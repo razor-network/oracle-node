@@ -19,12 +19,18 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"io/ioutil"
+
+	web3 "github.com/regcostajr/go-web3"
+	"github.com/regcostajr/go-web3/dto"
+	"github.com/regcostajr/go-web3/providers"
 )
 
 // stakeCmd represents the stake command
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
-	Short: "A brief description of your command",
+	Short: "Stake some schells",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -33,6 +39,21 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("stake called")
+
+		// content, err := ioutil.ReadFile("../build/contracts/StakeManager.json")
+
+		// type TruffleContract struct {
+		// 	Abi      string `json:"abi"`
+		// 	Bytecode string `json:"bytecode"`
+		// }
+
+		// var unmarshalResponse TruffleContract
+
+		// json.Unmarshal(content, &unmarshalResponse)
+
+		// var connection = web3.NewWeb3(providers.NewHTTPProvider("127.0.0.1:8545", 10, false))
+		// bytecode := unmarshalResponse.Bytecode
+		// contract, err := connection.Eth.NewContract(unmarshalResponse.Abi)
 	},
 }
 
