@@ -17,44 +17,93 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
-
-	"io/ioutil"
-
-	web3 "github.com/regcostajr/go-web3"
-	"github.com/regcostajr/go-web3/dto"
-	"github.com/regcostajr/go-web3/providers"
+	"log"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"os"
+  "github.com/ethereum/go-ethereum/common"
+	"math"
+	"math/big"
+	"context"
+	// "time"
+	// "io/ioutil"
+  // web3 "github.com/regcostajr/go-web3"
+	// "github.com/regcostajr/go-web3/dto"
+	// "github.com/regcostajr/go-web3/providers"
 )
 
 // stakeCmd represents the stake command
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some schells",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("stake called")
+       fmt.Println("stake called")
+			 client, err := ethclient.Dial("http://localhost:8545")
+       if err != nil {
+       log.Fatal(err)
+       }
 
-		// content, err := ioutil.ReadFile("../build/contracts/StakeManager.json")
+				// content, err := ioutil.ReadFile("../build/contracts/StakeManager.json")
 
-		// type TruffleContract struct {
-		// 	Abi      string `json:"abi"`
-		// 	Bytecode string `json:"bytecode"`
+				// type TruffleContract struct {
+				// 	Abi      string `json:"abi"`
+				// 	Bytecode string `json:"bytecode"`
+				// }
+
+				// var unmarshalResponse TruffleContract
+
+				// json.Unmarshal(content, &unmarshalResponse)
+
+				// var connection = web3.NewWeb3(providers.NewHTTPProvider("127.0.0.1:8545", 10, false))
+				// bytecode := unmarshalResponse.Bytecode
+				// contract, err := connection.Eth.NewContract(unmarshalResponse.Abi)
+		// amount := args[0]
+		address:= args[1]
+		fmt.Println("account", address)
+		// access schell balance from SchellingCoin
+		// fmt.Println("schell balance", balance, "schells")
+	  // if balance<amount {
+		// 	fmt.Println("Not enough schells to stake")
+		// 	os.Exit(0)
 		// }
+		account:=common.HexToAddress(address)
+		weiBalance,err :=client.BalanceAt(context.Background(),account,nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fbalance := new(big.Float)
+    fbalance.SetString(weiBalance.String())
+    ethBalance := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
 
-		// var unmarshalResponse TruffleContract
-
-		// json.Unmarshal(content, &unmarshalResponse)
-
-		// var connection = web3.NewWeb3(providers.NewHTTPProvider("127.0.0.1:8545", 10, false))
-		// bytecode := unmarshalResponse.Bytecode
-		// contract, err := connection.Eth.NewContract(unmarshalResponse.Abi)
-	},
+	  fmt.Println("ether balance", ethBalance, "eth")
+    if ethBalance.Cmp(big.NewFloat(0.01)) == -1 {
+			fmt.Println("Please fund this account with more ether to pay for tx fees")
+			os.Exit(0)
+		}
+    // approve transaction
+	for {
+		//   epoch=??
+		//   blocknumber,err := client.HeaderByNumber(context.Background(),nil)
+		//   if err != nil {
+		//   log.Fatal(err)
+	  //     }
+		//
+		// fmt.Println("epoch",epoch)
+		// fmt.Println("state",state)
+		// if state!=0 {
+		// 	fmt.Println("Can only stake during state 0 (commit). Retrying in 1 second...")
+		// 	time.Sleep(time.Second)
+		// }
+	}
+	fmt.Println("Sending stake transaction...")
+  // nonce=?
+  // let tx2 = await stakeManager.methods.stake(epoch, amountBN).send({
+  //   from: account,
+  // nonce: String(nonce)})
+  // console.log(tx2.events)
+  // return (tx2.events.Staked.event === 'Staked')
+ },
 }
 
 func init() {
