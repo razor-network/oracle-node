@@ -77,9 +77,10 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".razor" (without extension).
+		// Search config in home directory with name ".razor.yaml".
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".razor")
+		viper.SetConfigType("yaml")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
