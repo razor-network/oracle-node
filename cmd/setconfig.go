@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// setConfig represents the setconfig command
 var setConfig = &cobra.Command{
 	Use:   "setconfig",
 	Short: "setconfig enables user to set the values of provider and gas multiplier",
