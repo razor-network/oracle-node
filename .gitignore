@@ -19,3 +19,4 @@ build/.DS_Store
 
 .idea
 razor
+__debug_bin

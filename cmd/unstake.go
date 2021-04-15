@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -19,6 +21,7 @@ to quickly create a Cobra application.`,
 		provider, gasMultiplier, err := getConfigData(cmd)
 		if err != nil {
 			log.Error(err)
+			os.Exit(1)
 		}
 		address, _ := cmd.Flags().GetString("address")
 		password, _ := cmd.Flags().GetString("password")

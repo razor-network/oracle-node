@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -17,6 +19,7 @@ var stakeCmd = &cobra.Command{
 		provider, gasMultiplier, err := getConfigData(cmd)
 		if err != nil {
 			log.Error(err)
+			os.Exit(1)
 		}
 		amount, _ := cmd.Flags().GetFloat32("amount")
 		address, _ := cmd.Flags().GetString("address")

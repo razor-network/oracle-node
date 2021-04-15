@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -20,6 +22,7 @@ to quickly create a Cobra application.`,
 		provider, gasMultiplier, err := getConfigData(cmd)
 		if err != nil {
 			log.Error(err)
+			os.Exit(1)
 		}
 		address, _ := cmd.Flags().GetString("address")
 		password, _ := cmd.Flags().GetString("password")
@@ -39,9 +42,9 @@ func init() {
 		Password string
 	)
 
-	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
-	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
+	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	withdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 
-	voteCmd.MarkFlagRequired("address")
-	voteCmd.MarkFlagRequired("password")
+	withdrawCmd.MarkFlagRequired("address")
+	withdrawCmd.MarkFlagRequired("password")
 }

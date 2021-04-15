@@ -45,7 +45,7 @@ func init() {
 
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.razor.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
+	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 0, "gas multiplier value")
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
@@ -69,7 +69,8 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Warn("no config file found")
+			log.Warn("No config file found")
+			log.Warn("Use setconfig command to set the default config")
 		} else {
 			log.Warn("error in reading config")
 		}
