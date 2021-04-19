@@ -1,27 +1,13 @@
-/*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
-	"fmt"
+	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
 
-// transferCmd represents the transfer command
 var transferCmd = &cobra.Command{
 	Use:   "transfer",
 	Short: "A brief description of your command",
@@ -32,20 +18,44 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("transfer called")
+		provider, gasMultiplier, err := getConfigData(cmd)
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		amount, _ := cmd.Flags().GetFloat32("amount")
+		from, _ := cmd.Flags().GetString("from")
+		password, _ := cmd.Flags().GetString("password")
+		to, _ := cmd.Flags().GetString("to")
+
+		log.Info("provider: ", provider)
+		log.Info("gasmultiplier: ", gasMultiplier)
+		log.Info("amount: ", amount)
+		log.Info("from: ", from)
+		log.Info("password: ", password)
+		log.Info("to: ", to)
+
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(transferCmd)
+	var (
+		Amount   float32
+		From     string
+		Password string
+		To       string
+	)
 
-	// Here you will define your flags and configuration settings.
+	transferCmd.Flags().Float32VarP(&Amount, "amount", "a", 0, "amount to stake")
+	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
+	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
+	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// transferCmd.PersistentFlags().String("foo", "", "A help for foo")
+	transferCmd.MarkFlagRequired("amount")
+	transferCmd.MarkFlagRequired("from")
+	transferCmd.MarkFlagRequired("password")
+	transferCmd.MarkFlagRequired("to")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// transferCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
