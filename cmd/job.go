@@ -16,14 +16,24 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"math/big"
+	"strings"
 
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
+
+	jobManager "razor/pkg/bindings"
 )
 
 // jobCmd represents the job command
 var jobCmd = &cobra.Command{
-	Use:   "job",
+	Use:   "jobs",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -32,8 +42,46 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("job called")
-		fmt.Println(args)
+		fmt.Println("Job command called")
+
+		client, err := ethclient.Dial("wss://goerli.infura.io/ws/v3/0d8f675eedad42cb82600b8e208b3465")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		header, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		contractAddress := common.HexToAddress("0x264F48268dCEA2E264333B40dfe7d82fB8837E23")
+		query := ethereum.FilterQuery{
+			FromBlock: big.NewInt(0).Sub(header.Number, big.NewInt(1000)),
+			ToBlock:   header.Number,
+			Addresses: []common.Address{
+				contractAddress,
+			},
+		}
+
+		logs, err := client.FilterLogs(context.Background(), query)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		contractAbi, err := abi.JSON(strings.NewReader(string(jobManager.JobManagerABI)))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, vLog := range logs {
+			data, abc := contractAbi.Unpack("JobReported", vLog.Data)
+			if abc != nil {
+				log.Fatal(abc)
+			}
+
+			fmt.Println(data)
+
+		}
 	},
 }
 
