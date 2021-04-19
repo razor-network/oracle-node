@@ -26,8 +26,8 @@ var (
 	_ = event.NewSubscription
 )
 
-// StructsVote is an auto generated low-level Go binding around an user-defined struct.
-type StructsVote struct {
+// StructsIVote is an auto generated low-level Go binding around an user-defined struct.
+type StructsIVote struct {
 	Value  *big.Int
 	Weight *big.Int
 }
@@ -273,15 +273,15 @@ func (_IVoteManager *IVoteManagerCallerSession) GetTotalStakeRevealed0(epoch *bi
 // GetVote is a free data retrieval call binding the contract method 0x8ce7ff4a.
 //
 // Solidity: function getVote(uint256 epoch, uint256 stakerId, uint256 assetId) view returns((uint256,uint256) vote)
-func (_IVoteManager *IVoteManagerCaller) GetVote(opts *bind.CallOpts, epoch *big.Int, stakerId *big.Int, assetId *big.Int) (StructsVote, error) {
+func (_IVoteManager *IVoteManagerCaller) GetVote(opts *bind.CallOpts, epoch *big.Int, stakerId *big.Int, assetId *big.Int) (StructsIVote, error) {
 	var out []interface{}
 	err := _IVoteManager.contract.Call(opts, &out, "getVote", epoch, stakerId, assetId)
 
 	if err != nil {
-		return *new(StructsVote), err
+		return *new(StructsIVote), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(StructsVote)).(*StructsVote)
+	out0 := *abi.ConvertType(out[0], new(StructsIVote)).(*StructsIVote)
 
 	return out0, err
 
@@ -290,14 +290,14 @@ func (_IVoteManager *IVoteManagerCaller) GetVote(opts *bind.CallOpts, epoch *big
 // GetVote is a free data retrieval call binding the contract method 0x8ce7ff4a.
 //
 // Solidity: function getVote(uint256 epoch, uint256 stakerId, uint256 assetId) view returns((uint256,uint256) vote)
-func (_IVoteManager *IVoteManagerSession) GetVote(epoch *big.Int, stakerId *big.Int, assetId *big.Int) (StructsVote, error) {
+func (_IVoteManager *IVoteManagerSession) GetVote(epoch *big.Int, stakerId *big.Int, assetId *big.Int) (StructsIVote, error) {
 	return _IVoteManager.Contract.GetVote(&_IVoteManager.CallOpts, epoch, stakerId, assetId)
 }
 
 // GetVote is a free data retrieval call binding the contract method 0x8ce7ff4a.
 //
 // Solidity: function getVote(uint256 epoch, uint256 stakerId, uint256 assetId) view returns((uint256,uint256) vote)
-func (_IVoteManager *IVoteManagerCallerSession) GetVote(epoch *big.Int, stakerId *big.Int, assetId *big.Int) (StructsVote, error) {
+func (_IVoteManager *IVoteManagerCallerSession) GetVote(epoch *big.Int, stakerId *big.Int, assetId *big.Int) (StructsIVote, error) {
 	return _IVoteManager.Contract.GetVote(&_IVoteManager.CallOpts, epoch, stakerId, assetId)
 }
 

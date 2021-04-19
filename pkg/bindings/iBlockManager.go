@@ -26,8 +26,8 @@ var (
 	_ = event.NewSubscription
 )
 
-// StructsBlock is an auto generated low-level Go binding around an user-defined struct.
-type StructsBlock struct {
+// StructsIBlock is an auto generated low-level Go binding around an user-defined struct.
+type StructsIBlock struct {
 	ProposerId    *big.Int
 	JobIds        []*big.Int
 	Medians       []*big.Int
@@ -186,15 +186,15 @@ func (_IBlockManager *IBlockManagerTransactorRaw) Transact(opts *bind.TransactOp
 // GetBlock is a free data retrieval call binding the contract method 0x04c07569.
 //
 // Solidity: function getBlock(uint256 epoch) view returns((uint256,uint256[],uint256[],uint256[],uint256[],uint256,uint256,bool) _block)
-func (_IBlockManager *IBlockManagerCaller) GetBlock(opts *bind.CallOpts, epoch *big.Int) (StructsBlock, error) {
+func (_IBlockManager *IBlockManagerCaller) GetBlock(opts *bind.CallOpts, epoch *big.Int) (StructsIBlock, error) {
 	var out []interface{}
 	err := _IBlockManager.contract.Call(opts, &out, "getBlock", epoch)
 
 	if err != nil {
-		return *new(StructsBlock), err
+		return *new(StructsIBlock), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(StructsBlock)).(*StructsBlock)
+	out0 := *abi.ConvertType(out[0], new(StructsIBlock)).(*StructsIBlock)
 
 	return out0, err
 
@@ -203,14 +203,14 @@ func (_IBlockManager *IBlockManagerCaller) GetBlock(opts *bind.CallOpts, epoch *
 // GetBlock is a free data retrieval call binding the contract method 0x04c07569.
 //
 // Solidity: function getBlock(uint256 epoch) view returns((uint256,uint256[],uint256[],uint256[],uint256[],uint256,uint256,bool) _block)
-func (_IBlockManager *IBlockManagerSession) GetBlock(epoch *big.Int) (StructsBlock, error) {
+func (_IBlockManager *IBlockManagerSession) GetBlock(epoch *big.Int) (StructsIBlock, error) {
 	return _IBlockManager.Contract.GetBlock(&_IBlockManager.CallOpts, epoch)
 }
 
 // GetBlock is a free data retrieval call binding the contract method 0x04c07569.
 //
 // Solidity: function getBlock(uint256 epoch) view returns((uint256,uint256[],uint256[],uint256[],uint256[],uint256,uint256,bool) _block)
-func (_IBlockManager *IBlockManagerCallerSession) GetBlock(epoch *big.Int) (StructsBlock, error) {
+func (_IBlockManager *IBlockManagerCallerSession) GetBlock(epoch *big.Int) (StructsIBlock, error) {
 	return _IBlockManager.Contract.GetBlock(&_IBlockManager.CallOpts, epoch)
 }
 

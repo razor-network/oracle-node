@@ -26,8 +26,8 @@ var (
 	_ = event.NewSubscription
 )
 
-// StructsStaker is an auto generated low-level Go binding around an user-defined struct.
-type StructsStaker struct {
+// StructsIStaker is an auto generated low-level Go binding around an user-defined struct.
+type StructsIStaker struct {
 	Id                 *big.Int
 	Address            common.Address
 	Stake              *big.Int
@@ -279,15 +279,15 @@ func (_IStakeManager *IStakeManagerCallerSession) GetStakeGettingReward() (*big.
 // GetStaker is a free data retrieval call binding the contract method 0xe3c998fe.
 //
 // Solidity: function getStaker(uint256 _id) view returns((uint256,address,uint256,uint256,uint256,uint256,uint256,uint256) staker)
-func (_IStakeManager *IStakeManagerCaller) GetStaker(opts *bind.CallOpts, _id *big.Int) (StructsStaker, error) {
+func (_IStakeManager *IStakeManagerCaller) GetStaker(opts *bind.CallOpts, _id *big.Int) (StructsIStaker, error) {
 	var out []interface{}
 	err := _IStakeManager.contract.Call(opts, &out, "getStaker", _id)
 
 	if err != nil {
-		return *new(StructsStaker), err
+		return *new(StructsIStaker), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(StructsStaker)).(*StructsStaker)
+	out0 := *abi.ConvertType(out[0], new(StructsIStaker)).(*StructsIStaker)
 
 	return out0, err
 
@@ -296,14 +296,14 @@ func (_IStakeManager *IStakeManagerCaller) GetStaker(opts *bind.CallOpts, _id *b
 // GetStaker is a free data retrieval call binding the contract method 0xe3c998fe.
 //
 // Solidity: function getStaker(uint256 _id) view returns((uint256,address,uint256,uint256,uint256,uint256,uint256,uint256) staker)
-func (_IStakeManager *IStakeManagerSession) GetStaker(_id *big.Int) (StructsStaker, error) {
+func (_IStakeManager *IStakeManagerSession) GetStaker(_id *big.Int) (StructsIStaker, error) {
 	return _IStakeManager.Contract.GetStaker(&_IStakeManager.CallOpts, _id)
 }
 
 // GetStaker is a free data retrieval call binding the contract method 0xe3c998fe.
 //
 // Solidity: function getStaker(uint256 _id) view returns((uint256,address,uint256,uint256,uint256,uint256,uint256,uint256) staker)
-func (_IStakeManager *IStakeManagerCallerSession) GetStaker(_id *big.Int) (StructsStaker, error) {
+func (_IStakeManager *IStakeManagerCallerSession) GetStaker(_id *big.Int) (StructsIStaker, error) {
 	return _IStakeManager.Contract.GetStaker(&_IStakeManager.CallOpts, _id)
 }
 
