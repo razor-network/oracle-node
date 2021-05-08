@@ -10,3 +10,6 @@ go mod install
 go install razor
 
 # Ask for provider
+
+# Create .razor dir if not there
+# Set the default dir path to home/.razor/

@@ -8,7 +8,12 @@ import (
 	"github.com/spf13/cobra"
 	"math"
 	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/utils"
 	"time"
+
+	//"time"
 )
 
 var stakeCmd = &cobra.Command{
@@ -19,23 +24,28 @@ var stakeCmd = &cobra.Command{
 	stake -a <amount> --address <address> --password <password>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, gasMultiplier, err := getConfigData(cmd)
+
+		provider, err := GetProvider()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Error in getting provider: ", err)
 		}
 
-		client := connectToClient(provider)
+		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
-		balance := fetchBalance(client, address)
+
+		client := utils.ConnectToClient(provider)
+		balance := utils.FetchBalance(client, address)
 
 		amount, err := cmd.Flags().GetString("amount")
-		if err != nil  {
+		if err != nil {
 			log.Fatal("Error in reading amount", err)
 		}
+
 		amountInWei, ok := new(big.Int).SetString(amount, 10)
 		if !ok {
 			log.Fatal("SetString: error")
 		}
+
 		if amountInWei.Cmp(balance) > 0 {
 			log.Fatal("Not enough balance")
 		}
@@ -49,46 +59,61 @@ var stakeCmd = &cobra.Command{
 		if accountBalance.Cmp(minEtherBalance) < 0 {
 			log.Fatal("Please make sure you hold at least 0.01 ether in your account")
 		}
-		// TODO: Send stake manager address in 'to'
-		approve(client, address, "0x1C7Ccf3054bA60bA8Ec1fecC7E4E722b59bDD90b", amountInWei, gasMultiplier)
-		stakeCoins(client, address, amountInWei, gasMultiplier)
-		//password, _ := cmd.Flags().GetString("password")
+		chainId, err := GetChainId()
+		if err != nil {
+			log.Fatal("Error in fetching chain id", err)
+		}
+
+		gasMultiplier, err := GetMultiplier()
+		if err != nil {
+			log.Fatal("Error in fetching multiplier", err)
+		}
+		txnArgs := types.TransactionOptions{
+			Client:         client,
+			AccountAddress: address,
+			Password:       password,
+			Amount:         amountInWei,
+			ChainId:        chainId,
+			GasMultiplier: gasMultiplier,
+		}
+		approve(txnArgs)
+		stakeCoins(txnArgs)
 	},
 }
 
-func approve(client *ethclient.Client, from string, to string, amount *big.Int, gasMultiplier float32)  {
-	coinContract := getCoinContract(client)
-	opts := getOptions(false, from, "")
-	allowance, err := coinContract.Allowance(&opts, common.HexToAddress(from), common.HexToAddress(to))
+func approve(txnArgs types.TransactionOptions) {
+	coinContract := utils.GetCoinContract(txnArgs.Client)
+	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
+	allowance, err := coinContract.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		log.Fatal(err)
 	}
-	if allowance.Cmp(amount) >= 0 {
+	if allowance.Cmp(txnArgs.Amount) >= 0 {
 		log.Info("Sufficient allowance, no need to increase")
 	} else {
 		log.Info("Sending Approve transaction...")
-		txnOpts := getTxnOpts(client, from, gasMultiplier)
-		txn, err := coinContract.Approve(&txnOpts, common.HexToAddress(to), amount)
+		txnOpts := utils.GetTxnOpts(txnArgs)
+		txn, err := coinContract.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
-			log.Fatal("Error in approving: ",err)
+			log.Fatal("Error in approving: ", err)
 		}
 		log.Info("Approve transaction sent...\nTxn Hash: ", txn.Hash())
 	}
 }
 
-func stakeCoins(client *ethclient.Client, account string, amount *big.Int, gasMultiplier float32) {
-	stateManager := getStateManager(client)
-	stakeManager := getStakeManager(client)
+func stakeCoins(txnArgs types.TransactionOptions) {
+	stateManager := utils.GetStateManager(txnArgs.Client)
+	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	// TODO: Get a better approach for assigning epoch
 	var epoch *big.Int
 	for true {
-		callOpts := getOptions(false, account, "")
+		callOpts := utils.GetOptions(false, txnArgs.AccountAddress, "")
 		_epoch, err := stateManager.GetEpoch(&callOpts)
 		if err != nil {
 			log.Fatal("Error in fetching epoch: ", err)
 		}
 		epoch = _epoch
-		state := getDelayedState(client)
+		state := getDelayedState(txnArgs.Client)
 		log.Info("Epoch", epoch)
 		log.Info("State", state)
 		if state != 0 {
@@ -99,8 +124,8 @@ func stakeCoins(client *ethclient.Client, account string, amount *big.Int, gasMu
 		}
 	}
 	log.Info("Sending stake transactions...")
-	txnOpts := getTxnOpts(client, account, gasMultiplier)
-	tx, err := stakeManager.Stake(&txnOpts, epoch, amount)
+	txnOpts := utils.GetTxnOpts(txnArgs)
+	tx, err := stakeManager.Stake(txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		log.Fatal("Error in staking: ", err)
 	}
@@ -112,11 +137,12 @@ func getDelayedState(client *ethclient.Client) int64 {
 	if err != nil {
 		log.Fatal("Error in fetching latest block number: ", err)
 	}
-	if blockNumber % 10 > 7 || blockNumber % 10 < 1 {
+
+	if blockNumber%core.BlockDivider > 7 || blockNumber%core.BlockDivider < 1 {
 		return -1
 	}
-	state := math.Floor(float64(blockNumber/10))
-	return int64(state) % 4
+	state := math.Floor(float64(blockNumber / core.BlockDivider))
+	return int64(state) % core.NumberOfStates
 }
 
 func init() {

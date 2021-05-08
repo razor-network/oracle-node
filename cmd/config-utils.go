@@ -2,33 +2,63 @@ package cmd
 
 import (
 	"errors"
-
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"math/big"
+	"razor/core/types"
 )
 
-func getConfigData(cmd *cobra.Command) (string, float32, error) {
+func GetConfigData() (types.Configurations, error) {
+	config := types.Configurations{
+		Provider:      "",
+		GasMultiplier: 0,
+		ChainId:       nil,
+	}
+	provider, err := GetProvider()
+	if err != nil {
+		return config, err
+	}
+	gasMultiplier, err := GetMultiplier()
+	if err != nil {
+		return config, err
+	}
+	chainId, err := GetChainId()
+	if err != nil {
+		return config, err
+	}
+	config.Provider = provider
+	config.GasMultiplier = gasMultiplier
+	config.ChainId = chainId
+	return config, nil
+}
+
+func GetProvider() (string, error) {
 	provider, err := rootCmd.PersistentFlags().GetString("provider")
 	if err != nil {
-		return "", 0, err
+		return "", err
 	}
+	if provider == "" {
+		return "", errors.New("provider value is not set")
+	}
+	return provider, nil
+}
 
+func GetMultiplier() (float32, error) {
 	gasMultiplier, err := rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
 	if err != nil {
-		return "", 0, err
+		return 0, err
 	}
-
-	if provider == "" {
-		provider = viper.GetString("provider")
-	}
-
 	if gasMultiplier == 0 {
-		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
+		return 0, errors.New("gas multiplier value not set")
 	}
+	return gasMultiplier, nil
+}
 
-	if provider == "" || gasMultiplier == 0 {
-		return "", 0, errors.New("provider and gas multiplier value not set")
+func GetChainId() (*big.Int, error) {
+	chainId, err := rootCmd.PersistentFlags().GetInt64("chainid")
+	if err != nil {
+		return nil, err
 	}
-
-	return provider, gasMultiplier, nil
+	if chainId == 0000 {
+		return nil, errors.New("chain id not set")
+	}
+	return big.NewInt(chainId), nil
 }

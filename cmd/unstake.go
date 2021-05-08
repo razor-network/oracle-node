@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"os"
-
 	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,18 +15,19 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, gasMultiplier, err := getConfigData(cmd)
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-		address, _ := cmd.Flags().GetString("address")
-		password, _ := cmd.Flags().GetString("password")
-
-		log.Info("provider: ", provider)
-		log.Info("gasmultiplier: ", gasMultiplier)
-		log.Info("address: ", address)
-		log.Info("password: ", password)
+		//provider, gasMultiplier, err := utils.getConfigData(cmd)
+		//if err != nil {
+		//	log.Error(err)
+		//	os.Exit(1)
+		//}
+		//address, _ := cmd.Flags().GetString("address")
+		//password, _ := cmd.Flags().GetString("password")
+		//
+		//log.Info("provider: ", provider)
+		//log.Info("gasmultiplier: ", gasMultiplier)
+		//log.Info("address: ", address)
+		//log.Info("password: ", password)
+		log.Info("Unstake called")
 	},
 }
 

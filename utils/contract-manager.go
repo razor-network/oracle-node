@@ -1,4 +1,4 @@
-package cmd
+package utils
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -8,7 +8,7 @@ import (
 	"razor/pkg/bindings"
 )
 
-func getCoinContract(client *ethclient.Client) *bindings.SchellingCoin {
+func GetCoinContract(client *ethclient.Client) *bindings.SchellingCoin {
 	coinContract, err := bindings.NewSchellingCoin(common.HexToAddress("0x3a3dC05fB85e44b97A358850F117d3B5df7D1d48"), client)
 	if err != nil {
 		log.Fatal(err)
@@ -16,7 +16,7 @@ func getCoinContract(client *ethclient.Client) *bindings.SchellingCoin {
 	return coinContract
 }
 
-func getStateManager(client *ethclient.Client) *bindings.StateManager {
+func GetStateManager(client *ethclient.Client) *bindings.StateManager {
 	stateManagerContract, err := bindings.NewStateManager(common.HexToAddress("0x7568FC1928Ac51cE0bd4E417650b0593139842C8"), client)
 	if err != nil {
 		log.Fatal(err)
@@ -24,7 +24,7 @@ func getStateManager(client *ethclient.Client) *bindings.StateManager {
 	return stateManagerContract
 }
 
-func getStakeManager(client *ethclient.Client) *bindings.StakeManager {
+func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	stakeManagerContract, err := bindings.NewStakeManager(common.HexToAddress("0x1C7Ccf3054bA60bA8Ec1fecC7E4E722b59bDD90b"), client)
 	if err != nil {
 		log.Fatal(err)

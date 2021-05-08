@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"os"
-
 	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,24 +15,24 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, gasMultiplier, err := getConfigData(cmd)
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-
-		amount, _ := cmd.Flags().GetFloat32("amount")
-		from, _ := cmd.Flags().GetString("from")
-		password, _ := cmd.Flags().GetString("password")
-		to, _ := cmd.Flags().GetString("to")
-
-		log.Info("provider: ", provider)
-		log.Info("gasmultiplier: ", gasMultiplier)
-		log.Info("amount: ", amount)
-		log.Info("from: ", from)
-		log.Info("password: ", password)
-		log.Info("to: ", to)
-
+		//provider, gasMultiplier, err := utils.getConfigData(cmd)
+		//if err != nil {
+		//	log.Error(err)
+		//	os.Exit(1)
+		//}
+		//
+		//amount, _ := cmd.Flags().GetFloat32("amount")
+		//from, _ := cmd.Flags().GetString("from")
+		//password, _ := cmd.Flags().GetString("password")
+		//to, _ := cmd.Flags().GetString("to")
+		//
+		//log.Info("provider: ", provider)
+		//log.Info("gasmultiplier: ", gasMultiplier)
+		//log.Info("amount: ", amount)
+		//log.Info("from: ", from)
+		//log.Info("password: ", password)
+		//log.Info("to: ", to)
+		log.Info("Transfer called")
 	},
 }
 

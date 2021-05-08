@@ -1,8 +1,11 @@
 # go-cli
+
 ## Installation
+
 go install razor
 
 ## Commands
+
 1. stake
 2. transfer
 3. unstake
