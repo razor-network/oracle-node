@@ -39,9 +39,9 @@ func init() {
 	rootCmd.AddCommand(setConfig)
 
 	var (
-		Provider string
+		Provider      string
 		GasMultiplier float32
-		ChainId int64
+		ChainId       int64
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")

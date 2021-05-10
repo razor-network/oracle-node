@@ -12,8 +12,6 @@ import (
 	"razor/core/types"
 	"razor/utils"
 	"time"
-
-	//"time"
 )
 
 var stakeCmd = &cobra.Command{
@@ -24,7 +22,6 @@ var stakeCmd = &cobra.Command{
 	stake -a <amount> --address <address> --password <password>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		provider, err := GetProvider()
 		if err != nil {
 			log.Fatal("Error in getting provider: ", err)
@@ -32,7 +29,6 @@ var stakeCmd = &cobra.Command{
 
 		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
-
 		client := utils.ConnectToClient(provider)
 		balance := utils.FetchBalance(client, address)
 
@@ -55,8 +51,7 @@ var stakeCmd = &cobra.Command{
 			log.Fatalf("Error in fetching balance of the account: %s\n%s", address, err)
 		}
 
-		minEtherBalance := new(big.Int).SetInt64(1e16)
-		if accountBalance.Cmp(minEtherBalance) < 0 {
+		if accountBalance.Cmp(big.NewInt(1e16)) < 0 {
 			log.Fatal("Please make sure you hold at least 0.01 ether in your account")
 		}
 		chainId, err := GetChainId()
@@ -74,7 +69,7 @@ var stakeCmd = &cobra.Command{
 			Password:       password,
 			Amount:         amountInWei,
 			ChainId:        chainId,
-			GasMultiplier: gasMultiplier,
+			GasMultiplier:  gasMultiplier,
 		}
 		approve(txnArgs)
 		stakeCoins(txnArgs)
@@ -114,8 +109,8 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 		}
 		epoch = _epoch
 		state := getDelayedState(txnArgs.Client)
-		log.Info("Epoch", epoch)
-		log.Info("State", state)
+		log.Info("Epoch ", epoch)
+		log.Info("State ", state)
 		if state != 0 {
 			log.Info("Can only stake during state 0 (commit). Retrying in 1 second...")
 			time.Sleep(1000)
@@ -138,7 +133,7 @@ func getDelayedState(client *ethclient.Client) int64 {
 		log.Fatal("Error in fetching latest block number: ", err)
 	}
 
-	if blockNumber%core.BlockDivider > 7 || blockNumber%core.BlockDivider < 1 {
+	if blockNumber%(core.BlockDivider) > 7 || blockNumber%(core.BlockDivider) < 1 {
 		return -1
 	}
 	state := math.Floor(float64(blockNumber / core.BlockDivider))

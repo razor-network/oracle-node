@@ -35,5 +35,8 @@ func GetDefaultPath() string {
 		log.Fatal(err)
 	}
 	defaultPath := home + "/.razor"
+	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
+		os.Mkdir(defaultPath, 0777)
+	}
 	return defaultPath
 }

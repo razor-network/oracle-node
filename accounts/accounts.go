@@ -19,7 +19,6 @@ func CreateAccount(path string, password string) accounts.Account {
 }
 
 func getPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey {
-	// TODO: Trim extra /// from the keystorePath
 	jsonBytes, err := ioutil.ReadFile(keystorePath)
 	if err != nil {
 		log.Fatal("Error in reading keystore: ", err)

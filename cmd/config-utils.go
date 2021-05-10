@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"errors"
+	"github.com/spf13/viper"
 	"math/big"
 	"razor/core/types"
 )
@@ -36,7 +36,7 @@ func GetProvider() (string, error) {
 		return "", err
 	}
 	if provider == "" {
-		return "", errors.New("provider value is not set")
+		provider = viper.GetString("provider")
 	}
 	return provider, nil
 }
@@ -47,7 +47,7 @@ func GetMultiplier() (float32, error) {
 		return 0, err
 	}
 	if gasMultiplier == 0 {
-		return 0, errors.New("gas multiplier value not set")
+		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
 	}
 	return gasMultiplier, nil
 }
@@ -58,7 +58,7 @@ func GetChainId() (*big.Int, error) {
 		return nil, err
 	}
 	if chainId == 0000 {
-		return nil, errors.New("chain id not set")
+		chainId = viper.GetInt64("chainid")
 	}
 	return big.NewInt(chainId), nil
 }
