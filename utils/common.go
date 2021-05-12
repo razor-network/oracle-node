@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"math/big"
 	"os"
+	"time"
 )
 
 func ConnectToClient(provider string) *ethclient.Client {
@@ -49,4 +51,28 @@ func GetEpoch(client *ethclient.Client, address string) *big.Int {
 		log.Fatal("Error in fetching epoch: ", err)
 	}
 	return epoch
+}
+
+func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
+	txHash := common.HexToHash(_txHash)
+	tx, err := client.TransactionReceipt(context.Background(), txHash)
+	if err != nil {
+		return -1
+	}
+	return int(tx.Status)
+}
+
+func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+	for {
+		log.Info("Checking if transaction is mined....\n")
+		transactionStatus := checkTransactionReceipt(client, hashToRead)
+		if transactionStatus == 0 {
+			log.Info("Transaction mining unsuccessful")
+			return 0
+		} else if transactionStatus == 1 {
+			log.Info("Transaction mined successfully\n")
+			return 1
+		}
+		time.Sleep(2 * time.Second)
+	}
 }

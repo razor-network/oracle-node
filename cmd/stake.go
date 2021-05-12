@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -37,10 +39,11 @@ var stakeCmd = &cobra.Command{
 			log.Fatal("Error in reading amount", err)
 		}
 
-		amountInWei, ok := new(big.Int).SetString(amount, 10)
+		_amount, ok := new(big.Int).SetString(amount, 10)
 		if !ok {
 			log.Fatal("SetString: error")
 		}
+		amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
 
 		if amountInWei.Cmp(balance) > 0 {
 			log.Fatal("Not enough balance")
@@ -85,12 +88,13 @@ func approve(txnArgs types.TransactionOptions) {
 			log.Fatal("Error in approving: ", err)
 		}
 		log.Info("Approve transaction sent...\nTxn Hash: ", txn.Hash())
+		log.Info("Waiting for transaction to be mined....")
+		utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
 	}
 }
 
 func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
-	// TODO: Get a better approach for assigning epoch
 	var epoch *big.Int
 	for true {
 		epoch = utils.GetEpoch(txnArgs.Client, txnArgs.AccountAddress)
@@ -99,7 +103,7 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 		log.Info("State ", state)
 		if state != 0 {
 			log.Info("Can only stake during state 0 (commit). Retrying in 1 second...")
-			time.Sleep(1000)
+			time.Sleep(1 * time.Second)
 		} else {
 			break
 		}
@@ -111,6 +115,7 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 		log.Fatal("Error in staking: ", err)
 	}
 	log.Info("Staked\nTxn Hash: ", tx.Hash())
+	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
 }
 
 func getDelayedState(client *ethclient.Client) int64 {
@@ -124,6 +129,10 @@ func getDelayedState(client *ethclient.Client) int64 {
 	}
 	state := math.Floor(float64(blockNumber / core.BlockDivider))
 	return int64(state) % core.NumberOfStates
+}
+
+func checkIfTxnIsSuccess(transaction *types2.Transaction) {
+
 }
 
 func init() {
