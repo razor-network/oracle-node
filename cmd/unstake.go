@@ -3,31 +3,50 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"math/big"
+	"razor/core/types"
+	"razor/utils"
 )
 
 var unstakeCmd = &cobra.Command{
 	Use:   "unstake",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Unstake your razors",
+	Long: `unstake allows user to unstake their razors in the razor network
+	For ex:
+	unstake --address <address> --password <password>
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		//provider, gasMultiplier, err := utils.getConfigData(cmd)
-		//if err != nil {
-		//	log.Error(err)
-		//	os.Exit(1)
-		//}
-		//address, _ := cmd.Flags().GetString("address")
-		//password, _ := cmd.Flags().GetString("password")
-		//
-		//log.Info("provider: ", provider)
-		//log.Info("gasmultiplier: ", gasMultiplier)
-		//log.Info("address: ", address)
-		//log.Info("password: ", password)
-		log.Info("Unstake called")
+		config, err := GetConfigData()
+		if err != nil {
+			log.Fatal("Error in getting config: ", err)
+		}
+		address, _ := cmd.Flags().GetString("address")
+		password, _ := cmd.Flags().GetString("password")
+
+		client := utils.ConnectToClient(config.Provider)
+
+		balance := utils.FetchBalance(client, address)
+		if balance.Cmp(big.NewInt(0)) == 0 {
+			log.Fatal("Account balance is 0. Cannot unstake..")
+		}
+
+		epoch := utils.GetEpoch(client, address)
+
+		stakeManager := utils.GetStakeManager(client)
+		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+			Client:         client,
+			Password:       password,
+			AccountAddress: address,
+			ChainId:        config.ChainId,
+			GasMultiplier:  config.GasMultiplier,
+		})
+		log.Info("Unstaking coins")
+		txn, err := stakeManager.Unstake(txnOpts, epoch)
+		if err != nil {
+			log.Fatal("Error in un-staking: ", err)
+		}
+		log.Info("Successfully unstaked all the tokens")
+		log.Info("Transaction hash: ", txn.Hash())
 	},
 }
 

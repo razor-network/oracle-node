@@ -40,3 +40,13 @@ func GetDefaultPath() string {
 	}
 	return defaultPath
 }
+
+func GetEpoch(client *ethclient.Client, address string) *big.Int {
+	stateManager := GetStateManager(client)
+	callOpts := GetOptions(false, address, "")
+	epoch, err := stateManager.GetEpoch(&callOpts)
+	if err != nil {
+		log.Fatal("Error in fetching epoch: ", err)
+	}
+	return epoch
+}

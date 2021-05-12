@@ -22,14 +22,14 @@ var stakeCmd = &cobra.Command{
 	stake -a <amount> --address <address> --password <password>
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, err := GetProvider()
+		config, err := GetConfigData()
 		if err != nil {
-			log.Fatal("Error in getting provider: ", err)
+			log.Fatal("Error in getting config: ", err)
 		}
 
 		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
-		client := utils.ConnectToClient(provider)
+		client := utils.ConnectToClient(config.Provider)
 		balance := utils.FetchBalance(client, address)
 
 		amount, err := cmd.Flags().GetString("amount")
@@ -54,22 +54,14 @@ var stakeCmd = &cobra.Command{
 		if accountBalance.Cmp(big.NewInt(1e16)) < 0 {
 			log.Fatal("Please make sure you hold at least 0.01 ether in your account")
 		}
-		chainId, err := GetChainId()
-		if err != nil {
-			log.Fatal("Error in fetching chain id", err)
-		}
 
-		gasMultiplier, err := GetMultiplier()
-		if err != nil {
-			log.Fatal("Error in fetching multiplier", err)
-		}
 		txnArgs := types.TransactionOptions{
 			Client:         client,
 			AccountAddress: address,
 			Password:       password,
 			Amount:         amountInWei,
-			ChainId:        chainId,
-			GasMultiplier:  gasMultiplier,
+			ChainId:        config.ChainId,
+			GasMultiplier:  config.GasMultiplier,
 		}
 		approve(txnArgs)
 		stakeCoins(txnArgs)
@@ -97,17 +89,11 @@ func approve(txnArgs types.TransactionOptions) {
 }
 
 func stakeCoins(txnArgs types.TransactionOptions) {
-	stateManager := utils.GetStateManager(txnArgs.Client)
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	// TODO: Get a better approach for assigning epoch
 	var epoch *big.Int
 	for true {
-		callOpts := utils.GetOptions(false, txnArgs.AccountAddress, "")
-		_epoch, err := stateManager.GetEpoch(&callOpts)
-		if err != nil {
-			log.Fatal("Error in fetching epoch: ", err)
-		}
-		epoch = _epoch
+		epoch = utils.GetEpoch(txnArgs.Client, txnArgs.AccountAddress)
 		state := getDelayedState(txnArgs.Client)
 		log.Info("Epoch ", epoch)
 		log.Info("State ", state)
