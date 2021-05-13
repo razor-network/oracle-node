@@ -4,16 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"math"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
-	"time"
 )
 
 var stakeCmd = &cobra.Command{
@@ -95,44 +91,15 @@ func approve(txnArgs types.TransactionOptions) {
 
 func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
-	var epoch *big.Int
-	for true {
-		epoch = utils.GetEpoch(txnArgs.Client, txnArgs.AccountAddress)
-		state := getDelayedState(txnArgs.Client)
-		log.Info("Epoch ", epoch)
-		log.Info("State ", state)
-		if state != 0 {
-			log.Info("Can only stake during state 0 (commit). Retrying in 1 second...")
-			time.Sleep(1 * time.Second)
-		} else {
-			break
-		}
-	}
 	log.Info("Sending stake transactions...")
 	txnOpts := utils.GetTxnOpts(txnArgs)
+	epoch := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
 	tx, err := stakeManager.Stake(txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		log.Fatal("Error in staking: ", err)
 	}
 	log.Info("Staked\nTxn Hash: ", tx.Hash())
 	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
-}
-
-func getDelayedState(client *ethclient.Client) int64 {
-	blockNumber, err := client.BlockNumber(context.Background())
-	if err != nil {
-		log.Fatal("Error in fetching latest block number: ", err)
-	}
-
-	if blockNumber%(core.BlockDivider) > 7 || blockNumber%(core.BlockDivider) < 1 {
-		return -1
-	}
-	state := math.Floor(float64(blockNumber / core.BlockDivider))
-	return int64(state) % core.NumberOfStates
-}
-
-func checkIfTxnIsSuccess(transaction *types2.Transaction) {
-
 }
 
 func init() {

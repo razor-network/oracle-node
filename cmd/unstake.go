@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"math/big"
@@ -27,10 +28,10 @@ var unstakeCmd = &cobra.Command{
 
 		balance := utils.FetchBalance(client, address)
 		if balance.Cmp(big.NewInt(0)) == 0 {
-			log.Fatal("Account balance is 0. Cannot unstake..")
+			log.Fatal("Account balance is 0. Cannot unstake...")
 		}
 
-		epoch := utils.GetEpoch(client, address)
+		epoch := WaitForCommitState(client, address, "unstake")
 
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -47,6 +48,7 @@ var unstakeCmd = &cobra.Command{
 		}
 		log.Info("Successfully unstaked all the tokens")
 		log.Info("Transaction hash: ", txn.Hash())
+		utils.WaitForBlockCompletion(client,fmt.Sprintf("%s",txn.Hash()))
 	},
 }
 
