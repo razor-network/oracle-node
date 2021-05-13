@@ -28,7 +28,10 @@ var stakeCmd = &cobra.Command{
 		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
-		balance := utils.FetchBalance(client, address)
+		balance, err := utils.FetchBalance(client, address)
+		if err != nil {
+			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
+		}
 
 		amount, err := cmd.Flags().GetString("amount")
 		if err != nil {
@@ -93,7 +96,10 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	log.Info("Sending stake transactions...")
 	txnOpts := utils.GetTxnOpts(txnArgs)
-	epoch := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+	if err != nil {
+		log.Fatal("Error in getting commit state: ", err)
+	}
 	tx, err := stakeManager.Stake(txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		log.Fatal("Error in staking: ", err)
@@ -104,9 +110,6 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 
 func init() {
 	rootCmd.AddCommand(stakeCmd)
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
-	})
 	var (
 		Amount   string
 		Address  string

@@ -32,3 +32,19 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	}
 	return stakeManagerContract
 }
+
+func GetConstantsManager(client *ethclient.Client) *bindings.Constants {
+	constantsManager, err := bindings.NewConstants(common.HexToAddress(core.ConstantsAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return constantsManager
+}
+
+func GetJobManager(client *ethclient.Client) *bindings.JobManager {
+	jobManager, err := bindings.NewJobManager(common.HexToAddress(core.JobManagerAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return jobManager
+}

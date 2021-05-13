@@ -26,13 +26,18 @@ var unstakeCmd = &cobra.Command{
 
 		client := utils.ConnectToClient(config.Provider)
 
-		balance := utils.FetchBalance(client, address)
+		balance, err := utils.FetchBalance(client, address)
+		if err != nil {
+			log.Fatal("Error in fetching balance: ", err)
+		}
 		if balance.Cmp(big.NewInt(0)) == 0 {
 			log.Fatal("Account balance is 0. Cannot unstake...")
 		}
 
-		epoch := WaitForCommitState(client, address, "unstake")
-
+		epoch, err := WaitForCommitState(client, address, "unstake")
+		if err != nil {
+			log.Fatal(err)
+		}
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,

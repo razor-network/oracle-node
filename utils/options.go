@@ -52,14 +52,3 @@ func getGasPrice(client *ethclient.Client, gasMultiplier float32) *big.Int {
 	gasPrice := MultiplyFloatAndBigInt(gas, float64(gasMultiplier))
 	return gasPrice
 }
-
-func MultiplyFloatAndBigInt(gas *big.Int, val float64) *big.Int {
-	value := new(big.Float)
-	value.SetFloat64(val)
-	conversionInt := new(big.Float)
-	conversionInt.SetInt(gas)
-	value.Mul(value, conversionInt)
-	result := new(big.Int)
-	value.Int(result)
-	return result
-}

@@ -54,6 +54,10 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+
 	home := utils.GetDefaultPath()
 	// Search config in home directory with name ".razor.yaml".
 	viper.AddConfigPath(home)

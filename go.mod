@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/ethereum/go-ethereum v1.10.2
+	github.com/logrusorgru/aurora/v3 v3.0.0 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
