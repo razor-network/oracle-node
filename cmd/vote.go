@@ -26,7 +26,7 @@ var voteCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		//password, _ := cmd.Flags().GetString("password")
+		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
 		for {
 			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
@@ -35,13 +35,13 @@ var voteCmd = &cobra.Command{
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, address, latestHeader.Number)
+				handleBlock(client, address, password, latestHeader.Number)
 			}
 		}
 	},
 }
 
-func handleBlock(client *ethclient.Client, address string, blockNumber *big.Int) {
+func handleBlock(client *ethclient.Client, address string, password string, blockNumber *big.Int) {
 	state, err := utils.GetDelayedState(client)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -73,7 +73,7 @@ func handleBlock(client *ethclient.Client, address string, blockNumber *big.Int)
 
 	switch state {
 	case 0:
-		handleCommitState(client, address)
+		handleCommitState(client, address, password)
 		break
 	case 1:
 		handleRevealState()
@@ -88,7 +88,7 @@ func handleBlock(client *ethclient.Client, address string, blockNumber *big.Int)
 
 }
 
-func handleCommitState(client *ethclient.Client, address string) {
+func handleCommitState(client *ethclient.Client, address string, password string) {
 	jobs, err := utils.GetActiveJobs(client, address)
 	if err != nil {
 		log.Error("Error in getting active jobs: ", err)
@@ -116,7 +116,7 @@ func handleCommitState(client *ethclient.Client, address string) {
 		datum = append(datum, big.NewFloat(0))
 	}
 	log.Info("Datum", datum)
-	commit(client, datum, address)
+	commit(client, datum, "", address, password)
 }
 
 func handleRevealState() {
@@ -131,7 +131,7 @@ func handleDisputeState() {
 
 }
 
-func commit(client *ethclient.Client, data []interface{}, account string) {
+func commit(client *ethclient.Client, data []interface{}, secret string, account string, password string) {
 	state, err := utils.GetDelayedState(client)
 	if err != nil {
 		log.Error("Error in fetching state: ", state)
@@ -140,7 +140,7 @@ func commit(client *ethclient.Client, data []interface{}, account string) {
 		log.Error("Not commit state")
 		return
 	}
-
+	//TODO: Figure out what to do for the merkle function
 }
 
 func init() {
