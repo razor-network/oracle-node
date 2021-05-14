@@ -3,13 +3,14 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"math/big"
+	"razor/utils"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/logrusorgru/aurora/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"math/big"
-	"razor/utils"
 )
 
 var voteCmd = &cobra.Command{
@@ -141,6 +142,8 @@ func commit(client *ethclient.Client, data []interface{}, secret string, account
 		return
 	}
 	//TODO: Figure out what to do for the merkle function
+	//tree, err := merkletree.NewUsing([][]byte("data"), keccak256.New(), nil)
+	//tree.Root()
 }
 
 func init() {
