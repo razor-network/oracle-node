@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/crypto"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 )
@@ -39,4 +40,9 @@ func GetPrivateKey(address string, password string, keystorePath string) *ecdsa.
 		}
 	}
 	return nil
+}
+
+func Sign(hash []byte, address string, password string, defaultPath string) ([]byte, error) {
+	privateKey := GetPrivateKey(address, password, defaultPath)
+	return crypto.Sign(hash, privateKey)
 }

@@ -48,3 +48,11 @@ func GetJobManager(client *ethclient.Client) *bindings.JobManager {
 	}
 	return jobManager
 }
+
+func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
+	voteManager, err := bindings.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return voteManager
+}

@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/sha3"
 	"math"
 	"math/big"
 	"os"
@@ -58,7 +59,6 @@ func GetDelayedState(client *ethclient.Client) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	// TODO: Check error message
 	if blockNumber%(core.BlockDivider) > 7 || blockNumber%(core.BlockDivider) < 1 {
 		return -1, nil
 	}
@@ -108,6 +108,16 @@ func GetActiveJobs(client *ethclient.Client, address string) ([]types.Job, error
 	return jobs, nil
 }
 
+func GetCommitments(client *ethclient.Client, address string, epoch *big.Int) ([32]byte, error) {
+	voteManager := GetVoteManager(client)
+	callOpts := GetOptions(false, address, "")
+	stakerId, err := GetStakerId(client, address)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	return voteManager.Commitments(&callOpts, epoch, stakerId)
+}
+
 func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
 	tx, err := client.TransactionReceipt(context.Background(), txHash)
@@ -128,6 +138,22 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 			log.Info("Transaction mined successfully\n")
 			return 1
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
+}
+
+func GetDataInBytes(data []*big.Int) [][]byte {
+	var dataInBytes [][]byte
+	for _, datum := range data {
+		dataInBytes = append(dataInBytes, datum.Bytes())
+	}
+	return dataInBytes
+}
+
+func GetKeccak256Hash(bytesData ...[]byte) []byte {
+	hashingFunction := sha3.NewLegacyKeccak256()
+	for _, bytesDatum := range bytesData {
+		hashingFunction.Write(bytesDatum)
+	}
+	return hashingFunction.Sum(nil)
 }

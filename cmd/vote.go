@@ -3,7 +3,12 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/wealdtech/go-merkletree/keccak256"
 	"math/big"
+	"razor/accounts"
+	"razor/core/types"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -11,6 +16,7 @@ import (
 	"github.com/logrusorgru/aurora/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/wealdtech/go-merkletree"
 )
 
 var voteCmd = &cobra.Command{
@@ -36,13 +42,13 @@ var voteCmd = &cobra.Command{
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, address, password, latestHeader.Number)
+				handleBlock(client, address, password, latestHeader.Number, config)
 			}
 		}
 	},
 }
 
-func handleBlock(client *ethclient.Client, address string, password string, blockNumber *big.Int) {
+func handleBlock(client *ethclient.Client, address string, password string, blockNumber *big.Int, config types.Configurations) {
 	state, err := utils.GetDelayedState(client)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -74,7 +80,13 @@ func handleBlock(client *ethclient.Client, address string, password string, bloc
 
 	switch state {
 	case 0:
-		handleCommitState(client, address, password)
+		hash := utils.GetKeccak256Hash([]byte(address), epoch.Bytes())
+		signedData, err := accounts.Sign(hash, address, password, utils.GetDefaultPath())
+		if err != nil {
+			log.Error("Error in signing the data: ", err)
+		}
+		secret := utils.GetKeccak256Hash(signedData)
+		handleCommitState(client, address, password, secret, config)
 		break
 	case 1:
 		handleRevealState()
@@ -89,35 +101,39 @@ func handleBlock(client *ethclient.Client, address string, password string, bloc
 
 }
 
-func handleCommitState(client *ethclient.Client, address string, password string) {
+func handleCommitState(client *ethclient.Client, address string, password string, secret []byte, config types.Configurations) {
 	jobs, err := utils.GetActiveJobs(client, address)
 	if err != nil {
 		log.Error("Error in getting active jobs: ", err)
 	}
-	var datum []interface{}
+	var data []*big.Int
 	for jobIndex := 0; jobIndex < len(jobs); jobIndex++ {
 		response, err := utils.GetDataFromAPI(jobs[jobIndex].Url)
-		data := big.NewFloat(0)
+		datum := big.NewFloat(0)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
 		var parsedJSON map[string]interface{}
 		err = json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Error("Error in parsing data from API: ", err)
 		}
-		data, err = utils.ConvertToNumber(parsedJSON[jobs[jobIndex].Selector])
+		datum, err = utils.ConvertToNumber(parsedJSON[jobs[jobIndex].Selector])
 		if err != nil {
 			log.Error("Result is not a number")
 		}
-		data = utils.MultiplyToEightDecimals(data)
-		datum = append(datum, data)
+		dataToAppend := utils.MultiplyToEightDecimals(datum)
+		data = append(data, dataToAppend)
 	}
-	if len(datum) == 0 {
-		datum = append(datum, big.NewFloat(0))
+	if len(data) == 0 {
+		data = append(data, big.NewInt(0))
 	}
-	log.Info("Datum", datum)
-	commit(client, datum, "", address, password)
+	log.Info("Data", data)
+
+	if err := commit(client, data, secret, address, password, config); err != nil {
+		log.Error("Error in committing data: ", err)
+	}
 }
 
 func handleRevealState() {
@@ -132,18 +148,53 @@ func handleDisputeState() {
 
 }
 
-func commit(client *ethclient.Client, data []interface{}, secret string, account string, password string) {
+func commit(client *ethclient.Client, data []*big.Int, secret []byte, account string, password string, config types.Configurations) error {
 	state, err := utils.GetDelayedState(client)
 	if err != nil {
-		log.Error("Error in fetching state: ", state)
+		return err
 	}
 	if state != 0 {
-		log.Error("Not commit state")
-		return
+		return errors.New("not commit state")
 	}
-	//TODO: Figure out what to do for the merkle function
-	//tree, err := merkletree.NewUsing([][]byte("data"), keccak256.New(), nil)
-	//tree.Root()
+	bytesData := utils.GetDataInBytes(data)
+	tree, err := merkletree.NewUsing(bytesData, keccak256.New(), nil)
+	if err != nil {
+		return err
+	}
+	root := tree.Root()
+	epoch, err := utils.GetEpoch(client, account)
+	if err != nil {
+		return err
+	}
+	commitments, err := utils.GetCommitments(client, account, epoch)
+	if err != nil {
+		return err
+	}
+	if !utils.AllZero(commitments) {
+		return errors.New("already committed")
+	}
+	commitment := utils.GetKeccak256Hash(epoch.Bytes(), root, secret)
+	voteManager := utils.GetVoteManager(client)
+	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       password,
+		AccountAddress: account,
+		ChainId:        config.ChainId,
+		GasMultiplier:  config.GasMultiplier,
+	})
+	// TODO: Find a better approach for commitmentToSend
+	commitmentToSend := [32]byte{}
+	copy(commitmentToSend[:], commitment)
+	log.Infof("Committing: epoch: %s, root: %s, commitment: %s, secret: %s, account: %s", epoch, common.Bytes2Hex(root), common.Bytes2Hex(commitment), common.Bytes2Hex(secret), account)
+	txn, err := voteManager.Commit(txnOpts, epoch, commitmentToSend)
+	if err != nil {
+		return err
+	}
+	log.Info("Commitment sent...\nTxn hash: ", txn.Hash())
+	if utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash())) == 0 {
+		log.Error("Commit failed....")
+	}
+	return nil
 }
 
 func init() {

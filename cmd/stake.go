@@ -95,8 +95,8 @@ func approve(txnArgs types.TransactionOptions) {
 func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	log.Info("Sending stake transactions...")
-	txnOpts := utils.GetTxnOpts(txnArgs)
 	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+	txnOpts := utils.GetTxnOpts(txnArgs)
 	if err != nil {
 		log.Fatal("Error in getting commit state: ", err)
 	}
