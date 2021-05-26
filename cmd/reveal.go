@@ -74,14 +74,15 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 	voteManager := utils.GetVoteManager(client)
 
 	root := [32]byte{}
-	copy(root[:], tree.Root())
+	originalRoot := tree.RootV1()
+	copy(root[:], originalRoot)
 
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
 	log.Infof("Revealing vote for epoch: %s  votes: %s  root: %s  proof: %s  secret: %s  commitAccount: %s",
 		epoch,
 		committedData,
-		"0x"+common.Bytes2Hex(tree.Root()),
+		"0x"+common.Bytes2Hex(originalRoot),
 		proofs,
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
@@ -91,13 +92,14 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		log.Error(err)
 		return
 	}
+	log.Info("Revealed..\nTxn Hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 
 func getProofs(tree *merkletree.MerkleTree, data []*big.Int) [][][32]byte {
 	var proofs []*merkletree.Proof
-	for _, datum := range data {
-		proof, err := tree.GenerateProof(datum.Bytes())
+	for dataIndex, _ := range data {
+		proof, err := tree.GenerateProofV1(dataIndex)
 		if err != nil {
 			log.Error("Error in calculating merkle proof: ", err)
 			continue

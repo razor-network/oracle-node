@@ -37,6 +37,7 @@ var voteCmd = &cobra.Command{
 			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
+				continue
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader

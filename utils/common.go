@@ -3,10 +3,11 @@ package utils
 import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
+	math2 "github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"github.com/razor-network/go-merkletree"
-	"github.com/razor-network/go-merkletree/keccak256"
+	"github.com/wealdtech/go-merkletree"
+	"github.com/wealdtech/go-merkletree/keccak256"
 	"math"
 	"math/big"
 	"os"
@@ -169,14 +170,14 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 func GetDataInBytes(data []*big.Int) [][]byte {
 	var dataInBytes [][]byte
 	for _, datum := range data {
-		dataInBytes = append(dataInBytes, datum.Bytes())
+		dataInBytes = append(dataInBytes, math2.U256Bytes(datum))
 	}
 	return dataInBytes
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
 	bytesData := GetDataInBytes(data)
-	return merkletree.NewUsing(bytesData, keccak256.New(), nil)
+	return merkletree.NewUsingV1(bytesData, keccak256.New(), nil)
 }
 
 func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
@@ -184,5 +185,5 @@ func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return tree.Root(), err
+	return tree.RootV1(), err
 }
