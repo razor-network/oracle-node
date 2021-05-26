@@ -11,8 +11,6 @@ type TransactionOptions struct {
 	EtherValue        *big.Int
 	Amount            *big.Int
 	AccountAddress    string
-	ContractAddress   string
 	ChainId           *big.Int
 	GasMultiplier     float32
-	FunctionSignature string
 }

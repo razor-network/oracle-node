@@ -1,11 +1,11 @@
 package core
 
-var StakeManagerAddress = "0x221D4241565213f67585F5421766aB9c2774EA6E"
-var SchellingCoinAddress = "0xcf53aEa37Db3E0bf1Df538848c57b8495fb94E2b"
-var StateManagerAddress = "0xF0eEB480E85F88E203fe3E1f7C732B8d01e6CB38"
-var ConstantsAddress = "0xDC26d4b8C84CdDe77cEd3f4EbaF70Ee83d5Ee4B3"
-var JobManagerAddress = "0x52Ea760A1b4E608a8C5f80E27560579dBe7e8D1A"
-var VoteManagerAddress = "0x44359b41966713742cb792e4CE326657FD4D3FF8"
+var StakeManagerAddress = "0x4eb770fd059C422f49a94febE46875e11B22d1CA"
+var SchellingCoinAddress = "0xbbF08eb859865C5A7FD393cD56B56E4d3F69CC0c"
+var StateManagerAddress = "0xD288B383CFE13a477Ba29fAcA5AFb0d5D78c5757"
+var ConstantsAddress = "0xdc6CE8Ae027d4d658C32f9F97a811884151ab671"
+var JobManagerAddress = "0x40ee207556cf795EaFc33d87CD6BC5548dbe2307"
+var VoteManagerAddress = "0x849cE40d6d311bBF1c2175581c05e4DB935fb5d7"
 var BlockDivider uint64 = 10
 var NumberOfStates int64 = 4
 var DecimalsMultiplier int64 = 100000000

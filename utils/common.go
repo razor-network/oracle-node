@@ -5,12 +5,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/sha3"
+	"github.com/razor-network/go-merkletree"
+	"github.com/razor-network/go-merkletree/keccak256"
 	"math"
 	"math/big"
 	"os"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"time"
 )
 
@@ -76,6 +78,12 @@ func GetStake(client *ethclient.Client, address string, stakerId *big.Int) (*big
 	return stake.Stake, nil
 }
 
+func GetStaker(client *ethclient.Client, address string, stakerId *big.Int) (bindings.StructsStaker, error) {
+	stakeManager := GetStakeManager(client)
+	callOpts := GetOptions(false, address, "")
+	return stakeManager.GetStaker(&callOpts, stakerId)
+}
+
 func GetMinStakeAmount(client *ethclient.Client, address string) (*big.Int, error) {
 	constantsManager := GetConstantsManager(client)
 	callOpts := GetOptions(false, address, "")
@@ -118,6 +126,22 @@ func GetCommitments(client *ethclient.Client, address string, epoch *big.Int) ([
 	return voteManager.Commitments(&callOpts, epoch, stakerId)
 }
 
+func GetVotes(client *ethclient.Client, address string, epoch *big.Int) (struct {
+	Value  *big.Int
+	Weight *big.Int
+}, error) {
+	voteManager := GetVoteManager(client)
+	callOpts := GetOptions(false, address, "")
+	stakerId, err := GetStakerId(client, address)
+	if err != nil {
+		return struct {
+			Value  *big.Int
+			Weight *big.Int
+		}{}, err
+	}
+	return voteManager.Votes(&callOpts, epoch, stakerId, big.NewInt(0))
+}
+
 func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
 	tx, err := client.TransactionReceipt(context.Background(), txHash)
@@ -150,10 +174,15 @@ func GetDataInBytes(data []*big.Int) [][]byte {
 	return dataInBytes
 }
 
-func GetKeccak256Hash(bytesData ...[]byte) []byte {
-	hashingFunction := sha3.NewLegacyKeccak256()
-	for _, bytesDatum := range bytesData {
-		hashingFunction.Write(bytesDatum)
+func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
+	bytesData := GetDataInBytes(data)
+	return merkletree.NewUsing(bytesData, keccak256.New(), nil)
+}
+
+func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
+	tree, err := GetMerkleTree(data)
+	if err != nil {
+		return nil, err
 	}
-	return hashingFunction.Sum(nil)
+	return tree.Root(), err
 }
