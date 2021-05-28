@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/hex"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -48,7 +47,12 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 	}
 
 	// TODO Check if already revealed
-	revealed, err := utils.GetVotes(client, account.Address, epoch)
+	stakerId, err := utils.GetStakerId(client, account.Address)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	revealed, err := utils.GetVotes(client, account.Address, epoch, stakerId, big.NewInt(0))
 	if err != nil {
 		log.Error(err)
 		return
@@ -79,11 +83,10 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
-	log.Infof("Revealing vote for epoch: %s  votes: %s  root: %s  proof: %s  secret: %s  commitAccount: %s",
+	log.Infof("Revealing vote for epoch: %s  votes: %s  root: %s  secret: %s  commitAccount: %s",
 		epoch,
 		committedData,
 		"0x"+common.Bytes2Hex(originalRoot),
-		proofs,
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
 	)
@@ -113,7 +116,6 @@ func getProofs(tree *merkletree.MerkleTree, data []*big.Int) [][][32]byte {
 			if nestedProof != nil {
 				nestedProofBytes32 := [32]byte{}
 				copy(nestedProofBytes32[:], nestedProof)
-				log.Info("Proof: ", hex.EncodeToString(nestedProof))
 				proofHash = append(proofHash, nestedProofBytes32)
 			}
 		}

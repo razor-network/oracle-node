@@ -51,6 +51,9 @@ var (
 	_committedData []*big.Int
 	lastCommit *big.Int
 	lastReveal *big.Int
+	lastProposal *big.Int
+	lastElection *big.Int
+	lastVerification *big.Int
 )
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations) {
@@ -119,21 +122,21 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		break
 
 	case 2:
-		handleBlockProposalState()
+		if lastElection != nil && lastElection.Cmp(epoch) >= 0 {
+			break
+		}
+		lastElection = epoch
+		if lastProposal != nil && lastProposal.Cmp(epoch) >= 0 {
+			break
+		}
+		lastProposal = epoch
+		log.Info("Proposing block....")
+		Propose(client, account, config, stakerId, epoch)
 		break
 
 	case 3:
-		handleDisputeState()
 		break
 	}
-
-}
-
-func handleBlockProposalState() {
-
-}
-
-func handleDisputeState() {
 
 }
 

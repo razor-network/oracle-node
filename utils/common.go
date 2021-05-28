@@ -85,6 +85,12 @@ func GetStaker(client *ethclient.Client, address string, stakerId *big.Int) (bin
 	return stakeManager.GetStaker(&callOpts, stakerId)
 }
 
+func GetNumberOfStakers(client *ethclient.Client, address string) (*big.Int, error) {
+	stakeManager := GetStakeManager(client)
+	callOpts := GetOptions(false, address, "")
+	return stakeManager.GetNumStakers(&callOpts)
+}
+
 func GetMinStakeAmount(client *ethclient.Client, address string) (*big.Int, error) {
 	constantsManager := GetConstantsManager(client)
 	callOpts := GetOptions(false, address, "")
@@ -103,8 +109,7 @@ func GetActiveJobs(client *ethclient.Client, address string) ([]types.Job, error
 	if err != nil {
 		return jobs, err
 	}
-	for jobIndex := 0; jobIndex < int(numOfJobs.Int64()); jobIndex++ {
-		callOpts = GetOptions(false, address, "")
+	for jobIndex := 1; jobIndex <= int(numOfJobs.Int64()); jobIndex++ {
 		job, err := jobManager.Jobs(&callOpts, big.NewInt(int64(jobIndex)))
 		if err != nil {
 			log.Error("Error in fetching job", err)
@@ -127,20 +132,35 @@ func GetCommitments(client *ethclient.Client, address string, epoch *big.Int) ([
 	return voteManager.Commitments(&callOpts, epoch, stakerId)
 }
 
-func GetVotes(client *ethclient.Client, address string, epoch *big.Int) (struct {
+func GetVotes(client *ethclient.Client, address string, epoch *big.Int, stakerId *big.Int, assetId *big.Int) (struct {
 	Value  *big.Int
 	Weight *big.Int
 }, error) {
 	voteManager := GetVoteManager(client)
 	callOpts := GetOptions(false, address, "")
-	stakerId, err := GetStakerId(client, address)
-	if err != nil {
-		return struct {
-			Value  *big.Int
-			Weight *big.Int
-		}{}, err
+	if assetId == nil {
+		assetId = big.NewInt(0)
 	}
-	return voteManager.Votes(&callOpts, epoch, stakerId, big.NewInt(0))
+	return voteManager.Votes(&callOpts, epoch, stakerId, assetId)
+}
+
+func GetVoteWeights(client *ethclient.Client, address string, epoch *big.Int, assetId *big.Int, voteValue *big.Int) (*big.Int, error) {
+	voteManager := GetVoteManager(client)
+	callOpts := GetOptions(false, address, "")
+	if assetId == nil {
+		assetId = big.NewInt(0)
+	}
+	return voteManager.VoteWeights(&callOpts, epoch, assetId, voteValue)
+}
+
+func GetBlockHashes(client *ethclient.Client, address string) ([]byte, error) {
+	randomClient := GetRandomClient(client)
+	callOpts := GetOptions(false, address, "")
+	blockHashes, err := randomClient.BlockHashes(&callOpts, uint8(core.NumberOfBlocks))
+	if err != nil {
+		return nil, err
+	}
+	return blockHashes[:], err
 }
 
 func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
@@ -186,4 +206,13 @@ func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
 		return nil, err
 	}
 	return tree.RootV1(), err
+}
+
+func Contains(arr []*big.Int, val *big.Int) bool {
+	for _, value := range arr {
+		if value.Cmp(val) == 0 {
+			return true
+		}
+	}
+	return false
 }

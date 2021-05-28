@@ -46,7 +46,7 @@ func getDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 			data = append(data, big.NewInt(0))
 			continue
 		}
-
+		// TODO: Check why data is not coming properly
 		datum, err = utils.ConvertToNumber(parsedJSON[job.Selector])
 		if err != nil {
 			log.Error("Result is not a number")
@@ -64,12 +64,9 @@ func getDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 }
 
 func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) error {
-	state, err := utils.GetDelayedState(client)
-	if err != nil {
+	if state, err := utils.GetDelayedState(client); err != nil || state != 0 {
+		log.Error("Not commit state")
 		return err
-	}
-	if state != 0 {
-		return errors.New("not commit state")
 	}
 
 	root, err := utils.GetMerkleTreeRoot(data)
