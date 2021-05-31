@@ -7,6 +7,7 @@ import (
 	"razor/accounts"
 	"razor/core/types"
 	"razor/utils"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -43,16 +44,17 @@ var voteCmd = &cobra.Command{
 				header = latestHeader
 				handleBlock(client, account, latestHeader.Number, config)
 			}
+			time.Sleep(5 * time.Second)
 		}
 	},
 }
 
 var (
-	_committedData []*big.Int
-	lastCommit *big.Int
-	lastReveal *big.Int
-	lastProposal *big.Int
-	lastElection *big.Int
+	_committedData   []*big.Int
+	lastCommit       *big.Int
+	lastReveal       *big.Int
+	lastProposal     *big.Int
+	lastElection     *big.Int
 	lastVerification *big.Int
 )
 
@@ -135,6 +137,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		break
 
 	case 3:
+		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
+			break
+		}
+		lastVerification = epoch
+		HandleDispute(client, config, account, epoch)
 		break
 	}
 

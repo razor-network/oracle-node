@@ -163,6 +163,23 @@ func GetBlockHashes(client *ethclient.Client, address string) ([]byte, error) {
 	return blockHashes[:], err
 }
 
+func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch *big.Int) (*big.Int, error) {
+	blockManager := GetBlockManager(client)
+	callOpts := GetOptions(false, address, "")
+	return blockManager.GetNumProposedBlocks(&callOpts, epoch)
+}
+
+func GetProposedBlock(client *ethclient.Client, address string, epoch *big.Int, proposedBlock *big.Int) (struct {
+	Block         bindings.StructsBlock
+	BlockMedians  []*big.Int
+	LowerCutoffs  []*big.Int
+	HigherCutoffs []*big.Int
+}, error) {
+	blockManager := GetBlockManager(client)
+	callOpts := GetOptions(false, address, "")
+	return blockManager.GetProposedBlock(&callOpts, epoch, proposedBlock)
+}
+
 func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
 	tx, err := client.TransactionReceipt(context.Background(), txHash)
@@ -206,13 +223,4 @@ func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
 		return nil, err
 	}
 	return tree.RootV1(), err
-}
-
-func Contains(arr []*big.Int, val *big.Int) bool {
-	for _, value := range arr {
-		if value.Cmp(val) == 0 {
-			return true
-		}
-	}
-	return false
 }

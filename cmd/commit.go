@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/utils"
+	"strings"
 )
 
 func HandleCommitState(client *ethclient.Client, address string) []*big.Int {
@@ -46,8 +47,15 @@ func getDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 			data = append(data, big.NewInt(0))
 			continue
 		}
-		// TODO: Check why data is not coming properly
-		datum, err = utils.ConvertToNumber(parsedJSON[job.Selector])
+		// TODO: Get a better approach to fetch nested data
+		if strings.Contains(job.Selector, "[") {
+			selectorSlice := strings.Split(job.Selector, "[")
+			firstSelector := selectorSlice[0]
+			secondSelector := selectorSlice[1][1:len(selectorSlice[1])-2]
+			datum, err = utils.ConvertToNumber(parsedJSON[firstSelector].(map[string]interface{})[secondSelector])
+		} else {
+			datum, err = utils.ConvertToNumber(parsedJSON[job.Selector])
+		}
 		if err != nil {
 			log.Error("Result is not a number")
 			data = append(data, big.NewInt(0))
