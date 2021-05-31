@@ -9,7 +9,7 @@ import (
 	"razor/pkg/bindings"
 )
 
-func GetCoinContract(client *ethclient.Client) *bindings.SchellingCoin {
+func GetTokenManager(client *ethclient.Client) *bindings.SchellingCoin {
 	coinContract, err := bindings.NewSchellingCoin(common.HexToAddress(core.SchellingCoinAddress), client)
 	if err != nil {
 		log.Fatal(err)

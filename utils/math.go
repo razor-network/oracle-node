@@ -56,3 +56,16 @@ func AllZero(bytesValue [32]byte) bool {
 	return true
 }
 
+func GetAmountWithChecks(amount string, balance *big.Int) *big.Int {
+	_amount, ok := new(big.Int).SetString(amount, 10)
+	if !ok {
+		log.Fatal("SetString: error")
+	}
+
+	amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
+
+	if amountInWei.Cmp(balance) > 0 {
+		log.Fatal("Not enough balance")
+	}
+	return amountInWei
+}

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	math2 "github.com/ethereum/go-ethereum/common/math"
 	"math/big"
 )
 
@@ -24,4 +25,12 @@ func IsEqual(arr1 []*big.Int, arr2 []*big.Int) bool {
 		}
 	}
 	return true
+}
+
+func GetDataInBytes(data []*big.Int) [][]byte {
+	var dataInBytes [][]byte
+	for _, datum := range data {
+		dataInBytes = append(dataInBytes, math2.U256Bytes(datum))
+	}
+	return dataInBytes
 }
