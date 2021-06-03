@@ -45,16 +45,16 @@ var createJobCmd = &cobra.Command{
 			log.Fatal("SetString: error")
 		}
 
-		feeInWei := big.NewInt(1).Mul(feeInBigInt, big.NewInt(1e18))
+		//feeInWei := big.NewInt(1).Mul(feeInBigInt, big.NewInt(1e18))
 
-		if accountBalance.Cmp(feeInWei) < 0 {
+		if accountBalance.Cmp(feeInBigInt) < 0 {
 			log.Fatal("Please make sure you hold sufficient ether in your account")
 		}
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,
 			Password:       password,
-			EtherValue:     feeInWei,
+			EtherValue:     feeInBigInt,
 			AccountAddress: address,
 			ChainId:        config.ChainId,
 			GasMultiplier:  config.GasMultiplier,

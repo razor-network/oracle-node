@@ -47,10 +47,10 @@ func GetDelayedState(client *ethclient.Client) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	if blockNumber%(core.BlockDivider) > 7 || blockNumber%(core.BlockDivider) < 1 {
+	if blockNumber%(core.EpochLength) > 7 || blockNumber%(core.EpochLength) < 1 {
 		return -1, nil
 	}
-	state := math.Floor(float64(blockNumber / core.BlockDivider))
+	state := math.Floor(float64(blockNumber / core.EpochLength))
 	return int64(state) % core.NumberOfStates, nil
 }
 
@@ -74,7 +74,7 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 			log.Info("Transaction mined successfully\n")
 			return 1
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }
 

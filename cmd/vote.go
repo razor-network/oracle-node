@@ -3,18 +3,16 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
-	"math/big"
-	"razor/accounts"
-	"razor/core/types"
-	"razor/utils"
-	"time"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/logrusorgru/aurora/v3"
 	"github.com/miguelmota/go-solidity-sha3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"math/big"
+	"razor/accounts"
+	"razor/core/types"
+	"razor/utils"
 )
 
 var voteCmd = &cobra.Command{
@@ -44,7 +42,6 @@ var voteCmd = &cobra.Command{
 				header = latestHeader
 				handleBlock(client, account, latestHeader.Number, config)
 			}
-			time.Sleep(5 * time.Second)
 		}
 	},
 }
@@ -154,7 +151,7 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 		log.Error("Error in signing the data: ", err)
 		return nil
 	}
-	secret := solsha3.SoliditySHA3([]string{"byte"}, []interface{}{hex.EncodeToString(signedData)})
+	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret
 }
 
