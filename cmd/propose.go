@@ -114,7 +114,6 @@ func getBiggestStakeAndId(client *ethclient.Client, address string) (*big.Int, *
 }
 
 func getIteration(proposer types.ElectedProposer) int {
-	// TODO: Check why 10000000000
 	for i := 0; i < 10000000000; i++ {
 		proposer.Iteration = i
 		isElected := isElectedProposer(proposer)
@@ -213,13 +212,11 @@ func getSortedVotes(client *ethclient.Client, address string, assetId int, epoch
 }
 
 func weightedMedianAndCutOffs(sortedVotes, sortedWeights []*big.Int) (*big.Int, *big.Int, *big.Int) {
-	//TODO: median calculation doesn't calculate median actually
 	totalWeight := big.NewInt(0)
 	for _, weight := range sortedWeights {
 		totalWeight.Add(totalWeight, weight)
 	}
 	medianWeight := big.NewInt(1).Div(totalWeight, big.NewInt(2))
-	// TODO: understand the lower cut off weight and higher cut off weight calculation
 	lowerCutOffWeight := big.NewInt(1).Div(totalWeight, big.NewInt(4))
 	intermediateHigherCutOffWeight := big.NewInt(1).Mul(totalWeight, big.NewInt(3))
 	higherCutOffWeight := big.NewInt(1).Div(intermediateHigherCutOffWeight, big.NewInt(4))

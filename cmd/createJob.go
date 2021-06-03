@@ -86,7 +86,7 @@ func init() {
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
-	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector")
+	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (comma separated for nested values)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
 	createJobCmd.Flags().StringVarP(&Fee, "fee", "f", "0", "fee")

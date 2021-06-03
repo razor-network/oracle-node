@@ -30,7 +30,7 @@ var stakeCmd = &cobra.Command{
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
 		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
+			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
 		}
 
 		amount, err := cmd.Flags().GetString("amount")

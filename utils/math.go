@@ -29,6 +29,9 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 }
 
 func MultiplyToEightDecimals(num *big.Float) *big.Int {
+	if num == nil {
+		return big.NewInt(0)
+	}
 	decimalMultiplier := big.NewFloat(float64(core.DecimalsMultiplier))
 	value := big.NewFloat(1).Mul(num, decimalMultiplier)
 	result := new(big.Int)
@@ -36,11 +39,14 @@ func MultiplyToEightDecimals(num *big.Float) *big.Int {
 	return result
 }
 
-func MultiplyFloatAndBigInt(gas *big.Int, val float64) *big.Int {
+func MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
+	if bigIntVal == nil || floatingVal == 0 {
+		return big.NewInt(0)
+	}
 	value := new(big.Float)
-	value.SetFloat64(val)
+	value.SetFloat64(floatingVal)
 	conversionInt := new(big.Float)
-	conversionInt.SetInt(gas)
+	conversionInt.SetInt(bigIntVal)
 	value.Mul(value, conversionInt)
 	result := new(big.Int)
 	value.Int(result)
