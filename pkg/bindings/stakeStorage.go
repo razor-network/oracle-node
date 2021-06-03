@@ -27,7 +27,7 @@ var (
 )
 
 // StakeStorageABI is the input ABI used to generate the binding from.
-const StakeStorageABI = "[{\"inputs\":[],\"name\":\"genesisBlock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastBlockRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastHalvings\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"numStakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rewardPool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stakeGettingReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"stakerIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastCommitted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastRevealed\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unstakeAfter\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"withdrawAfter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const StakeStorageABI = "[{\"inputs\":[],\"name\":\"blockReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"numStakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rewardPool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stakeGettingReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"stakerIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastCommitted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastRevealed\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unstakeAfter\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"withdrawAfter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // StakeStorage is an auto generated Go binding around an Ethereum contract.
 type StakeStorage struct {
@@ -171,12 +171,12 @@ func (_StakeStorage *StakeStorageTransactorRaw) Transact(opts *bind.TransactOpts
 	return _StakeStorage.Contract.contract.Transact(opts, method, params...)
 }
 
-// GenesisBlock is a free data retrieval call binding the contract method 0x4cdc9c63.
+// BlockReward is a free data retrieval call binding the contract method 0x0ac168a1.
 //
-// Solidity: function genesisBlock() view returns(uint256)
-func (_StakeStorage *StakeStorageCaller) GenesisBlock(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function blockReward() view returns(uint256)
+func (_StakeStorage *StakeStorageCaller) BlockReward(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _StakeStorage.contract.Call(opts, &out, "genesisBlock")
+	err := _StakeStorage.contract.Call(opts, &out, "blockReward")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -188,80 +188,18 @@ func (_StakeStorage *StakeStorageCaller) GenesisBlock(opts *bind.CallOpts) (*big
 
 }
 
-// GenesisBlock is a free data retrieval call binding the contract method 0x4cdc9c63.
+// BlockReward is a free data retrieval call binding the contract method 0x0ac168a1.
 //
-// Solidity: function genesisBlock() view returns(uint256)
-func (_StakeStorage *StakeStorageSession) GenesisBlock() (*big.Int, error) {
-	return _StakeStorage.Contract.GenesisBlock(&_StakeStorage.CallOpts)
+// Solidity: function blockReward() view returns(uint256)
+func (_StakeStorage *StakeStorageSession) BlockReward() (*big.Int, error) {
+	return _StakeStorage.Contract.BlockReward(&_StakeStorage.CallOpts)
 }
 
-// GenesisBlock is a free data retrieval call binding the contract method 0x4cdc9c63.
+// BlockReward is a free data retrieval call binding the contract method 0x0ac168a1.
 //
-// Solidity: function genesisBlock() view returns(uint256)
-func (_StakeStorage *StakeStorageCallerSession) GenesisBlock() (*big.Int, error) {
-	return _StakeStorage.Contract.GenesisBlock(&_StakeStorage.CallOpts)
-}
-
-// LastBlockRewards is a free data retrieval call binding the contract method 0x2f594949.
-//
-// Solidity: function lastBlockRewards() view returns(uint256)
-func (_StakeStorage *StakeStorageCaller) LastBlockRewards(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _StakeStorage.contract.Call(opts, &out, "lastBlockRewards")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// LastBlockRewards is a free data retrieval call binding the contract method 0x2f594949.
-//
-// Solidity: function lastBlockRewards() view returns(uint256)
-func (_StakeStorage *StakeStorageSession) LastBlockRewards() (*big.Int, error) {
-	return _StakeStorage.Contract.LastBlockRewards(&_StakeStorage.CallOpts)
-}
-
-// LastBlockRewards is a free data retrieval call binding the contract method 0x2f594949.
-//
-// Solidity: function lastBlockRewards() view returns(uint256)
-func (_StakeStorage *StakeStorageCallerSession) LastBlockRewards() (*big.Int, error) {
-	return _StakeStorage.Contract.LastBlockRewards(&_StakeStorage.CallOpts)
-}
-
-// LastHalvings is a free data retrieval call binding the contract method 0xa8264f99.
-//
-// Solidity: function lastHalvings() view returns(uint256)
-func (_StakeStorage *StakeStorageCaller) LastHalvings(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _StakeStorage.contract.Call(opts, &out, "lastHalvings")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// LastHalvings is a free data retrieval call binding the contract method 0xa8264f99.
-//
-// Solidity: function lastHalvings() view returns(uint256)
-func (_StakeStorage *StakeStorageSession) LastHalvings() (*big.Int, error) {
-	return _StakeStorage.Contract.LastHalvings(&_StakeStorage.CallOpts)
-}
-
-// LastHalvings is a free data retrieval call binding the contract method 0xa8264f99.
-//
-// Solidity: function lastHalvings() view returns(uint256)
-func (_StakeStorage *StakeStorageCallerSession) LastHalvings() (*big.Int, error) {
-	return _StakeStorage.Contract.LastHalvings(&_StakeStorage.CallOpts)
+// Solidity: function blockReward() view returns(uint256)
+func (_StakeStorage *StakeStorageCallerSession) BlockReward() (*big.Int, error) {
+	return _StakeStorage.Contract.BlockReward(&_StakeStorage.CallOpts)
 }
 
 // NumStakers is a free data retrieval call binding the contract method 0x6c8b052a.

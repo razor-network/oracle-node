@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"log"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
+	"razor/utils"
 )
 
 var setConfig = &cobra.Command{
@@ -17,18 +16,19 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
 		gasMultiplier, _ := cmd.Flags().GetFloat32("gasmultiplier")
+		chainId, _ := cmd.Flags().GetInt64("chainid")
+
 		if provider != "" {
 			viper.Set("provider", provider)
 		}
 		if gasMultiplier != -1 {
 			viper.Set("gasmultiplier", gasMultiplier)
 		}
-		pwd, err := os.UserHomeDir()
-		if err != nil {
-			log.Fatal(err)
+		if chainId != 0000 {
+			viper.Set("chainid", chainId)
 		}
-		path := pwd + "/.razor.yaml"
-		err = viper.WriteConfigAs(path)
+		path := utils.GetDefaultPath() + "/razor.yaml"
+		err := viper.WriteConfigAs(path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,8 +38,12 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 func init() {
 	rootCmd.AddCommand(setConfig)
 
-	var Provider string
-	var GasMultiplier float32
+	var (
+		Provider      string
+		GasMultiplier float32
+		ChainId       int64
+	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
+	setConfig.Flags().Int64VarP(&ChainId, "chainid", "c", 0000, "chain id of the blockchain network")
 }

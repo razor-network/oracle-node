@@ -27,7 +27,7 @@ var (
 )
 
 // FaucetABI is the input ABI used to generate the binding from.
-const FaucetABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Donate\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"faucet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"requested\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"token\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const FaucetABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Donate\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"faucet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"requested\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"token\",\"outputs\":[{\"internalType\":\"contractERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // Faucet is an auto generated Go binding around an Ethereum contract.
 type Faucet struct {
@@ -252,27 +252,6 @@ func (_Faucet *FaucetSession) Faucet(_address common.Address) (*types.Transactio
 // Solidity: function faucet(address _address) returns()
 func (_Faucet *FaucetTransactorSession) Faucet(_address common.Address) (*types.Transaction, error) {
 	return _Faucet.Contract.Faucet(&_Faucet.TransactOpts, _address)
-}
-
-// Init is a paid mutator transaction binding the contract method 0x19ab453c.
-//
-// Solidity: function init(address _address) returns()
-func (_Faucet *FaucetTransactor) Init(opts *bind.TransactOpts, _address common.Address) (*types.Transaction, error) {
-	return _Faucet.contract.Transact(opts, "init", _address)
-}
-
-// Init is a paid mutator transaction binding the contract method 0x19ab453c.
-//
-// Solidity: function init(address _address) returns()
-func (_Faucet *FaucetSession) Init(_address common.Address) (*types.Transaction, error) {
-	return _Faucet.Contract.Init(&_Faucet.TransactOpts, _address)
-}
-
-// Init is a paid mutator transaction binding the contract method 0x19ab453c.
-//
-// Solidity: function init(address _address) returns()
-func (_Faucet *FaucetTransactorSession) Init(_address common.Address) (*types.Transaction, error) {
-	return _Faucet.Contract.Init(&_Faucet.TransactOpts, _address)
 }
 
 // FaucetDonateIterator is returned from FilterDonate and is used to iterate over the raw logs and unpacked data for Donate events raised by the Faucet contract.

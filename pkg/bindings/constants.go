@@ -27,7 +27,7 @@ var (
 )
 
 // ConstantsABI is the input ABI used to generate the binding from.
-const ConstantsABI = "[{\"inputs\":[],\"name\":\"commit\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"dispute\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"epochLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"exposureDenominator\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBlockConfirmerHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getJobConfirmerHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakeModifierHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakerActivityUpdaterHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"halvingInterval\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialBlockReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"maxAltBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"numStates\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"penaltyNotRevealDenom\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"penaltyNotRevealNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"propose\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"reveal\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unstakeLockPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"withdrawLockPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]"
+const ConstantsABI = "[{\"inputs\":[],\"name\":\"commit\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"dispute\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"epochLength\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"exposureDenominator\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getBlockConfirmerHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getDefaultAdminHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getJobConfirmerHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakeModifierHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getStakerActivityUpdaterHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"maxAltBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minStake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"numStates\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"penaltyNotRevealDenom\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"penaltyNotRevealNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"propose\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"reveal\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unstakeLockPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"withdrawLockPeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]"
 
 // Constants is an auto generated Go binding around an Ethereum contract.
 type Constants struct {
@@ -326,6 +326,37 @@ func (_Constants *ConstantsCallerSession) GetBlockConfirmerHash() ([32]byte, err
 	return _Constants.Contract.GetBlockConfirmerHash(&_Constants.CallOpts)
 }
 
+// GetDefaultAdminHash is a free data retrieval call binding the contract method 0xb1a62781.
+//
+// Solidity: function getDefaultAdminHash() pure returns(bytes32)
+func (_Constants *ConstantsCaller) GetDefaultAdminHash(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _Constants.contract.Call(opts, &out, "getDefaultAdminHash")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GetDefaultAdminHash is a free data retrieval call binding the contract method 0xb1a62781.
+//
+// Solidity: function getDefaultAdminHash() pure returns(bytes32)
+func (_Constants *ConstantsSession) GetDefaultAdminHash() ([32]byte, error) {
+	return _Constants.Contract.GetDefaultAdminHash(&_Constants.CallOpts)
+}
+
+// GetDefaultAdminHash is a free data retrieval call binding the contract method 0xb1a62781.
+//
+// Solidity: function getDefaultAdminHash() pure returns(bytes32)
+func (_Constants *ConstantsCallerSession) GetDefaultAdminHash() ([32]byte, error) {
+	return _Constants.Contract.GetDefaultAdminHash(&_Constants.CallOpts)
+}
+
 // GetJobConfirmerHash is a free data retrieval call binding the contract method 0x7f890b11.
 //
 // Solidity: function getJobConfirmerHash() pure returns(bytes32)
@@ -417,68 +448,6 @@ func (_Constants *ConstantsSession) GetStakerActivityUpdaterHash() ([32]byte, er
 // Solidity: function getStakerActivityUpdaterHash() pure returns(bytes32)
 func (_Constants *ConstantsCallerSession) GetStakerActivityUpdaterHash() ([32]byte, error) {
 	return _Constants.Contract.GetStakerActivityUpdaterHash(&_Constants.CallOpts)
-}
-
-// HalvingInterval is a free data retrieval call binding the contract method 0x6a47aa06.
-//
-// Solidity: function halvingInterval() pure returns(uint256)
-func (_Constants *ConstantsCaller) HalvingInterval(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Constants.contract.Call(opts, &out, "halvingInterval")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// HalvingInterval is a free data retrieval call binding the contract method 0x6a47aa06.
-//
-// Solidity: function halvingInterval() pure returns(uint256)
-func (_Constants *ConstantsSession) HalvingInterval() (*big.Int, error) {
-	return _Constants.Contract.HalvingInterval(&_Constants.CallOpts)
-}
-
-// HalvingInterval is a free data retrieval call binding the contract method 0x6a47aa06.
-//
-// Solidity: function halvingInterval() pure returns(uint256)
-func (_Constants *ConstantsCallerSession) HalvingInterval() (*big.Int, error) {
-	return _Constants.Contract.HalvingInterval(&_Constants.CallOpts)
-}
-
-// InitialBlockReward is a free data retrieval call binding the contract method 0xe388a69e.
-//
-// Solidity: function initialBlockReward() pure returns(uint256)
-func (_Constants *ConstantsCaller) InitialBlockReward(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Constants.contract.Call(opts, &out, "initialBlockReward")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// InitialBlockReward is a free data retrieval call binding the contract method 0xe388a69e.
-//
-// Solidity: function initialBlockReward() pure returns(uint256)
-func (_Constants *ConstantsSession) InitialBlockReward() (*big.Int, error) {
-	return _Constants.Contract.InitialBlockReward(&_Constants.CallOpts)
-}
-
-// InitialBlockReward is a free data retrieval call binding the contract method 0xe388a69e.
-//
-// Solidity: function initialBlockReward() pure returns(uint256)
-func (_Constants *ConstantsCallerSession) InitialBlockReward() (*big.Int, error) {
-	return _Constants.Contract.InitialBlockReward(&_Constants.CallOpts)
 }
 
 // MaxAltBlocks is a free data retrieval call binding the contract method 0x379597e0.
