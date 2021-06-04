@@ -41,6 +41,10 @@ do
     generate_binding "$c"
 done
 
+<<<<<<< HEAD
+=======
+echo "done"
+>>>>>>> upstream/v1
 # Install go dependencies
 #go mod install
 
