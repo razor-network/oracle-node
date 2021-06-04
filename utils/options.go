@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"razor/accounts"
-	"razor/core"
 	"razor/core/types"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -37,7 +36,6 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 
 	txnOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
-	txnOpts.GasLimit = uint64(core.GasLimit)
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
 

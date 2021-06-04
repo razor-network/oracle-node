@@ -28,19 +28,50 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 	return big.NewFloat(0), nil
 }
 
-func MultiplyToEightDecimals(num *big.Float) *big.Float {
+func MultiplyToEightDecimals(num *big.Float) *big.Int {
+	if num == nil {
+		return big.NewInt(0)
+	}
 	decimalMultiplier := big.NewFloat(float64(core.DecimalsMultiplier))
-	return big.NewFloat(1).Mul(num, decimalMultiplier)
+	value := big.NewFloat(1).Mul(num, decimalMultiplier)
+	result := new(big.Int)
+	value.Int(result)
+	return result
 }
 
-func MultiplyFloatAndBigInt(gas *big.Int, val float64) *big.Int {
+func MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
+	if bigIntVal == nil || floatingVal == 0 {
+		return big.NewInt(0)
+	}
 	value := new(big.Float)
-	value.SetFloat64(val)
+	value.SetFloat64(floatingVal)
 	conversionInt := new(big.Float)
-	conversionInt.SetInt(gas)
+	conversionInt.SetInt(bigIntVal)
 	value.Mul(value, conversionInt)
 	result := new(big.Int)
 	value.Int(result)
 	return result
 }
 
+func AllZero(bytesValue [32]byte) bool {
+	for _, value := range bytesValue {
+		if value != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func GetAmountWithChecks(amount string, balance *big.Int) *big.Int {
+	_amount, ok := new(big.Int).SetString(amount, 10)
+	if !ok {
+		log.Fatal("SetString: error")
+	}
+
+	amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
+
+	if amountInWei.Cmp(balance) > 0 {
+		log.Fatal("Not enough balance")
+	}
+	return amountInWei
+}

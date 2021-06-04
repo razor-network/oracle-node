@@ -4,8 +4,10 @@ import (
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/crypto"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"razor/core/types"
 )
 
 func CreateAccount(path string, password string) accounts.Account {
@@ -39,4 +41,9 @@ func GetPrivateKey(address string, password string, keystorePath string) *ecdsa.
 		}
 	}
 	return nil
+}
+
+func Sign(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
+	privateKey := GetPrivateKey(account.Address, account.Password, defaultPath)
+	return crypto.Sign(hash, privateKey)
 }

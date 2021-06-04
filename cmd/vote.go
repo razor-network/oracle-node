@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
-	"math/big"
-	"razor/utils"
-
+	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/logrusorgru/aurora/v3"
+	"github.com/miguelmota/go-solidity-sha3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"math/big"
+	"razor/accounts"
+	"razor/core/types"
+	"razor/utils"
 )
 
 var voteCmd = &cobra.Command{
@@ -29,121 +31,128 @@ var voteCmd = &cobra.Command{
 		}
 		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
+		account := types.Account{Address: address, Password: password}
 		for {
 			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
+				continue
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, address, password, latestHeader.Number)
+				handleBlock(client, account, latestHeader.Number, config)
 			}
 		}
 	},
 }
 
-func handleBlock(client *ethclient.Client, address string, password string, blockNumber *big.Int) {
+var (
+	_committedData   []*big.Int
+	lastCommit       *big.Int
+	lastReveal       *big.Int
+	lastProposal     *big.Int
+	lastElection     *big.Int
+	lastVerification *big.Int
+)
+
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations) {
 	state, err := utils.GetDelayedState(client)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 	}
-	epoch, err := utils.GetEpoch(client, address)
+	epoch, err := utils.GetEpoch(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 	}
-	stakerId, err := utils.GetStakerId(client, address)
+	stakerId, err := utils.GetStakerId(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting staker id: ", err)
 	}
-	stakedAmount, err := utils.GetStake(client, address, stakerId)
+	stakedAmount, err := utils.GetStake(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in getting staked amount: ", err)
 	}
-	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
+	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(account.Address), nil)
 	if err != nil {
-		log.Errorf("Error in fetching balance of the account: %s\n%s", address, err)
+		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 	}
-	minStakeAmount, err := utils.GetMinStakeAmount(client, address)
+	minStakeAmount, err := utils.GetMinStakeAmount(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 	}
+	log.Info(aurora.Red("🔲 Block:"), aurora.Red(blockNumber), aurora.Yellow("⌛ Epoch:"), aurora.Yellow(epoch), aurora.Green("⏱️ State:"), aurora.Green(state), aurora.Blue("📒:"), aurora.Blue(account.Address), aurora.BrightBlue("👤 Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("💰Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Ξ:"), aurora.Magenta(ethBalance))
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
+		return
 	}
-	log.Info(aurora.Red("🔲 Block:"), aurora.Red(blockNumber), aurora.Yellow("⌛ Epoch:"), aurora.Yellow(epoch), aurora.Green("⏱️ State:"), aurora.Green(state), aurora.Blue("📒:"), aurora.Blue(address), aurora.BrightBlue("👤 Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("💰Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Ξ:"), aurora.Magenta(ethBalance))
 
 	switch state {
 	case 0:
-		handleCommitState(client, address, password)
+		if lastCommit != nil && lastCommit.Cmp(epoch) >= 0 {
+			break
+		}
+		secret := calculateSecret(account, epoch)
+		if secret == nil {
+			break
+		}
+		data := HandleCommitState(client, account.Address)
+		if err := Commit(client, data, secret, account, config); err != nil {
+			log.Error("Error in committing data: ", err)
+			break
+		}
+		_committedData = data
+		lastCommit = epoch
 		break
+
 	case 1:
-		handleRevealState()
-		break
-	case 2:
-		handleBlockProposalState()
-		break
-	case 3:
-		handleDisputeState()
-		break
-	}
-
-}
-
-func handleCommitState(client *ethclient.Client, address string, password string) {
-	jobs, err := utils.GetActiveJobs(client, address)
-	if err != nil {
-		log.Error("Error in getting active jobs: ", err)
-	}
-	var datum []interface{}
-	for jobIndex := 0; jobIndex < len(jobs); jobIndex++ {
-		response, err := utils.GetDataFromAPI(jobs[jobIndex].Url)
-		data := big.NewFloat(0)
-		if err != nil {
+		if _committedData == nil || (lastReveal != nil && lastReveal.Cmp(epoch) >= 0) {
+			break
+		}
+		lastReveal = epoch
+		secret := calculateSecret(account, epoch)
+		if secret == nil {
+			break
+		}
+		if err := HandleRevealState(client, account.Address, stakerId, epoch); err != nil {
 			log.Error(err)
+			break
 		}
-		var parsedJSON map[string]interface{}
-		err = json.Unmarshal(response, &parsedJSON)
-		if err != nil {
-			log.Error("Error in parsing data from API: ", err)
+		Reveal(client, _committedData, secret, account, account.Address, config)
+		break
+
+	case 2:
+		if lastElection != nil && lastElection.Cmp(epoch) >= 0 {
+			break
 		}
-		data, err = utils.ConvertToNumber(parsedJSON[jobs[jobIndex].Selector])
-		if err != nil {
-			log.Error("Result is not a number")
+		lastElection = epoch
+		if lastProposal != nil && lastProposal.Cmp(epoch) >= 0 {
+			break
 		}
-		data = utils.MultiplyToEightDecimals(data)
-		datum = append(datum, data)
+		lastProposal = epoch
+		log.Info("Proposing block....")
+		Propose(client, account, config, stakerId, epoch)
+		break
+
+	case 3:
+		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
+			break
+		}
+		lastVerification = epoch
+		HandleDispute(client, config, account, epoch)
+		break
 	}
-	if len(datum) == 0 {
-		datum = append(datum, big.NewFloat(0))
-	}
-	log.Info("Datum", datum)
-	commit(client, datum, "", address, password)
-}
-
-func handleRevealState() {
 
 }
 
-func handleBlockProposalState() {
-
-}
-
-func handleDisputeState() {
-
-}
-
-func commit(client *ethclient.Client, data []interface{}, secret string, account string, password string) {
-	state, err := utils.GetDelayedState(client)
+func calculateSecret(account types.Account, epoch *big.Int) []byte {
+	hash := solsha3.SoliditySHA3([]string{"address", "uint256"}, []interface{}{account.Address, epoch.String()})
+	signedData, err := accounts.Sign(hash, account, utils.GetDefaultPath())
 	if err != nil {
-		log.Error("Error in fetching state: ", state)
+		log.Error("Error in signing the data: ", err)
+		return nil
 	}
-	if state != 0 {
-		log.Error("Not commit state")
-		return
-	}
-	//TODO: Figure out what to do for the merkle function
-	//tree, err := merkletree.NewUsing([][]byte("data"), keccak256.New(), nil)
-	//tree.Root()
+	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
+	return secret
 }
 
 func init() {

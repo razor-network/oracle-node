@@ -9,7 +9,7 @@ import (
 	"razor/pkg/bindings"
 )
 
-func GetCoinContract(client *ethclient.Client) *bindings.SchellingCoin {
+func GetTokenManager(client *ethclient.Client) *bindings.SchellingCoin {
 	coinContract, err := bindings.NewSchellingCoin(common.HexToAddress(core.SchellingCoinAddress), client)
 	if err != nil {
 		log.Fatal(err)
@@ -47,4 +47,28 @@ func GetJobManager(client *ethclient.Client) *bindings.JobManager {
 		log.Fatal(err)
 	}
 	return jobManager
+}
+
+func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
+	voteManager, err := bindings.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return voteManager
+}
+
+func GetRandomClient(client *ethclient.Client) *bindings.Random {
+	randomClient, err := bindings.NewRandom(common.HexToAddress(core.RandomClientAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return randomClient
+}
+
+func GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
+	blockManager, err := bindings.NewBlockManager(common.HexToAddress(core.BlockManagerAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return blockManager
 }

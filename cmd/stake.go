@@ -30,7 +30,7 @@ var stakeCmd = &cobra.Command{
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
 		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
+			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
 		}
 
 		amount, err := cmd.Flags().GetString("amount")
@@ -38,15 +38,7 @@ var stakeCmd = &cobra.Command{
 			log.Fatal("Error in reading amount", err)
 		}
 
-		_amount, ok := new(big.Int).SetString(amount, 10)
-		if !ok {
-			log.Fatal("SetString: error")
-		}
-		amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
-
-		if amountInWei.Cmp(balance) > 0 {
-			log.Fatal("Not enough balance")
-		}
+		amountInWei := utils.GetAmountWithChecks(amount, balance)
 
 		accountBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
 		if err != nil {
@@ -71,9 +63,9 @@ var stakeCmd = &cobra.Command{
 }
 
 func approve(txnArgs types.TransactionOptions) {
-	coinContract := utils.GetCoinContract(txnArgs.Client)
+	tokenManager := utils.GetTokenManager(txnArgs.Client)
 	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
-	allowance, err := coinContract.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,7 +74,7 @@ func approve(txnArgs types.TransactionOptions) {
 	} else {
 		log.Info("Sending Approve transaction...")
 		txnOpts := utils.GetTxnOpts(txnArgs)
-		txn, err := coinContract.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
+		txn, err := tokenManager.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			log.Fatal("Error in approving: ", err)
 		}
@@ -95,8 +87,8 @@ func approve(txnArgs types.TransactionOptions) {
 func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	log.Info("Sending stake transactions...")
-	txnOpts := utils.GetTxnOpts(txnArgs)
 	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+	txnOpts := utils.GetTxnOpts(txnArgs)
 	if err != nil {
 		log.Fatal("Error in getting commit state: ", err)
 	}
