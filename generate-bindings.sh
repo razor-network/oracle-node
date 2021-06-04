@@ -40,18 +40,3 @@ for c in "${contracts[@]}"
 do
     generate_binding "$c"
 done
-
-<<<<<<< HEAD
-=======
-echo "done"
->>>>>>> upstream/v1
-# Install go dependencies
-#go mod install
-
-# Install razor binary
-#go install razors
-
-# Ask for provider
-
-# Create .razor dir if not there
-# Set the default dir path to home/.razor/
