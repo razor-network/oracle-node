@@ -14,7 +14,6 @@ import (
 var (
 	Provider      string
 	GasMultiplier float32
-	ChainId       int64
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -27,8 +26,6 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) { fmt.Println("Welcome to razor-cli.") },
 }
 
@@ -47,7 +44,6 @@ func init() {
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.razor.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 0, "gas multiplier value")
-	rootCmd.PersistentFlags().Int64VarP(&ChainId, "chainid", "c", 0000, "chain id value")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 

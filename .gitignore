@@ -22,3 +22,4 @@ razor
 __debug_bin
 .vscode
 node_modules
+build

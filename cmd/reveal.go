@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/wealdtech/go-merkletree"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 )
@@ -71,7 +72,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        config.ChainId,
+		ChainId:        core.ChainId,
 		GasMultiplier:  config.GasMultiplier,
 	})
 

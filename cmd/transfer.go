@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 )
@@ -45,7 +46,7 @@ to quickly create a Cobra application.`,
 			Client:         client,
 			Password:       password,
 			AccountAddress: fromAddress,
-			ChainId:        config.ChainId,
+			ChainId:        core.ChainId,
 			GasMultiplier:  config.GasMultiplier,
 		})
 		log.Infof("Transferring %s tokens from %s to %s", amount, fromAddress, toAddress)

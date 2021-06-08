@@ -2,9 +2,11 @@
 
 set -e -o pipefail
 
-npm install
-
 mkdir -p ./pkg/bindings
+
+echo "\n"
+
+# TODO: Copy bindings directly from node_modules to ./pkg/bindings
 
 generate_binding() {
   contract=$(echo $1 | awk '{print $1}')
@@ -38,15 +40,3 @@ for c in "${contracts[@]}"
 do
     generate_binding "$c"
 done
-
-echo "done"
-# Install go dependencies
-#go mod install
-
-# Install razor binary
-#go install razors
-
-# Ask for provider
-
-# Create .razor dir if not there
-# Set the default dir path to home/.razor/

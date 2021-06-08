@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 
@@ -56,7 +57,7 @@ var createJobCmd = &cobra.Command{
 			Password:       password,
 			EtherValue:     feeInBigInt,
 			AccountAddress: address,
-			ChainId:        config.ChainId,
+			ChainId:        core.ChainId,
 			GasMultiplier:  config.GasMultiplier,
 		})
 
