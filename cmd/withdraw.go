@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 )
@@ -42,7 +43,7 @@ to quickly create a Cobra application.`,
 			Client:         client,
 			Password:       password,
 			AccountAddress: address,
-			ChainId:        config.ChainId,
+			ChainId:        core.ChainId,
 			GasMultiplier:  config.GasMultiplier,
 		})
 		log.Info("Withdrawing funds...")

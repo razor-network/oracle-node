@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/big"
 	"modernc.org/sortutil"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 )
@@ -77,7 +78,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        config.ChainId,
+		ChainId:        core.ChainId,
 		GasMultiplier:  config.GasMultiplier,
 	})
 	blockManager := utils.GetBlockManager(client)

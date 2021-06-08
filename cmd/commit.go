@@ -9,6 +9,7 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	log "github.com/sirupsen/logrus"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 )
@@ -98,7 +99,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        config.ChainId,
+		ChainId:        core.ChainId,
 		GasMultiplier:  config.GasMultiplier,
 	})
 	commitmentToSend := [32]byte{}

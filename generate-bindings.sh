@@ -2,11 +2,11 @@
 
 set -e -o pipefail
 
-npm install
-
 mkdir -p ./pkg/bindings
 
 echo "\n"
+
+# TODO: Copy bindings directly from node_modules to ./pkg/bindings
 
 generate_binding() {
   contract=$(echo $1 | awk '{print $1}')

@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"math"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 )
@@ -64,7 +65,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 			 Client:         client,
 			 Password:       account.Password,
 			 AccountAddress: account.Address,
-			 ChainId:        config.ChainId,
+			 ChainId:        core.ChainId,
 			 GasMultiplier:  config.GasMultiplier,
 		 })
 		 txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(0),sortedVotes[i*1000: i*1000+1])
@@ -81,7 +82,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        config.ChainId,
+		ChainId:        core.ChainId,
 		GasMultiplier:  config.GasMultiplier,
 	})
 	txn, err :=blockManager.FinalizeDispute(txnOpts, epoch, blockId)
