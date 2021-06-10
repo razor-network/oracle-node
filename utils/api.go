@@ -18,6 +18,7 @@ func GetDataFromAPI(url string) ([]byte, error) {
 	return ioutil.ReadAll(response.Body)
 }
 
+// TODO: Get data from jsonpath as selector
 func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
 	if !strings.Contains(selector, ",") {
 		return jsonObject[selector], nil

@@ -84,6 +84,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		return err
 	}
 
+	// FIXME: Not required
 	commitments, err := utils.GetCommitments(client, account.Address, epoch)
 	if err != nil {
 		return err

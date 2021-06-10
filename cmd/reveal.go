@@ -47,12 +47,13 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		return
 	}
 
-	// TODO Check if already revealed
+	//FIXME: Not required to check whether revealed or not here
 	stakerId, err := utils.GetStakerId(client, account.Address)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	// FIXME: Don't use GetVotes function here, check from events
 	revealed, err := utils.GetVotes(client, account.Address, epoch, stakerId, big.NewInt(0))
 	if err != nil {
 		log.Error(err)

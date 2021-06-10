@@ -37,6 +37,7 @@ func GetDefaultPath() string {
 	}
 	defaultPath := home + "/.razor"
 	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
+		// TODO: Restrict permission
 		os.Mkdir(defaultPath, 0777)
 	}
 	return defaultPath
@@ -47,6 +48,8 @@ func GetDelayedState(client *ethclient.Client) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+	// TODO: EpochLength should be renamed StateLength
+	// TODO: Buffer should be set in config
 	if blockNumber%(core.EpochLength) > 7 || blockNumber%(core.EpochLength) < 1 {
 		return -1, nil
 	}
@@ -64,6 +67,7 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 }
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+	// TODO: STATELENGTH * BLOCKTIME = TIMEOUT
 	for {
 		log.Info("Checking if transaction is mined....\n")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
@@ -74,7 +78,7 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 			log.Info("Transaction mined successfully\n")
 			return 1
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 

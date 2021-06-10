@@ -26,19 +26,11 @@ import (
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "create command can be used to create new accounts",
+	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		path := utils.GetDefaultPath()
-		password, _ := cmd.Flags().GetString("password")
-		if password == "" {
-			log.Fatal("Please provide a password in order to create an account")
-		}
+		password := utils.PasswordPrompt()
 		account := accounts.CreateAccount(path, password)
 		log.Info("Account address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)
@@ -47,9 +39,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	var (
-		Password string
-	)
-	createCmd.Flags().StringVarP(&Password, "password", "", "", "password to create a new account")
-	createCmd.MarkFlagRequired("password")
 }

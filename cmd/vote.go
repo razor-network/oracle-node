@@ -24,12 +24,12 @@ var voteCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("Error in fetching config details: ", err)
 		}
+		password := utils.PasswordPrompt()
 		client := utils.ConnectToClient(config.Provider)
 		header, err := client.HeaderByNumber(context.Background(), nil)
 		if err != nil {
 			log.Fatal(err)
 		}
-		password, _ := cmd.Flags().GetString("password")
 		address, _ := cmd.Flags().GetString("address")
 		account := types.Account{Address: address, Password: password}
 		for {
@@ -42,6 +42,7 @@ var voteCmd = &cobra.Command{
 				header = latestHeader
 				handleBlock(client, account, latestHeader.Number, config)
 			}
+			// TODO: Sleep for 5 secs
 		}
 	},
 }
@@ -105,6 +106,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		break
 
 	case 1:
+		// TODO: Get LastReveal and other data points from the blockchain
 		if _committedData == nil || (lastReveal != nil && lastReveal.Cmp(epoch) >= 0) {
 			break
 		}
@@ -121,6 +123,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		break
 
 	case 2:
+		// FIXME: Remove LastElection
 		if lastElection != nil && lastElection.Cmp(epoch) >= 0 {
 			break
 		}
@@ -158,14 +161,9 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 func init() {
 	rootCmd.AddCommand(voteCmd)
 
-	var (
-		Address  string
-		Password string
-	)
+	var Address  string
 
 	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
-	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 
 	voteCmd.MarkFlagRequired("address")
-	voteCmd.MarkFlagRequired("password")
 }

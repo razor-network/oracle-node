@@ -17,7 +17,7 @@ import (
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
 	Short: "Create Job is used to create a job on razor.network",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("createJob called")
 		config, err := GetConfigData()
@@ -25,7 +25,8 @@ var createJobCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		password, _ := cmd.Flags().GetString("password")
+		password := utils.PasswordPrompt()
+
 		address, _ := cmd.Flags().GetString("address")
 		fee, _ := cmd.Flags().GetString("fee")
 		name, _ := cmd.Flags().GetString("name")
@@ -83,22 +84,20 @@ func init() {
 		Repeat   bool
 		Fee      string
 		Account  string
-		Password string
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
+	// TODO: SELECTOR must use JSONPath format
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (comma separated for nested values)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
 	createJobCmd.Flags().StringVarP(&Fee, "fee", "f", "0", "fee")
 	createJobCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
-	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password of the ̰ob creator")
 
 	createJobCmd.MarkFlagRequired("url")
 	createJobCmd.MarkFlagRequired("selector")
 	createJobCmd.MarkFlagRequired("name")
 	createJobCmd.MarkFlagRequired("fee")
 	createJobCmd.MarkFlagRequired("address")
-	createJobCmd.MarkFlagRequired("password")
 
 }

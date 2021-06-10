@@ -24,7 +24,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal("Error in getting config: ", err)
 		}
-		password, _ := cmd.Flags().GetString("password")
+		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
 
 		client := utils.ConnectToClient(config.Provider)
@@ -60,14 +60,9 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(withdrawCmd)
 
-	var (
-		Address  string
-		Password string
-	)
+	var Address  string
 
 	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
-	withdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 
 	withdrawCmd.MarkFlagRequired("address")
-	withdrawCmd.MarkFlagRequired("password")
 }

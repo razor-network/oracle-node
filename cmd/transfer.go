@@ -23,7 +23,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal("Error in getting config: ", err)
 		}
-		password, _ := cmd.Flags().GetString("password")
+		password := utils.PasswordPrompt()
 		fromAddress, _ := cmd.Flags().GetString("from")
 		toAddress, _ := cmd.Flags().GetString("to")
 
@@ -67,18 +67,15 @@ func init() {
 	var (
 		Amount   string
 		From     string
-		Password string
 		To       string
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to transfer (in Wei)")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
-	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 
 	transferCmd.MarkFlagRequired("amount")
 	transferCmd.MarkFlagRequired("from")
-	transferCmd.MarkFlagRequired("password")
 	transferCmd.MarkFlagRequired("to")
 
 }

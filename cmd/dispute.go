@@ -46,6 +46,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 				continue
 			}
 		} else {
+			//TODO: Break once you get a valid block
 			log.Info("Proposed median matches with local calculations. Will not open dispute.")
 		}
 	}
