@@ -11,7 +11,7 @@ var VoteManagerAddress = "0x246b61043839479E9d070506766bFbfBe659e0b4"
 var RandomClientAddress = "0xcf8F791945346E6daB85d2C140911A99E409768C"
 var BlockManagerAddress = "0x99E7Afeb0215D2E80088b8C7Bde54BD9162c3A35"
 
-var EpochLength uint64 = 75
+var StateLength uint64 = 75
 var NumberOfStates int64 = 4
 var DecimalsMultiplier int64 = 100000000
 var NumberOfBlocks = 10

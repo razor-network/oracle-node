@@ -37,7 +37,6 @@ func GetDefaultPath() string {
 	}
 	defaultPath := home + "/.razor"
 	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
-		// TODO: Restrict permission
 		os.Mkdir(defaultPath, 0777)
 	}
 	return defaultPath
@@ -48,12 +47,11 @@ func GetDelayedState(client *ethclient.Client) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	// TODO: EpochLength should be renamed StateLength
 	// TODO: Buffer should be set in config
-	if blockNumber%(core.EpochLength) > 7 || blockNumber%(core.EpochLength) < 1 {
+	if blockNumber%(core.StateLength) > 7 || blockNumber%(core.StateLength) < 1 {
 		return -1, nil
 	}
-	state := math.Floor(float64(blockNumber / core.EpochLength))
+	state := math.Floor(float64(blockNumber / core.StateLength))
 	return int64(state) % core.NumberOfStates, nil
 }
 
