@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
@@ -36,22 +34,12 @@ var createJobCmd = &cobra.Command{
 
 		client := utils.ConnectToClient(config.Provider)
 
-		accountBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
-		if err != nil {
-			log.Errorf("Error in fetching balance of the account: %s", address)
-			log.Fatal(err)
-		}
 
 		feeInBigInt, ok := new(big.Int).SetString(fee, 10)
 		if !ok {
 			log.Fatal("SetString: error")
 		}
 
-		//feeInWei := big.NewInt(1).Mul(feeInBigInt, big.NewInt(1e18))
-
-		if accountBalance.Cmp(feeInBigInt) < 0 {
-			log.Fatal("Please make sure you hold sufficient ether in your account")
-		}
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,

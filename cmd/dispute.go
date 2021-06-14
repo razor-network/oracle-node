@@ -16,9 +16,6 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		log.Error(err)
 		return
 	}
-	if numberOfProposedBlocks.Cmp(big.NewInt(5)) > 0 {
-		numberOfProposedBlocks = big.NewInt(5)
-	}
 	for i := 0; i < int(numberOfProposedBlocks.Int64()); i++ {
 		proposedBlock, err := utils.GetProposedBlock(client, account.Address, epoch, big.NewInt(int64(i)))
 		if err != nil {
@@ -46,8 +43,8 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 				continue
 			}
 		} else {
-			//TODO: Break once you get a valid block
 			log.Info("Proposed median matches with local calculations. Will not open dispute.")
+			break
 		}
 	}
 }
@@ -58,24 +55,24 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	if err != nil {
 		return err
 	}
-	iter := int(math.Ceil(float64(len(sortedVotes))/1000))
+	iter := int(math.Ceil(float64(len(sortedVotes)) / 1000))
 	blockManager := utils.GetBlockManager(client)
 	for i := 0; i < iter; i++ {
-		 log.Info(epoch, sortedVotes[i*1000:i*1000+1000])
-		 txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			 Client:         client,
-			 Password:       account.Password,
-			 AccountAddress: account.Address,
-			 ChainId:        core.ChainId,
-			 GasMultiplier:  config.GasMultiplier,
-		 })
-		 txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(0),sortedVotes[i*1000: i*1000+1])
-		 if err != nil {
-		 	log.Error(err)
-		 	continue
-		 }
-		 log.Info("Txn Hash: ", txn.Hash())
-		 utils.WaitForBlockCompletion(client, txn.Hash().String())
+		log.Info(epoch, sortedVotes[i*1000:i*1000+1000])
+		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+			Client:         client,
+			Password:       account.Password,
+			AccountAddress: account.Address,
+			ChainId:        core.ChainId,
+			GasMultiplier:  config.GasMultiplier,
+		})
+		txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(0), sortedVotes[i*1000:i*1000+1])
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		log.Info("Txn Hash: ", txn.Hash())
+		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	}
 
 	log.Info("Sending finalized dispute...")
@@ -86,7 +83,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		ChainId:        core.ChainId,
 		GasMultiplier:  config.GasMultiplier,
 	})
-	txn, err :=blockManager.FinalizeDispute(txnOpts, epoch, blockId)
+	txn, err := blockManager.FinalizeDispute(txnOpts, epoch, blockId)
 	if err != nil {
 		return err
 	}

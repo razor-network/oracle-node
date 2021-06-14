@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -39,16 +37,6 @@ var stakeCmd = &cobra.Command{
 		}
 
 		amountInWei := utils.GetAmountWithChecks(amount, balance)
-
-		accountBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
-		if err != nil {
-			log.Fatalf("Error in fetching balance of the account: %s\n%s", address, err)
-		}
-
-		// FIXME: Not required, remove
-		if accountBalance.Cmp(big.NewInt(1e16)) < 0 {
-			log.Fatal("Please make sure you hold at least 0.01 ether in your account")
-		}
 
 		txnArgs := types.TransactionOptions{
 			Client:         client,

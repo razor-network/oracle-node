@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/logrusorgru/aurora/v3"
@@ -11,8 +13,11 @@ import (
 	"github.com/spf13/cobra"
 	"math/big"
 	"razor/accounts"
+	"razor/core"
 	"razor/core/types"
+	jobManager "razor/pkg/bindings"
 	"razor/utils"
+	"strings"
 )
 
 var voteCmd = &cobra.Command{
@@ -48,11 +53,7 @@ var voteCmd = &cobra.Command{
 }
 
 var (
-	_committedData   []*big.Int
-	lastCommit       *big.Int
-	lastReveal       *big.Int
-	lastProposal     *big.Int
-	lastElection     *big.Int
+	_committedData []*big.Int
 	lastVerification *big.Int
 )
 
@@ -87,8 +88,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		return
 	}
 
+	staker, err := utils.GetStaker(client, account.Address, stakerId)
+	if err != nil {
+		log.Error(err)
+	}
+
 	switch state {
 	case 0:
+		lastCommit := staker.EpochLastCommitted
 		if lastCommit != nil && lastCommit.Cmp(epoch) >= 0 {
 			break
 		}
@@ -102,20 +109,18 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		_committedData = data
-		lastCommit = epoch
 		break
 
 	case 1:
-		// TODO: Get LastReveal and other data points from the blockchain
+		lastReveal := staker.EpochLastRevealed
 		if _committedData == nil || (lastReveal != nil && lastReveal.Cmp(epoch) >= 0) {
 			break
 		}
-		lastReveal = epoch
 		secret := calculateSecret(account, epoch)
 		if secret == nil {
 			break
 		}
-		if err := HandleRevealState(client, account.Address, stakerId, epoch); err != nil {
+		if err := HandleRevealState(staker, epoch); err != nil {
 			log.Error(err)
 			break
 		}
@@ -123,11 +128,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		break
 
 	case 2:
-		// FIXME: Remove LastElection
-		if lastElection != nil && lastElection.Cmp(epoch) >= 0 {
-			break
-		}
-		lastElection = epoch
+		lastProposal := getLastProposedEpoch(client, blockNumber, stakerId)
 		if lastProposal != nil && lastProposal.Cmp(epoch) >= 0 {
 			break
 		}
@@ -147,6 +148,38 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 
 }
 
+func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId *big.Int) *big.Int {
+	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
+	query := ethereum.FilterQuery{
+		FromBlock: big.NewInt(0).Sub(blockNumber,big.NewInt(numberOfBlocks)),
+		ToBlock:   blockNumber,
+		Addresses: []common.Address{
+			common.HexToAddress(core.BlockManagerAddress),
+		},
+	}
+	logs, err := client.FilterLogs(context.Background(), query)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	contractAbi, err := abi.JSON(strings.NewReader(jobManager.BlockManagerABI))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, vLog := range logs {
+		data, unpackErr := contractAbi.Unpack("Proposed", vLog.Data)
+		if unpackErr != nil {
+			log.Error(unpackErr)
+			continue
+		}
+		if stakerId.Cmp(data[1].(*big.Int)) == 0 {
+			return data[0].(*big.Int)
+		}
+	}
+	return big.NewInt(0)
+}
+
 func calculateSecret(account types.Account, epoch *big.Int) []byte {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint256"}, []interface{}{account.Address, epoch.String()})
 	signedData, err := accounts.Sign(hash, account, utils.GetDefaultPath())
@@ -161,7 +194,7 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 func init() {
 	rootCmd.AddCommand(voteCmd)
 
-	var Address  string
+	var Address string
 
 	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
 

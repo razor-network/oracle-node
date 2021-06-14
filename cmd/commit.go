@@ -84,7 +84,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		return err
 	}
 
-	// FIXME: Not required
+	// Required if 2 or more instances of same staker is running and one of them has already committed in the current epoch
 	commitments, err := utils.GetCommitments(client, account.Address, epoch)
 	if err != nil {
 		return err
