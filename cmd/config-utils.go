@@ -10,20 +10,25 @@ func GetConfigData() (types.Configurations, error) {
 		Provider:      "",
 		GasMultiplier: 0,
 	}
-	provider, err := GetProvider()
+	provider, err := getProvider()
 	if err != nil {
 		return config, err
 	}
-	gasMultiplier, err := GetMultiplier()
+	gasMultiplier, err := getMultiplier()
+	if err != nil {
+		return config, err
+	}
+	bufferPercent,err := getBufferPercent()
 	if err != nil {
 		return config, err
 	}
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
+	config.BufferPercent = bufferPercent
 	return config, nil
 }
 
-func GetProvider() (string, error) {
+func getProvider() (string, error) {
 	provider, err := rootCmd.PersistentFlags().GetString("provider")
 	if err != nil {
 		return "", err
@@ -34,13 +39,24 @@ func GetProvider() (string, error) {
 	return provider, nil
 }
 
-func GetMultiplier() (float32, error) {
+func getMultiplier() (float32, error) {
 	gasMultiplier, err := rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
 	if err != nil {
-		return 0, err
+		return 1, err
 	}
 	if gasMultiplier == 0 {
 		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
 	}
 	return gasMultiplier, nil
+}
+
+func getBufferPercent() (int8, error) {
+	bufferPercent, err := rootCmd.PersistentFlags().GetInt8("buffer")
+	if err != nil {
+		return 30, err
+	}
+	if bufferPercent == 0 {
+		bufferPercent = int8(viper.GetInt32("buffer"))
+	}
+	return bufferPercent, nil
 }

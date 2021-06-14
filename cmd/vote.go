@@ -57,7 +57,7 @@ var (
 )
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations) {
-	state, err := utils.GetDelayedState(client)
+	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 	}

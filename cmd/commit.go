@@ -69,7 +69,7 @@ func getDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 }
 
 func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) error {
-	if state, err := utils.GetDelayedState(client); err != nil || state != 0 {
+	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return err
 	}

@@ -27,7 +27,7 @@ func HandleRevealState(client *ethclient.Client, address string, stakerId *big.I
 }
 
 func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations) {
-	if state, err := utils.GetDelayedState(client); err != nil || state != 1 {
+	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return
 	}

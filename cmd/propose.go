@@ -14,7 +14,7 @@ import (
 )
 
 func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId *big.Int, epoch *big.Int) {
-	if state, err := utils.GetDelayedState(client); err != nil || state != 2 {
+	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return
 	}

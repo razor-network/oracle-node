@@ -14,6 +14,7 @@ import (
 var (
 	Provider      string
 	GasMultiplier float32
+	BufferPercent int8
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -41,9 +42,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.razor.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 0, "gas multiplier value")
+	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 1, "gas multiplier value")
+	rootCmd.PersistentFlags().Int8VarP(&BufferPercent, "buffer", "b", 30, "buffer percent")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -55,18 +56,17 @@ func initConfig() {
 	})
 
 	home := utils.GetDefaultPath()
-	// Search config in home directory with name ".razor.yaml".
+	// Search config in home directory with name "razor.yaml".
 	viper.AddConfigPath(home)
 	viper.SetConfigName("razor")
 	viper.SetConfigType("yaml")
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
+	// If a config file is found, read it.
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Warn("No config file found")
-			log.Warn("Use setconfig command to set the default config")
 		} else {
 			log.Warn("error in reading config")
 		}
