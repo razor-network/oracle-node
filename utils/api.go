@@ -1,9 +1,9 @@
 package utils
 
 import (
+	"github.com/PaesslerAG/jsonpath"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -18,21 +18,11 @@ func GetDataFromAPI(url string) ([]byte, error) {
 	return ioutil.ReadAll(response.Body)
 }
 
-// TODO: Get data from jsonpath as selector
 func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
-	if !strings.Contains(selector, ",") {
-		return jsonObject[selector], nil
+	if selector[0] == '[' {
+		selector = "$"+selector
+	} else {
+		selector = "$."+selector
 	}
-	splitSelector := strings.Split(selector, ",")
-	return getNestedDataFromJSON(jsonObject, splitSelector)
-}
-
-func getNestedDataFromJSON(jsonObject map[string]interface{}, splitSelector []string) (interface{}, error) {
-	if len(splitSelector) == 1 {
-		return jsonObject[splitSelector[0]], nil
-	}
-	for i, s := range splitSelector {
-		return getNestedDataFromJSON(jsonObject[s].(map[string]interface{}), splitSelector[i+1:])
-	}
-	return nil, nil
+	return jsonpath.Get(selector, jsonObject)
 }

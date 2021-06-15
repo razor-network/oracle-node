@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
@@ -17,7 +16,6 @@ var createJobCmd = &cobra.Command{
 	Short: "Create Job is used to create a job on razor.network",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("createJob called")
 		config, err := GetConfigData()
 		if err != nil {
 			log.Fatal("Error in getting config: ", err)
