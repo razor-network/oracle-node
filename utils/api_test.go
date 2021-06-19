@@ -13,14 +13,14 @@ func getAPIByteArray(index int) []byte {
   "title": "delectus aut autem",
   "completed": false
 }`),
-	[]byte(`{
+		[]byte(`{
   "postId": 1,
   "id": 1,
   "name": "id labore ex et quam laborum",
   "email": "Eliseo@gardner.biz",
   "body": "laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"
 }`),
-}
+	}
 	return apiData[index]
 }
 
@@ -35,15 +35,15 @@ func TestGetDataFromAPI(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "TODO API",
-			args: args{url: "https://jsonplaceholder.typicode.com/todos/1"},
-			want: getAPIByteArray(0),
+			name:    "TODO API",
+			args:    args{url: "https://jsonplaceholder.typicode.com/todos/1"},
+			want:    getAPIByteArray(0),
 			wantErr: false,
 		},
 		{
-			name: "Comments API",
-			args: args{url: "https://jsonplaceholder.typicode.com/comments/1"},
-			want: getAPIByteArray(1),
+			name:    "Comments API",
+			args:    args{url: "https://jsonplaceholder.typicode.com/comments/1"},
+			want:    getAPIByteArray(1),
 			wantErr: false,
 		},
 	}
@@ -84,7 +84,7 @@ func TestGetDataFromJSON(t *testing.T) {
 		{
 			name: "BTC-USD",
 			args: args{
-				jsonObject: map[string]interface{}{"bid":"37179.05","ask":"37196.47","volume": map[string]interface{}{"BTC":"2375.5393065136","USD":"86722499.942276466292","timestamp":1622629800000},"last":"37176.33"},
+				jsonObject: map[string]interface{}{"bid": "37179.05", "ask": "37196.47", "volume": map[string]interface{}{"BTC": "2375.5393065136", "USD": "86722499.942276466292", "timestamp": 1622629800000}, "last": "37176.33"},
 				selector:   "last",
 			},
 			want:    "37176.33",
@@ -95,19 +95,19 @@ func TestGetDataFromJSON(t *testing.T) {
 			args: args{
 				jsonObject: map[string]interface{}{
 					"Global Quote": map[string]interface{}{
-						"01. symbol": "MSFT",
-						"02. open": "251.2300",
-						"03. high": "251.2900",
-						"04. low": "246.9600",
-						"05. price": "247.4000",
-						"06. volume": "23213310",
+						"01. symbol":             "MSFT",
+						"02. open":               "251.2300",
+						"03. high":               "251.2900",
+						"04. low":                "246.9600",
+						"05. price":              "247.4000",
+						"06. volume":             "23213310",
 						"07. latest trading day": "2021-06-01",
-						"08. previous close": "249.6800",
-						"09. change": "-2.2800",
-						"10. change percent": "-0.9132%",
+						"08. previous close":     "249.6800",
+						"09. change":             "-2.2800",
+						"10. change percent":     "-0.9132%",
 					},
 				},
-				selector:   "Global Quote,05. price",
+				selector: `["Global Quote"]["05. price"]`,
 			},
 			want:    "247.4000",
 			wantErr: false,
@@ -116,31 +116,31 @@ func TestGetDataFromJSON(t *testing.T) {
 			name: "nth nesting",
 			args: args{
 				jsonObject: map[string]interface{}{
-						"id": 1,
-						"name": "Leanne Graham",
-						"username": "Bret",
-						"email": "Sincere@april.biz",
-						"address": map[string]interface{}{
-							"street": "Kulas Light",
-							"suite": "Apt. 556",
-							"city": "Gwenborough",
-							"zipcode": "92998-3874",
-							"geo": map[string]interface{}{
-								"lat": "-37.3159",
-								"lng": "81.1496",
-							},
+					"id":       1,
+					"name":     "Leanne Graham",
+					"username": "Bret",
+					"email":    "Sincere@april.biz",
+					"address": map[string]interface{}{
+						"street":  "Kulas Light",
+						"suite":   "Apt. 556",
+						"city":    "Gwenborough",
+						"zipcode": "92998-3874",
+						"geo": map[string]interface{}{
+							"lat": "-37.3159",
+							"lng": "81.1496",
 						},
-						"phone": "1-770-736-8031 x56442",
-						"website": "hildegard.org",
-						"company": map[string]interface{}{
-							"name": "Romaguera-Crona",
-							"catchPhrase": "Multi-layered client-server neural-net",
-							"bs": "harness real-time e-markets",
-						},
+					},
+					"phone":   "1-770-736-8031 x56442",
+					"website": "hildegard.org",
+					"company": map[string]interface{}{
+						"name":        "Romaguera-Crona",
+						"catchPhrase": "Multi-layered client-server neural-net",
+						"bs":          "harness real-time e-markets",
+					},
 				},
-				selector:   "address,geo,lng",
+				selector: `address["geo"]["lng"]`,
 			},
-			want: "81.1496",
+			want:    "81.1496",
 			wantErr: false,
 		},
 	}

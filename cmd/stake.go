@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -25,7 +23,7 @@ var stakeCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		password, _ := cmd.Flags().GetString("password")
+		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
@@ -39,15 +37,6 @@ var stakeCmd = &cobra.Command{
 		}
 
 		amountInWei := utils.GetAmountWithChecks(amount, balance)
-
-		accountBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
-		if err != nil {
-			log.Fatalf("Error in fetching balance of the account: %s\n%s", address, err)
-		}
-
-		if accountBalance.Cmp(big.NewInt(1e16)) < 0 {
-			log.Fatal("Please make sure you hold at least 0.01 ether in your account")
-		}
 
 		txnArgs := types.TransactionOptions{
 			Client:         client,
@@ -105,15 +94,12 @@ func init() {
 	var (
 		Amount   string
 		Address  string
-		Password string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
 	stakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
-	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 
 	stakeCmd.MarkFlagRequired("amount")
 	stakeCmd.MarkFlagRequired("address")
-	stakeCmd.MarkFlagRequired("password")
 
 }

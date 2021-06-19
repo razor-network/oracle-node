@@ -23,7 +23,7 @@ var unstakeCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 		address, _ := cmd.Flags().GetString("address")
-		password, _ := cmd.Flags().GetString("password")
+		password := utils.PasswordPrompt()
 
 		client := utils.ConnectToClient(config.Provider)
 
@@ -61,14 +61,9 @@ var unstakeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(unstakeCmd)
 
-	var (
-		Address  string
-		Password string
-	)
+	var Address  string
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
-	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 
 	unstakeCmd.MarkFlagRequired("address")
-	unstakeCmd.MarkFlagRequired("password")
 }

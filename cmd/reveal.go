@@ -9,15 +9,11 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
-func HandleRevealState(client *ethclient.Client, address string, stakerId *big.Int, epoch *big.Int) error {
-	staker, err := utils.GetStaker(client, address, stakerId)
-	if err != nil {
-		log.Error("Error in fetching staker")
-		return err
-	}
+func HandleRevealState(staker bindings.StructsStaker, epoch *big.Int) error {
 	log.Info("Staker last epoch committed: ", staker.EpochLastCommitted)
 	if staker.EpochLastCommitted.Cmp(epoch) != 0 {
 		return errors.New("commitment for this epoch not found on network.... aborting reveal")
@@ -27,7 +23,7 @@ func HandleRevealState(client *ethclient.Client, address string, stakerId *big.I
 }
 
 func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations) {
-	if state, err := utils.GetDelayedState(client); err != nil || state != 1 {
+	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return
 	}
@@ -46,19 +42,6 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		log.Error("Did not commit")
 		return
 	}
-
-	// TODO Check if already revealed
-	stakerId, err := utils.GetStakerId(client, account.Address)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	revealed, err := utils.GetVotes(client, account.Address, epoch, stakerId, big.NewInt(0))
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	log.Info(revealed)
 
 	tree, err := utils.GetMerkleTree(committedData)
 	if err != nil {

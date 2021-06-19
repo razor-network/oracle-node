@@ -42,15 +42,17 @@ func GetDefaultPath() string {
 	return defaultPath
 }
 
-func GetDelayedState(client *ethclient.Client) (int64, error) {
+func GetDelayedState(client *ethclient.Client, buffer int8) (int64, error) {
 	blockNumber, err := client.BlockNumber(context.Background())
 	if err != nil {
 		return -1, err
 	}
-	if blockNumber%(core.EpochLength) > 7 || blockNumber%(core.EpochLength) < 1 {
+	lowerLimit := (core.StateLength * uint64(buffer))/100
+	upperLimit := core.StateLength - (core.StateLength * uint64(buffer))/100
+	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
 		return -1, nil
 	}
-	state := math.Floor(float64(blockNumber / core.EpochLength))
+	state := math.Floor(float64(blockNumber / core.StateLength))
 	return int64(state) % core.NumberOfStates, nil
 }
 
@@ -64,6 +66,7 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 }
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+	// TODO: STATELENGTH * BLOCKTIME = TIMEOUT
 	for {
 		log.Info("Checking if transaction is mined....\n")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
@@ -74,7 +77,7 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 			log.Info("Transaction mined successfully\n")
 			return 1
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 

@@ -14,7 +14,11 @@ func WaitForCommitState(client *ethclient.Client, accountAddress string, action 
 		if err != nil {
 			log.Fatal("Error in fetching epoch: ", err)
 		}
-		state, err := utils.GetDelayedState(client)
+		bufferPercent, err := getBufferPercent()
+		if err != nil {
+			log.Fatal(err)
+		}
+		state, err := utils.GetDelayedState(client, bufferPercent)
 		if err != nil {
 			log.Fatal("Error in fetching state: ", err)
 		}
