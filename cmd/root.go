@@ -3,10 +3,10 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"razor/utils"
 
 	"github.com/spf13/cobra"
 
-	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -14,6 +14,7 @@ import (
 var (
 	Provider      string
 	GasMultiplier float32
+	BufferPercent int8
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -26,8 +27,6 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) { fmt.Println("Welcome to razor-cli.") },
 }
 
@@ -43,34 +42,31 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.razor.yaml)")
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 0, "gas multiplier value")
-
+	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 1, "gas multiplier value")
+	rootCmd.PersistentFlags().Int8VarP(&BufferPercent, "buffer", "b", 30, "buffer percent")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
 
-	// Search config in home directory with name ".razor.yaml".
+	home := utils.GetDefaultPath()
+	// Search config in home directory with name "razor.yaml".
 	viper.AddConfigPath(home)
-	viper.SetConfigName(".razor")
+	viper.SetConfigName("razor")
 	viper.SetConfigType("yaml")
 
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// If a config file is found, read it in.
+	// If a config file is found, read it.
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Warn("No config file found")
-			log.Warn("Use setconfig command to set the default config")
 		} else {
 			log.Warn("error in reading config")
 		}

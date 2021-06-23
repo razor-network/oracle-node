@@ -1,34 +1,62 @@
 package cmd
 
 import (
-	"errors"
-
-	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"razor/core/types"
 )
 
-func getConfigData(cmd *cobra.Command) (string, float32, error) {
+func GetConfigData() (types.Configurations, error) {
+	config := types.Configurations{
+		Provider:      "",
+		GasMultiplier: 0,
+	}
+	provider, err := getProvider()
+	if err != nil {
+		return config, err
+	}
+	gasMultiplier, err := getMultiplier()
+	if err != nil {
+		return config, err
+	}
+	bufferPercent,err := getBufferPercent()
+	if err != nil {
+		return config, err
+	}
+	config.Provider = provider
+	config.GasMultiplier = gasMultiplier
+	config.BufferPercent = bufferPercent
+	return config, nil
+}
+
+func getProvider() (string, error) {
 	provider, err := rootCmd.PersistentFlags().GetString("provider")
 	if err != nil {
-		return "", 0, err
+		return "", err
 	}
-
-	gasMultiplier, err := rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
-	if err != nil {
-		return "", 0, err
-	}
-
 	if provider == "" {
 		provider = viper.GetString("provider")
 	}
+	return provider, nil
+}
 
+func getMultiplier() (float32, error) {
+	gasMultiplier, err := rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
+	if err != nil {
+		return 1, err
+	}
 	if gasMultiplier == 0 {
 		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
 	}
+	return gasMultiplier, nil
+}
 
-	if provider == "" || gasMultiplier == 0 {
-		return "", 0, errors.New("provider and gas multiplier value not set")
+func getBufferPercent() (int8, error) {
+	bufferPercent, err := rootCmd.PersistentFlags().GetInt8("buffer")
+	if err != nil {
+		return 30, err
 	}
-
-	return provider, gasMultiplier, nil
+	if bufferPercent == 0 {
+		bufferPercent = int8(viper.GetInt32("buffer"))
+	}
+	return bufferPercent, nil
 }

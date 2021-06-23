@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"log"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
+	"razor/utils"
 )
 
 var setConfig = &cobra.Command{
@@ -17,18 +16,18 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
 		gasMultiplier, _ := cmd.Flags().GetFloat32("gasmultiplier")
+		bufferPercent, _ := cmd.Flags().GetInt64("buffer")
 		if provider != "" {
 			viper.Set("provider", provider)
 		}
 		if gasMultiplier != -1 {
 			viper.Set("gasmultiplier", gasMultiplier)
 		}
-		pwd, err := os.UserHomeDir()
-		if err != nil {
-			log.Fatal(err)
+		if bufferPercent != 30 {
+			viper.Set("buffer", bufferPercent)
 		}
-		path := pwd + "/.razor.yaml"
-		err = viper.WriteConfigAs(path)
+		path := utils.GetDefaultPath() + "/razor.yaml"
+		err := viper.WriteConfigAs(path)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,8 +37,13 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 func init() {
 	rootCmd.AddCommand(setConfig)
 
-	var Provider string
-	var GasMultiplier float32
+	var (
+		Provider      string
+		GasMultiplier float32
+		BufferPercent int32
+	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
+	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 1, "gas multiplier value")
+	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 30, "buffer percent")
+
 }

@@ -20,3 +20,6 @@ build/.DS_Store
 .idea
 razor
 __debug_bin
+.vscode
+node_modules
+build

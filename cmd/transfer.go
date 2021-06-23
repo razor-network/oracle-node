@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"os"
-
+	"github.com/ethereum/go-ethereum/common"
 	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
+	"razor/core"
+	"razor/core/types"
+	"razor/utils"
 )
 
 var transferCmd = &cobra.Command{
@@ -18,44 +19,63 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		provider, gasMultiplier, err := getConfigData(cmd)
+		config, err := GetConfigData()
 		if err != nil {
-			log.Error(err)
-			os.Exit(1)
+			log.Fatal("Error in getting config: ", err)
+		}
+		password := utils.PasswordPrompt()
+		fromAddress, _ := cmd.Flags().GetString("from")
+		toAddress, _ := cmd.Flags().GetString("to")
+
+		amount, err := cmd.Flags().GetString("amount")
+		if err != nil {
+			log.Fatal("Error in reading amount", err)
 		}
 
-		amount, _ := cmd.Flags().GetFloat32("amount")
-		from, _ := cmd.Flags().GetString("from")
-		password, _ := cmd.Flags().GetString("password")
-		to, _ := cmd.Flags().GetString("to")
+		client := utils.ConnectToClient(config.Provider)
 
-		log.Info("provider: ", provider)
-		log.Info("gasmultiplier: ", gasMultiplier)
-		log.Info("amount: ", amount)
-		log.Info("from: ", from)
-		log.Info("password: ", password)
-		log.Info("to: ", to)
+		balance, err := utils.FetchBalance(client, fromAddress)
+		if err != nil {
+			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
+		}
 
+		amountInWei := utils.GetAmountWithChecks(amount, balance)
+
+		tokenManager := utils.GetTokenManager(client)
+		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+			Client:         client,
+			Password:       password,
+			AccountAddress: fromAddress,
+			ChainId:        core.ChainId,
+			GasMultiplier:  config.GasMultiplier,
+		})
+		log.Infof("Transferring %s tokens from %s to %s", amount, fromAddress, toAddress)
+
+		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), amountInWei)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Info("Transfer transaction sent.")
+		log.Info("Transaction Hash: ", txn.Hash())
+		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (
-		Amount   float32
+		Amount   string
 		From     string
-		Password string
 		To       string
 	)
 
-	transferCmd.Flags().Float32VarP(&Amount, "amount", "a", 0, "amount to stake")
+	transferCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to transfer (in Wei)")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
-	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password to unlock account")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 
 	transferCmd.MarkFlagRequired("amount")
 	transferCmd.MarkFlagRequired("from")
-	transferCmd.MarkFlagRequired("password")
 	transferCmd.MarkFlagRequired("to")
 
 }
