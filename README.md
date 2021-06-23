@@ -38,6 +38,8 @@ $ ./razor create
 Password: 
 ```
 
+### Before staking on Razor Network, please ensure your account has eth and RAZOR. For RAZOR, please use the faucet here - https://razorscan.io/dashboard/faucet
+
 ### Stake
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
