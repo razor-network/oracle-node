@@ -8,11 +8,15 @@ Official node for running stakers in Golang.
 * Golang 1.15 or later must be installed.
 * Latest stable version of node is required.
 * Silicon chip based Mac users must go for node 15.3.0+
+* `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
 
 ### Building the source
 1. Run `npm install` to install the node dependencies.
 2. Run `npm run build` to build the binary. While building the binary, supply the provider RPC url and the gas multiplier.
-3. The binary will be generated at `build/bin`.
+3. If you want to build from scratch i.e., by fetching the smart contract bindings as well, run `npm run build-all` instead of `npm run build`. 
+   
+   _Note: To build from scratch, `geth` and `abigen` must be installed in your system._
+5. The binary will be generated at `build/bin`.
 
 ## Commands
 
