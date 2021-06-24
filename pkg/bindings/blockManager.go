@@ -29,7 +29,7 @@ var (
 // StructsBlock is an auto generated low-level Go binding around an user-defined struct.
 type StructsBlock struct {
 	ProposerId    *big.Int
-	JobIds        []*big.Int
+	Ids           []*big.Int
 	Medians       []*big.Int
 	LowerCutoffs  []*big.Int
 	HigherCutoffs []*big.Int
@@ -39,7 +39,7 @@ type StructsBlock struct {
 }
 
 // BlockManagerABI is the input ABI used to generate the binding from.
-const BlockManagerABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakerId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"jobIds\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"BlockConfirmed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakerId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"jobIds\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"biggestStakerId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Proposed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"blocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"confirmBlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"disputes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"accWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"median\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lowerCutoff\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"higherCutoff\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastVisited\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"assetId\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"blockId\",\"type\":\"uint256\"}],\"name\":\"finalizeDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getBlock\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"jobIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"internalType\":\"structStructs.Block\",\"name\":\"_block\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getBlockMedians\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_blockMedians\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getHigherCutoffs\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_higherCutoffs\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getLowerCutoffs\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_lowerCutoffs\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getNumProposedBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proposedBlock\",\"type\":\"uint256\"}],\"name\":\"getProposedBlock\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"jobIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"internalType\":\"structStructs.Block\",\"name\":\"_block\",\"type\":\"tuple\"},{\"internalType\":\"uint256[]\",\"name\":\"_blockMedians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_higherCutoffs\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proposedBlock\",\"type\":\"uint256\"}],\"name\":\"getProposedBlockMedians\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_blockMedians\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"assetId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"sorted\",\"type\":\"uint256[]\"}],\"name\":\"giveSorted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_stakeManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_stateManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_voteManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_jobManagerAddress\",\"type\":\"address\"}],\"name\":\"init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStakerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakerId\",\"type\":\"uint256\"}],\"name\":\"isElectedProposer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"jobManager\",\"outputs\":[{\"internalType\":\"contractIJobManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"jobIds\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStakerId\",\"type\":\"uint256\"}],\"name\":\"propose\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"proposedBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"resetDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stakeManager\",\"outputs\":[{\"internalType\":\"contractIStakeManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stateManager\",\"outputs\":[{\"internalType\":\"contractIStateManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"voteManager\",\"outputs\":[{\"internalType\":\"contractIVoteManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const BlockManagerABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakerId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"BlockConfirmed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stakerId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"biggestStakerId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"Proposed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"assetManager\",\"outputs\":[{\"internalType\":\"contractIAssetManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"blocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"confirmBlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"disputes\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"accWeight\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"median\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lowerCutoff\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"higherCutoff\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lastVisited\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"assetId\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"blockId\",\"type\":\"uint256\"}],\"name\":\"finalizeDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getBlock\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"internalType\":\"structStructs.Block\",\"name\":\"_block\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getBlockMedians\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_blockMedians\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getHigherCutoffs\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_higherCutoffs\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getLowerCutoffs\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_lowerCutoffs\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"getNumProposedBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proposedBlock\",\"type\":\"uint256\"}],\"name\":\"getProposedBlock\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"internalType\":\"structStructs.Block\",\"name\":\"_block\",\"type\":\"tuple\"},{\"internalType\":\"uint256[]\",\"name\":\"_blockMedians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_higherCutoffs\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"proposedBlock\",\"type\":\"uint256\"}],\"name\":\"getProposedBlockMedians\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"_blockMedians\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"assetId\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"sorted\",\"type\":\"uint256[]\"}],\"name\":\"giveSorted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"stakeManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"rewardManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"voteManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"assetManagerAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"parametersAddress\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStakerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"stakerId\",\"type\":\"uint256\"}],\"name\":\"isElectedProposer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"parameters\",\"outputs\":[{\"internalType\":\"contractIParameters\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"medians\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"lowerCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"higherCutoffs\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStakerId\",\"type\":\"uint256\"}],\"name\":\"propose\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"proposedBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"proposerId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"iteration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"biggestStake\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"valid\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"}],\"name\":\"resetDispute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rewardManager\",\"outputs\":[{\"internalType\":\"contractIRewardManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stakeManager\",\"outputs\":[{\"internalType\":\"contractIStakeManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"voteManager\",\"outputs\":[{\"internalType\":\"contractIVoteManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // BlockManager is an auto generated Go binding around an Ethereum contract.
 type BlockManager struct {
@@ -212,6 +212,37 @@ func (_BlockManager *BlockManagerSession) DEFAULTADMINROLE() ([32]byte, error) {
 // Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
 func (_BlockManager *BlockManagerCallerSession) DEFAULTADMINROLE() ([32]byte, error) {
 	return _BlockManager.Contract.DEFAULTADMINROLE(&_BlockManager.CallOpts)
+}
+
+// AssetManager is a free data retrieval call binding the contract method 0x94217ad1.
+//
+// Solidity: function assetManager() view returns(address)
+func (_BlockManager *BlockManagerCaller) AssetManager(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _BlockManager.contract.Call(opts, &out, "assetManager")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// AssetManager is a free data retrieval call binding the contract method 0x94217ad1.
+//
+// Solidity: function assetManager() view returns(address)
+func (_BlockManager *BlockManagerSession) AssetManager() (common.Address, error) {
+	return _BlockManager.Contract.AssetManager(&_BlockManager.CallOpts)
+}
+
+// AssetManager is a free data retrieval call binding the contract method 0x94217ad1.
+//
+// Solidity: function assetManager() view returns(address)
+func (_BlockManager *BlockManagerCallerSession) AssetManager() (common.Address, error) {
+	return _BlockManager.Contract.AssetManager(&_BlockManager.CallOpts)
 }
 
 // Blocks is a free data retrieval call binding the contract method 0xf25b3f99.
@@ -668,12 +699,12 @@ func (_BlockManager *BlockManagerCallerSession) IsElectedProposer(iteration *big
 	return _BlockManager.Contract.IsElectedProposer(&_BlockManager.CallOpts, iteration, biggestStakerId, stakerId)
 }
 
-// JobManager is a free data retrieval call binding the contract method 0x3df395a3.
+// Parameters is a free data retrieval call binding the contract method 0x89035730.
 //
-// Solidity: function jobManager() view returns(address)
-func (_BlockManager *BlockManagerCaller) JobManager(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function parameters() view returns(address)
+func (_BlockManager *BlockManagerCaller) Parameters(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _BlockManager.contract.Call(opts, &out, "jobManager")
+	err := _BlockManager.contract.Call(opts, &out, "parameters")
 
 	if err != nil {
 		return *new(common.Address), err
@@ -685,18 +716,18 @@ func (_BlockManager *BlockManagerCaller) JobManager(opts *bind.CallOpts) (common
 
 }
 
-// JobManager is a free data retrieval call binding the contract method 0x3df395a3.
+// Parameters is a free data retrieval call binding the contract method 0x89035730.
 //
-// Solidity: function jobManager() view returns(address)
-func (_BlockManager *BlockManagerSession) JobManager() (common.Address, error) {
-	return _BlockManager.Contract.JobManager(&_BlockManager.CallOpts)
+// Solidity: function parameters() view returns(address)
+func (_BlockManager *BlockManagerSession) Parameters() (common.Address, error) {
+	return _BlockManager.Contract.Parameters(&_BlockManager.CallOpts)
 }
 
-// JobManager is a free data retrieval call binding the contract method 0x3df395a3.
+// Parameters is a free data retrieval call binding the contract method 0x89035730.
 //
-// Solidity: function jobManager() view returns(address)
-func (_BlockManager *BlockManagerCallerSession) JobManager() (common.Address, error) {
-	return _BlockManager.Contract.JobManager(&_BlockManager.CallOpts)
+// Solidity: function parameters() view returns(address)
+func (_BlockManager *BlockManagerCallerSession) Parameters() (common.Address, error) {
+	return _BlockManager.Contract.Parameters(&_BlockManager.CallOpts)
 }
 
 // ProposedBlocks is a free data retrieval call binding the contract method 0x92b48411.
@@ -754,6 +785,37 @@ func (_BlockManager *BlockManagerCallerSession) ProposedBlocks(arg0 *big.Int, ar
 	return _BlockManager.Contract.ProposedBlocks(&_BlockManager.CallOpts, arg0, arg1)
 }
 
+// RewardManager is a free data retrieval call binding the contract method 0x0f4ef8a6.
+//
+// Solidity: function rewardManager() view returns(address)
+func (_BlockManager *BlockManagerCaller) RewardManager(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _BlockManager.contract.Call(opts, &out, "rewardManager")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// RewardManager is a free data retrieval call binding the contract method 0x0f4ef8a6.
+//
+// Solidity: function rewardManager() view returns(address)
+func (_BlockManager *BlockManagerSession) RewardManager() (common.Address, error) {
+	return _BlockManager.Contract.RewardManager(&_BlockManager.CallOpts)
+}
+
+// RewardManager is a free data retrieval call binding the contract method 0x0f4ef8a6.
+//
+// Solidity: function rewardManager() view returns(address)
+func (_BlockManager *BlockManagerCallerSession) RewardManager() (common.Address, error) {
+	return _BlockManager.Contract.RewardManager(&_BlockManager.CallOpts)
+}
+
 // StakeManager is a free data retrieval call binding the contract method 0x7542ff95.
 //
 // Solidity: function stakeManager() view returns(address)
@@ -783,37 +845,6 @@ func (_BlockManager *BlockManagerSession) StakeManager() (common.Address, error)
 // Solidity: function stakeManager() view returns(address)
 func (_BlockManager *BlockManagerCallerSession) StakeManager() (common.Address, error) {
 	return _BlockManager.Contract.StakeManager(&_BlockManager.CallOpts)
-}
-
-// StateManager is a free data retrieval call binding the contract method 0x2e716fb1.
-//
-// Solidity: function stateManager() view returns(address)
-func (_BlockManager *BlockManagerCaller) StateManager(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _BlockManager.contract.Call(opts, &out, "stateManager")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// StateManager is a free data retrieval call binding the contract method 0x2e716fb1.
-//
-// Solidity: function stateManager() view returns(address)
-func (_BlockManager *BlockManagerSession) StateManager() (common.Address, error) {
-	return _BlockManager.Contract.StateManager(&_BlockManager.CallOpts)
-}
-
-// StateManager is a free data retrieval call binding the contract method 0x2e716fb1.
-//
-// Solidity: function stateManager() view returns(address)
-func (_BlockManager *BlockManagerCallerSession) StateManager() (common.Address, error) {
-	return _BlockManager.Contract.StateManager(&_BlockManager.CallOpts)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -962,46 +993,46 @@ func (_BlockManager *BlockManagerTransactorSession) GrantRole(role [32]byte, acc
 	return _BlockManager.Contract.GrantRole(&_BlockManager.TransactOpts, role, account)
 }
 
-// Init is a paid mutator transaction binding the contract method 0x06552ff3.
+// Initialize is a paid mutator transaction binding the contract method 0x1459457a.
 //
-// Solidity: function init(address _stakeManagerAddress, address _stateManagerAddress, address _voteManagerAddress, address _jobManagerAddress) returns()
-func (_BlockManager *BlockManagerTransactor) Init(opts *bind.TransactOpts, _stakeManagerAddress common.Address, _stateManagerAddress common.Address, _voteManagerAddress common.Address, _jobManagerAddress common.Address) (*types.Transaction, error) {
-	return _BlockManager.contract.Transact(opts, "init", _stakeManagerAddress, _stateManagerAddress, _voteManagerAddress, _jobManagerAddress)
+// Solidity: function initialize(address stakeManagerAddress, address rewardManagerAddress, address voteManagerAddress, address assetManagerAddress, address parametersAddress) returns()
+func (_BlockManager *BlockManagerTransactor) Initialize(opts *bind.TransactOpts, stakeManagerAddress common.Address, rewardManagerAddress common.Address, voteManagerAddress common.Address, assetManagerAddress common.Address, parametersAddress common.Address) (*types.Transaction, error) {
+	return _BlockManager.contract.Transact(opts, "initialize", stakeManagerAddress, rewardManagerAddress, voteManagerAddress, assetManagerAddress, parametersAddress)
 }
 
-// Init is a paid mutator transaction binding the contract method 0x06552ff3.
+// Initialize is a paid mutator transaction binding the contract method 0x1459457a.
 //
-// Solidity: function init(address _stakeManagerAddress, address _stateManagerAddress, address _voteManagerAddress, address _jobManagerAddress) returns()
-func (_BlockManager *BlockManagerSession) Init(_stakeManagerAddress common.Address, _stateManagerAddress common.Address, _voteManagerAddress common.Address, _jobManagerAddress common.Address) (*types.Transaction, error) {
-	return _BlockManager.Contract.Init(&_BlockManager.TransactOpts, _stakeManagerAddress, _stateManagerAddress, _voteManagerAddress, _jobManagerAddress)
+// Solidity: function initialize(address stakeManagerAddress, address rewardManagerAddress, address voteManagerAddress, address assetManagerAddress, address parametersAddress) returns()
+func (_BlockManager *BlockManagerSession) Initialize(stakeManagerAddress common.Address, rewardManagerAddress common.Address, voteManagerAddress common.Address, assetManagerAddress common.Address, parametersAddress common.Address) (*types.Transaction, error) {
+	return _BlockManager.Contract.Initialize(&_BlockManager.TransactOpts, stakeManagerAddress, rewardManagerAddress, voteManagerAddress, assetManagerAddress, parametersAddress)
 }
 
-// Init is a paid mutator transaction binding the contract method 0x06552ff3.
+// Initialize is a paid mutator transaction binding the contract method 0x1459457a.
 //
-// Solidity: function init(address _stakeManagerAddress, address _stateManagerAddress, address _voteManagerAddress, address _jobManagerAddress) returns()
-func (_BlockManager *BlockManagerTransactorSession) Init(_stakeManagerAddress common.Address, _stateManagerAddress common.Address, _voteManagerAddress common.Address, _jobManagerAddress common.Address) (*types.Transaction, error) {
-	return _BlockManager.Contract.Init(&_BlockManager.TransactOpts, _stakeManagerAddress, _stateManagerAddress, _voteManagerAddress, _jobManagerAddress)
-}
-
-// Propose is a paid mutator transaction binding the contract method 0x17d99c04.
-//
-// Solidity: function propose(uint256 epoch, uint256[] jobIds, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId) returns()
-func (_BlockManager *BlockManagerTransactor) Propose(opts *bind.TransactOpts, epoch *big.Int, jobIds []*big.Int, medians []*big.Int, lowerCutoffs []*big.Int, higherCutoffs []*big.Int, iteration *big.Int, biggestStakerId *big.Int) (*types.Transaction, error) {
-	return _BlockManager.contract.Transact(opts, "propose", epoch, jobIds, medians, lowerCutoffs, higherCutoffs, iteration, biggestStakerId)
+// Solidity: function initialize(address stakeManagerAddress, address rewardManagerAddress, address voteManagerAddress, address assetManagerAddress, address parametersAddress) returns()
+func (_BlockManager *BlockManagerTransactorSession) Initialize(stakeManagerAddress common.Address, rewardManagerAddress common.Address, voteManagerAddress common.Address, assetManagerAddress common.Address, parametersAddress common.Address) (*types.Transaction, error) {
+	return _BlockManager.Contract.Initialize(&_BlockManager.TransactOpts, stakeManagerAddress, rewardManagerAddress, voteManagerAddress, assetManagerAddress, parametersAddress)
 }
 
 // Propose is a paid mutator transaction binding the contract method 0x17d99c04.
 //
-// Solidity: function propose(uint256 epoch, uint256[] jobIds, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId) returns()
-func (_BlockManager *BlockManagerSession) Propose(epoch *big.Int, jobIds []*big.Int, medians []*big.Int, lowerCutoffs []*big.Int, higherCutoffs []*big.Int, iteration *big.Int, biggestStakerId *big.Int) (*types.Transaction, error) {
-	return _BlockManager.Contract.Propose(&_BlockManager.TransactOpts, epoch, jobIds, medians, lowerCutoffs, higherCutoffs, iteration, biggestStakerId)
+// Solidity: function propose(uint256 epoch, uint256[] ids, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId) returns()
+func (_BlockManager *BlockManagerTransactor) Propose(opts *bind.TransactOpts, epoch *big.Int, ids []*big.Int, medians []*big.Int, lowerCutoffs []*big.Int, higherCutoffs []*big.Int, iteration *big.Int, biggestStakerId *big.Int) (*types.Transaction, error) {
+	return _BlockManager.contract.Transact(opts, "propose", epoch, ids, medians, lowerCutoffs, higherCutoffs, iteration, biggestStakerId)
 }
 
 // Propose is a paid mutator transaction binding the contract method 0x17d99c04.
 //
-// Solidity: function propose(uint256 epoch, uint256[] jobIds, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId) returns()
-func (_BlockManager *BlockManagerTransactorSession) Propose(epoch *big.Int, jobIds []*big.Int, medians []*big.Int, lowerCutoffs []*big.Int, higherCutoffs []*big.Int, iteration *big.Int, biggestStakerId *big.Int) (*types.Transaction, error) {
-	return _BlockManager.Contract.Propose(&_BlockManager.TransactOpts, epoch, jobIds, medians, lowerCutoffs, higherCutoffs, iteration, biggestStakerId)
+// Solidity: function propose(uint256 epoch, uint256[] ids, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId) returns()
+func (_BlockManager *BlockManagerSession) Propose(epoch *big.Int, ids []*big.Int, medians []*big.Int, lowerCutoffs []*big.Int, higherCutoffs []*big.Int, iteration *big.Int, biggestStakerId *big.Int) (*types.Transaction, error) {
+	return _BlockManager.Contract.Propose(&_BlockManager.TransactOpts, epoch, ids, medians, lowerCutoffs, higherCutoffs, iteration, biggestStakerId)
+}
+
+// Propose is a paid mutator transaction binding the contract method 0x17d99c04.
+//
+// Solidity: function propose(uint256 epoch, uint256[] ids, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId) returns()
+func (_BlockManager *BlockManagerTransactorSession) Propose(epoch *big.Int, ids []*big.Int, medians []*big.Int, lowerCutoffs []*big.Int, higherCutoffs []*big.Int, iteration *big.Int, biggestStakerId *big.Int) (*types.Transaction, error) {
+	return _BlockManager.Contract.Propose(&_BlockManager.TransactOpts, epoch, ids, medians, lowerCutoffs, higherCutoffs, iteration, biggestStakerId)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
@@ -1141,14 +1172,14 @@ type BlockManagerBlockConfirmed struct {
 	Medians       []*big.Int
 	LowerCutoffs  []*big.Int
 	HigherCutoffs []*big.Int
-	JobIds        []*big.Int
+	Ids           []*big.Int
 	Timestamp     *big.Int
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
 // FilterBlockConfirmed is a free log retrieval operation binding the contract event 0x5ef264ae9101b91bd7117350c5e85901297fa0569e7a3e07eb7ec0a6281529f0.
 //
-// Solidity: event BlockConfirmed(uint256 epoch, uint256 stakerId, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256[] jobIds, uint256 timestamp)
+// Solidity: event BlockConfirmed(uint256 epoch, uint256 stakerId, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256[] ids, uint256 timestamp)
 func (_BlockManager *BlockManagerFilterer) FilterBlockConfirmed(opts *bind.FilterOpts) (*BlockManagerBlockConfirmedIterator, error) {
 
 	logs, sub, err := _BlockManager.contract.FilterLogs(opts, "BlockConfirmed")
@@ -1160,7 +1191,7 @@ func (_BlockManager *BlockManagerFilterer) FilterBlockConfirmed(opts *bind.Filte
 
 // WatchBlockConfirmed is a free log subscription operation binding the contract event 0x5ef264ae9101b91bd7117350c5e85901297fa0569e7a3e07eb7ec0a6281529f0.
 //
-// Solidity: event BlockConfirmed(uint256 epoch, uint256 stakerId, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256[] jobIds, uint256 timestamp)
+// Solidity: event BlockConfirmed(uint256 epoch, uint256 stakerId, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256[] ids, uint256 timestamp)
 func (_BlockManager *BlockManagerFilterer) WatchBlockConfirmed(opts *bind.WatchOpts, sink chan<- *BlockManagerBlockConfirmed) (event.Subscription, error) {
 
 	logs, sub, err := _BlockManager.contract.WatchLogs(opts, "BlockConfirmed")
@@ -1197,7 +1228,7 @@ func (_BlockManager *BlockManagerFilterer) WatchBlockConfirmed(opts *bind.WatchO
 
 // ParseBlockConfirmed is a log parse operation binding the contract event 0x5ef264ae9101b91bd7117350c5e85901297fa0569e7a3e07eb7ec0a6281529f0.
 //
-// Solidity: event BlockConfirmed(uint256 epoch, uint256 stakerId, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256[] jobIds, uint256 timestamp)
+// Solidity: event BlockConfirmed(uint256 epoch, uint256 stakerId, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256[] ids, uint256 timestamp)
 func (_BlockManager *BlockManagerFilterer) ParseBlockConfirmed(log types.Log) (*BlockManagerBlockConfirmed, error) {
 	event := new(BlockManagerBlockConfirmed)
 	if err := _BlockManager.contract.UnpackLog(event, "BlockConfirmed", log); err != nil {
@@ -1278,7 +1309,7 @@ func (it *BlockManagerProposedIterator) Close() error {
 type BlockManagerProposed struct {
 	Epoch           *big.Int
 	StakerId        *big.Int
-	JobIds          []*big.Int
+	Ids             []*big.Int
 	Medians         []*big.Int
 	LowerCutoffs    []*big.Int
 	HigherCutoffs   []*big.Int
@@ -1290,7 +1321,7 @@ type BlockManagerProposed struct {
 
 // FilterProposed is a free log retrieval operation binding the contract event 0xee036cc96c88163f353feaa4d497e88baaebeb631f40ad9b8a6d51bb6fad4076.
 //
-// Solidity: event Proposed(uint256 epoch, uint256 stakerId, uint256[] jobIds, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId, uint256 timestamp)
+// Solidity: event Proposed(uint256 epoch, uint256 stakerId, uint256[] ids, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId, uint256 timestamp)
 func (_BlockManager *BlockManagerFilterer) FilterProposed(opts *bind.FilterOpts) (*BlockManagerProposedIterator, error) {
 
 	logs, sub, err := _BlockManager.contract.FilterLogs(opts, "Proposed")
@@ -1302,7 +1333,7 @@ func (_BlockManager *BlockManagerFilterer) FilterProposed(opts *bind.FilterOpts)
 
 // WatchProposed is a free log subscription operation binding the contract event 0xee036cc96c88163f353feaa4d497e88baaebeb631f40ad9b8a6d51bb6fad4076.
 //
-// Solidity: event Proposed(uint256 epoch, uint256 stakerId, uint256[] jobIds, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId, uint256 timestamp)
+// Solidity: event Proposed(uint256 epoch, uint256 stakerId, uint256[] ids, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId, uint256 timestamp)
 func (_BlockManager *BlockManagerFilterer) WatchProposed(opts *bind.WatchOpts, sink chan<- *BlockManagerProposed) (event.Subscription, error) {
 
 	logs, sub, err := _BlockManager.contract.WatchLogs(opts, "Proposed")
@@ -1339,7 +1370,7 @@ func (_BlockManager *BlockManagerFilterer) WatchProposed(opts *bind.WatchOpts, s
 
 // ParseProposed is a log parse operation binding the contract event 0xee036cc96c88163f353feaa4d497e88baaebeb631f40ad9b8a6d51bb6fad4076.
 //
-// Solidity: event Proposed(uint256 epoch, uint256 stakerId, uint256[] jobIds, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId, uint256 timestamp)
+// Solidity: event Proposed(uint256 epoch, uint256 stakerId, uint256[] ids, uint256[] medians, uint256[] lowerCutoffs, uint256[] higherCutoffs, uint256 iteration, uint256 biggestStakerId, uint256 timestamp)
 func (_BlockManager *BlockManagerFilterer) ParseProposed(log types.Log) (*BlockManagerProposed, error) {
 	event := new(BlockManagerProposed)
 	if err := _BlockManager.contract.UnpackLog(event, "Proposed", log); err != nil {

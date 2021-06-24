@@ -27,7 +27,7 @@ var (
 )
 
 // StakeStorageABI is the input ABI used to generate the binding from.
-const StakeStorageABI = "[{\"inputs\":[],\"name\":\"blockReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"numStakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rewardPool\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"stakeGettingReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"stakerIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastCommitted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastRevealed\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"unstakeAfter\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"withdrawAfter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const StakeStorageABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"locks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"withdrawAfter\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"numStakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"stakerIds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"stakers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochStaked\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastCommitted\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"epochLastRevealed\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"acceptDelegation\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"commission\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // StakeStorage is an auto generated Go binding around an Ethereum contract.
 type StakeStorage struct {
@@ -171,35 +171,49 @@ func (_StakeStorage *StakeStorageTransactorRaw) Transact(opts *bind.TransactOpts
 	return _StakeStorage.Contract.contract.Transact(opts, method, params...)
 }
 
-// BlockReward is a free data retrieval call binding the contract method 0x0ac168a1.
+// Locks is a free data retrieval call binding the contract method 0xc05f6155.
 //
-// Solidity: function blockReward() view returns(uint256)
-func (_StakeStorage *StakeStorageCaller) BlockReward(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function locks(address , address ) view returns(uint256 amount, uint256 withdrawAfter)
+func (_StakeStorage *StakeStorageCaller) Locks(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (struct {
+	Amount        *big.Int
+	WithdrawAfter *big.Int
+}, error) {
 	var out []interface{}
-	err := _StakeStorage.contract.Call(opts, &out, "blockReward")
+	err := _StakeStorage.contract.Call(opts, &out, "locks", arg0, arg1)
 
+	outstruct := new(struct {
+		Amount        *big.Int
+		WithdrawAfter *big.Int
+	})
 	if err != nil {
-		return *new(*big.Int), err
+		return *outstruct, err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Amount = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.WithdrawAfter = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
 
-	return out0, err
+	return *outstruct, err
 
 }
 
-// BlockReward is a free data retrieval call binding the contract method 0x0ac168a1.
+// Locks is a free data retrieval call binding the contract method 0xc05f6155.
 //
-// Solidity: function blockReward() view returns(uint256)
-func (_StakeStorage *StakeStorageSession) BlockReward() (*big.Int, error) {
-	return _StakeStorage.Contract.BlockReward(&_StakeStorage.CallOpts)
+// Solidity: function locks(address , address ) view returns(uint256 amount, uint256 withdrawAfter)
+func (_StakeStorage *StakeStorageSession) Locks(arg0 common.Address, arg1 common.Address) (struct {
+	Amount        *big.Int
+	WithdrawAfter *big.Int
+}, error) {
+	return _StakeStorage.Contract.Locks(&_StakeStorage.CallOpts, arg0, arg1)
 }
 
-// BlockReward is a free data retrieval call binding the contract method 0x0ac168a1.
+// Locks is a free data retrieval call binding the contract method 0xc05f6155.
 //
-// Solidity: function blockReward() view returns(uint256)
-func (_StakeStorage *StakeStorageCallerSession) BlockReward() (*big.Int, error) {
-	return _StakeStorage.Contract.BlockReward(&_StakeStorage.CallOpts)
+// Solidity: function locks(address , address ) view returns(uint256 amount, uint256 withdrawAfter)
+func (_StakeStorage *StakeStorageCallerSession) Locks(arg0 common.Address, arg1 common.Address) (struct {
+	Amount        *big.Int
+	WithdrawAfter *big.Int
+}, error) {
+	return _StakeStorage.Contract.Locks(&_StakeStorage.CallOpts, arg0, arg1)
 }
 
 // NumStakers is a free data retrieval call binding the contract method 0x6c8b052a.
@@ -231,68 +245,6 @@ func (_StakeStorage *StakeStorageSession) NumStakers() (*big.Int, error) {
 // Solidity: function numStakers() view returns(uint256)
 func (_StakeStorage *StakeStorageCallerSession) NumStakers() (*big.Int, error) {
 	return _StakeStorage.Contract.NumStakers(&_StakeStorage.CallOpts)
-}
-
-// RewardPool is a free data retrieval call binding the contract method 0x66666aa9.
-//
-// Solidity: function rewardPool() view returns(uint256)
-func (_StakeStorage *StakeStorageCaller) RewardPool(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _StakeStorage.contract.Call(opts, &out, "rewardPool")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// RewardPool is a free data retrieval call binding the contract method 0x66666aa9.
-//
-// Solidity: function rewardPool() view returns(uint256)
-func (_StakeStorage *StakeStorageSession) RewardPool() (*big.Int, error) {
-	return _StakeStorage.Contract.RewardPool(&_StakeStorage.CallOpts)
-}
-
-// RewardPool is a free data retrieval call binding the contract method 0x66666aa9.
-//
-// Solidity: function rewardPool() view returns(uint256)
-func (_StakeStorage *StakeStorageCallerSession) RewardPool() (*big.Int, error) {
-	return _StakeStorage.Contract.RewardPool(&_StakeStorage.CallOpts)
-}
-
-// StakeGettingReward is a free data retrieval call binding the contract method 0x0ec88d3f.
-//
-// Solidity: function stakeGettingReward() view returns(uint256)
-func (_StakeStorage *StakeStorageCaller) StakeGettingReward(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _StakeStorage.contract.Call(opts, &out, "stakeGettingReward")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// StakeGettingReward is a free data retrieval call binding the contract method 0x0ec88d3f.
-//
-// Solidity: function stakeGettingReward() view returns(uint256)
-func (_StakeStorage *StakeStorageSession) StakeGettingReward() (*big.Int, error) {
-	return _StakeStorage.Contract.StakeGettingReward(&_StakeStorage.CallOpts)
-}
-
-// StakeGettingReward is a free data retrieval call binding the contract method 0x0ec88d3f.
-//
-// Solidity: function stakeGettingReward() view returns(uint256)
-func (_StakeStorage *StakeStorageCallerSession) StakeGettingReward() (*big.Int, error) {
-	return _StakeStorage.Contract.StakeGettingReward(&_StakeStorage.CallOpts)
 }
 
 // StakerIds is a free data retrieval call binding the contract method 0xc8ae0d7d.
@@ -328,7 +280,7 @@ func (_StakeStorage *StakeStorageCallerSession) StakerIds(arg0 common.Address) (
 
 // Stakers is a free data retrieval call binding the contract method 0xfd5e6dd1.
 //
-// Solidity: function stakers(uint256 ) view returns(uint256 id, address _address, uint256 stake, uint256 epochStaked, uint256 epochLastCommitted, uint256 epochLastRevealed, uint256 unstakeAfter, uint256 withdrawAfter)
+// Solidity: function stakers(uint256 ) view returns(uint256 id, address _address, uint256 stake, uint256 epochStaked, uint256 epochLastCommitted, uint256 epochLastRevealed, bool acceptDelegation, uint256 commission, address tokenAddress)
 func (_StakeStorage *StakeStorageCaller) Stakers(opts *bind.CallOpts, arg0 *big.Int) (struct {
 	Id                 *big.Int
 	Address            common.Address
@@ -336,8 +288,9 @@ func (_StakeStorage *StakeStorageCaller) Stakers(opts *bind.CallOpts, arg0 *big.
 	EpochStaked        *big.Int
 	EpochLastCommitted *big.Int
 	EpochLastRevealed  *big.Int
-	UnstakeAfter       *big.Int
-	WithdrawAfter      *big.Int
+	AcceptDelegation   bool
+	Commission         *big.Int
+	TokenAddress       common.Address
 }, error) {
 	var out []interface{}
 	err := _StakeStorage.contract.Call(opts, &out, "stakers", arg0)
@@ -349,8 +302,9 @@ func (_StakeStorage *StakeStorageCaller) Stakers(opts *bind.CallOpts, arg0 *big.
 		EpochStaked        *big.Int
 		EpochLastCommitted *big.Int
 		EpochLastRevealed  *big.Int
-		UnstakeAfter       *big.Int
-		WithdrawAfter      *big.Int
+		AcceptDelegation   bool
+		Commission         *big.Int
+		TokenAddress       common.Address
 	})
 	if err != nil {
 		return *outstruct, err
@@ -362,8 +316,9 @@ func (_StakeStorage *StakeStorageCaller) Stakers(opts *bind.CallOpts, arg0 *big.
 	outstruct.EpochStaked = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
 	outstruct.EpochLastCommitted = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
 	outstruct.EpochLastRevealed = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
-	outstruct.UnstakeAfter = *abi.ConvertType(out[6], new(*big.Int)).(**big.Int)
-	outstruct.WithdrawAfter = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.AcceptDelegation = *abi.ConvertType(out[6], new(bool)).(*bool)
+	outstruct.Commission = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.TokenAddress = *abi.ConvertType(out[8], new(common.Address)).(*common.Address)
 
 	return *outstruct, err
 
@@ -371,7 +326,7 @@ func (_StakeStorage *StakeStorageCaller) Stakers(opts *bind.CallOpts, arg0 *big.
 
 // Stakers is a free data retrieval call binding the contract method 0xfd5e6dd1.
 //
-// Solidity: function stakers(uint256 ) view returns(uint256 id, address _address, uint256 stake, uint256 epochStaked, uint256 epochLastCommitted, uint256 epochLastRevealed, uint256 unstakeAfter, uint256 withdrawAfter)
+// Solidity: function stakers(uint256 ) view returns(uint256 id, address _address, uint256 stake, uint256 epochStaked, uint256 epochLastCommitted, uint256 epochLastRevealed, bool acceptDelegation, uint256 commission, address tokenAddress)
 func (_StakeStorage *StakeStorageSession) Stakers(arg0 *big.Int) (struct {
 	Id                 *big.Int
 	Address            common.Address
@@ -379,15 +334,16 @@ func (_StakeStorage *StakeStorageSession) Stakers(arg0 *big.Int) (struct {
 	EpochStaked        *big.Int
 	EpochLastCommitted *big.Int
 	EpochLastRevealed  *big.Int
-	UnstakeAfter       *big.Int
-	WithdrawAfter      *big.Int
+	AcceptDelegation   bool
+	Commission         *big.Int
+	TokenAddress       common.Address
 }, error) {
 	return _StakeStorage.Contract.Stakers(&_StakeStorage.CallOpts, arg0)
 }
 
 // Stakers is a free data retrieval call binding the contract method 0xfd5e6dd1.
 //
-// Solidity: function stakers(uint256 ) view returns(uint256 id, address _address, uint256 stake, uint256 epochStaked, uint256 epochLastCommitted, uint256 epochLastRevealed, uint256 unstakeAfter, uint256 withdrawAfter)
+// Solidity: function stakers(uint256 ) view returns(uint256 id, address _address, uint256 stake, uint256 epochStaked, uint256 epochLastCommitted, uint256 epochLastRevealed, bool acceptDelegation, uint256 commission, address tokenAddress)
 func (_StakeStorage *StakeStorageCallerSession) Stakers(arg0 *big.Int) (struct {
 	Id                 *big.Int
 	Address            common.Address
@@ -395,8 +351,9 @@ func (_StakeStorage *StakeStorageCallerSession) Stakers(arg0 *big.Int) (struct {
 	EpochStaked        *big.Int
 	EpochLastCommitted *big.Int
 	EpochLastRevealed  *big.Int
-	UnstakeAfter       *big.Int
-	WithdrawAfter      *big.Int
+	AcceptDelegation   bool
+	Commission         *big.Int
+	TokenAddress       common.Address
 }, error) {
 	return _StakeStorage.Contract.Stakers(&_StakeStorage.CallOpts, arg0)
 }
