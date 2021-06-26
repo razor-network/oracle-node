@@ -1,4 +1,4 @@
-# Go-CLI
+# Razor-Go
 
 Official node for running stakers in Golang.
 
