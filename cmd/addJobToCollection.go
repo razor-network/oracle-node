@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: Add documentation for this command
-
 // addJobToCollectionCmd represents the addJobToCollection command
 var addJobToCollectionCmd = &cobra.Command{
 	Use:   "addJobToCollection",

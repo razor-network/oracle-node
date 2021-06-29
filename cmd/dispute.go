@@ -50,7 +50,6 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 }
 
 func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch *big.Int, blockId *big.Int) error {
-	// TODO: Check what should be the value of asset id
 	sortedVotes, _, err := getSortedVotes(client, account.Address, 0, epoch)
 	if err != nil {
 		return err

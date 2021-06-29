@@ -9,8 +9,6 @@ import (
 	"razor/utils"
 )
 
-//TODO: Add documentation for this command.
-
 // createCollectionCmd represents the createCollection command
 var createCollectionCmd = &cobra.Command{
 	Use:   "createCollection",
