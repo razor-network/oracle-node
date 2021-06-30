@@ -4,8 +4,7 @@
   "description": "Installation",
   "main": "index.js",
   "scripts": {
-    "build-all": "make all",
-    "build": "make build",
+    "build": "make all",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +18,6 @@
   },
   "homepage": "https://github.com/ashish10677/go-cli#readme",
   "dependencies": {
-    "@razor-network/contracts": "^0.0.3"
+    "@razor-network/contracts": "^0.1.0"
   }
 }

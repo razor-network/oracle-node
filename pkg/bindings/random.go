@@ -27,7 +27,7 @@ var (
 )
 
 // RandomABI is the input ABI used to generate the binding from.
-const RandomABI = "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"numBlocks\",\"type\":\"uint8\"}],\"name\":\"blockHashes\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"numBlocks\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"max\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"}],\"name\":\"prng\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"numBlocks\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"}],\"name\":\"prngHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const RandomABI = "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"numBlocks\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"epochLength\",\"type\":\"uint256\"}],\"name\":\"blockHashes\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"numBlocks\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"max\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"epochLength\",\"type\":\"uint256\"}],\"name\":\"prng\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"numBlocks\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"seed\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"epochLength\",\"type\":\"uint256\"}],\"name\":\"prngHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // Random is an auto generated Go binding around an Ethereum contract.
 type Random struct {
@@ -171,12 +171,12 @@ func (_Random *RandomTransactorRaw) Transact(opts *bind.TransactOpts, method str
 	return _Random.Contract.contract.Transact(opts, method, params...)
 }
 
-// BlockHashes is a free data retrieval call binding the contract method 0x7fa00da2.
+// BlockHashes is a free data retrieval call binding the contract method 0x7cf6c43a.
 //
-// Solidity: function blockHashes(uint8 numBlocks) view returns(bytes32)
-func (_Random *RandomCaller) BlockHashes(opts *bind.CallOpts, numBlocks uint8) ([32]byte, error) {
+// Solidity: function blockHashes(uint8 numBlocks, uint256 epochLength) view returns(bytes32)
+func (_Random *RandomCaller) BlockHashes(opts *bind.CallOpts, numBlocks uint8, epochLength *big.Int) ([32]byte, error) {
 	var out []interface{}
-	err := _Random.contract.Call(opts, &out, "blockHashes", numBlocks)
+	err := _Random.contract.Call(opts, &out, "blockHashes", numBlocks, epochLength)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -188,26 +188,26 @@ func (_Random *RandomCaller) BlockHashes(opts *bind.CallOpts, numBlocks uint8) (
 
 }
 
-// BlockHashes is a free data retrieval call binding the contract method 0x7fa00da2.
+// BlockHashes is a free data retrieval call binding the contract method 0x7cf6c43a.
 //
-// Solidity: function blockHashes(uint8 numBlocks) view returns(bytes32)
-func (_Random *RandomSession) BlockHashes(numBlocks uint8) ([32]byte, error) {
-	return _Random.Contract.BlockHashes(&_Random.CallOpts, numBlocks)
+// Solidity: function blockHashes(uint8 numBlocks, uint256 epochLength) view returns(bytes32)
+func (_Random *RandomSession) BlockHashes(numBlocks uint8, epochLength *big.Int) ([32]byte, error) {
+	return _Random.Contract.BlockHashes(&_Random.CallOpts, numBlocks, epochLength)
 }
 
-// BlockHashes is a free data retrieval call binding the contract method 0x7fa00da2.
+// BlockHashes is a free data retrieval call binding the contract method 0x7cf6c43a.
 //
-// Solidity: function blockHashes(uint8 numBlocks) view returns(bytes32)
-func (_Random *RandomCallerSession) BlockHashes(numBlocks uint8) ([32]byte, error) {
-	return _Random.Contract.BlockHashes(&_Random.CallOpts, numBlocks)
+// Solidity: function blockHashes(uint8 numBlocks, uint256 epochLength) view returns(bytes32)
+func (_Random *RandomCallerSession) BlockHashes(numBlocks uint8, epochLength *big.Int) ([32]byte, error) {
+	return _Random.Contract.BlockHashes(&_Random.CallOpts, numBlocks, epochLength)
 }
 
-// Prng is a free data retrieval call binding the contract method 0x5075dbfb.
+// Prng is a free data retrieval call binding the contract method 0x320e985c.
 //
-// Solidity: function prng(uint8 numBlocks, uint256 max, bytes32 seed) view returns(uint256)
-func (_Random *RandomCaller) Prng(opts *bind.CallOpts, numBlocks uint8, max *big.Int, seed [32]byte) (*big.Int, error) {
+// Solidity: function prng(uint8 numBlocks, uint256 max, bytes32 seed, uint256 epochLength) view returns(uint256)
+func (_Random *RandomCaller) Prng(opts *bind.CallOpts, numBlocks uint8, max *big.Int, seed [32]byte, epochLength *big.Int) (*big.Int, error) {
 	var out []interface{}
-	err := _Random.contract.Call(opts, &out, "prng", numBlocks, max, seed)
+	err := _Random.contract.Call(opts, &out, "prng", numBlocks, max, seed, epochLength)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -219,26 +219,26 @@ func (_Random *RandomCaller) Prng(opts *bind.CallOpts, numBlocks uint8, max *big
 
 }
 
-// Prng is a free data retrieval call binding the contract method 0x5075dbfb.
+// Prng is a free data retrieval call binding the contract method 0x320e985c.
 //
-// Solidity: function prng(uint8 numBlocks, uint256 max, bytes32 seed) view returns(uint256)
-func (_Random *RandomSession) Prng(numBlocks uint8, max *big.Int, seed [32]byte) (*big.Int, error) {
-	return _Random.Contract.Prng(&_Random.CallOpts, numBlocks, max, seed)
+// Solidity: function prng(uint8 numBlocks, uint256 max, bytes32 seed, uint256 epochLength) view returns(uint256)
+func (_Random *RandomSession) Prng(numBlocks uint8, max *big.Int, seed [32]byte, epochLength *big.Int) (*big.Int, error) {
+	return _Random.Contract.Prng(&_Random.CallOpts, numBlocks, max, seed, epochLength)
 }
 
-// Prng is a free data retrieval call binding the contract method 0x5075dbfb.
+// Prng is a free data retrieval call binding the contract method 0x320e985c.
 //
-// Solidity: function prng(uint8 numBlocks, uint256 max, bytes32 seed) view returns(uint256)
-func (_Random *RandomCallerSession) Prng(numBlocks uint8, max *big.Int, seed [32]byte) (*big.Int, error) {
-	return _Random.Contract.Prng(&_Random.CallOpts, numBlocks, max, seed)
+// Solidity: function prng(uint8 numBlocks, uint256 max, bytes32 seed, uint256 epochLength) view returns(uint256)
+func (_Random *RandomCallerSession) Prng(numBlocks uint8, max *big.Int, seed [32]byte, epochLength *big.Int) (*big.Int, error) {
+	return _Random.Contract.Prng(&_Random.CallOpts, numBlocks, max, seed, epochLength)
 }
 
-// PrngHash is a free data retrieval call binding the contract method 0xb07ceab8.
+// PrngHash is a free data retrieval call binding the contract method 0xa874132b.
 //
-// Solidity: function prngHash(uint8 numBlocks, bytes32 seed) view returns(bytes32)
-func (_Random *RandomCaller) PrngHash(opts *bind.CallOpts, numBlocks uint8, seed [32]byte) ([32]byte, error) {
+// Solidity: function prngHash(uint8 numBlocks, bytes32 seed, uint256 epochLength) view returns(bytes32)
+func (_Random *RandomCaller) PrngHash(opts *bind.CallOpts, numBlocks uint8, seed [32]byte, epochLength *big.Int) ([32]byte, error) {
 	var out []interface{}
-	err := _Random.contract.Call(opts, &out, "prngHash", numBlocks, seed)
+	err := _Random.contract.Call(opts, &out, "prngHash", numBlocks, seed, epochLength)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -250,16 +250,16 @@ func (_Random *RandomCaller) PrngHash(opts *bind.CallOpts, numBlocks uint8, seed
 
 }
 
-// PrngHash is a free data retrieval call binding the contract method 0xb07ceab8.
+// PrngHash is a free data retrieval call binding the contract method 0xa874132b.
 //
-// Solidity: function prngHash(uint8 numBlocks, bytes32 seed) view returns(bytes32)
-func (_Random *RandomSession) PrngHash(numBlocks uint8, seed [32]byte) ([32]byte, error) {
-	return _Random.Contract.PrngHash(&_Random.CallOpts, numBlocks, seed)
+// Solidity: function prngHash(uint8 numBlocks, bytes32 seed, uint256 epochLength) view returns(bytes32)
+func (_Random *RandomSession) PrngHash(numBlocks uint8, seed [32]byte, epochLength *big.Int) ([32]byte, error) {
+	return _Random.Contract.PrngHash(&_Random.CallOpts, numBlocks, seed, epochLength)
 }
 
-// PrngHash is a free data retrieval call binding the contract method 0xb07ceab8.
+// PrngHash is a free data retrieval call binding the contract method 0xa874132b.
 //
-// Solidity: function prngHash(uint8 numBlocks, bytes32 seed) view returns(bytes32)
-func (_Random *RandomCallerSession) PrngHash(numBlocks uint8, seed [32]byte) ([32]byte, error) {
-	return _Random.Contract.PrngHash(&_Random.CallOpts, numBlocks, seed)
+// Solidity: function prngHash(uint8 numBlocks, bytes32 seed, uint256 epochLength) view returns(bytes32)
+func (_Random *RandomCallerSession) PrngHash(numBlocks uint8, seed [32]byte, epochLength *big.Int) ([32]byte, error) {
+	return _Random.Contract.PrngHash(&_Random.CallOpts, numBlocks, seed, epochLength)
 }
