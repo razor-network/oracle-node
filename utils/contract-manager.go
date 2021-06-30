@@ -1,12 +1,14 @@
 package utils
 
 import (
-	log "github.com/sirupsen/logrus"
 	"razor/core"
+
+	log "github.com/sirupsen/logrus"
+
+	"razor/pkg/bindings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"razor/pkg/bindings"
 )
 
 func GetTokenManager(client *ethclient.Client) *bindings.SchellingCoin {
@@ -17,14 +19,6 @@ func GetTokenManager(client *ethclient.Client) *bindings.SchellingCoin {
 	return coinContract
 }
 
-func GetStateManager(client *ethclient.Client) *bindings.StateManager {
-	stateManagerContract, err := bindings.NewStateManager(common.HexToAddress(core.StateManagerAddress), client)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return stateManagerContract
-}
-
 func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	stakeManagerContract, err := bindings.NewStakeManager(common.HexToAddress(core.StakeManagerAddress), client)
 	if err != nil {
@@ -33,20 +27,20 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	return stakeManagerContract
 }
 
-func GetConstantsManager(client *ethclient.Client) *bindings.Constants {
-	constantsManager, err := bindings.NewConstants(common.HexToAddress(core.ConstantsAddress), client)
+func GetParametersManager(client *ethclient.Client) *bindings.Parameters {
+	parametersManager, err := bindings.NewParameters(common.HexToAddress(core.ParametersAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return constantsManager
+	return parametersManager
 }
 
-func GetJobManager(client *ethclient.Client) *bindings.JobManager {
-	jobManager, err := bindings.NewJobManager(common.HexToAddress(core.JobManagerAddress), client)
+func GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
+	assetManager, err := bindings.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return jobManager
+	return assetManager
 }
 
 func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {

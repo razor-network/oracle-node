@@ -2,10 +2,14 @@ package utils
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
+	"razor/core/types"
 	"strconv"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
+	"modernc.org/sortutil"
 )
 
 func ConvertToNumber(num interface{}) (*big.Float, error) {
@@ -74,4 +78,33 @@ func GetAmountWithChecks(amount string, balance *big.Int) *big.Int {
 		log.Fatal("Not enough balance")
 	}
 	return amountInWei
+}
+
+func Aggregate(client *ethclient.Client, address string, collection types.Collection) (*big.Int, error) {
+	if len(collection.JobIDs) == 0 {
+		return nil, errors.New("no jobs present in the collection")
+	}
+	var jobs []types.Job
+	for _, id := range collection.JobIDs {
+		job, err := GetActiveJob(client, address, id)
+		if err != nil {
+			log.Errorf("Error in fetching active job %d: %s", id, err)
+			continue
+		}
+		jobs = append(jobs, job)
+	}
+	return performAggregation(GetDataToCommitFromJobs(jobs), collection.AggregationMethod)
+}
+
+func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, error) {
+	// convention is 1 for median and 2 for mean
+	switch aggregationMethod {
+	case 1:
+		sortutil.BigIntSlice.Sort(data)
+		return data[len(data)/2], nil
+	case 2:
+		sum := CalculateSumOfArray(data)
+		return sum.Div(sum, big.NewInt(int64(len(data)))), nil
+	}
+	return nil, errors.New("invalid aggregation method")
 }

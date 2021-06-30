@@ -1,4 +1,4 @@
-# Go-CLI
+# Razor-Go
 
 Official node for running stakers in Golang.
 
@@ -108,6 +108,30 @@ $ ./razor createJob --url <URL> --selector <selector_comma_seperated> --name <na
 Example:
 ```
 $ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector "Global Quote,05. price" --fee 100 --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+```
+
+### Create Collection
+You can create new collections using `creteCollection` command.
+
+```
+$ ./razor createCollection --name <collection_name> --fee <fee_to_lock> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
+```
+
+Example:
+```
+$ ./razor createCollection --name btcCollectionMean -f 100 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
+```
+
+### Add Job to Collection
+You can add existing jobs to existing collections using `addJobToCollection` command.
+
+```
+$ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
+```
+
+Example:
+```
+$ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
 ```
 
 ### Set Config

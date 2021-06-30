@@ -1,8 +1,9 @@
 package types
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type Job struct {
@@ -16,4 +17,13 @@ type Job struct {
 	Credit    *big.Int
 	Fulfilled bool
 	Result    *big.Int
+	AssetType *big.Int
+}
+
+type Collection struct {
+	Id                *big.Int
+	Name              string
+	AggregationMethod uint32
+	JobIDs            []*big.Int
+	Result            *big.Int
 }

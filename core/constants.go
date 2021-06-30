@@ -2,16 +2,17 @@ package core
 
 import "math/big"
 
-var StakeManagerAddress = "0xC8C86b586551ED4F1c1A1B2617B305be7637e5B2"
-var SchellingCoinAddress = "0x8b4F6FE4E110C9509d77A7205Ad85a224d9c3E68"
-var StateManagerAddress = "0xDdBb10a49A54172FdBa02b93D6D1dDfC12A838ba"
-var ConstantsAddress = "0xeE7Dc215BEAEcf2c6f4B30E19b89bb580E404EDa"
-var JobManagerAddress = "0x28c2c5725ED40D5faD7bdA2419A4753BC6946A9b"
-var VoteManagerAddress = "0x246b61043839479E9d070506766bFbfBe659e0b4"
-var RandomClientAddress = "0xcf8F791945346E6daB85d2C140911A99E409768C"
-var BlockManagerAddress = "0x99E7Afeb0215D2E80088b8C7Bde54BD9162c3A35"
+//TODO: Change these addresses to the deployed address.
+var StakeManagerAddress = "0xBfBA8b5F2CaD3Fdd82893BECDBfb0193C878CED6"
+var SchellingCoinAddress = "0x1Ca31A8832c532DD22AcFB0a3cf7b9F87F4574e6"
+var ParametersAddress = "0x1B08F228697A195fB0406A8EB24C3A4E35209c1A"
+var AssetManagerAddress = "0xC5edba1DdA6FF3D7682284Da6eeb65b793704a5c"
+var VoteManagerAddress = "0xA47b2F152628E2865A42153d59dFa4336E94be50"
+var RandomClientAddress = "0xc470b4254550700eA75dbdf945eaf4f5c571da04"
+var BlockManagerAddress = "0x36CD33dbC84920afB057DE9CD9fC9edB446d338D"
 
 var StateLength uint64 = 75
+var EpochLength int64 = 300
 var NumberOfStates int64 = 4
 var DecimalsMultiplier int64 = 100000000
 var NumberOfBlocks = 10

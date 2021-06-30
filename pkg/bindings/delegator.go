@@ -27,7 +27,7 @@ var (
 )
 
 // DelegatorABI is the input ABI used to generate the binding from.
-const DelegatorABI = "[{\"inputs\":[],\"name\":\"delegate\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getJob\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"selector\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"repeat\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"result\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getResult\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"jobManager\",\"outputs\":[{\"internalType\":\"contractIJobManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newDelegateAddress\",\"type\":\"address\"}],\"name\":\"upgradeDelegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const DelegatorABI = "[{\"inputs\":[],\"name\":\"assetManager\",\"outputs\":[{\"internalType\":\"contractIAssetManager\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"delegate\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getJob\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"url\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"selector\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"repeat\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"result\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getResult\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newDelegateAddress\",\"type\":\"address\"}],\"name\":\"upgradeDelegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // Delegator is an auto generated Go binding around an Ethereum contract.
 type Delegator struct {
@@ -171,6 +171,37 @@ func (_Delegator *DelegatorTransactorRaw) Transact(opts *bind.TransactOpts, meth
 	return _Delegator.Contract.contract.Transact(opts, method, params...)
 }
 
+// AssetManager is a free data retrieval call binding the contract method 0x94217ad1.
+//
+// Solidity: function assetManager() view returns(address)
+func (_Delegator *DelegatorCaller) AssetManager(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _Delegator.contract.Call(opts, &out, "assetManager")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// AssetManager is a free data retrieval call binding the contract method 0x94217ad1.
+//
+// Solidity: function assetManager() view returns(address)
+func (_Delegator *DelegatorSession) AssetManager() (common.Address, error) {
+	return _Delegator.Contract.AssetManager(&_Delegator.CallOpts)
+}
+
+// AssetManager is a free data retrieval call binding the contract method 0x94217ad1.
+//
+// Solidity: function assetManager() view returns(address)
+func (_Delegator *DelegatorCallerSession) AssetManager() (common.Address, error) {
+	return _Delegator.Contract.AssetManager(&_Delegator.CallOpts)
+}
+
 // Delegate is a free data retrieval call binding the contract method 0xc89e4361.
 //
 // Solidity: function delegate() view returns(address)
@@ -291,37 +322,6 @@ func (_Delegator *DelegatorSession) GetResult(id *big.Int) (*big.Int, error) {
 // Solidity: function getResult(uint256 id) view returns(uint256)
 func (_Delegator *DelegatorCallerSession) GetResult(id *big.Int) (*big.Int, error) {
 	return _Delegator.Contract.GetResult(&_Delegator.CallOpts, id)
-}
-
-// JobManager is a free data retrieval call binding the contract method 0x3df395a3.
-//
-// Solidity: function jobManager() view returns(address)
-func (_Delegator *DelegatorCaller) JobManager(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _Delegator.contract.Call(opts, &out, "jobManager")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// JobManager is a free data retrieval call binding the contract method 0x3df395a3.
-//
-// Solidity: function jobManager() view returns(address)
-func (_Delegator *DelegatorSession) JobManager() (common.Address, error) {
-	return _Delegator.Contract.JobManager(&_Delegator.CallOpts)
-}
-
-// JobManager is a free data retrieval call binding the contract method 0x3df395a3.
-//
-// Solidity: function jobManager() view returns(address)
-func (_Delegator *DelegatorCallerSession) JobManager() (common.Address, error) {
-	return _Delegator.Contract.JobManager(&_Delegator.CallOpts)
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.

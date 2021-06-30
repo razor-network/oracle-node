@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -32,12 +33,10 @@ var createJobCmd = &cobra.Command{
 
 		client := utils.ConnectToClient(config.Provider)
 
-
 		feeInBigInt, ok := new(big.Int).SetString(fee, 10)
 		if !ok {
 			log.Fatal("SetString: error")
 		}
-
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,
@@ -48,9 +47,9 @@ var createJobCmd = &cobra.Command{
 			GasMultiplier:  config.GasMultiplier,
 		})
 
-		jobManager := utils.GetJobManager(client)
+		assetManager := utils.GetAssetManager(client)
 		log.Info("Creating Job...")
-		txn, err := jobManager.CreateJob(txnOpts, url, selector, name, repeat)
+		txn, err := assetManager.CreateJob(txnOpts, url, selector, name, repeat)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -73,8 +72,7 @@ func init() {
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
-	// TODO: SELECTOR must use JSONPath format
-	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (comma separated for nested values)")
+	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
 	createJobCmd.Flags().StringVarP(&Fee, "fee", "f", "0", "fee")

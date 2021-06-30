@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	log "github.com/sirupsen/logrus"
 	"math"
 	"math/big"
-	"modernc.org/sortutil"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	log "github.com/sirupsen/logrus"
+	"modernc.org/sortutil"
 )
 
 func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId *big.Int, epoch *big.Int) {
@@ -65,10 +66,13 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 
 	log.Infof("\nMedians: %s Lower Cut Offs: %s Higher Cut Offs: %s \n", medians, lowerCutOffs, higherCutOffs)
 
-	jobs, err := utils.GetActiveJobs(client, account.Address)
-	var jobIds []*big.Int
+	jobs, collections, err := utils.GetActiveAssets(client, account.Address)
+	var ids []*big.Int
 	for _, job := range jobs {
-		jobIds = append(jobIds, job.Id)
+		ids = append(ids, job.Id)
+	}
+	for _, collection := range collections {
+		ids = append(ids, collection.Id)
 	}
 	if err != nil {
 		log.Error(err)
@@ -84,8 +88,8 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	blockManager := utils.GetBlockManager(client)
 
 	log.Infof("\nEpoch: %s Medians: %s Lower Cut Offs: %s Higher Cut Offs: %s", epoch, medians, lowerCutOffs, higherCutOffs)
-	log.Infof("Job Ids: %s Iteration: %d Biggest Staker Id: %s\n", jobIds, iteration, biggestStakerId)
-	txn, err := blockManager.Propose(txnOpts, epoch, jobIds, medians, lowerCutOffs, higherCutOffs, big.NewInt(int64(iteration)), biggestStakerId)
+	log.Infof("Asset Ids: %s Iteration: %d Biggest Staker Id: %s\n", ids, iteration, biggestStakerId)
+	txn, err := blockManager.Propose(txnOpts, epoch, ids, medians, lowerCutOffs, higherCutOffs, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
 		log.Error(err)
 		return
@@ -101,7 +105,7 @@ func getBiggestStakeAndId(client *ethclient.Client, address string) (*big.Int, *
 	}
 	var biggestStakerId *big.Int
 	biggestStake := big.NewInt(0)
-	for i := 0; i < int(numberOfStakers.Int64()); i++ {
+	for i := 1; i <= int(numberOfStakers.Int64()); i++ {
 		staker, err := utils.GetStaker(client, address, big.NewInt(int64(i)))
 		if err != nil {
 			return nil, nil, err
@@ -153,7 +157,7 @@ func pseudoRandomNumberGenerator(seed []byte, max *big.Int, blockHashes []byte) 
 }
 
 func MakeBlock(client *ethclient.Client, address string, epoch *big.Int) ([]*big.Int, []*big.Int, []*big.Int, error) {
-	jobs, err := utils.GetActiveJobs(client, address)
+	numAssets, err := utils.GetNumAssets(client, address)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -162,7 +166,7 @@ func MakeBlock(client *ethclient.Client, address string, epoch *big.Int) ([]*big
 		lowerCutOffs  []*big.Int
 		higherCutOffs []*big.Int
 	)
-	for assetId := 0; assetId < len(jobs); assetId++ {
+	for assetId := 0; assetId < int(numAssets.Int64()); assetId++ {
 		sortedWeights, sortedVotes, err := getSortedVotes(client, address, assetId, epoch)
 		if err != nil {
 			log.Error(err)

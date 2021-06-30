@@ -3,14 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/logrusorgru/aurora/v3"
-	"github.com/miguelmota/go-solidity-sha3"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"math/big"
 	"razor/accounts"
 	"razor/core"
@@ -18,6 +10,15 @@ import (
 	jobManager "razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/logrusorgru/aurora/v3"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var voteCmd = &cobra.Command{
@@ -53,7 +54,7 @@ var voteCmd = &cobra.Command{
 }
 
 var (
-	_committedData []*big.Int
+	_committedData   []*big.Int
 	lastVerification *big.Int
 )
 
@@ -151,7 +152,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId *big.Int) *big.Int {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
-		FromBlock: big.NewInt(0).Sub(blockNumber,big.NewInt(numberOfBlocks)),
+		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
 		ToBlock:   blockNumber,
 		Addresses: []common.Address{
 			common.HexToAddress(core.BlockManagerAddress),
@@ -166,7 +167,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	epochLastProposed := big.NewInt(0)
 	for _, vLog := range logs {
 		data, unpackErr := contractAbi.Unpack("Proposed", vLog.Data)
 		if unpackErr != nil {
@@ -174,10 +175,10 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			continue
 		}
 		if stakerId.Cmp(data[1].(*big.Int)) == 0 {
-			return data[0].(*big.Int)
+			epochLastProposed = data[0].(*big.Int)
 		}
 	}
-	return big.NewInt(0)
+	return epochLastProposed
 }
 
 func calculateSecret(account types.Account, epoch *big.Int) []byte {
