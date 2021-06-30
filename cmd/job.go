@@ -2,18 +2,19 @@ package cmd
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
 	"razor/utils"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 
-	jobManager "razor/pkg/bindings"
+	assetManager "razor/pkg/bindings"
 )
 
 // jobCmd represents the job command
@@ -39,7 +40,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		contractAddress := common.HexToAddress(core.JobManagerAddress)
+		contractAddress := common.HexToAddress(core.AssetManagerAddress)
 		query := ethereum.FilterQuery{
 			FromBlock: big.NewInt(0),
 			ToBlock:   header.Number,
@@ -53,7 +54,7 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		contractAbi, err := abi.JSON(strings.NewReader(string(jobManager.JobManagerABI)))
+		contractAbi, err := abi.JSON(strings.NewReader(string(assetManager.AssetManagerABI)))
 		if err != nil {
 			log.Fatal(err)
 		}

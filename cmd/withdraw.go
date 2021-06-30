@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // withdrawCmd represents the withdraw command
@@ -47,7 +48,11 @@ to quickly create a Cobra application.`,
 			GasMultiplier:  config.GasMultiplier,
 		})
 		log.Info("Withdrawing funds...")
-		txn, err := stakeManager.Withdraw(txnOpts, epoch)
+		stakerId, err := utils.GetStakerId(client, address)
+		if err != nil {
+			log.Fatal(err)
+		}
+		txn, err := stakeManager.Withdraw(txnOpts, epoch, stakerId)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -60,7 +65,7 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(withdrawCmd)
 
-	var Address  string
+	var Address string
 
 	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
 
