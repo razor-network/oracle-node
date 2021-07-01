@@ -23,3 +23,4 @@ __debug_bin
 .vscode
 node_modules
 build
+pkg
