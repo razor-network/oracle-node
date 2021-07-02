@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -57,22 +58,13 @@ to quickly create a Cobra application.`,
 
 		for i := epoch; i.Cmp(withdrawBefore) < 0 ; {
 			if epoch.Cmp(lock.WithdrawAfter) >= 0 && epoch.Cmp(withdrawBefore) <= 0 {
-				stakeManager := utils.GetStakeManager(client)
-				txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+				withdraw(client, types.TransactionOptions{
 					Client:         client,
 					Password:       password,
 					AccountAddress: address,
 					ChainId:        core.ChainId,
 					GasMultiplier:  config.GasMultiplier,
-				})
-
-				log.Info("Withdrawing funds...")
-
-				txn, err := stakeManager.Withdraw(txnOpts, epoch, _stakerId)
-				utils.CheckError("Error in withdrawing funds: ", err)
-				log.Info("Withdraw Transaction sent.")
-				log.Info("Txn Hash: ", txn.Hash())
-				utils.WaitForBlockCompletion(client, txn.Hash().String())
+				}, epoch, _stakerId)
 				break
 			} else {
 				i, err = WaitForCommitState(client, address, "withdraw")
@@ -80,6 +72,19 @@ to quickly create a Cobra application.`,
 			}
 		}
 	},
+}
+
+func withdraw(client *ethclient.Client, txnOpts types.TransactionOptions, epoch *big.Int, stakerId *big.Int) {
+	log.Info("Withdrawing funds...")
+
+	stakeManager := utils.GetStakeManager(client)
+	txn, err := stakeManager.Withdraw(utils.GetTxnOpts(txnOpts), epoch, stakerId)
+	utils.CheckError("Error in withdrawing funds: ", err)
+
+	log.Info("Withdraw Transaction sent.")
+	log.Info("Txn Hash: ", txn.Hash())
+
+	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 
 func init() {
