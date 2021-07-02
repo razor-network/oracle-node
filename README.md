@@ -52,6 +52,30 @@ Example:
 $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000
 ```
 
+### Set Delegation
+
+If you are a staker you can accept delegation from delegators and charge a commission from them.
+```
+$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
+```
+
+Example:
+```
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+```
+
+### Delegate
+
+If you want to become a delegator use the `delegate` command. The staker whose `staker_id` is provided, their stake is increased.
+```
+$ ./razor delegate --address <address> --amount <amount> --stakerId <staker_id>
+```
+
+Example:
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
+```
+
 ### Vote
 You can start voting once you've staked some razors
 ```
@@ -66,26 +90,39 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ### Unstake
 If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
 ```
-$ ./razor unstake --address <address>
+$ ./razor unstake --address <address> --stakerId <staker_id>
 ```
 
 Example:
 ```
-$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
 
 ### Withdraw
 Once `unstake` has been called, you can withdraw your funds using the `withdraw` command
 
 ```
-$ ./razor withdraw --address <address>
+$ ./razor withdraw --address <address> --stakerId <staker_id>
 ```
 
 Example:
 
 ```
-$ ./razor withdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor withdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
+
+### Reset Lock
+If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake.
+```
+$ ./razor resetLock --address <address> --stakerId <staker_id>
+```
+
+Example:
+
+```
+$ ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+```
+
 ### Transfer
 Transfers razor to other accounts.
 
