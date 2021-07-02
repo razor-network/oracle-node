@@ -93,3 +93,9 @@ func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
 	}
 	return tree.RootV1(), err
 }
+
+func CheckError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}

@@ -1,7 +1,16 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"razor/utils"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -17,24 +26,102 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("setDelegation called")
+		config, err := GetConfigData()
+		if err != nil {
+			log.Fatal("Error in getting config: ", err)
+		}
+
+		password := utils.PasswordPrompt()
+		address, _ := cmd.Flags().GetString("address")
+		status, _ := cmd.Flags().GetBool("status")
+		commission, _ := cmd.Flags().GetString("commission")
+
+		client := utils.ConnectToClient(config.Provider)
+
+		stakerId, err := utils.GetStakerId(client, address)
+		utils.CheckError(err)
+
+		stakerInfo, err := utils.GetStaker(client, address, stakerId)
+		utils.CheckError(err)
+
+		stakeManager := utils.GetStakeManager(client)
+		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+			Client:         client,
+			Password:       password,
+			AccountAddress: address,
+			ChainId:        core.ChainId,
+			GasMultiplier:  config.GasMultiplier,
+		})
+
+		if stakerInfo.AcceptDelegation != status {
+			log.Infof("Setting delegation acceptance of Staker %s to %t", stakerId, status)
+			delegationTxn, err := stakeManager.SetDelegationAcceptance(txnOpts, status)
+			utils.CheckError(err)
+			log.Info("Sending SetDelegationAcceptance transaction...")
+			utils.WaitForBlockCompletion(client, delegationTxn.Hash().String())
+		}
+
+		_commission, ok := new(big.Int).SetString(commission, 10)
+		commissionAmountInWei := big.NewInt(1).Mul(_commission, big.NewInt(1e18))
+		if !ok {
+			log.Fatal("Set string: error")
+		}
+
+		// Fetch updated stakerInfo
+		stakerInfo, err = utils.GetStaker(client, address, stakerId)
+		utils.CheckError(err)
+		if commission != "0" && stakerInfo.AcceptDelegation {
+			// Call SetCommission if the commission value is provided and the staker hasn't already set commission
+			if stakerInfo.Commission.Cmp(big.NewInt(0)) == 0 {
+				SetCommission(client, stakeManager, stakerId, txnOpts, commissionAmountInWei)
+			}
+
+			// Call DecreaseCommission if the commission value is provided and the staker has already set commission
+			if stakerInfo.Commission.Cmp(big.NewInt(0)) > 0 && stakerInfo.Commission.Cmp(commissionAmountInWei) > 0 {
+				DecreaseCommission(client, stakeManager, stakerId, txnOpts, commissionAmountInWei)
+			}
+
+		}
+
 	},
+}
+
+func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commissionAmountInWei *big.Int) {
+	log.Infof("Setting the commission value of Staker %s to %s", stakerId, commissionAmountInWei)
+	commissionTxn, err := stakeManager.SetCommission(txnOpts, commissionAmountInWei)
+	utils.CheckError(err)
+	log.Info("Sending SetCommission transaction...")
+	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
+}
+
+func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commissionAmountInWei *big.Int) {
+	log.Infof("Decreasing the commission value of Staker %s to %s", stakerId, commissionAmountInWei)
+	prompt := promptui.Prompt{
+		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
+		IsConfirm: true,
+	}
+	result, err := prompt.Run()
+	utils.CheckError(err)
+	if strings.ToLower(result) == "yes" || strings.ToLower(result) == "y" {
+		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commissionAmountInWei)
+		utils.CheckError(err)
+		log.Info("Sending DecreaseCommission transaction...")
+		utils.WaitForBlockCompletion(client, decreaseCommissionTxn.Hash().String())
+	}
+	return
 }
 
 func init() {
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		State      bool
+		Status     bool
 		Address    string
 		Commission string
 	)
-	setDelegationCmd.Flags().BoolVarP(&State, "state", "a", true, "true for accepting delegation and false for not accepting")
+	setDelegationCmd.Flags().BoolVarP(&Status, "status", "s", true, "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
-	setDelegationCmd.Flags().StringVarP(&Commission, "commissioned", "", "0", "commission")
+	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
 
-	setDelegationCmd.MarkFlagRequired("amount")
 	setDelegationCmd.MarkFlagRequired("address")
-	setDelegationCmd.MarkFlagRequired("stakerId")
-
 }
