@@ -16,9 +16,7 @@ var delegateCmd = &cobra.Command{
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
@@ -28,15 +26,12 @@ var delegateCmd = &cobra.Command{
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, address)
-		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
-		}
+		utils.CheckError("Error in fetching balance for account " + address + ": ", err)
 
 		amountInWei := utils.GetAmountWithChecks(amount, balance)
 		epoch, err := WaitForCommitState(client, address, "delegate")
-		if err != nil {
-			log.Fatal("Error in fetching epoch: ", epoch)
-		}
+		utils.CheckError("Error in fetching epoch: ", err)
+
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("SetString error while converting stakerId")
@@ -56,9 +51,7 @@ var delegateCmd = &cobra.Command{
 
 		log.Infof("Delegating %s razors to Staker %s", amount, _stakerId)
 		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, amountInWei, _stakerId)
-		if err != nil {
-			log.Fatal(err)
-		}
+		utils.CheckError("Error in delegating: ", err)
 		log.Infof("Sending Delegate transaction...")
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},

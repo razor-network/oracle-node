@@ -27,3 +27,8 @@ type Collection struct {
 	JobIDs            []*big.Int
 	Result            *big.Int
 }
+
+type Locks struct {
+	Amount        *big.Int
+	WithdrawAfter *big.Int
+}

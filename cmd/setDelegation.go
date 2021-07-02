@@ -27,9 +27,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
@@ -39,10 +37,10 @@ to quickly create a Cobra application.`,
 		client := utils.ConnectToClient(config.Provider)
 
 		stakerId, err := utils.GetStakerId(client, address)
-		utils.CheckError(err)
+		utils.CheckError("Error in fetching staker id: ", err)
 
 		stakerInfo, err := utils.GetStaker(client, address, stakerId)
-		utils.CheckError(err)
+		utils.CheckError("Error in fetching staker info: ", err)
 
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -56,7 +54,7 @@ to quickly create a Cobra application.`,
 		if stakerInfo.AcceptDelegation != status {
 			log.Infof("Setting delegation acceptance of Staker %s to %t", stakerId, status)
 			delegationTxn, err := stakeManager.SetDelegationAcceptance(txnOpts, status)
-			utils.CheckError(err)
+			utils.CheckError("Error in setting delegation acceptance: ", err)
 			log.Info("Sending SetDelegationAcceptance transaction...")
 			utils.WaitForBlockCompletion(client, delegationTxn.Hash().String())
 		}
@@ -69,7 +67,7 @@ to quickly create a Cobra application.`,
 
 		// Fetch updated stakerInfo
 		stakerInfo, err = utils.GetStaker(client, address, stakerId)
-		utils.CheckError(err)
+		utils.CheckError("Error in fetching staker info: ", err)
 		if commission != "0" && stakerInfo.AcceptDelegation {
 			// Call SetCommission if the commission value is provided and the staker hasn't already set commission
 			if stakerInfo.Commission.Cmp(big.NewInt(0)) == 0 {
@@ -89,7 +87,7 @@ to quickly create a Cobra application.`,
 func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commissionAmountInWei *big.Int) {
 	log.Infof("Setting the commission value of Staker %s to %s", stakerId, commissionAmountInWei)
 	commissionTxn, err := stakeManager.SetCommission(txnOpts, commissionAmountInWei)
-	utils.CheckError(err)
+	utils.CheckError("Error in setting commission: ", err)
 	log.Info("Sending SetCommission transaction...")
 	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
 }
@@ -101,10 +99,10 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 		IsConfirm: true,
 	}
 	result, err := prompt.Run()
-	utils.CheckError(err)
+	utils.CheckError(result, err)
 	if strings.ToLower(result) == "yes" || strings.ToLower(result) == "y" {
 		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commissionAmountInWei)
-		utils.CheckError(err)
+		utils.CheckError("Error in decreasing commission: ", err)
 		log.Info("Sending DecreaseCommission transaction...")
 		utils.WaitForBlockCompletion(client, decreaseCommissionTxn.Hash().String())
 	}
