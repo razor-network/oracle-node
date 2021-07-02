@@ -43,21 +43,23 @@ var delegateCmd = &cobra.Command{
 		}
 
 		stakeManager := utils.GetStakeManager(client)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		txnOpts := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
 			Amount:         amountInWei,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			GasMultiplier:  config.GasMultiplier,
-		})
+		}
 
-		log.Infof("Delegating %s razors to %s", amount, _stakerId)
-		txn, err := stakeManager.Delegate(txnOpts, epoch, amountInWei, _stakerId)
+		approve(txnOpts)
+
+		log.Infof("Delegating %s razors to Staker %s", amount, _stakerId)
+		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, amountInWei, _stakerId)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Infof("Delegation transaction sent to network...")
+		log.Infof("Sending Delegate transaction...")
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }
