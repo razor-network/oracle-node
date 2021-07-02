@@ -22,52 +22,78 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
+
 		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
+		stakerId, _ := cmd.Flags().GetString("stakerId")
 
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, address)
-		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
-		}
+		utils.CheckError("Error in fetching balance for account"+address+": ", err)
+
 		if balance.Cmp(big.NewInt(0)) == 0 {
 			log.Fatal("Balance is 0. Aborting...")
 		}
 
+		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
+		if !ok {
+			log.Fatal("Set string error in converting staker id")
+		}
+
+		lock, err := utils.GetLock(client, address, _stakerId)
+		utils.CheckError("Error in fetching lock: ", err)
+		withdrawReleasePeriod, err := utils.GetWithdrawReleasePeriod(client, address)
+		utils.CheckError("Error in fetching withdraw release period", err)
+		withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, withdrawReleasePeriod)
+
 		epoch, err := WaitForCommitState(client, address, "withdraw")
-		stakeManager := utils.GetStakeManager(client)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
-		})
-		log.Info("Withdrawing funds...")
-		stakerId, err := utils.GetStakerId(client, address)
-		if err != nil {
-			log.Fatal(err)
+		utils.CheckError("Error in fetching epoch: ", err)
+
+		if epoch.Cmp(withdrawBefore) > 0 {
+			log.Fatal("Withdrawal period has passed. Cannot withdraw now, please reset the lock!")
 		}
-		txn, err := stakeManager.Withdraw(txnOpts, epoch, stakerId)
-		if err != nil {
-			log.Fatal(err)
+
+		for i := epoch; i.Cmp(withdrawBefore) < 0 ; {
+			if epoch.Cmp(lock.WithdrawAfter) >= 0 && epoch.Cmp(withdrawBefore) <= 0 {
+				stakeManager := utils.GetStakeManager(client)
+				txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+					Client:         client,
+					Password:       password,
+					AccountAddress: address,
+					ChainId:        core.ChainId,
+					GasMultiplier:  config.GasMultiplier,
+				})
+
+				log.Info("Withdrawing funds...")
+
+				txn, err := stakeManager.Withdraw(txnOpts, epoch, _stakerId)
+				utils.CheckError("Error in withdrawing funds: ", err)
+				log.Info("Withdraw Transaction sent.")
+				log.Info("Txn Hash: ", txn.Hash())
+				utils.WaitForBlockCompletion(client, txn.Hash().String())
+				break
+			} else {
+				i, err = WaitForCommitState(client, address, "withdraw")
+				utils.CheckError("Error in fetching epoch: ", err)
+			}
 		}
-		log.Info("Withdraw Transaction sent.")
-		log.Info("Txn Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(withdrawCmd)
 
-	var Address string
+	var (
+		Address  string
+		StakerId string
+	)
 
-	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
+	withdrawCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to withdraw")
 
 	withdrawCmd.MarkFlagRequired("address")
+	withdrawCmd.MarkFlagRequired("stakerId")
+
 }

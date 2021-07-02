@@ -60,9 +60,7 @@ var unstakeCmd = &cobra.Command{
 
 		log.Info("Unstaking coins")
 		txn, err := stakeManager.Unstake(txnOpts, epoch, _stakerId, amountInWei)
-		if err != nil {
-			log.Fatal("Error in un-staking: ", err)
-		}
+		utils.CheckError("Error in un-staking: ", err)
 		log.Infof("Successfully unstaked %s sRazors", amountInWei)
 		log.Info("Transaction hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))

@@ -56,6 +56,7 @@ to quickly create a Cobra application.`,
 			delegationTxn, err := stakeManager.SetDelegationAcceptance(txnOpts, status)
 			utils.CheckError("Error in setting delegation acceptance: ", err)
 			log.Info("Sending SetDelegationAcceptance transaction...")
+			log.Infof("Transaction hash: %s", delegationTxn.Hash())
 			utils.WaitForBlockCompletion(client, delegationTxn.Hash().String())
 		}
 
@@ -78,7 +79,6 @@ to quickly create a Cobra application.`,
 			if stakerInfo.Commission.Cmp(big.NewInt(0)) > 0 && stakerInfo.Commission.Cmp(commissionAmountInWei) > 0 {
 				DecreaseCommission(client, stakeManager, stakerId, txnOpts, commissionAmountInWei)
 			}
-
 		}
 
 	},
@@ -89,6 +89,7 @@ func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager
 	commissionTxn, err := stakeManager.SetCommission(txnOpts, commissionAmountInWei)
 	utils.CheckError("Error in setting commission: ", err)
 	log.Info("Sending SetCommission transaction...")
+	log.Infof("Transaction hash: %s", commissionTxn.Hash())
 	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
 }
 
@@ -104,6 +105,7 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commissionAmountInWei)
 		utils.CheckError("Error in decreasing commission: ", err)
 		log.Info("Sending DecreaseCommission transaction...")
+		log.Infof("Transaction hash: %s", decreaseCommissionTxn.Hash())
 		utils.WaitForBlockCompletion(client, decreaseCommissionTxn.Hash().String())
 	}
 	return

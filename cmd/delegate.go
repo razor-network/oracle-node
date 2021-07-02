@@ -53,6 +53,7 @@ var delegateCmd = &cobra.Command{
 		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, amountInWei, _stakerId)
 		utils.CheckError("Error in delegating: ", err)
 		log.Infof("Sending Delegate transaction...")
+		log.Infof("Transaction hash: %s", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }
