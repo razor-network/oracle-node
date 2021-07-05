@@ -25,7 +25,7 @@ PS: make sure that your commits are [signed](https://docs.github.com/en/github/a
 If you've found something wrong we want to know about it, please help us understand the problem so we can resolve it.
 
 1. Check to see if this already is recorded, if so add some more information [issue list](https://github.com/razor-network/razor-go/issues) 
-2. If not then create a new issue using the [bug report template](https://github.com/razor-network/razor-go/issues/issues/new?assignees=&labels=&template=bug.md&title=)
+2. If not then create a new issue using the [bug report template](https://github.com/razor-network/razor-go/issues/new?assignees=&labels=type%3Abug&template=bug.md&title=)
 3. Stay involved in the conversation on the issue as it is triaged and progressed.
 
 ## Use a Consistent Coding Style
