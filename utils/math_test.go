@@ -266,7 +266,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
 
-			if got.Cmp(tt.want)!=0 {
+			if got.Cmp(tt.want) != 0 {
 				t.Errorf("GetAmountWithChecks() = %v, want = %v", got, tt.want)
 			}
 		})
