@@ -69,10 +69,10 @@ var unstakeCmd = &cobra.Command{
 		utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
 
 		if autoWithdraw {
-			log.Info("Starting withdrawal now")
-			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			log.Info("Starting withdrawal now...")
+			s := spinner.New(spinner.CharSets[9], 100 * time.Millisecond)
 			s.Start()
-			time.Sleep(280 * time.Second)
+			time.Sleep(time.Duration(core.EpochLength) * time.Second)
 			s.Stop()
 			checkForCommitStateAndWithdraw(client, types.Account{
 				Address:  address,
