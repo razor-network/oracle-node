@@ -10,6 +10,7 @@ import (
 	jobManager "razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -48,7 +49,7 @@ var voteCmd = &cobra.Command{
 				header = latestHeader
 				handleBlock(client, account, latestHeader.Number, config)
 			}
-			// TODO: Sleep for 5 secs
+			time.Sleep(5 * time.Second)
 		}
 	},
 }
