@@ -12,10 +12,11 @@ Official node for running stakers in Golang.
 
 ### Building the source
 1. Run `npm install` to install the node dependencies.
-2. Run `npm run build` to build the binary. While building the binary, supply the provider RPC url and the gas multiplier.
-3. If you want to build from scratch i.e., by fetching the smart contract bindings as well, run `npm run build-all` instead of `npm run build`. 
-   
+2. If you want to build from scratch i.e., by fetching the smart contract bindings as well, run `npm run build-all`.
+
    _Note: To build from scratch, `geth` and `abigen` must be installed in your system._
+3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary. 
+4. While building the binary, supply the provider RPC url and the gas multiplier.
 5. The binary will be generated at `build/bin`.
 
 ## Commands
