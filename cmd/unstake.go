@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/briandowns/spinner"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -25,6 +27,7 @@ var unstakeCmd = &cobra.Command{
 		address, _ := cmd.Flags().GetString("address")
 		amount, _ := cmd.Flags().GetString("amount")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
+		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
 		password := utils.PasswordPrompt()
 
 		client := utils.ConnectToClient(config.Provider)
@@ -64,6 +67,19 @@ var unstakeCmd = &cobra.Command{
 		log.Infof("Successfully unstaked %s sRazors", amountInWei)
 		log.Info("Transaction hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
+
+		if autoWithdraw {
+			log.Info("Starting withdrawal now")
+			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+			s.Start()
+			time.Sleep(280 * time.Second)
+			s.Stop()
+			checkForCommitStateAndWithdraw(client, types.Account{
+				Address:  address,
+				Password: password,
+			}, config, _stakerId)
+		}
+
 	},
 }
 
@@ -71,14 +87,16 @@ func init() {
 	rootCmd.AddCommand(unstakeCmd)
 
 	var (
-		Address         string
-		StakerId		string
-		AmountToUnStake string
+		Address               string
+		StakerId              string
+		AmountToUnStake       string
+		WithdrawAutomatically bool
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "amount", "a", "0", "amount of sRazors to un-stake")
+	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "w", false, "withdraw after un-stake automatically")
 
 	unstakeCmd.MarkFlagRequired("address")
 	unstakeCmd.MarkFlagRequired("stakerId")
