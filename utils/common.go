@@ -66,8 +66,8 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 }
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
-	// TODO: STATELENGTH * BLOCKTIME = TIMEOUT
-	for {
+	timeout := core.StateLength * 2
+	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second ; {
 		log.Info("Checking if transaction is mined....\n")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
@@ -79,6 +79,8 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 		}
 		time.Sleep(3 * time.Second)
 	}
+	log.Info("Timeout Passed")
+	return 0
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
