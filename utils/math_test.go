@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"github.com/magiconair/properties/assert"
+	log "github.com/sirupsen/logrus"
 	"math/big"
 	"reflect"
 	"testing"
@@ -198,6 +200,191 @@ func TestMultiplyToEightDecimals(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := MultiplyToEightDecimals(tt.args.num); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MultiplyToEightDecimals() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAmountWithChecks(t *testing.T) {
+	type args struct {
+		amount string
+		balance *big.Int
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+		expectedFatal bool
+	}{
+		{
+			name: "Test When amount is non-zero and less than balance",
+			args: args{
+				amount: "900",
+				balance: big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
+			expectedFatal: false,
+		},
+		{
+			name: "Test When amount is zero",
+			args: args{
+				amount: "0",
+				balance: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+			},
+			want: big.NewInt(0),
+			expectedFatal: false,
+		},
+		{
+			name: "Test When amount Exceeds Balance-fatal",
+			args: args{
+				amount: "10000",
+				balance: big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
+			expectedFatal: true,
+		},
+		{
+			name: "Test When amount is equal to balance",
+			args: args{
+				amount: "1000",
+				balance: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+			expectedFatal: false,
+		},
+	}
+
+	defer func() { log.StandardLogger().ExitFunc = nil }()
+	var fatal bool
+	log.StandardLogger().ExitFunc = func(int){ fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fatal = false
+			got := GetAmountWithChecks(tt.args.amount, tt.args.balance)
+			if tt.expectedFatal {
+				assert.Equal(t, tt.expectedFatal, fatal)
+			}
+
+			if got.Cmp(tt.want) != 0 {
+				t.Errorf("GetAmountWithChecks() = %v, want = %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_performAggregation(t *testing.T) {
+	type args struct {
+		data []*big.Int
+		aggregationMethod uint32
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test Median for Odd Number of elements",
+			args: args{
+				data: []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(2)},
+				aggregationMethod: 1,
+			},
+			want: big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "Test Median for Even Number of elements",
+			args: args{
+				data: []*big.Int{big.NewInt(0), big.NewInt(1)},
+				aggregationMethod: 1,
+			},
+			want: big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "Test Median for single element",
+			args: args{
+				data: []*big.Int{big.NewInt(1)},
+				aggregationMethod: 1,
+			},
+			want: big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "Test Median for elements with higher value",
+			args: args{
+				data: []*big.Int{big.NewInt(500), big.NewInt(1000), big.NewInt(1500), big.NewInt(2000)},
+				aggregationMethod: 1,
+			},
+			want: big.NewInt(1500),
+			wantErr: false,
+		},
+		{
+			name: "Test Median for 0 elements",
+			args: args{
+				data: []*big.Int{},
+				aggregationMethod: 1,
+			},
+			want: nil ,
+			wantErr: true,
+		},
+		{
+			name: "Test Mean for multiple number of elements",
+			args: args{
+				data: []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(2)},
+				aggregationMethod: 2,
+			},
+			want: big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "Test Mean for single element",
+			args: args{
+				data: []*big.Int{big.NewInt(1)},
+				aggregationMethod: 2,
+			},
+			want: big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "Test Mean for elements with higher value",
+			args: args{
+				data: []*big.Int{big.NewInt(500), big.NewInt(1000), big.NewInt(1500), big.NewInt(2000)},
+				aggregationMethod: 2,
+			},
+			want: big.NewInt(1250),
+			wantErr: false,
+		},
+		{
+			name: "Test Mean for 0 elements",
+			args: args{
+				data: []*big.Int{},
+				aggregationMethod: 2,
+			},
+			want: nil ,
+			wantErr: true,
+		},
+		{
+			name: "Test incorrect input for AggregationMethod",
+			args: args{
+				data: []*big.Int{big.NewInt(1)},
+				aggregationMethod: 3,
+			},
+			want: nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got,err := performAggregation(tt.args.data, tt.args.aggregationMethod)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetDataFromJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("performAggregation() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -97,6 +97,9 @@ func Aggregate(client *ethclient.Client, address string, collection types.Collec
 }
 
 func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, error) {
+	if len(data) == 0 {
+		return nil, errors.New("aggregation cannot be performed for nil data")
+	}
 	// convention is 1 for median and 2 for mean
 	switch aggregationMethod {
 	case 1:
