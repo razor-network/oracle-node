@@ -91,12 +91,12 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ### Unstake
 If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
 ```
-$ ./razor unstake --address <address> --stakerId <staker_id>
+$ ./razor unstake --address <address> --stakerId <staker_id> --autoWithdraw 
 ```
 
 Example:
 ```
-$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --autoWithdraw
 ```
 
 ### Withdraw
