@@ -183,3 +183,5 @@ Example:
 ```
 $ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5
 ```
+### Contribute to razor-go
+We would really appreciate your contribution. To see our contribution guideline please check https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md
