@@ -27,7 +27,7 @@ import (
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create command can be used to create new accounts",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		path := utils.GetDefaultPath()
 		password := utils.PasswordPrompt()

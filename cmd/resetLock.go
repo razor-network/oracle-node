@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // resetLockCmd represents the resetLock command
@@ -64,6 +65,8 @@ func init() {
 	resetLockCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
 	resetLockCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to reset lock")
 
-	resetLockCmd.MarkFlagRequired("address")
-	resetLockCmd.MarkFlagRequired("stakerId")
+	addrErr := resetLockCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
+	stakerIdErr := resetLockCmd.MarkFlagRequired("stakerId")
+	utils.CheckError("Address error: ", stakerIdErr)
 }

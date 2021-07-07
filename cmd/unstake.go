@@ -72,7 +72,7 @@ func init() {
 
 	var (
 		Address         string
-		StakerId		string
+		StakerId        string
 		AmountToUnStake string
 	)
 
@@ -80,8 +80,11 @@ func init() {
 	unstakeCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "amount", "a", "0", "amount of sRazors to un-stake")
 
-	unstakeCmd.MarkFlagRequired("address")
-	unstakeCmd.MarkFlagRequired("stakerId")
-	unstakeCmd.MarkFlagRequired("amount")
+	addrErr := unstakeCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
+	stakerIdErr := unstakeCmd.MarkFlagRequired("stakerId")
+	utils.CheckError("Staker Id error: ", stakerIdErr)
+	amountErr := unstakeCmd.MarkFlagRequired("amount")
+	utils.CheckError("Amount error: ", amountErr)
 
 }

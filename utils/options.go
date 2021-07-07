@@ -2,14 +2,16 @@ package utils
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"razor/accounts"
 	"razor/core/types"
 
+	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
+
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
 )
 
 func GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
@@ -25,16 +27,12 @@ func GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	privateKey := accounts.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, GetDefaultPath())
 	nonce, err := transactionData.Client.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress))
-	if err != nil {
-		log.Fatal("Error in fetching pending nonce: ", err)
-	}
+	CheckError("Error in fetching pending nonce: ", err)
 
-	if err != nil {
-		log.Fatal("Error in fetching gas multiplier", err)
-	}
 	gasPrice := getGasPrice(transactionData.Client, transactionData.GasMultiplier)
 
 	txnOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
+	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue

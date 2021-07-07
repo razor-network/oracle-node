@@ -1,19 +1,20 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // delegateCmd represents the delegate command
 var delegateCmd = &cobra.Command{
 	Use:   "delegate",
 	Short: "delegate is used by delegator to stake coins on the network without setting up a node",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
@@ -26,7 +27,7 @@ var delegateCmd = &cobra.Command{
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account " + address + ": ", err)
+		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
 		amountInWei := utils.GetAmountWithChecks(amount, balance)
 		epoch, err := WaitForCommitState(client, address, "delegate")
@@ -70,8 +71,11 @@ func init() {
 	delegateCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
 	delegateCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 
-	delegateCmd.MarkFlagRequired("amount")
-	delegateCmd.MarkFlagRequired("address")
-	delegateCmd.MarkFlagRequired("stakerId")
+	amountErr := delegateCmd.MarkFlagRequired("amount")
+	utils.CheckError("Amount error: ", amountErr)
+	addrErr := delegateCmd.MarkFlagRequired("address")
+	utils.CheckError("Amount error: ", addrErr)
+	stakerIdErr := delegateCmd.MarkFlagRequired("stakerId")
+	utils.CheckError("Amount error: ", stakerIdErr)
 
 }

@@ -111,8 +111,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		_committedData = data
-		break
-
 	case 1:
 		lastReveal := staker.EpochLastRevealed
 		if _committedData == nil || (lastReveal != nil && lastReveal.Cmp(epoch) >= 0) {
@@ -127,8 +125,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		Reveal(client, _committedData, secret, account, account.Address, config)
-		break
-
 	case 2:
 		lastProposal := getLastProposedEpoch(client, blockNumber, stakerId)
 		if lastProposal != nil && lastProposal.Cmp(epoch) >= 0 {
@@ -137,15 +133,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		lastProposal = epoch
 		log.Info("Proposing block....")
 		Propose(client, account, config, stakerId, epoch)
-		break
-
 	case 3:
 		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
 			break
 		}
 		lastVerification = epoch
 		HandleDispute(client, config, account, epoch)
-		break
 	}
 
 }
@@ -200,5 +193,6 @@ func init() {
 
 	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
 
-	voteCmd.MarkFlagRequired("address")
+	addrErr := voteCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
 }

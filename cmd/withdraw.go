@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -56,7 +57,7 @@ to quickly create a Cobra application.`,
 			log.Fatal("Withdrawal period has passed. Cannot withdraw now, please reset the lock!")
 		}
 
-		for i := epoch; i.Cmp(withdrawBefore) < 0 ; {
+		for i := epoch; i.Cmp(withdrawBefore) < 0; {
 			if epoch.Cmp(lock.WithdrawAfter) >= 0 && epoch.Cmp(withdrawBefore) <= 0 {
 				withdraw(client, types.TransactionOptions{
 					Client:         client,
@@ -98,7 +99,8 @@ func init() {
 	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
 	withdrawCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to withdraw")
 
-	withdrawCmd.MarkFlagRequired("address")
-	withdrawCmd.MarkFlagRequired("stakerId")
-
+	addrErr := withdrawCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
+	stakerIdErr := withdrawCmd.MarkFlagRequired("stakerId")
+	utils.CheckError("Staker id error: ", stakerIdErr)
 }

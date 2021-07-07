@@ -78,10 +78,14 @@ func init() {
 	createJobCmd.Flags().StringVarP(&Fee, "fee", "f", "0", "fee")
 	createJobCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
 
-	createJobCmd.MarkFlagRequired("url")
-	createJobCmd.MarkFlagRequired("selector")
-	createJobCmd.MarkFlagRequired("name")
-	createJobCmd.MarkFlagRequired("fee")
-	createJobCmd.MarkFlagRequired("address")
-
+	urlErr := createJobCmd.MarkFlagRequired("url")
+	utils.CheckError("URL error: ", urlErr)
+	selectorErr := createJobCmd.MarkFlagRequired("selector")
+	utils.CheckError("Selector error: ", selectorErr)
+	nameErr := createJobCmd.MarkFlagRequired("name")
+	utils.CheckError("Name error: ", nameErr)
+	feeErr := createJobCmd.MarkFlagRequired("fee")
+	utils.CheckError("Fee error: ", feeErr)
+	addrErr := createJobCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
 }
