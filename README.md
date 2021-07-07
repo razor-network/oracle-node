@@ -39,7 +39,7 @@ $ ./razor create
 Password: 
 ```
 
-### Before staking on Razor Network, please ensure your account has eth and RAZOR. For RAZOR, please use the faucet here - https://razorscan.io/dashboard/faucet
+### Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please use the faucet here - https://razorscan.io/dashboard/faucet
 
 ### Stake
 
