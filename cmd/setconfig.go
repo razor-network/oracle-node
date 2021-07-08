@@ -20,10 +20,10 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 		if provider != "" {
 			viper.Set("provider", provider)
 		}
-		if gasMultiplier != -1 {
+		if gasMultiplier > 0 {
 			viper.Set("gasmultiplier", gasMultiplier)
 		}
-		if bufferPercent != 30 {
+		if bufferPercent > 0 {
 			viper.Set("buffer", bufferPercent)
 		}
 		path := utils.GetDefaultPath() + "/razor.yaml"
@@ -43,7 +43,7 @@ func init() {
 		BufferPercent int32
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 1, "gas multiplier value")
-	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 30, "buffer percent")
+	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
+	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", -1, "buffer percent")
 
 }

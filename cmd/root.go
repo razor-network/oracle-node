@@ -14,7 +14,7 @@ import (
 var (
 	Provider      string
 	GasMultiplier float32
-	BufferPercent int8
+	BufferPercent int32
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -43,8 +43,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 1, "gas multiplier value")
-	rootCmd.PersistentFlags().Int8VarP(&BufferPercent, "buffer", "b", 30, "buffer percent")
+	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
+	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", -1, "buffer percent")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
