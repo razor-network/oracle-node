@@ -16,7 +16,7 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
 		gasMultiplier, _ := cmd.Flags().GetFloat32("gasmultiplier")
-		bufferPercent, _ := cmd.Flags().GetInt64("buffer")
+		bufferPercent, _ := cmd.Flags().GetInt32("buffer")
 		if provider != "" {
 			viper.Set("provider", provider)
 		}
