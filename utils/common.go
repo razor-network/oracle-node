@@ -41,7 +41,7 @@ func GetDefaultPath() string {
 	return defaultPath
 }
 
-func GetDelayedState(client *ethclient.Client, buffer int8) (int64, error) {
+func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	blockNumber, err := client.BlockNumber(context.Background())
 	if err != nil {
 		return -1, err

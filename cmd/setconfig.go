@@ -16,14 +16,14 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
 		gasMultiplier, _ := cmd.Flags().GetFloat32("gasmultiplier")
-		bufferPercent, _ := cmd.Flags().GetInt64("buffer")
+		bufferPercent, _ := cmd.Flags().GetInt32("buffer")
 		if provider != "" {
 			viper.Set("provider", provider)
 		}
 		if gasMultiplier != -1 {
 			viper.Set("gasmultiplier", gasMultiplier)
 		}
-		if bufferPercent != 30 {
+		if bufferPercent != 0 {
 			viper.Set("buffer", bufferPercent)
 		}
 		path := utils.GetDefaultPath() + "/razor.yaml"
@@ -43,7 +43,7 @@ func init() {
 		BufferPercent int32
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", 1, "gas multiplier value")
-	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 30, "buffer percent")
+	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
+	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 
 }

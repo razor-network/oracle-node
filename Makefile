@@ -1,5 +1,5 @@
 GO ?= go
-SHELL = sh
+SHELL = /bin/bash
 BIN_DIR = ./build/bin
 RAZOR = ${BIN_DIR}/razor
 

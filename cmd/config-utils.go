@@ -9,6 +9,7 @@ func GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:      "",
 		GasMultiplier: 0,
+		BufferPercent: 0,
 	}
 	provider, err := getProvider()
 	if err != nil {
@@ -44,19 +45,19 @@ func getMultiplier() (float32, error) {
 	if err != nil {
 		return 1, err
 	}
-	if gasMultiplier == 0 {
+	if gasMultiplier == -1 {
 		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
 	}
 	return gasMultiplier, nil
 }
 
-func getBufferPercent() (int8, error) {
-	bufferPercent, err := rootCmd.PersistentFlags().GetInt8("buffer")
+func getBufferPercent() (int32, error) {
+	bufferPercent, err := rootCmd.PersistentFlags().GetInt32("buffer")
 	if err != nil {
 		return 30, err
 	}
 	if bufferPercent == 0 {
-		bufferPercent = int8(viper.GetInt32("buffer"))
+		bufferPercent = viper.GetInt32("buffer")
 	}
 	return bufferPercent, nil
 }
