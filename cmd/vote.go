@@ -111,7 +111,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		_committedData = data
-		break
+		time.Sleep(time.Duration(core.StateLength * 2) * time.Second)
 
 	case 1:
 		lastReveal := staker.EpochLastRevealed
@@ -127,7 +127,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		Reveal(client, _committedData, secret, account, account.Address, config)
-		break
+		time.Sleep(time.Duration(core.StateLength * 2) * time.Second)
 
 	case 2:
 		lastProposal := getLastProposedEpoch(client, blockNumber, stakerId)
@@ -137,7 +137,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		lastProposal = epoch
 		log.Info("Proposing block....")
 		Propose(client, account, config, stakerId, epoch)
-		break
+		time.Sleep(time.Duration(core.StateLength * 2) * time.Second)
 
 	case 3:
 		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
@@ -145,7 +145,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		lastVerification = epoch
 		HandleDispute(client, config, account, epoch)
-		break
+		time.Sleep(time.Duration(core.StateLength * 2) * time.Second)
 	}
 
 }

@@ -106,7 +106,7 @@ func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, er
 		sortutil.BigIntSlice.Sort(data)
 		return data[len(data)/2], nil
 	case 2:
-		sum := CalculateSumOfArray(data)
+		sum := CalculateSumOfBigIntArray(data)
 		return sum.Div(sum, big.NewInt(int64(len(data)))), nil
 	}
 	return nil, errors.New("invalid aggregation method")

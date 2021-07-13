@@ -59,7 +59,7 @@ func ConvertToBigIntArray(data []string) []*big.Int {
 	return bigIntArray
 }
 
-func CalculateSumOfArray(data []*big.Int) *big.Int {
+func CalculateSumOfBigIntArray(data []*big.Int) *big.Int {
 	sum := big.NewInt(0)
 	for _, datum := range data {
 		sum.Add(sum, datum)
