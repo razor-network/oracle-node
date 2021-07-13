@@ -4,9 +4,10 @@ go 1.15
 
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
+	github.com/briandowns/spinner v1.16.0
 	github.com/ethereum/go-ethereum v1.10.3
 	github.com/logrusorgru/aurora/v3 v3.0.0
-	github.com/magiconair/properties v1.8.4 // indirect
+	github.com/magiconair/properties v1.8.4
 	github.com/manifoldco/promptui v0.8.0
 	github.com/miguelmota/go-solidity-sha3 v0.1.1
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
