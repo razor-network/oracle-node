@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"github.com/briandowns/spinner"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -100,4 +101,13 @@ func CheckError(msg string, err error) {
 	if err != nil {
 		log.Fatal(msg + err.Error())
 	}
+}
+
+func WaitTillNextState() {
+	s := spinner.New(spinner.CharSets[11], 100 * time.Millisecond)
+	s.Start()
+	s.Color("bgBlack", "bold", "fgYellow")
+	s.Prefix = "Waiting for the next state "
+	time.Sleep(time.Duration((core.StateLength - 10) * 2) * time.Second)
+	s.Stop()
 }
