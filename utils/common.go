@@ -48,8 +48,8 @@ func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	lowerLimit := (core.StateLength * uint64(buffer))/100
-	upperLimit := core.StateLength - (core.StateLength * uint64(buffer))/100
+	lowerLimit := (core.StateLength * uint64(buffer)) / 100
+	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
 		return -1, nil
 	}
@@ -68,7 +68,7 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	timeout := core.StateLength * 2
-	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second ; {
+	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Info("Checking if transaction is mined....\n")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
@@ -104,10 +104,10 @@ func CheckError(msg string, err error) {
 }
 
 func WaitTillNextState() {
-	s := spinner.New(spinner.CharSets[11], 100 * time.Millisecond)
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	s.Start()
 	s.Color("bgBlack", "bold", "fgYellow")
 	s.Prefix = "Waiting for the next state "
-	time.Sleep(time.Duration((core.StateLength - 10) * 2) * time.Second)
+	time.Sleep(time.Duration((core.StateLength-10)*2) * time.Second)
 	s.Stop()
 }
