@@ -137,19 +137,23 @@ $ ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e 
 ```
 
 ### Create Job
-You can create new jobs using `creteJob` command.
+You can create new jobs using `creteJob` command. This command will work only for admins.
 
 ```
-$ ./razor createJob --url <URL> --selector <selector_comma_seperated> --name <name> --fee <fee_to_lock> --address <address>
+$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --fee <fee_to_lock> --address <address>
 ```
 
 Example:
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector "Global Quote,05. price" --fee 100 --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --fee 100 --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+```
+OR
+```
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -f 100 -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
 ```
 
 ### Create Collection
-You can create new collections using `creteCollection` command.
+You can create new collections using `creteCollection` command. This command will work only for admins.
 
 ```
 $ ./razor createCollection --name <collection_name> --fee <fee_to_lock> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
@@ -161,7 +165,7 @@ $ ./razor createCollection --name btcCollectionMean -f 100 --address 0x5a0b54d5d
 ```
 
 ### Add Job to Collection
-You can add existing jobs to existing collections using `addJobToCollection` command.
+You can add existing jobs to existing collections using `addJobToCollection` command. This command will work only for admins.
 
 ```
 $ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
