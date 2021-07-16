@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
-	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
+	"github.com/wealdtech/go-merkletree"
 )
 
 func HandleRevealState(staker bindings.StructsStaker, epoch *big.Int) error {
@@ -85,7 +86,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 
 func getProofs(tree *merkletree.MerkleTree, data []*big.Int) [][][32]byte {
 	var proofs []*merkletree.Proof
-	for dataIndex, _ := range data {
+	for dataIndex := range data {
 		proof, err := tree.GenerateProofV1(dataIndex)
 		if err != nil {
 			log.Error("Error in calculating merkle proof: ", err)

@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var transferCmd = &cobra.Command{
@@ -65,17 +66,20 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (
-		Amount   string
-		From     string
-		To       string
+		Amount string
+		From   string
+		To     string
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to transfer (in Wei)")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 
-	transferCmd.MarkFlagRequired("amount")
-	transferCmd.MarkFlagRequired("from")
-	transferCmd.MarkFlagRequired("to")
+	amountErr := transferCmd.MarkFlagRequired("amount")
+	utils.CheckError("Amount error: ", amountErr)
+	fromErr := transferCmd.MarkFlagRequired("from")
+	utils.CheckError("From address error: ", fromErr)
+	toErr := transferCmd.MarkFlagRequired("to")
+	utils.CheckError("To address error: ", toErr)
 
 }

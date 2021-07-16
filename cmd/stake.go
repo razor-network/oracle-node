@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var stakeCmd = &cobra.Command{
@@ -92,14 +93,16 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount   string
-		Address  string
+		Amount  string
+		Address string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
 	stakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
 
-	stakeCmd.MarkFlagRequired("amount")
-	stakeCmd.MarkFlagRequired("address")
+	amountErr := stakeCmd.MarkFlagRequired("amount")
+	utils.CheckError("Amount error: ", amountErr)
+	addrErr := stakeCmd.MarkFlagRequired("address")
+	utils.CheckError("Amount error: ", addrErr)
 
 }

@@ -89,7 +89,6 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 	var data []*big.Int
 	for _, job := range jobs {
-		datum := big.NewFloat(0)
 		var parsedJSON map[string]interface{}
 
 		response, err := GetDataFromAPI(job.Url)
@@ -110,7 +109,7 @@ func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 			log.Error("Error in fetching value from parsed data ", err)
 			continue
 		}
-		datum, err = ConvertToNumber(parsedData)
+		datum, err := ConvertToNumber(parsedData)
 		if err != nil {
 			log.Error("Result is not a number")
 			data = append(data, big.NewInt(0))

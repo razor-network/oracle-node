@@ -20,9 +20,9 @@ func GetDataFromAPI(url string) ([]byte, error) {
 
 func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
 	if selector[0] == '[' {
-		selector = "$"+selector
+		selector = "$" + selector
 	} else {
-		selector = "$."+selector
+		selector = "$." + selector
 	}
 	return jsonpath.Get(selector, jsonObject)
 }

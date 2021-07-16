@@ -1,16 +1,17 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/manifoldco/promptui"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/manifoldco/promptui"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -108,7 +109,6 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 		log.Infof("Transaction hash: %s", decreaseCommissionTxn.Hash())
 		utils.WaitForBlockCompletion(client, decreaseCommissionTxn.Hash().String())
 	}
-	return
 }
 
 func init() {
@@ -123,5 +123,6 @@ func init() {
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
 
-	setDelegationCmd.MarkFlagRequired("address")
+	addrErr := setDelegationCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
 }

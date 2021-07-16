@@ -19,7 +19,7 @@ func GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
-	bufferPercent,err := getBufferPercent()
+	bufferPercent, err := getBufferPercent()
 	if err != nil {
 		return config, err
 	}
