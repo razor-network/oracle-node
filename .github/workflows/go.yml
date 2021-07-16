@@ -25,6 +25,3 @@ jobs:
         
       - name: Check code linting using golangci-lint
         uses: golangci/golangci-lint-action@v2.5.2
-    
-      - name: Test
-        run: go test -v ./...
