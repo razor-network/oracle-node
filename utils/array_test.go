@@ -86,7 +86,7 @@ func TestGetDataInBytes(t *testing.T) {
 			},
 		},
 	}
-		for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := GetDataInBytes(tt.args.data); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetDataInBytes() = %v, want %v", got, tt.want)
@@ -130,7 +130,7 @@ func TestIsEqual(t *testing.T) {
 			want: true,
 		},
 	}
-		for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := IsEqual(tt.args.arr1, tt.args.arr2); got != tt.want {
 				t.Errorf("IsEqual() = %v, want %v", got, tt.want)

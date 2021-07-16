@@ -1,15 +1,16 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/utils"
 	"time"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
 )
 
 func WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (*big.Int, error) {
-	for true {
+	for {
 		epoch, err := utils.GetEpoch(client, accountAddress)
 		if err != nil {
 			log.Fatal("Error in fetching epoch: ", err)
@@ -31,5 +32,4 @@ func WaitForCommitState(client *ethclient.Client, accountAddress string, action 
 			return epoch, nil
 		}
 	}
-	return nil, nil
 }

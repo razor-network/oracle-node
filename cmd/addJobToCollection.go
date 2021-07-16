@@ -66,8 +66,8 @@ func init() {
 	rootCmd.AddCommand(addJobToCollectionCmd)
 
 	var (
-		Account string
-		JobId string
+		Account      string
+		JobId        string
 		CollectionId string
 	)
 
@@ -75,8 +75,10 @@ func init() {
 	addJobToCollectionCmd.Flags().StringVarP(&JobId, "jobId", "", "", "job id to add to the  collection")
 	addJobToCollectionCmd.Flags().StringVarP(&CollectionId, "collectionId", "", "", "collection id")
 
-	addJobToCollectionCmd.MarkFlagRequired("address")
-	addJobToCollectionCmd.MarkFlagRequired("jobId")
-	addJobToCollectionCmd.MarkFlagRequired("collectionId")
-
+	addrErr := addJobToCollectionCmd.MarkFlagRequired("address")
+	utils.CheckError("Address error: ", addrErr)
+	jobIdErr := addJobToCollectionCmd.MarkFlagRequired("jobId")
+	utils.CheckError("Job Id error: ", jobIdErr)
+	collectionIdErr := addJobToCollectionCmd.MarkFlagRequired("collectionId")
+	utils.CheckError("Collection Id error: ", collectionIdErr)
 }

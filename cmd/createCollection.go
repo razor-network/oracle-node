@@ -13,7 +13,7 @@ import (
 var createCollectionCmd = &cobra.Command{
 	Use:   "createCollection",
 	Short: "A brief description of your command",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {
@@ -60,10 +60,10 @@ func init() {
 	rootCmd.AddCommand(createCollectionCmd)
 
 	var (
-		Name    string
-		Fee     string
-		Account string
-		JobIds []string
+		Name              string
+		Fee               string
+		Account           string
+		JobIds            []string
 		AggregationMethod uint32
 	)
 
@@ -73,9 +73,12 @@ func init() {
 	createCollectionCmd.Flags().StringSliceVarP(&JobIds, "jobIds", "", []string{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 
-	createCollectionCmd.MarkFlagRequired("name")
-	createCollectionCmd.MarkFlagRequired("fee")
-	createCollectionCmd.MarkFlagRequired("address")
-	createCollectionCmd.MarkFlagRequired("jobIds")
-
+	nameErr := createCollectionCmd.MarkFlagRequired("name")
+	utils.CheckError("Name error: ", nameErr)
+	feeErr := createCollectionCmd.MarkFlagRequired("fee")
+	utils.CheckError("Fee error: ", feeErr)
+	addrErr := createCollectionCmd.MarkFlagRequired("address")
+	utils.CheckError("Address Error: ", addrErr)
+	jobIdErr := createCollectionCmd.MarkFlagRequired("jobIds")
+	utils.CheckError("Job Id Error: ", jobIdErr)
 }

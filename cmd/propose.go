@@ -144,10 +144,7 @@ func isElectedProposer(proposer types.ElectedProposer) bool {
 
 	biggestRandomStake := big.NewInt(1).Mul(randomHashNumber, proposer.BiggestStake)
 	stake := big.NewInt(1).Mul(proposer.Stake, big.NewInt(int64(math.Exp2(32))))
-	if biggestRandomStake.Cmp(stake) > 0 {
-		return false
-	}
-	return true
+	return biggestRandomStake.Cmp(stake) <= 0
 }
 
 func pseudoRandomNumberGenerator(seed []byte, max *big.Int, blockHashes []byte) *big.Int {

@@ -35,4 +35,3 @@ func GetVoteWeights(client *ethclient.Client, address string, epoch *big.Int, as
 	}
 	return voteManager.VoteWeights(&callOpts, epoch, assetId, voteValue)
 }
-
