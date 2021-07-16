@@ -70,7 +70,7 @@ var unstakeCmd = &cobra.Command{
 
 		if autoWithdraw {
 			log.Info("Starting withdrawal now...")
-			s := spinner.New(spinner.CharSets[9], 100 * time.Millisecond)
+			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
 			s.Start()
 			time.Sleep(time.Duration(core.EpochLength) * time.Second)
 			s.Stop()
