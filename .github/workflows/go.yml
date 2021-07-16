@@ -27,6 +27,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.29
+	  args: --skip-dirs=razor/pkg/bindings
     
       - name: Test
         run: go test -v ./...
