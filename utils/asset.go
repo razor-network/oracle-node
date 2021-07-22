@@ -57,6 +57,7 @@ func GetActiveJob(client *ethclient.Client, address string, jobId *big.Int) (typ
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
 	epoch, err := GetEpoch(client, address)
+
 	if err != nil {
 		return types.Job{}, err
 	}
@@ -64,7 +65,7 @@ func GetActiveJob(client *ethclient.Client, address string, jobId *big.Int) (typ
 	if err != nil {
 		return types.Job{}, err
 	}
-	if !job.Fulfilled && job.Epoch.Cmp(epoch) < 0 {
+	if job.Active && job.Epoch.Cmp(epoch) < 0 {
 		return job, nil
 	}
 	return types.Job{}, errors.New("job already fulfilled")
