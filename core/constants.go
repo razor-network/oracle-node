@@ -4,7 +4,7 @@ import "math/big"
 
 //TODO: Change these addresses to the deployed address.
 var StakeManagerAddress = "0xBfBA8b5F2CaD3Fdd82893BECDBfb0193C878CED6"
-var SchellingCoinAddress = "0x1Ca31A8832c532DD22AcFB0a3cf7b9F87F4574e6"
+var RAZORAddress = "0x1Ca31A8832c532DD22AcFB0a3cf7b9F87F4574e6"
 var ParametersAddress = "0x1B08F228697A195fB0406A8EB24C3A4E35209c1A"
 var AssetManagerAddress = "0xC5edba1DdA6FF3D7682284Da6eeb65b793704a5c"
 var VoteManagerAddress = "0xA47b2F152628E2865A42153d59dFa4336E94be50"

@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/ashish10677/go-cli#readme",
   "dependencies": {
-    "@razor-network/contracts": "^0.1.0"
+    "@razor-network/contracts": "^0.1.1"
   }
 }

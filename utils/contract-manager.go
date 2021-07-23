@@ -11,8 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func GetTokenManager(client *ethclient.Client) *bindings.SchellingCoin {
-	coinContract, err := bindings.NewSchellingCoin(common.HexToAddress(core.SchellingCoinAddress), client)
+func GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
+	coinContract, err := bindings.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}

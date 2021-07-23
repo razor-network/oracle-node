@@ -13,9 +13,8 @@ type Job struct {
 	Selector  string
 	Name      string
 	Repeat    bool
+	Active    bool
 	Creator   common.Address
-	Credit    *big.Int
-	Fulfilled bool
 	Result    *big.Int
 	AssetType *big.Int
 }
