@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 	"razor/utils"
 )
 
@@ -25,6 +25,12 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 		}
 		if bufferPercent != 0 {
 			viper.Set("buffer", bufferPercent)
+		}
+		if provider == "" && gasMultiplier == -1 && bufferPercent == 0 {
+			viper.Set("provider", "http://127.0.0.1:8545")
+			viper.Set("gasmultiplier", 1.0)
+			viper.Set("buffer", 30)
+			log.Info("Config values set to default. Use setconfig to modify the values.")
 		}
 		path := utils.GetDefaultPath() + "/razor.yaml"
 		err := viper.WriteConfigAs(path)
