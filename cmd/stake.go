@@ -52,7 +52,7 @@ var stakeCmd = &cobra.Command{
 	},
 }
 
-func approve(txnArgs types.TransactionOptions) {
+func approve(txnArgs types.TransactionOptions) int {
 	tokenManager := utils.GetTokenManager(txnArgs.Client)
 	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
 	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
@@ -61,6 +61,7 @@ func approve(txnArgs types.TransactionOptions) {
 	}
 	if allowance.Cmp(txnArgs.Amount) >= 0 {
 		log.Info("Sufficient allowance, no need to increase")
+		return 1
 	} else {
 		log.Info("Sending Approve transaction...")
 		txnOpts := utils.GetTxnOpts(txnArgs)
@@ -70,7 +71,8 @@ func approve(txnArgs types.TransactionOptions) {
 		}
 		log.Info("Approve transaction sent...\nTxn Hash: ", txn.Hash())
 		log.Info("Waiting for transaction to be mined....")
-		utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
+		approvedStatus := utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
+		return approvedStatus
 	}
 }
 
