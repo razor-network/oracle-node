@@ -14,16 +14,11 @@ fetch_bindings:
 install_razor:
 	@echo "Installing razor node...."
 	${GO} build -o ./build/bin/razor main.go
-	@echo "Razor node installed. \n"
+	@echo "Razor node installed."
+	@echo ""
 
 set_config:
-	@echo "Enter provider: "; \
-	read PROVIDER; \
-	echo "Enter gas multiplier value: "; \
-	read GAS_MULTIPLIER; \
-	echo "Enter buffer percent: "; \
-    read BUFFER_PERCENT; \
-    echo "\n"; \
-    echo "Setting initial config..."; \
-    ${RAZOR} setconfig -p $${PROVIDER} -g $${GAS_MULTIPLIER} -b $${BUFFER_PERCENT}
-	@echo "Setup done"
+	@echo "Setup initial config"
+	@${SHELL} config.sh
+	@echo ""
+	@echo "Razor node is set up and ready to use"
