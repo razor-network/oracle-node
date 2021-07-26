@@ -5,6 +5,7 @@ RAZOR = ${BIN_DIR}/razor
 
 all: fetch_bindings install_razor set_config
 build: install_razor set_config
+docker-build: fetch_bindings install_razor
 
 fetch_bindings:
 	@echo "Installing contract dependencies..."
