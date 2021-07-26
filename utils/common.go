@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"github.com/briandowns/spinner"
 	"math/big"
 	"os"
@@ -92,7 +93,7 @@ func WaitTillNextNBlock(waitTime int32) {
 	if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
 		log.Error("Error in setting color for spinner")
 	}
-	s.Prefix = "Waiting for the next " + string(waitTime) + " block(s) "
+	s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " block(s) "
 	time.Sleep(time.Duration(waitTime*2) * time.Second)
 	s.Stop()
 }

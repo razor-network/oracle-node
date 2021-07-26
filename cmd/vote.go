@@ -3,15 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
-	"math/big"
-	"razor/accounts"
-	"razor/core"
-	"razor/core/types"
-	jobManager "razor/pkg/bindings"
-	"razor/utils"
-	"strings"
-	"time"
-
+	"fmt"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,6 +12,14 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"math/big"
+	"razor/accounts"
+	"razor/core"
+	"razor/core/types"
+	jobManager "razor/pkg/bindings"
+	"razor/utils"
+	"strings"
+	"time"
 )
 
 var voteCmd = &cobra.Command{
@@ -49,7 +49,7 @@ var voteCmd = &cobra.Command{
 				header = latestHeader
 				handleBlock(client, account, latestHeader.Number, config)
 			}
-			time.Sleep(5 * time.Second)
+
 		}
 	},
 }
@@ -111,7 +111,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		_committedData = data
-		utils.WaitTillNextNBlock(config.WaitTime)
 	case 1:
 		lastReveal := staker.EpochLastRevealed
 		if _committedData == nil || (lastReveal != nil && lastReveal.Cmp(epoch) >= 0) {
@@ -126,7 +125,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		Reveal(client, _committedData, secret, account, account.Address, config)
-		utils.WaitTillNextNBlock(config.WaitTime)
 	case 2:
 		lastProposal := getLastProposedEpoch(client, blockNumber, stakerId)
 		if lastProposal != nil && lastProposal.Cmp(epoch) >= 0 {
@@ -135,16 +133,20 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		lastProposal = epoch
 		log.Info("Proposing block....")
 		Propose(client, account, config, stakerId, epoch)
-		utils.WaitTillNextNBlock(config.WaitTime)
 	case 3:
 		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
 			break
 		}
 		lastVerification = epoch
 		HandleDispute(client, config, account, epoch)
-		utils.WaitTillNextNBlock(config.WaitTime)
+	case -1:
+		if config.WaitTime > 5 {
+			time.Sleep(5 * time.Second)
+			return
+		}
 	}
-
+	utils.WaitTillNextNBlock(config.WaitTime)
+	fmt.Println()
 }
 
 func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId *big.Int) *big.Int {
