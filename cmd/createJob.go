@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -25,23 +24,15 @@ var createJobCmd = &cobra.Command{
 		password := utils.PasswordPrompt()
 
 		address, _ := cmd.Flags().GetString("address")
-		fee, _ := cmd.Flags().GetString("fee")
 		name, _ := cmd.Flags().GetString("name")
 		repeat, _ := cmd.Flags().GetBool("repeat")
 		url, _ := cmd.Flags().GetString("url")
 		selector, _ := cmd.Flags().GetString("selector")
 
 		client := utils.ConnectToClient(config.Provider)
-
-		feeInBigInt, ok := new(big.Int).SetString(fee, 10)
-		if !ok {
-			log.Fatal("SetString: error")
-		}
-
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,
 			Password:       password,
-			EtherValue:     feeInBigInt,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			GasMultiplier:  config.GasMultiplier,
@@ -67,7 +58,6 @@ func init() {
 		Selector string
 		Name     string
 		Repeat   bool
-		Fee      string
 		Account  string
 	)
 
@@ -75,7 +65,6 @@ func init() {
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
-	createJobCmd.Flags().StringVarP(&Fee, "fee", "f", "0", "fee")
 	createJobCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
 
 	urlErr := createJobCmd.MarkFlagRequired("url")
@@ -84,8 +73,6 @@ func init() {
 	utils.CheckError("Selector error: ", selectorErr)
 	nameErr := createJobCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)
-	feeErr := createJobCmd.MarkFlagRequired("fee")
-	utils.CheckError("Fee error: ", feeErr)
 	addrErr := createJobCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 }
