@@ -23,20 +23,18 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			continue
 		}
 		log.Info("Values in the block")
-		log.Infof("Medians: %s, LowerCutOffs: %s, HigherCutOffs: %s", proposedBlock.BlockMedians, proposedBlock.LowerCutoffs, proposedBlock.HigherCutoffs)
-		medians, lowerCutOffs, higherCutOffs, err := MakeBlock(client, account.Address, epoch)
+		log.Infof("Medians: %s", proposedBlock.BlockMedians)
+		medians, err := MakeBlock(client, account.Address, epoch)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 		log.Info("Locally calculated data:")
-		log.Infof("Medians: %s, LowerCutOffs: %s, HigherCutOffs: %s\n", medians, lowerCutOffs, higherCutOffs)
-		if !utils.IsEqual(proposedBlock.BlockMedians, medians) ||
-			!utils.IsEqual(proposedBlock.LowerCutoffs, lowerCutOffs) ||
-			!utils.IsEqual(proposedBlock.HigherCutoffs, higherCutOffs) {
+		log.Infof("Medians: %s\n", medians)
+		if !utils.IsEqual(proposedBlock.BlockMedians, medians) {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
-			log.Info("Block Values: ", proposedBlock.BlockMedians, proposedBlock.LowerCutoffs, proposedBlock.HigherCutoffs)
-			log.Info("Local Calculations: ", medians, lowerCutOffs, higherCutOffs)
+			log.Info("Block Values: ", proposedBlock.BlockMedians)
+			log.Info("Local Calculations: ", medians)
 			err := Dispute(client, config, account, epoch, big.NewInt(int64(i)))
 			if err != nil {
 				log.Error("Error in disputing...", err)

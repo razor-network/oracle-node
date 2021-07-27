@@ -13,10 +13,8 @@ func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch *
 }
 
 func GetProposedBlock(client *ethclient.Client, address string, epoch *big.Int, proposedBlock *big.Int) (struct {
-	Block         bindings.StructsBlock
-	BlockMedians  []*big.Int
-	LowerCutoffs  []*big.Int
-	HigherCutoffs []*big.Int
+	Block        bindings.StructsBlock
+	BlockMedians []*big.Int
 }, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions(false, address, "")

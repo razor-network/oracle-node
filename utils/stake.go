@@ -36,6 +36,11 @@ func GetNumberOfStakers(client *ethclient.Client, address string) (*big.Int, err
 	return stakeManager.GetNumStakers(&callOpts)
 }
 
+func GetInfluence(client *ethclient.Client, address string, stakerId *big.Int) (*big.Int, error) {
+	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	return stakeManager.GetInfluence(&callOpts, stakerId)
+}
+
 func GetLock(client *ethclient.Client, address string, stakerId *big.Int) (types.Locks, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	staker, err := GetStaker(client, address, stakerId)
