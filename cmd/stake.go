@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"razor/core"
 	"razor/core/types"
@@ -47,12 +48,14 @@ var stakeCmd = &cobra.Command{
 			ChainId:        core.ChainId,
 			GasMultiplier:  config.GasMultiplier,
 		}
-		approve(txnArgs)
-		stakeCoins(txnArgs)
+		approveErr := approve(txnArgs)
+		utils.CheckError("Approve error: ", approveErr)
+		stakeErr := stakeCoins(txnArgs)
+		utils.CheckError("Stake error: ", stakeErr)
 	},
 }
 
-func approve(txnArgs types.TransactionOptions) int {
+func approve(txnArgs types.TransactionOptions) error {
 	tokenManager := utils.GetTokenManager(txnArgs.Client)
 	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
 	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
@@ -61,7 +64,7 @@ func approve(txnArgs types.TransactionOptions) int {
 	}
 	if allowance.Cmp(txnArgs.Amount) >= 0 {
 		log.Info("Sufficient allowance, no need to increase")
-		return 1
+		return nil
 	} else {
 		log.Info("Sending Approve transaction...")
 		txnOpts := utils.GetTxnOpts(txnArgs)
@@ -71,12 +74,15 @@ func approve(txnArgs types.TransactionOptions) int {
 		}
 		log.Info("Approve transaction sent...\nTxn Hash: ", txn.Hash())
 		log.Info("Waiting for transaction to be mined....")
-		approvedStatus := utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
-		return approvedStatus
+		return utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
 	}
 }
 
-func stakeCoins(txnArgs types.TransactionOptions) {
+func stakeCoins(txnArgs types.TransactionOptions) error {
+	minStake, _ := utils.GetMinStakeAmount(txnArgs.Client, txnArgs.AccountAddress)
+	if txnArgs.Amount.Cmp(minStake) == -1 {
+		return errors.New("stake amount is less than minimum stake")
+	}
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	log.Info("Sending stake transactions...")
 	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
@@ -89,7 +95,7 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 		log.Fatal("Error in staking: ", err)
 	}
 	log.Info("Staked\nTxn Hash: ", tx.Hash())
-	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
+	return utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
 }
 
 func init() {
