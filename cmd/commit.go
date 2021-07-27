@@ -83,7 +83,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 
 	log.Info("Commitment sent...\nTxn hash: ", txn.Hash())
 
-	if utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash())) == 0 {
+	if utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash())) != nil {
 		log.Error("Commit failed....")
 	}
 	return nil

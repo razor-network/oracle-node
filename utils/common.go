@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"math/big"
 	"os"
 	"razor/core"
@@ -64,22 +65,22 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	return int(tx.Status)
 }
 
-func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
 	timeout := core.StateLength * 2
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Info("Checking if transaction is mined....\n")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
 			log.Info("Transaction mining unsuccessful")
-			return 0
+			return errors.New("transaction mining unsuccessful")
 		} else if transactionStatus == 1 {
 			log.Info("Transaction mined successfully\n")
-			return 1
+			return nil
 		}
 		time.Sleep(3 * time.Second)
 	}
 	log.Info("Timeout Passed")
-	return 0
+	return errors.New("timeout passed")
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
