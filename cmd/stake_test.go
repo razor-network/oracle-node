@@ -21,10 +21,10 @@ func getTransactionArgs() types.TransactionOptions {
 		log.Fatal("Error in connecting...\n", err)
 	}
 	log.Info("Connected to: ", provider)
-	if err != nil {
-		log.Fatal(err)
+	balance, balanceErr := utils.FetchBalance(client, address)
+	if balanceErr != nil {
+		log.Fatalf("Error in fetching balance: %e", balanceErr)
 	}
-	balance, _ := utils.FetchBalance(client, address)
 	amount := "1000"
 	amountInWei := utils.GetAmountWithChecks(amount, balance)
 
@@ -38,7 +38,7 @@ func getTransactionArgs() types.TransactionOptions {
 	}
 	return txnArgs
 }
-func getTransactionArgs1() types.TransactionOptions {
+func getTransactionArgsMinStake() types.TransactionOptions {
 	password := "12345"
 	address := "0x53baCf1E1C6E14BB5700178Acf426dF6f0d5A949" // Provide your address for testing
 	provider := "http://127.0.0.1:8545/"
@@ -47,10 +47,10 @@ func getTransactionArgs1() types.TransactionOptions {
 		log.Fatal("Error in connecting...\n", err)
 	}
 	log.Info("Connected to: ", provider)
-	if err != nil {
-		log.Fatal(err)
+	balance, balanceErr := utils.FetchBalance(client, address)
+	if balanceErr != nil {
+		log.Fatalf("Error in fetching balance: %e", balanceErr)
 	}
-	balance, _ := utils.FetchBalance(client, address)
 	amount := "10"
 	amountInWei := utils.GetAmountWithChecks(amount, balance)
 
@@ -83,8 +83,10 @@ func Test_approve(t *testing.T) {
 	t.Run("Test3: Allowance of number of razors is set correctly after approve", func(t *testing.T) {
 		tokenManager := utils.GetTokenManager(txnArgs.Client)
 		opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
-		allowance, _ := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
-
+		allowance, allowanceErr := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+		if allowanceErr != nil {
+			utils.CheckError("Error in getting allowance amount", allowanceErr)
+		}
 		if got := allowance; got.Cmp(txnArgs.Amount) != 1 && got.Cmp(txnArgs.Amount) != 0 {
 			t.Errorf("Amount of razor's approved are less than the required amount of razor's to be sent")
 		}
@@ -118,7 +120,8 @@ func Test_stakeCoins(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stakerId, _ := stakeManager.GetStakerId(&opts, common.HexToAddress(txnArgs.AccountAddress))
+			stakerId, err := stakeManager.GetStakerId(&opts, common.HexToAddress(txnArgs.AccountAddress))
+			utils.CheckError("Error in getting staker ID: ", err)
 
 			if stakerId.Cmp(big.NewInt(0)) == 0 {
 				approveErr := approve(txnArgs)
@@ -126,8 +129,10 @@ func Test_stakeCoins(t *testing.T) {
 				stakeErr := stakeCoins(txnArgs)
 				utils.CheckError("Stake error: ", stakeErr)
 
-				newStakerID, _ := stakeManager.GetStakerId(&opts, common.HexToAddress(txnArgs.AccountAddress))
-				staker, _ := utils.GetStaker(txnArgs.Client, txnArgs.AccountAddress, newStakerID)
+				newStakerID, stakerIdErr := stakeManager.GetStakerId(&opts, common.HexToAddress(txnArgs.AccountAddress))
+				utils.CheckError("Error in getting staker ID: ", stakerIdErr)
+				staker, stakerErr := utils.GetStaker(txnArgs.Client, txnArgs.AccountAddress, newStakerID)
+				utils.CheckError("Error in getting staker: ", stakerErr)
 				expectedStake := big.NewInt(0)
 				expectedStake.Add(expectedStake, txnArgs.Amount)
 				newStake := staker.Stake
@@ -137,15 +142,17 @@ func Test_stakeCoins(t *testing.T) {
 				}
 			}
 			if stakerId.Cmp(big.NewInt(0)) != 0 {
-				staker, _ := utils.GetStaker(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+				staker, stakerErr := utils.GetStaker(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+				utils.CheckError("Error in getting staker: ", stakerErr)
 				previousStake := staker.Stake
 
 				approveErr := approve(txnArgs)
 				utils.CheckError("Approve error: ", approveErr)
 				stakeErr := stakeCoins(txnArgs)
 				utils.CheckError("Stake error: ", stakeErr)
-				staker1, _ := utils.GetStaker(txnArgs.Client, txnArgs.AccountAddress, stakerId)
-				newStake := staker1.Stake
+				updatedStaker, updatedStakerErr := utils.GetStaker(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+				utils.CheckError("Error in getting staker: ", updatedStakerErr)
+				newStake := updatedStaker.Stake
 
 				expectedStake := big.NewInt(0)
 				expectedStake.Add(previousStake, txnArgs.Amount)
@@ -157,12 +164,12 @@ func Test_stakeCoins(t *testing.T) {
 		})
 	}
 
-	t.Run("Stake should be greater than minimum stake", func(t *testing.T) {
+	t.Run("Test3: Stake should be greater than minimum stake", func(t *testing.T) {
 		expectedErr := errors.New("stake amount is less than minimum stake")
-		txnArgs1 := getTransactionArgs1()
-		approveErr := approve(txnArgs1)
+		txnArgsMinStake := getTransactionArgsMinStake()
+		approveErr := approve(txnArgsMinStake)
 		utils.CheckError("Approve error: ", approveErr)
-		err := stakeCoins(txnArgs1)
+		err := stakeCoins(txnArgsMinStake)
 		if expectedErr.Error() != err.Error() {
 			t.Errorf("Expected error :%v and got error :%v", expectedErr, err)
 		}
