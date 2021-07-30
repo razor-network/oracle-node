@@ -95,14 +95,14 @@ func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 		response, err := GetDataFromAPI(job.Url)
 		if err != nil {
 			log.Error(err)
-			data = append(data, big.NewInt(0))
+			data = append(data, big.NewInt(1))
 			continue
 		}
 
 		err = json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Error("Error in parsing data from API: ", err)
-			data = append(data, big.NewInt(0))
+			data = append(data, big.NewInt(1))
 			continue
 		}
 		parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
@@ -113,7 +113,7 @@ func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 		datum, err := ConvertToNumber(parsedData)
 		if err != nil {
 			log.Error("Result is not a number")
-			data = append(data, big.NewInt(0))
+			data = append(data, big.NewInt(1))
 			continue
 		}
 
@@ -121,7 +121,7 @@ func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 		data = append(data, dataToAppend)
 	}
 	if len(data) == 0 {
-		data = append(data, big.NewInt(0))
+		data = append(data, big.NewInt(1))
 	}
 	return data
 }

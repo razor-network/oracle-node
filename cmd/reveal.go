@@ -80,7 +80,8 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		log.Error(err)
 		return
 	}
-	log.Info("Revealed..\nTxn Hash: ", txn.Hash())
+	log.Info("Revealed..")
+	log.Info("Txn Hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 
