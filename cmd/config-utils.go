@@ -10,6 +10,7 @@ func GetConfigData() (types.Configurations, error) {
 		Provider:      "",
 		GasMultiplier: 0,
 		BufferPercent: 0,
+		WaitTime:      0,
 	}
 	provider, err := getProvider()
 	if err != nil {
@@ -23,9 +24,14 @@ func GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	waitTime, err := getWaitTime()
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
+	config.WaitTime = waitTime
 	return config, nil
 }
 
@@ -60,4 +66,15 @@ func getBufferPercent() (int32, error) {
 		bufferPercent = viper.GetInt32("buffer")
 	}
 	return bufferPercent, nil
+}
+
+func getWaitTime() (int32, error) {
+	waitTime, err := rootCmd.PersistentFlags().GetInt32("wait")
+	if err != nil {
+		return 3, err
+	}
+	if waitTime == -1 {
+		waitTime = viper.GetInt32("wait")
+	}
+	return waitTime, nil
 }
