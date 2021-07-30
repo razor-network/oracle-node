@@ -191,7 +191,7 @@ func getSortedVotes(client *ethclient.Client, address string, assetId int, epoch
 		voteWeights []*big.Int
 	)
 	for i := 1; i <= int(numberOfStakers.Int64()); i++ {
-		vote, err := utils.GetVotes(client, address, epoch, big.NewInt(int64(i)), big.NewInt(int64(assetId - 1)))
+		vote, err := utils.GetVotes(client, address, epoch, big.NewInt(int64(i)), big.NewInt(int64(assetId-1)))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -204,7 +204,7 @@ func getSortedVotes(client *ethclient.Client, address string, assetId int, epoch
 	}
 	sortutil.BigIntSlice.Sort(voteValues)
 	for _, value := range voteValues {
-		weight, err := utils.GetVoteWeights(client, address, epoch, big.NewInt(int64(assetId - 1)), value)
+		weight, err := utils.GetVoteWeights(client, address, epoch, big.NewInt(int64(assetId-1)), value)
 		if err != nil {
 			log.Error(err)
 			continue
