@@ -18,8 +18,7 @@ RUN apt-get update && \
     apt-get install -y  wget && \
     apt-get install -y build-essential && \
     apt-get -y install solc && \
-    apt install -y protobuf-compiler && \
-#RUN    useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo 
+    apt install -y protobuf-compiler && \ 
     curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh && \
     chmod +x nodesource_setup.sh && \
     ./nodesource_setup.sh && \
@@ -29,8 +28,7 @@ RUN apt-get update && \
     tar -xvf go1.16.6.linux-amd64.tar.gz && \
     mv -f go ../../../usr/local && pwd && \
     cd ../ && rm -rf tmp && \
-    go version && go get -u github.com/ethereum/go-ethereum && \
+    go version && go get -u github.com/ethereum/go-ethereum@v1.10.6 && \
     cd ../../go/pkg/mod/github.com/ethereum/go-ethereum@v1.10.6 && chmod +777 build &&  make && make devtools
-RUN npm run
-#RUN ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5
+RUN go mod tidy && npm run dockerize-build
 CMD ["/bin/bash"]
