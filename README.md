@@ -16,8 +16,9 @@ Official node for running stakers in Golang.
 
    _Note: To build from scratch, `geth` and `abigen` must be installed in your system._
 3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary. 
-4. While building the binary, supply the provider RPC url and the gas multiplier.
-5. The binary will be generated at `build/bin`.
+4. If you want to build the binary without wanting to set the configurations use `npm run dockerize-build`
+5. While building the binary, supply the provider RPC url and the gas multiplier.
+6. The binary will be generated at `build/bin`.
 
 ## Commands
 
@@ -74,7 +75,7 @@ $ ./razor delegate --address <address> --amount <amount> --stakerId <staker_id>
 
 Example:
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
+$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
 ```
 
 ### Vote

@@ -28,7 +28,7 @@ func GetActiveAssets(client *ethclient.Client, address string) ([]types.Job, []t
 
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
-	for assetIndex := 1; assetIndex < int(numOfAssets.Int64()); assetIndex++ {
+	for assetIndex := 1; assetIndex <= int(numOfAssets.Int64()); assetIndex++ {
 		assetType, err := assetManager.GetAssetType(&callOpts, big.NewInt(int64(assetIndex)))
 		if err != nil {
 			log.Error("Error in fetching asset: ", assetIndex)
