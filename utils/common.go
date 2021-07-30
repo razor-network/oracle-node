@@ -2,6 +2,8 @@ package utils
 
 import (
 	"context"
+	"fmt"
+	"github.com/briandowns/spinner"
 	"math/big"
 	"os"
 	"razor/core"
@@ -80,6 +82,20 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	}
 	log.Info("Timeout Passed")
 	return 0
+}
+
+func WaitTillNextNBlock(waitTime int32) {
+	if waitTime <= 0 {
+		waitTime = 1
+	}
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Start()
+	if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
+		log.Error("Error in setting color for spinner")
+	}
+	s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " block(s) "
+	time.Sleep(time.Duration(waitTime*2) * time.Second)
+	s.Stop()
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
