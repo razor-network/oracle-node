@@ -85,7 +85,7 @@ to quickly create a Cobra application.`,
 }
 
 func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commission *big.Int) {
-	log.Infof("Setting the commission value of Staker %s to %s", stakerId, commission)
+	log.Infof("Setting the commission value of Staker %s to %s %%", stakerId, commission)
 	commissionTxn, err := stakeManager.SetCommission(txnOpts, commission)
 	utils.CheckError("Error in setting commission: ", err)
 	log.Info("Sending SetCommission transaction...")
@@ -94,7 +94,7 @@ func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager
 }
 
 func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commission *big.Int) {
-	log.Infof("Decreasing the commission value of Staker %s to %s", stakerId, commission)
+	log.Infof("Decreasing the commission value of Staker %s to %s %%", stakerId, commission)
 	prompt := promptui.Prompt{
 		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
 		IsConfirm: true,
