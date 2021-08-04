@@ -24,7 +24,8 @@ func GetVotes(client *ethclient.Client, address string, epoch *big.Int, stakerId
 	if assetId == nil {
 		assetId = big.NewInt(0)
 	}
-	return voteManager.Votes(&callOpts, epoch, stakerId, assetId)
+
+	return voteManager.GetVote(&callOpts, epoch, stakerId, assetId)
 }
 
 func GetVoteWeights(client *ethclient.Client, address string, epoch *big.Int, assetId *big.Int, voteValue *big.Int) (*big.Int, error) {
