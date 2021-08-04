@@ -62,7 +62,6 @@ to quickly create a Cobra application.`,
 		}
 
 		_commission, ok := new(big.Int).SetString(commission, 10)
-		commissionAmountInWei := big.NewInt(1).Mul(_commission, big.NewInt(1e18))
 		if !ok {
 			log.Fatal("Set string: error")
 		}
@@ -73,29 +72,29 @@ to quickly create a Cobra application.`,
 		if commission != "0" && stakerInfo.AcceptDelegation {
 			// Call SetCommission if the commission value is provided and the staker hasn't already set commission
 			if stakerInfo.Commission.Cmp(big.NewInt(0)) == 0 {
-				SetCommission(client, stakeManager, stakerId, txnOpts, commissionAmountInWei)
+				SetCommission(client, stakeManager, stakerId, txnOpts, _commission)
 			}
 
 			// Call DecreaseCommission if the commission value is provided and the staker has already set commission
-			if stakerInfo.Commission.Cmp(big.NewInt(0)) > 0 && stakerInfo.Commission.Cmp(commissionAmountInWei) > 0 {
-				DecreaseCommission(client, stakeManager, stakerId, txnOpts, commissionAmountInWei)
+			if stakerInfo.Commission.Cmp(big.NewInt(0)) > 0 && stakerInfo.Commission.Cmp(_commission) > 0 {
+				DecreaseCommission(client, stakeManager, stakerId, txnOpts, _commission)
 			}
 		}
 
 	},
 }
 
-func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commissionAmountInWei *big.Int) {
-	log.Infof("Setting the commission value of Staker %s to %s", stakerId, commissionAmountInWei)
-	commissionTxn, err := stakeManager.SetCommission(txnOpts, commissionAmountInWei)
+func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commission *big.Int) {
+	log.Infof("Setting the commission value of Staker %s to %s%%", stakerId, commission)
+	commissionTxn, err := stakeManager.SetCommission(txnOpts, commission)
 	utils.CheckError("Error in setting commission: ", err)
 	log.Info("Sending SetCommission transaction...")
 	log.Infof("Transaction hash: %s", commissionTxn.Hash())
 	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
 }
 
-func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commissionAmountInWei *big.Int) {
-	log.Infof("Decreasing the commission value of Staker %s to %s", stakerId, commissionAmountInWei)
+func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commission *big.Int) {
+	log.Infof("Decreasing the commission value of Staker %s to %s%%", stakerId, commission)
 	prompt := promptui.Prompt{
 		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
 		IsConfirm: true,
@@ -103,7 +102,7 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 	result, err := prompt.Run()
 	utils.CheckError(result, err)
 	if strings.ToLower(result) == "yes" || strings.ToLower(result) == "y" {
-		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commissionAmountInWei)
+		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commission)
 		utils.CheckError("Error in decreasing commission: ", err)
 		log.Info("Sending DecreaseCommission transaction...")
 		log.Infof("Transaction hash: %s", decreaseCommissionTxn.Hash())
