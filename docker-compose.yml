@@ -1,0 +1,6 @@
+version: "3"
+services:
+  go-cli:
+    build: .
+    image: razor-go
+    tty: true
