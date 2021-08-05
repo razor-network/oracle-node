@@ -61,7 +61,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		iter := int(math.Ceil(float64(len(sortedVotes)) / 1000))
 		blockManager := utils.GetBlockManager(client)
 		for i := 0; i < iter; i++ {
-			log.Info(epoch, sortedVotes[i*1000:i*1000+1000])
+			log.Info(epoch, sortedVotes)
 			txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 				Client:         client,
 				Password:       account.Password,
@@ -69,7 +69,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 				ChainId:        core.ChainId,
 				GasMultiplier:  config.GasMultiplier,
 			})
-			txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId)), sortedVotes[i*1000:i*1000+1000])
+			txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId)), sortedVotes)
 			if err != nil {
 				log.Error(err)
 				continue
