@@ -3,13 +3,13 @@ package core
 import "math/big"
 
 //TODO: Change these addresses to the deployed address.
-var StakeManagerAddress = "0x70C55e9f008f66fB67F508b02fdcac81916826e6"
-var RAZORAddress = "0x34A8759E4024A9A217014DB7Ee046498A16f08f0"
-var ParametersAddress = "0xcCb4043db41D6aDaFc770FBC706c9E3194524287"
-var AssetManagerAddress = "0xD62408a3aECD9aC97878B216979790b3C3b543c4"
-var VoteManagerAddress = "0x6e83e9C80B34eB41e8FE252c075B5713558Cc0bc"
-var RandomClientAddress = "0x2CCc74005be81213c9322EE56AAE2273525101c2"
-var BlockManagerAddress = "0x2e19aB0b134Ae1917A44C3C3338fA774cCB4c079"
+var StakeManagerAddress = "0x809A7d7cA60A3a0C3dD7dbf2Ba6f56e9b09156d7"
+var RAZORAddress = "0x9CfA4A2D0E705B1C9dA418EB901f51817512D2dd"
+var ParametersAddress = "0xf85B5Af15a9a4c417603Afb5809F308aFb484339"
+var AssetManagerAddress = "0x2494FcCada1B6532a9f705155fDC02b1BEfcb13a"
+var VoteManagerAddress = "0x9561518cA5a293Ea636a40148e76e9F11dAAeab5"
+var RandomClientAddress = "0xb3A395A36c469A33d9F078EB1A1c602A11Dad7a7"
+var BlockManagerAddress = "0x099272194FD75656dd013BD21d1eF6E987a14C13"
 
 var StateLength uint64 = 75
 var EpochLength int64 = 300

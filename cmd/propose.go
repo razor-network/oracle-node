@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"math"
 	"math/big"
+	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -14,7 +15,7 @@ import (
 	"modernc.org/sortutil"
 )
 
-func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId *big.Int, epoch *big.Int) {
+func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId *big.Int, epoch *big.Int, rogueMode bool) {
 	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return
@@ -58,7 +59,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 
-	medians, err := MakeBlock(client, account.Address, epoch)
+	medians, err := MakeBlock(client, account.Address, epoch, rogueMode)
 	if err != nil {
 		log.Error(err)
 		return
@@ -158,7 +159,7 @@ func pseudoRandomNumberGenerator(seed []byte, max *big.Int, blockHashes []byte) 
 	return sum.Mod(sum, max)
 }
 
-func MakeBlock(client *ethclient.Client, address string, epoch *big.Int) ([]*big.Int, error) {
+func MakeBlock(client *ethclient.Client, address string, epoch *big.Int, rogueMode bool) ([]*big.Int, error) {
 	numAssets, err := utils.GetNumAssets(client, address)
 	if err != nil {
 		return nil, err
@@ -174,7 +175,12 @@ func MakeBlock(client *ethclient.Client, address string, epoch *big.Int) ([]*big
 		}
 		log.Info("Sorted Votes: ", sortedVotes)
 		log.Info("Sorted Weights: ", sortedWeights)
-		median := weightedMedian(sortedVotes, sortedWeights)
+		var median *big.Int
+		if rogueMode {
+			median = big.NewInt(int64(rand.Intn(10000000)))
+		} else {
+			median = weightedMedian(sortedVotes, sortedWeights)
+		}
 		log.Infof("Median: %s", median)
 		medians = append(medians, median)
 	}
