@@ -61,7 +61,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		ChainId:        core.ChainId,
 		GasMultiplier:  config.GasMultiplier,
 	})
-	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId - 1)), sortedVotes)
+	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
 	if err != nil {
 		log.Error(err)
 	}

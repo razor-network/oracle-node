@@ -112,7 +112,7 @@ func TestIsEqual(t *testing.T) {
 				arr1: []*big.Int{big.NewInt(1), big.NewInt(1234), big.NewInt(2321)},
 				arr2: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
 			},
-			want: false,
+			want:  false,
 			want1: 1,
 		},
 		{
@@ -121,7 +121,7 @@ func TestIsEqual(t *testing.T) {
 				arr1: []*big.Int{big.NewInt(1), big.NewInt(1234)},
 				arr2: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
 			},
-			want: false,
+			want:  false,
 			want1: 3,
 		},
 		{
@@ -130,7 +130,7 @@ func TestIsEqual(t *testing.T) {
 				arr1: []*big.Int{},
 				arr2: []*big.Int{},
 			},
-			want: true,
+			want:  true,
 			want1: -1,
 		},
 		{
@@ -139,7 +139,7 @@ func TestIsEqual(t *testing.T) {
 				arr1: []*big.Int{big.NewInt(1), big.NewInt(1232), big.NewInt(12423)},
 				arr2: []*big.Int{big.NewInt(1), big.NewInt(1232), big.NewInt(12423)},
 			},
-			want: true,
+			want:  true,
 			want1: -1,
 		},
 	}
