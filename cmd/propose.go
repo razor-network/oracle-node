@@ -65,7 +65,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 
-	log.Infof("\nMedians: %s", medians)
+	log.Infof("Medians: %s", medians)
 
 	jobs, collections, err := utils.GetActiveAssets(client, account.Address)
 	var ids []*big.Int
@@ -88,14 +88,15 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	})
 	blockManager := utils.GetBlockManager(client)
 
-	log.Infof("\nEpoch: %s Medians: %s", epoch, medians)
+	log.Infof("Epoch: %s Medians: %s", epoch, medians)
 	log.Infof("Asset Ids: %s Iteration: %d Biggest Influence Id: %s\n", ids, iteration, biggestInfluenceId)
 	txn, err := blockManager.Propose(txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	log.Infof("Proposed Block\n%s", txn.Hash())
+	log.Info("Block Proposed...")
+	log.Info("Txn Hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 

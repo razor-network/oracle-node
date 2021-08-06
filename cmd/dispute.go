@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"math"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -31,11 +30,12 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Info("Locally calculated data:")
 		log.Infof("Medians: %s\n", medians)
-		if !utils.IsEqual(proposedBlock.BlockMedians, medians) {
+		isEqual, assetId := utils.IsEqual(proposedBlock.BlockMedians, medians)
+		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Info("Block Values: ", proposedBlock.BlockMedians)
 			log.Info("Local Calculations: ", medians)
-			err := Dispute(client, config, account, epoch, big.NewInt(int64(i)))
+			err := Dispute(client, config, account, epoch, big.NewInt(int64(i)), assetId)
 			if err != nil {
 				log.Error("Error in disputing...", err)
 				continue
@@ -47,51 +47,41 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 	}
 }
 
-func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch *big.Int, blockId *big.Int) error {
-	numAssets, err := utils.GetNumAssets(client, account.Address)
+func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch *big.Int, blockId *big.Int, assetId int) error {
+	blockManager := utils.GetBlockManager(client)
+	_, sortedVotes, err := getSortedVotes(client, account.Address, assetId, epoch)
 	if err != nil {
 		return err
 	}
-	//TODO: Check if assetId should be looped or a particular giveSorted should be called only for a particular assetId for which the median reported is wrong
-	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		sortedVotes, _, err := getSortedVotes(client, account.Address, assetId, epoch)
-		if err != nil {
-			return err
-		}
-		iter := int(math.Ceil(float64(len(sortedVotes)) / 1000))
-		blockManager := utils.GetBlockManager(client)
-		for i := 0; i < iter; i++ {
-			log.Info(epoch, sortedVotes)
-			txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-				Client:         client,
-				Password:       account.Password,
-				AccountAddress: account.Address,
-				ChainId:        core.ChainId,
-				GasMultiplier:  config.GasMultiplier,
-			})
-			txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId)), sortedVotes)
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-			log.Info("Txn Hash: ", txn.Hash())
-			utils.WaitForBlockCompletion(client, txn.Hash().String())
-		}
-
-		log.Info("Sending finalized dispute...")
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       account.Password,
-			AccountAddress: account.Address,
-			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
-		})
-		txn, err := blockManager.FinalizeDispute(txnOpts, epoch, blockId)
-		if err != nil {
-			return err
-		}
-		log.Info("Txn Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+	log.Infof("Epoch: %s, Sorted Votes: %s", epoch, sortedVotes)
+	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		GasMultiplier:  config.GasMultiplier,
+	})
+	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId - 1)), sortedVotes)
+	if err != nil {
+		log.Error(err)
 	}
+	log.Info("Calling GiveSorted...")
+	log.Info("Txn Hash: ", txn.Hash())
+	utils.WaitForBlockCompletion(client, txn.Hash().String())
+
+	log.Info("Finalizing dispute...")
+	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		GasMultiplier:  config.GasMultiplier,
+	})
+	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
+	if err != nil {
+		return err
+	}
+	log.Info("Txn Hash: ", finalizeTxn.Hash())
+	utils.WaitForBlockCompletion(client, txn.Hash().String())
 	return nil
 }
