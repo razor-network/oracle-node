@@ -194,13 +194,20 @@ $ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4
 ```
 
 ### Set Config
-The config is set while the build is generated, but if you need to change your provider or the gas multiplier, you can use the `setconfig` command.
+There are a set of parameters that are configurable. These include:
+
+* Provider: The RPC URL of the provider you are using to connect to the blockchain.
+* Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
+* Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
+* Wait Time: This is the number of blocks the system will wait while voting.
+
+The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setconfig` command.
 
 ```
-$ ./razor setconfig --provider <rpc_provider> --gasmultiplier <multiplier_value>
+$ ./razor setconfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks>
 ```
 
 Example:
 ```
-$ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5
+$ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70
 ```
