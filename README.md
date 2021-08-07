@@ -211,3 +211,5 @@ Example:
 ```
 $ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70
 ```
+### Contribute to razor-go 
+We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
