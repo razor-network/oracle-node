@@ -24,7 +24,6 @@ contracts=(
   "Delegator delegator.go"
   "ERC20 erc20.go"
   "ERC165 erc165.go"
-  "Faucet faucet.go"
   "AssetManager assetManager.go"
   "AssetStorage assetStorage.go"
   "Random random.go"
