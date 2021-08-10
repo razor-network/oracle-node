@@ -15,24 +15,12 @@ import (
 )
 
 func HandleCommitState(client *ethclient.Client, address string) []*big.Int {
-	jobs, collections, err := utils.GetActiveAssets(client, address)
+	data, err := utils.GetActiveAssetsData(client, address)
 	if err != nil {
-		log.Error("Error in getting active jobs: ", err)
+		log.Error("Error in getting active assets: ", err)
 		return nil
 	}
-
-	dataFromJobs := utils.GetDataToCommitFromJobs(jobs)
-	var dataFromCollections []*big.Int
-	for _, collection := range collections {
-		data, err := utils.Aggregate(client, address, collection)
-		if err != nil {
-			log.Error(err)
-		}
-		dataFromCollections = append(dataFromCollections, data)
-	}
-	data := append(dataFromJobs, dataFromCollections...)
-	log.Info("Data", data)
-
+	log.Info("Data: ", data)
 	return data
 }
 

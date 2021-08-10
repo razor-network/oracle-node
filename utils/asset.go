@@ -3,11 +3,10 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"math/big"
-	"razor/core/types"
-
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
+	"math/big"
+	"razor/core/types"
 )
 
 func GetNumAssets(client *ethclient.Client, address string) (*big.Int, error) {
@@ -16,18 +15,17 @@ func GetNumAssets(client *ethclient.Client, address string) (*big.Int, error) {
 	return assetManager.GetNumAssets(&callOpts)
 }
 
-func GetActiveAssets(client *ethclient.Client, address string) ([]types.Job, []types.Collection, error) {
-	var jobs []types.Job
-
-	var collections []types.Collection
+func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, error) {
+	var data []*big.Int
 
 	numOfAssets, err := GetNumAssets(client, address)
 	if err != nil {
-		return jobs, collections, err
+		return data, err
 	}
 
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
+
 	for assetIndex := 1; assetIndex <= int(numOfAssets.Int64()); assetIndex++ {
 		assetType, err := assetManager.GetAssetType(&callOpts, big.NewInt(int64(assetIndex)))
 		if err != nil {
@@ -40,17 +38,21 @@ func GetActiveAssets(client *ethclient.Client, address string) ([]types.Job, []t
 				log.Error(err)
 				continue
 			}
-			jobs = append(jobs, activeJob)
+			data = append(data, GetDataToCommitFromJob(activeJob))
 		} else {
 			activeCollection, err := GetActiveCollection(client, address, big.NewInt(int64(assetIndex)))
 			if err != nil {
 				log.Error(err)
 				continue
 			}
-			collections = append(collections, activeCollection)
+			collectionData, err := Aggregate(client, address, activeCollection)
+			if err != nil {
+				collectionData = big.NewInt(1)
+			}
+			data = append(data, collectionData)
 		}
 	}
-	return jobs, collections, nil
+	return data, nil
 }
 
 func GetActiveJob(client *ethclient.Client, address string, jobId *big.Int) (types.Job, error) {
@@ -90,38 +92,41 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
 	var data []*big.Int
 	for _, job := range jobs {
-		var parsedJSON map[string]interface{}
-
-		response, err := GetDataFromAPI(job.Url)
-		if err != nil {
-			log.Error(err)
-			data = append(data, big.NewInt(1))
-			continue
-		}
-
-		err = json.Unmarshal(response, &parsedJSON)
-		if err != nil {
-			log.Error("Error in parsing data from API: ", err)
-			data = append(data, big.NewInt(1))
-			continue
-		}
-		parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
-		if err != nil {
-			log.Error("Error in fetching value from parsed data ", err)
-			continue
-		}
-		datum, err := ConvertToNumber(parsedData)
-		if err != nil {
-			log.Error("Result is not a number")
-			data = append(data, big.NewInt(1))
-			continue
-		}
-
-		dataToAppend := MultiplyToEightDecimals(datum)
+		dataToAppend := GetDataToCommitFromJob(job)
 		data = append(data, dataToAppend)
 	}
 	if len(data) == 0 {
 		data = append(data, big.NewInt(1))
 	}
 	return data
+}
+
+func GetDataToCommitFromJob(job types.Job) *big.Int {
+	var parsedJSON map[string]interface{}
+
+	response, err := GetDataFromAPI(job.Url)
+	if err != nil {
+		log.Error(err)
+		return big.NewInt(1)
+	}
+
+	err = json.Unmarshal(response, &parsedJSON)
+	if err != nil {
+		log.Error("Error in parsing data from API: ", err)
+		return big.NewInt(1)
+	}
+
+	parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
+	if err != nil {
+		log.Error("Error in fetching value from parsed data ", err)
+		return big.NewInt(1)
+	}
+
+	datum, err := ConvertToNumber(parsedData)
+	if err != nil {
+		log.Error("Result is not a number")
+		return big.NewInt(1)
+	}
+
+	return MultiplyToEightDecimals(datum)
 }
