@@ -101,39 +101,56 @@ func TestIsEqual(t *testing.T) {
 		arr2 []*big.Int
 	}
 	tests := []struct {
-		name string
-		args args
-		want bool
+		name  string
+		args  args
+		want  bool
+		want1 int
 	}{
 		{
-			name: "Test 1",
+			name: "Test when both arrays have same values but at different positions",
 			args: args{
 				arr1: []*big.Int{big.NewInt(1), big.NewInt(1234), big.NewInt(2321)},
 				arr2: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
 			},
-			want: true,
+			want:  false,
+			want1: 1,
 		},
 		{
-			name: "Test 2",
+			name: "Test when both arrays have different length",
 			args: args{
 				arr1: []*big.Int{big.NewInt(1), big.NewInt(1234)},
 				arr2: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
 			},
-			want: false,
+			want:  false,
+			want1: 3,
 		},
 		{
-			name: "Test 3",
+			name: "Test when both arrays are empty",
 			args: args{
 				arr1: []*big.Int{},
 				arr2: []*big.Int{},
 			},
-			want: true,
+			want:  true,
+			want1: -1,
+		},
+		{
+			name: "Test when both arrays are exactly identical",
+			args: args{
+				arr1: []*big.Int{big.NewInt(1), big.NewInt(1232), big.NewInt(12423)},
+				arr2: []*big.Int{big.NewInt(1), big.NewInt(1232), big.NewInt(12423)},
+			},
+			want:  true,
+			want1: -1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsEqual(tt.args.arr1, tt.args.arr2); got != tt.want {
-				t.Errorf("IsEqual() = %v, want %v", got, tt.want)
+			got, got1 := IsEqual(tt.args.arr1, tt.args.arr2)
+			if got != tt.want {
+				t.Errorf("IsEqual() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("IsEqual() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
