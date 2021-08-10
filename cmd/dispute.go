@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"math"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -24,18 +23,19 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Info("Values in the block")
 		log.Infof("Medians: %s", proposedBlock.BlockMedians)
-		medians, err := MakeBlock(client, account.Address, epoch)
+		medians, err := MakeBlock(client, account.Address, epoch, false)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 		log.Info("Locally calculated data:")
 		log.Infof("Medians: %s\n", medians)
-		if !utils.IsEqual(proposedBlock.BlockMedians, medians) {
+		isEqual, assetId := utils.IsEqual(proposedBlock.BlockMedians, medians)
+		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Info("Block Values: ", proposedBlock.BlockMedians)
 			log.Info("Local Calculations: ", medians)
-			err := Dispute(client, config, account, epoch, big.NewInt(int64(i)))
+			err := Dispute(client, config, account, epoch, big.NewInt(int64(i)), assetId)
 			if err != nil {
 				log.Error("Error in disputing...", err)
 				continue
@@ -47,32 +47,14 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 	}
 }
 
-func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch *big.Int, blockId *big.Int) error {
-	sortedVotes, _, err := getSortedVotes(client, account.Address, 0, epoch)
+func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch *big.Int, blockId *big.Int, assetId int) error {
+	blockManager := utils.GetBlockManager(client)
+	_, sortedVotes, err := getSortedVotes(client, account.Address, assetId, epoch)
 	if err != nil {
 		return err
 	}
-	iter := int(math.Ceil(float64(len(sortedVotes)) / 1000))
-	blockManager := utils.GetBlockManager(client)
-	for i := 0; i < iter; i++ {
-		log.Info(epoch, sortedVotes[i*1000:i*1000+1000])
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       account.Password,
-			AccountAddress: account.Address,
-			ChainId:        core.ChainId,
-			Config:         config,
-		})
-		txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(0), sortedVotes[i*1000:i*1000+1000])
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		log.Info("Txn Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
-	}
 
-	log.Info("Sending finalized dispute...")
+	log.Infof("Epoch: %s, Sorted Votes: %s", epoch, sortedVotes)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
@@ -80,11 +62,27 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		ChainId:        core.ChainId,
 		Config:         config,
 	})
-	txn, err := blockManager.FinalizeDispute(txnOpts, epoch, blockId)
+	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Info("Calling GiveSorted...")
+	log.Info("Txn Hash: ", txn.Hash())
+	utils.WaitForBlockCompletion(client, txn.Hash().String())
+
+	log.Info("Finalizing dispute...")
+	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	})
+	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
 		return err
 	}
-	log.Info("Txn Hash: ", txn.Hash())
+	log.Info("Txn Hash: ", finalizeTxn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 	return nil
 }

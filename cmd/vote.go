@@ -31,6 +31,7 @@ var voteCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("Error in fetching config details: ", err)
 		}
+		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		password := utils.PasswordPrompt()
 		client := utils.ConnectToClient(config.Provider)
 		header, err := client.HeaderByNumber(context.Background(), nil)
@@ -47,7 +48,7 @@ var voteCmd = &cobra.Command{
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config)
+				handleBlock(client, account, latestHeader.Number, config, rogueMode)
 			}
 
 		}
@@ -59,7 +60,7 @@ var (
 	lastVerification *big.Int
 )
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations) {
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -132,7 +133,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		lastProposal = epoch
 		log.Info("Proposing block....")
-		Propose(client, account, config, stakerId, epoch)
+		Propose(client, account, config, stakerId, epoch, rogueMode)
 	case 3:
 		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
 			break
@@ -195,9 +196,13 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 func init() {
 	rootCmd.AddCommand(voteCmd)
 
-	var Address string
+	var (
+		Address string
+		Rogue   bool
+	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

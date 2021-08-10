@@ -5,7 +5,6 @@ import (
 
 	math2 "github.com/ethereum/go-ethereum/common/math"
 	log "github.com/sirupsen/logrus"
-	"modernc.org/sortutil"
 )
 
 func Contains(arr []*big.Int, val *big.Int) bool {
@@ -20,18 +19,18 @@ func Contains(arr []*big.Int, val *big.Int) bool {
 	return false
 }
 
-func IsEqual(arr1 []*big.Int, arr2 []*big.Int) bool {
-	if len(arr1) != len(arr2) {
-		return false
+func IsEqual(arr1 []*big.Int, arr2 []*big.Int) (bool, int) {
+	if len(arr1) > len(arr2) {
+		return false, len(arr2) + 1
+	} else if len(arr1) < len(arr2) {
+		return false, len(arr1) + 1
 	}
-	sortutil.BigIntSlice.Sort(arr1)
-	sortutil.BigIntSlice.Sort(arr2)
 	for i := 0; i < len(arr1); i++ {
 		if arr1[i].Cmp(arr2[i]) != 0 {
-			return false
+			return false, i + 1
 		}
 	}
-	return true
+	return true, -1
 }
 
 func GetDataInBytes(data []*big.Int) [][]byte {

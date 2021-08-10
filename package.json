@@ -1,7 +1,6 @@
 {
-  "name": "go-cli",
-  "version": "1.0.0",
-  "description": "Installation",
+  "name": "razor-go",
+  "version": "v0.1.3", "description": "Official node for running stakers in Golang.",
   "main": "index.js",
   "scripts": {
     "build": "make build",
@@ -11,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ashish10677/go-cli.git"
+    "url": "https://github.com/razor-network/razor-go"
   },
   "author": "Razor Network",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ashish10677/go-cli/issues"
+    "url": "https://github.com/razor-network/razor-go/issues"
   },
-  "homepage": "https://github.com/ashish10677/go-cli#readme",
+  "homepage": "https://github.com/razor-network/razor-go#readme",
   "dependencies": {
     "@razor-network/contracts": "0.1.3"
   }
