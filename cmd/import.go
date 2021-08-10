@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"razor/utils"
+	"strings"
 )
 
 // importCmd represents the import command
@@ -21,8 +22,10 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		privateKey := utils.PrivateKeyPrompt()
-		// Remove 0x from the private key
-		privateKey = privateKey[2:]
+		if strings.HasPrefix(privateKey, "0x") {
+			// Remove 0x from the private key
+			privateKey = privateKey[2:]
+		}
 		log.Info("Enter password to protect keystore file")
 		password := utils.PasswordPrompt()
 		path := utils.GetDefaultPath()
