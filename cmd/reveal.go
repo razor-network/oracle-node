@@ -57,7 +57,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
-		GasMultiplier:  config.GasMultiplier,
+		Config:         config,
 	})
 
 	voteManager := utils.GetVoteManager(client)

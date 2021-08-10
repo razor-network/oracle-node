@@ -83,7 +83,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
-		GasMultiplier:  config.GasMultiplier,
+		Config:         config,
 	})
 	blockManager := utils.GetBlockManager(client)
 

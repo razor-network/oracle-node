@@ -69,7 +69,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
-		GasMultiplier:  config.GasMultiplier,
+		Config:         config,
 	})
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)

@@ -74,7 +74,7 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 				Password:       account.Password,
 				AccountAddress: account.Address,
 				ChainId:        core.ChainId,
-				GasMultiplier:  configurations.GasMultiplier,
+				Config:         configurations,
 			}, epoch, stakerId)
 			break
 		} else {

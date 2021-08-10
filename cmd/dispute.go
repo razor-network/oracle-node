@@ -61,7 +61,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 			Password:       account.Password,
 			AccountAddress: account.Address,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		})
 		txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(0), sortedVotes[i*1000:i*1000+1000])
 		if err != nil {
@@ -78,7 +78,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
-		GasMultiplier:  config.GasMultiplier,
+		Config:         config,
 	})
 	txn, err := blockManager.FinalizeDispute(txnOpts, epoch, blockId)
 	if err != nil {

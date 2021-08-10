@@ -29,7 +29,7 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	nonce, err := transactionData.Client.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching pending nonce: ", err)
 
-	gasPrice := getGasPrice(transactionData.Client, transactionData.GasMultiplier)
+	gasPrice := getGasPrice(transactionData.Client, transactionData.Config)
 
 	txnOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
@@ -40,11 +40,14 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	return txnOpts
 }
 
-func getGasPrice(client *ethclient.Client, gasMultiplier float32) *big.Int {
+func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
 	gas, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
-	gasPrice := MultiplyFloatAndBigInt(gas, float64(gasMultiplier))
+	if config.GasPrice != 0 {
+		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
+	}
+	gasPrice := MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
 	return gasPrice
 }
