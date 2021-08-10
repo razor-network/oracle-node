@@ -11,7 +11,7 @@ import (
 var listAccountsCmd = &cobra.Command{
 	Use:   "listAccounts",
 	Short: "listAccounts command can be used to list all accessible accounts",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		path := utils.GetDefaultPath()
 		ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
