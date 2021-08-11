@@ -48,7 +48,7 @@ to quickly create a Cobra application.`,
 			Password:       password,
 			AccountAddress: fromAddress,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		})
 		log.Infof("Transferring %s tokens from %s to %s", amount, fromAddress, toAddress)
 

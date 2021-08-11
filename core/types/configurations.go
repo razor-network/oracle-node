@@ -5,4 +5,5 @@ type Configurations struct {
 	GasMultiplier float32
 	BufferPercent int32
 	WaitTime      int32
+	GasPrice      int32
 }

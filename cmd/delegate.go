@@ -45,7 +45,7 @@ var delegateCmd = &cobra.Command{
 			Amount:         amountInWei,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		}
 
 		approve(txnOpts)

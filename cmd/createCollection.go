@@ -35,7 +35,7 @@ var createCollectionCmd = &cobra.Command{
 			Password:       password,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		})
 
 		assetManager := utils.GetAssetManager(client)

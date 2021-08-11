@@ -16,6 +16,7 @@ var (
 	GasMultiplier float32
 	BufferPercent int32
 	WaitTime      int32
+	GasPrice      int32
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -47,6 +48,7 @@ func init() {
 	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
+	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
