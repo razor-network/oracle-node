@@ -21,11 +21,10 @@ jobs:
           name: Install go-ethereum
           command: |
             go get -u github.com/ethereum/go-ethereum
-            
       - persist_to_workspace:
+          root: /
           paths:
-            - .
-            - /go/src/github.com/ethereum/go-ethereum
+            - go/src/github.com/ethereum/go-ethereum
 
 
   install_dependencies_and_setup:
