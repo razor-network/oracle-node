@@ -1,69 +1,32 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
+orbs:
+  node: circleci/node@4.7.0
 jobs:
-  checkout_source:
-    docker:
-      - image: cimg/node:16.5
-    steps:
-      - checkout
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
-
-  install_geth:
-    docker:
-      - image: circleci/golang:1.15.8
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Install go-ethereum
-          command: |
-            go get -u github.com/ethereum/go-ethereum
-      - persist_to_workspace:
-          root: /
-          paths:
-            - go/src/github.com/ethereum/go-ethereum
-
-
-  install_dependencies_and_setup:
-    docker:
-      - image: cimg/node:16.5
-    steps:
-      - attach_workspace:
-          at: .
-      - restore_cache:
-          keys:
-            - dependencies-{{ checksum "package-lock.json" }}
-      - run:
-          name: Install dependencies
-          command: |
-            cd /go/src/github.com/ethereum/go-ethereum
-            make abigen
-            npm install
-            npm run setup
-      - save_cache:
-          key: dependencies-{{ checksum "package-lock.json" }}
-          paths:
-            - node_modules
-      - persist_to_workspace:
-          root: .
-          paths:
-            - node_modules/*
-            - pkg/*
-
   test:
     docker:
       - image: circleci/golang:1.15.8
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - node/install:
+          install-yarn: false
+      - run: node --version
+      - node/install-packages:
+          cache-path: node_modules
+          override-ci-command: npm install
+      - run: npm run setup
       - restore_cache:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
       - run:
-          name: Install Progect Dependencies
+          name: Install go-ethereum and abigen
+          command: |
+            go get -u github.com/ethereum/go-ethereum@v1.10.6
+            cd $GOPATH/src/github.com/ethereum/go-ethereum/
+            make
+            make devtools
+      - run:
+          name: Install Project Dependencies
           command: go mod download
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
@@ -76,16 +39,3 @@ jobs:
             gotestsum --junitfile /tmp/test-reports/unit-tests.xml
       - store_test_results:
           path: /tmp/test-reports
-
-workflows:
-  tests:
-    jobs:
-      - checkout_source
-      - install_geth
-      - install_dependencies_and_setup:
-          requires:
-            - checkout_source
-            - install_geth
-      - test:
-          requires:
-            - install_dependencies_and_setup
