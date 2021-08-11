@@ -18,8 +18,15 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Install go-ethereum
+          command: go get -d github.com/ethereum/go-ethereum
+      - run:
           name: Install go-ethereum Executables
           command: go install github.com/ethereum/go-ethereum/cmd/geth
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
 
   install_dependencies_and_setup:
     docker:
