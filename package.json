@@ -4,6 +4,7 @@
   "description": "Official node for running stakers in Golang.",
   "main": "index.js",
   "scripts": {
+    "setup": "make setup",
     "build": "make build",
     "build-all": "make all",
     "dockerize-build": "make docker-build",
