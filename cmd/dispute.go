@@ -53,13 +53,14 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	if err != nil {
 		return err
 	}
+
 	log.Infof("Epoch: %s, Sorted Votes: %s", epoch, sortedVotes)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
-		GasMultiplier:  config.GasMultiplier,
+		Config:         config,
 	})
 	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
 	if err != nil {
@@ -75,7 +76,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
-		GasMultiplier:  config.GasMultiplier,
+		Config:         config,
 	})
 	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {

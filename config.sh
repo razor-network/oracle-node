@@ -28,4 +28,9 @@ if [ -z "$WAIT_TIME" ]; then
    WAIT_TIME=1
 fi
 
-$RAZOR setconfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME
+read -rp "Gas Price: (0) " GAS_PRICE
+if [ -z "$GAS_PRICE" ]; then
+   GAS_PRICE=0
+fi
+
+$RAZOR setconfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE

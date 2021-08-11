@@ -45,7 +45,7 @@ var stakeCmd = &cobra.Command{
 			Password:       password,
 			Amount:         amountInWei,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		}
 		approve(txnArgs)
 		stakeCoins(txnArgs)

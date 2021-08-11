@@ -58,7 +58,7 @@ var unstakeCmd = &cobra.Command{
 			Password:       password,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		})
 
 		log.Info("Unstaking coins")

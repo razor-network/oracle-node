@@ -28,10 +28,15 @@ func GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	gasPrice, err := getGasPrice()
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
+	config.GasPrice = gasPrice
 	return config, nil
 }
 
@@ -77,4 +82,15 @@ func getWaitTime() (int32, error) {
 		waitTime = viper.GetInt32("wait")
 	}
 	return waitTime, nil
+}
+
+func getGasPrice() (int32, error) {
+	gasPrice, err := rootCmd.PersistentFlags().GetInt32("gasprice")
+	if err != nil {
+		return 0, err
+	}
+	if gasPrice == -1 {
+		gasPrice = viper.GetInt32("gasprice")
+	}
+	return gasPrice, nil
 }
