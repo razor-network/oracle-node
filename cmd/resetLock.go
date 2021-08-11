@@ -42,7 +42,7 @@ to quickly create a Cobra application.`,
 			Password:       password,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
-			GasMultiplier:  config.GasMultiplier,
+			Config:         config,
 		})
 
 		log.Info("Resetting lock...")

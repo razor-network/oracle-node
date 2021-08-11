@@ -12,5 +12,5 @@ type TransactionOptions struct {
 	Amount         *big.Int
 	AccountAddress string
 	ChainId        *big.Int
-	GasMultiplier  float32
+	Config         Configurations
 }
