@@ -152,11 +152,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 
 func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId *big.Int) *big.Int {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
+	blockManagerAddress := utils.GetBlockManagerAddress()
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
 		ToBlock:   blockNumber,
 		Addresses: []common.Address{
-			common.HexToAddress(core.BlockManagerAddress),
+			common.HexToAddress(blockManagerAddress),
 		},
 	}
 	logs, err := client.FilterLogs(context.Background(), query)
