@@ -41,12 +41,15 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 }
 
 func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
-	gas, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
+	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
+	} else {
+		var err error
+		gas, err = client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	gasPrice := MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
 	return gasPrice
