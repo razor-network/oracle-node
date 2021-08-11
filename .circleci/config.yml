@@ -11,6 +11,16 @@ jobs:
           paths:
             - .
 
+  install_geth:
+    docker:
+      - image: circleci/golang:1.15.8
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install go-ethereum Executables
+          command: go install github.com/ethereum/go-ethereum/cmd/geth
+
   install_dependencies_and_setup:
     docker:
       - image: cimg/node:16.5
@@ -47,9 +57,6 @@ jobs:
       - run:
           name: Install Progect Dependencies
           command: go mod download
-      - run:
-          name: Install go-ethereum Executables
-          command: go install github.com/ethereum/go-ethereum/cmd/geth
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
           paths:
@@ -69,6 +76,7 @@ workflows:
       - install_dependencies_and_setup:
           requires:
             - checkout_source
+            - install_geth
       - test:
           requires:
             - install_dependencies_and_setup
