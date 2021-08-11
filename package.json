@@ -1,8 +1,10 @@
 {
   "name": "razor-go",
-  "version": "v0.1.3", "description": "Official node for running stakers in Golang.",
+  "version": "v0.1.3",
+  "description": "Official node for running stakers in Golang.",
   "main": "index.js",
   "scripts": {
+    "setup": "make setup",
     "build": "make build",
     "build-all": "make all",
     "dockerize-build": "make docker-build",
