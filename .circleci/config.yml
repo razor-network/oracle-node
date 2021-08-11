@@ -73,6 +73,7 @@ workflows:
   tests:
     jobs:
       - checkout_source
+      - install_geth
       - install_dependencies_and_setup:
           requires:
             - checkout_source
