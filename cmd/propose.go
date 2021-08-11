@@ -37,20 +37,21 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		log.Error("Error in calculating biggest staker: ", err)
 		return
 	}
-	blockHashes, err := utils.GetBlockHashes(client, account.Address)
+	//blockHashes, err := utils.GetBlockHashes(client, account.Address)
+	randaoHash, err := utils.GetRandaoHash(client, account.Address)
 	if err != nil {
-		log.Error("Error in fetching block hashes: ", blockHashes)
+		log.Error("Error in fetching random hash: ", err)
 		return
 	}
 	log.Info("Biggest Influence Id: ", biggestInfluenceId)
-	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %s, Number of Stakers: %s, Blockhashes: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(blockHashes))
+	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %s, Number of Stakers: %s, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
 	iteration := getIteration(client, account.Address, types.ElectedProposer{
 		Stake:            staker.Stake,
 		StakerId:         stakerId,
 		BiggestInfluence: biggestInfluence,
 		NumberOfStakers:  numStakers,
-		BlockHashes:      blockHashes,
+		RandaoHash:       randaoHash,
 	})
 
 	log.Info("Iteration: ", iteration)
@@ -130,14 +131,14 @@ func getIteration(client *ethclient.Client, address string, proposer types.Elect
 
 func isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
-	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.BlockHashes)
+	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
 	pseudoRandomNumber = pseudoRandomNumber.Add(pseudoRandomNumber, big.NewInt(1))
 	if pseudoRandomNumber.Cmp(proposer.StakerId) != 0 {
 		return false
 	}
 	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
-	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.BlockHashes), "0x" + hex.EncodeToString(seed2)})
+	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
