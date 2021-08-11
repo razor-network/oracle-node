@@ -36,7 +36,6 @@ jobs:
             - pkg/*
 
   test:
-    working_directory: ~/repo
     docker:
       - image: circleci/golang:1.15.8
     steps:
@@ -59,3 +58,14 @@ jobs:
             gotestsum --junitfile /tmp/test-reports/unit-tests.xml
       - store_test_results:
           path: /tmp/test-reports
+
+workflows:
+  tests:
+    jobs:
+      - checkout_source
+      - install_dependencies_and_setup:
+          requires:
+            - checkout_source
+      - test:
+          requires:
+            - install_dependencies_and_setup
