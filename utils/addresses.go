@@ -32,7 +32,7 @@ func GetBlockManagerAddress() string {
 	return addresses.BlockManagerAddress
 }
 
-func getParametersAddress() string {
+func GetParametersAddress() string {
 	addresses := core.AssignAddressesFromJSON()
 	return addresses.ParametersAddress
 }

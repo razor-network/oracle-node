@@ -28,7 +28,7 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 }
 
 func GetParametersManager(client *ethclient.Client) *bindings.Parameters {
-	parametersAddress := getParametersAddress()
+	parametersAddress := GetParametersAddress()
 	parametersManager, err := bindings.NewParameters(common.HexToAddress(parametersAddress), client)
 	if err != nil {
 		log.Fatal(err)
