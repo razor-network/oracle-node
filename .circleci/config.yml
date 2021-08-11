@@ -45,8 +45,11 @@ jobs:
           keys:
             - go-mod-v4-{{ checksum "go.sum" }}
       - run:
-          name: Install Dependencies
+          name: Install Progect Dependencies
           command: go mod download
+      - run:
+          name: Install go-ethereum Executables
+          command: go install github.com/ethereum/go-ethereum/cmd/geth
       - save_cache:
           key: go-mod-v4-{{ checksum "go.sum" }}
           paths:
