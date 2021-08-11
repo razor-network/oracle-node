@@ -21,8 +21,8 @@ jobs:
           name: Install go-ethereum
           command: |
             go get -u github.com/ethereum/go-ethereum
+            
       - persist_to_workspace:
-          root: .
           paths:
             - .
             - $GOPATH/src/github.com/ethereum/go-ethereum
@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            cd $GOPATH/src/github.com/ethereum/go-ethereum
+            cd /go/src/github.com/ethereum/go-ethereum
             make abigen
             npm install
             npm run setup
