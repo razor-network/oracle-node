@@ -29,8 +29,8 @@ jobs:
       - node/install-packages:
           cache-path: node_modules
           override-ci-command: npm install
-      - node/run:
-          npm-run: setup
+      - run:
+          command: npm run setup
       - save_cache:
           key: dependencies-{{ checksum "package-lock.json" }}
           paths:
