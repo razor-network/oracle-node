@@ -19,7 +19,7 @@ type Addresses struct {
 
 func AssignAddressesFromJSON() Addresses {
 	var addresses Addresses
-	data, err := ioutil.ReadFile("addresses.json")
+	data, err := ioutil.ReadFile("./../deployed_addresses/addresses.json")
 	if err != nil {
 		log.Fatal(err)
 	}
