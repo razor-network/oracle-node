@@ -26,7 +26,6 @@ contracts=(
   "ERC165 erc165.go"
   "AssetManager assetManager.go"
   "AssetStorage assetStorage.go"
-  "Random random.go"
   "RAZOR RAZOR.go"
   "StakeManager stakeManager.go"
   "StakeStorage stakeStorage.go"
