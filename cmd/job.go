@@ -38,8 +38,7 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		assetManagerAddress := utils.GetAssetManagerAddress()
-		contractAddress := common.HexToAddress(assetManagerAddress)
+		contractAddress := common.HexToAddress(utils.GetAssetManagerAddress())
 		query := ethereum.FilterQuery{
 			FromBlock: big.NewInt(0),
 			ToBlock:   header.Number,

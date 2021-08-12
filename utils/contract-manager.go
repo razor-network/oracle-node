@@ -10,8 +10,7 @@ import (
 )
 
 func GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
-	RAZORAddress := GetRAZORAddress()
-	coinContract, err := bindings.NewRAZOR(common.HexToAddress(RAZORAddress), client)
+	coinContract, err := bindings.NewRAZOR(common.HexToAddress(GetRAZORAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -19,8 +18,7 @@ func GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 }
 
 func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
-	stakeManagerAddress := GetStakeManagerAddress()
-	stakeManagerContract, err := bindings.NewStakeManager(common.HexToAddress(stakeManagerAddress), client)
+	stakeManagerContract, err := bindings.NewStakeManager(common.HexToAddress(GetStakeManagerAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,8 +26,7 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 }
 
 func GetParametersManager(client *ethclient.Client) *bindings.Parameters {
-	parametersAddress := GetParametersAddress()
-	parametersManager, err := bindings.NewParameters(common.HexToAddress(parametersAddress), client)
+	parametersManager, err := bindings.NewParameters(common.HexToAddress(GetParametersAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,8 +34,7 @@ func GetParametersManager(client *ethclient.Client) *bindings.Parameters {
 }
 
 func GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
-	assetManagerAddress := GetAssetManagerAddress()
-	assetManager, err := bindings.NewAssetManager(common.HexToAddress(assetManagerAddress), client)
+	assetManager, err := bindings.NewAssetManager(common.HexToAddress(GetAssetManagerAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,8 +42,7 @@ func GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
 }
 
 func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
-	voteManagerAddress := GetVoteManagerAddress()
-	voteManager, err := bindings.NewVoteManager(common.HexToAddress(voteManagerAddress), client)
+	voteManager, err := bindings.NewVoteManager(common.HexToAddress(GetVoteManagerAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,8 +50,7 @@ func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
 }
 
 func GetRandomClient(client *ethclient.Client) *bindings.Random {
-	randomClientAddress := GetRandomAddress()
-	randomClient, err := bindings.NewRandom(common.HexToAddress(randomClientAddress), client)
+	randomClient, err := bindings.NewRandom(common.HexToAddress(GetRandomAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,8 +58,7 @@ func GetRandomClient(client *ethclient.Client) *bindings.Random {
 }
 
 func GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	blockManagerAddress := GetBlockManagerAddress()
-	blockManager, err := bindings.NewBlockManager(common.HexToAddress(blockManagerAddress), client)
+	blockManager, err := bindings.NewBlockManager(common.HexToAddress(GetBlockManagerAddress()), client)
 	if err != nil {
 		log.Fatal(err)
 	}
