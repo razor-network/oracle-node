@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/briandowns/spinner"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 	"time"
+
+	"github.com/briandowns/spinner"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -33,6 +34,9 @@ var unstakeCmd = &cobra.Command{
 		client := utils.ConnectToClient(config.Provider)
 
 		_amount, ok := new(big.Int).SetString(amount, 10)
+		if !ok {
+			log.Fatal("SetString: error")
+		}
 		amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
 
 		epoch, err := WaitForCommitState(client, address, "unstake")
