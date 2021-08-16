@@ -67,14 +67,10 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 
 	log.Infof("Medians: %s", medians)
 
-	var ids []*big.Int
-	numAssets, err := utils.GetNumAssets(client, account.Address)
-	if err != nil {
+	ids, err := utils.GetActiveAssetIds(client, account.Address)
+	if err!= nil {
 		log.Error(err)
 		return
-	}
-	for assetIndex := 1; assetIndex <= int(numAssets.Int64()); assetIndex++ {
-		ids = append(ids, big.NewInt(int64(assetIndex)))
 	}
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,

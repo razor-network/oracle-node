@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"razor/core/types"
+	"strings"
 )
 
 func CreateAccount(path string, password string) accounts.Account {
@@ -36,7 +37,7 @@ func GetPrivateKey(address string, password string, keystorePath string) *ecdsa.
 	ks := keystore.NewKeyStore(keystorePath, keystore.StandardScryptN, keystore.StandardScryptP)
 	allAccounts := ks.Accounts()
 	for _, account := range allAccounts {
-		if account.Address.Hex() == address {
+		if strings.ToLower(account.Address.Hex()) == strings.ToLower(address) {
 			return getPrivateKeyFromKeystore(account.URL.Path, password)
 		}
 	}
