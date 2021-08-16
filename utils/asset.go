@@ -42,7 +42,7 @@ func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, er
 				log.Error(err)
 				continue
 			}
-			activeAssets =  append(activeAssets, activeCollection.Id)
+			activeAssets = append(activeAssets, activeCollection.Id)
 		}
 	}
 	return activeAssets, nil

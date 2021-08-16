@@ -37,7 +37,7 @@ func GetPrivateKey(address string, password string, keystorePath string) *ecdsa.
 	ks := keystore.NewKeyStore(keystorePath, keystore.StandardScryptN, keystore.StandardScryptP)
 	allAccounts := ks.Accounts()
 	for _, account := range allAccounts {
-		if strings.ToLower(account.Address.Hex()) == strings.ToLower(address) {
+		if strings.EqualFold(account.Address.Hex(), address) {
 			return getPrivateKeyFromKeystore(account.URL.Path, password)
 		}
 	}

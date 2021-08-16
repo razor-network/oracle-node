@@ -68,7 +68,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	log.Infof("Medians: %s", medians)
 
 	ids, err := utils.GetActiveAssetIds(client, account.Address)
-	if err!= nil {
+	if err != nil {
 		log.Error(err)
 		return
 	}
