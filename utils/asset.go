@@ -24,25 +24,12 @@ func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, er
 	callOpts := GetOptions(false, address, "")
 	var activeAssets []*big.Int
 	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		assetType, err := assetManager.GetAssetType(&callOpts, big.NewInt(int64(assetId)))
+		isActiveAsset, err := assetManager.GetActiveStatus(&callOpts, big.NewInt(int64(assetId)))
 		if err != nil {
-			log.Error("Error in fetching asset: ", assetId)
-			continue
+			log.Error("Error in calling GetActiveStatus: ", err)
 		}
-		if assetType.Cmp(big.NewInt(1)) == 0 {
-			activeJob, err := GetActiveJob(client, address, big.NewInt(int64(assetId)))
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-			activeAssets = append(activeAssets, activeJob.Id)
-		} else {
-			activeCollection, err := GetActiveCollection(client, address, big.NewInt(int64(assetId)))
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-			activeAssets = append(activeAssets, activeCollection.Id)
+		if isActiveAsset {
+			activeAssets = append(activeAssets, big.NewInt(int64(assetId)))
 		}
 	}
 	return activeAssets, nil
