@@ -36,3 +36,9 @@ func GetVoteWeights(client *ethclient.Client, address string, epoch *big.Int, as
 	}
 	return voteManager.VoteWeights(&callOpts, epoch, assetId, voteValue)
 }
+
+func GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
+	voteManager := GetVoteManager(client)
+	callOpts := GetOptions(false, address, "")
+	return voteManager.GetRandaoHash(&callOpts)
+}

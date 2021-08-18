@@ -49,14 +49,6 @@ func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
 	return voteManager
 }
 
-func GetRandomClient(client *ethclient.Client) *bindings.Random {
-	randomClient, err := bindings.NewRandom(common.HexToAddress(GetRandomAddress()), client)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return randomClient
-}
-
 func GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
 	blockManager, err := bindings.NewBlockManager(common.HexToAddress(GetBlockManagerAddress()), client)
 	if err != nil {

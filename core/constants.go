@@ -13,7 +13,6 @@ type Addresses struct {
 	ParametersAddress   string `json:"Parameters"`
 	AssetManagerAddress string `json:"AssetManager"`
 	VoteManagerAddress  string `json:"VoteManager"`
-	RandomClientAddress string `json:"Random"`
 	BlockManagerAddress string `json:"BlockManager"`
 }
 

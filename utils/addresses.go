@@ -22,11 +22,6 @@ func GetRAZORAddress() string {
 	return addresses.RAZORAddress
 }
 
-func GetRandomAddress() string {
-	addresses := core.AssignAddressesFromJSON()
-	return addresses.RandomClientAddress
-}
-
 func GetBlockManagerAddress() string {
 	addresses := core.AssignAddressesFromJSON()
 	return addresses.BlockManagerAddress
