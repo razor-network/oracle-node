@@ -8,5 +8,5 @@ type ElectedProposer struct {
 	StakerId         *big.Int
 	BiggestInfluence *big.Int
 	NumberOfStakers  *big.Int
-	BlockHashes      []byte
+	RandaoHash       [32]byte
 }

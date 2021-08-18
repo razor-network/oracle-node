@@ -22,10 +22,8 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		privateKey := utils.PrivateKeyPrompt()
-		if strings.HasPrefix(privateKey, "0x") {
-			// Remove 0x from the private key
-			privateKey = privateKey[2:]
-		}
+		// Remove 0x from the private key
+		privateKey = strings.TrimPrefix(privateKey, "0x")
 		log.Info("Enter password to protect keystore file")
 		password := utils.PasswordPrompt()
 		path := utils.GetDefaultPath()
