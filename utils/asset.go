@@ -15,6 +15,26 @@ func GetNumAssets(client *ethclient.Client, address string) (*big.Int, error) {
 	return assetManager.GetNumAssets(&callOpts)
 }
 
+func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, error) {
+	numAssets, err := GetNumAssets(client, address)
+	if err != nil {
+		return nil, err
+	}
+	assetManager := GetAssetManager(client)
+	callOpts := GetOptions(false, address, "")
+	var activeAssets []*big.Int
+	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
+		isActiveAsset, err := assetManager.GetActiveStatus(&callOpts, big.NewInt(int64(assetId)))
+		if err != nil {
+			log.Error("Error in calling GetActiveStatus: ", err)
+		}
+		if isActiveAsset {
+			activeAssets = append(activeAssets, big.NewInt(int64(assetId)))
+		}
+	}
+	return activeAssets, nil
+}
+
 func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, error) {
 	var data []*big.Int
 
@@ -79,6 +99,9 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 	collection, err := assetManager.GetCollection(&callOpts, collectionId)
 	if err != nil {
 		return types.Collection{}, err
+	}
+	if !collection.Active {
+		return types.Collection{}, nil
 	}
 	return types.Collection{
 		Id:                collectionId,
