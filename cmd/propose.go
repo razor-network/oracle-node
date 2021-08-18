@@ -59,7 +59,30 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	if iteration == -1 {
 		return
 	}
-
+	numOfProposedBlocks, err := utils.GetNumberOfProposedBlocks(client, account.Address, epoch)
+	if err != nil {
+		log.Error(err)
+	}
+	maxAltBlocks, err := utils.GetMaxAltBlocks(client, account.Address)
+	if err != nil {
+		log.Error(err)
+	}
+	if numOfProposedBlocks.Cmp(maxAltBlocks) == 0 {
+		log.Infof("Number of blocks proposed: %s, which is equal to maximum alternative blocks allowed", numOfProposedBlocks)
+		log.Info("Comparing  iterations...")
+		lastBlockIndex := big.NewInt(0)
+		lastBlockIndex.Sub(numOfProposedBlocks, big.NewInt(1))
+		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
+		if err != nil {
+			log.Error(err)
+		}
+		lastIteration := lastProposedBlockStruct.Block.Iteration
+		if lastIteration.Cmp(big.NewInt(int64(iteration))) == -1 {
+			log.Infof("Current iteration is greater than iteration of last proposed block, cannot propose")
+			return
+		}
+		log.Infof("Current iteration is less than iteration of last proposed block, can propose")
+	}
 	medians, err := MakeBlock(client, account.Address, epoch, rogueMode)
 	if err != nil {
 		log.Error(err)
