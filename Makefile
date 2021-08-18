@@ -10,8 +10,10 @@ setup: fetch_bindings
 
 fetch_bindings:
 	@echo "Installing contract dependencies..."
+	@echo ""
 	@${SHELL} generate-bindings.sh
-	@echo "Contract bindings generated....\n"
+	@echo "Contract bindings generated...."
+	@echo ""
 
 install_razor:
 	@echo "Installing razor node...."
