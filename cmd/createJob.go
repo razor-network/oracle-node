@@ -10,11 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createJobCmd represents the createJob command
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
-	Short: "Create Job is used to create a job on razor.network",
-	Long:  ``,
+	Short: "createJob can be used to create a job",
+	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The createJob command can be used to create a job that the stakers can vote upon.
+
+Example:
+  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -r true -s last -u https://api.gemini.com/v1/pubticker/btcusd
+
+Note: 
+  This command only works for the admin.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {

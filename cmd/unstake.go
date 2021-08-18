@@ -18,8 +18,9 @@ var unstakeCmd = &cobra.Command{
 	Use:   "unstake",
 	Short: "Unstake your razors",
 	Long: `unstake allows user to unstake their sRzrs in the razor network
-	For ex:
-	unstake --address <address> --amount <amount_of_sRazors>
+
+Example:	
+  ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount 1000 --autoWithdraw
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()

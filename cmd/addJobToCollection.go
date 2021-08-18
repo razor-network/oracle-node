@@ -14,8 +14,12 @@ var addJobToCollectionCmd = &cobra.Command{
 	Use:   "addJobToCollection",
 	Short: "addJobToCollection can be used to add a particular job to an existing collection",
 	Long: `If there are existing jobs and collections, this command can be used to add a job to a collection.
-	USAGE: ./razor addJobToCollection --address <address> --jobId <jobId> --collectionId <collectionId>
-	Note: This command only works for the admin.
+
+Example: 
+  ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7 
+
+Note: 
+  This command only works for the admin.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()

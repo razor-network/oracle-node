@@ -13,8 +13,12 @@ import (
 // delegateCmd represents the delegate command
 var delegateCmd = &cobra.Command{
 	Use:   "delegate",
-	Short: "delegate is used by delegator to stake coins on the network without setting up a node",
-	Long:  ``,
+	Short: "delegate can be used by delegator to stake coins on the network without setting up a node",
+	Long: `If a user has Razors with them, and wants to stake them but doesn't want to set up a node, they can use the delegate command.
+
+Example:
+  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)

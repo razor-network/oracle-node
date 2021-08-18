@@ -7,12 +7,13 @@ import (
 	"razor/utils"
 )
 
-// createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create command can be used to create new accounts",
-	Long:  `For a new user to start doing anything, an account is required. This command helps the user to create a new account secured by a password so that only that user would be able to use the account
-	USAGE: ./razor create`,
+	Long: `For a new user to start doing anything, an account is required. This command helps the user to create a new account secured by a password so that only that user would be able to use the account
+
+Example: 
+  ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
 		path := utils.GetDefaultPath()
 		password := utils.PasswordPrompt()

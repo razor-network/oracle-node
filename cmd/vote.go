@@ -24,8 +24,11 @@ import (
 
 var voteCmd = &cobra.Command{
 	Use:   "vote",
-	Short: "Start monitoring contract, commit, vote, propose and dispute automatically",
-	Long:  ``,
+	Short: "Start monitoring contract, commit, reveal, propose and dispute automatically",
+	Long: `vote command allows you to participate in the voting of assets and earn rewards.
+
+Example:
+  ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {

@@ -12,16 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// withdrawCmd represents the withdraw command
 var withdrawCmd = &cobra.Command{
 	Use:   "withdraw",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "withdraw your razors once you've unstaked",
+	Long: `withdraw command can be used once the user has unstaked their token and the withdraw period is upon them.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example:
+  ./razor withdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)

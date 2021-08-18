@@ -15,9 +15,9 @@ var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some razors",
 	Long: `Stake allows user to stake razors in the razor network
-	For ex:
-	stake -a <amount> --address <address> --password <password>
-	`,
+
+Example:
+  ./razor stake -a <amount> --address <address> --password <password>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {

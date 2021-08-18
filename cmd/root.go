@@ -21,12 +21,15 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "razor",
+	Use:   "razor [command] [flags]",
 	Short: "Official node for running stakers in Golang",
-	Long: `Razor can be used by the stakers to stake, delegate and vote on the razorscan. Stakers can vote correctly and earn rewards.`,
+	Long:  `Razor can be used by the stakers to stake, delegate and vote on the razorscan. Stakers can vote correctly and earn rewards.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Welcome to razor-go.")
-		cmd.Help()
+		err := cmd.Help()
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 

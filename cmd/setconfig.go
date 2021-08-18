@@ -12,6 +12,9 @@ var setConfig = &cobra.Command{
 	Short: "setconfig enables user to set the values of provider and gas multiplier",
 	Long: `Setting the provider helps the CLI to know which provider to connect to.
 Setting the gas multiplier value enables the CLI to multiply the gas with that value for all the transactions
+
+Example:
+  ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
