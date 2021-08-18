@@ -68,7 +68,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		log.Error(err)
 	}
 	if numOfProposedBlocks.Cmp(maxAltBlocks) == 0 || numOfProposedBlocks.Cmp(maxAltBlocks) == 1 {
-		log.Infof("Number of blocks proposed: %s, which is equal to maximum alternative blocks allowed", numOfProposedBlocks)
+		log.Infof("Number of blocks proposed: %s, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Info("Comparing  iterations...")
 		lastBlockIndex := big.NewInt(0)
 		lastBlockIndex.Sub(numOfProposedBlocks, big.NewInt(1))
