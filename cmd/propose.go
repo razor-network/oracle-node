@@ -78,10 +78,10 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		}
 		lastIteration := lastProposedBlockStruct.Block.Iteration
 		if lastIteration.Cmp(big.NewInt(int64(iteration))) == -1 {
-			log.Infof("Current iteration is greater than iteration of last proposed block, cannot propose")
+			log.Info("Current iteration is greater than iteration of last proposed block, cannot propose")
 			return
 		}
-		log.Infof("Current iteration is less than iteration of last proposed block, can propose")
+		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
 	medians, err := MakeBlock(client, account.Address, epoch, rogueMode)
 	if err != nil {
