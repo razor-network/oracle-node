@@ -5,7 +5,7 @@ RAZOR = ${BIN_DIR}/razor
 
 all: fetch_bindings install_razor set_config
 build: install_razor set_config
-docker-build: fetch_bindings install_razor
+build-noargs: fetch_bindings install_razor
 setup: fetch_bindings
 
 fetch_bindings:
