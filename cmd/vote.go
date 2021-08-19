@@ -163,7 +163,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
 		ToBlock:   blockNumber,
 		Addresses: []common.Address{
-			common.HexToAddress(core.BlockManagerAddress),
+			common.HexToAddress(utils.GetBlockManagerAddress()),
 		},
 	}
 	logs, err := client.FilterLogs(context.Background(), query)
