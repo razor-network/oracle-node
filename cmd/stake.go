@@ -55,7 +55,8 @@ Example:
 func approve(txnArgs types.TransactionOptions) {
 	tokenManager := utils.GetTokenManager(txnArgs.Client)
 	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
-	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+	stakeManagerAddress := utils.GetStakeManagerAddress()
+	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(stakeManagerAddress))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +65,7 @@ func approve(txnArgs types.TransactionOptions) {
 	} else {
 		log.Info("Sending Approve transaction...")
 		txnOpts := utils.GetTxnOpts(txnArgs)
-		txn, err := tokenManager.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
+		txn, err := tokenManager.Approve(txnOpts, common.HexToAddress(stakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			log.Fatal("Error in approving: ", err)
 		}
