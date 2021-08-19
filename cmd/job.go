@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"math/big"
+	"razor/core"
 	"razor/utils"
 	"strings"
 
@@ -38,7 +39,8 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		contractAddress := common.HexToAddress(utils.GetAssetManagerAddress())
+
+		contractAddress := common.HexToAddress(core.AssetManagerAddress)
 		query := ethereum.FilterQuery{
 			FromBlock: big.NewInt(0),
 			ToBlock:   header.Number,
