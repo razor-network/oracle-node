@@ -16,7 +16,7 @@ var createJobCmd = &cobra.Command{
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The createJob command can be used to create a job that the stakers can vote upon.
 
 Example:
-  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -r true -s last -u https://api.gemini.com/v1/pubticker/btcusd
+  ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -r true -s last -u https://api.gemini.com/v1/pubticker/btcusd
 
 Note: 
   This command only works for the admin.
@@ -71,7 +71,7 @@ func init() {
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
-	createJobCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
+	createJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 
 	urlErr := createJobCmd.MarkFlagRequired("url")
 	utils.CheckError("URL error: ", urlErr)

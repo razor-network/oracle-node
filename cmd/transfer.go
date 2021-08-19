@@ -16,7 +16,7 @@ var transferCmd = &cobra.Command{
 	Long: `transfer command allows user to transfer their razors to another account if they've not staked those razors
 
 Example:
-  ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
+  ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {
@@ -26,9 +26,9 @@ Example:
 		fromAddress, _ := cmd.Flags().GetString("from")
 		toAddress, _ := cmd.Flags().GetString("to")
 
-		amount, err := cmd.Flags().GetString("amount")
+		value, err := cmd.Flags().GetString("value")
 		if err != nil {
-			log.Fatal("Error in reading amount", err)
+			log.Fatal("Error in reading value", err)
 		}
 
 		client := utils.ConnectToClient(config.Provider)
@@ -38,7 +38,7 @@ Example:
 			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
 		}
 
-		amountInWei := utils.GetAmountWithChecks(amount, balance)
+		valueInWei := utils.GetAmountWithChecks(value, balance)
 
 		tokenManager := utils.GetTokenManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -48,9 +48,9 @@ Example:
 			ChainId:        core.ChainId,
 			Config:         config,
 		})
-		log.Infof("Transferring %s tokens from %s to %s", amount, fromAddress, toAddress)
+		log.Infof("Transferring %s tokens from %s to %s", value, fromAddress, toAddress)
 
-		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), amountInWei)
+		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), valueInWei)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -69,12 +69,12 @@ func init() {
 		To     string
 	)
 
-	transferCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to transfer (in Wei)")
+	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 
-	amountErr := transferCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	amountErr := transferCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", amountErr)
 	fromErr := transferCmd.MarkFlagRequired("from")
 	utils.CheckError("From address error: ", fromErr)
 	toErr := transferCmd.MarkFlagRequired("to")

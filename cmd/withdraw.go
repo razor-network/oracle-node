@@ -103,7 +103,7 @@ func init() {
 		StakerId string
 	)
 
-	withdrawCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
+	withdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	withdrawCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to withdraw")
 
 	addrErr := withdrawCmd.MarkFlagRequired("address")

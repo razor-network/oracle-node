@@ -17,7 +17,7 @@ var delegateCmd = &cobra.Command{
 	Long: `If a user has Razors with them, and wants to stake them but doesn't want to set up a node, they can use the delegate command.
 
 Example:
-  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
+  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
@@ -26,14 +26,14 @@ Example:
 		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
-		amount, _ := cmd.Flags().GetString("amount")
+		value, _ := cmd.Flags().GetString("value")
 
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
-		amountInWei := utils.GetAmountWithChecks(amount, balance)
+		valueInWei := utils.GetAmountWithChecks(value, balance)
 		epoch, err := WaitForCommitState(client, address, "delegate")
 		utils.CheckError("Error in fetching epoch: ", err)
 
@@ -46,7 +46,7 @@ Example:
 		txnOpts := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
-			Amount:         amountInWei,
+			Amount:         valueInWei,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			Config:         config,
@@ -54,8 +54,8 @@ Example:
 
 		approve(txnOpts)
 
-		log.Infof("Delegating %s razors to Staker %s", amount, _stakerId)
-		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, amountInWei, _stakerId)
+		log.Infof("Delegating %s razors to Staker %s", value, _stakerId)
+		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, valueInWei, _stakerId)
 		utils.CheckError("Error in delegating: ", err)
 		log.Infof("Sending Delegate transaction...")
 		log.Infof("Transaction hash: %s", txn.Hash())
@@ -71,15 +71,15 @@ func init() {
 		StakerId string
 	)
 
-	delegateCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
-	delegateCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
+	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
+	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	delegateCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 
-	amountErr := delegateCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	valueErr := delegateCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", valueErr)
 	addrErr := delegateCmd.MarkFlagRequired("address")
-	utils.CheckError("Amount error: ", addrErr)
+	utils.CheckError("Address error: ", addrErr)
 	stakerIdErr := delegateCmd.MarkFlagRequired("stakerId")
-	utils.CheckError("Amount error: ", stakerIdErr)
+	utils.CheckError("StakerId error: ", stakerIdErr)
 
 }

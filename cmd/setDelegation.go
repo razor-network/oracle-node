@@ -117,7 +117,7 @@ func init() {
 		Commission string
 	)
 	setDelegationCmd.Flags().BoolVarP(&Status, "status", "s", true, "true for accepting delegation and false for not accepting")
-	setDelegationCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
+	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")

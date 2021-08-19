@@ -72,7 +72,7 @@ func init() {
 		CollectionId string
 	)
 
-	addJobToCollectionCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
+	addJobToCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	addJobToCollectionCmd.Flags().StringVarP(&JobId, "jobId", "", "", "job id to add to the  collection")
 	addJobToCollectionCmd.Flags().StringVarP(&CollectionId, "collectionId", "", "", "collection id")
 

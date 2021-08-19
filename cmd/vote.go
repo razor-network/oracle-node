@@ -211,7 +211,7 @@ func init() {
 		Rogue   bool
 	)
 
-	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 
 	addrErr := voteCmd.MarkFlagRequired("address")

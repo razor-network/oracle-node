@@ -60,7 +60,7 @@ func init() {
 		StakerId string
 	)
 
-	resetLockCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
+	resetLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	resetLockCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to reset lock")
 
 	addrErr := resetLockCmd.MarkFlagRequired("address")

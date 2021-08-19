@@ -65,7 +65,7 @@ func init() {
 	)
 
 	createCollectionCmd.Flags().StringVarP(&Name, "name", "n", "", "name of the collection")
-	createCollectionCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
+	createCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createCollectionCmd.Flags().StringSliceVarP(&JobIds, "jobIds", "", []string{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 
