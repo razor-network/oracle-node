@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"bufio"
 	"errors"
 	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"os"
 )
 
 func PasswordPrompt() string {
@@ -44,4 +47,30 @@ func validatePrivateKey(input string) error {
 		return errors.New("enter a valid private key")
 	}
 	return nil
+}
+
+func GetPasswordFromFile(path string) string {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Getting password from the first line of file at described location")
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		return scanner.Text()
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return ""
+}
+
+func AssignPassword(flagset *pflag.FlagSet) string {
+	if IsFlagPassed("password") {
+		passwordPath, _ := flagset.GetString("password")
+		return GetPasswordFromFile(passwordPath)
+	}
+	return PasswordPrompt()
 }

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/briandowns/spinner"
@@ -116,24 +115,6 @@ func CheckError(msg string, err error) {
 	if err != nil {
 		log.Fatal(msg + err.Error())
 	}
-}
-
-func GetPasswordFromFile(path string) string {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Info("Getting password from the first line of file at described location")
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		return scanner.Text()
-	}
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return ""
 }
 
 func IsFlagPassed(name string) bool {
