@@ -25,14 +25,7 @@ var unstakeCmd = &cobra.Command{
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		amount, _ := cmd.Flags().GetString("amount")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
@@ -105,7 +98,7 @@ func init() {
 	unstakeCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "amount", "a", "0", "amount of sRazors to un-stake")
 	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
-	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "user's password")
+	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 	stakerIdErr := unstakeCmd.MarkFlagRequired("stakerId")

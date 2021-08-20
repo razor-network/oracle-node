@@ -24,14 +24,7 @@ to quickly create a Cobra application.`,
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 
@@ -72,7 +65,7 @@ func init() {
 
 	resetLockCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
 	resetLockCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to reset lock")
-	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password of the user")
+	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 
 	addrErr := resetLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

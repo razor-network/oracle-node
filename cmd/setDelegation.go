@@ -30,14 +30,7 @@ to quickly create a Cobra application.`,
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		status, _ := cmd.Flags().GetBool("status")
 		commission, _ := cmd.Flags().GetString("commission")
@@ -129,7 +122,7 @@ func init() {
 	setDelegationCmd.Flags().BoolVarP(&Status, "status", "s", true, "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
-	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "your account password")
+	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

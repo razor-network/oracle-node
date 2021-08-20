@@ -19,14 +19,7 @@ var delegateCmd = &cobra.Command{
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 		amount, _ := cmd.Flags().GetString("amount")
@@ -78,7 +71,7 @@ func init() {
 	delegateCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
 	delegateCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
 	delegateCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
-	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "your account password")
+	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	amountErr := delegateCmd.MarkFlagRequired("amount")
 	utils.CheckError("Amount error: ", amountErr)

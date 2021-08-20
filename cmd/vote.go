@@ -32,14 +32,7 @@ var voteCmd = &cobra.Command{
 			log.Fatal("Error in fetching config details: ", err)
 		}
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		client := utils.ConnectToClient(config.Provider)
 		header, err := client.HeaderByNumber(context.Background(), nil)
@@ -219,7 +212,7 @@ func init() {
 
 	voteCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
-	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password of the staker")
+	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

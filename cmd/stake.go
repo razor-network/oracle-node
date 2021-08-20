@@ -24,14 +24,7 @@ var stakeCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
@@ -107,7 +100,7 @@ func init() {
 
 	stakeCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
 	stakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
-	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "passsword of the staker")
+	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "passsword path of staker to protect the keystore")
 
 	amountErr := stakeCmd.MarkFlagRequired("amount")
 	utils.CheckError("Amount error: ", amountErr)

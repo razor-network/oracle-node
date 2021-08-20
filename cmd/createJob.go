@@ -21,14 +21,7 @@ var createJobCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		var password string
-		if utils.IsFlagPassed("password") {
-			passwordPath, _ := cmd.Flags().GetString("password")
-			password = utils.GetPasswordFromFile(passwordPath)
-		} else {
-			password = utils.PasswordPrompt()
-		}
-
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		name, _ := cmd.Flags().GetString("name")
 		repeat, _ := cmd.Flags().GetBool("repeat")
@@ -73,7 +66,7 @@ func init() {
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
 	createJobCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
-	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password of the job creator")
+	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	urlErr := createJobCmd.MarkFlagRequired("url")
 	utils.CheckError("URL error: ", urlErr)
