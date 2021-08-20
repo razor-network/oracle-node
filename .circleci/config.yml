@@ -17,19 +17,11 @@ jobs:
           install-yarn: false
       - run: node --version
       - node/install-packages:
-          cache-path: node_modules
           override-ci-command: npm install
       - run: npm run setup
-      - restore_cache:
-          keys:
-            - go-mod-v4-{{ .Environment.CACHE_VERSION }}-{{ checksum "go.sum" }}
       - run:
           name: Install Project Dependencies
           command: go mod download
-      - save_cache:
-          key: go-mod-v4-{{ .Environment.CACHE_VERSION }}-{{ checksum "go.sum" }}
-          paths:
-            - "/go/pkg/mod"
       - run:
           name: Run tests
           command: |
