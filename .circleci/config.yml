@@ -25,9 +25,6 @@ jobs:
     steps:
       - setup_remote_docker
       - run:
-          name: Load archived Docker image
-          command: docker load -i /tmp/workspace/image.tar
-      - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -64,12 +61,12 @@ workflows:
   tests:
     jobs:
       - test
-  build-master:
+  build-main:
     jobs:
       - publish-latest:
           filters:
             branches:
-              only: master
+              only: main
   build-tags:
     jobs:
       - publish-tag:
