@@ -1,32 +1,33 @@
-## Use node 16.2 on alpine.
-FROM node:16.2.0-alpine
+FROM golang:1.16-alpine as ethereum
 
-## Install python
-RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN apk add --no-cache gcc musl-dev linux-headers git \
+    && git clone https://github.com/ethereum/go-ethereum/ \
+    && cd go-ethereum \
+    && go run build/ci.go install ./cmd/abigen \
+    && cp build/bin/abigen /usr/local/bin/
 
-## Install other dependencies
-RUN apk add --update make gcc musl musl-dev g++ libc-dev bash linux-headers
+FROM golang:1.16-alpine AS go
 
-## Copy geth, abigen from geth image
-COPY --from=ethereum/client-go:alltools-v1.10.7 /usr/local/bin/* /usr/local/bin/
+FROM node:16.2.0-alpine AS builder
 
-## Copy golang from golang-alpine
-COPY --from=golang:1.16-alpine /usr/local/go/ /usr/local/go/
-ENV PATH="/usr/local/go/bin:${PATH}"
-
-RUN abigen --version
-
-## Install solc using npm
-RUN npm install -g solc
-
-## Caching node_modules
-ADD package.json /tmp/package.json
-RUN cd /tmp && npm install
-RUN mkdir -p /app && cp -a /tmp/node_modules /app
+COPY --from=ethereum /usr/local/bin/abigen /usr/local/bin/
+COPY --from=go /usr/local/go/ /usr/local/go/
 
 ## Attaching current dir to workdir
 WORKDIR /app
 COPY . /app
 
-## Create build
-RUN npm run dockerize-build
+## Install and Cleanup
+
+RUN PATH="/usr/local/go/bin:${PATH}" \
+    && apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python \
+    && apk add --update make gcc musl musl-dev g++ libc-dev bash linux-headers \
+    && npm install \
+    && npm run dockerize-build \
+    && cp build/bin/razor /usr/local/bin/
+
+
+FROM alpine:latest
+RUN apk add --update bash 
+COPY --from=builder /usr/local/bin/razor /usr/local/bin/
+
