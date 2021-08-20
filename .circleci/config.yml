@@ -3,6 +3,36 @@ version: 2.1
 orbs:
   node: circleci/node@4.7.0
 jobs:
+  publish-latest:
+    environment:
+      IMAGE_NAME: razornetwork/razor-go
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG="0.0.${CIRCLE_BUILD_NUM}"
+            docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:$IMAGE_TAG .
+
+  publish-tag:
+    environment:
+      IMAGE_NAME: razornetwork/razor-go
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=${CIRCLE_TAG/v/''}
+            docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:$IMAGE_TAG .
   test:
     docker:
       - image: circleci/golang:1.15.8
@@ -11,7 +41,7 @@ jobs:
       - run:
           name: Install go-ethereum and abigen
           command: |
-            go get -u github.com/ethereum/go-ethereum@v1.10.6
+            go get -u github.com/ethereum/go-ethereum@v1.10.7
             go install github.com/ethereum/go-ethereum/cmd/abigen
       - node/install:
           install-yarn: false
@@ -34,3 +64,17 @@ workflows:
   tests:
     jobs:
       - test
+  build-master:
+    jobs:
+      - publish-latest:
+          filters:
+            branches:
+              only: master
+  build-tags:
+    jobs:
+      - publish-tag:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
