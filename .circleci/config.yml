@@ -4,9 +4,9 @@ orbs:
   node: circleci/node@4.7.0
 jobs:
   publish-latest:
-    executor: razornetwork/razor-go
+    executor: docker-publisher
     environment:
-      IMAGE_NAME: building-on-ci
+      IMAGE_NAME: razornetwork/razor-go
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
@@ -20,9 +20,9 @@ jobs:
 
   publish-tag:
     executor: docker-publisher
+    environment:
+      IMAGE_NAME: razornetwork/razor-go
     steps:
-      - attach_workspace:
-          at: /tmp/workspace
       - setup_remote_docker
       - run:
           name: Load archived Docker image
