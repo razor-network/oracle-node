@@ -3,12 +3,12 @@ package core
 import "math/big"
 
 //TODO: Change these addresses to the deployed address.
-var StakeManagerAddress = "0x5B4a0dF703d1D5Ea5c1605f24a8572449b4F22B5"
-var RAZORAddress = "0xB3c9650357B358ddf8d60167b4B305D7fd0676c3"
-var ParametersAddress = "0x4F629Aa4CB67fbDbcDDB508fc16ED4BD7f25E751"
-var AssetManagerAddress = "0xA43AfAA0F3B4D4109Cc0949E95C57111F5fE6993"
-var VoteManagerAddress = "0x76CFd554C5ed222bea7A2c0d23631a47fa3bc128"
-var BlockManagerAddress = "0xD63c084F2B2eC5688fbc0A42D3AbfdB0cd7A2535"
+var StakeManagerAddress = "0x92d5fB140fB93E0790baD45f945677ABBC0239c3"
+var RAZORAddress = "0xA02C76D746877d3bB5df1fD3c4130D642c16ab49"
+var ParametersAddress = "0x31E62E022f241bfE8c3Bc83DE8c090af7a67DdD6"
+var AssetManagerAddress = "0x80280d1D25558Bd23712720266428Ba3AfaD2e0B"
+var VoteManagerAddress = "0xD0dcD208Cf140cC160E8e5423a9d76458c58AC6E"
+var BlockManagerAddress = "0x8eAC317759167b0901cf0b2548a91321F62B3f2B"
 
 var StateLength uint64 = 75
 var EpochLength int64 = 300
