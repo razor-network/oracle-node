@@ -40,8 +40,6 @@ Example:
 		}
 		valueInWei := big.NewInt(1).Mul(_value, big.NewInt(1e18))
 
-		epoch, err := WaitForCommitState(client, address, "unstake")
-		utils.CheckError("Error in fetching epoch: ", err)
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("Set string error in converting staker id")
@@ -62,6 +60,8 @@ Example:
 			Config:         config,
 		})
 
+		epoch, err := WaitForCommitState(client, address, "unstake")
+		utils.CheckError("Error in fetching epoch: ", err)
 		log.Info("Unstaking coins")
 		txn, err := stakeManager.Unstake(txnOpts, epoch, _stakerId, valueInWei)
 		utils.CheckError("Error in un-staking: ", err)

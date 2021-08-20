@@ -34,9 +34,6 @@ Example:
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
 		valueInWei := utils.GetAmountWithChecks(value, balance)
-		epoch, err := WaitForCommitState(client, address, "delegate")
-		utils.CheckError("Error in fetching epoch: ", err)
-
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("SetString error while converting stakerId")
@@ -55,7 +52,10 @@ Example:
 		approve(txnOpts)
 
 		log.Infof("Delegating %s razors to Staker %s", value, _stakerId)
-		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, valueInWei, _stakerId)
+		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
+		epoch, err := WaitForCommitState(client, address, "delegate")
+		utils.CheckError("Error in fetching epoch: ", err)
+		txn, err := stakeManager.Delegate(delegationTxnOpts, epoch, valueInWei, _stakerId)
 		utils.CheckError("Error in delegating: ", err)
 		log.Infof("Sending Delegate transaction...")
 		log.Infof("Transaction hash: %s", txn.Hash())
