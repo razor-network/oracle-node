@@ -66,22 +66,12 @@ workflows:
       - test
   build-master:
     jobs:
-      - build:
-          filters:
-            branches:
-              only: master
       - publish-latest:
           filters:
             branches:
               only: master
   build-tags:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
       - publish-tag:
           filters:
             tags:
