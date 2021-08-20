@@ -4,6 +4,11 @@ Official node for running stakers in Golang.
 
 ## Installation
 
+### Docker quick start
+One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+
+docker run -it razor-network/razor-go /bin/bash
+
 ### Prerequisites
 * Golang 1.15 or later must be installed.
 * Latest stable version of node is required.
