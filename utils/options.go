@@ -28,7 +28,7 @@ func GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	privateKey := accounts.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, GetDefaultPath())
 	if privateKey == nil {
-		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress + " not present in razor-go"))
+		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
 	nonce, err := transactionData.Client.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching pending nonce: ", err)
