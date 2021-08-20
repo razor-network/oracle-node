@@ -84,7 +84,7 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	return 0
 }
 
-func WaitTillNextNBlock(waitTime int32) {
+func WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
 	}
@@ -93,8 +93,8 @@ func WaitTillNextNBlock(waitTime int32) {
 	if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
 		log.Error("Error in setting color for spinner")
 	}
-	s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " block(s) "
-	time.Sleep(time.Duration(waitTime*2) * time.Second)
+	s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " second(s) "
+	time.Sleep(time.Duration(waitTime) * time.Second)
 	s.Stop()
 }
 

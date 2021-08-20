@@ -156,7 +156,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			return
 		}
 	}
-	utils.WaitTillNextNBlock(config.WaitTime)
+	utils.WaitTillNextNSecs(config.WaitTime)
 	fmt.Println()
 }
 

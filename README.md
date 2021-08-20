@@ -207,7 +207,7 @@ There are a set of parameters that are configurable. These include:
 * Provider: The RPC URL of the provider you are using to connect to the blockchain.
 * Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
 * Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
-* Wait Time: This is the number of blocks the system will wait while voting.
+* Wait Time: This is the time in seconds for which the system will wait while voting.
 * Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 0, the razor client will automatically calculate the optimum gas price and send it.
 
 The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setconfig` command.
