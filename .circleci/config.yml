@@ -4,7 +4,6 @@ orbs:
   node: circleci/node@4.7.0
 jobs:
   publish-latest:
-    executor: docker-publisher
     environment:
       IMAGE_NAME: razornetwork/razor-go
     docker:
@@ -19,9 +18,10 @@ jobs:
             docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:latest --tag $IMAGE_NAME:$IMAGE_TAG .
 
   publish-tag:
-    executor: docker-publisher
     environment:
       IMAGE_NAME: razornetwork/razor-go
+    docker:
+      - image: circleci/buildpack-deps:stretch
     steps:
       - setup_remote_docker
       - run:
