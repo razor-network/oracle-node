@@ -19,7 +19,13 @@ var createCollectionCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		password := utils.PasswordPrompt()
+		var password string
+		if utils.IsFlagPassed("password") {
+			passwordPath, _ := cmd.Flags().GetString("password")
+			password = utils.GetPasswordFromFile(passwordPath)
+		} else {
+			password = utils.PasswordPrompt()
+		}
 
 		name, _ := cmd.Flags().GetString("name")
 		address, _ := cmd.Flags().GetString("address")
@@ -56,12 +62,14 @@ func init() {
 		Account           string
 		JobIds            []string
 		AggregationMethod uint32
+		Password          string
 	)
 
 	createCollectionCmd.Flags().StringVarP(&Name, "name", "n", "", "name of the collection")
 	createCollectionCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
 	createCollectionCmd.Flags().StringSliceVarP(&JobIds, "jobIds", "", []string{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
+	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password of job creater")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)

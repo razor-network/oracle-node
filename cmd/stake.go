@@ -24,7 +24,14 @@ var stakeCmd = &cobra.Command{
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		password := utils.PasswordPrompt()
+		var password string
+		if utils.IsFlagPassed("password") {
+			passwordPath, _ := cmd.Flags().GetString("password")
+			password = utils.GetPasswordFromFile(passwordPath)
+		} else {
+			password = utils.PasswordPrompt()
+		}
+
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
@@ -93,12 +100,14 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount  string
-		Address string
+		Amount   string
+		Address  string
+		Password string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
 	stakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "passsword of the staker")
 
 	amountErr := stakeCmd.MarkFlagRequired("amount")
 	utils.CheckError("Amount error: ", amountErr)

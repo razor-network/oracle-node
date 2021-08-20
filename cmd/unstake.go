@@ -25,11 +25,18 @@ var unstakeCmd = &cobra.Command{
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
+		var password string
+		if utils.IsFlagPassed("password") {
+			passwordPath, _ := cmd.Flags().GetString("password")
+			password = utils.GetPasswordFromFile(passwordPath)
+		} else {
+			password = utils.PasswordPrompt()
+		}
+
 		address, _ := cmd.Flags().GetString("address")
 		amount, _ := cmd.Flags().GetString("amount")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
-		password := utils.PasswordPrompt()
 
 		client := utils.ConnectToClient(config.Provider)
 
@@ -91,13 +98,14 @@ func init() {
 		StakerId              string
 		AmountToUnStake       string
 		WithdrawAutomatically bool
+		Password              string
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "amount", "a", "0", "amount of sRazors to un-stake")
 	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
-
+	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "user's password")
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 	stakerIdErr := unstakeCmd.MarkFlagRequired("stakerId")

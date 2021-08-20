@@ -29,8 +29,15 @@ var createCmd = &cobra.Command{
 	Short: "create command can be used to create new accounts",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		var password string
+		if utils.IsFlagPassed("password") {
+			passwordPath, _ := cmd.Flags().GetString("password")
+			password = utils.GetPasswordFromFile(passwordPath)
+		} else {
+			password = utils.PasswordPrompt()
+		}
+
 		path := utils.GetDefaultPath()
-		password := utils.PasswordPrompt()
 		account := accounts.CreateAccount(path, password)
 		log.Info("Account address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)
@@ -39,4 +46,10 @@ var createCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(createCmd)
+
+	var (
+		Password string
+	)
+
+	createCmd.Flags().StringVarP(&Password, "password", "", "", "password of the user")
 }

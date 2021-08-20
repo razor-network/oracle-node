@@ -24,7 +24,15 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal("Error in getting config: ", err)
 		}
-		password := utils.PasswordPrompt()
+
+		var password string
+		if utils.IsFlagPassed("password") {
+			passwordPath, _ := cmd.Flags().GetString("password")
+			password = utils.GetPasswordFromFile(passwordPath)
+		} else {
+			password = utils.PasswordPrompt()
+		}
+
 		fromAddress, _ := cmd.Flags().GetString("from")
 		toAddress, _ := cmd.Flags().GetString("to")
 
@@ -66,14 +74,16 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (
-		Amount string
-		From   string
-		To     string
+		Amount   string
+		From     string
+		To       string
+		Password string
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to transfer (in Wei)")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
+	transferCmd.Flags().StringVarP(&Password, "password", "", "", "your account password")
 
 	amountErr := transferCmd.MarkFlagRequired("amount")
 	utils.CheckError("Amount error: ", amountErr)
