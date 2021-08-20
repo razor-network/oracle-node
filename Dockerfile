@@ -1,12 +1,5 @@
-FROM golang:1.16-alpine as ethereum
-
-RUN apk add --no-cache gcc musl-dev linux-headers git \
-    && git clone https://github.com/ethereum/go-ethereum/ \
-    && cd go-ethereum \
-    && go run build/ci.go install ./cmd/abigen \
-    && cp build/bin/abigen /usr/local/bin/
-
 FROM golang:1.16-alpine AS go
+FROM ethereum/client-go:alltools-v1.10.7 AS ethereum
 
 FROM node:16.2.0-alpine AS builder
 
