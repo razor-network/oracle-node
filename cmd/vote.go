@@ -190,7 +190,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 }
 
 func calculateSecret(account types.Account, epoch *big.Int) []byte {
-	hash := solsha3.SoliditySHA3([]string{"address", "uint256"}, []interface{}{account.Address, epoch.String()})
+	hash := solsha3.SoliditySHA3([]string{"address", "uint256", "uint256", "string"}, []interface{}{account.Address, epoch.String(), core.ChainId.String(), "razororacle"})
 	signedData, err := accounts.Sign(hash, account, utils.GetDefaultPath())
 	if err != nil {
 		log.Error("Error in signing the data: ", err)
