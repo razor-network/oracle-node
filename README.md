@@ -215,15 +215,15 @@ There are a set of parameters that are configurable. These include:
 * Wait Time: This is the time in seconds for which the system will wait while voting.
 * Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 0, the razor client will automatically calculate the optimum gas price and send it.
 
-The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setconfig` command.
+The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setConfig` command.
 
 ```
-$ ./razor setconfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price>
+$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price>
 ```
 
 Example:
 ```
-$ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
+$ ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
 ```
 
 Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.

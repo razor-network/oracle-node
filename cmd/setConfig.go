@@ -8,13 +8,13 @@ import (
 )
 
 var setConfig = &cobra.Command{
-	Use:   "setconfig",
-	Short: "setconfig enables user to set the values of provider and gas multiplier",
+	Use:   "setConfig",
+	Short: "setConfig enables user to set the values of provider and gas multiplier",
 	Long: `Setting the provider helps the CLI to know which provider to connect to.
 Setting the gas multiplier value enables the CLI to multiply the gas with that value for all the transactions
 
 Example:
-  ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
+  ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
@@ -43,7 +43,7 @@ Example:
 			viper.Set("buffer", 30)
 			viper.Set("wait", 3)
 			viper.Set("gasprice", 0)
-			log.Info("Config values set to default. Use setconfig to modify the values.")
+			log.Info("Config values set to default. Use setConfig to modify the values.")
 		}
 		path := utils.GetDefaultPath() + "/razor.yaml"
 		err := viper.WriteConfigAs(path)
