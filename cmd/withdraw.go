@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -54,26 +55,33 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 
 	lock, err := utils.GetLock(client, account.Address, stakerId)
 	utils.CheckError("Error in fetching lock: ", err)
+	log.Info(lock.WithdrawAfter)
+
+	if lock.WithdrawAfter.Cmp(big.NewInt(0)) == 0 {
+		log.Fatal("Please unstake Razors before withdrawing.")
+	}
+
 	withdrawReleasePeriod, err := utils.GetWithdrawReleasePeriod(client, account.Address)
 	utils.CheckError("Error in fetching withdraw release period", err)
 	withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, withdrawReleasePeriod)
+	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         configurations,
+	})
 
-	epoch, err := WaitForCommitState(client, account.Address, "withdraw")
-	utils.CheckError("Error in fetching epoch: ", err)
-
+	epoch, err := utils.GetEpoch(client, account.Address)
 	if epoch.Cmp(withdrawBefore) > 0 {
 		log.Fatal("Withdrawal period has passed. Cannot withdraw now, please reset the lock!")
 	}
 
-	for i := epoch; i.Cmp(withdrawBefore) < 0; {
-		if epoch.Cmp(lock.WithdrawAfter) >= 0 && epoch.Cmp(withdrawBefore) <= 0 {
-			withdraw(client, types.TransactionOptions{
-				Client:         client,
-				Password:       account.Password,
-				AccountAddress: account.Address,
-				ChainId:        core.ChainId,
-				Config:         configurations,
-			}, epoch, stakerId)
+	commitStateEpoch, err := WaitForCommitState(client, account.Address, "withdraw")
+	for i := commitStateEpoch; i.Cmp(withdrawBefore) < 0; {
+		if commitStateEpoch.Cmp(lock.WithdrawAfter) >= 0 && commitStateEpoch.Cmp(withdrawBefore) <= 0 {
+			utils.CheckError("Error in fetching epoch: ", err)
+			withdraw(client, txnOpts, commitStateEpoch, stakerId)
 			break
 		} else {
 			i, err = WaitForCommitState(client, account.Address, "withdraw")
@@ -82,11 +90,11 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 	}
 }
 
-func withdraw(client *ethclient.Client, txnOpts types.TransactionOptions, epoch *big.Int, stakerId *big.Int) {
+func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch *big.Int, stakerId *big.Int) {
 	log.Info("Withdrawing funds...")
 
 	stakeManager := utils.GetStakeManager(client)
-	txn, err := stakeManager.Withdraw(utils.GetTxnOpts(txnOpts), epoch, stakerId)
+	txn, err := stakeManager.Withdraw(txnOpts, epoch, stakerId)
 	utils.CheckError("Error in withdrawing funds: ", err)
 
 	log.Info("Withdraw Transaction sent.")
