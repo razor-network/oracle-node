@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"os"
+	"strings"
 )
 
 func PasswordPrompt() string {
@@ -70,7 +71,15 @@ func GetPasswordFromFile(path string) string {
 func AssignPassword(flagset *pflag.FlagSet) string {
 	if IsFlagPassed("password") {
 		passwordPath, _ := flagset.GetString("password")
-		return GetPasswordFromFile(passwordPath)
+		prompt := promptui.Prompt{
+			Label:     "Setting password from file at described path, are you sure?",
+			IsConfirm: true,
+		}
+		result, err := prompt.Run()
+		CheckError(result, err)
+		if strings.ToLower(result) == "y" {
+			return GetPasswordFromFile(passwordPath)
+		}
 	}
 	return PasswordPrompt()
 }
