@@ -14,7 +14,7 @@ import (
 var modifyAssetStatusCmd = &cobra.Command{
 	Use:   "modifyAssetStatus",
 	Short: "",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in fetching config data: ", err)
@@ -75,7 +75,7 @@ func init() {
 	var (
 		Address string
 		AssetId string
-		Status bool
+		Status  bool
 	)
 
 	modifyAssetStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
