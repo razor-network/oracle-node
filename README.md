@@ -194,11 +194,11 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --gasprice 1
 ```
 This will cause this particular vote command to run with a gas price of 10.
 
-### Admin Commands
 
-#### Create Job
-The admin can create new jobs using `creteJob` command. 
+### Create Job
+Create new jobs using `creteJob` command. 
 
+_Note: This command is restricted to "Admin Role"_
 ```
 $ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
 ```
@@ -213,7 +213,9 @@ $  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n eth
 ```
 
 ### Create Collection
-The admin can create new collections using `creteCollection` command. 
+Create new collections using `creteCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
 
 ```
 $ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
@@ -224,8 +226,10 @@ Example:
 $ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
 ```
 
-#### Add Job to Collection
-The admin can add existing jobs to existing collections using `addJobToCollection` command. 
+### Add Job to Collection
+Add existing jobs to existing collections using `addJobToCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
 
 ```
 $ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
@@ -236,8 +240,10 @@ Example:
 $ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
 ```
 
-#### Modify Asset Status
-The admin can modify the active status of an asset using the `modifyAssetStatus` command.
+### Modify Asset Status
+Modify the active status of an asset using the `modifyAssetStatus` command.
+
+_Note: This command is restricted to "Admin Role"_
 
 ```
 $ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status=<true_or_false>
