@@ -79,7 +79,7 @@ func init() {
 	var (
 		Address string
 		AssetId string
-		Status string
+		Status  string
 	)
 
 	modifyAssetStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")

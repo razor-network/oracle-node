@@ -118,7 +118,7 @@ func init() {
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		Status    string
+		Status     string
 		Address    string
 		Commission string
 	)
