@@ -7,11 +7,13 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/logrusorgru/aurora/v3"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"math"
 	"math/big"
 	"razor/accounts"
 	"razor/core"
@@ -134,7 +136,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		Reveal(client, _committedData, secret, account, account.Address, config)
 	case 2:
-		lastProposal := getLastProposedEpoch(client, blockNumber, stakerId)
+		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
+		if err != nil {
+			log.Error("Error in fetching last proposal: ", err)
+			break
+		}
 		if lastProposal != nil && lastProposal.Cmp(epoch) >= 0 {
 			break
 		}
@@ -157,7 +163,8 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	fmt.Println()
 }
 
-func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId *big.Int) *big.Int {
+func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId *big.Int) (*big.Int, error) {
+	maxRetries := 3
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
@@ -166,14 +173,27 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			common.HexToAddress(core.BlockManagerAddress),
 		},
 	}
-	logs, err := client.FilterLogs(context.Background(), query)
-	if err != nil {
-		log.Fatal(err)
+	var (
+		logs []types2.Log
+		err  error
+	)
+	for retry := 1; retry <= maxRetries; retry++ {
+		logs, err = client.FilterLogs(context.Background(), query)
+		if err != nil {
+			log.Error("Error in fetching logs: ", err)
+			retryingIn := math.Pow(2, float64(retry))
+			log.Infof("Retrying in %f seconds.....", retryingIn)
+			time.Sleep(time.Duration(retryingIn) * time.Second)
+			continue
+		}
+		break
 	}
-
+	if err != nil {
+		return big.NewInt(0), err
+	}
 	contractAbi, err := abi.JSON(strings.NewReader(jobManager.BlockManagerABI))
 	if err != nil {
-		log.Fatal(err)
+		return big.NewInt(0), err
 	}
 	epochLastProposed := big.NewInt(0)
 	for _, vLog := range logs {
@@ -186,7 +206,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			epochLastProposed = data[0].(*big.Int)
 		}
 	}
-	return epochLastProposed
+	return epochLastProposed, nil
 }
 
 func calculateSecret(account types.Account, epoch *big.Int) []byte {
