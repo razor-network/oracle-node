@@ -79,12 +79,12 @@ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 10
 
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
+$ ./razor setDelegation --address <address> --status=<true_or_false> --commission <commission>
 ```
 
 Example:
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status=true --commission 100
 ```
 
 ### Delegate
@@ -166,46 +166,6 @@ Example:
 $ ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
-### Create Job
-You can create new jobs using `creteJob` command. This command will work only for admins.
-
-```
-$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
-```
-
-Example:
-```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
-```
-OR
-```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
-```
-
-### Create Collection
-You can create new collections using `creteCollection` command. This command will work only for admins.
-
-```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
-```
-
-Example:
-```
-$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
-```
-
-### Add Job to Collection
-You can add existing jobs to existing collections using `addJobToCollection` command. This command will work only for admins.
-
-```
-$ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
-```
-
-Example:
-```
-$ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
-```
-
 ### Set Config
 There are a set of parameters that are configurable. These include:
 
@@ -233,6 +193,60 @@ Example:
 $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --gasprice 10 
 ```
 This will cause this particular vote command to run with a gas price of 10.
+
+### Admin Commands
+
+#### Create Job
+The admin can create new jobs using `creteJob` command. 
+
+```
+$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
+```
+
+Example:
+```
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+```
+OR
+```
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
+```
+
+### Create Collection
+The admin can create new collections using `creteCollection` command. 
+
+```
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
+```
+
+Example:
+```
+$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
+```
+
+#### Add Job to Collection
+The admin can add existing jobs to existing collections using `addJobToCollection` command. 
+
+```
+$ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
+```
+
+Example:
+```
+$ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
+```
+
+#### Modify Asset Status
+The admin can modify the active status of an asset using the `modifyAssetStatus` command.
+
+```
+$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status=<true_or_false>
+```
+
+Example:
+```
+$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status=false
+```
 
 ### Contribute to razor-go 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
