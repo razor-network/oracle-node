@@ -67,17 +67,16 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	if err != nil {
 		log.Error(err)
 	}
-	if numOfProposedBlocks.Cmp(maxAltBlocks) == 0 || numOfProposedBlocks.Cmp(maxAltBlocks) == 1 {
+	if numOfProposedBlocks.Cmp(maxAltBlocks) >= 0 {
 		log.Infof("Number of blocks proposed: %s, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Info("Comparing  iterations...")
-		lastBlockIndex := big.NewInt(0)
-		lastBlockIndex.Sub(numOfProposedBlocks, big.NewInt(1))
+		lastBlockIndex := big.NewInt(0).Sub(numOfProposedBlocks, big.NewInt(1))
 		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
 		}
 		lastIteration := lastProposedBlockStruct.Block.Iteration
-		if lastIteration.Cmp(big.NewInt(int64(iteration))) == -1 {
+		if lastIteration.Cmp(big.NewInt(int64(iteration))) < 0 {
 			log.Info("Current iteration is greater than iteration of last proposed block, cannot propose")
 			return
 		}
