@@ -37,7 +37,7 @@ func GetDefaultPath() string {
 	CheckError("Error in getting user home directory: ", err)
 	defaultPath := home + "/.razor"
 	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
-		mkdirErr := os.Mkdir(defaultPath, 0777)
+		mkdirErr := os.Mkdir(defaultPath, 0700)
 		CheckError("Error in creating directory: ", mkdirErr)
 	}
 	return defaultPath

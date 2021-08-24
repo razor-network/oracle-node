@@ -73,6 +73,7 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 	})
 
 	epoch, err := utils.GetEpoch(client, account.Address)
+	utils.CheckError("Error in fetching epoch: ", err)
 	if epoch.Cmp(withdrawBefore) > 0 {
 		log.Fatal("Withdrawal period has passed. Cannot withdraw now, please reset the lock!")
 	}
