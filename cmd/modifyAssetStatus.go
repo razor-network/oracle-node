@@ -7,6 +7,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +22,10 @@ var modifyAssetStatusCmd = &cobra.Command{
 
 		address, _ := cmd.Flags().GetString("address")
 		assetId, _ := cmd.Flags().GetString("assetId")
-		status, _ := cmd.Flags().GetBool("status")
+		statusString, _ := cmd.Flags().GetString("status")
+
+		status, err := strconv.ParseBool(statusString)
+		utils.CheckError("Error in parsing status to boolean: ", err)
 
 		assetIdInBigInt, ok := new(big.Int).SetString(assetId, 10)
 		if !ok {
@@ -75,12 +79,12 @@ func init() {
 	var (
 		Address string
 		AssetId string
-		Status  bool
+		Status string
 	)
 
 	modifyAssetStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	modifyAssetStatusCmd.Flags().StringVarP(&AssetId, "assetId", "", "", "assetId of the asset")
-	modifyAssetStatusCmd.Flags().BoolVarP(&Status, "status", "", true, "active status of the asset")
+	modifyAssetStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the asset")
 
 	addressErr := modifyAssetStatusCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addressErr)

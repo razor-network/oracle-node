@@ -79,12 +79,12 @@ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 10
 
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 ```
-$ ./razor setDelegation --address <address> --status=<true_or_false> --commission <commission>
+$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
 ```
 
 Example:
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status=true --commission 100
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
 ```
 
 ### Delegate
@@ -246,12 +246,12 @@ Modify the active status of an asset using the `modifyAssetStatus` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status=<true_or_false>
+$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
 ```
 
 Example:
 ```
-$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status=false
+$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
 ```
 
 ### Contribute to razor-go 
