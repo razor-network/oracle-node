@@ -6,6 +6,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -30,8 +31,11 @@ Example:
 
 		password := utils.PasswordPrompt()
 		address, _ := cmd.Flags().GetString("address")
-		status, _ := cmd.Flags().GetBool("status")
+		statusString, _ := cmd.Flags().GetString("status")
 		commission, _ := cmd.Flags().GetString("commission")
+
+		status, err := strconv.ParseBool(statusString)
+		utils.CheckError("Error in parsing status to boolean: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
 
@@ -112,11 +116,12 @@ func init() {
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		Status     bool
+		Status     string
 		Address    string
 		Commission string
 	)
-	setDelegationCmd.Flags().BoolVarP(&Status, "status", "s", true, "true for accepting delegation and false for not accepting")
+
+	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
 
