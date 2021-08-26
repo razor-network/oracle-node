@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
@@ -62,13 +64,8 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		ChainId:        core.ChainId,
 		Config:         config,
 	})
-	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
-	if err != nil {
-		log.Error(err)
-	}
-	log.Info("Calling GiveSorted...")
-	log.Info("Txn Hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+
+    GiveSorted(client, blockManager, txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
 
 	log.Info("Finalizing dispute...")
 	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -83,6 +80,19 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		return err
 	}
 	log.Info("Txn Hash: ", finalizeTxn.Hash())
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+	utils.WaitForBlockCompletion(client, finalizeTxn.Hash().String())
 	return nil
+}
+
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch *big.Int, assetId *big.Int, sortedVotes []*big.Int) {
+	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedVotes)
+	if err != nil {
+		log.Error("Error in calling GiveSorted: ", err)
+		mid := len(sortedVotes)/2
+		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedVotes[:mid])
+		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedVotes[mid:])
+	}
+	log.Info("Calling GiveSorted...")
+	log.Info("Txn Hash: ", txn.Hash())
+	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
