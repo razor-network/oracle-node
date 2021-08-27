@@ -30,6 +30,9 @@ var delegateCmd = &cobra.Command{
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
 		amountInWei := utils.GetAmountWithChecks(amount, balance)
+
+		utils.CheckEthBalanceIsZero(client, address)
+
 		epoch, err := WaitForCommitState(client, address, "delegate")
 		utils.CheckError("Error in fetching epoch: ", err)
 
@@ -37,8 +40,6 @@ var delegateCmd = &cobra.Command{
 		if !ok {
 			log.Fatal("SetString error while converting stakerId")
 		}
-
-		utils.CheckEthBalanceIsZero(client, address)
 
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := types.TransactionOptions{
