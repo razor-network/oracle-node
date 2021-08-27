@@ -39,6 +39,8 @@ var stakeCmd = &cobra.Command{
 
 		amountInWei := utils.GetAmountWithChecks(amount, balance)
 
+		utils.CheckEthBalanceIsZero(client, address)
+
 		txnArgs := types.TransactionOptions{
 			Client:         client,
 			AccountAddress: address,

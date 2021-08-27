@@ -39,6 +39,8 @@ var unstakeCmd = &cobra.Command{
 		}
 		amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
 
+		utils.CheckEthBalanceIsZero(client, address)
+
 		epoch, err := WaitForCommitState(client, address, "unstake")
 		utils.CheckError("Error in fetching epoch: ", err)
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
