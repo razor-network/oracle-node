@@ -37,7 +37,7 @@ func GetDefaultPath() string {
 	CheckError("Error in getting user home directory: ", err)
 	defaultPath := home + "/.razor"
 	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
-		mkdirErr := os.Mkdir(defaultPath, 0777)
+		mkdirErr := os.Mkdir(defaultPath, 0700)
 		CheckError("Error in creating directory: ", mkdirErr)
 	}
 	return defaultPath
@@ -125,4 +125,14 @@ func IsFlagPassed(name string) bool {
 		}
 	}
 	return found
+}
+
+func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
+	if err != nil {
+		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
+	}
+	if ethBalance.Cmp(big.NewInt(0)) == 0 {
+		log.Fatal("Eth balance is 0, Aborting...")
+	}
 }

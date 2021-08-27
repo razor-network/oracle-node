@@ -6,6 +6,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -32,8 +33,11 @@ to quickly create a Cobra application.`,
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		status, _ := cmd.Flags().GetBool("status")
+		statusString, _ := cmd.Flags().GetString("status")
 		commission, _ := cmd.Flags().GetString("commission")
+
+		status, err := strconv.ParseBool(statusString)
+		utils.CheckError("Error in parsing status to boolean: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
 
@@ -101,7 +105,7 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 	}
 	result, err := prompt.Run()
 	utils.CheckError(result, err)
-	if strings.ToLower(result) == "yes" || strings.ToLower(result) == "y" {
+	if strings.ToLower(result) == "y" {
 		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commission)
 		utils.CheckError("Error in decreasing commission: ", err)
 		log.Info("Sending DecreaseCommission transaction...")
@@ -114,12 +118,12 @@ func init() {
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		Status     bool
+		Status     string
 		Address    string
 		Commission string
 		Password   string
 	)
-	setDelegationCmd.Flags().BoolVarP(&Status, "status", "s", true, "true for accepting delegation and false for not accepting")
+	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")

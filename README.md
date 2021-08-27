@@ -4,6 +4,11 @@ Official node for running stakers in Golang.
 
 ## Installation
 
+### Docker quick start
+One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+
+`docker run -it razornetwork/razor-go /bin/bash`
+
 ### Prerequisites
 * Golang 1.15 or later must be installed.
 * Latest stable version of node is required.
@@ -161,46 +166,6 @@ Example:
 $ ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
-### Create Job
-You can create new jobs using `creteJob` command. This command will work only for admins.
-
-```
-$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
-```
-
-Example:
-```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
-```
-OR
-```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
-```
-
-### Create Collection
-You can create new collections using `creteCollection` command. This command will work only for admins.
-
-```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
-```
-
-Example:
-```
-$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
-```
-
-### Add Job to Collection
-You can add existing jobs to existing collections using `addJobToCollection` command. This command will work only for admins.
-
-```
-$ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
-```
-
-Example:
-```
-$ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
-```
-
 ### Set Config
 There are a set of parameters that are configurable. These include:
 
@@ -228,6 +193,66 @@ Example:
 $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --gasprice 10 
 ```
 This will cause this particular vote command to run with a gas price of 10.
+
+
+### Create Job
+Create new jobs using `creteJob` command. 
+
+_Note: This command is restricted to "Admin Role"_
+```
+$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
+```
+
+Example:
+```
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+```
+OR
+```
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
+```
+
+### Create Collection
+Create new collections using `creteCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
+
+```
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
+```
+
+Example:
+```
+$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
+```
+
+### Add Job to Collection
+Add existing jobs to existing collections using `addJobToCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
+
+```
+$ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
+```
+
+Example:
+```
+$ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
+```
+
+### Modify Asset Status
+Modify the active status of an asset using the `modifyAssetStatus` command.
+
+_Note: This command is restricted to "Admin Role"_
+
+```
+$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+```
+
+Example:
+```
+$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
+```
 
 ### Contribute to razor-go 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
