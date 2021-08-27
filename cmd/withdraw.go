@@ -32,17 +32,12 @@ to quickly create a Cobra application.`,
 
 		client := utils.ConnectToClient(config.Provider)
 
-		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account"+address+": ", err)
-
-		if balance.Cmp(big.NewInt(0)) == 0 {
-			log.Fatal("Balance is 0. Aborting...")
-		}
-
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("Set string error in converting staker id")
 		}
+
+		utils.CheckEthBalanceIsZero(client, address)
 
 		checkForCommitStateAndWithdraw(client, types.Account{
 			Address:  address,
