@@ -38,6 +38,8 @@ var delegateCmd = &cobra.Command{
 			log.Fatal("SetString error while converting stakerId")
 		}
 
+		utils.CheckEthBalanceIsZero(client, address)
+
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := types.TransactionOptions{
 			Client:         client,
