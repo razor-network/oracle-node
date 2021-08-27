@@ -39,6 +39,8 @@ Example:
 
 		valueInWei := utils.GetAmountWithChecks(value, balance)
 
+		utils.CheckEthBalanceIsZero(client, address)
+
 		txnArgs := types.TransactionOptions{
 			Client:         client,
 			AccountAddress: address,

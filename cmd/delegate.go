@@ -34,6 +34,8 @@ Example:
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
 		valueInWei := utils.GetAmountWithChecks(value, balance)
+		utils.CheckEthBalanceIsZero(client, address)
+
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("SetString error while converting stakerId")

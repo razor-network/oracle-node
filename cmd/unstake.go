@@ -40,6 +40,8 @@ Example:
 		}
 		valueInWei := big.NewInt(1).Mul(_value, big.NewInt(1e18))
 
+		utils.CheckEthBalanceIsZero(client, address)
+
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("Set string error in converting staker id")

@@ -103,7 +103,7 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 	}
 	result, err := prompt.Run()
 	utils.CheckError(result, err)
-	if strings.ToLower(result) == "yes" || strings.ToLower(result) == "y" {
+	if strings.ToLower(result) == "y" {
 		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commission)
 		utils.CheckError("Error in decreasing commission: ", err)
 		log.Info("Sending DecreaseCommission transaction...")
