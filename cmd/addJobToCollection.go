@@ -10,16 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// addJobToCollectionCmd represents the addJobToCollection command
 var addJobToCollectionCmd = &cobra.Command{
 	Use:   "addJobToCollection",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "addJobToCollection can be used to add a particular job to an existing collection",
+	Long: `If there are existing jobs and collections, this command can be used to add a job to a collection.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example: 
+  ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7 
+
+Note: 
+  This command only works for the admin.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {
@@ -71,7 +72,7 @@ func init() {
 		CollectionId string
 	)
 
-	addJobToCollectionCmd.Flags().StringVarP(&Account, "address", "", "", "address of the job creator")
+	addJobToCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	addJobToCollectionCmd.Flags().StringVarP(&JobId, "jobId", "", "", "job id to add to the  collection")
 	addJobToCollectionCmd.Flags().StringVarP(&CollectionId, "collectionId", "", "", "collection id")
 

@@ -17,16 +17,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// setDelegationCmd represents the setDelegation command
 var setDelegationCmd = &cobra.Command{
 	Use:   "setDelegation",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "setDelegation allows a staker to start accepting/rejecting delegation requests",
+	Long: `Using setDelegation, a staker can accept delegation from delegators and charge a commission from them.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example:
+  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
@@ -123,8 +121,9 @@ func init() {
 		Commission string
 		Password   string
 	)
+
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
-	setDelegationCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
+	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 

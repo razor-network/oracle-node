@@ -4,10 +4,6 @@ set -e -o pipefail
 
 mkdir -p ./pkg/bindings
 
-echo "\n"
-
-# TODO: Copy bindings directly from node_modules to ./pkg/bindings
-
 generate_binding() {
   contract=$(echo $1 | awk '{print $1}')
   go_source=$(echo $1 | awk '{print $2}')

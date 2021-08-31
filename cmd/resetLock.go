@@ -10,16 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// resetLockCmd represents the resetLock command
 var resetLockCmd = &cobra.Command{
 	Use:   "resetLock",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "resetLock can be used to reset the lock once the withdraw lock period is over",
+	Long: `If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake. This can be done by resetLock command.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example:
+  ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
@@ -63,7 +61,7 @@ func init() {
 		Password string
 	)
 
-	resetLockCmd.Flags().StringVarP(&Address, "address", "", "", "address of the user")
+	resetLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	resetLockCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to reset lock")
 	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 

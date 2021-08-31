@@ -25,3 +25,8 @@ func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (*big.In
 	parametersManager, callOpts := getParametersManagerWithOpts(client, address)
 	return parametersManager.WithdrawReleasePeriod(&callOpts)
 }
+
+func GetMaxAltBlocks(client *ethclient.Client, address string) (*big.Int, error) {
+	parametersManager, callOpts := getParametersManagerWithOpts(client, address)
+	return parametersManager.MaxAltBlocks(&callOpts)
+}

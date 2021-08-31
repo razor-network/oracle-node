@@ -8,10 +8,13 @@ import (
 )
 
 var setConfig = &cobra.Command{
-	Use:   "setconfig",
-	Short: "setconfig enables user to set the values of provider and gas multiplier",
+	Use:   "setConfig",
+	Short: "setConfig enables user to set the values of provider and gas multiplier",
 	Long: `Setting the provider helps the CLI to know which provider to connect to.
 Setting the gas multiplier value enables the CLI to multiply the gas with that value for all the transactions
+
+Example:
+  ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, _ := cmd.Flags().GetString("provider")
@@ -40,7 +43,7 @@ Setting the gas multiplier value enables the CLI to multiply the gas with that v
 			viper.Set("buffer", 30)
 			viper.Set("wait", 3)
 			viper.Set("gasprice", 0)
-			log.Info("Config values set to default. Use setconfig to modify the values.")
+			log.Info("Config values set to default. Use setConfig to modify the values.")
 		}
 		path := utils.GetDefaultPath() + "/razor.yaml"
 		err := viper.WriteConfigAs(path)
@@ -63,6 +66,6 @@ func init() {
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
-	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
+	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 }

@@ -13,8 +13,12 @@ import (
 // delegateCmd represents the delegate command
 var delegateCmd = &cobra.Command{
 	Use:   "delegate",
-	Short: "delegate is used by delegator to stake coins on the network without setting up a node",
-	Long:  ``,
+	Short: "delegate can be used by delegator to stake coins on the network without setting up a node",
+	Long: `If a user has Razors with them, and wants to stake them but doesn't want to set up a node, they can use the delegate command.
+
+Example:
+  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
@@ -22,16 +26,15 @@ var delegateCmd = &cobra.Command{
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
-		amount, _ := cmd.Flags().GetString("amount")
+		value, _ := cmd.Flags().GetString("value")
 
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
-		amountInWei := utils.GetAmountWithChecks(amount, balance)
-		epoch, err := WaitForCommitState(client, address, "delegate")
-		utils.CheckError("Error in fetching epoch: ", err)
+		valueInWei := utils.GetAmountWithChecks(value, balance)
+		utils.CheckEthBalanceIsZero(client, address)
 
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
@@ -42,7 +45,7 @@ var delegateCmd = &cobra.Command{
 		txnOpts := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
-			Amount:         amountInWei,
+			Amount:         valueInWei,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			Config:         config,
@@ -50,8 +53,11 @@ var delegateCmd = &cobra.Command{
 
 		approve(txnOpts)
 
-		log.Infof("Delegating %s razors to Staker %s", amount, _stakerId)
-		txn, err := stakeManager.Delegate(utils.GetTxnOpts(txnOpts), epoch, amountInWei, _stakerId)
+		log.Infof("Delegating %s razors to Staker %s", value, _stakerId)
+		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
+		epoch, err := WaitForCommitState(client, address, "delegate")
+		utils.CheckError("Error in fetching epoch: ", err)
+		txn, err := stakeManager.Delegate(delegationTxnOpts, epoch, valueInWei, _stakerId)
 		utils.CheckError("Error in delegating: ", err)
 		log.Infof("Sending Delegate transaction...")
 		log.Infof("Transaction hash: %s", txn.Hash())
@@ -68,16 +74,16 @@ func init() {
 		Password string
 	)
 
-	delegateCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
-	delegateCmd.Flags().StringVarP(&Address, "address", "", "", "your account address")
+	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
+	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	delegateCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
-	amountErr := delegateCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	valueErr := delegateCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", valueErr)
 	addrErr := delegateCmd.MarkFlagRequired("address")
-	utils.CheckError("Amount error: ", addrErr)
+	utils.CheckError("Address error: ", addrErr)
 	stakerIdErr := delegateCmd.MarkFlagRequired("stakerId")
-	utils.CheckError("Amount error: ", stakerIdErr)
+	utils.CheckError("StakerId error: ", stakerIdErr)
 
 }

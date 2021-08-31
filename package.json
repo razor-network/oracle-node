@@ -7,7 +7,7 @@
     "setup": "make setup",
     "build": "make build",
     "build-all": "make all",
-    "dockerize-build": "make docker-build",
+    "build-noargs": "make build-noargs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

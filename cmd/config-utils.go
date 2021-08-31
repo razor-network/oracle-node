@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"razor/core/types"
+	"strings"
 )
 
 func GetConfigData() (types.Configurations, error) {
@@ -47,6 +49,9 @@ func getProvider() (string, error) {
 	}
 	if provider == "" {
 		provider = viper.GetString("provider")
+	}
+	if !strings.HasPrefix(provider, "https") {
+		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
 	return provider, nil
 }
