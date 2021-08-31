@@ -13,12 +13,12 @@ func getStakeManagerWithOpts(client *ethclient.Client, address string) (*binding
 	return GetStakeManager(client), GetOptions(false, address, "")
 }
 
-func GetStakerId(client *ethclient.Client, address string) (*big.Int, error) {
+func GetStakerId(client *ethclient.Client, address string) (uint32, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	return stakeManager.GetStakerId(&callOpts, common.HexToAddress(address))
 }
 
-func GetStake(client *ethclient.Client, address string, stakerId *big.Int) (*big.Int, error) {
+func GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
 	stake, err := GetStaker(client, address, stakerId)
 	if err != nil {
 		return nil, err
@@ -26,22 +26,22 @@ func GetStake(client *ethclient.Client, address string, stakerId *big.Int) (*big
 	return stake.Stake, nil
 }
 
-func GetStaker(client *ethclient.Client, address string, stakerId *big.Int) (bindings.StructsStaker, error) {
+func GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	return stakeManager.GetStaker(&callOpts, stakerId)
 }
 
-func GetNumberOfStakers(client *ethclient.Client, address string) (*big.Int, error) {
+func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	return stakeManager.GetNumStakers(&callOpts)
 }
 
-func GetInfluence(client *ethclient.Client, address string, stakerId *big.Int) (*big.Int, error) {
+func GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	return stakeManager.GetInfluence(&callOpts, stakerId)
 }
 
-func GetLock(client *ethclient.Client, address string, stakerId *big.Int) (types.Locks, error) {
+func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	staker, err := GetStaker(client, address, stakerId)
 	if err != nil {
