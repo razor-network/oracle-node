@@ -7,11 +7,12 @@ import (
 	"razor/utils"
 )
 
-//listAccountsCmd represents listAccounts command
 var listAccountsCmd = &cobra.Command{
 	Use:   "listAccounts",
 	Short: "listAccounts command can be used to list all accessible accounts",
-	Long:  ``,
+	Long: `If the user wants to see what all accounts are existing in the razor-go environment, they can use this command to list down all the accounts.
+Example:
+  ./razor listAccounts`,
 	Run: func(cmd *cobra.Command, args []string) {
 		path := utils.GetDefaultPath()
 		ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)

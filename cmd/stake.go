@@ -15,9 +15,9 @@ var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some razors",
 	Long: `Stake allows user to stake razors in the razor network
-	For ex:
-	stake -a <amount> --address <address> --password <password>
-	`,
+
+Example:
+  ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		if err != nil {
@@ -32,12 +32,12 @@ var stakeCmd = &cobra.Command{
 			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
 		}
 
-		amount, err := cmd.Flags().GetString("amount")
+		value, err := cmd.Flags().GetString("value")
 		if err != nil {
-			log.Fatal("Error in reading amount", err)
+			log.Fatal("Error in reading value", err)
 		}
 
-		amountInWei := utils.GetAmountWithChecks(amount, balance)
+		valueInWei := utils.GetAmountWithChecks(value, balance)
 
 		utils.CheckEthBalanceIsZero(client, address)
 
@@ -45,7 +45,7 @@ var stakeCmd = &cobra.Command{
 			Client:         client,
 			AccountAddress: address,
 			Password:       password,
-			Amount:         amountInWei,
+			Amount:         valueInWei,
 			ChainId:        core.ChainId,
 			Config:         config,
 		}
@@ -79,8 +79,8 @@ func approve(txnArgs types.TransactionOptions) {
 func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	log.Info("Sending stake transactions...")
-	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
 	txnOpts := utils.GetTxnOpts(txnArgs)
+	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
 	if err != nil {
 		log.Fatal("Error in getting commit state: ", err)
 	}
@@ -99,12 +99,12 @@ func init() {
 		Address string
 	)
 
-	stakeCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
-	stakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
+	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 
-	amountErr := stakeCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	amountErr := stakeCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", amountErr)
 	addrErr := stakeCmd.MarkFlagRequired("address")
-	utils.CheckError("Amount error: ", addrErr)
+	utils.CheckError("Address error: ", addrErr)
 
 }

@@ -43,15 +43,16 @@ var VersionWithMeta = func() string {
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Version: VersionWithMeta,
-	Use:     "razor",
-	Short:   "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) { fmt.Println("Welcome to razor-cli.") },
+	Use:     "razor [command] [flags]",
+	Short:   "Official node for running stakers in Golang",
+	Long:    `Razor can be used by the stakers to stake, delegate and vote on the razorscan. Stakers can vote correctly and earn rewards.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Welcome to razor-go.")
+		err := cmd.Help()
+		if err != nil {
+			panic(err)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

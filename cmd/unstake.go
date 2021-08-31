@@ -18,31 +18,30 @@ var unstakeCmd = &cobra.Command{
 	Use:   "unstake",
 	Short: "Unstake your razors",
 	Long: `unstake allows user to unstake their sRzrs in the razor network
-	For ex:
-	unstake --address <address> --amount <amount_of_sRazors>
+
+Example:	
+  ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --value 1000 --autoWithdraw
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		address, _ := cmd.Flags().GetString("address")
-		amount, _ := cmd.Flags().GetString("amount")
+		value, _ := cmd.Flags().GetString("value")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
 		password := utils.PasswordPrompt()
 
 		client := utils.ConnectToClient(config.Provider)
 
-		_amount, ok := new(big.Int).SetString(amount, 10)
+		_value, ok := new(big.Int).SetString(value, 10)
 		if !ok {
 			log.Fatal("SetString: error")
 		}
-		amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
+		valueInWei := big.NewInt(1).Mul(_value, big.NewInt(1e18))
 
 		utils.CheckEthBalanceIsZero(client, address)
 
-		epoch, err := WaitForCommitState(client, address, "unstake")
-		utils.CheckError("Error in fetching epoch: ", err)
 		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
 		if !ok {
 			log.Fatal("Set string error in converting staker id")
@@ -63,10 +62,12 @@ var unstakeCmd = &cobra.Command{
 			Config:         config,
 		})
 
+		epoch, err := WaitForCommitState(client, address, "unstake")
+		utils.CheckError("Error in fetching epoch: ", err)
 		log.Info("Unstaking coins")
-		txn, err := stakeManager.Unstake(txnOpts, epoch, _stakerId, amountInWei)
+		txn, err := stakeManager.Unstake(txnOpts, epoch, _stakerId, valueInWei)
 		utils.CheckError("Error in un-staking: ", err)
-		log.Infof("Successfully unstaked %s sRazors", amountInWei)
+		log.Infof("Successfully unstaked %s sRazors", valueInWei)
 		log.Info("Transaction hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
 
@@ -95,16 +96,16 @@ func init() {
 		WithdrawAutomatically bool
 	)
 
-	unstakeCmd.Flags().StringVarP(&Address, "address", "", "", "user's address")
+	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
-	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "amount", "a", "0", "amount of sRazors to un-stake")
+	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
 	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
 
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 	stakerIdErr := unstakeCmd.MarkFlagRequired("stakerId")
 	utils.CheckError("Staker Id error: ", stakerIdErr)
-	amountErr := unstakeCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	valueErr := unstakeCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", valueErr)
 
 }

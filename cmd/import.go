@@ -10,16 +10,12 @@ import (
 	"strings"
 )
 
-// importCmd represents the import command
 var importCmd = &cobra.Command{
 	Use:   "import",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "import can be used to import existing accounts into razor-go",
+	Long: `If the user has their private key of an account, they can import that account into razor-go to perform further operations with razor-go.
+Example:
+  ./razor import`,
 	Run: func(cmd *cobra.Command, args []string) {
 		privateKey := utils.PrivateKeyPrompt()
 		// Remove 0x from the private key
