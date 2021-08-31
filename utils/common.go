@@ -117,6 +117,16 @@ func CheckError(msg string, err error) {
 	}
 }
 
+func IsFlagPassed(name string) bool {
+	found := false
+	for _, arg := range os.Args {
+		if arg == "--"+name {
+			found = true
+		}
+	}
+	return found
+}
+
 func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
 	if err != nil {

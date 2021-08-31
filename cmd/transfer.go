@@ -22,7 +22,8 @@ Example:
 		if err != nil {
 			log.Fatal("Error in getting config: ", err)
 		}
-		password := utils.PasswordPrompt()
+
+		password := utils.AssignPassword(cmd.Flags())
 		fromAddress, _ := cmd.Flags().GetString("from")
 		toAddress, _ := cmd.Flags().GetString("to")
 
@@ -64,14 +65,16 @@ Example:
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (
-		Amount string
-		From   string
-		To     string
+		Amount   string
+		From     string
+		To       string
+		Password string
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
+	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	amountErr := transferCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

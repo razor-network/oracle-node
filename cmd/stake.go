@@ -24,7 +24,7 @@ Example:
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		password := utils.PasswordPrompt()
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
@@ -95,12 +95,14 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount  string
-		Address string
+		Amount   string
+		Address  string
+		Password string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

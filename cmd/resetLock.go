@@ -22,7 +22,7 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
 
-		password := utils.PasswordPrompt()
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 
@@ -58,10 +58,12 @@ func init() {
 	var (
 		Address  string
 		StakerId string
+		Password string
 	)
 
 	resetLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	resetLockCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to reset lock")
+	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 
 	addrErr := resetLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

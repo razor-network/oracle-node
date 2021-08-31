@@ -25,7 +25,7 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		password := utils.PasswordPrompt()
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 
@@ -105,10 +105,12 @@ func init() {
 	var (
 		Address  string
 		StakerId string
+		Password string
 	)
 
 	withdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	withdrawCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to withdraw")
+	withdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 
 	addrErr := withdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

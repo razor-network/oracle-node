@@ -25,8 +25,7 @@ Note:
 			log.Fatal("Error in getting config: ", err)
 		}
 
-		password := utils.PasswordPrompt()
-
+		password := utils.AssignPassword(cmd.Flags())
 		name, _ := cmd.Flags().GetString("name")
 		address, _ := cmd.Flags().GetString("address")
 		jobIds, _ := cmd.Flags().GetStringSlice("jobIds")
@@ -62,12 +61,14 @@ func init() {
 		Account           string
 		JobIds            []string
 		AggregationMethod uint32
+		Password          string
 	)
 
 	createCollectionCmd.Flags().StringVarP(&Name, "name", "n", "", "name of the collection")
 	createCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createCollectionCmd.Flags().StringSliceVarP(&JobIds, "jobIds", "", []string{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
+	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creater to protect the keystore")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)

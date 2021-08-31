@@ -26,11 +26,11 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		value, _ := cmd.Flags().GetString("value")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
-		password := utils.PasswordPrompt()
 
 		client := utils.ConnectToClient(config.Provider)
 
@@ -94,13 +94,14 @@ func init() {
 		StakerId              string
 		AmountToUnStake       string
 		WithdrawAutomatically bool
+		Password              string
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
 	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
-
+	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 	stakerIdErr := unstakeCmd.MarkFlagRequired("stakerId")

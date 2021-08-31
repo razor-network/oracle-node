@@ -15,8 +15,9 @@ var createCmd = &cobra.Command{
 Example: 
   ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		password := utils.AssignPassword(cmd.Flags())
 		path := utils.GetDefaultPath()
-		password := utils.PasswordPrompt()
 		account := accounts.CreateAccount(path, password)
 		log.Info("Account address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)
@@ -25,4 +26,10 @@ Example:
 
 func init() {
 	rootCmd.AddCommand(createCmd)
+
+	var (
+		Password string
+	)
+
+	createCmd.Flags().StringVarP(&Password, "password", "", "", "password file path to protect the keystore")
 }

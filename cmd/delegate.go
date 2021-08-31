@@ -23,7 +23,7 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		password := utils.PasswordPrompt()
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetString("stakerId")
 		value, _ := cmd.Flags().GetString("value")
@@ -71,11 +71,13 @@ func init() {
 		Amount   string
 		Address  string
 		StakerId string
+		Password string
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
 	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	delegateCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
+	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", valueErr)

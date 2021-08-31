@@ -29,7 +29,7 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		password := utils.PasswordPrompt()
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		statusString, _ := cmd.Flags().GetString("status")
 		commission, _ := cmd.Flags().GetString("commission")
@@ -119,11 +119,13 @@ func init() {
 		Status     string
 		Address    string
 		Commission string
+		Password   string
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
+	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
