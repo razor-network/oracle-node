@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/briandowns/spinner"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -100,7 +101,8 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	log.Info(aurora.Red("🔲 Block:"), aurora.Red(blockNumber), aurora.Yellow("⌛ Epoch:"), aurora.Yellow(epoch), aurora.Green("⏱️ State:"), aurora.Green(state), aurora.Blue("📒:"), aurora.Blue(account.Address), aurora.BrightBlue("👤 Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("💰Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Ξ:"), aurora.Magenta(ethBalance))
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
-		return
+		AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
+		log.Fatal("Stopped voting as total stake is withdrawn now")
 	}
 
 	staker, err := utils.GetStaker(client, account.Address, stakerId)
@@ -222,6 +224,42 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret
+}
+
+func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
+	stakeManager := utils.GetStakeManager(client)
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		AccountAddress: account.Address,
+		Password:       account.Password,
+		Amount:         amount,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
+
+	txnOpts := utils.GetTxnOpts(txnArgs)
+
+	epoch, err := WaitForCommitState(client, account.Address, "unstake")
+	utils.CheckError("Error in fetching epoch: ", err)
+
+	stakerId, err := utils.GetStakerId(client, account.Address)
+	utils.CheckError("Error in getting staker id: ", err)
+
+	log.Info("Auto starting Unstake followed by Withdraw")
+	log.Info("Unstaking coins")
+	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
+	utils.CheckError("Error in un-staking: ", err)
+	log.Infof("Successfully unstaked %s sRazors", txnArgs.Amount)
+	log.Info("Transaction hash: ", txn.Hash())
+	utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
+
+	log.Info("Starting withdrawal now...")
+	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	s.Start()
+	time.Sleep(time.Duration(core.EpochLength) * time.Second)
+	s.Stop()
+	checkForCommitStateAndWithdraw(client, account, config, stakerId)
+
 }
 
 func init() {
