@@ -83,6 +83,9 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staker id: ", err)
 		return
 	}
+	if stakerId.Cmp(big.NewInt(0)) == 0 {
+		log.Fatal("Staker doesn't exist")
+	}
 	stakedAmount, err := utils.GetStake(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in getting staked amount: ", err)
