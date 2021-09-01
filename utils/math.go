@@ -84,7 +84,7 @@ func GetFractionalAmountInWei(amount *big.Int, power string) *big.Int {
 	if !err {
 		log.Fatal("SetString: error")
 	}
-	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(0).Exp(big.NewInt(10), _power, nil))
+	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1).Exp(big.NewInt(10), _power, nil))
 	return amountInWei
 }
 
