@@ -83,7 +83,8 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		return
 	}
 	if stakerId.Cmp(big.NewInt(0)) == 0 {
-		log.Fatal("Staker doesn't exist")
+		log.Error("Staker doesn't exist")
+		return
 	}
 	stakedAmount, err := utils.GetStake(client, account.Address, stakerId)
 	if err != nil {
@@ -104,11 +105,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
-			log.Fatal("Stopped voting as total stake is already withdrawn.")
+			log.Error("Stopped voting as total stake is already withdrawn.")
+		} else {
+			log.Info("Auto starting Unstake followed by Withdraw")
+			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
+			log.Error("Stopped voting as total stake is withdrawn now")
 		}
-		log.Info("Auto starting Unstake followed by Withdraw")
-		AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
-		log.Fatal("Stopped voting as total stake is withdrawn now")
+		return
 	}
 
 	staker, err := utils.GetStaker(client, account.Address, stakerId)
