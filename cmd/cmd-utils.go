@@ -24,7 +24,19 @@ func WaitForCommitState(client *ethclient.Client, accountAddress string, action 
 			log.Fatal("Error in fetching state: ", err)
 		}
 		log.Info("Epoch ", epoch)
-		log.Info("State ", state)
+		switch state {
+		case 0:
+			log.Info("State 0: Commit")
+		case 1:
+			log.Info("State 1: Reveal")
+		case 2:
+			log.Info("State 2: Propose")
+		case 3:
+			log.Info("State 3: Dispute")
+		default:
+			log.Info("State: ", state)
+		}
+
 		if state != 0 {
 			log.Infof("Can only %s during state 0 (commit). Retrying in 5 second...", action)
 			time.Sleep(5 * time.Second)
