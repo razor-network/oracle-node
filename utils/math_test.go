@@ -207,7 +207,7 @@ func TestMultiplyToEightDecimals(t *testing.T) {
 
 func TestGetAmountWithChecks(t *testing.T) {
 	type args struct {
-		amount  string
+		amount  *big.Int
 		balance *big.Int
 	}
 	tests := []struct {
@@ -219,7 +219,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount is non-zero and less than balance",
 			args: args{
-				amount:  "900",
+				amount:  big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
 				balance: big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
@@ -228,7 +228,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount is zero",
 			args: args{
-				amount:  "0",
+				amount:  big.NewInt(0),
 				balance: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(0),
@@ -237,7 +237,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount Exceeds Balance-fatal",
 			args: args{
-				amount:  "10000",
+				amount:  big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
 				balance: big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
@@ -246,7 +246,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount is equal to balance",
 			args: args{
-				amount:  "1000",
+				amount:  big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 				balance: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
