@@ -101,6 +101,9 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	log.Info(aurora.Red("🔲 Block:"), aurora.Red(blockNumber), aurora.Yellow("⌛ Epoch:"), aurora.Yellow(epoch), aurora.Green("⏱️ State:"), aurora.Green(state), aurora.Blue("📒:"), aurora.Blue(account.Address), aurora.BrightBlue("👤 Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("💰Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Ξ:"), aurora.Magenta(ethBalance))
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
+		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
+			log.Fatal("Stopped voting as total stake is already withdrawn.")
+		}
 		AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 		log.Fatal("Stopped voting as total stake is withdrawn now")
 	}
