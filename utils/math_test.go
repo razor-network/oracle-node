@@ -277,7 +277,7 @@ func TestGetAmountInWei(t *testing.T) {
 		amount *big.Int
 	}
 
-	tests := []struct{
+	tests := []struct {
 		name string
 		args args
 		want *big.Int
@@ -286,16 +286,16 @@ func TestGetAmountInWei(t *testing.T) {
 			name: "Test when amount is non-zero",
 			args: args{
 				big.NewInt(1000),
-				},
-				want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 			},
-			{
-				name: "Test when amount is zero",
-				args: args{
-					big.NewInt(0),
-				},
-				want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1e18)),
+			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+		},
+		{
+			name: "Test when amount is zero",
+			args: args{
+				big.NewInt(0),
 			},
+			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1e18)),
+		},
 	}
 
 	for _, tt := range tests {
@@ -311,10 +311,10 @@ func TestGetAmountInWei(t *testing.T) {
 func TestGetFractionalAmountInWei(t *testing.T) {
 	type args struct {
 		amount *big.Int
-		power string
+		power  string
 	}
 
-	tests := []struct{
+	tests := []struct {
 		name string
 		args args
 		want *big.Int
@@ -323,7 +323,7 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 			name: "Test when amount is non-zero and power is non-zero",
 			args: args{
 				amount: big.NewInt(1000),
-				power: "17",
+				power:  "17",
 			},
 			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(17), nil)),
 		},
@@ -331,7 +331,7 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 			name: "Test when amount is zero and power is non-zero",
 			args: args{
 				amount: big.NewInt(0),
-				power: "15",
+				power:  "15",
 			},
 			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(15), nil)),
 		},
@@ -339,7 +339,7 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 			name: "Test when amount is non-zero and power is zero",
 			args: args{
 				amount: big.NewInt(1000),
-				power: "0",
+				power:  "0",
 			},
 			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
 		},
@@ -347,7 +347,7 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 			name: "Test when amount is zero and power is also zero",
 			args: args{
 				amount: big.NewInt(0),
-				power: "0",
+				power:  "0",
 			},
 			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
 		},
