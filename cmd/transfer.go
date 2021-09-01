@@ -27,11 +27,6 @@ Example:
 		fromAddress, _ := cmd.Flags().GetString("from")
 		toAddress, _ := cmd.Flags().GetString("to")
 
-		value, err := cmd.Flags().GetString("value")
-		if err != nil {
-			log.Fatal("Error in reading value", err)
-		}
-
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, fromAddress)
@@ -39,7 +34,8 @@ Example:
 			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
 		}
 
-		valueInWei := utils.GetAmountWithChecks(value, balance)
+		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		utils.GetAmountWithChecks(valueInWei, balance)
 
 		tokenManager := utils.GetTokenManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -49,7 +45,7 @@ Example:
 			ChainId:        core.ChainId,
 			Config:         config,
 		})
-		log.Infof("Transferring %s tokens from %s to %s", value, fromAddress, toAddress)
+		log.Infof("Transferring tokens from %s to %s", fromAddress, toAddress)
 
 		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), valueInWei)
 		if err != nil {
@@ -69,12 +65,14 @@ func init() {
 		From     string
 		To       string
 		Password string
+		Power    string
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	transferCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 
 	amountErr := transferCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)
