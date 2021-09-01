@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/briandowns/spinner"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -234,7 +233,6 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 }
 
 func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
-	stakeManager := utils.GetStakeManager(client)
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: account.Address,
@@ -243,29 +241,10 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 		ChainId:        core.ChainId,
 		Config:         config,
 	}
-
-	txnOpts := utils.GetTxnOpts(txnArgs)
-
-	epoch, err := WaitForCommitState(client, account.Address, "unstake")
-	utils.CheckError("Error in fetching epoch: ", err)
-
 	stakerId, err := utils.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
-
-	log.Info("Unstaking coins")
-	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
-	utils.CheckError("Error in un-staking: ", err)
-	log.Infof("Successfully unstaked %s sRazors", txnArgs.Amount)
-	log.Info("Transaction hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
-
-	log.Info("Starting withdrawal now...")
-	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-	s.Start()
-	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	s.Stop()
-	checkForCommitStateAndWithdraw(client, account, config, stakerId)
-
+	Unstake(txnArgs, stakerId)
+	AutoWithdraw(txnArgs, stakerId)
 }
 
 func init() {
