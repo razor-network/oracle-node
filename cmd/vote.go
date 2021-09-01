@@ -104,6 +104,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
 			log.Fatal("Stopped voting as total stake is already withdrawn.")
 		}
+		log.Info("Auto starting Unstake followed by Withdraw")
 		AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 		log.Fatal("Stopped voting as total stake is withdrawn now")
 	}
@@ -248,7 +249,6 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 	stakerId, err := utils.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
 
-	log.Info("Auto starting Unstake followed by Withdraw")
 	log.Info("Unstaking coins")
 	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
 	utils.CheckError("Error in un-staking: ", err)
