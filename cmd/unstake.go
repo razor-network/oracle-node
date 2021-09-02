@@ -47,43 +47,53 @@ Example:
 			log.Fatal("Set string error in converting staker id")
 		}
 
-		lock, err := utils.GetLock(client, address, _stakerId)
-		utils.CheckError("Error in getting lock: ", err)
-		if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-			log.Fatal("Existing lock")
-		}
-
-		stakeManager := utils.GetStakeManager(client)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		txnArgs := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
 			AccountAddress: address,
+			Amount:         valueInWei,
 			ChainId:        core.ChainId,
 			Config:         config,
-		})
-
-		epoch, err := WaitForCommitState(client, address, "unstake")
-		utils.CheckError("Error in fetching epoch: ", err)
-		log.Info("Unstaking coins")
-		txn, err := stakeManager.Unstake(txnOpts, epoch, _stakerId, valueInWei)
-		utils.CheckError("Error in un-staking: ", err)
-		log.Infof("Successfully unstaked %s sRazors", valueInWei)
-		log.Info("Transaction hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
-
-		if autoWithdraw {
-			log.Info("Starting withdrawal now...")
-			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-			s.Start()
-			time.Sleep(time.Duration(core.EpochLength) * time.Second)
-			s.Stop()
-			checkForCommitStateAndWithdraw(client, types.Account{
-				Address:  address,
-				Password: password,
-			}, config, _stakerId)
 		}
 
+		Unstake(txnArgs, _stakerId)
+
+		if autoWithdraw {
+			AutoWithdraw(txnArgs, _stakerId)
+		}
 	},
+}
+
+func Unstake(txnArgs types.TransactionOptions, stakerId *big.Int) {
+	lock, err := utils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+	utils.CheckError("Error in getting lock: ", err)
+	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
+		log.Fatal("Existing lock")
+	}
+
+	stakeManager := utils.GetStakeManager(txnArgs.Client)
+	txnOpts := utils.GetTxnOpts(txnArgs)
+
+	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "unstake")
+	utils.CheckError("Error in fetching epoch: ", err)
+	log.Info("Unstaking coins")
+	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
+	utils.CheckError("Error in un-staking: ", err)
+	log.Infof("Successfully unstaked %s sRazors", txnArgs.Amount)
+	log.Info("Transaction hash: ", txn.Hash())
+	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
+}
+
+func AutoWithdraw(txnArgs types.TransactionOptions, stakerId *big.Int) {
+	log.Info("Starting withdrawal now...")
+	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	s.Start()
+	time.Sleep(time.Duration(core.EpochLength) * time.Second)
+	s.Stop()
+	checkForCommitStateAndWithdraw(txnArgs.Client, types.Account{
+		Address:  txnArgs.AccountAddress,
+		Password: txnArgs.Password,
+	}, txnArgs.Config, stakerId)
 }
 
 func init() {
