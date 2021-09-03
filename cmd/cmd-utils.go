@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"math/big"
 	"razor/utils"
 	"time"
 
@@ -9,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (*big.Int, error) {
+func WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
 	for {
 		epoch, err := utils.GetEpoch(client, accountAddress)
 		if err != nil {

@@ -14,12 +14,15 @@ import (
 	"github.com/wealdtech/go-merkletree"
 )
 
-func HandleRevealState(staker bindings.StructsStaker, epoch *big.Int) error {
-	log.Info("Staker last epoch committed: ", staker.EpochLastCommitted)
-	if staker.EpochLastCommitted.Cmp(epoch) != 0 {
+func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32) error {
+	epochLastCommitted, err := utils.GetEpochLastCommitted(client, address, staker.Id)
+	if err != nil {
+		return err
+	}
+	log.Info("Staker last epoch committed: ", epochLastCommitted)
+	if epochLastCommitted != epoch {
 		return errors.New("commitment for this epoch not found on network.... aborting reveal")
 	}
-	log.Info("Staker last epoch revealed: ", staker.EpochLastRevealed)
 	return nil
 }
 
@@ -50,7 +53,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		return
 	}
 
-	proofs := getProofs(tree, committedData)
+	//proofs := getProofs(tree, committedData)
 
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
@@ -68,14 +71,14 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
-	log.Infof("Revealing vote for epoch: %s  votes: %s  root: %s  secret: %s  commitAccount: %s",
+	log.Infof("Revealing vote for epoch: %d  votes: %s  root: %s  secret: %s  commitAccount: %s",
 		epoch,
 		committedData,
 		"0x"+common.Bytes2Hex(originalRoot),
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
 	)
-	txn, err := voteManager.Reveal(txnOpts, epoch, root, committedData, proofs, secretBytes32, common.HexToAddress(commitAccount))
+	txn, err := voteManager.Reveal(txnOpts, epoch, committedData, secretBytes32)
 	if err != nil {
 		log.Error(err)
 		return

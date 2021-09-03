@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -16,7 +15,7 @@ var resetLockCmd = &cobra.Command{
 	Long: `If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake. This can be done by resetLock command.
 
 Example:
-  ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+  ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
@@ -24,15 +23,10 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetString("stakerId")
-
-		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
-		if !ok {
-			log.Fatal("Set string error in converting staker id")
-		}
 
 		client := utils.ConnectToClient(config.Provider)
-
+		stakerId, err := utils.GetStakerId(client, address)
+		utils.CheckError("Error in fetching staker id: ", err)
 		stakeManager := utils.GetStakeManager(client)
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -44,7 +38,7 @@ Example:
 		})
 
 		log.Info("Resetting lock...")
-		txn, err := stakeManager.ResetLock(txnOpts, _stakerId)
+		txn, err := stakeManager.ResetLock(txnOpts, stakerId)
 		utils.CheckError("Error in resetting lock: ", err)
 		log.Info("Transaction sent..")
 		log.Infof("Transaction Hash: %s", txn.Hash())
@@ -57,16 +51,12 @@ func init() {
 
 	var (
 		Address  string
-		StakerId string
 		Password string
 	)
 
 	resetLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	resetLockCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to reset lock")
 	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 
 	addrErr := resetLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
-	stakerIdErr := resetLockCmd.MarkFlagRequired("stakerId")
-	utils.CheckError("Address error: ", stakerIdErr)
 }

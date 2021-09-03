@@ -49,7 +49,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		return errors.New("already committed")
 	}
 
-	commitment := solsha3.SoliditySHA3([]string{"uint256", "bytes32", "bytes32"}, []interface{}{epoch.String(), "0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(secret)})
+	commitment := solsha3.SoliditySHA3([]string{"uint256", "bytes32", "bytes32"}, []interface{}{string(epoch), "0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(secret)})
 
 	voteManager := utils.GetVoteManager(client)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -25,7 +24,7 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetString("stakerId")
+		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 		value, _ := cmd.Flags().GetString("value")
 
 		client := utils.ConnectToClient(config.Provider)
@@ -35,11 +34,6 @@ Example:
 
 		valueInWei := utils.GetAmountWithChecks(value, balance)
 		utils.CheckEthBalanceIsZero(client, address)
-
-		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
-		if !ok {
-			log.Fatal("SetString error while converting stakerId")
-		}
 
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := types.TransactionOptions{
@@ -53,11 +47,11 @@ Example:
 
 		approve(txnOpts)
 
-		log.Infof("Delegating %s razors to Staker %s", value, _stakerId)
+		log.Infof("Delegating %s razors to Staker %d", value, stakerId)
 		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
 		epoch, err := WaitForCommitState(client, address, "delegate")
 		utils.CheckError("Error in fetching epoch: ", err)
-		txn, err := stakeManager.Delegate(delegationTxnOpts, epoch, valueInWei, _stakerId)
+		txn, err := stakeManager.Delegate(delegationTxnOpts, epoch, stakerId, valueInWei)
 		utils.CheckError("Error in delegating: ", err)
 		log.Infof("Sending Delegate transaction...")
 		log.Infof("Transaction hash: %s", txn.Hash())
@@ -70,13 +64,13 @@ func init() {
 	var (
 		Amount   string
 		Address  string
-		StakerId string
+		StakerId uint32
 		Password string
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
 	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
-	delegateCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker id")
+	delegateCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")
