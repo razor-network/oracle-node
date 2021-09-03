@@ -151,5 +151,5 @@ func GetDataToCommitFromJob(job types.Job) *big.Int {
 		return big.NewInt(1)
 	}
 
-	return MultiplyToEightDecimals(datum)
+	return MultiplyWithPower(datum, job.Power)
 }
