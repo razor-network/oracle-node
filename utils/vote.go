@@ -21,7 +21,7 @@ func GetCommitments(client *ethclient.Client, address string, epoch uint32) ([32
 }
 
 func GetVotes(client *ethclient.Client, address string, stakerId uint32) (struct {
-	Epoch uint32
+	Epoch  uint32
 	Values []*big.Int
 }, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)

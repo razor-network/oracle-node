@@ -234,7 +234,7 @@ func getSortedVotes(client *ethclient.Client, address string) ([]*big.Int, error
 	if err != nil {
 		return nil, err
 	}
-	var voteValues  []*big.Int
+	var voteValues []*big.Int
 
 	for i := 1; i <= int(numberOfStakers); i++ {
 		vote, err := utils.GetVotes(client, address, uint32(i))

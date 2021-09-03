@@ -124,7 +124,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	case 0:
 		lastCommit, err := utils.GetEpochLastCommitted(client, account.Address, stakerId)
 		if err != nil {
-			log.Error("Error in fetching last commit: ",err)
+			log.Error("Error in fetching last commit: ", err)
 			break
 		}
 		if lastCommit >= epoch {
@@ -144,7 +144,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	case 1:
 		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
 		if err != nil {
-			log.Error("Error in fetching last reveal: ",err)
+			log.Error("Error in fetching last reveal: ", err)
 			break
 		}
 		if _committedData == nil || lastReveal >= epoch {
