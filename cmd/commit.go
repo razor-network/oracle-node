@@ -49,7 +49,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		return errors.New("already committed")
 	}
 
-	commitment := solsha3.SoliditySHA3([]string{"uint256", "bytes32", "bytes32"}, []interface{}{string(epoch), "0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(secret)})
+	commitment := solsha3.SoliditySHA3([]string{"uint32", "bytes32", "bytes32"}, []interface{}{epoch, "0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(secret)})
 
 	voteManager := utils.GetVoteManager(client)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -62,7 +62,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
 
-	log.Infof("Committing: epoch: %s, root: %s, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(root), "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
+	log.Infof("Committing: epoch: %d, root: %s, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(root), "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 
 	txn, err := voteManager.Commit(txnOpts, epoch, commitmentToSend)
 	if err != nil {

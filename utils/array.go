@@ -2,7 +2,6 @@ package utils
 
 import (
 	math2 "github.com/ethereum/go-ethereum/common/math"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 )
 
@@ -41,20 +40,6 @@ func GetDataInBytes(data []*big.Int) [][]byte {
 		dataInBytes = append(dataInBytes, math2.U256Bytes(datum))
 	}
 	return dataInBytes
-}
-
-func ConvertToBigIntArray(data []string) []*big.Int {
-	var bigIntArray []*big.Int
-
-	for _, datum := range data {
-		bigData, ok := new(big.Int).SetString(datum, 10)
-		if !ok {
-			log.Fatal("SetString: error")
-		}
-		bigIntArray = append(bigIntArray, bigData)
-	}
-
-	return bigIntArray
 }
 
 func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {

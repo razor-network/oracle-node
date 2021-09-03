@@ -44,7 +44,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 	log.Info("Biggest Influence Id: ", biggestInfluenceId)
-	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %s, Number of Stakers: %s, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
+	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
 	iteration := getIteration(client, account.Address, types.ElectedProposer{
 		Stake:            staker.Stake,
@@ -88,7 +88,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 
-	log.Infof("Medians: %s", medians)
+	log.Infof("Medians: %d", medians)
 
 	ids, err := utils.GetActiveAssetIds(client, account.Address)
 	if err != nil {
@@ -104,8 +104,8 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	})
 	blockManager := utils.GetBlockManager(client)
 
-	log.Infof("Epoch: %s Medians: %s", epoch, medians)
-	log.Infof("Asset Ids: %s Iteration: %d Biggest Influence Id: %s\n", ids, iteration, biggestInfluenceId)
+	log.Infof("Epoch: %d Medians: %d", epoch, medians)
+	log.Infof("Asset Ids: %s Iteration: %d Biggest Influence Id: %d", ids, iteration, biggestInfluenceId)
 	txn, err := blockManager.Propose(txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
 	if err != nil {
 		log.Error(err)
@@ -155,7 +155,7 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	if pseudoRandomNumber.Cmp(big.NewInt(int64(proposer.StakerId))) != 0 {
 		return false
 	}
-	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
+	seed2 := solsha3.SoliditySHA3([]string{"uint32", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
 	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))

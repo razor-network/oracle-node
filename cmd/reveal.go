@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"github.com/wealdtech/go-merkletree"
 )
 
 func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32) error {
@@ -88,27 +87,27 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 
-func getProofs(tree *merkletree.MerkleTree, data []*big.Int) [][][32]byte {
-	var proofs []*merkletree.Proof
-	for dataIndex := range data {
-		proof, err := tree.GenerateProofV1(dataIndex)
-		if err != nil {
-			log.Error("Error in calculating merkle proof: ", err)
-			continue
-		}
-		proofs = append(proofs, proof)
-	}
-	var finalProofs [][][32]byte
-	for _, proof := range proofs {
-		var proofHash [][32]byte
-		for _, nestedProof := range proof.Hashes {
-			if nestedProof != nil {
-				nestedProofBytes32 := [32]byte{}
-				copy(nestedProofBytes32[:], nestedProof)
-				proofHash = append(proofHash, nestedProofBytes32)
-			}
-		}
-		finalProofs = append(finalProofs, proofHash)
-	}
-	return finalProofs
-}
+//func getProofs(tree *merkletree.MerkleTree, data []*big.Int) [][][32]byte {
+//	var proofs []*merkletree.Proof
+//	for dataIndex := range data {
+//		proof, err := tree.GenerateProofV1(dataIndex)
+//		if err != nil {
+//			log.Error("Error in calculating merkle proof: ", err)
+//			continue
+//		}
+//		proofs = append(proofs, proof)
+//	}
+//	var finalProofs [][][32]byte
+//	for _, proof := range proofs {
+//		var proofHash [][32]byte
+//		for _, nestedProof := range proof.Hashes {
+//			if nestedProof != nil {
+//				nestedProofBytes32 := [32]byte{}
+//				copy(nestedProofBytes32[:], nestedProof)
+//				proofHash = append(proofHash, nestedProofBytes32)
+//			}
+//		}
+//		finalProofs = append(finalProofs, proofHash)
+//	}
+//	return finalProofs
+//}

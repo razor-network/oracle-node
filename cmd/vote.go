@@ -82,7 +82,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staker id: ", err)
 		return
 	}
-	if stakerId.Cmp(big.NewInt(0)) == 0 {
+	if stakerId == 0 {
 		log.Error("Staker doesn't exist")
 		return
 	}
