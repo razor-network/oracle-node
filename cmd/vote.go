@@ -179,6 +179,16 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		lastVerification = epoch
 		HandleDispute(client, config, account, epoch)
+	case 4:
+		if lastVerification == epoch {
+			ClaimBlockReward(types.TransactionOptions{
+				Client:         client,
+				Password:       account.Password,
+				AccountAddress: account.Address,
+				ChainId:        core.ChainId,
+				Config:         config,
+			})
+		}
 	case -1:
 		if config.WaitTime > 5 {
 			time.Sleep(5 * time.Second)

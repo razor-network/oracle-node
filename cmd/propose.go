@@ -254,6 +254,8 @@ func influencedMedian(sortedVotes []*big.Int, influence *big.Int, totalInfluence
 	for _, vote := range sortedVotes {
 		accProd = accProd.Add(accProd, vote.Mul(vote, influence))
 	}
-
+	if totalInfluenceRevealed.Cmp(big.NewInt(0)) == 0 {
+		return accProd
+	}
 	return accProd.Div(accProd, totalInfluenceRevealed)
 }
