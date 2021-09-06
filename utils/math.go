@@ -67,7 +67,7 @@ func AllZero(bytesValue [32]byte) bool {
 	return true
 }
 
-func GetAmountWithChecks(amountInWei *big.Int, balance *big.Int) *big.Int {
+func CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	if amountInWei.Cmp(balance) > 0 {
 		log.Fatal("Not enough balance")
 	}
@@ -105,6 +105,10 @@ func AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
 		amountInWei = GetAmountInWei(_amount)
 	}
 	return amountInWei
+}
+
+func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
+	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
 
 func Aggregate(client *ethclient.Client, address string, collection types.Collection) (*big.Int, error) {

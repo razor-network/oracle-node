@@ -33,7 +33,7 @@ Example:
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
-		utils.GetAmountWithChecks(valueInWei, balance)
+		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		utils.CheckEthBalanceIsZero(client, address)
 
@@ -54,7 +54,7 @@ Example:
 
 		approve(txnOpts)
 
-		log.Infof("Delegating razors to Staker %s", _stakerId)
+		log.Infof("Delegating %g razors to Staker %s", utils.GetAmountInDecimal(valueInWei), _stakerId)
 		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
 		epoch, err := WaitForCommitState(client, address, "delegate")
 		utils.CheckError("Error in fetching epoch: ", err)

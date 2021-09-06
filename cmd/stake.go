@@ -33,7 +33,7 @@ Example:
 		}
 
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
-		utils.GetAmountWithChecks(valueInWei, balance)
+		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		utils.CheckEthBalanceIsZero(client, address)
 

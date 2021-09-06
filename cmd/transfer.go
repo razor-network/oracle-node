@@ -35,7 +35,7 @@ Example:
 		}
 
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
-		utils.GetAmountWithChecks(valueInWei, balance)
+		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		tokenManager := utils.GetTokenManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -45,7 +45,7 @@ Example:
 			ChainId:        core.ChainId,
 			Config:         config,
 		})
-		log.Infof("Transferring tokens from %s to %s", fromAddress, toAddress)
+		log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
 
 		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), valueInWei)
 		if err != nil {
