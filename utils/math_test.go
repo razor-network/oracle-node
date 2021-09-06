@@ -205,7 +205,7 @@ func TestMultiplyToEightDecimals(t *testing.T) {
 	}
 }
 
-func TestGetAmountWithChecks(t *testing.T) {
+func TestCheckAmountAndBalance(t *testing.T) {
 	type args struct {
 		amount  *big.Int
 		balance *big.Int
@@ -261,13 +261,13 @@ func TestGetAmountWithChecks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fatal = false
-			got := GetAmountWithChecks(tt.args.amount, tt.args.balance)
+			got := CheckAmountAndBalance(tt.args.amount, tt.args.balance)
 			if tt.expectedFatal {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
 
 			if got.Cmp(tt.want) != 0 {
-				t.Errorf("GetAmountWithChecks() = %v, want = %v", got, tt.want)
+				t.Errorf("CheckAmountAndBalance() = %v, want = %v", got, tt.want)
 			}
 		})
 	}
@@ -358,6 +358,56 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 			got := GetFractionalAmountInWei(tt.args.amount, tt.args.power)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetFractionalAmountInWei() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAmountInDecimal(t *testing.T) {
+	type args struct {
+		amount *big.Int
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *big.Float
+	}{
+		{
+			name: "Test1",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+			},
+			want: new(big.Float).SetInt(big.NewInt(1000)),
+		},
+		{
+			name: "Test 2",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e17)),
+			},
+			want: big.NewFloat(100),
+		},
+		{
+			name: "Test 3",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(555), big.NewInt(1e16)),
+			},
+			want: new(big.Float).Quo(new(big.Float).SetInt(big.NewInt(1).Mul(big.NewInt(555), big.NewInt(1e16))), new(big.Float).SetInt(big.NewInt(1e18))),
+		},
+		{
+			name: "Test 4",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(123456789), big.NewInt(1e10)),
+			},
+			want: new(big.Float).Quo(new(big.Float).SetInt(big.NewInt(1).Mul(big.NewInt(123456789), big.NewInt(1e10))), new(big.Float).SetInt(big.NewInt(1e18))),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetAmountInDecimal(tt.args.amount)
+			if got.Cmp(tt.want) != 0 {
+				t.Errorf("GetAmountInDecimal() = %v, want %v", got, tt.want)
 			}
 		})
 	}

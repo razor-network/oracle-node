@@ -82,6 +82,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staker id: ", err)
 		return
 	}
+	if stakerId.Cmp(big.NewInt(0)) == 0 {
+		log.Error("Staker doesn't exist")
+		return
+	}
 	stakedAmount, err := utils.GetStake(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in getting staked amount: ", err)
@@ -100,6 +104,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	log.Info(aurora.Red("🔲 Block:"), aurora.Red(blockNumber), aurora.Yellow("⌛ Epoch:"), aurora.Yellow(epoch), aurora.Green("⏱️ State:"), aurora.Green(state), aurora.Blue("📒:"), aurora.Blue(account.Address), aurora.BrightBlue("👤 Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("💰Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Ξ:"), aurora.Magenta(ethBalance))
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
+		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
+			log.Error("Stopped voting as total stake is already withdrawn.")
+		} else {
+			log.Info("Auto starting Unstake followed by Withdraw")
+			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
+			log.Error("Stopped voting as total stake is withdrawn now")
+		}
 		return
 	}
 
@@ -222,6 +233,21 @@ func calculateSecret(account types.Account, epoch *big.Int) []byte {
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret
+}
+
+func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		AccountAddress: account.Address,
+		Password:       account.Password,
+		Amount:         amount,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
+	stakerId, err := utils.GetStakerId(client, account.Address)
+	utils.CheckError("Error in getting staker id: ", err)
+	Unstake(txnArgs, stakerId)
+	AutoWithdraw(txnArgs, stakerId)
 }
 
 func init() {
