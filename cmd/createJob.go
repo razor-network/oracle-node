@@ -45,7 +45,7 @@ Note:
 
 		assetManager := utils.GetAssetManager(client)
 		log.Info("Creating Job...")
-		txn, err := assetManager.CreateJob(txnOpts, power, selector, name, url)
+		txn, err := assetManager.CreateJob(txnOpts, power, name, selector, url)
 		if err != nil {
 			log.Fatal(err)
 		}

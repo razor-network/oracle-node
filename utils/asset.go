@@ -78,16 +78,11 @@ func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, 
 func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (types.Job, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
-	epoch, err := GetEpoch(client, address)
-
-	if err != nil {
-		return types.Job{}, err
-	}
 	job, err := assetManager.Jobs(&callOpts, jobId)
 	if err != nil {
 		return types.Job{}, err
 	}
-	if job.Active && job.Epoch == epoch {
+	if job.Active {
 		return job, nil
 	}
 	return types.Job{}, errors.New("job already fulfilled")
@@ -141,7 +136,7 @@ func GetDataToCommitFromJob(job types.Job) *big.Int {
 
 	parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
 	if err != nil {
-		log.Error("Error in fetching value from parsed data ", err)
+		log.Error("Error in fetching value from parsed data: ", err)
 		return big.NewInt(1)
 	}
 
