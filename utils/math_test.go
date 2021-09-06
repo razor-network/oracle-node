@@ -237,7 +237,7 @@ func Test_performAggregation(t *testing.T) {
 	type args struct {
 		data              []*big.Int
 		aggregationMethod uint32
-		power int8
+		power             int8
 	}
 
 	tests := []struct {
@@ -251,7 +251,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(2)},
 				aggregationMethod: 1,
-				power: 2,
+				power:             2,
 			},
 			want:    big.NewInt(100),
 			wantErr: false,
@@ -261,7 +261,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(0), big.NewInt(1)},
 				aggregationMethod: 1,
-				power: 3,
+				power:             3,
 			},
 			want:    big.NewInt(1000),
 			wantErr: false,
@@ -271,7 +271,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(1)},
 				aggregationMethod: 1,
-				power: 0,
+				power:             0,
 			},
 			want:    big.NewInt(1),
 			wantErr: false,
@@ -281,7 +281,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(500), big.NewInt(1000), big.NewInt(1500), big.NewInt(2000)},
 				aggregationMethod: 1,
-				power: 8,
+				power:             8,
 			},
 			want:    big.NewInt(150000000000),
 			wantErr: false,
@@ -291,7 +291,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{},
 				aggregationMethod: 1,
-				power: 0,
+				power:             0,
 			},
 			want:    nil,
 			wantErr: true,
@@ -301,7 +301,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(0), big.NewInt(10), big.NewInt(20)},
 				aggregationMethod: 2,
-				power: -1,
+				power:             -1,
 			},
 			want:    big.NewInt(1),
 			wantErr: false,
@@ -311,7 +311,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(100000)},
 				aggregationMethod: 2,
-				power: -2,
+				power:             -2,
 			},
 			want:    big.NewInt(1000),
 			wantErr: false,
@@ -321,7 +321,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(500), big.NewInt(1000), big.NewInt(1500), big.NewInt(2000)},
 				aggregationMethod: 2,
-				power: -1,
+				power:             -1,
 			},
 			want:    big.NewInt(125),
 			wantErr: false,
@@ -331,7 +331,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{},
 				aggregationMethod: 2,
-				power: 0,
+				power:             0,
 			},
 			want:    nil,
 			wantErr: true,
@@ -341,7 +341,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(1)},
 				aggregationMethod: 3,
-				power: 2,
+				power:             2,
 			},
 			want:    nil,
 			wantErr: true,

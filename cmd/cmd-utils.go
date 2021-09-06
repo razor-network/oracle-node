@@ -44,7 +44,7 @@ func WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress strin
 		epoch, state, err := GetEpochAndState(client, accountAddress)
 		utils.CheckError("Error in fetching epoch and state: ", err)
 		if state != 3 && state != 4 {
-			log.Infof("Can only %s during dispute or confirm state. Retrying in 5 seconds...", accountAddress )
+			log.Infof("Can only %s during dispute or confirm state. Retrying in 5 seconds...", accountAddress)
 			time.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
