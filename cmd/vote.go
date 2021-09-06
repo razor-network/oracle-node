@@ -179,7 +179,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		if lastReveal < epoch {
-			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", lastReveal, epoch)
+			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
 		log.Info("Proposing block....")
