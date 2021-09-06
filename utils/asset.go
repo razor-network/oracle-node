@@ -15,6 +15,12 @@ func GetNumAssets(client *ethclient.Client, address string) (uint8, error) {
 	return assetManager.GetNumAssets(&callOpts)
 }
 
+func GetNumActiveAssets(client *ethclient.Client, address string) (uint8, error) {
+	assetManager := GetAssetManager(client)
+	callOpts := GetOptions(false, address, "")
+	return assetManager.GetNumActiveAssets(&callOpts)
+}
+
 func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, error) {
 	numAssets, err := GetNumAssets(client, address)
 	if err != nil {
@@ -24,8 +30,17 @@ func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, er
 	callOpts := GetOptions(false, address, "")
 	var activeAssets []*big.Int
 	for assetId := 1; assetId <= int(numAssets); assetId++ {
+		assetType, err := assetManager.GetAssetType(&callOpts, uint8(assetId))
+		if err != nil {
+			//TODO: Implement retry
+			log.Error("Error in calling GetActiveStatus: ", err)
+		}
+		if assetType == 1 {
+			continue
+		}
 		isActiveAsset, err := assetManager.GetActiveStatus(&callOpts, uint8(assetId))
 		if err != nil {
+			//TODO: Implement retry
 			log.Error("Error in calling GetActiveStatus: ", err)
 		}
 		if isActiveAsset {
@@ -52,14 +67,7 @@ func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, 
 			log.Error("Error in fetching asset: ", assetIndex)
 			continue
 		}
-		if assetType == 1 {
-			activeJob, err := GetActiveJob(client, address, uint8(assetIndex))
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-			data = append(data, GetDataToCommitFromJob(activeJob))
-		} else {
+		if assetType == 2 {
 			activeCollection, err := GetActiveCollection(client, address, uint8(assetIndex))
 			if err != nil {
 				log.Error(err)

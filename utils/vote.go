@@ -11,9 +11,13 @@ func getVoteManagerWithOpts(client *ethclient.Client, address string) (*bindings
 	return GetVoteManager(client), GetOptions(false, address, "")
 }
 
-func GetCommitments(client *ethclient.Client, address string, epoch uint32) ([32]byte, error) {
+func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)
-	commitments, err := voteManager.Commitments(&callOpts, epoch)
+	stakerId, err := GetStakerId(client, address)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	commitments, err := voteManager.Commitments(&callOpts, stakerId)
 	if err != nil {
 		return [32]byte{}, err
 	}

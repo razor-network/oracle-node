@@ -64,6 +64,7 @@ Example:
 var (
 	_committedData   []*big.Int
 	lastVerification uint32
+	blockConfirmed   uint32
 )
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
@@ -148,7 +149,8 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		if _committedData == nil || lastReveal >= epoch {
-			log.Warnf("Cannot reveal in epoch %d because last revealed epoch is %d", epoch, lastReveal)
+			log.Warnf("Last reveal: %d", lastReveal)
+			log.Warnf("Cannot reveal in epoch %d", epoch)
 			break
 		}
 		secret := calculateSecret(account, epoch)
@@ -171,6 +173,15 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last proposed epoch is %d", epoch, lastProposal)
 			break
 		}
+		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
+		if err != nil {
+			log.Error("Error in fetching last reveal: ", err)
+			break
+		}
+		if lastReveal < epoch {
+			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", lastReveal, epoch)
+			break
+		}
 		log.Info("Proposing block....")
 		Propose(client, account, config, stakerId, epoch, rogueMode)
 	case 3:
@@ -180,7 +191,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		lastVerification = epoch
 		HandleDispute(client, config, account, epoch)
 	case 4:
-		if lastVerification == epoch {
+		if lastVerification == epoch && blockConfirmed < epoch {
 			ClaimBlockReward(types.TransactionOptions{
 				Client:         client,
 				Password:       account.Password,
@@ -188,6 +199,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				ChainId:        core.ChainId,
 				Config:         config,
 			})
+			blockConfirmed = epoch
 		}
 	case -1:
 		if config.WaitTime > 5 {

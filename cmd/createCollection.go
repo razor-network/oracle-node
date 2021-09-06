@@ -43,10 +43,10 @@ Note:
 		})
 		jobIds := utils.ConvertUintArrayToUint8Array(jobIdInUint)
 		assetManager := utils.GetAssetManager(client)
+		_, err = WaitForDisputeOrConfirmState(client, address, "create collection")
+		utils.CheckError("Error in fetching state: ", err)
 		txn, err := assetManager.CreateCollection(txnOpts, jobIds, aggregation, power, name)
-		if err != nil {
-			log.Fatal(err)
-		}
+		utils.CheckError("Error in creating collection: ", err)
 		log.Info("Creating collection...")
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},

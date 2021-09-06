@@ -177,7 +177,7 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 }
 
 func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
-	numAssets, err := utils.GetNumAssets(client, address)
+	numAssets, err := utils.GetNumActiveAssets(client, address)
 	if err != nil {
 		return nil, err
 	}

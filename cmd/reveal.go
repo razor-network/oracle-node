@@ -36,7 +36,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		log.Error(err)
 		return
 	}
-	commitments, err := utils.GetCommitments(client, account.Address, epoch)
+	commitments, err := utils.GetCommitments(client, account.Address)
 	if err != nil {
 		log.Error(err)
 		return
