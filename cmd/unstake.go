@@ -50,35 +50,19 @@ Example:
 			log.Fatal("Existing lock")
 		}
 
-		stakeManager := utils.GetStakeManager(client)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		txnOptions := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
 			AccountAddress: address,
 			Amount:         valueInWei,
 			ChainId:        core.ChainId,
 			Config:         config,
-		})
+		}
 
-		epoch, err := WaitForCommitState(client, address, "unstake")
-		utils.CheckError("Error in fetching epoch: ", err)
-		log.Info("Unstaking coins")
-		txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, valueInWei)
-		utils.CheckError("Error in un-staking: ", err)
-		log.Infof("Successfully unstaked %s sRazors", valueInWei)
-		log.Info("Transaction hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash()))
+		Unstake(txnOptions, stakerId)
 
 		if autoWithdraw {
-			log.Info("Starting withdrawal now...")
-			s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-			s.Start()
-			time.Sleep(time.Duration(core.EpochLength) * time.Second)
-			s.Stop()
-			checkForCommitStateAndWithdraw(client, types.Account{
-				Address:  address,
-				Password: password,
-			}, config, stakerId)
+			AutoWithdraw(txnOptions, stakerId)
 		}
 	},
 }
