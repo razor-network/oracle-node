@@ -166,46 +166,6 @@ func TestMultiplyFloatAndBigInt(t *testing.T) {
 	}
 }
 
-func TestMultiplyToEightDecimals(t *testing.T) {
-	type args struct {
-		num *big.Float
-	}
-	tests := []struct {
-		name string
-		args args
-		want *big.Int
-	}{
-		{
-			name: "Test 1",
-			args: args{
-				num: big.NewFloat(1.22342),
-			},
-			want: big.NewInt(122342000),
-		},
-		{
-			name: "Test 2",
-			args: args{
-				num: big.NewFloat(0),
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test 3",
-			args: args{
-				num: nil,
-			},
-			want: big.NewInt(0),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := MultiplyToEightDecimals(tt.args.num); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MultiplyToEightDecimals() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestCheckAmountAndBalance(t *testing.T) {
 	type args struct {
 		amount  *big.Int
