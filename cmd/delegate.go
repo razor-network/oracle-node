@@ -25,14 +25,15 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetUint32("stakerId")
-		value, _ := cmd.Flags().GetString("value")
 
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
-		valueInWei := utils.GetAmountWithChecks(value, balance)
+		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		utils.CheckAmountAndBalance(valueInWei, balance)
+
 		utils.CheckEthBalanceIsZero(client, address)
 
 		stakeManager := utils.GetStakeManager(client)
@@ -47,7 +48,7 @@ Example:
 
 		approve(txnOpts)
 
-		log.Infof("Delegating %s razors to Staker %d", value, stakerId)
+		log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(valueInWei), stakerId)
 		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
 		epoch, err := WaitForCommitState(client, address, "delegate")
 		utils.CheckError("Error in fetching epoch: ", err)
@@ -66,12 +67,14 @@ func init() {
 		Address  string
 		StakerId uint32
 		Password string
+		Power    string
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
 	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	delegateCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	delegateCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", valueErr)

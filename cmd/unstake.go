@@ -28,16 +28,12 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		value, _ := cmd.Flags().GetString("value")
+
 		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
 
 		client := utils.ConnectToClient(config.Provider)
 
-		_value, ok := new(big.Int).SetString(value, 10)
-		if !ok {
-			log.Fatal("SetString: error")
-		}
-		valueInWei := big.NewInt(1).Mul(_value, big.NewInt(1e18))
+		valueInWei := utils.AssignAmountInWei(cmd.Flags())
 
 		utils.CheckEthBalanceIsZero(client, address)
 
@@ -107,12 +103,14 @@ func init() {
 		AmountToUnStake       string
 		WithdrawAutomatically bool
 		Password              string
+		Power                 string
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
 	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
 	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	unstakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

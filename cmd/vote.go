@@ -4,15 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/logrusorgru/aurora/v3"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"math"
 	"math/big"
 	"razor/accounts"
@@ -22,6 +13,16 @@ import (
 	"razor/utils"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/logrusorgru/aurora/v3"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var voteCmd = &cobra.Command{
@@ -186,6 +187,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		Propose(client, account, config, stakerId, epoch, rogueMode)
 	case 3:
 		if lastVerification >= epoch {
+			break
+		}
+		if rogueMode {
+			log.Warn("Won't dispute in rogue mode..")
 			break
 		}
 		lastVerification = epoch
