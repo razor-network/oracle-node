@@ -65,7 +65,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Config:         config,
 	})
 
-    GiveSorted(client, blockManager, txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
+	GiveSorted(client, blockManager, txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
 
 	log.Info("Finalizing dispute...")
 	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -88,7 +88,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedVotes)
 	if err != nil {
 		log.Error("Error in calling GiveSorted: ", err)
-		mid := len(sortedVotes)/2
+		mid := len(sortedVotes) / 2
 		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedVotes[:mid])
 		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedVotes[mid:])
 	}
