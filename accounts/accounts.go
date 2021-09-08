@@ -2,13 +2,14 @@ package accounts
 
 import (
 	"crypto/ecdsa"
+	"io/ioutil"
+	"razor/core/types"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"razor/core/types"
-	"strings"
 )
 
 func CreateAccount(path string, password string) accounts.Account {
