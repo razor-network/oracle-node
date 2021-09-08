@@ -23,10 +23,9 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
+		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 
 		client := utils.ConnectToClient(config.Provider)
-		stakerId, err := utils.GetStakerId(client, address)
-		utils.CheckError("Error in fetching staker id: ", err)
 		stakeManager := utils.GetStakeManager(client)
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -52,10 +51,12 @@ func init() {
 	var (
 		Address  string
 		Password string
+		StakerId uint32
 	)
 
 	resetLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
+	resetLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 
 	addrErr := resetLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

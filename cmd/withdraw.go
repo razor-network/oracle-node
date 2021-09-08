@@ -27,9 +27,9 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
+		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 
 		client := utils.ConnectToClient(config.Provider)
-		stakerId, err := utils.GetStakerId(client, address)
 		utils.CheckError("Error in fetching staker id: ", err)
 
 		utils.CheckEthBalanceIsZero(client, address)
@@ -101,10 +101,12 @@ func init() {
 	var (
 		Address  string
 		Password string
+		StakerId uint32
 	)
 
 	withdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	withdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
+	withdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
 
 	addrErr := withdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

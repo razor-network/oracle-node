@@ -28,7 +28,7 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-
+		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
 
 		client := utils.ConnectToClient(config.Provider)
@@ -36,9 +36,6 @@ Example:
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
 
 		utils.CheckEthBalanceIsZero(client, address)
-
-		stakerId, err := utils.GetStakerId(client, address)
-		utils.CheckError("Error in fetching staker: ", err)
 
 		lock, err := utils.GetLock(client, address, stakerId)
 		utils.CheckError("Error in getting lock: ", err)
@@ -104,6 +101,7 @@ func init() {
 		WithdrawAutomatically bool
 		Password              string
 		Power                 string
+		StakerId              uint32
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
@@ -111,6 +109,7 @@ func init() {
 	unstakeCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
 	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	unstakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	unstakeCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
