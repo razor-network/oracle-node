@@ -205,9 +205,9 @@ func TestMultiplyToEightDecimals(t *testing.T) {
 	}
 }
 
-func TestGetAmountWithChecks(t *testing.T) {
+func TestCheckAmountAndBalance(t *testing.T) {
 	type args struct {
-		amount  string
+		amount  *big.Int
 		balance *big.Int
 	}
 	tests := []struct {
@@ -219,7 +219,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount is non-zero and less than balance",
 			args: args{
-				amount:  "900",
+				amount:  big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
 				balance: big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
@@ -228,7 +228,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount is zero",
 			args: args{
-				amount:  "0",
+				amount:  big.NewInt(0),
 				balance: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(0),
@@ -237,7 +237,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount Exceeds Balance-fatal",
 			args: args{
-				amount:  "10000",
+				amount:  big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
 				balance: big.NewInt(1).Mul(big.NewInt(900), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
@@ -246,7 +246,7 @@ func TestGetAmountWithChecks(t *testing.T) {
 		{
 			name: "Test When amount is equal to balance",
 			args: args{
-				amount:  "1000",
+				amount:  big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 				balance: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
@@ -261,13 +261,153 @@ func TestGetAmountWithChecks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fatal = false
-			got := GetAmountWithChecks(tt.args.amount, tt.args.balance)
+			got := CheckAmountAndBalance(tt.args.amount, tt.args.balance)
 			if tt.expectedFatal {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
 
 			if got.Cmp(tt.want) != 0 {
-				t.Errorf("GetAmountWithChecks() = %v, want = %v", got, tt.want)
+				t.Errorf("CheckAmountAndBalance() = %v, want = %v", got, tt.want)
+			}
+		})
+	}
+}
+func TestGetAmountInWei(t *testing.T) {
+	type args struct {
+		amount *big.Int
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test when amount is non-zero",
+			args: args{
+				big.NewInt(1000),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+		},
+		{
+			name: "Test when amount is zero",
+			args: args{
+				big.NewInt(0),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1e18)),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetAmountInWei(tt.args.amount)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAmountInWei() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetFractionalAmountInWei(t *testing.T) {
+	type args struct {
+		amount *big.Int
+		power  string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test when amount is non-zero and power is non-zero",
+			args: args{
+				amount: big.NewInt(1000),
+				power:  "17",
+			},
+			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(17), nil)),
+		},
+		{
+			name: "Test when amount is zero and power is non-zero",
+			args: args{
+				amount: big.NewInt(0),
+				power:  "15",
+			},
+			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(15), nil)),
+		},
+		{
+			name: "Test when amount is non-zero and power is zero",
+			args: args{
+				amount: big.NewInt(1000),
+				power:  "0",
+			},
+			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
+		},
+		{
+			name: "Test when amount is zero and power is also zero",
+			args: args{
+				amount: big.NewInt(0),
+				power:  "0",
+			},
+			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetFractionalAmountInWei(tt.args.amount, tt.args.power)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetFractionalAmountInWei() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAmountInDecimal(t *testing.T) {
+	type args struct {
+		amount *big.Int
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want *big.Float
+	}{
+		{
+			name: "Test1",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+			},
+			want: new(big.Float).SetInt(big.NewInt(1000)),
+		},
+		{
+			name: "Test 2",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e17)),
+			},
+			want: big.NewFloat(100),
+		},
+		{
+			name: "Test 3",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(555), big.NewInt(1e16)),
+			},
+			want: new(big.Float).Quo(new(big.Float).SetInt(big.NewInt(1).Mul(big.NewInt(555), big.NewInt(1e16))), new(big.Float).SetInt(big.NewInt(1e18))),
+		},
+		{
+			name: "Test 4",
+			args: args{
+				big.NewInt(1).Mul(big.NewInt(123456789), big.NewInt(1e10)),
+			},
+			want: new(big.Float).Quo(new(big.Float).SetInt(big.NewInt(1).Mul(big.NewInt(123456789), big.NewInt(1e10))), new(big.Float).SetInt(big.NewInt(1e18))),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetAmountInDecimal(tt.args.amount)
+			if got.Cmp(tt.want) != 0 {
+				t.Errorf("GetAmountInDecimal() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -163,6 +163,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Info("Proposing block....")
 		Propose(client, account, config, stakerId, epoch, rogueMode)
 	case 3:
+		if rogueMode {
+			log.Warn("Won't dispute in rogue mode..")
+			break
+		}
 		if lastVerification != nil && lastVerification.Cmp(epoch) >= 0 {
 			break
 		}

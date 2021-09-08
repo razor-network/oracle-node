@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -66,18 +67,48 @@ func AllZero(bytesValue [32]byte) bool {
 	return true
 }
 
-func GetAmountWithChecks(amount string, balance *big.Int) *big.Int {
-	_amount, ok := new(big.Int).SetString(amount, 10)
-	if !ok {
-		log.Fatal("SetString: error")
-	}
-
-	amountInWei := big.NewInt(1).Mul(_amount, big.NewInt(1e18))
-
+func CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	if amountInWei.Cmp(balance) > 0 {
 		log.Fatal("Not enough balance")
 	}
 	return amountInWei
+}
+
+func GetAmountInWei(amount *big.Int) *big.Int {
+	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1e18))
+	return amountInWei
+}
+
+func GetFractionalAmountInWei(amount *big.Int, power string) *big.Int {
+	_power, err := new(big.Int).SetString(power, 10)
+	if !err {
+		log.Fatal("SetString: error")
+	}
+	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1).Exp(big.NewInt(10), _power, nil))
+	return amountInWei
+}
+
+func AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
+	amount, err := flagSet.GetString("value")
+	if err != nil {
+		log.Fatal("Error in reading value", err)
+	}
+	_amount, ok := new(big.Int).SetString(amount, 10)
+	if !ok {
+		log.Fatal("SetString: error")
+	}
+	var amountInWei *big.Int
+	if IsFlagPassed("pow") {
+		power, _ := flagSet.GetString("pow")
+		amountInWei = GetFractionalAmountInWei(_amount, power)
+	} else {
+		amountInWei = GetAmountInWei(_amount)
+	}
+	return amountInWei
+}
+
+func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
+	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
 
 func Aggregate(client *ethclient.Client, address string, collection types.Collection) (*big.Int, error) {
