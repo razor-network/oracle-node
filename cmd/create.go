@@ -1,15 +1,11 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/spf13/pflag"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"razor/accounts"
+	"razor/utils"
 )
-
-var razorUtils utilsInterface
-var razorAccounts accountsInterface
 
 var createCmd = &cobra.Command{
 	Use:   "create",
@@ -19,18 +15,13 @@ var createCmd = &cobra.Command{
 Example: 
   ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
-		flags := cmd.Flags()
-		Create(flags, razorUtils, razorAccounts)
-	},
-}
 
-func Create(flags *pflag.FlagSet, razorUtils utilsInterface, razorAccounts accountsInterface) accounts.Account {
-	password := razorUtils.AssignPassword(flags)
-	path := razorUtils.GetDefaultPath()
-	account := razorAccounts.CreateAccount(path, password)
-	log.Info("Account address: ", account.Address)
-	log.Info("Keystore Path: ", account.URL)
-	return account
+		password := utils.AssignPassword(cmd.Flags())
+		path := utils.GetDefaultPath()
+		account := accounts.CreateAccount(path, password)
+		log.Info("Account address: ", account.Address)
+		log.Info("Keystore Path: ", account.URL)
+	},
 }
 
 func init() {
