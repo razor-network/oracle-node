@@ -26,7 +26,7 @@ func GetLogFilePath() (io.Writer, error) {
 	if err != nil {
 		return nil, err
 	}
-	dt := time.Now().Format("2006-01-02_15:04:05")
+	dt := time.Now().Format("2006-01-02_15.04.05")
 	logFilePath, err := os.OpenFile(home+"/"+dt+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		return nil, err
