@@ -28,12 +28,11 @@ Note:
 		password := utils.AssignPassword(cmd.Flags())
 		name, _ := cmd.Flags().GetString("name")
 		address, _ := cmd.Flags().GetString("address")
-		jobIds, _ := cmd.Flags().GetStringSlice("jobIds")
+		jobIdInUint, _ := cmd.Flags().GetUintSlice("jobIds")
 		aggregation, _ := cmd.Flags().GetUint32("aggregation")
+		power, _ := cmd.Flags().GetInt8("power")
 
 		client := utils.ConnectToClient(config.Provider)
-
-		jobIdsInBigInt := utils.ConvertToBigIntArray(jobIds)
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,
@@ -42,12 +41,12 @@ Note:
 			ChainId:        core.ChainId,
 			Config:         config,
 		})
-
+		jobIds := utils.ConvertUintArrayToUint8Array(jobIdInUint)
 		assetManager := utils.GetAssetManager(client)
-		txn, err := assetManager.CreateCollection(txnOpts, name, jobIdsInBigInt, aggregation)
-		if err != nil {
-			log.Fatal(err)
-		}
+		_, err = WaitForDisputeOrConfirmState(client, address, "create collection")
+		utils.CheckError("Error in fetching state: ", err)
+		txn, err := assetManager.CreateCollection(txnOpts, jobIds, aggregation, power, name)
+		utils.CheckError("Error in creating collection: ", err)
 		log.Info("Creating collection...")
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
@@ -59,16 +58,18 @@ func init() {
 	var (
 		Name              string
 		Account           string
-		JobIds            []string
+		JobIds            []uint
 		AggregationMethod uint32
 		Password          string
+		Power             int8
 	)
 
 	createCollectionCmd.Flags().StringVarP(&Name, "name", "n", "", "name of the collection")
 	createCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
-	createCollectionCmd.Flags().StringSliceVarP(&JobIds, "jobIds", "", []string{}, "job ids for the  collection")
+	createCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
-	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creater to protect the keystore")
+	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
+	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)
@@ -76,4 +77,6 @@ func init() {
 	utils.CheckError("Address Error: ", addrErr)
 	jobIdErr := createCollectionCmd.MarkFlagRequired("jobIds")
 	utils.CheckError("Job Id Error: ", jobIdErr)
+	powerErr := createCollectionCmd.MarkFlagRequired("power")
+	utils.CheckError("Power Error: ", powerErr)
 }

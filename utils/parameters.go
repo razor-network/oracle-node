@@ -16,17 +16,17 @@ func GetMinStakeAmount(client *ethclient.Client, address string) (*big.Int, erro
 	return parametersManager.MinStake(&callOpts)
 }
 
-func GetEpoch(client *ethclient.Client, address string) (*big.Int, error) {
+func GetEpoch(client *ethclient.Client, address string) (uint32, error) {
 	parametersManager, callOpts := getParametersManagerWithOpts(client, address)
 	return parametersManager.GetEpoch(&callOpts)
 }
 
-func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (*big.Int, error) {
+func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
 	parametersManager, callOpts := getParametersManagerWithOpts(client, address)
 	return parametersManager.WithdrawReleasePeriod(&callOpts)
 }
 
-func GetMaxAltBlocks(client *ethclient.Client, address string) (*big.Int, error) {
+func GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
 	parametersManager, callOpts := getParametersManagerWithOpts(client, address)
 	return parametersManager.MaxAltBlocks(&callOpts)
 }

@@ -15,7 +15,7 @@ import (
 	"modernc.org/sortutil"
 )
 
-func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId *big.Int, epoch *big.Int, rogueMode bool) {
+func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueMode bool) {
 	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return
@@ -37,14 +37,14 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		log.Error("Error in calculating biggest staker: ", err)
 		return
 	}
-	//blockHashes, err := utils.GetBlockHashes(client, account.Address)
+
 	randaoHash, err := utils.GetRandaoHash(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching random hash: ", err)
 		return
 	}
 	log.Info("Biggest Influence Id: ", biggestInfluenceId)
-	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %s, Number of Stakers: %s, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
+	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
 	iteration := getIteration(client, account.Address, types.ElectedProposer{
 		Stake:            staker.Stake,
@@ -67,10 +67,10 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	if err != nil {
 		log.Error(err)
 	}
-	if numOfProposedBlocks.Cmp(maxAltBlocks) >= 0 {
-		log.Infof("Number of blocks proposed: %s, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
+	if numOfProposedBlocks >= maxAltBlocks {
+		log.Infof("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Info("Comparing  iterations...")
-		lastBlockIndex := big.NewInt(0).Sub(numOfProposedBlocks, big.NewInt(1))
+		lastBlockIndex := numOfProposedBlocks - 1
 		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
@@ -82,13 +82,13 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := MakeBlock(client, account.Address, epoch, rogueMode)
+	medians, err := MakeBlock(client, account.Address, rogueMode)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	log.Infof("Medians: %s", medians)
+	log.Infof("Medians: %d", medians)
 
 	ids, err := utils.GetActiveAssetIds(client, account.Address)
 	if err != nil {
@@ -104,9 +104,9 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	})
 	blockManager := utils.GetBlockManager(client)
 
-	log.Infof("Epoch: %s Medians: %s", epoch, medians)
-	log.Infof("Asset Ids: %s Iteration: %d Biggest Influence Id: %s\n", ids, iteration, biggestInfluenceId)
-	txn, err := blockManager.Propose(txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
+	log.Infof("Epoch: %d Medians: %d", epoch, medians)
+	log.Infof("Asset Ids: %s Iteration: %d Biggest Influence Id: %d", ids, iteration, biggestInfluenceId)
+	txn, err := blockManager.Propose(txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
 	if err != nil {
 		log.Error(err)
 		return
@@ -116,21 +116,21 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 
-func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, *big.Int, error) {
+func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
 	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
 	if err != nil {
-		return nil, nil, err
+		return nil, 0, err
 	}
-	var biggestInfluenceId *big.Int
+	var biggestInfluenceId uint32
 	biggestInfluence := big.NewInt(0)
-	for i := 1; i <= int(numberOfStakers.Int64()); i++ {
-		influence, err := utils.GetInfluence(client, address, big.NewInt(int64(i)))
+	for i := 1; i <= int(numberOfStakers); i++ {
+		influence, err := utils.GetInfluence(client, address, uint32(i))
 		if err != nil {
-			return nil, nil, err
+			return nil, 0, err
 		}
 		if influence.Cmp(biggestInfluence) > 0 {
 			biggestInfluence = influence
-			biggestInfluenceId = big.NewInt(int64(i))
+			biggestInfluenceId = uint32(i)
 		}
 	}
 	return biggestInfluence, biggestInfluenceId, nil
@@ -152,10 +152,10 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
 	pseudoRandomNumber = pseudoRandomNumber.Add(pseudoRandomNumber, big.NewInt(1))
-	if pseudoRandomNumber.Cmp(proposer.StakerId) != 0 {
+	if pseudoRandomNumber.Cmp(big.NewInt(int64(proposer.StakerId))) != 0 {
 		return false
 	}
-	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
+	seed2 := solsha3.SoliditySHA3([]string{"uint32", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
 	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
@@ -170,92 +170,92 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	return biggestInfluence.Cmp(stakerInfluence) <= 0
 }
 
-func pseudoRandomNumberGenerator(seed []byte, max *big.Int, blockHashes []byte) *big.Int {
+func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
 	hash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(blockHashes), "0x" + hex.EncodeToString(seed)})
 	sum := big.NewInt(0).SetBytes(hash)
-	return sum.Mod(sum, max)
+	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func MakeBlock(client *ethclient.Client, address string, epoch *big.Int, rogueMode bool) ([]*big.Int, error) {
-	numAssets, err := utils.GetNumAssets(client, address)
+func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
+	numAssets, err := utils.GetNumActiveAssets(client, address)
 	if err != nil {
 		return nil, err
 	}
 
 	var medians []*big.Int
 
-	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		sortedWeights, sortedVotes, err := getSortedVotes(client, address, assetId, epoch)
+	epoch, err := utils.GetEpoch(client, address)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	for assetId := 1; assetId <= int(numAssets); assetId++ {
+		sortedVotes, err := getSortedVotes(client, address)
 		if err != nil {
 			log.Error(err)
+			// TODO: Add retry mechanism
 			continue
 		}
+
+		influenceSnapshot, err := utils.GetInfluenceSnapshot(client, address, epoch)
+		if err != nil {
+			log.Error(err)
+			// TODO: Add retry mechanism
+			continue
+		}
+
+		totalInfluenceRevealed, err := utils.GetTotalInfluenceRevealed(client, address, epoch)
+		if err != nil {
+			log.Error(err)
+			// TODO: Add retry mechanism
+			continue
+		}
+
 		log.Info("Sorted Votes: ", sortedVotes)
-		log.Info("Sorted Weights: ", sortedWeights)
+		log.Info("Influence Snapshot: ", influenceSnapshot)
+		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
+
 		var median *big.Int
 		if rogueMode {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
-			median = weightedMedian(sortedVotes, sortedWeights)
+			median = influencedMedian(sortedVotes, influenceSnapshot, totalInfluenceRevealed)
 		}
 		log.Infof("Median: %s", median)
 		medians = append(medians, median)
 	}
-	return medians, nil
+	mediansInUint32 := utils.ConvertBigIntArrayToUint32Array(medians)
+	return mediansInUint32, nil
 }
 
-func getSortedVotes(client *ethclient.Client, address string, assetId int, epoch *big.Int) ([]*big.Int, []*big.Int, error) {
+func getSortedVotes(client *ethclient.Client, address string) ([]*big.Int, error) {
 	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var (
-		voteValues  []*big.Int
-		voteWeights []*big.Int
-	)
-	for i := 1; i <= int(numberOfStakers.Int64()); i++ {
-		vote, err := utils.GetVotes(client, address, epoch, big.NewInt(int64(i)), big.NewInt(int64(assetId-1)))
+	var voteValues []*big.Int
+
+	for i := 1; i <= int(numberOfStakers); i++ {
+		vote, err := utils.GetVotes(client, address, uint32(i))
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		if vote.Value.Cmp(big.NewInt(0)) == 0 {
-			continue
-		}
-		if !utils.Contains(voteValues, vote.Value) {
-			voteValues = append(voteValues, vote.Value)
-		}
+		voteValues = append(voteValues, vote.Values...)
 	}
+
 	sortutil.BigIntSlice.Sort(voteValues)
-	for _, value := range voteValues {
-		weight, err := utils.GetVoteWeights(client, address, epoch, big.NewInt(int64(assetId-1)), value)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		voteWeights = append(voteWeights, weight)
-	}
-	return voteWeights, voteValues, nil
+	return voteValues, nil
 }
 
-func weightedMedian(sortedVotes, sortedWeights []*big.Int) *big.Int {
-	totalWeight := big.NewInt(0)
-	for _, weight := range sortedWeights {
-		totalWeight.Add(totalWeight, weight)
-	}
-	medianWeight := big.NewInt(1).Div(totalWeight, big.NewInt(2))
+func influencedMedian(sortedVotes []*big.Int, influence *big.Int, totalInfluenceRevealed *big.Int) *big.Int {
+	accProd := big.NewInt(0)
 
-	weight := big.NewInt(0)
-	median := big.NewInt(0)
-
-	for i, vote := range sortedVotes {
-		weight = weight.Add(weight, sortedWeights[i])
-		if weight.Cmp(medianWeight) >= 0 && median.Cmp(big.NewInt(0)) == 0 {
-			median = vote
-		}
+	for _, vote := range sortedVotes {
+		accProd = accProd.Add(accProd, vote.Mul(vote, influence))
 	}
-
-	if median.Cmp(big.NewInt(0)) == 0 {
-		return big.NewInt(1)
+	if totalInfluenceRevealed.Cmp(big.NewInt(0)) == 0 {
+		return accProd
 	}
-	return median
+	return accProd.Div(accProd, totalInfluenceRevealed)
 }

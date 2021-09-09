@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"math/big"
 	"razor/core"
@@ -30,27 +29,12 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		return err
 	}
 
-	root, err := utils.GetMerkleTreeRoot(data)
-	if err != nil {
-		return err
-	}
-
 	epoch, err := utils.GetEpoch(client, account.Address)
 	if err != nil {
 		return err
 	}
 
-	// Required if 2 or more instances of same staker is running and one of them has already committed in the current epoch
-	commitments, err := utils.GetCommitments(client, account.Address, epoch)
-	if err != nil {
-		return err
-	}
-	if !utils.AllZero(commitments) {
-		return errors.New("already committed")
-	}
-
-	commitment := solsha3.SoliditySHA3([]string{"uint256", "bytes32", "bytes32"}, []interface{}{epoch.String(), "0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(secret)})
-
+	commitment := solsha3.SoliditySHA3([]string{"uint32", "uint256[]", "bytes32"}, []interface{}{epoch, data, "0x" + hex.EncodeToString(secret)})
 	voteManager := utils.GetVoteManager(client)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
@@ -62,7 +46,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
 
-	log.Infof("Committing: epoch: %s, root: %s, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(root), "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
+	log.Infof("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 
 	txn, err := voteManager.Commit(txnOpts, epoch, commitmentToSend)
 	if err != nil {

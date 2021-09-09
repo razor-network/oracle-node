@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"math/big"
 	"razor/utils"
 	"time"
 
@@ -9,36 +8,58 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (*big.Int, error) {
-	for {
-		epoch, err := utils.GetEpoch(client, accountAddress)
-		if err != nil {
-			log.Fatal("Error in fetching epoch: ", err)
-		}
-		bufferPercent, err := getBufferPercent()
-		if err != nil {
-			log.Fatal(err)
-		}
-		state, err := utils.GetDelayedState(client, bufferPercent)
-		if err != nil {
-			log.Fatal("Error in fetching state: ", err)
-		}
-		log.Info("Epoch ", epoch)
-		switch state {
-		case 0:
-			log.Info("State 0: Commit")
-		case 1:
-			log.Info("State 1: Reveal")
-		case 2:
-			log.Info("State 2: Propose")
-		case 3:
-			log.Info("State 3: Dispute")
-		default:
-			log.Info("State: ", state)
-		}
+func GetEpochAndState(client *ethclient.Client, accountAddress string) (uint32, int64, error) {
+	epoch, err := utils.GetEpoch(client, accountAddress)
+	if err != nil {
+		return 0, 0, err
+	}
+	bufferPercent, err := getBufferPercent()
+	if err != nil {
+		return 0, 0, err
+	}
+	state, err := utils.GetDelayedState(client, bufferPercent)
+	if err != nil {
+		return 0, 0, err
+	}
+	log.Info("Epoch ", epoch)
 
+	switch state {
+	case 0:
+		log.Info("State : Commit")
+	case 1:
+		log.Info("State 1: Reveal")
+	case 2:
+		log.Info("State 2: Propose")
+	case 3:
+		log.Info("State 3: Dispute")
+	case 4:
+		log.Info("State 4: Confirm")
+	default:
+		log.Info("State: ", state)
+	}
+
+	return epoch, state, nil
+}
+
+func WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	for {
+		epoch, state, err := GetEpochAndState(client, accountAddress)
+		utils.CheckError("Error in fetching epoch and state: ", err)
 		if state != 0 {
 			log.Infof("Can only %s during state 0 (commit). Retrying in 5 second...", action)
+			time.Sleep(5 * time.Second)
+		} else {
+			return epoch, nil
+		}
+	}
+}
+
+func WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	for {
+		epoch, state, err := GetEpochAndState(client, accountAddress)
+		utils.CheckError("Error in fetching epoch and state: ", err)
+		if state != 3 && state != 4 {
+			log.Infof("Can only %s during dispute or confirm state. Retrying in 5 seconds...", action)
 			time.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil

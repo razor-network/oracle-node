@@ -32,12 +32,8 @@ Example:
 			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
 		}
 
-		value, err := cmd.Flags().GetString("value")
-		if err != nil {
-			log.Fatal("Error in reading value", err)
-		}
-
-		valueInWei := utils.GetAmountWithChecks(value, balance)
+		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		utils.CheckEthBalanceIsZero(client, address)
 
@@ -88,7 +84,8 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 	if err != nil {
 		log.Fatal("Error in staking: ", err)
 	}
-	log.Info("Staked\nTxn Hash: ", tx.Hash())
+	log.Info("Staked....")
+	log.Info("Txn Hash: ", tx.Hash().Hex())
 	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
 }
 
@@ -98,11 +95,13 @@ func init() {
 		Amount   string
 		Address  string
 		Password string
+		Power    string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
+	stakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

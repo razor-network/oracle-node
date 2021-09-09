@@ -7,24 +7,23 @@ import (
 )
 
 type Job struct {
-	Id        *big.Int
-	Epoch     *big.Int
-	Url       string
-	Selector  string
-	Name      string
-	Repeat    bool
 	Active    bool
+	Id        uint8
+	AssetType uint8
+	Power     int8
+	Epoch     uint32
 	Creator   common.Address
-	Result    *big.Int
-	AssetType *big.Int
+	Name      string
+	Selector  string
+	Url       string
 }
 
 type Collection struct {
-	Id                *big.Int
+	Id                uint8
 	Name              string
 	AggregationMethod uint32
-	JobIDs            []*big.Int
-	Result            *big.Int
+	JobIDs            []uint8
+	Power             int8
 }
 
 type Locks struct {

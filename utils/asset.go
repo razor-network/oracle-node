@@ -9,10 +9,16 @@ import (
 	"razor/core/types"
 )
 
-func GetNumAssets(client *ethclient.Client, address string) (*big.Int, error) {
+func GetNumAssets(client *ethclient.Client, address string) (uint8, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
 	return assetManager.GetNumAssets(&callOpts)
+}
+
+func GetNumActiveAssets(client *ethclient.Client, address string) (uint8, error) {
+	assetManager := GetAssetManager(client)
+	callOpts := GetOptions(false, address, "")
+	return assetManager.GetNumActiveAssets(&callOpts)
 }
 
 func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, error) {
@@ -23,9 +29,18 @@ func GetActiveAssetIds(client *ethclient.Client, address string) ([]*big.Int, er
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
 	var activeAssets []*big.Int
-	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		isActiveAsset, err := assetManager.GetActiveStatus(&callOpts, big.NewInt(int64(assetId)))
+	for assetId := 1; assetId <= int(numAssets); assetId++ {
+		assetType, err := assetManager.GetAssetType(&callOpts, uint8(assetId))
 		if err != nil {
+			//TODO: Implement retry
+			log.Error("Error in calling GetActiveStatus: ", err)
+		}
+		if assetType == 1 {
+			continue
+		}
+		isActiveAsset, err := assetManager.GetActiveStatus(&callOpts, uint8(assetId))
+		if err != nil {
+			//TODO: Implement retry
 			log.Error("Error in calling GetActiveStatus: ", err)
 		}
 		if isActiveAsset {
@@ -46,21 +61,14 @@ func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, 
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
 
-	for assetIndex := 1; assetIndex <= int(numOfAssets.Int64()); assetIndex++ {
-		assetType, err := assetManager.GetAssetType(&callOpts, big.NewInt(int64(assetIndex)))
+	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
+		assetType, err := assetManager.GetAssetType(&callOpts, uint8(assetIndex))
 		if err != nil {
 			log.Error("Error in fetching asset: ", assetIndex)
 			continue
 		}
-		if assetType.Cmp(big.NewInt(1)) == 0 {
-			activeJob, err := GetActiveJob(client, address, big.NewInt(int64(assetIndex)))
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-			data = append(data, GetDataToCommitFromJob(activeJob))
-		} else {
-			activeCollection, err := GetActiveCollection(client, address, big.NewInt(int64(assetIndex)))
+		if assetType == 2 {
+			activeCollection, err := GetActiveCollection(client, address, uint8(assetIndex))
 			if err != nil {
 				log.Error(err)
 				continue
@@ -75,25 +83,20 @@ func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, 
 	return data, nil
 }
 
-func GetActiveJob(client *ethclient.Client, address string, jobId *big.Int) (types.Job, error) {
+func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (types.Job, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
-	epoch, err := GetEpoch(client, address)
-
-	if err != nil {
-		return types.Job{}, err
-	}
 	job, err := assetManager.Jobs(&callOpts, jobId)
 	if err != nil {
 		return types.Job{}, err
 	}
-	if job.Active && job.Epoch.Cmp(epoch) < 0 {
+	if job.Active {
 		return job, nil
 	}
 	return types.Job{}, errors.New("job already fulfilled")
 }
 
-func GetActiveCollection(client *ethclient.Client, address string, collectionId *big.Int) (types.Collection, error) {
+func GetActiveCollection(client *ethclient.Client, address string, collectionId uint8) (types.Collection, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
 	collection, err := assetManager.GetCollection(&callOpts, collectionId)
@@ -108,7 +111,7 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 		Name:              collection.Name,
 		AggregationMethod: collection.AggregationMethod,
 		JobIDs:            collection.JobIDs,
-		Result:            collection.Result,
+		Power:             collection.Power,
 	}, nil
 }
 
@@ -141,7 +144,7 @@ func GetDataToCommitFromJob(job types.Job) *big.Int {
 
 	parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
 	if err != nil {
-		log.Error("Error in fetching value from parsed data ", err)
+		log.Error("Error in fetching value from parsed data: ", err)
 		return big.NewInt(1)
 	}
 
@@ -151,5 +154,5 @@ func GetDataToCommitFromJob(job types.Job) *big.Int {
 		return big.NewInt(1)
 	}
 
-	return MultiplyToEightDecimals(datum)
+	return MultiplyWithPower(datum, job.Power)
 }

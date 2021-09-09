@@ -2,7 +2,6 @@ package cmd
 
 import (
 	log "github.com/sirupsen/logrus"
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -30,20 +29,10 @@ Note:
 		password := utils.PasswordPrompt()
 
 		address, _ := cmd.Flags().GetString("address")
-		jobId, _ := cmd.Flags().GetString("jobId")
-		collectionId, _ := cmd.Flags().GetString("collectionId")
+		jobId, _ := cmd.Flags().GetUint8("jobId")
+		collectionId, _ := cmd.Flags().GetUint8("collectionId")
 
 		client := utils.ConnectToClient(config.Provider)
-
-		jobIdInBigInt, ok := new(big.Int).SetString(jobId, 10)
-		if !ok {
-			log.Fatal("SetString: error")
-		}
-
-		collectionIdInBigInt, ok := new(big.Int).SetString(collectionId, 10)
-		if !ok {
-			log.Fatal("SetString: error")
-		}
 
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 			Client:         client,
@@ -54,8 +43,8 @@ Note:
 		})
 
 		assetManager := utils.GetAssetManager(client)
-		log.Infof("Adding Job %s to collection %s", jobIdInBigInt, collectionIdInBigInt)
-		txn, err := assetManager.AddJobToCollection(txnOpts, collectionIdInBigInt, jobIdInBigInt)
+		log.Infof("Adding Job %d to collection %d", jobId, collectionId)
+		txn, err := assetManager.AddJobToCollection(txnOpts, collectionId, jobId)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -68,13 +57,13 @@ func init() {
 
 	var (
 		Account      string
-		JobId        string
-		CollectionId string
+		JobId        uint8
+		CollectionId uint8
 	)
 
 	addJobToCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
-	addJobToCollectionCmd.Flags().StringVarP(&JobId, "jobId", "", "", "job id to add to the  collection")
-	addJobToCollectionCmd.Flags().StringVarP(&CollectionId, "collectionId", "", "", "collection id")
+	addJobToCollectionCmd.Flags().Uint8VarP(&JobId, "jobId", "", 0, "job id to add to the  collection")
+	addJobToCollectionCmd.Flags().Uint8VarP(&CollectionId, "collectionId", "", 0, "collection id")
 
 	addrErr := addJobToCollectionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
