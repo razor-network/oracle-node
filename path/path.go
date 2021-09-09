@@ -24,7 +24,7 @@ func GetLogFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return home+"/razor.log", err
+	return home + "/razor.log", err
 }
 
 func GetConfigFilePath() (string, error) {
