@@ -2,13 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"razor/utils"
-
 	"github.com/spf13/cobra"
-
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
+	"razor/logger"
+	"razor/path"
 )
 
 var (
@@ -39,6 +37,8 @@ var VersionWithMeta = func() string {
 	}
 	return v
 }()
+
+var log = logger.NewLogger()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -77,12 +77,10 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
-	})
-
-	home := utils.GetDefaultPath()
+	home, err := path.GetDefaultPath()
+	if err != nil {
+		log.Fatal("Error in fetching .razor directory: ", err)
+	}
 	// Search config in home directory with name "razor.yaml".
 	viper.AddConfigPath(home)
 	viper.SetConfigName("razor")

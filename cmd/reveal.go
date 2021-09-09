@@ -10,7 +10,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 )
 
 func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32) error {

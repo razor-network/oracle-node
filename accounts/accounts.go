@@ -5,11 +5,13 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"razor/core/types"
+	"razor/logger"
 	"strings"
 )
+
+var log = logger.NewLogger()
 
 func CreateAccount(path string, password string) accounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)

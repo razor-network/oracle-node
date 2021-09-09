@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"

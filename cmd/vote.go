@@ -9,6 +9,7 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
+	"razor/path"
 	jobManager "razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -21,7 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/logrusorgru/aurora/v3"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -264,7 +264,11 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 
 func calculateSecret(account types.Account, epoch uint32) []byte {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
-	signedData, err := accounts.Sign(hash, account, utils.GetDefaultPath())
+	razorPath, err := path.GetDefaultPath()
+	if err != nil {
+		log.Error("Error in fetching .razor directory: ", err)
+	}
+	signedData, err := accounts.Sign(hash, account, razorPath)
 	if err != nil {
 		log.Error("Error in signing the data: ", err)
 		return nil

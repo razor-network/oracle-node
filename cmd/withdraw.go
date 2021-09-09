@@ -9,7 +9,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

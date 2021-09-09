@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"modernc.org/sortutil"
 )
 

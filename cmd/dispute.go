@@ -8,7 +8,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 )
 
 func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) {

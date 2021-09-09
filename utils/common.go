@@ -11,7 +11,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"github.com/wealdtech/go-merkletree"
 	"github.com/wealdtech/go-merkletree/keccak256"
 )
@@ -30,17 +29,6 @@ func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, er
 	coinContract := GetTokenManager(client)
 	opts := GetOptions(false, accountAddress, "")
 	return coinContract.BalanceOf(&opts, address)
-}
-
-func GetDefaultPath() string {
-	home, err := os.UserHomeDir()
-	CheckError("Error in getting user home directory: ", err)
-	defaultPath := home + "/.razor"
-	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
-		mkdirErr := os.Mkdir(defaultPath, 0700)
-		CheckError("Error in creating directory: ", mkdirErr)
-	}
-	return defaultPath
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {

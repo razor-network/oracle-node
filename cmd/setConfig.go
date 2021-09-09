@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"razor/path"
 	"razor/utils"
 )
 
@@ -45,11 +45,10 @@ Example:
 			viper.Set("gasprice", 0)
 			log.Info("Config values set to default. Use setConfig to modify the values.")
 		}
-		path := utils.GetDefaultPath() + "/razor.yaml"
+		path, pathErr := path.GetConfigFilePath()
+		utils.CheckError("Error in fetching config file path: ", pathErr)
 		err := viper.WriteConfigAs(path)
-		if err != nil {
-			log.Fatal(err)
-		}
+		utils.CheckError("Error in writing config: ", err)
 	},
 }
 

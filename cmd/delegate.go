@@ -5,7 +5,6 @@ import (
 	"razor/core/types"
 	"razor/utils"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

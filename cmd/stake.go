@@ -7,7 +7,6 @@ import (
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

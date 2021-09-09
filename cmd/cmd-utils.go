@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 )
 
 func GetEpochAndState(client *ethclient.Client, accountAddress string) (uint32, int64, error) {

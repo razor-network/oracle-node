@@ -11,7 +11,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	log "github.com/sirupsen/logrus"
 	"modernc.org/sortutil"
 )
 
