@@ -1,9 +1,7 @@
 package path
 
 import (
-	"io"
 	"os"
-	"time"
 )
 
 func GetDefaultPath() (string, error) {
@@ -21,17 +19,12 @@ func GetDefaultPath() (string, error) {
 	return defaultPath, nil
 }
 
-func GetLogFilePath() (io.Writer, error) {
+func GetLogFilePath() (string, error) {
 	home, err := GetDefaultPath()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	dt := time.Now().Format("2006-01-02_15.04.05")
-	logFilePath, err := os.OpenFile(home+"/"+dt+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		return nil, err
-	}
-	return logFilePath, nil
+	return home+"/razor.log", err
 }
 
 func GetConfigFilePath() (string, error) {

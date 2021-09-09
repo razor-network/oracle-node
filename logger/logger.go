@@ -3,6 +3,7 @@ package logger
 import (
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"razor/path"
 )
 
@@ -20,7 +21,13 @@ func init() {
 	}
 
 	standardLogger.Formatter = &logrus.JSONFormatter{}
-	standardLogger.Out = logFilePath
+	standardLogger.Out = &lumberjack.Logger{
+		Filename:   logFilePath,
+		MaxSize:    5,
+		MaxBackups: 10,
+		MaxAge:     30,
+	}
+
 	osInfo := goInfo.GetInfo()
 
 	standardLogger.WithFields(logrus.Fields{
