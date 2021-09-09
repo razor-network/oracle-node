@@ -136,3 +136,22 @@ func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 		log.Fatal("Eth balance is 0, Aborting...")
 	}
 }
+
+func GetStateName(stateNumber int64) string {
+	var stateName string
+	switch stateNumber {
+	case 0:
+		stateName = "Commit"
+	case 1:
+		stateName = "Reveal"
+	case 2:
+		stateName = "Propose"
+	case 3:
+		stateName = "Dispute"
+	case 4:
+		stateName = "Confirm"
+	default:
+		stateName = "-1"
+	}
+	return stateName
+}

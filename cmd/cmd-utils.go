@@ -22,21 +22,7 @@ func GetEpochAndState(client *ethclient.Client, accountAddress string) (uint32, 
 		return 0, 0, err
 	}
 	log.Info("Epoch ", epoch)
-
-	switch state {
-	case 0:
-		log.Info("State: Commit")
-	case 1:
-		log.Info("State: Reveal")
-	case 2:
-		log.Info("State: Propose")
-	case 3:
-		log.Info("State: Dispute")
-	case 4:
-		log.Info("State: Confirm")
-	default:
-		log.Info("State: ", state)
-	}
+	log.Info("State: ", utils.GetStateName(state))
 
 	return epoch, state, nil
 }
