@@ -1,44 +1,62 @@
 package utils
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
+	"razor/pkg/bindings"
 )
 
-func GetCommitments(client *ethclient.Client, address string, epoch *big.Int) ([32]byte, error) {
-	voteManager := GetVoteManager(client)
-	callOpts := GetOptions(false, address, "")
+func getVoteManagerWithOpts(client *ethclient.Client, address string) (*bindings.VoteManager, bind.CallOpts) {
+	return GetVoteManager(client), GetOptions(false, address, "")
+}
+
+func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
 	stakerId, err := GetStakerId(client, address)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	return voteManager.Commitments(&callOpts, epoch, stakerId)
+	commitments, err := voteManager.Commitments(&callOpts, stakerId)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	return commitments.CommitmentHash, nil
 }
 
-func GetVotes(client *ethclient.Client, address string, epoch *big.Int, stakerId *big.Int, assetId *big.Int) (struct {
-	Value  *big.Int
-	Weight *big.Int
+func GetVotes(client *ethclient.Client, address string, stakerId uint32) (struct {
+	Epoch  uint32
+	Values []*big.Int
 }, error) {
-	voteManager := GetVoteManager(client)
-	callOpts := GetOptions(false, address, "")
-	if assetId == nil {
-		assetId = big.NewInt(0)
-	}
-
-	return voteManager.GetVote(&callOpts, epoch, stakerId, assetId)
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	return voteManager.GetVote(&callOpts, stakerId)
 }
 
-func GetVoteWeights(client *ethclient.Client, address string, epoch *big.Int, assetId *big.Int, voteValue *big.Int) (*big.Int, error) {
-	voteManager := GetVoteManager(client)
-	callOpts := GetOptions(false, address, "")
-	if assetId == nil {
-		assetId = big.NewInt(0)
+func GetInfluenceSnapshot(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	stakerId, err := GetStakerId(client, address)
+	if err != nil {
+		return nil, err
 	}
-	return voteManager.VoteWeights(&callOpts, epoch, assetId, voteValue)
+	return voteManager.GetInfluenceSnapshot(&callOpts, epoch, stakerId)
+}
+
+func GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	return voteManager.GetTotalInfluenceRevealed(&callOpts, epoch)
 }
 
 func GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
-	voteManager := GetVoteManager(client)
-	callOpts := GetOptions(false, address, "")
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
 	return voteManager.GetRandaoHash(&callOpts)
+}
+
+func GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	return voteManager.GetEpochLastCommitted(&callOpts, stakerId)
+}
+
+func GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	return voteManager.GetEpochLastRevealed(&callOpts, stakerId)
 }

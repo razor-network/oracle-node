@@ -2,19 +2,18 @@ package utils
 
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
-	"math/big"
 	"razor/pkg/bindings"
 )
 
-func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch *big.Int) (*big.Int, error) {
+func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions(false, address, "")
 	return blockManager.GetNumProposedBlocks(&callOpts, epoch)
 }
 
-func GetProposedBlock(client *ethclient.Client, address string, epoch *big.Int, proposedBlock *big.Int) (struct {
+func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlock uint8) (struct {
 	Block        bindings.StructsBlock
-	BlockMedians []*big.Int
+	BlockMedians []uint32
 }, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions(false, address, "")

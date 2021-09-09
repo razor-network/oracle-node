@@ -84,7 +84,8 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 	if err != nil {
 		log.Fatal("Error in staking: ", err)
 	}
-	log.Info("Staked\nTxn Hash: ", tx.Hash())
+	log.Info("Staked....")
+	log.Info("Txn Hash: ", tx.Hash().Hex())
 	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
 }
 

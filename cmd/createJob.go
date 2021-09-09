@@ -30,9 +30,9 @@ Note:
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		name, _ := cmd.Flags().GetString("name")
-		repeat, _ := cmd.Flags().GetBool("repeat")
 		url, _ := cmd.Flags().GetString("url")
 		selector, _ := cmd.Flags().GetString("selector")
+		power, _ := cmd.Flags().GetInt8("power")
 
 		client := utils.ConnectToClient(config.Provider)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -45,7 +45,7 @@ Note:
 
 		assetManager := utils.GetAssetManager(client)
 		log.Info("Creating Job...")
-		txn, err := assetManager.CreateJob(txnOpts, url, selector, name, repeat)
+		txn, err := assetManager.CreateJob(txnOpts, power, name, selector, url)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -62,7 +62,7 @@ func init() {
 		URL      string
 		Selector string
 		Name     string
-		Repeat   bool
+		Power    int8
 		Account  string
 		Password string
 	)
@@ -70,7 +70,7 @@ func init() {
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
-	createJobCmd.Flags().BoolVarP(&Repeat, "repeat", "r", true, "repeat")
+	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
@@ -82,4 +82,6 @@ func init() {
 	utils.CheckError("Name error: ", nameErr)
 	addrErr := createJobCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
+	powErr := createJobCmd.MarkFlagRequired("power")
+	utils.CheckError("Power error: ", powErr)
 }

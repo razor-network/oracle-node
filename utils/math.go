@@ -2,11 +2,12 @@ package utils
 
 import (
 	"errors"
-	"github.com/spf13/pflag"
+	"math"
 	"math/big"
-	"razor/core"
 	"razor/core/types"
 	"strconv"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -33,11 +34,11 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 	return big.NewFloat(0), nil
 }
 
-func MultiplyToEightDecimals(num *big.Float) *big.Int {
+func MultiplyWithPower(num *big.Float, power int8) *big.Int {
 	if num == nil {
 		return big.NewInt(0)
 	}
-	decimalMultiplier := big.NewFloat(float64(core.DecimalsMultiplier))
+	decimalMultiplier := big.NewFloat(math.Pow(10, float64(power)))
 	value := big.NewFloat(1).Mul(num, decimalMultiplier)
 	result := new(big.Int)
 	value.Int(result)
@@ -124,10 +125,10 @@ func Aggregate(client *ethclient.Client, address string, collection types.Collec
 		}
 		jobs = append(jobs, job)
 	}
-	return performAggregation(GetDataToCommitFromJobs(jobs), collection.AggregationMethod)
+	return performAggregation(GetDataToCommitFromJobs(jobs), collection.AggregationMethod, collection.Power)
 }
 
-func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, error) {
+func performAggregation(data []*big.Int, aggregationMethod uint32, power int8) (*big.Int, error) {
 	if len(data) == 0 {
 		return nil, errors.New("aggregation cannot be performed for nil data")
 	}
@@ -135,10 +136,12 @@ func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, er
 	switch aggregationMethod {
 	case 1:
 		sortutil.BigIntSlice.Sort(data)
-		return data[len(data)/2], nil
+		median := data[len(data)/2]
+		return MultiplyWithPower(big.NewFloat(float64(median.Int64())), power), nil
 	case 2:
 		sum := CalculateSumOfArray(data)
-		return sum.Div(sum, big.NewInt(int64(len(data)))), nil
+		mean := sum.Div(sum, big.NewInt(int64(len(data))))
+		return MultiplyWithPower(big.NewFloat(float64(mean.Int64())), power), nil
 	}
 	return nil, errors.New("invalid aggregation method")
 }

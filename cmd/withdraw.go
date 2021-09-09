@@ -27,26 +27,22 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetString("stakerId")
+		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 
 		client := utils.ConnectToClient(config.Provider)
-
-		_stakerId, ok := new(big.Int).SetString(stakerId, 10)
-		if !ok {
-			log.Fatal("Set string error in converting staker id")
-		}
+		utils.CheckError("Error in fetching staker id: ", err)
 
 		utils.CheckEthBalanceIsZero(client, address)
 
 		checkForCommitStateAndWithdraw(client, types.Account{
 			Address:  address,
 			Password: password,
-		}, config, _stakerId)
+		}, config, stakerId)
 
 	},
 }
 
-func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId *big.Int) {
+func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) {
 
 	lock, err := utils.GetLock(client, account.Address, stakerId)
 	utils.CheckError("Error in fetching lock: ", err)
@@ -58,7 +54,7 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 
 	withdrawReleasePeriod, err := utils.GetWithdrawReleasePeriod(client, account.Address)
 	utils.CheckError("Error in fetching withdraw release period", err)
-	withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, withdrawReleasePeriod)
+	withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, big.NewInt(int64(withdrawReleasePeriod)))
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
@@ -69,13 +65,13 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 
 	epoch, err := utils.GetEpoch(client, account.Address)
 	utils.CheckError("Error in fetching epoch: ", err)
-	if epoch.Cmp(withdrawBefore) > 0 {
+	if big.NewInt(int64(epoch)).Cmp(withdrawBefore) > 0 {
 		log.Fatal("Withdrawal period has passed. Cannot withdraw now, please reset the lock!")
 	}
 
 	commitStateEpoch, err := WaitForCommitState(client, account.Address, "withdraw")
-	for i := commitStateEpoch; i.Cmp(withdrawBefore) < 0; {
-		if commitStateEpoch.Cmp(lock.WithdrawAfter) >= 0 && commitStateEpoch.Cmp(withdrawBefore) <= 0 {
+	for i := commitStateEpoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
+		if big.NewInt(int64(commitStateEpoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(commitStateEpoch)).Cmp(withdrawBefore) <= 0 {
 			utils.CheckError("Error in fetching epoch: ", err)
 			withdraw(client, txnOpts, commitStateEpoch, stakerId)
 			break
@@ -86,7 +82,7 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 	}
 }
 
-func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch *big.Int, stakerId *big.Int) {
+func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32) {
 	log.Info("Withdrawing funds...")
 
 	stakeManager := utils.GetStakeManager(client)
@@ -104,16 +100,14 @@ func init() {
 
 	var (
 		Address  string
-		StakerId string
 		Password string
+		StakerId uint32
 	)
 
 	withdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	withdrawCmd.Flags().StringVarP(&StakerId, "stakerId", "", "", "staker's id to withdraw")
 	withdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
+	withdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
 
 	addrErr := withdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
-	stakerIdErr := withdrawCmd.MarkFlagRequired("stakerId")
-	utils.CheckError("Staker id error: ", stakerIdErr)
 }
