@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -32,7 +31,7 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		statusString, _ := cmd.Flags().GetString("status")
-		commission, _ := cmd.Flags().GetString("commission")
+		commission, _ := cmd.Flags().GetUint8("commission")
 
 		status, err := strconv.ParseBool(statusString)
 		utils.CheckError("Error in parsing status to boolean: ", err)
@@ -55,7 +54,7 @@ Example:
 		})
 
 		if stakerInfo.AcceptDelegation != status {
-			log.Infof("Setting delegation acceptance of Staker %s to %t", stakerId, status)
+			log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
 			delegationTxn, err := stakeManager.SetDelegationAcceptance(txnOpts, status)
 			utils.CheckError("Error in setting delegation acceptance: ", err)
 			log.Info("Sending SetDelegationAcceptance transaction...")
@@ -63,31 +62,26 @@ Example:
 			utils.WaitForBlockCompletion(client, delegationTxn.Hash().String())
 		}
 
-		_commission, ok := new(big.Int).SetString(commission, 10)
-		if !ok {
-			log.Fatal("Set string: error")
-		}
-
 		// Fetch updated stakerInfo
 		stakerInfo, err = utils.GetStaker(client, address, stakerId)
 		utils.CheckError("Error in fetching staker info: ", err)
-		if commission != "0" && stakerInfo.AcceptDelegation {
+		if commission != 0 && stakerInfo.AcceptDelegation {
 			// Call SetCommission if the commission value is provided and the staker hasn't already set commission
-			if stakerInfo.Commission.Cmp(big.NewInt(0)) == 0 {
-				SetCommission(client, stakeManager, stakerId, txnOpts, _commission)
+			if stakerInfo.Commission == 0 {
+				SetCommission(client, stakeManager, stakerId, txnOpts, commission)
 			}
 
 			// Call DecreaseCommission if the commission value is provided and the staker has already set commission
-			if stakerInfo.Commission.Cmp(big.NewInt(0)) > 0 && stakerInfo.Commission.Cmp(_commission) > 0 {
-				DecreaseCommission(client, stakeManager, stakerId, txnOpts, _commission)
+			if stakerInfo.Commission > 0 && stakerInfo.Commission > commission {
+				DecreaseCommission(client, stakeManager, stakerId, txnOpts, commission)
 			}
 		}
 
 	},
 }
 
-func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commission *big.Int) {
-	log.Infof("Setting the commission value of Staker %s to %s%%", stakerId, commission)
+func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8) {
+	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
 	commissionTxn, err := stakeManager.SetCommission(txnOpts, commission)
 	utils.CheckError("Error in setting commission: ", err)
 	log.Info("Sending SetCommission transaction...")
@@ -95,8 +89,8 @@ func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager
 	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
 }
 
-func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId *big.Int, txnOpts *bind.TransactOpts, commission *big.Int) {
-	log.Infof("Decreasing the commission value of Staker %s to %s%%", stakerId, commission)
+func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8) {
+	log.Infof("Decreasing the commission value of Staker %d to %d%%", stakerId, commission)
 	prompt := promptui.Prompt{
 		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
 		IsConfirm: true,
@@ -118,13 +112,13 @@ func init() {
 	var (
 		Status     string
 		Address    string
-		Commission string
+		Commission uint8
 		Password   string
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
-	setDelegationCmd.Flags().StringVarP(&Commission, "commission", "c", "0", "commission")
+	setDelegationCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
