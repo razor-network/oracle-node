@@ -22,6 +22,7 @@ Example:
 		bufferPercent, _ := cmd.Flags().GetInt32("buffer")
 		waitTime, _ := cmd.Flags().GetInt32("wait")
 		gasPrice, _ := cmd.Flags().GetInt32("gasprice")
+		logLevel, _ := cmd.Flags().GetString("logLevel")
 		if provider != "" {
 			viper.Set("provider", provider)
 		}
@@ -37,12 +38,16 @@ Example:
 		if gasPrice != -1 {
 			viper.Set("gasprice", gasPrice)
 		}
-		if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 {
+		if logLevel != "" {
+			viper.Set("logLevel", logLevel)
+		}
+		if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" {
 			viper.Set("provider", "http://127.0.0.1:8545")
 			viper.Set("gasmultiplier", 1.0)
 			viper.Set("buffer", 30)
 			viper.Set("wait", 3)
 			viper.Set("gasprice", 0)
+			viper.Set("logLevel", "")
 			log.Info("Config values set to default. Use setConfig to modify the values.")
 		}
 		path, pathErr := path.GetConfigFilePath()
@@ -61,10 +66,13 @@ func init() {
 		BufferPercent int32
 		WaitTime      int32
 		GasPrice      int32
+		LogLevel      string
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
+	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
+
 }

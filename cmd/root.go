@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -16,6 +17,7 @@ var (
 	BufferPercent int32
 	WaitTime      int32
 	GasPrice      int32
+	LogLevel      string
 )
 
 var log = logger.NewLogger()
@@ -52,6 +54,7 @@ func init() {
 	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
 	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
+	rootCmd.PersistentFlags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -75,5 +78,14 @@ func initConfig() {
 		} else {
 			log.Warn("error in reading config")
 		}
+	}
+
+	config, err := GetConfigData()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if config.LogLevel == "debug" {
+		log.SetLevel(logrus.DebugLevel)
 	}
 }

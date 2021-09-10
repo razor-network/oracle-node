@@ -20,7 +20,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/logrusorgru/aurora/v3"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/cobra"
 )
@@ -100,7 +99,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting minimum stake amount: ", err)
 		return
 	}
-	log.Debug(aurora.Red("Block:"), aurora.Red(blockNumber), aurora.Yellow("Epoch:"), aurora.Yellow(epoch), aurora.Green("State:"), aurora.Green(state), aurora.Blue("Address:"), aurora.Blue(account.Address), aurora.BrightBlue("Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Eth Balance:"), aurora.Magenta(ethBalance))
+	log.Debug("Block:", blockNumber, " Epoch:", epoch, " State:", state, " Address:", account.Address, " Staker ID:", stakerId, " Stake:", stakedAmount, " Eth Balance:", ethBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
