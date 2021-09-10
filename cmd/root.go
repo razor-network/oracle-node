@@ -80,6 +80,10 @@ func initConfig() {
 		}
 	}
 
+	setLogLevel()
+}
+
+func setLogLevel() {
 	config, err := GetConfigData()
 	if err != nil {
 		log.Fatal(err)
@@ -88,4 +92,13 @@ func initConfig() {
 	if config.LogLevel == "debug" {
 		log.SetLevel(logrus.DebugLevel)
 	}
+
+	log.Debug("Config details: ")
+	log.Debugf("Provider: %s", config.Provider)
+	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
+	log.Debugf("Buffer Percent: %d", config.BufferPercent)
+	log.Debugf("WaitTime: %d", config.WaitTime)
+	log.Debugf("GasPrice: %d", config.GasPrice)
+	log.Debugf("LogLevel: %s", config.LogLevel)
+
 }

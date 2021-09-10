@@ -44,7 +44,7 @@ Example:
 		if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" {
 			viper.Set("provider", "http://127.0.0.1:8545")
 			viper.Set("gasmultiplier", 1.0)
-			viper.Set("buffer", 30)
+			viper.Set("buffer", 20)
 			viper.Set("wait", 3)
 			viper.Set("gasprice", 0)
 			viper.Set("logLevel", "")
