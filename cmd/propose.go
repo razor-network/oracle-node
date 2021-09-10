@@ -69,7 +69,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 	if numOfProposedBlocks >= maxAltBlocks {
-		log.Debug("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
+		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
 		lastBlockIndex := numOfProposedBlocks - 1
 		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)

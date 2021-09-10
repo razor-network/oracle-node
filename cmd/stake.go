@@ -24,7 +24,7 @@ Example:
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account: " + address, err)
+		utils.CheckError("Error in fetching balance for account: "+address, err)
 
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
 		utils.CheckAmountAndBalance(valueInWei, balance)
