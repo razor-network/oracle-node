@@ -34,17 +34,14 @@ Example:
   ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in fetching config details: ", err)
-		}
+		utils.CheckError("Error in fetching config details: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
 		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		client := utils.ConnectToClient(config.Provider)
 		header, err := client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			log.Fatal(err)
-		}
+		utils.CheckError("Error in getting block: ", err)
+
 		address, _ := cmd.Flags().GetString("address")
 		account := types.Account{Address: address, Password: password}
 		for {
@@ -103,13 +100,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting minimum stake amount: ", err)
 		return
 	}
-	log.Info(aurora.Red("🔲 Block:"), aurora.Red(blockNumber), aurora.Yellow("⌛ Epoch:"), aurora.Yellow(epoch), aurora.Green("⏱️ State:"), aurora.Green(state), aurora.Blue("📒:"), aurora.Blue(account.Address), aurora.BrightBlue("👤 Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("💰Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Ξ:"), aurora.Magenta(ethBalance))
+	log.Debug(aurora.Red("Block:"), aurora.Red(blockNumber), aurora.Yellow("Epoch:"), aurora.Yellow(epoch), aurora.Green("State:"), aurora.Green(state), aurora.Blue("Address:"), aurora.Blue(account.Address), aurora.BrightBlue("Staker ID:"), aurora.BrightBlue(stakerId), aurora.Cyan("Stake:"), aurora.Cyan(stakedAmount), aurora.Magenta("Eth Balance:"), aurora.Magenta(ethBalance))
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
 			log.Error("Stopped voting as total stake is already withdrawn.")
 		} else {
-			log.Info("Auto starting Unstake followed by Withdraw")
+			log.Debug("Auto starting Unstake followed by Withdraw")
 			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
@@ -162,7 +159,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Error(err)
 			break
 		}
-		log.Info("Epoch last revealed: ", lastReveal)
+		log.Debug("Epoch last revealed: ", lastReveal)
 		Reveal(client, _committedData, secret, account, account.Address, config)
 	case 2:
 		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
@@ -183,7 +180,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		log.Info("Proposing block....")
 		Propose(client, account, config, stakerId, epoch, rogueMode)
 	case 3:
 		if lastVerification >= epoch {
@@ -235,7 +231,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 		if err != nil {
 			log.Error("Error in fetching logs: ", err)
 			retryingIn := math.Pow(2, float64(retry))
-			log.Infof("Retrying in %f seconds.....", retryingIn)
+			log.Debugf("Retrying in %f seconds.....", retryingIn)
 			time.Sleep(time.Duration(retryingIn) * time.Second)
 			continue
 		}

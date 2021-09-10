@@ -56,7 +56,6 @@ Example:
 			log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
 			delegationTxn, err := stakeManager.SetDelegationAcceptance(txnOpts, status)
 			utils.CheckError("Error in setting delegation acceptance: ", err)
-			log.Info("Sending SetDelegationAcceptance transaction...")
 			log.Infof("Transaction hash: %s", delegationTxn.Hash())
 			utils.WaitForBlockCompletion(client, delegationTxn.Hash().String())
 		}
@@ -83,7 +82,6 @@ func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager
 	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
 	commissionTxn, err := stakeManager.SetCommission(txnOpts, commission)
 	utils.CheckError("Error in setting commission: ", err)
-	log.Info("Sending SetCommission transaction...")
 	log.Infof("Transaction hash: %s", commissionTxn.Hash())
 	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
 }
@@ -97,9 +95,9 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 	result, err := prompt.Run()
 	utils.CheckError(result, err)
 	if strings.ToLower(result) == "y" {
+		log.Info("Sending DecreaseCommission transaction...")
 		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commission)
 		utils.CheckError("Error in decreasing commission: ", err)
-		log.Info("Sending DecreaseCommission transaction...")
 		log.Infof("Transaction hash: %s", decreaseCommissionTxn.Hash())
 		utils.WaitForBlockCompletion(client, decreaseCommissionTxn.Hash().String())
 	}

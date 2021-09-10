@@ -51,9 +51,9 @@ Example:
 		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
 		epoch, err := WaitForCommitState(client, address, "delegate")
 		utils.CheckError("Error in fetching epoch: ", err)
+		log.Info("Sending Delegate transaction...")
 		txn, err := stakeManager.Delegate(delegationTxnOpts, epoch, stakerId, valueInWei)
 		utils.CheckError("Error in delegating: ", err)
-		log.Infof("Sending Delegate transaction...")
 		log.Infof("Transaction hash: %s", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},

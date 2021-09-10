@@ -29,7 +29,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		log.Error("Error in fetching number of stakers: ", err)
 		return
 	}
-	log.Info("Stake: ", staker.Stake)
+	log.Debug("Stake: ", staker.Stake)
 
 	biggestInfluence, biggestInfluenceId, err := getBiggestInfluenceAndId(client, account.Address)
 	if err != nil {
@@ -42,8 +42,8 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		log.Error("Error in fetching random hash: ", err)
 		return
 	}
-	log.Info("Biggest Influence Id: ", biggestInfluenceId)
-	log.Infof("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
+	log.Debug("Biggest Influence Id: ", biggestInfluenceId)
+	log.Debugf("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
 	iteration := getIteration(client, account.Address, types.ElectedProposer{
 		Stake:            staker.Stake,
@@ -53,7 +53,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		RandaoHash:       randaoHash,
 	})
 
-	log.Info("Iteration: ", iteration)
+	log.Debug("Iteration: ", iteration)
 
 	if iteration == -1 {
 		return
@@ -61,18 +61,22 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	numOfProposedBlocks, err := utils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
 		log.Error(err)
+		return
 	}
 	maxAltBlocks, err := utils.GetMaxAltBlocks(client, account.Address)
 	if err != nil {
 		log.Error(err)
+		return
 	}
 	if numOfProposedBlocks >= maxAltBlocks {
-		log.Infof("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
-		log.Info("Comparing  iterations...")
+		log.Debug("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
+		log.Debug("Comparing  iterations...")
 		lastBlockIndex := numOfProposedBlocks - 1
 		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
+			//TODO: Add retry mechanism
+			return
 		}
 		lastIteration := lastProposedBlockStruct.Block.Iteration
 		if lastIteration.Cmp(big.NewInt(int64(iteration))) < 0 {
@@ -87,7 +91,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 
-	log.Infof("Medians: %d", medians)
+	log.Debugf("Medians: %d", medians)
 
 	ids, err := utils.GetActiveAssetIds(client, account.Address)
 	if err != nil {
@@ -103,14 +107,14 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	})
 	blockManager := utils.GetBlockManager(client)
 
-	log.Infof("Epoch: %d Medians: %d", epoch, medians)
-	log.Infof("Asset Ids: %s Iteration: %d Biggest Influence Id: %d", ids, iteration, biggestInfluenceId)
+	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
+	log.Debugf("Asset Ids: %s Iteration: %d Biggest Influence Id: %d", ids, iteration, biggestInfluenceId)
+	log.Info("Proposing block...")
 	txn, err := blockManager.Propose(txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	log.Info("Block Proposed...")
 	log.Info("Txn Hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
@@ -211,8 +215,8 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 			continue
 		}
 
-		log.Info("Sorted Votes: ", sortedVotes)
-		log.Info("Influence Snapshot: ", influenceSnapshot)
+		log.Debug("Sorted Votes: ", sortedVotes)
+		log.Debug("Influence Snapshot: ", influenceSnapshot)
 		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
 
 		var median *big.Int
@@ -221,7 +225,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 		} else {
 			median = influencedMedian(sortedVotes, influenceSnapshot, totalInfluenceRevealed)
 		}
-		log.Infof("Median: %s", median)
+		log.Debugf("Median: %s", median)
 		medians = append(medians, median)
 	}
 	mediansInUint32 := utils.ConvertBigIntArrayToUint32Array(medians)

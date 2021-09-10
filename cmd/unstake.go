@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 	"time"
-
-	"github.com/briandowns/spinner"
 
 	"github.com/spf13/cobra"
 )
@@ -74,17 +71,16 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 	log.Info("Unstaking coins")
 	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
 	utils.CheckError("Error in un-staking: ", err)
-	log.Infof("Successfully unstaked %s sRazors", txnArgs.Amount)
 	log.Info("Transaction hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
+	utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
 }
 
 func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
 	log.Info("Starting withdrawal now...")
-	s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-	s.Start()
+	//s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+	//s.Start()
 	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	s.Stop()
+	//s.Stop()
 	checkForCommitStateAndWithdraw(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,

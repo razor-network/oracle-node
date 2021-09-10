@@ -47,6 +47,7 @@ Note:
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Info("Txn Hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }

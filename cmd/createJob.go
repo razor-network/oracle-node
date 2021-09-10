@@ -21,9 +21,7 @@ Note:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
@@ -47,7 +45,6 @@ Note:
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Info("Job creation transaction sent.")
 		log.Info("Transaction Hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},

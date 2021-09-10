@@ -88,7 +88,6 @@ func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32
 	txn, err := stakeManager.Withdraw(txnOpts, epoch, stakerId)
 	utils.CheckError("Error in withdrawing funds: ", err)
 
-	log.Info("Withdraw Transaction sent.")
 	log.Info("Txn Hash: ", txn.Hash())
 
 	utils.WaitForBlockCompletion(client, txn.Hash().String())

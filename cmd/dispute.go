@@ -22,20 +22,20 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Error(err)
 			continue
 		}
-		log.Info("Values in the block")
-		log.Infof("Medians: %d", proposedBlock.BlockMedians)
+		log.Debug("Values in the block")
+		log.Debugf("Medians: %d", proposedBlock.BlockMedians)
 		medians, err := MakeBlock(client, account.Address, false)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
-		log.Info("Locally calculated data:")
-		log.Infof("Medians: %d\n", medians)
+		log.Debug("Locally calculated data:")
+		log.Debugf("Medians: %d\n", medians)
 		isEqual, assetId := utils.IsEqual(proposedBlock.BlockMedians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
-			log.Info("Block Values: ", proposedBlock.BlockMedians)
-			log.Info("Local Calculations: ", medians)
+			log.Debug("Block Values: ", proposedBlock.BlockMedians)
+			log.Debug("Local Calculations: ", medians)
 			err := Dispute(client, config, account, epoch, uint8(i), assetId)
 			if err != nil {
 				log.Error("Error in disputing...", err)
@@ -55,7 +55,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		return err
 	}
 
-	log.Infof("Epoch: %d, Sorted Votes: %s", epoch, sortedVotes)
+	log.Debugf("Epoch: %d, Sorted Votes: %s", epoch, sortedVotes)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,

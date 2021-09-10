@@ -2,8 +2,6 @@ package utils
 
 import (
 	"context"
-	"fmt"
-	"github.com/briandowns/spinner"
 	"math/big"
 	"os"
 	"razor/core"
@@ -57,13 +55,13 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	timeout := core.StateLength * 2
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
-		log.Info("Checking if transaction is mined....\n")
+		log.Debug("Checking if transaction is mined....")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
-			log.Info("Transaction mining unsuccessful")
+			log.Error("Transaction mining unsuccessful")
 			return 0
 		} else if transactionStatus == 1 {
-			log.Info("Transaction mined successfully\n")
+			log.Info("Transaction mined successfully")
 			return 1
 		}
 		time.Sleep(3 * time.Second)
@@ -76,14 +74,14 @@ func WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
 	}
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-	s.Start()
-	if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
-		log.Error("Error in setting color for spinner")
-	}
-	s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " second(s) "
+	//s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	//s.Start()
+	//if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
+	//	log.Error("Error in setting color for spinner")
+	//}
+	//s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " second(s) "
 	time.Sleep(time.Duration(waitTime) * time.Second)
-	s.Stop()
+	//s.Stop()
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {

@@ -17,7 +17,7 @@ func HandleRevealState(client *ethclient.Client, address string, staker bindings
 	if err != nil {
 		return err
 	}
-	log.Info("Staker last epoch committed: ", epochLastCommitted)
+	log.Debug("Staker last epoch committed: ", epochLastCommitted)
 	if epochLastCommitted != epoch {
 		return errors.New("commitment for this epoch not found on network.... aborting reveal")
 	}
@@ -67,19 +67,19 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
-	log.Infof("Revealing vote for epoch: %d  votes: %s  root: %s  secret: %s  commitAccount: %s",
+	log.Debugf("Revealing vote for epoch: %d  votes: %s  root: %s  secret: %s  commitAccount: %s",
 		epoch,
 		committedData,
 		"0x"+common.Bytes2Hex(originalRoot),
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
 	)
+	log.Info("Revealing votes...")
 	txn, err := voteManager.Reveal(txnOpts, epoch, committedData, secretBytes32)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	log.Info("Revealed..")
 	log.Info("Txn Hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }

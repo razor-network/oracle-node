@@ -4,7 +4,9 @@ import (
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"razor/core"
 	"razor/path"
+	"runtime"
 )
 
 type StandardLogger struct {
@@ -35,6 +37,8 @@ func init() {
 		"Core":             osInfo.Core,
 		"Platform":         osInfo.Platform,
 		"CPUs":             osInfo.CPUs,
+		"razor-go version": core.VersionWithMeta,
+		"go version":       runtime.Version(),
 	}).Info()
 
 }

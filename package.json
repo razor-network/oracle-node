@@ -8,7 +8,7 @@
     "build": "make build",
     "build-all": "make all",
     "build-noargs": "make build-noargs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "go test ./... -v"
   },
   "repository": {
     "type": "git",

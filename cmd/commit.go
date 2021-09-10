@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"razor/core"
@@ -18,7 +19,7 @@ func HandleCommitState(client *ethclient.Client, address string) []*big.Int {
 		log.Error("Error in getting active assets: ", err)
 		return nil
 	}
-	log.Info("Data: ", data)
+	log.Debug("Data: ", data)
 	return data
 }
 
@@ -45,17 +46,16 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
 
-	log.Infof("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
+	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 
+	log.Info("Commitment sent...")
 	txn, err := voteManager.Commit(txnOpts, epoch, commitmentToSend)
 	if err != nil {
 		return err
 	}
-
-	log.Info("Commitment sent...")
 	log.Info("Txn Hash: ", txn.Hash())
 	if utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash())) == 0 {
-		log.Error("Commit failed....")
+		return errors.New("block not mined")
 	}
 	return nil
 }
