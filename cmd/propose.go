@@ -194,7 +194,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 	}
 
 	for assetId := 1; assetId <= int(numAssets); assetId++ {
-		sortedVotes, err := getSortedVotes(client, address)
+		sortedVotes, err := getSortedVotes(client, address, uint8(assetId))
 		if err != nil {
 			log.Error(err)
 			// TODO: Add retry mechanism
@@ -232,7 +232,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 	return mediansInUint32, nil
 }
 
-func getSortedVotes(client *ethclient.Client, address string) ([]*big.Int, error) {
+func getSortedVotes(client *ethclient.Client, address string, assetId uint8) ([]*big.Int, error) {
 	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, err
@@ -240,11 +240,11 @@ func getSortedVotes(client *ethclient.Client, address string) ([]*big.Int, error
 	var voteValues []*big.Int
 
 	for i := 1; i <= int(numberOfStakers); i++ {
-		vote, err := utils.GetVotes(client, address, uint32(i))
+		vote, err := utils.GetVoteValue(client, address, assetId, uint32(i))
 		if err != nil {
 			return nil, err
 		}
-		voteValues = append(voteValues, vote.Values...)
+		voteValues = append(voteValues, vote)
 	}
 
 	sortutil.BigIntSlice.Sort(voteValues)
