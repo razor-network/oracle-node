@@ -32,6 +32,11 @@ func GetVotes(client *ethclient.Client, address string, stakerId uint32) (struct
 	return voteManager.GetVote(&callOpts, stakerId)
 }
 
+func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	return voteManager.GetVoteValue(&callOpts, assetId, stakerId)
+}
+
 func GetInfluenceSnapshot(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)
 	stakerId, err := GetStakerId(client, address)

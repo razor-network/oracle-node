@@ -50,7 +50,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 
 func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
 	blockManager := utils.GetBlockManager(client)
-	sortedVotes, err := getSortedVotes(client, account.Address)
+	sortedVotes, err := getSortedVotes(client, account.Address, uint8(assetId))
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Config:         config,
 	})
 
-	GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId-1), utils.ConvertBigIntArrayToUint32Array(sortedVotes))
+	GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes))
 
 	log.Info("Finalizing dispute...")
 	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
