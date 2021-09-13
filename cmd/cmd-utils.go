@@ -21,7 +21,7 @@ func GetEpochAndState(client *ethclient.Client, accountAddress string) (uint32, 
 		return 0, 0, err
 	}
 	log.Debug("Epoch ", epoch)
-	log.Debug("State ", state)
+	log.Debug("State ", utils.GetStateName(state))
 	return epoch, state, nil
 }
 
