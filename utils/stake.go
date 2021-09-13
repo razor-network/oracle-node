@@ -47,6 +47,5 @@ func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.L
 	if err != nil {
 		return types.Locks{}, err
 	}
-	//log.Info("Staker Token Address: ", staker.TokenAddress)
 	return stakeManager.Locks(&callOpts, common.HexToAddress(address), staker.TokenAddress)
 }

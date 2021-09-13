@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -48,6 +47,7 @@ Note:
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Info("Txn Hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }

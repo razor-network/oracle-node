@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/magiconair/properties/assert"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestAllZero(t *testing.T) {
@@ -215,9 +214,9 @@ func TestCheckAmountAndBalance(t *testing.T) {
 		},
 	}
 
-	defer func() { log.StandardLogger().ExitFunc = nil }()
+	defer func() { log.ExitFunc = nil }()
 	var fatal bool
-	log.StandardLogger().ExitFunc = func(int) { fatal = true }
+	log.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -6,4 +6,5 @@ type Configurations struct {
 	BufferPercent int32
 	WaitTime      int32
 	GasPrice      int32
+	LogLevel      string
 }

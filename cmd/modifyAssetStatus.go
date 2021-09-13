@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -63,7 +62,6 @@ func ModifyAssetStatus(transactionOpts types.TransactionOptions, assetId uint8, 
 	if err != nil {
 		return err
 	}
-	log.Info("Asset active status changed")
 	log.Info("Txn Hash: ", txn.Hash().String())
 	utils.WaitForBlockCompletion(transactionOpts.Client, txn.Hash().String())
 	return nil

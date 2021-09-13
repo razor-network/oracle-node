@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"github.com/manifoldco/promptui"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"os"
 )

@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,17 +18,13 @@ Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
-		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
-		}
+		utils.CheckError("Error in fetching balance for account: "+address, err)
 
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
 		utils.CheckAmountAndBalance(valueInWei, balance)
@@ -54,39 +48,32 @@ func approve(txnArgs types.TransactionOptions) {
 	tokenManager := utils.GetTokenManager(txnArgs.Client)
 	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
 	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
-	if err != nil {
-		log.Fatal(err)
-	}
+	utils.CheckError("Error in sending allowance: ", err)
+
 	if allowance.Cmp(txnArgs.Amount) >= 0 {
-		log.Info("Sufficient allowance, no need to increase")
+		log.Debug("Sufficient allowance, no need to increase")
 	} else {
 		log.Info("Sending Approve transaction...")
 		txnOpts := utils.GetTxnOpts(txnArgs)
 		txn, err := tokenManager.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
-		if err != nil {
-			log.Fatal("Error in approving: ", err)
-		}
-		log.Info("Approve transaction sent...\nTxn Hash: ", txn.Hash())
-		log.Info("Waiting for transaction to be mined....")
-		utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
+		utils.CheckError("Error in approving", err)
+		log.Info("Txn Hash: ", txn.Hash())
+		utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
 	}
 }
 
 func stakeCoins(txnArgs types.TransactionOptions) {
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
-	log.Info("Sending stake transactions...")
 	txnOpts := utils.GetTxnOpts(txnArgs)
 	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
-	if err != nil {
-		log.Fatal("Error in getting commit state: ", err)
-	}
+	utils.CheckError("Error in getting commit state: ", err)
+
+	log.Info("Sending stake transactions...")
 	tx, err := stakeManager.Stake(txnOpts, epoch, txnArgs.Amount)
-	if err != nil {
-		log.Fatal("Error in staking: ", err)
-	}
-	log.Info("Staked....")
+	utils.CheckError("Error in staking: ", err)
+
 	log.Info("Txn Hash: ", tx.Hash().Hex())
-	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
+	utils.WaitForBlockCompletion(txnArgs.Client, tx.Hash().String())
 }
 
 func init() {
