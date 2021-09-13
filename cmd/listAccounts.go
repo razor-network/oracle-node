@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"razor/path"
 	"razor/utils"
 )
 
@@ -14,7 +14,8 @@ var listAccountsCmd = &cobra.Command{
 Example:
   ./razor listAccounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		path := utils.GetDefaultPath()
+		path, err := path.GetDefaultPath()
+		utils.CheckError("Error in fetching .razor directory", err)
 		ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 		allAccounts := ks.Accounts()
 		log.Info("The available accounts are: ")

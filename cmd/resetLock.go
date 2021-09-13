@@ -5,7 +5,6 @@ import (
 	"razor/core/types"
 	"razor/utils"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +38,6 @@ Example:
 		log.Info("Resetting lock...")
 		txn, err := stakeManager.ResetLock(txnOpts, stakerId)
 		utils.CheckError("Error in resetting lock: ", err)
-		log.Info("Transaction sent..")
 		log.Infof("Transaction Hash: %s", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},

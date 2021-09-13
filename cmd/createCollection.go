@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"razor/core"
 	"razor/core/types"
@@ -21,9 +20,7 @@ Note:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
 		name, _ := cmd.Flags().GetString("name")
@@ -48,6 +45,7 @@ Note:
 		txn, err := assetManager.CreateCollection(txnOpts, jobIds, aggregation, power, name)
 		utils.CheckError("Error in creating collection: ", err)
 		log.Info("Creating collection...")
+		log.Info("Txn Hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
 }

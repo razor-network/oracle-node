@@ -174,16 +174,17 @@ There are a set of parameters that are configurable. These include:
 * Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
 * Wait Time: This is the number of blocks the system will wait while voting.
 * Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 0, the razor client will automatically calculate the optimum gas price and send it.
+* Log Level: Normally debug logs are not logged into the log file. But if you want you can set `logLevel` to `debug` and fetch the debug logs.
 
-The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setconfig` command.
+The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setConfig` command.
 
 ```
-$ ./razor setconfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price>
+$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info>
 ```
 
 Example:
 ```
-$ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
+$ ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug
 ```
 
 Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.

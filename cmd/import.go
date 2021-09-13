@@ -4,8 +4,8 @@ import (
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"razor/path"
 	"razor/utils"
 	"strings"
 )
@@ -22,7 +22,8 @@ Example:
 		privateKey = strings.TrimPrefix(privateKey, "0x")
 		log.Info("Enter password to protect keystore file")
 		password := utils.PasswordPrompt()
-		path := utils.GetDefaultPath()
+		path, err := path.GetDefaultPath()
+		utils.CheckError("Error in fetching .razor directory: ", err)
 		priv, err := crypto.HexToECDSA(privateKey)
 		utils.CheckError("Error in parsing private key: ", err)
 		importAccount(path, password, priv)
