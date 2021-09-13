@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"razor/core/types"
 	"strings"
@@ -13,7 +12,9 @@ func GetConfigData() (types.Configurations, error) {
 		GasMultiplier: 0,
 		BufferPercent: 0,
 		WaitTime:      0,
+		LogLevel:      "",
 	}
+
 	provider, err := getProvider()
 	if err != nil {
 		return config, err
@@ -34,11 +35,18 @@ func GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	logLevel, err := getLogLevel()
+	if err != nil {
+		return config, err
+	}
+
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
 	config.GasPrice = gasPrice
+	config.LogLevel = logLevel
+
 	return config, nil
 }
 
@@ -98,4 +106,15 @@ func getGasPrice() (int32, error) {
 		gasPrice = viper.GetInt32("gasprice")
 	}
 	return gasPrice, nil
+}
+
+func getLogLevel() (string, error) {
+	logLevel, err := rootCmd.PersistentFlags().GetString("logLevel")
+	if err != nil {
+		return "", err
+	}
+	if logLevel == "" {
+		logLevel = viper.GetString("logLevel")
+	}
+	return logLevel, nil
 }

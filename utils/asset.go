@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"razor/core/types"
 )

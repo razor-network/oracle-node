@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"razor/accounts"
+	"razor/path"
 	"razor/utils"
 )
 
@@ -17,7 +17,8 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 
 		password := utils.AssignPassword(cmd.Flags())
-		path := utils.GetDefaultPath()
+		path, err := path.GetDefaultPath()
+		utils.CheckError("Error in fetching .razor directory", err)
 		account := accounts.CreateAccount(path, password)
 		log.Info("Account address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)

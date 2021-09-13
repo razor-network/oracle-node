@@ -3,8 +3,6 @@ package utils
 import (
 	"razor/core"
 
-	log "github.com/sirupsen/logrus"
-
 	"razor/pkg/bindings"
 
 	"github.com/ethereum/go-ethereum/common"
