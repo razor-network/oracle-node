@@ -124,7 +124,11 @@ func Aggregate(client *ethclient.Client, address string, collection types.Collec
 		}
 		jobs = append(jobs, job)
 	}
-	return performAggregation(GetDataToCommitFromJobs(jobs), collection.AggregationMethod, collection.Power)
+	dataToCommit, err := GetDataToCommitFromJobs(client, address, jobs)
+	if err != nil {
+		return nil, err
+	}
+	return performAggregation(dataToCommit, collection.AggregationMethod, collection.Power)
 }
 
 func performAggregation(data []*big.Int, aggregationMethod uint32, power int8) (*big.Int, error) {

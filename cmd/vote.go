@@ -133,7 +133,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data := HandleCommitState(client, account.Address)
+		data, err := HandleCommitState(client, account.Address)
+		if err != nil {
+			log.Error("Error in getting active assets: ", err)
+			break
+		}
 		if err := Commit(client, data, secret, account, config); err != nil {
 			log.Error("Error in committing data: ", err)
 			break
@@ -212,7 +216,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 }
 
 func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	maxRetries := 3
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
@@ -225,7 +228,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 		logs []types2.Log
 		err  error
 	)
-	for retry := 1; retry <= maxRetries; retry++ {
+	for retry := 1; retry <= core.MaxRetries; retry++ {
 		logs, err = client.FilterLogs(context.Background(), query)
 		if err != nil {
 			log.Error("Error in fetching logs: ", err)

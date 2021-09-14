@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
+	"time"
 )
 
 func GetNumAssets(client *ethclient.Client, address string) (uint8, error) {
@@ -114,44 +117,105 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 	}, nil
 }
 
-func GetDataToCommitFromJobs(jobs []types.Job) []*big.Int {
+func GetDataToCommitFromJobs(client *ethclient.Client, address string, jobs []types.Job) ([]*big.Int, error) {
 	var data []*big.Int
 	for _, job := range jobs {
-		dataToAppend := GetDataToCommitFromJob(job)
+		dataToAppend, err := GetDataToCommitFromJob(client, address, job)
+		if err != nil {
+			return nil, err
+		}
 		data = append(data, dataToAppend)
 	}
 	if len(data) == 0 {
 		data = append(data, big.NewInt(1))
 	}
-	return data
+	return data, nil
 }
 
-func GetDataToCommitFromJob(job types.Job) *big.Int {
+func GetDataToCommitFromJob(client *ethclient.Client, address string, job types.Job) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
+	var (
+		response []byte
+		apiErr   error
+	)
 
-	response, err := GetDataFromAPI(job.Url)
-	if err != nil {
-		log.Error(err)
-		return big.NewInt(1)
+	// Fetch data from API with retry mechanism
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		response, apiErr = GetDataFromAPI(job.Url)
+		if apiErr != nil {
+			log.Error("Error in fetching data from API: ", apiErr)
+			retryingIn := math.Pow(2, float64(retry))
+			log.Debugf("Retrying in %f seconds.....", retryingIn)
+			time.Sleep(time.Duration(retryingIn) * time.Second)
+			continue
+		}
+		break
 	}
 
-	err = json.Unmarshal(response, &parsedJSON)
+	// If the API still throws an error, fetch the last reported value
+	if apiErr != nil {
+		var (
+			stakerId     uint32
+			stakerErr    error
+			voteValue    *big.Int
+			voteValueErr error
+		)
+
+		// Fetch stakerId with retry mechanism
+		for retry := 1; retry <= core.MaxRetries; retry++ {
+			stakerId, stakerErr = GetStakerId(client, address)
+			if stakerErr != nil {
+				log.Error("Error in fetching staker id: ", stakerErr)
+				retryingIn := math.Pow(2, float64(retry))
+				log.Debugf("Retrying in %f seconds.....", retryingIn)
+				time.Sleep(time.Duration(retryingIn) * time.Second)
+				continue
+			}
+			break
+		}
+		// If fetching staker id still throws an error, return the error
+		if stakerErr != nil {
+			return nil, stakerErr
+		}
+
+		// Fetch the last voted value with retry mechanism
+		for retry := 1; retry <= core.MaxRetries; retry++ {
+			voteValue, voteValueErr = GetVoteValue(client, address, job.Id, stakerId)
+			if voteValueErr != nil {
+				log.Error("Error in fetching last vote: ", stakerErr)
+				retryingIn := math.Pow(2, float64(retry))
+				log.Debugf("Retrying in %f seconds.....", retryingIn)
+				time.Sleep(time.Duration(retryingIn) * time.Second)
+				continue
+			}
+			break
+		}
+
+		// If fetching vote value still throws an error, return the error
+		if voteValueErr != nil {
+			return nil, voteValueErr
+		}
+
+		return voteValue, nil
+	}
+
+	err := json.Unmarshal(response, &parsedJSON)
 	if err != nil {
 		log.Error("Error in parsing data from API: ", err)
-		return big.NewInt(1)
+		return nil, err
 	}
 
 	parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
 	if err != nil {
 		log.Error("Error in fetching value from parsed data: ", err)
-		return big.NewInt(1)
+		return big.NewInt(1), nil
 	}
 
 	datum, err := ConvertToNumber(parsedData)
 	if err != nil {
 		log.Error("Result is not a number")
-		return big.NewInt(1)
+		return big.NewInt(1), err
 	}
 
-	return MultiplyWithPower(datum, job.Power)
+	return MultiplyWithPower(datum, job.Power), err
 }
