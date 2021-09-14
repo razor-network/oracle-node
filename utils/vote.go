@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func getVoteManagerWithOpts(client *ethclient.Client, address string) (*bindings.VoteManager, bind.CallOpts) {
@@ -55,11 +56,6 @@ func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stake
 		return nil, voteValueErr
 	}
 	return voteValue, nil
-}
-
-func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
-	return voteManager.GetVoteValue(&callOpts, assetId, stakerId)
 }
 
 func GetInfluenceSnapshot(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {

@@ -149,3 +149,10 @@ func GetStateName(stateNumber int64) string {
 	}
 	return stateName
 }
+
+func Retry(retry int, errMsg string, err error) {
+	log.Error(errMsg, err)
+	retryingIn := math.Pow(2, float64(retry))
+	log.Debugf("Retrying in %f seconds.....", retryingIn)
+	time.Sleep(time.Duration(retryingIn) * time.Second)
+}
