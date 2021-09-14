@@ -145,7 +145,7 @@ func GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uin
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)
 	var (
 		epochLastRevealed uint32
-		err                error
+		err               error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
 		epochLastRevealed, err = voteManager.GetEpochLastRevealed(&callOpts, stakerId)

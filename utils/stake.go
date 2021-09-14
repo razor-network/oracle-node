@@ -65,8 +65,8 @@ func GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindi
 func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	var (
-		numStakers   uint32
-		stakerErr error
+		numStakers uint32
+		stakerErr  error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
 		numStakers, stakerErr = stakeManager.GetNumStakers(&callOpts)
@@ -85,7 +85,7 @@ func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error
 func GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	var (
-		influence   *big.Int
+		influence    *big.Int
 		influenceErr error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
@@ -109,7 +109,7 @@ func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.L
 		return types.Locks{}, err
 	}
 	var (
-		locks types.Locks
+		locks   types.Locks
 		lockErr error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {

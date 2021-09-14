@@ -11,7 +11,7 @@ func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch u
 	callOpts := GetOptions(false, address, "")
 	var (
 		numProposedBlocks uint8
-		err       error
+		err               error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
 		numProposedBlocks, err = blockManager.GetNumProposedBlocks(&callOpts, epoch)
@@ -32,7 +32,7 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 	callOpts := GetOptions(false, address, "")
 	var (
 		proposedBlock types.Block
-		err       error
+		err           error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
 		proposedBlock, err = blockManager.GetProposedBlock(&callOpts, epoch, proposedBlockId)
