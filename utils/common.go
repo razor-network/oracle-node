@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"math"
 	"math/big"
 	"os"
 	"razor/core"
@@ -121,4 +122,11 @@ func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	if ethBalance.Cmp(big.NewInt(0)) == 0 {
 		log.Fatal("Eth balance is 0, Aborting...")
 	}
+}
+
+func Retry(retry int, errMsg string, err error) {
+	log.Error(errMsg, err)
+	retryingIn := math.Pow(2, float64(retry))
+	log.Debugf("Retrying in %f seconds.....", retryingIn)
+	time.Sleep(time.Duration(retryingIn) * time.Second)
 }

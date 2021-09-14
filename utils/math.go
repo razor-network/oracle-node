@@ -119,8 +119,11 @@ func Aggregate(client *ethclient.Client, address string, collection types.Collec
 	for _, id := range collection.JobIDs {
 		job, err := GetActiveJob(client, address, id)
 		if err != nil {
-			log.Errorf("Error in fetching active job %d: %s", id, err)
-			continue
+			log.Errorf("Error in fetching job %d: %s", id, err)
+			if err == errors.New("job already fulfilled") {
+				continue
+			}
+			return FetchPreviousValue(client, address, collection.Id)
 		}
 		jobs = append(jobs, job)
 	}

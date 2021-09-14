@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
+	"razor/core"
 	"razor/pkg/bindings"
 )
 
@@ -24,17 +25,24 @@ func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) 
 	return commitments.CommitmentHash, nil
 }
 
-func GetVotes(client *ethclient.Client, address string, stakerId uint32) (struct {
-	Epoch  uint32
-	Values []*big.Int
-}, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
-	return voteManager.GetVote(&callOpts, stakerId)
-}
-
 func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)
-	return voteManager.GetVoteValue(&callOpts, assetId, stakerId)
+	var (
+		voteValue    *big.Int
+		voteValueErr error
+	)
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		voteValue, voteValueErr = voteManager.GetVoteValue(&callOpts, assetId, stakerId)
+		if voteValueErr != nil {
+			Retry(retry, "Error in fetching last vote: ", voteValueErr)
+			continue
+		}
+		break
+	}
+	if voteValueErr != nil {
+		return nil, voteValueErr
+	}
+	return voteValue, nil
 }
 
 func GetInfluenceSnapshot(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {

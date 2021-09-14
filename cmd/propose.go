@@ -93,11 +93,6 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 
 	log.Debugf("Medians: %d", medians)
 
-	ids, err := utils.GetActiveAssetIds(client, account.Address)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
@@ -108,7 +103,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	blockManager := utils.GetBlockManager(client)
 
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
-	log.Debugf("Asset Ids: %s Iteration: %d Biggest Influence Id: %d", ids, iteration, biggestInfluenceId)
+	log.Debugf("Iteration: %d Biggest Influence Id: %d", iteration, biggestInfluenceId)
 	log.Info("Proposing block...")
 	txn, err := blockManager.Propose(txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
 	if err != nil {
