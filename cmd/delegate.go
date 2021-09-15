@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -45,7 +46,12 @@ Example:
 			Config:         config,
 		}
 
-		approve(txnOpts)
+		txnHash, err := approve(txnOpts, razorUtils, tokenManagerUtils, transactionUtils)
+		utils.CheckError("Approve error: ", err)
+		nilHash := common.Hash{0x00}
+		if txnHash != nilHash {
+			razorUtils.WaitForBlockCompletion(txnOpts.Client, txnHash.String())
+		}
 
 		log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(valueInWei), stakerId)
 		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
