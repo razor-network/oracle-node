@@ -192,21 +192,18 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 		sortedVotes, err := getSortedVotes(client, address, uint8(assetId))
 		if err != nil {
 			log.Error(err)
-			// TODO: Add retry mechanism
 			continue
 		}
 
 		influenceSnapshot, err := utils.GetInfluenceSnapshot(client, address, epoch)
 		if err != nil {
 			log.Error(err)
-			// TODO: Add retry mechanism
 			continue
 		}
 
 		totalInfluenceRevealed, err := utils.GetTotalInfluenceRevealed(client, address, epoch)
 		if err != nil {
 			log.Error(err)
-			// TODO: Add retry mechanism
 			continue
 		}
 
