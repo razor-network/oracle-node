@@ -45,7 +45,12 @@ Example:
 			Config:         config,
 		}
 
-		approve(txnOpts)
+		txnHash, err := approve(txnOpts, razorUtils, tokenManagerUtils, transactionUtils)
+		utils.CheckError("Approve error: ", err)
+
+		if txnHash != core.NilHash {
+			razorUtils.WaitForBlockCompletion(txnOpts.Client, txnHash.String())
+		}
 
 		log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(valueInWei), stakerId)
 		delegationTxnOpts := utils.GetTxnOpts(txnOpts)

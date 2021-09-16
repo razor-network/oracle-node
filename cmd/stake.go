@@ -5,9 +5,12 @@ import (
 	"razor/core/types"
 	"razor/utils"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 )
+
+var razorUtils utilsInterface
+var tokenManagerUtils tokenManagerInterface
+var transactionUtils transactionInterface
 
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
@@ -39,27 +42,14 @@ Example:
 			ChainId:        core.ChainId,
 			Config:         config,
 		}
-		approve(txnArgs)
+		approveTxnHash, err := approve(txnArgs, razorUtils, tokenManagerUtils, transactionUtils)
+		utils.CheckError("Approve error: ", err)
+
+		if approveTxnHash != core.NilHash {
+			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		}
 		stakeCoins(txnArgs)
 	},
-}
-
-func approve(txnArgs types.TransactionOptions) {
-	tokenManager := utils.GetTokenManager(txnArgs.Client)
-	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
-	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
-	utils.CheckError("Error in sending allowance: ", err)
-
-	if allowance.Cmp(txnArgs.Amount) >= 0 {
-		log.Debug("Sufficient allowance, no need to increase")
-	} else {
-		log.Info("Sending Approve transaction...")
-		txnOpts := utils.GetTxnOpts(txnArgs)
-		txn, err := tokenManager.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
-		utils.CheckError("Error in approving", err)
-		log.Info("Txn Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
-	}
 }
 
 func stakeCoins(txnArgs types.TransactionOptions) {
@@ -77,6 +67,10 @@ func stakeCoins(txnArgs types.TransactionOptions) {
 }
 
 func init() {
+	razorUtils = Utils{}
+	tokenManagerUtils = TokenManagerUtils{}
+	transactionUtils = TransactionUtils{}
+
 	rootCmd.AddCommand(stakeCmd)
 	var (
 		Amount   string
