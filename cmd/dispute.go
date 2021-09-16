@@ -50,7 +50,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 
 func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
 	blockManager := utils.GetBlockManager(client)
-	sortedVotes, err := getSortedVotes(client, account.Address, uint8(assetId))
+	sortedVotes, err := getSortedVotes(client, account.Address, uint8(assetId), epoch)
 	if err != nil {
 		return err
 	}
