@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -48,8 +47,8 @@ Example:
 
 		txnHash, err := approve(txnOpts, razorUtils, tokenManagerUtils, transactionUtils)
 		utils.CheckError("Approve error: ", err)
-		nilHash := common.Hash{0x00}
-		if txnHash != nilHash {
+
+		if txnHash != core.NilHash {
 			razorUtils.WaitForBlockCompletion(txnOpts.Client, txnHash.String())
 		}
 

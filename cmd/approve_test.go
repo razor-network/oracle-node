@@ -82,7 +82,8 @@ func Test_approve(t *testing.T) {
 				approveError:    nil,
 				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want: common.Hash{0x00},
+			want:    common.Hash{0x00},
+			wantErr: nil,
 		},
 		{
 			name: "Test 3: When there is error in sending allowance ",
