@@ -1,6 +1,9 @@
 package core
 
-import "math/big"
+import (
+	"github.com/ethereum/go-ethereum/common"
+	"math/big"
+)
 
 //TODO: Change these addresses to the deployed address.
 var StakeManagerAddress = "0x92d5fB140fB93E0790baD45f945677ABBC0239c3"
@@ -12,5 +15,8 @@ var BlockManagerAddress = "0x8eAC317759167b0901cf0b2548a91321F62B3f2B"
 
 var StateLength uint64 = 60
 var EpochLength int64 = 300
+
 var NumberOfStates int64 = 5
 var ChainId = big.NewInt(80001)
+
+var NilHash = common.Hash{0x00}
