@@ -15,6 +15,7 @@ type utilsInterface interface {
 	GetOptions(bool, string, string) bind.CallOpts
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
+	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -24,4 +25,8 @@ type tokenManagerInterface interface {
 
 type transactionInterface interface {
 	Hash(*Types.Transaction) common.Hash
+}
+
+type stakeManagerInterface interface {
+	Stake(*bind.TransactOpts, uint32, *big.Int, *ethclient.Client) (*Types.Transaction, error)
 }

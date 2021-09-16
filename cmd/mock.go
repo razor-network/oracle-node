@@ -16,6 +16,8 @@ type TokenManagerMock struct{}
 
 type TransactionMock struct{}
 
+type StakeManagerMock struct{}
+
 var GetTokenManagerMock func(*ethclient.Client) *bindings.RAZOR
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -64,4 +66,8 @@ func (tokenManagerMock TokenManagerMock) Approve(opts *bind.TransactOpts, spende
 
 func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash {
 	return HashMock(txn)
+}
+
+func (stakeManagerMock StakeManagerMock) Stake(opts *bind.TransactOpts, epoch uint32, amount *big.Int, client *ethclient.Client) (*Types.Transaction, error) {
+	return StakeMock(opts, epoch, amount, client)
 }
