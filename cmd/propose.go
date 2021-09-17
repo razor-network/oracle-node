@@ -247,7 +247,7 @@ func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epo
 			log.Debugf("Vote Value of staker %v: %v", i, vote)
 			log.Debugf("Influence snapshot of staker %v: %v", i, influence)
 			weightedVote := big.NewInt(1).Mul(vote, influence)
-			log.Debugf("Weighted vote of staker %v: %v", i, influence)
+			log.Debugf("Weighted vote of staker %v: %v", i, weightedVote)
 			weightedVoteValues = append(weightedVoteValues, weightedVote)
 		}
 	}
