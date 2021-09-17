@@ -4,6 +4,8 @@ import (
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"io"
+	"os"
 	"razor/core"
 	"razor/path"
 	"runtime"
@@ -22,14 +24,17 @@ func init() {
 		standardLogger.Fatal("Error in fetching log file path: ", err)
 	}
 
-	standardLogger.Formatter = &logrus.JSONFormatter{}
-	standardLogger.Out = &lumberjack.Logger{
+	lumberJackLogger := &lumberjack.Logger{
 		Filename:   logFilePath,
 		MaxSize:    5,
 		MaxBackups: 10,
 		MaxAge:     30,
 	}
 
+	out := os.Stderr
+	mw := io.MultiWriter(out, lumberJackLogger)
+	standardLogger.Formatter = &logrus.JSONFormatter{}
+	standardLogger.SetOutput(mw)
 	osInfo := goInfo.GetInfo()
 
 	standardLogger.WithFields(logrus.Fields{
