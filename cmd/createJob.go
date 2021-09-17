@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
 )
+
+var assetManagerUtils assetManagerInterface
 
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
@@ -31,26 +34,36 @@ Note:
 		power, _ := cmd.Flags().GetInt8("power")
 
 		client := utils.ConnectToClient(config.Provider)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		txnArgs := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			Config:         config,
-		})
-
-		assetManager := utils.GetAssetManager(client)
-		log.Info("Creating Job...")
-		txn, err := assetManager.CreateJob(txnOpts, power, name, selector, url)
-		if err != nil {
-			log.Fatal(err)
 		}
-		log.Info("Transaction Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+		txn, err := createJob(txnArgs, power, name, selector, url, razorUtils, assetManagerUtils, transactionUtils)
+		utils.CheckError("CreateJob error: ", err)
+		utils.WaitForBlockCompletion(client, txn.String())
 	},
 }
 
+func createJob(txnArgs types.TransactionOptions, power int8, name string, selector string, url string, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	log.Info("Creating Job...")
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, power, name, selector, url)
+	if err != nil {
+		return common.Hash{0x00}, err
+	}
+	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
+}
+
 func init() {
+
+	razorUtils = Utils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+
 	rootCmd.AddCommand(createJobCmd)
 
 	var (
