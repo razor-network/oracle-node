@@ -16,6 +16,8 @@ type TokenManagerMock struct{}
 
 type TransactionMock struct{}
 
+type AssetManagerMock struct{}
+
 var GetTokenManagerMock func(*ethclient.Client) *bindings.RAZOR
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -33,6 +35,8 @@ var ApproveMock func(*bind.TransactOpts, common.Address, *big.Int, *ethclient.Cl
 var HashMock func(*Types.Transaction) common.Hash
 
 var StakeMock func(*bind.TransactOpts, uint32, *big.Int, *ethclient.Client) (*Types.Transaction, error)
+
+var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
 func (u UtilsMock) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 	return GetTokenManagerMock(client)
@@ -64,4 +68,8 @@ func (tokenManagerMock TokenManagerMock) Approve(opts *bind.TransactOpts, spende
 
 func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash {
 	return HashMock(txn)
+}
+
+func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
+	return CreateJobMock(opts, power, name, selector, url)
 }

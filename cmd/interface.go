@@ -25,3 +25,7 @@ type tokenManagerInterface interface {
 type transactionInterface interface {
 	Hash(*Types.Transaction) common.Hash
 }
+
+type assetManagerInterface interface {
+	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+}

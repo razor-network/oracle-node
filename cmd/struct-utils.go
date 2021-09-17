@@ -15,6 +15,7 @@ type Utils struct{}
 type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
+type AssetManagerUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -57,4 +58,9 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 func (stakeManagerUtils StakeManagerUtils) Stake(txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int, client *ethclient.Client) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Stake(txnOpts, epoch, amount)
+}
+
+func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateJob(opts, power, name, selector, url)
 }
