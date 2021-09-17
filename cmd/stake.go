@@ -66,7 +66,7 @@ func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, sta
 	}
 
 	log.Info("Sending stake transactions...")
-	tx, err := stakeManagerUtils.Stake(txnOpts, epoch, txnArgs.Amount, txnArgs.Client)
+	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}

@@ -100,7 +100,7 @@ func Test_stakeCoins(t *testing.T) {
 			WaitForCommitStateMock = func(*ethclient.Client, string, string) (uint32, error) {
 				return tt.args.epoch, tt.args.waitForCommitStateErr
 			}
-			StakeMock = func(*bind.TransactOpts, uint32, *big.Int, *ethclient.Client) (*Types.Transaction, error) {
+			StakeMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
 				return tt.args.stakeTxn, tt.args.stakeErr
 			}
 

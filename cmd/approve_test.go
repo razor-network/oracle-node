@@ -140,11 +140,11 @@ func Test_approve(t *testing.T) {
 				return tt.args.transactOpts
 			}
 
-			AllowanceMock = func(*bind.CallOpts, common.Address, common.Address, *ethclient.Client) (*big.Int, error) {
+			AllowanceMock = func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error) {
 				return tt.args.allowanceAmount, tt.args.allowanceError
 			}
 
-			ApproveMock = func(*bind.TransactOpts, common.Address, *big.Int, *ethclient.Client) (*Types.Transaction, error) {
+			ApproveMock = func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error) {
 				return tt.args.approveTxn, tt.args.approveError
 			}
 
