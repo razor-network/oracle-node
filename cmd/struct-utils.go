@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"math/big"
+	"razor/accounts"
 	"razor/core/types"
+	"razor/path"
 	"razor/utils"
 )
 
@@ -14,6 +18,7 @@ type Utils struct{}
 type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
+type AccountUtils struct{}
 
 func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return utils.GetOptions(pending, from, blockNumber)
@@ -29,6 +34,14 @@ func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead strin
 
 func (u Utils) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
 	return WaitForCommitState(client, accountAddress, action)
+}
+
+func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
+	return utils.AssignPassword(flagSet)
+}
+
+func (u Utils) GetDefaultPath() (string, error) {
+	return path.GetDefaultPath()
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -48,4 +61,8 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Stake(txnOpts, epoch, amount)
+}
+
+func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
+	return accounts.CreateAccount(path, password)
 }
