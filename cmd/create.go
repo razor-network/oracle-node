@@ -18,8 +18,10 @@ var createCmd = &cobra.Command{
 Example: 
   ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := Create(cmd.Flags(), razorUtils, accountUtils)
+		account, err := Create(cmd.Flags(), razorUtils, accountUtils)
 		utils.CheckError("Create error: ", err)
+		log.Info("Account address: ", account.Address)
+		log.Info("Keystore Path: ", account.URL)
 	},
 }
 
@@ -31,8 +33,6 @@ func Create(flagSet *pflag.FlagSet, razorUtils utilsInterface, accountUtils acco
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 	account := accountUtils.CreateAccount(path, password)
-	log.Info("Account address: ", account.Address)
-	log.Info("Keystore Path: ", account.URL)
 	return account, nil
 }
 
