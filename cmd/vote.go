@@ -99,7 +99,15 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting minimum stake amount: ", err)
 		return
 	}
-	log.Debug("Block:", blockNumber, " Epoch:", epoch, " State:", utils.GetStateName(state), " Address:", account.Address, " Staker ID:", stakerId, " Stake:", stakedAmount, " Eth Balance:", ethBalance)
+	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
+	if err != nil {
+		log.Error("Error in converting stakedAmount from wei denomination")
+	}
+	actualBalance, err := utils.ConvertWeiToEth(ethBalance)
+	if err != nil {
+		log.Error("Error in converting ethBalance from wei denomination")
+	}
+	log.Debug("Block:", blockNumber, " Epoch:", epoch, " State:", utils.GetStateName(state), " Address:", account.Address, " Staker ID:", stakerId, " Stake:", actualStake, " Eth Balance:", actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
