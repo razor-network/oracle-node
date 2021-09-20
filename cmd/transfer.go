@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -19,35 +20,40 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		fromAddress, _ := cmd.Flags().GetString("from")
-		toAddress, _ := cmd.Flags().GetString("to")
-
-		client := utils.ConnectToClient(config.Provider)
-
-		balance, err := utils.FetchBalance(client, fromAddress)
-		utils.CheckError("Error in fetching balance for account "+fromAddress+": ", err)
-
-		valueInWei := utils.AssignAmountInWei(cmd.Flags())
-		utils.CheckAmountAndBalance(valueInWei, balance)
-
-		tokenManager := utils.GetTokenManager(client)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: fromAddress,
-			ChainId:        core.ChainId,
-			Config:         config,
-		})
-		log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
-
-		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), valueInWei)
-		utils.CheckError("Error in transferring tokens: ", err)
-
-		log.Info("Transaction Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+		txn, err := transfer(cmd.Flags(), config)
+		utils.CheckError("Transfer error: ", err)
+		log.Info("Transaction Hash: ", txn)
+		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
+}
+
+func transfer(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+
+	password := razorUtils.AssignPassword(flagSet)
+	fromAddress, _ := flagSet.GetString("from")
+	toAddress, _ := flagSet.GetString("to")
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	balance, err := razorUtils.FetchBalance(client, fromAddress)
+	utils.CheckError("Error in fetching balance for account "+fromAddress+": ", err)
+
+	valueInWei := razorUtils.AssignAmountInWei(flagSet)
+	razorUtils.CheckAmountAndBalance(valueInWei, balance)
+
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       password,
+		AccountAddress: fromAddress,
+		ChainId:        core.ChainId,
+		Config:         config,
+	})
+	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
+
+	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(toAddress), valueInWei)
+	utils.CheckError("Error in transferring tokens: ", err)
+
+	return transactionUtils.Hash(txn), err
 }
 
 func init() {
