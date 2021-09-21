@@ -9,25 +9,28 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
-	"razor/pkg/bindings"
 )
 
 type utilsInterface interface {
-	GetTokenManager(*ethclient.Client) *bindings.RAZOR
 	GetOptions(bool, string, string) bind.CallOpts
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
+	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
 	GetDefaultPath() (string, error)
 }
 
 type tokenManagerInterface interface {
-	Allowance(*bind.CallOpts, common.Address, common.Address, *ethclient.Client) (*big.Int, error)
-	Approve(*bind.TransactOpts, common.Address, *big.Int, *ethclient.Client) (*Types.Transaction, error)
+	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
+	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 }
 
 type transactionInterface interface {
 	Hash(*Types.Transaction) common.Hash
+}
+
+type stakeManagerInterface interface {
+	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
