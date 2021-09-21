@@ -44,6 +44,10 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
+	return utils.GetAmountInDecimal(amountInWei)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -61,6 +65,11 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Stake(txnOpts, epoch, amount)
+}
+
+func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Delegate(opts, epoch, stakerId, amount)
 }
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
