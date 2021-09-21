@@ -18,6 +18,8 @@ type TokenManagerMock struct{}
 
 type TransactionMock struct{}
 
+type StakeManagerMock struct{}
+
 type AccountMock struct{}
 
 var GetTokenManagerMock func(*ethclient.Client) *bindings.RAZOR
@@ -28,19 +30,19 @@ var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
-var WaitForCommitStateMock func(client *ethclient.Client, accountAddress string, action string) (uint32, error)
+var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
 
-var AssignPasswordMock func(flagSet *pflag.FlagSet) string
+var AssignPasswordMock func(*pflag.FlagSet) string
 
 var GetDefaultPathMock func() (string, error)
 
-var AllowanceMock func(*bind.CallOpts, common.Address, common.Address, *ethclient.Client) (*big.Int, error)
+var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
-var ApproveMock func(*bind.TransactOpts, common.Address, *big.Int, *ethclient.Client) (*Types.Transaction, error)
+var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 
 var HashMock func(*Types.Transaction) common.Hash
 
-var StakeMock func(*bind.TransactOpts, uint32, *big.Int, *ethclient.Client) (*Types.Transaction, error)
+var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -72,16 +74,20 @@ func (u UtilsMock) GetDefaultPath() (string, error) {
 	return GetDefaultPathMock()
 }
 
-func (tokenManagerMock TokenManagerMock) Allowance(opts *bind.CallOpts, owner common.Address, spender common.Address, client *ethclient.Client) (*big.Int, error) {
-	return AllowanceMock(opts, owner, spender, client)
+func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
+	return AllowanceMock(client, opts, owner, spender)
 }
 
-func (tokenManagerMock TokenManagerMock) Approve(opts *bind.TransactOpts, spender common.Address, amount *big.Int, client *ethclient.Client) (*Types.Transaction, error) {
-	return ApproveMock(opts, spender, amount, client)
+func (tokenManagerMock TokenManagerMock) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
+	return ApproveMock(client, opts, spender, amount)
 }
 
 func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash {
 	return HashMock(txn)
+}
+
+func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
+	return StakeMock(client, opts, epoch, amount)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
