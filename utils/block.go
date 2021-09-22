@@ -47,3 +47,24 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 	}
 	return proposedBlock, nil
 }
+
+func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, assetId uint8) (uint32, error) {
+	blockManager := GetBlockManager(client)
+	callOpts := GetOptions(false, address, "")
+	var (
+		blockMedians []uint32
+		err          error
+	)
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		blockMedians, err = blockManager.GetBlockMedians(&callOpts, epoch)
+		if err != nil {
+			Retry(retry, "Error in fetching proposed block: ", err)
+			continue
+		}
+		break
+	}
+	if err != nil {
+		return 0, err
+	}
+	return blockMedians[assetId-1], nil
+}

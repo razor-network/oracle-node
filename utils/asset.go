@@ -109,7 +109,7 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint8)
 	return collection, nil
 }
 
-func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, error) {
+func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
 	var data []*big.Int
 
 	numOfAssets, err := GetNumAssets(client, address)
@@ -132,10 +132,10 @@ func GetActiveAssetsData(client *ethclient.Client, address string) ([]*big.Int, 
 				}
 				return nil, err
 			}
-			collectionData, aggregationError := Aggregate(client, address, activeCollection)
+			//Supply previous epoch to Aggregate in case if last reported value is required.
+			collectionData, aggregationError := Aggregate(client, address, epoch-1, activeCollection)
 			if aggregationError != nil {
-				log.Error(aggregationError)
-				collectionData = big.NewInt(1)
+				return nil, aggregationError
 			}
 			data = append(data, collectionData)
 		}
@@ -185,22 +185,19 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 	}, nil
 }
 
-func GetDataToCommitFromJobs(client *ethclient.Client, address string, jobs []types.Job) ([]*big.Int, error) {
+func GetDataToCommitFromJobs(jobs []types.Job) ([]*big.Int, error) {
 	var data []*big.Int
 	for _, job := range jobs {
-		dataToAppend, err := GetDataToCommitFromJob(client, address, job)
+		dataToAppend, err := GetDataToCommitFromJob(job)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		data = append(data, dataToAppend)
-	}
-	if len(data) == 0 {
-		data = append(data, big.NewInt(1))
 	}
 	return data, nil
 }
 
-func GetDataToCommitFromJob(client *ethclient.Client, address string, job types.Job) (*big.Int, error) {
+func GetDataToCommitFromJob(job types.Job) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
 	var (
 		response []byte
@@ -217,11 +214,6 @@ func GetDataToCommitFromJob(client *ethclient.Client, address string, job types.
 		break
 	}
 
-	// If the API still throws an error, fetch the last reported value
-	if apiErr != nil {
-		return FetchPreviousValue(client, address, job.Id)
-	}
-
 	err := json.Unmarshal(response, &parsedJSON)
 	if err != nil {
 		log.Error("Error in parsing data from API: ", err)
@@ -231,27 +223,14 @@ func GetDataToCommitFromJob(client *ethclient.Client, address string, job types.
 	parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
 	if err != nil {
 		log.Error("Error in fetching value from parsed data: ", err)
-		return big.NewInt(1), nil
+		return nil, err
 	}
 
 	datum, err := ConvertToNumber(parsedData)
 	if err != nil {
 		log.Error("Result is not a number")
-		return big.NewInt(1), err
+		return nil, err
 	}
 
 	return MultiplyWithPower(datum, job.Power), err
-}
-
-func FetchPreviousValue(client *ethclient.Client, address string, assetId uint8) (*big.Int, error) {
-	stakerId, stakerErr := GetStakerId(client, address)
-	if stakerErr != nil {
-		return big.NewInt(1), nil
-	}
-
-	voteValue, voteValueErr := GetVoteValue(client, address, assetId, stakerId)
-	if voteValueErr != nil {
-		return big.NewInt(1), nil
-	}
-	return voteValue, nil
 }

@@ -141,7 +141,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := HandleCommitState(client, account.Address)
+		data, err := HandleCommitState(client, account.Address, epoch)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break

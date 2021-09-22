@@ -13,8 +13,8 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
-func HandleCommitState(client *ethclient.Client, address string) ([]*big.Int, error) {
-	data, err := utils.GetActiveAssetsData(client, address)
+func HandleCommitState(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	data, err := utils.GetActiveAssetsData(client, address, epoch)
 	if err != nil {
 		return nil, err
 	}
