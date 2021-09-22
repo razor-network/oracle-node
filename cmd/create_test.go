@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
-	"github.com/syndtr/goleveldb/leveldb/errors"
 	"testing"
 )
 
