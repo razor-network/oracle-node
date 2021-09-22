@@ -8,7 +8,7 @@ import (
 
 func approve(txnArgs types.TransactionOptions, razorUtils utilsInterface, tokenManagerUtils tokenManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	opts := razorUtils.GetOptions(false, txnArgs.AccountAddress, "")
-	allowance, err := tokenManagerUtils.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress), txnArgs.Client)
+	allowance, err := tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -18,7 +18,7 @@ func approve(txnArgs types.TransactionOptions, razorUtils utilsInterface, tokenM
 	} else {
 		log.Info("Sending Approve transaction...")
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
-		txn, err := tokenManagerUtils.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount, txnArgs.Client)
+		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			return common.Hash{0x00}, err
 		}

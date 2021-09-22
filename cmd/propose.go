@@ -201,13 +201,6 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 			continue
 		}
 
-		influenceSnapshot, err := utils.GetInfluenceSnapshot(client, address, epoch)
-		if err != nil {
-			log.Error(err)
-			// TODO: Add retry mechanism
-			continue
-		}
-
 		totalInfluenceRevealed, err := utils.GetTotalInfluenceRevealed(client, address, epoch)
 		if err != nil {
 			log.Error(err)
@@ -216,14 +209,13 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 		}
 
 		log.Debug("Sorted Votes: ", sortedVotes)
-		log.Debug("Influence Snapshot: ", influenceSnapshot)
 		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
 
 		var median *big.Int
 		if rogueMode {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
-			median = influencedMedian(sortedVotes, influenceSnapshot, totalInfluenceRevealed)
+			median = influencedMedian(sortedVotes, totalInfluenceRevealed)
 		}
 		log.Debugf("Median: %s", median)
 		medians = append(medians, median)
@@ -237,8 +229,7 @@ func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epo
 	if err != nil {
 		return nil, err
 	}
-	var voteValues []*big.Int
-
+	var weightedVoteValues []*big.Int
 	for i := 1; i <= int(numberOfStakers); i++ {
 		epochLastRevealed, err := utils.GetEpochLastRevealed(client, address, uint32(i))
 		if err != nil {
@@ -249,19 +240,27 @@ func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epo
 			if err != nil {
 				return nil, err
 			}
-			voteValues = append(voteValues, vote)
+			influence, err := utils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
+			if err != nil {
+				return nil, err
+			}
+			log.Debugf("Vote Value of staker %v: %v", i, vote)
+			log.Debugf("Influence snapshot of staker %v: %v", i, influence)
+			weightedVote := big.NewInt(1).Mul(vote, influence)
+			log.Debugf("Weighted vote of staker %v: %v", i, weightedVote)
+			weightedVoteValues = append(weightedVoteValues, weightedVote)
 		}
 	}
 
-	sortutil.BigIntSlice.Sort(voteValues)
-	return voteValues, nil
+	sortutil.BigIntSlice.Sort(weightedVoteValues)
+	return weightedVoteValues, nil
 }
 
-func influencedMedian(sortedVotes []*big.Int, influence *big.Int, totalInfluenceRevealed *big.Int) *big.Int {
+func influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
 	accProd := big.NewInt(0)
 
 	for _, vote := range sortedVotes {
-		accProd = accProd.Add(accProd, vote.Mul(vote, influence))
+		accProd = accProd.Add(accProd, vote)
 	}
 	if totalInfluenceRevealed.Cmp(big.NewInt(0)) == 0 {
 		return accProd

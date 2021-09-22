@@ -544,3 +544,52 @@ func TestMultiplyWithPower(t *testing.T) {
 		})
 	}
 }
+
+func TestConvertWeiToEth(t *testing.T) {
+	type args struct {
+		data *big.Int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Float
+		wantErr bool
+	}{
+		{
+			name:    "Test if the value is 0",
+			args:    args{big.NewInt(0)},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name:    "Test if data is bigger than 1e18",
+			args:    args{big.NewInt(2 * 1e18)},
+			want:    big.NewFloat(2).SetPrec(32),
+			wantErr: false,
+		},
+		{
+			name:    "Test if data is smaller than 1e18",
+			args:    args{big.NewInt(234 * 1e12)},
+			want:    big.NewFloat(234 * 1e-6).SetPrec(32),
+			wantErr: false,
+		},
+		{
+			name:    "Test if data is in the order of 1e18",
+			args:    args{big.NewInt(392 * 1e16)},
+			want:    big.NewFloat(3.92).SetPrec(32),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertWeiToEth(tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertWeiToEth() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertWeiToEth() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
