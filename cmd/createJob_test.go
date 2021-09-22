@@ -8,6 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -16,20 +18,32 @@ import (
 
 func Test_createJob(t *testing.T) {
 
+	var client *ethclient.Client
+	var flagSet *pflag.FlagSet
+	var config types.Configurations
+
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	razorUtils := UtilsMock{}
 	assetManagerUtils := AssetManagerMock{}
 	transactionUtils := TransactionMock{}
-
-	var txnArgs types.TransactionOptions
-	var power int8
-	var name, selector, url string
+	flagSetUtils := FlagSetMock{}
 
 	type args struct {
+		password     string
+		address      string
+		addressErr   error
+		name         string
+		nameErr      error
+		url          string
+		urlErr       error
+		selector     string
+		selectorErr  error
+		power        int8
+		powerErr     error
 		txnOpts      *bind.TransactOpts
-		createJobtxn *Types.Transaction
+		createJobTxn *Types.Transaction
 		createJobErr error
 		hash         common.Hash
 	}
@@ -40,10 +54,21 @@ func Test_createJob(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test1: When createJob transaction is succesull",
+			name: "Test1:  When createJob function executes successfully",
 			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "last",
+				selectorErr:  nil,
+				power:        1,
+				powerErr:     nil,
 				txnOpts:      txnOpts,
-				createJobtxn: &Types.Transaction{},
+				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
@@ -51,12 +76,132 @@ func Test_createJob(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test2: When createJob transaction fails",
+			name: "Test2:  When there is an error in getting address from flags",
 			args: args{
+				password:     "test",
+				address:      "",
+				addressErr:   errors.New("address error"),
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "last",
+				selectorErr:  nil,
+				power:        1,
+				powerErr:     nil,
 				txnOpts:      txnOpts,
-				createJobtxn: &Types.Transaction{},
+				createJobTxn: &Types.Transaction{},
+				createJobErr: nil,
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("address error"),
+		},
+		{
+			name: "Test3:  When there is an error in getting name from flags",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "",
+				nameErr:      errors.New("name error"),
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "last",
+				selectorErr:  nil,
+				power:        1,
+				powerErr:     nil,
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
+				createJobErr: nil,
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("name error"),
+		},
+		{
+			name: "Test4:  When there is an error in getting url from flags",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "",
+				urlErr:       errors.New("url error"),
+				selector:     "last",
+				selectorErr:  nil,
+				power:        1,
+				powerErr:     nil,
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
+				createJobErr: nil,
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("url error"),
+		},
+		{
+			name: "Test5:  When there is an error in getting selector from flags",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "",
+				selectorErr:  errors.New("selector error"),
+				power:        1,
+				powerErr:     nil,
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
+				createJobErr: nil,
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("selector error"),
+		},
+		{
+			name: "Test6:  When there is an error in getting power from flag",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "last",
+				selectorErr:  nil,
+				powerErr:     errors.New("power error"),
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
+				createJobErr: nil,
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("power error"),
+		},
+		{
+			name: "Test7:  When createJob transaction fails",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "last",
+				selectorErr:  nil,
+				power:        1,
+				powerErr:     nil,
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
 				createJobErr: errors.New("createJob error"),
-				hash:         common.Hash{0x00},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("createJob error"),
@@ -64,20 +209,47 @@ func Test_createJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			AssignPasswordMock = func(*pflag.FlagSet) string {
+				return tt.args.password
+			}
+
+			GetStringAddressMock = func(*pflag.FlagSet) (string, error) {
+				return tt.args.address, tt.args.addressErr
+			}
+
+			GetStringNameMock = func(*pflag.FlagSet) (string, error) {
+				return tt.args.name, tt.args.nameErr
+			}
+
+			GetStringUrlMock = func(*pflag.FlagSet) (string, error) {
+				return tt.args.url, tt.args.urlErr
+			}
+
+			GetStringSelectorMock = func(*pflag.FlagSet) (string, error) {
+				return tt.args.selector, tt.args.selectorErr
+			}
+
+			GetInt8PowerMock = func(*pflag.FlagSet) (int8, error) {
+				return tt.args.power, tt.args.powerErr
+			}
+
+			ConnectToClientMock = func(string) *ethclient.Client {
+				return client
+			}
 
 			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
 			CreateJobMock = func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error) {
-				return tt.args.createJobtxn, tt.args.createJobErr
+				return tt.args.createJobTxn, tt.args.createJobErr
 			}
 
 			HashMock = func(transaction *Types.Transaction) common.Hash {
 				return tt.args.hash
 			}
 
-			got, err := createJob(txnArgs, power, name, selector, url, razorUtils, assetManagerUtils, transactionUtils)
+			got, err := createJob(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
 			if got != tt.want {
 				t.Errorf("Txn hash for createJob function, got = %v, want %v", got, tt.want)
 			}
