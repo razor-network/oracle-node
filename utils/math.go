@@ -151,3 +151,11 @@ func performAggregation(data []*big.Int, aggregationMethod uint32, power int8) (
 	}
 	return nil, errors.New("invalid aggregation method")
 }
+
+func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
+	if data.Cmp(big.NewInt(0)) == 0 {
+		return big.NewFloat(0), errors.New("cannot divide by 0")
+	}
+	dataInFloat := new(big.Float).SetInt(data)
+	return dataInFloat.Quo(dataInFloat, big.NewFloat(1e18)).SetPrec(32), nil
+}

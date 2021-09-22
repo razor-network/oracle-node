@@ -58,7 +58,7 @@ func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stake
 	return voteValue, nil
 }
 
-func GetInfluenceSnapshot(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
+func GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)
 	stakerId, err := GetStakerId(client, address)
 	if err != nil {
