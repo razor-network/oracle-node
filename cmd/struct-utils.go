@@ -3,6 +3,7 @@ package cmd
 import (
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -19,6 +20,7 @@ type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AccountUtils struct{}
+type KeystoreUtils struct{}
 
 func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return utils.GetOptions(pending, from, blockNumber)
@@ -65,4 +67,9 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
+}
+
+func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.Accounts()
 }

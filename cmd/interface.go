@@ -36,3 +36,7 @@ type stakeManagerInterface interface {
 type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
 }
+
+type keystoreInterface interface {
+	Accounts(string) []accounts.Account
+}
