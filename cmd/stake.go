@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -11,6 +12,7 @@ import (
 var razorUtils utilsInterface
 var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
+var stakeManagerUtils stakeManagerInterface
 
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
@@ -48,28 +50,35 @@ Example:
 		if approveTxnHash != core.NilHash {
 			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
-		stakeCoins(txnArgs)
+
+		stakeTxnHash, err := stakeCoins(txnArgs, razorUtils, stakeManagerUtils, transactionUtils)
+		utils.CheckError("Stake error: ", err)
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+
 	},
 }
 
-func stakeCoins(txnArgs types.TransactionOptions) {
-	stakeManager := utils.GetStakeManager(txnArgs.Client)
-	txnOpts := utils.GetTxnOpts(txnArgs)
-	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
-	utils.CheckError("Error in getting commit state: ", err)
+func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+	if err != nil {
+		return common.Hash{0x00}, err
+	}
 
 	log.Info("Sending stake transactions...")
-	tx, err := stakeManager.Stake(txnOpts, epoch, txnArgs.Amount)
-	utils.CheckError("Error in staking: ", err)
-
-	log.Info("Txn Hash: ", tx.Hash().Hex())
-	utils.WaitForBlockCompletion(txnArgs.Client, tx.Hash().String())
+	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	if err != nil {
+		return common.Hash{0x00}, err
+	}
+	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
+	return transactionUtils.Hash(tx), nil
 }
 
 func init() {
 	razorUtils = Utils{}
 	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (
