@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/razor-network/razor-go/badge.svg?branch=main)](https://coveralls.io/github/razor-network/razor-go?branch=main)
+
 # Razor-Go
 
 Official node for running stakers in Golang.
