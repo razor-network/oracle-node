@@ -52,14 +52,6 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 
 	proofs := getProofs(tree, committedData)
 
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
-
 	voteManager := utils.GetVoteManager(client)
 
 	root := [32]byte{}
@@ -75,6 +67,17 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
 	)
+	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.VoteManagerAddress,
+		ABI:             bindings.VoteManagerMetaData.ABI,
+		MethodName:      "reveal",
+		Parameters:      []interface{}{epoch, root, committedData, proofs, secretBytes32, common.HexToAddress(commitAccount)},
+	})
 	txn, err := voteManager.Reveal(txnOpts, epoch, root, committedData, proofs, secretBytes32, common.HexToAddress(commitAccount))
 	if err != nil {
 		log.Error(err)

@@ -4,14 +4,14 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"razor/utils"
-
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	log "github.com/sirupsen/logrus"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"razor/utils"
 )
 
 func HandleCommitState(client *ethclient.Client, address string) []*big.Int {
@@ -52,15 +52,20 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 	commitment := solsha3.SoliditySHA3([]string{"uint256", "bytes32", "bytes32"}, []interface{}{epoch.String(), "0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(secret)})
 
 	voteManager := utils.GetVoteManager(client)
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
+
+	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.VoteManagerAddress,
+		ABI:             bindings.VoteManagerMetaData.ABI,
+		MethodName:      "commit",
+		Parameters:      []interface{}{epoch, commitmentToSend},
+	})
 
 	log.Infof("Committing: epoch: %s, root: %s, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(root), "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 

@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -74,11 +75,15 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		return
 	}
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.BlockManagerAddress,
+		ABI:             bindings.BlockManagerMetaData.ABI,
+		MethodName:      "propose",
+		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
 	})
 	blockManager := utils.GetBlockManager(client)
 
