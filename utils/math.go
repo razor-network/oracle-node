@@ -111,7 +111,7 @@ func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
 
-func Aggregate(client *ethclient.Client, address string, collection types.Collection) (*big.Int, error) {
+func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, collection types.Collection) (*big.Int, error) {
 	if len(collection.JobIDs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
@@ -119,12 +119,20 @@ func Aggregate(client *ethclient.Client, address string, collection types.Collec
 	for _, id := range collection.JobIDs {
 		job, err := GetActiveJob(client, address, id)
 		if err != nil {
-			log.Errorf("Error in fetching active job %d: %s", id, err)
+			log.Errorf("Error in fetching job %d: %s", id, err)
 			continue
 		}
 		jobs = append(jobs, job)
 	}
-	return performAggregation(GetDataToCommitFromJobs(jobs), collection.AggregationMethod, collection.Power)
+	dataToCommit, err := GetDataToCommitFromJobs(jobs)
+	if err != nil || len(dataToCommit) == 0 {
+		prevCommitmentData, err := FetchPreviousValue(client, address, previousEpoch, collection.Id)
+		if err != nil {
+			return nil, err
+		}
+		return big.NewInt(int64(prevCommitmentData)), nil
+	}
+	return performAggregation(dataToCommit, collection.AggregationMethod, collection.Power)
 }
 
 func performAggregation(data []*big.Int, aggregationMethod uint32, power int8) (*big.Int, error) {
