@@ -22,6 +22,8 @@ type StakeManagerMock struct{}
 
 type AccountMock struct{}
 
+type FlagSetMock struct{}
+
 var GetTokenManagerMock func(*ethclient.Client) *bindings.RAZOR
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -57,6 +59,10 @@ var HashMock func(*Types.Transaction) common.Hash
 var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
+
+var GetStringFromMock func(*pflag.FlagSet) (string, error)
+
+var GetStringToMock func(*pflag.FlagSet) (string, error)
 
 func (u UtilsMock) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 	return GetTokenManagerMock(client)
@@ -128,4 +134,12 @@ func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *b
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
 	return CreateAccountMock(path, password)
+}
+
+func (flagSetMock FlagSetMock) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringFromMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringToMock(flagSet)
 }

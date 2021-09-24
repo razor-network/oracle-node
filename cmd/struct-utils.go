@@ -19,6 +19,7 @@ type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AccountUtils struct{}
+type FlagSetUtils struct{}
 
 func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return utils.GetOptions(pending, from, blockNumber)
@@ -38,6 +39,10 @@ func (u Utils) WaitForCommitState(client *ethclient.Client, accountAddress strin
 
 func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	return utils.AssignPassword(flagSet)
+}
+
+func (u Utils) ConnectToClient(provider string) *ethclient.Client {
+	return utils.ConnectToClient(provider)
 }
 
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
@@ -86,4 +91,12 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
+}
+
+func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("from")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("to")
 }

@@ -42,3 +42,8 @@ type stakeManagerInterface interface {
 type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
 }
+
+type flagSetInterface interface {
+	GetStringFrom(*pflag.FlagSet) (string, error)
+	GetStringTo(*pflag.FlagSet) (string, error)
+}
