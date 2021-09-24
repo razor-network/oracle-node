@@ -1,108 +1,101 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 
-	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+var razorUtils utilsInterface
+var tokenManagerUtils tokenManagerInterface
+var transactionUtils transactionInterface
+var stakeManagerUtils stakeManagerInterface
 
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some razors",
 	Long: `Stake allows user to stake razors in the razor network
-	For ex:
-	stake -a <amount> --address <address> --password <password>
-	`,
+
+Example:
+  ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
+		utils.CheckError("Error in getting config: ", err)
 
-		password := utils.PasswordPrompt()
+		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
 		client := utils.ConnectToClient(config.Provider)
 		balance, err := utils.FetchBalance(client, address)
-		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", address, err)
-		}
+		utils.CheckError("Error in fetching balance for account: "+address, err)
 
-		amount, err := cmd.Flags().GetString("amount")
-		if err != nil {
-			log.Fatal("Error in reading amount", err)
-		}
+		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		utils.CheckAmountAndBalance(valueInWei, balance)
 
-		amountInWei := utils.GetAmountWithChecks(amount, balance)
+		utils.CheckEthBalanceIsZero(client, address)
 
 		txnArgs := types.TransactionOptions{
 			Client:         client,
 			AccountAddress: address,
 			Password:       password,
-			Amount:         amountInWei,
+			Amount:         valueInWei,
 			ChainId:        core.ChainId,
 			Config:         config,
 		}
-		approve(txnArgs)
-		stakeCoins(txnArgs)
+		approveTxnHash, err := approve(txnArgs, razorUtils, tokenManagerUtils, transactionUtils)
+		utils.CheckError("Approve error: ", err)
+
+		if approveTxnHash != core.NilHash {
+			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		}
+
+		stakeTxnHash, err := stakeCoins(txnArgs, razorUtils, stakeManagerUtils, transactionUtils)
+		utils.CheckError("Stake error: ", err)
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+
 	},
 }
 
-func approve(txnArgs types.TransactionOptions) {
-	tokenManager := utils.GetTokenManager(txnArgs.Client)
-	opts := utils.GetOptions(false, txnArgs.AccountAddress, "")
-	allowance, err := tokenManager.Allowance(&opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
 	if err != nil {
-		log.Fatal(err)
+		return common.Hash{0x00}, err
 	}
-	if allowance.Cmp(txnArgs.Amount) >= 0 {
-		log.Info("Sufficient allowance, no need to increase")
-	} else {
-		log.Info("Sending Approve transaction...")
-		txnOpts := utils.GetTxnOpts(txnArgs)
-		txn, err := tokenManager.Approve(txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
-		if err != nil {
-			log.Fatal("Error in approving: ", err)
-		}
-		log.Info("Approve transaction sent...\nTxn Hash: ", txn.Hash())
-		log.Info("Waiting for transaction to be mined....")
-		utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", txn.Hash()))
-	}
-}
 
-func stakeCoins(txnArgs types.TransactionOptions) {
-	stakeManager := utils.GetStakeManager(txnArgs.Client)
 	log.Info("Sending stake transactions...")
-	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
-	txnOpts := utils.GetTxnOpts(txnArgs)
+	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
-		log.Fatal("Error in getting commit state: ", err)
+		return common.Hash{0x00}, err
 	}
-	tx, err := stakeManager.Stake(txnOpts, epoch, txnArgs.Amount)
-	if err != nil {
-		log.Fatal("Error in staking: ", err)
-	}
-	log.Info("Staked\nTxn Hash: ", tx.Hash())
-	utils.WaitForBlockCompletion(txnArgs.Client, fmt.Sprintf("%s", tx.Hash()))
+	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
+	return transactionUtils.Hash(tx), nil
 }
 
 func init() {
+	razorUtils = Utils{}
+	tokenManagerUtils = TokenManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
+
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount  string
-		Address string
+		Amount   string
+		Address  string
+		Password string
+		Power    string
 	)
 
-	stakeCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to stake (in Wei)")
-	stakeCmd.Flags().StringVarP(&Address, "address", "", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
+	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
+	stakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 
-	amountErr := stakeCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	amountErr := stakeCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", amountErr)
 	addrErr := stakeCmd.MarkFlagRequired("address")
-	utils.CheckError("Amount error: ", addrErr)
+	utils.CheckError("Address error: ", addrErr)
 
 }

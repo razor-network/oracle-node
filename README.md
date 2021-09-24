@@ -168,9 +168,40 @@ Example:
 $ ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
-### Create Job
-You can create new jobs using `creteJob` command. This command will work only for admins.
+### Set Config
+There are a set of parameters that are configurable. These include:
 
+* Provider: The RPC URL of the provider you are using to connect to the blockchain.
+* Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
+* Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
+* Wait Time: This is the number of blocks the system will wait while voting.
+* Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 0, the razor client will automatically calculate the optimum gas price and send it.
+* Log Level: Normally debug logs are not logged into the log file. But if you want you can set `logLevel` to `debug` and fetch the debug logs.
+
+The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setConfig` command.
+
+```
+$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info>
+```
+
+Example:
+```
+$ ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug
+```
+
+Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
+
+Example:
+```
+$ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --gasprice 10 
+```
+This will cause this particular vote command to run with a gas price of 10.
+
+
+### Create Job
+Create new jobs using `creteJob` command. 
+
+_Note: This command is restricted to "Admin Role"_
 ```
 $ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
 ```
@@ -185,7 +216,9 @@ $  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n eth
 ```
 
 ### Create Collection
-You can create new collections using `creteCollection` command. This command will work only for admins.
+Create new collections using `creteCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
 
 ```
 $ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
@@ -197,7 +230,9 @@ $ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aa
 ```
 
 ### Add Job to Collection
-You can add existing jobs to existing collections using `addJobToCollection` command. This command will work only for admins.
+Add existing jobs to existing collections using `addJobToCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
 
 ```
 $ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
@@ -208,33 +243,19 @@ Example:
 $ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
 ```
 
-### Set Config
-There are a set of parameters that are configurable. These include:
+### Modify Asset Status
+Modify the active status of an asset using the `modifyAssetStatus` command.
 
-* Provider: The RPC URL of the provider you are using to connect to the blockchain.
-* Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
-* Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
-* Wait Time: This is the number of blocks the system will wait while voting.
-* Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 0, the razor client will automatically calculate the optimum gas price and send it.
-
-The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setconfig` command.
+_Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor setconfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price>
+$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
 ```
 
 Example:
 ```
-$ ./razor setconfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1
+$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
 ```
-
-Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
-
-Example:
-```
-$ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --gasprice 10 
-```
-This will cause this particular vote command to run with a gas price of 10.
 
 ### Contribute to razor-go 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)

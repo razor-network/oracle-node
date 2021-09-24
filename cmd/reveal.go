@@ -10,16 +10,17 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
-	"github.com/wealdtech/go-merkletree"
 )
 
-func HandleRevealState(staker bindings.StructsStaker, epoch *big.Int) error {
-	log.Info("Staker last epoch committed: ", staker.EpochLastCommitted)
-	if staker.EpochLastCommitted.Cmp(epoch) != 0 {
+func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32) error {
+	epochLastCommitted, err := utils.GetEpochLastCommitted(client, address, staker.Id)
+	if err != nil {
+		return err
+	}
+	log.Debug("Staker last epoch committed: ", epochLastCommitted)
+	if epochLastCommitted != epoch {
 		return errors.New("commitment for this epoch not found on network.... aborting reveal")
 	}
-	log.Info("Staker last epoch revealed: ", staker.EpochLastRevealed)
 	return nil
 }
 
@@ -34,7 +35,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		log.Error(err)
 		return
 	}
-	commitments, err := utils.GetCommitments(client, account.Address, epoch)
+	commitments, err := utils.GetCommitments(client, account.Address)
 	if err != nil {
 		log.Error(err)
 		return
@@ -49,8 +50,6 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		log.Error(err)
 		return
 	}
-
-	proofs := getProofs(tree, committedData)
 
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
@@ -68,44 +67,19 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
-	log.Infof("Revealing vote for epoch: %s  votes: %s  root: %s  secret: %s  commitAccount: %s",
+	log.Debugf("Revealing vote for epoch: %d  votes: %s  root: %s  secret: %s  commitAccount: %s",
 		epoch,
 		committedData,
 		"0x"+common.Bytes2Hex(originalRoot),
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
 	)
-	txn, err := voteManager.Reveal(txnOpts, epoch, root, committedData, proofs, secretBytes32, common.HexToAddress(commitAccount))
+	log.Info("Revealing votes...")
+	txn, err := voteManager.Reveal(txnOpts, epoch, committedData, secretBytes32)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	log.Info("Revealed..")
 	log.Info("Txn Hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
-}
-
-func getProofs(tree *merkletree.MerkleTree, data []*big.Int) [][][32]byte {
-	var proofs []*merkletree.Proof
-	for dataIndex := range data {
-		proof, err := tree.GenerateProofV1(dataIndex)
-		if err != nil {
-			log.Error("Error in calculating merkle proof: ", err)
-			continue
-		}
-		proofs = append(proofs, proof)
-	}
-	var finalProofs [][][32]byte
-	for _, proof := range proofs {
-		var proofHash [][32]byte
-		for _, nestedProof := range proof.Hashes {
-			if nestedProof != nil {
-				nestedProofBytes32 := [32]byte{}
-				copy(nestedProofBytes32[:], nestedProof)
-				proofHash = append(proofHash, nestedProofBytes32)
-			}
-		}
-		finalProofs = append(finalProofs, proofHash)
-	}
-	return finalProofs
 }

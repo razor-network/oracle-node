@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"razor/utils"
-
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
+	"razor/core"
+	"razor/logger"
+	"razor/path"
 )
 
 var (
@@ -17,41 +17,24 @@ var (
 	BufferPercent int32
 	WaitTime      int32
 	GasPrice      int32
+	LogLevel      string
 )
 
-const (
-	VersionMajor = 0          // Major version component of the current release
-	VersionMinor = 1          // Minor version component of the current release
-	VersionPatch = 5          // Patch version component of the current release
-	VersionMeta  = "unstable" // Version metadata to append to the version string
-)
-
-// Version holds the textual version string.
-var Version = func() string {
-	return fmt.Sprintf("%d.%d.%d", VersionMajor, VersionMinor, VersionPatch)
-}()
-
-// VersionWithMeta holds the textual version string including the metadata.
-var VersionWithMeta = func() string {
-	v := Version
-	if VersionMeta != "" {
-		v += "-" + VersionMeta
-	}
-	return v
-}()
+var log = logger.NewLogger()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Version: VersionWithMeta,
-	Use:     "razor",
-	Short:   "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) { fmt.Println("Welcome to razor-cli.") },
+	Version: core.VersionWithMeta,
+	Use:     "razor [command] [flags]",
+	Short:   "Official node for running stakers in Golang",
+	Long:    `Razor can be used by the stakers to stake, delegate and vote on the razorscan. Stakers can vote correctly and earn rewards.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Welcome to razor-go.")
+		err := cmd.Help()
+		if err != nil {
+			panic(err)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -71,17 +54,16 @@ func init() {
 	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
 	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
+	rootCmd.PersistentFlags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
-	})
-
-	home := utils.GetDefaultPath()
+	home, err := path.GetDefaultPath()
+	if err != nil {
+		log.Fatal("Error in fetching .razor directory: ", err)
+	}
 	// Search config in home directory with name "razor.yaml".
 	viper.AddConfigPath(home)
 	viper.SetConfigName("razor")
@@ -97,4 +79,26 @@ func initConfig() {
 			log.Warn("error in reading config")
 		}
 	}
+
+	setLogLevel()
+}
+
+func setLogLevel() {
+	config, err := GetConfigData()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if config.LogLevel == "debug" {
+		log.SetLevel(logrus.DebugLevel)
+	}
+
+	log.Debug("Config details: ")
+	log.Debugf("Provider: %s", config.Provider)
+	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
+	log.Debugf("Buffer Percent: %d", config.BufferPercent)
+	log.Debugf("WaitTime: %d", config.WaitTime)
+	log.Debugf("GasPrice: %d", config.GasPrice)
+	log.Debugf("LogLevel: %s", config.LogLevel)
+
 }

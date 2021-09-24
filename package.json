@@ -1,14 +1,14 @@
 {
   "name": "razor-go",
-  "version": "v0.1.5",
+  "version": "v0.1.6",
   "description": "Official node for running stakers in Golang.",
   "main": "index.js",
   "scripts": {
     "setup": "make setup",
     "build": "make build",
     "build-all": "make all",
-    "dockerize-build": "make docker-build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build-noargs": "make build-noargs",
+    "test": "go test ./... -v"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/razor-network/razor-go#readme",
   "dependencies": {
-    "@razor-network/contracts": "0.1.5"
+    "@razor-network/contracts": "0.1.6"
   }
 }

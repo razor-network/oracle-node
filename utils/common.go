@@ -2,8 +2,7 @@ package utils
 
 import (
 	"context"
-	"fmt"
-	"github.com/briandowns/spinner"
+	"math"
 	"math/big"
 	"os"
 	"razor/core"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 	"github.com/wealdtech/go-merkletree"
 	"github.com/wealdtech/go-merkletree/keccak256"
 )
@@ -30,17 +28,6 @@ func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, er
 	coinContract := GetTokenManager(client)
 	opts := GetOptions(false, accountAddress, "")
 	return coinContract.BalanceOf(&opts, address)
-}
-
-func GetDefaultPath() string {
-	home, err := os.UserHomeDir()
-	CheckError("Error in getting user home directory: ", err)
-	defaultPath := home + "/.razor"
-	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
-		mkdirErr := os.Mkdir(defaultPath, 0700)
-		CheckError("Error in creating directory: ", mkdirErr)
-	}
-	return defaultPath
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -69,13 +56,13 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	timeout := core.StateLength * 2
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
-		log.Info("Checking if transaction is mined....\n")
+		log.Debug("Checking if transaction is mined....")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
-			log.Info("Transaction mining unsuccessful")
+			log.Error("Transaction mining unsuccessful")
 			return 0
 		} else if transactionStatus == 1 {
-			log.Info("Transaction mined successfully\n")
+			log.Info("Transaction mined successfully")
 			return 1
 		}
 		time.Sleep(3 * time.Second)
@@ -84,18 +71,18 @@ func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	return 0
 }
 
-func WaitTillNextNBlock(waitTime int32) {
+func WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
 	}
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-	s.Start()
-	if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
-		log.Error("Error in setting color for spinner")
-	}
-	s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " block(s) "
-	time.Sleep(time.Duration(waitTime*2) * time.Second)
-	s.Stop()
+	//s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	//s.Start()
+	//if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
+	//	log.Error("Error in setting color for spinner")
+	//}
+	//s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " second(s) "
+	time.Sleep(time.Duration(waitTime) * time.Second)
+	//s.Stop()
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
@@ -115,4 +102,50 @@ func CheckError(msg string, err error) {
 	if err != nil {
 		log.Fatal(msg + err.Error())
 	}
+}
+
+func IsFlagPassed(name string) bool {
+	found := false
+	for _, arg := range os.Args {
+		if arg == "--"+name {
+			found = true
+		}
+	}
+	return found
+}
+
+func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
+	if err != nil {
+		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
+	}
+	if ethBalance.Cmp(big.NewInt(0)) == 0 {
+		log.Fatal("Eth balance is 0, Aborting...")
+	}
+}
+
+func Retry(retry int, errMsg string, err error) {
+	log.Error(errMsg, err)
+	retryingIn := math.Pow(2, float64(retry))
+	log.Debugf("Retrying in %f seconds.....", retryingIn)
+	time.Sleep(time.Duration(retryingIn) * time.Second)
+}
+
+func GetStateName(stateNumber int64) string {
+	var stateName string
+	switch stateNumber {
+	case 0:
+		stateName = "Commit"
+	case 1:
+		stateName = "Reveal"
+	case 2:
+		stateName = "Propose"
+	case 3:
+		stateName = "Dispute"
+	case 4:
+		stateName = "Confirm"
+	default:
+		stateName = "-1"
+	}
+	return stateName
 }

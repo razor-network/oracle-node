@@ -1,42 +1,50 @@
 package cmd
 
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
-	"razor/accounts"
+	"github.com/spf13/pflag"
 	"razor/utils"
 )
 
-// createCmd represents the create command
+var accountUtils accountInterface
+
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create command can be used to create new accounts",
-	Long:  ``,
+	Long: `For a new user to start doing anything, an account is required. This command helps the user to create a new account secured by a password so that only that user would be able to use the account
+
+Example: 
+  ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
-		path := utils.GetDefaultPath()
-		password := utils.PasswordPrompt()
-		account := accounts.CreateAccount(path, password)
+		account, err := Create(cmd.Flags(), razorUtils, accountUtils)
+		utils.CheckError("Create error: ", err)
 		log.Info("Account address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)
 	},
 }
 
+func Create(flagSet *pflag.FlagSet, razorUtils utilsInterface, accountUtils accountInterface) (accounts.Account, error) {
+	password := razorUtils.AssignPassword(flagSet)
+	path, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		log.Error("Error in fetching .razor directory")
+		return accounts.Account{Address: common.Address{0x00}}, err
+	}
+	account := accountUtils.CreateAccount(path, password)
+	return account, nil
+}
+
 func init() {
+	razorUtils = Utils{}
+	accountUtils = AccountUtils{}
+
 	rootCmd.AddCommand(createCmd)
+
+	var (
+		Password string
+	)
+
+	createCmd.Flags().StringVarP(&Password, "password", "", "", "password file path to protect the keystore")
 }

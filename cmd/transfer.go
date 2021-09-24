@@ -6,41 +6,31 @@ import (
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var transferCmd = &cobra.Command{
 	Use:   "transfer",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "transfer razors from your account to others' account",
+	Long: `transfer command allows user to transfer their razors to another account if they've not staked those razors
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example:
+  ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
-		if err != nil {
-			log.Fatal("Error in getting config: ", err)
-		}
-		password := utils.PasswordPrompt()
+		utils.CheckError("Error in getting config: ", err)
+
+		password := utils.AssignPassword(cmd.Flags())
 		fromAddress, _ := cmd.Flags().GetString("from")
 		toAddress, _ := cmd.Flags().GetString("to")
-
-		amount, err := cmd.Flags().GetString("amount")
-		if err != nil {
-			log.Fatal("Error in reading amount", err)
-		}
 
 		client := utils.ConnectToClient(config.Provider)
 
 		balance, err := utils.FetchBalance(client, fromAddress)
-		if err != nil {
-			log.Fatalf("Error in fetching balance for account %s: %e", balance, err)
-		}
+		utils.CheckError("Error in fetching balance for account "+fromAddress+": ", err)
 
-		amountInWei := utils.GetAmountWithChecks(amount, balance)
+		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		tokenManager := utils.GetTokenManager(client)
 		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
@@ -50,14 +40,11 @@ to quickly create a Cobra application.`,
 			ChainId:        core.ChainId,
 			Config:         config,
 		})
-		log.Infof("Transferring %s tokens from %s to %s", amount, fromAddress, toAddress)
+		log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
 
-		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), amountInWei)
-		if err != nil {
-			log.Fatal(err)
-		}
+		txn, err := tokenManager.Transfer(txnOpts, common.HexToAddress(toAddress), valueInWei)
+		utils.CheckError("Error in transferring tokens: ", err)
 
-		log.Info("Transfer transaction sent.")
 		log.Info("Transaction Hash: ", txn.Hash())
 		utils.WaitForBlockCompletion(client, txn.Hash().String())
 	},
@@ -66,17 +53,21 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (
-		Amount string
-		From   string
-		To     string
+		Amount   string
+		From     string
+		To       string
+		Password string
+		Power    string
 	)
 
-	transferCmd.Flags().StringVarP(&Amount, "amount", "a", "0", "amount to transfer (in Wei)")
+	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
+	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	transferCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 
-	amountErr := transferCmd.MarkFlagRequired("amount")
-	utils.CheckError("Amount error: ", amountErr)
+	amountErr := transferCmd.MarkFlagRequired("value")
+	utils.CheckError("Value error: ", amountErr)
 	fromErr := transferCmd.MarkFlagRequired("from")
 	utils.CheckError("From address error: ", fromErr)
 	toErr := transferCmd.MarkFlagRequired("to")
