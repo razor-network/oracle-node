@@ -2,8 +2,11 @@ package utils
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"razor/accounts"
 	"razor/core/types"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -36,7 +39,11 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
-
+	gasLimit, err := getGasLimit(transactionData, txnOpts)
+	CheckError("Error in getting gas limit: ", err)
+	log.Info("Gas Limit: ", gasLimit)
+	txnOpts.GasLimit = (gasLimit*3)/20 + gasLimit
+	log.Info("Gas Limit after increment: ", txnOpts.GasLimit)
 	return txnOpts
 }
 
@@ -53,4 +60,25 @@ func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int
 	}
 	gasPrice := MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
 	return gasPrice
+}
+
+func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+	if transactionData.MethodName == "" {
+		return 0, nil
+	}
+	parsed, err := abi.JSON(strings.NewReader(transactionData.ABI))
+	inputData, err := parsed.Pack(transactionData.MethodName, transactionData.Parameters...)
+	if err != nil {
+		log.Error("Error in calculating inputData: ", err)
+		return 0, err
+	}
+	contractAddress := common.HexToAddress(transactionData.ContractAddress)
+	msg := ethereum.CallMsg{
+		From:     common.HexToAddress(transactionData.AccountAddress),
+		To:       &contractAddress,
+		GasPrice: txnOpts.GasPrice,
+		Value:    txnOpts.Value,
+		Data:     inputData,
+	}
+	return transactionData.Client.EstimateGas(context.Background(), msg)
 }

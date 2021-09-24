@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
@@ -56,11 +57,15 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 
 	log.Infof("Epoch: %s, Sorted Votes: %s", epoch, sortedVotes)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.BlockManagerAddress,
+		ABI:             bindings.BlockManagerMetaData.ABI,
+		MethodName:      "giveSorted",
+		Parameters:      []interface{}{epoch, big.NewInt(int64(assetId - 1)), sortedVotes},
 	})
 	txn, err := blockManager.GiveSorted(txnOpts, epoch, big.NewInt(int64(assetId-1)), sortedVotes)
 	if err != nil {
@@ -72,11 +77,15 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 
 	log.Info("Finalizing dispute...")
 	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.BlockManagerAddress,
+		ABI:             bindings.BlockManagerMetaData.ABI,
+		MethodName:      "finalizeDispute",
+		Parameters:      []interface{}{epoch, blockId},
 	})
 	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
