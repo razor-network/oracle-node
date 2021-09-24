@@ -37,27 +37,27 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	password := razorUtils.AssignPassword(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	url, err := flagSetUtils.GetStringUrl(flagSet)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	selector, err := flagSetUtils.GetStringSelector(flagSet)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	power, err := flagSetUtils.GetInt8Power(flagSet)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	client := razorUtils.ConnectToClient(config.Provider)
@@ -73,7 +73,7 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	log.Info("Creating Job...")
 	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, power, name, selector, url)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil
