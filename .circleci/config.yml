@@ -23,12 +23,18 @@ jobs:
           name: Install Project Dependencies
           command: go mod download
       - run:
-          name: Run tests
+          name: "Install Dependencies"
           command: |
-            mkdir -p /tmp/test-reports
-            gotestsum --junitfile /tmp/test-reports/unit-tests.xml
-      - store_test_results:
-          path: /tmp/test-reports
+            go get github.com/mattn/goveralls
+            go get -u github.com/ory/go-acc
+      - run:
+          name: "Generate Coverage"
+          command: |
+            go-acc ./...
+      - run:
+          name: "Publish Coverage to Coveralls.io"
+          command: |
+            goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
 
 workflows:
   tests:
