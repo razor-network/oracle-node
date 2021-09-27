@@ -18,6 +18,7 @@ type utilsInterface interface {
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
 	GetDefaultPath() (string, error)
+	ConnectToClient(string) *ethclient.Client
 }
 
 type tokenManagerInterface interface {
@@ -27,6 +28,10 @@ type tokenManagerInterface interface {
 
 type transactionInterface interface {
 	Hash(*Types.Transaction) common.Hash
+}
+
+type assetManagerInterface interface {
+	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 }
 
 type stakeManagerInterface interface {
@@ -39,4 +44,12 @@ type accountInterface interface {
 
 type keystoreInterface interface {
 	Accounts(string) []accounts.Account
+}
+
+type flagSetInterface interface {
+	GetStringAddress(*pflag.FlagSet) (string, error)
+	GetStringName(*pflag.FlagSet) (string, error)
+	GetStringUrl(*pflag.FlagSet) (string, error)
+	GetStringSelector(*pflag.FlagSet) (string, error)
+	GetInt8Power(*pflag.FlagSet) (int8, error)
 }
