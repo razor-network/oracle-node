@@ -18,6 +18,7 @@ type utilsInterface interface {
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
 	GetDefaultPath() (string, error)
+	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
 }
 
@@ -30,9 +31,14 @@ type transactionInterface interface {
 	Hash(*Types.Transaction) common.Hash
 }
 
+type assetManagerInterface interface {
+	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+}
+
 type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	ResetLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
@@ -42,4 +48,8 @@ type accountInterface interface {
 type flagSetInterface interface {
 	GetStringAddress(*pflag.FlagSet) (string, error)
 	GetUint32StakerId(*pflag.FlagSet) (uint32, error)
+	GetStringName(*pflag.FlagSet) (string, error)
+	GetStringUrl(*pflag.FlagSet) (string, error)
+	GetStringSelector(*pflag.FlagSet) (string, error)
+	GetInt8Power(*pflag.FlagSet) (int8, error)
 }

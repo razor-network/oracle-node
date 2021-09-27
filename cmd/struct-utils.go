@@ -18,6 +18,7 @@ type Utils struct{}
 type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
+type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type FlagSetUtils struct{}
 
@@ -49,6 +50,10 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
+	return utils.GetAmountInDecimal(amountInWei)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -73,6 +78,16 @@ func (stakeManagerUtils StakeManagerUtils) ResetLock(client *ethclient.Client, o
 	return stakeManager.ResetLock(opts, stakerId)
 }
 
+func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Delegate(opts, epoch, stakerId, amount)
+}
+
+func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateJob(opts, power, name, selector, url)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
 }
@@ -85,10 +100,18 @@ func (flagSetUtils FlagSetUtils) GetUint32StakerId(flagSet *pflag.FlagSet) (uint
 	return flagSet.GetUint32("stakerId")
 }
 
-func (flagSetMock FlagSetMock) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	return GetStringAddressMock(flagSet)
+func (flagSetUtils FlagSetUtils) GetStringName(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("name")
 }
 
-func (flagSetMock FlagSetMock) GetUint32StakerId(flagset *pflag.FlagSet) (uint32, error) {
-	return GetUint32StakerIdMock(flagset)
+func (flagSetUtils FlagSetUtils) GetStringUrl(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("url")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("selector")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
+	return flagSet.GetInt8("power")
 }

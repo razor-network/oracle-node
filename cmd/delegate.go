@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -35,8 +36,7 @@ Example:
 
 		utils.CheckEthBalanceIsZero(client, address)
 
-		stakeManager := utils.GetStakeManager(client)
-		txnOpts := types.TransactionOptions{
+		txnArgs := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
 			Amount:         valueInWei,
@@ -45,26 +45,40 @@ Example:
 			Config:         config,
 		}
 
-		txnHash, err := approve(txnOpts, razorUtils, tokenManagerUtils, transactionUtils)
+		approveTxnHash, err := approve(txnArgs, razorUtils, tokenManagerUtils, transactionUtils)
 		utils.CheckError("Approve error: ", err)
 
-		if txnHash != core.NilHash {
-			razorUtils.WaitForBlockCompletion(txnOpts.Client, txnHash.String())
+		if approveTxnHash != core.NilHash {
+			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
 
-		log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(valueInWei), stakerId)
-		delegationTxnOpts := utils.GetTxnOpts(txnOpts)
-		epoch, err := WaitForCommitState(client, address, "delegate")
-		utils.CheckError("Error in fetching epoch: ", err)
-		log.Info("Sending Delegate transaction...")
-		txn, err := stakeManager.Delegate(delegationTxnOpts, epoch, stakerId, valueInWei)
-		utils.CheckError("Error in delegating: ", err)
-		log.Infof("Transaction hash: %s", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+		delegateTxnHash, err := delegate(txnArgs, stakerId, razorUtils, stakeManagerUtils, transactionUtils)
+		utils.CheckError("Delegate error: ", err)
+		utils.WaitForBlockCompletion(client, delegateTxnHash.String())
 	},
 }
 
+func delegate(txnArgs types.TransactionOptions, stakerId uint32, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
+	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
+	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "delegate")
+	if err != nil {
+		return common.Hash{0x00}, err
+	}
+	log.Info("Sending Delegate transaction...")
+	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
+	if err != nil {
+		return common.Hash{0x00}, err
+	}
+	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
+}
+
 func init() {
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
+
 	rootCmd.AddCommand(delegateCmd)
 	var (
 		Amount   string
