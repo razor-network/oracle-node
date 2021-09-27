@@ -18,7 +18,13 @@ type Utils struct{}
 type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
+type AssetManagerUtils struct{}
 type AccountUtils struct{}
+type FlagSetUtils struct{}
+
+func (u Utils) ConnectToClient(provider string) *ethclient.Client {
+	return utils.ConnectToClient(provider)
+}
 
 func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return utils.GetOptions(pending, from, blockNumber)
@@ -72,6 +78,31 @@ func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, op
 	return stakeManager.Delegate(opts, epoch, stakerId, amount)
 }
 
+func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateJob(opts, power, name, selector, url)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
+}
+
+func (flagSetUtils FlagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("address")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringName(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("name")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringUrl(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("url")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("selector")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
+	return flagSet.GetInt8("power")
 }

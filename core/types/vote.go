@@ -10,3 +10,8 @@ type ElectedProposer struct {
 	NumberOfStakers  uint32
 	RandaoHash       [32]byte
 }
+
+type Commitment struct {
+	Epoch          uint32
+	CommitmentHash [32]byte
+}
