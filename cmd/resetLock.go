@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var flagSetUtils flagSetInterface
-
 var resetLockCmd = &cobra.Command{
 	Use:   "resetLock",
 	Short: "resetLock can be used to reset the lock once the withdraw lock period is over",

@@ -31,7 +31,7 @@ func Test_resetLock(t *testing.T) {
 	flagSetUtils := FlagSetMock{}
 
 	type args struct {
-		password string
+		password     string
 		address      string
 		addressErr   error
 		stakerId     uint32
@@ -50,7 +50,7 @@ func Test_resetLock(t *testing.T) {
 		{
 			name: "Test 1: When resetLock function executes successfully",
 			args: args{
-				password: "test",
+				password:     "test",
 				address:      "0x000000000000000000000000000000000000dea1",
 				addressErr:   nil,
 				stakerId:     1,
@@ -60,13 +60,13 @@ func Test_resetLock(t *testing.T) {
 				resetLockErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
-			want: common.BigToHash(big.NewInt(1)),
+			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
 		},
 		{
 			name: "Test 2: When there is an error in getting address from flags",
 			args: args{
-				password: "test",
+				password:     "test",
 				address:      "",
 				addressErr:   errors.New("address error"),
 				stakerId:     1,
@@ -76,13 +76,13 @@ func Test_resetLock(t *testing.T) {
 				resetLockErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
-			want: core.NilHash,
+			want:    core.NilHash,
 			wantErr: errors.New("address error"),
 		},
 		{
 			name: "Test 3: When there is an error in getting stakerId from flags",
 			args: args{
-				password: "test",
+				password:     "test",
 				address:      "0x000000000000000000000000000000000000dea1",
 				addressErr:   nil,
 				stakerIdErr:  errors.New("stakerId error"),
@@ -91,13 +91,13 @@ func Test_resetLock(t *testing.T) {
 				resetLockErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
-			want: core.NilHash,
+			want:    core.NilHash,
 			wantErr: errors.New("stakerId error"),
 		},
 		{
 			name: "Test 4: When ResetLock transaction fails",
 			args: args{
-				password: "test",
+				password:     "test",
 				address:      "0x000000000000000000000000000000000000dea1",
 				addressErr:   nil,
 				stakerId:     1,
@@ -107,7 +107,7 @@ func Test_resetLock(t *testing.T) {
 				resetLockErr: errors.New("resetLock error"),
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
-			want: core.NilHash,
+			want:    core.NilHash,
 			wantErr: errors.New("resetLock error"),
 		},
 	}
