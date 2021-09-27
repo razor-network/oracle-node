@@ -18,6 +18,7 @@ type utilsInterface interface {
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
 	GetDefaultPath() (string, error)
+	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
 }
 
@@ -36,6 +37,7 @@ type assetManagerInterface interface {
 
 type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
