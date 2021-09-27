@@ -19,6 +19,11 @@ type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AccountUtils struct{}
+type FlagSetUtils struct{}
+
+func (u Utils) ConnectToClient(provider string) *ethclient.Client {
+	return utils.ConnectToClient(provider)
+}
 
 func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return utils.GetOptions(pending, from, blockNumber)
@@ -63,6 +68,27 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
+func (stakeManagerUtils StakeManagerUtils) ResetLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.ResetLock(opts, stakerId)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
+}
+
+func (flagSetUtils FlagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("address")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint32StakerId(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("stakerId")
+}
+
+func (flagSetMock FlagSetMock) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringAddressMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint32StakerId(flagset *pflag.FlagSet) (uint32, error) {
+	return GetUint32StakerIdMock(flagset)
 }

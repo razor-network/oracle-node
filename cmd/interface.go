@@ -18,6 +18,7 @@ type utilsInterface interface {
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
 	GetDefaultPath() (string, error)
+	ConnectToClient(string) *ethclient.Client
 }
 
 type tokenManagerInterface interface {
@@ -31,8 +32,14 @@ type transactionInterface interface {
 
 type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+	ResetLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
+}
+
+type flagSetInterface interface {
+	GetStringAddress(*pflag.FlagSet) (string, error)
+	GetUint32StakerId(*pflag.FlagSet) (uint32, error)
 }
