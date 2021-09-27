@@ -1,12 +1,17 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
 )
+
+var assetManagerUtils assetManagerInterface
+var flagSetUtils flagSetInterface
 
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
@@ -22,35 +27,65 @@ Note:
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		name, _ := cmd.Flags().GetString("name")
-		url, _ := cmd.Flags().GetString("url")
-		selector, _ := cmd.Flags().GetString("selector")
-		power, _ := cmd.Flags().GetInt8("power")
-
-		client := utils.ConnectToClient(config.Provider)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
-		})
-
-		assetManager := utils.GetAssetManager(client)
-		log.Info("Creating Job...")
-		txn, err := assetManager.CreateJob(txnOpts, power, name, selector, url)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Info("Transaction Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+		txn, err := createJob(cmd.Flags(), config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+		utils.CheckError("CreateJob error: ", err)
+		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
+func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	name, err := flagSetUtils.GetStringName(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	url, err := flagSetUtils.GetStringUrl(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	selector, err := flagSetUtils.GetStringSelector(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	power, err := flagSetUtils.GetInt8Power(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	client := razorUtils.ConnectToClient(config.Provider)
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		Password:       password,
+		AccountAddress: address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
+
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	log.Info("Creating Job...")
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, power, name, selector, url)
+	if err != nil {
+		return core.NilHash, err
+	}
+	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
+}
+
 func init() {
+
+	razorUtils = Utils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FlagSetUtils{}
+
 	rootCmd.AddCommand(createJobCmd)
 
 	var (

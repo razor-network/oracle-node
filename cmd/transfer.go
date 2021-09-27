@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var flagSetUtils flagSetInterface
-
 var transferCmd = &cobra.Command{
 	Use:   "transfer",
 	Short: "transfer razors from your account to others' account",

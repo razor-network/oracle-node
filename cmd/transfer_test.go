@@ -20,8 +20,6 @@ func Test_transfer(t *testing.T) {
 	var client *ethclient.Client
 	var flagSet *pflag.FlagSet
 	var config types.Configurations
-	//var amount *big.Int
-	//var decimalAmount *big.Float
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
