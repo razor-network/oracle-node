@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
-	"razor/pkg/bindings"
 )
 
 type UtilsMock struct{}
@@ -26,8 +25,6 @@ type AccountMock struct{}
 
 type FlagSetMock struct{}
 
-var GetTokenManagerMock func(*ethclient.Client) *bindings.RAZOR
-
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -40,6 +37,8 @@ var AssignPasswordMock func(*pflag.FlagSet) string
 
 var GetDefaultPathMock func() (string, error)
 
+var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
+
 var ConnectToClientMock func(string) *ethclient.Client
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
@@ -49,6 +48,8 @@ var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big
 var HashMock func(*Types.Transaction) common.Hash
 
 var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+
+var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -63,10 +64,6 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
-
-func (u UtilsMock) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
-	return GetTokenManagerMock(client)
-}
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -92,6 +89,10 @@ func (u UtilsMock) GetDefaultPath() (string, error) {
 	return GetDefaultPathMock()
 }
 
+func (u UtilsMock) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
+	return GetAmountInDecimalMock(amountInWei)
+}
+
 func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
 }
@@ -114,6 +115,10 @@ func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opt
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	return StakeMock(client, opts, epoch, amount)
+}
+
+func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
+	return DelegateMock(client, opts, epoch, stakerId, amount)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
