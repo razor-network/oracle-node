@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
@@ -20,7 +23,9 @@ type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AssetManagerUtils struct{}
 type AccountUtils struct{}
+type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type CryptoUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -52,6 +57,14 @@ func (u Utils) GetDefaultPath() (string, error) {
 
 func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
+}
+
+func (u Utils) PrivateKeyPrompt() string {
+	return utils.PrivateKeyPrompt()
+}
+
+func (u Utils) PasswordPrompt() string {
+	return utils.PasswordPrompt()
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -87,6 +100,16 @@ func (account AccountUtils) CreateAccount(path string, password string) ethAccou
 	return accounts.CreateAccount(path, password)
 }
 
+func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.Accounts()
+}
+
+func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.ImportECDSA(priv, passphrase)
+}
+
 func (flagSetUtils FlagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("address")
 }
@@ -105,4 +128,8 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(hexKey)
 }

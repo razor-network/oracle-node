@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,6 +21,8 @@ type utilsInterface interface {
 	GetDefaultPath() (string, error)
 	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
+	PrivateKeyPrompt() string
+	PasswordPrompt() string
 }
 
 type tokenManagerInterface interface {
@@ -44,10 +47,19 @@ type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
 }
 
+type keystoreInterface interface {
+	Accounts(string) []accounts.Account
+	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
+}
+
 type flagSetInterface interface {
 	GetStringAddress(*pflag.FlagSet) (string, error)
 	GetStringName(*pflag.FlagSet) (string, error)
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+}
+
+type cryptoInterface interface {
+	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }

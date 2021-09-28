@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,7 +24,11 @@ type StakeManagerMock struct{}
 
 type AccountMock struct{}
 
+type KeystoreMock struct{}
+
 type FlagSetMock struct{}
+
+type CryptoMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
@@ -41,6 +46,10 @@ var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
 
+var PrivateKeyPromptMock func() string
+
+var PasswordPromptMock func() string
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -53,6 +62,10 @@ var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *bi
 
 var CreateAccountMock func(string, string) accounts.Account
 
+var AccountsMock func(string) []accounts.Account
+
+var ImportECDSAMock func(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
+
 var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
@@ -64,6 +77,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -97,6 +112,14 @@ func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
 }
 
+func (u UtilsMock) PrivateKeyPrompt() string {
+	return PrivateKeyPromptMock()
+}
+
+func (u UtilsMock) PasswordPrompt() string {
+	return PasswordPromptMock()
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -125,6 +148,14 @@ func (account AccountMock) CreateAccount(path string, password string) accounts.
 	return CreateAccountMock(path, password)
 }
 
+func (ks KeystoreMock) Accounts(path string) []accounts.Account {
+	return AccountsMock(path)
+}
+
+func (ks KeystoreMock) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (accounts.Account, error) {
+	return ImportECDSAMock(path, priv, passphrase)
+}
+
 func (flagSetMock FlagSetMock) GetStringName(flagSet *pflag.FlagSet) (string, error) {
 	return GetStringNameMock(flagSet)
 }
@@ -143,4 +174,8 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return HexToECDSAMock(hexKey)
 }
