@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
-	"razor/path"
 	"razor/utils"
 	"strings"
 )
+
+var keystoreUtils keystoreInterface
+var cryptoUtils cryptoInterface
 
 var importCmd = &cobra.Command{
 	Use:   "import",
@@ -17,28 +18,42 @@ var importCmd = &cobra.Command{
 Example:
   ./razor import`,
 	Run: func(cmd *cobra.Command, args []string) {
-		privateKey := utils.PrivateKeyPrompt()
-		// Remove 0x from the private key
-		privateKey = strings.TrimPrefix(privateKey, "0x")
-		log.Info("Enter password to protect keystore file")
-		password := utils.PasswordPrompt()
-		path, err := path.GetDefaultPath()
-		utils.CheckError("Error in fetching .razor directory: ", err)
-		priv, err := crypto.HexToECDSA(privateKey)
-		utils.CheckError("Error in parsing private key: ", err)
-		importAccount(path, password, priv)
+		account, err := importAccount(razorUtils, keystoreUtils, cryptoUtils)
+		utils.CheckError("Import error: ", err)
+		log.Info("Account Address: ", account.Address)
+		log.Info("Keystore Path: ", account.URL)
 	},
 }
 
-func importAccount(path string, passphrase string, priv *ecdsa.PrivateKey) {
-	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
-	account, err := ks.ImportECDSA(priv, passphrase)
-	utils.CheckError("Error in importing account: ", err)
+func importAccount(razorUtils utilsInterface, keystoreUtils keystoreInterface, cryptoUtils cryptoInterface) (accounts.Account, error) {
+	privateKey := razorUtils.PrivateKeyPrompt()
+	// Remove 0x from the private key
+	privateKey = strings.TrimPrefix(privateKey, "0x")
+	log.Info("Enter password to protect keystore file")
+	password := razorUtils.PasswordPrompt()
+	path, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		log.Error("Error in fetching .razor directory")
+		return accounts.Account{Address: common.Address{0x00}}, err
+	}
+	priv, err := cryptoUtils.HexToECDSA(privateKey)
+	if err != nil {
+		log.Error("Error in parsing private key")
+		return accounts.Account{Address: common.Address{0x00}}, err
+	}
+	account, err := keystoreUtils.ImportECDSA(path, priv, password)
+	if err != nil {
+		log.Error("Error in importing account")
+		return accounts.Account{Address: common.Address{0x00}}, err
+	}
 	log.Info("Account imported...")
-	log.Info("Account Address: ", account.Address)
-	log.Info("Keystore Path: ", account.URL)
+	return account, nil
 }
 
 func init() {
+	razorUtils = Utils{}
+	keystoreUtils = KeystoreUtils{}
+	cryptoUtils = CryptoUtils{}
+
 	rootCmd.AddCommand(importCmd)
 }
