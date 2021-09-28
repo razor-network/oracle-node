@@ -54,6 +54,14 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
 }
 
+func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
+	return utils.ConvertUintArrayToUint8Array(uintArr)
+}
+
+func (u Utils) WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForDisputeOrConfirmState(client, accountAddress, action)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -83,6 +91,11 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, power, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
 }
@@ -105,4 +118,12 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
+	return flagSet.GetUintSlice("jobIds")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint32Aggregation(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("aggregation")
 }

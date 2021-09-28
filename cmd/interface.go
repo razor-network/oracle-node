@@ -20,6 +20,8 @@ type utilsInterface interface {
 	GetDefaultPath() (string, error)
 	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
+	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
+	WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -33,6 +35,7 @@ type transactionInterface interface {
 
 type assetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
 }
 
 type stakeManagerInterface interface {
@@ -50,4 +53,6 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)
+	GetUint32Aggregation(set *pflag.FlagSet) (uint32, error)
 }

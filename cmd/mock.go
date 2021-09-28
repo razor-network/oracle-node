@@ -37,9 +37,13 @@ var AssignPasswordMock func(*pflag.FlagSet) string
 
 var GetDefaultPathMock func() (string, error)
 
-var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
+var GetAmountInDecimalMock func(*big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var ConvertUintArrayToUint8ArrayMock func([]uint) []uint8
+
+var WaitForDisputeOrConfirmStateMock func(*ethclient.Client, string, string) (uint32, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -53,7 +57,9 @@ var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *bi
 
 var CreateAccountMock func(string, string) accounts.Account
 
-var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+
+var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error)
 
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
@@ -64,6 +70,10 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
+
+var GetUint32AggregationMock func(*pflag.FlagSet) (uint32, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -97,6 +107,14 @@ func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
 }
 
+func (u UtilsMock) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
+	return ConvertUintArrayToUint8ArrayMock(uintArr)
+}
+
+func (u UtilsMock) WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForDisputeOrConfirmStateMock(client, accountAddress, action)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -110,7 +128,11 @@ func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash 
 }
 
 func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
-	return CreateJobMock(opts, power, name, selector, url)
+	return CreateJobMock(client, opts, power, name, selector, url)
+}
+
+func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+	return CreateCollectionMock(client, opts, jobIDs, aggregationMethod, power, name)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -143,4 +165,12 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
+	return GetUintSliceJobIdsMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint32Aggregation(flagSet *pflag.FlagSet) (uint32, error) {
+	return GetUint32AggregationMock(flagSet)
 }
