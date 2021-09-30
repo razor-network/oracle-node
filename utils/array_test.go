@@ -9,8 +9,8 @@ import (
 
 func TestContains(t *testing.T) {
 	type args struct {
-		arr []*big.Int
-		val *big.Int
+		arr []int
+		val int
 	}
 	tests := []struct {
 		name string
@@ -18,36 +18,28 @@ func TestContains(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "Test 1",
+			name: "Test if value is not present in the array",
 			args: args{
-				arr: []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(2)},
-				val: nil,
+				arr: []int{0, 1, 2},
+				val: 4,
 			},
 			want: false,
 		},
 		{
-			name: "Test 2",
+			name: "Test if value is present in the array",
 			args: args{
-				arr: []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(2)},
-				val: big.NewInt(4),
-			},
-			want: false,
-		},
-		{
-			name: "Test 3",
-			args: args{
-				arr: []*big.Int{},
-				val: big.NewInt(4),
-			},
-			want: false,
-		},
-		{
-			name: "Test 4",
-			args: args{
-				arr: []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(2)},
-				val: big.NewInt(1),
+				arr: []int{0, 1, 2},
+				val: 2,
 			},
 			want: true,
+		},
+		{
+			name: "Test if array is empty",
+			args: args{
+				arr: []int{},
+				val: 4,
+			},
+			want: false,
 		},
 	}
 	for _, tt := range tests {
