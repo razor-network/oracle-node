@@ -51,3 +51,7 @@ type flagSetInterface interface {
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
 }
+
+type blockManagerInterface interface {
+	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
+}

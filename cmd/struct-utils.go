@@ -21,6 +21,7 @@ type StakeManagerUtils struct{}
 type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type FlagSetUtils struct{}
+type BlockManagerUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -105,4 +106,9 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
 }

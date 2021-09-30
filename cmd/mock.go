@@ -25,6 +25,8 @@ type AccountMock struct{}
 
 type FlagSetMock struct{}
 
+type BlockManagerMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -64,6 +66,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -143,4 +147,8 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
 }

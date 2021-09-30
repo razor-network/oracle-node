@@ -210,7 +210,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				AccountAddress: account.Address,
 				ChainId:        core.ChainId,
 				Config:         config,
-			}, razorUtils ,blockManagerUtils, transactionUtils)
+			}, razorUtils, blockManagerUtils, transactionUtils)
 			utils.WaitForBlockCompletion(client, txn.Hex())
 			blockConfirmed = epoch
 		}
