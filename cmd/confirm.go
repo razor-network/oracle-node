@@ -1,18 +1,20 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
+	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 )
 
-func ClaimBlockReward(options types.TransactionOptions) {
-	blockManager := utils.GetBlockManager(options.Client)
+var blockManagerUtils blockManagerInterface
+
+func ClaimBlockReward(options types.TransactionOptions,razorUtils utilsInterface ,blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) (common.Hash, error){
 	log.Info("Claiming block reward...")
-	txn, err := blockManager.ClaimBlockReward(utils.GetTxnOpts(options))
+	txn, err := blockManagerUtils.ClaimBlockReward(options.Client, razorUtils.GetTxnOpts(options))
 	if err != nil {
 		log.Error("Error in claiming block reward: ", err)
-		return
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", txn.Hash().Hex())
-	utils.WaitForBlockCompletion(options.Client, txn.Hash().Hex())
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn).Hex())
+	return transactionUtils.Hash(txn), nil
 }
