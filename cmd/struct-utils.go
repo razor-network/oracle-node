@@ -103,6 +103,11 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
+func (stakeManagerUtils StakeManagerUtils) ResetLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.ResetLock(opts, stakerId)
+}
+
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Delegate(opts, epoch, stakerId, amount)
@@ -137,6 +142,10 @@ func (flagSetUtils FlagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, er
 
 func (flagSetUtils FlagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("address")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint32StakerId(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("stakerId")
 }
 
 func (flagSetUtils FlagSetUtils) GetStringName(flagSet *pflag.FlagSet) (string, error) {

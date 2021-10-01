@@ -44,6 +44,7 @@ type assetManagerInterface interface {
 
 type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+	ResetLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 }
 
@@ -60,6 +61,7 @@ type flagSetInterface interface {
 	GetStringFrom(*pflag.FlagSet) (string, error)
 	GetStringTo(*pflag.FlagSet) (string, error)
 	GetStringAddress(*pflag.FlagSet) (string, error)
+	GetUint32StakerId(*pflag.FlagSet) (uint32, error)
 	GetStringName(*pflag.FlagSet) (string, error)
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
