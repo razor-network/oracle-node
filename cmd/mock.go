@@ -59,6 +59,8 @@ var HashMock func(*Types.Transaction) common.Hash
 
 var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 
+var ResetLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
@@ -72,6 +74,8 @@ var GetStringToMock func(*pflag.FlagSet) (string, error)
 var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
+
+var GetUint32StakerIdMock func(*pflag.FlagSet) (uint32, error)
 
 var GetStringNameMock func(*pflag.FlagSet) (string, error)
 
@@ -149,6 +153,10 @@ func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *b
 	return StakeMock(client, opts, epoch, amount)
 }
 
+func (stakeManagerMock StakeManagerMock) ResetLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	return ResetLockMock(client, opts, stakerId)
+}
+
 func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	return DelegateMock(client, opts, epoch, stakerId, amount)
 }
@@ -171,6 +179,10 @@ func (flagSetMock FlagSetMock) GetStringTo(flagSet *pflag.FlagSet) (string, erro
 
 func (flagSetMock FlagSetMock) GetStringName(flagSet *pflag.FlagSet) (string, error) {
 	return GetStringNameMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint32StakerId(flagset *pflag.FlagSet) (uint32, error) {
+	return GetUint32StakerIdMock(flagset)
 }
 
 func (flagSetMock FlagSetMock) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
