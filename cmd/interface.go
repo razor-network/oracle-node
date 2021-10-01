@@ -48,6 +48,10 @@ type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
 }
 
+type keystoreInterface interface {
+	Accounts(string) []accounts.Account
+}
+
 type flagSetInterface interface {
 	GetStringFrom(*pflag.FlagSet) (string, error)
 	GetStringTo(*pflag.FlagSet) (string, error)
