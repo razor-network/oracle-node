@@ -25,6 +25,8 @@ type AccountMock struct{}
 
 type FlagSetMock struct{}
 
+type VoteManagerMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -40,6 +42,12 @@ var GetDefaultPathMock func() (string, error)
 var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
+
+var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+
+var GetActiveAssetsDataMock func(*ethclient.Client, string, uint32) ([]*big.Int, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -64,6 +72,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -95,6 +105,18 @@ func (u UtilsMock) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 
 func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
+}
+
+func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return GetDelayedStateMock(client, buffer)
+}
+
+func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return GetEpochMock(client, address)
+}
+
+func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return GetActiveAssetsDataMock(client, address, epoch)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -143,4 +165,8 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	return CommitMock(client, opts, epoch, commitment)
 }

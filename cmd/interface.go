@@ -20,6 +20,9 @@ type utilsInterface interface {
 	GetDefaultPath() (string, error)
 	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	GetEpoch(*ethclient.Client, string) (uint32, error)
+	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 }
 
 type tokenManagerInterface interface {
@@ -50,4 +53,8 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+}
+
+type voteManagerInterface interface {
+	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 }
