@@ -51,7 +51,7 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 		log.Error("Error in getting gas limit: ", err)
 	}
 	log.Debug("Estimated Gas: ", gasLimit)
-	txnOpts.GasLimit = (gasLimit*3)/20 + gasLimit
+	txnOpts.GasLimit = (gasLimit*7)/20 + gasLimit
 	log.Debug("Gas Limit after increment: ", txnOpts.GasLimit)
 
 	return txnOpts
