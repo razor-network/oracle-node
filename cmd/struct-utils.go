@@ -51,8 +51,16 @@ func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	return utils.AssignPassword(flagSet)
 }
 
-func (u Utils) GetDefaultPath() (string, error) {
-	return path.GetDefaultPath()
+func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
+	return utils.FetchBalance(client, accountAddress)
+}
+
+func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
+	return utils.AssignAmountInWei(flagSet)
+}
+
+func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+	return utils.CheckAmountAndBalance(amountInWei, balance)
 }
 
 func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
@@ -67,6 +75,10 @@ func (u Utils) PasswordPrompt() string {
 	return utils.PasswordPrompt()
 }
 
+func (u Utils) GetDefaultPath() (string, error) {
+	return path.GetDefaultPath()
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -75,6 +87,11 @@ func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, o
 func (tokenManagerUtils TokenManagerUtils) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Approve(opts, spender, amount)
+}
+
+func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
+	tokenManager := utils.GetTokenManager(client)
+	return tokenManager.Transfer(opts, recipient, amount)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
@@ -108,6 +125,14 @@ func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.ImportECDSA(priv, passphrase)
+}
+
+func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("from")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("to")
 }
 
 func (flagSetUtils FlagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {

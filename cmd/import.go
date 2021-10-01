@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-var keystoreUtils keystoreInterface
 var cryptoUtils cryptoInterface
 
 var importCmd = &cobra.Command{

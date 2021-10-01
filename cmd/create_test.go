@@ -87,7 +87,7 @@ func TestCreate(t *testing.T) {
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for approve function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for Create function, got = %v, want %v", got, tt.wantErr)
 				}
 			}
 		})
