@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 type utilsInterface interface {
@@ -20,6 +21,9 @@ type utilsInterface interface {
 	GetDefaultPath() (string, error)
 	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
+	GetStakerId(*ethclient.Client, string) (uint32, error)
+	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetConfigData() (types.Configurations, error)
 }
 
 type tokenManagerInterface interface {
@@ -38,6 +42,9 @@ type assetManagerInterface interface {
 type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
+	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
@@ -50,4 +57,11 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+	GetStringStatus(*pflag.FlagSet) (string, error)
+	GetUint8Commission(*pflag.FlagSet) (uint8, error)
+}
+
+type utilsCmdInterface interface {
+	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
+	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
 }
