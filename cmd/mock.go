@@ -23,6 +23,8 @@ type StakeManagerMock struct{}
 
 type AccountMock struct{}
 
+type KeystoreMock struct{}
+
 type FlagSetMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -60,6 +62,8 @@ var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Ty
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
+
+var AccountsMock func(string) []accounts.Account
 
 var GetStringFromMock func(*pflag.FlagSet) (string, error)
 
@@ -151,6 +155,10 @@ func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
 	return CreateAccountMock(path, password)
+}
+
+func (ks KeystoreMock) Accounts(path string) []accounts.Account {
+	return AccountsMock(path)
 }
 
 func (flagSetMock FlagSetMock) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {

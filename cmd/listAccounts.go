@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/spf13/cobra"
-	"razor/path"
 	"razor/utils"
 )
+
+var keystoreUtils keystoreInterface
 
 var listAccountsCmd = &cobra.Command{
 	Use:   "listAccounts",
@@ -14,17 +15,27 @@ var listAccountsCmd = &cobra.Command{
 Example:
   ./razor listAccounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		path, err := path.GetDefaultPath()
-		utils.CheckError("Error in fetching .razor directory", err)
-		ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
-		allAccounts := ks.Accounts()
+		allAccounts, err := listAccounts(razorUtils, keystoreUtils)
+		utils.CheckError("ListAccounts error: ", err)
 		log.Info("The available accounts are: ")
 		for _, account := range allAccounts {
-			log.Infof("%s\n", account.Address.String())
+			log.Infof("%s", account.Address.String())
 		}
 	},
 }
 
+func listAccounts(razorUtils utilsInterface, keystoreUtils keystoreInterface) ([]accounts.Account, error) {
+	path, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		log.Error("Error in fetching .razor directory")
+		return nil, err
+	}
+
+	return keystoreUtils.Accounts(path), nil
+}
+
 func init() {
+	razorUtils = Utils{}
+	keystoreUtils = KeystoreUtils{}
 	rootCmd.AddCommand(listAccountsCmd)
 }
