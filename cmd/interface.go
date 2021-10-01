@@ -15,16 +15,20 @@ type utilsInterface interface {
 	GetOptions(bool, string, string) bind.CallOpts
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
-	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
-	GetDefaultPath() (string, error)
-	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
+	FetchBalance(*ethclient.Client, string) (*big.Int, error)
+	AssignAmountInWei(*pflag.FlagSet) *big.Int
+	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
+	GetAmountInDecimal(*big.Int) *big.Float
+	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
+	GetDefaultPath() (string, error)
 }
 
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
+	Transfer(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 }
 
 type transactionInterface interface {
@@ -45,7 +49,13 @@ type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
 }
 
+type keystoreInterface interface {
+	Accounts(string) []accounts.Account
+}
+
 type flagSetInterface interface {
+	GetStringFrom(*pflag.FlagSet) (string, error)
+	GetStringTo(*pflag.FlagSet) (string, error)
 	GetStringAddress(*pflag.FlagSet) (string, error)
 	GetUint32StakerId(*pflag.FlagSet) (uint32, error)
 	GetStringName(*pflag.FlagSet) (string, error)

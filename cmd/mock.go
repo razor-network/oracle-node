@@ -23,6 +23,8 @@ type StakeManagerMock struct{}
 
 type AccountMock struct{}
 
+type KeystoreMock struct{}
+
 type FlagSetMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -33,9 +35,15 @@ var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
 var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
 
+var GetDefaultPathMock func() (string, error)
+
 var AssignPasswordMock func(*pflag.FlagSet) string
 
-var GetDefaultPathMock func() (string, error)
+var FetchBalanceMock func(*ethclient.Client, string) (*big.Int, error)
+
+var AssignAmountInWeiMock func(flagSet *pflag.FlagSet) *big.Int
+
+var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.Int
 
 var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
 
@@ -44,6 +52,8 @@ var ConnectToClientMock func(string) *ethclient.Client
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
+
+var TransferMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 
 var HashMock func(*Types.Transaction) common.Hash
 
@@ -54,6 +64,12 @@ var ResetLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Tr
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
+
+var AccountsMock func(string) []accounts.Account
+
+var GetStringFromMock func(*pflag.FlagSet) (string, error)
+
+var GetStringToMock func(*pflag.FlagSet) (string, error)
 
 var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
@@ -89,6 +105,18 @@ func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
 	return AssignPasswordMock(flagSet)
 }
 
+func (u UtilsMock) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
+	return FetchBalanceMock(client, accountAddress)
+}
+
+func (u UtilsMock) AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
+	return AssignAmountInWeiMock(flagSet)
+}
+
+func (u UtilsMock) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+	return CheckAmountAndBalanceMock(amountInWei, balance)
+}
+
 func (u UtilsMock) GetDefaultPath() (string, error) {
 	return GetDefaultPathMock()
 }
@@ -107,6 +135,10 @@ func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opt
 
 func (tokenManagerMock TokenManagerMock) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
 	return ApproveMock(client, opts, spender, amount)
+}
+
+func (tokenManagerMock TokenManagerMock) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
+	return TransferMock(client, opts, recipient, amount)
 }
 
 func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash {
@@ -131,6 +163,18 @@ func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
 	return CreateAccountMock(path, password)
+}
+
+func (ks KeystoreMock) Accounts(path string) []accounts.Account {
+	return AccountsMock(path)
+}
+
+func (flagSetMock FlagSetMock) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringFromMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringToMock(flagSet)
 }
 
 func (flagSetMock FlagSetMock) GetStringName(flagSet *pflag.FlagSet) (string, error) {

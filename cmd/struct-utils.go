@@ -3,6 +3,7 @@ package cmd
 import (
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -20,6 +21,7 @@ type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AssetManagerUtils struct{}
 type AccountUtils struct{}
+type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -46,12 +48,24 @@ func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	return utils.AssignPassword(flagSet)
 }
 
-func (u Utils) GetDefaultPath() (string, error) {
-	return path.GetDefaultPath()
+func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
+	return utils.FetchBalance(client, accountAddress)
+}
+
+func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
+	return utils.AssignAmountInWei(flagSet)
+}
+
+func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+	return utils.CheckAmountAndBalance(amountInWei, balance)
 }
 
 func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
+}
+
+func (u Utils) GetDefaultPath() (string, error) {
+	return path.GetDefaultPath()
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -62,6 +76,11 @@ func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, o
 func (tokenManagerUtils TokenManagerUtils) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Approve(opts, spender, amount)
+}
+
+func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
+	tokenManager := utils.GetTokenManager(client)
+	return tokenManager.Transfer(opts, recipient, amount)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
@@ -90,6 +109,19 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
+}
+
+func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.Accounts()
+}
+
+func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("from")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("to")
 }
 
 func (flagSetUtils FlagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
