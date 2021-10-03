@@ -48,7 +48,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
-		ABI:             bindings.VoteManagerMetaData.ABI,
+		ABI:             bindings.VoteManagerABI,
 		MethodName:      "commit",
 		Parameters:      []interface{}{epoch, commitmentToSend},
 	})

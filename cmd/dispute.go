@@ -63,7 +63,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerMetaData.ABI,
+		ABI:             bindings.BlockManagerABI,
 		MethodName:      "giveSorted",
 		Parameters:      []interface{}{epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes)},
 	})
@@ -78,7 +78,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerMetaData.ABI,
+		ABI:             bindings.BlockManagerABI,
 		MethodName:      "finalizeDispute",
 		Parameters:      []interface{}{epoch, blockId},
 	})

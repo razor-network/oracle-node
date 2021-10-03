@@ -101,7 +101,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerMetaData.ABI,
+		ABI:             bindings.BlockManagerABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
 	})

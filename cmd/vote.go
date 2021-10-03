@@ -212,7 +212,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
-				ABI:             jobManager.BlockManagerMetaData.ABI,
+				ABI:             jobManager.BlockManagerABI,
 			})
 			blockConfirmed = epoch
 		}

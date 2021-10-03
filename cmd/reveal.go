@@ -74,7 +74,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
-		ABI:             bindings.VoteManagerMetaData.ABI,
+		ABI:             bindings.VoteManagerABI,
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, committedData, secretBytes32},
 	})
