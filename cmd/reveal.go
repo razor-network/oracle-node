@@ -11,6 +11,8 @@ import (
 )
 
 var voteManagerUtils voteManagerInterface
+var treeUtils treeInterface
+
 func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32, razorUtils utilsInterface) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, address, staker.Id)
 	if err != nil {
@@ -23,7 +25,7 @@ func HandleRevealState(client *ethclient.Client, address string, staker bindings
 	return nil
 }
 
-func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations, razorUtils utilsInterface, voteManagerUtils voteManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations, razorUtils utilsInterface, voteManagerUtils voteManagerInterface, transactionUtils transactionInterface, treeUtils treeInterface) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
@@ -41,7 +43,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 	}
 	if razorUtils.AllZero(commitments) {
 		log.Error("Did not commit")
-		return core.NilHash, err
+		return core.NilHash, nil
 	}
 
 	tree, err := razorUtils.GetMerkleTree(committedData)
@@ -59,7 +61,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 	})
 
 	root := [32]byte{}
-	originalRoot := tree.RootV1()
+	originalRoot := treeUtils.RootV1(tree)
 	copy(root[:], originalRoot)
 
 	secretBytes32 := [32]byte{}

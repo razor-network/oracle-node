@@ -30,6 +30,8 @@ type FlagSetMock struct{}
 
 type VoteManagerMock struct{}
 
+type TreeMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -56,13 +58,13 @@ var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
 
 var GetEpochMock func(*ethclient.Client, string) (uint32, error)
 
-var GetCommitmentsMock func( *ethclient.Client,  string) ([32]byte, error)
+var GetCommitmentsMock func(*ethclient.Client, string) ([32]byte, error)
 
 var AllZeroMock func([32]byte) bool
 
 var GetMerkleTreeMock func([]*big.Int) (*merkletree.MerkleTree, error)
 
-var GetEpochLastCommittedMock func( *ethclient.Client,  string,  uint32) (uint32, error)
+var GetEpochLastCommittedMock func(*ethclient.Client, string, uint32) (uint32, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -100,7 +102,9 @@ var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
-var RevealMock func( *ethclient.Client,  *bind.TransactOpts,  uint32,  []*big.Int,  [32]byte) (*Types.Transaction, error)
+var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
+
+var RootV1Mock func(*merkletree.MerkleTree) []byte
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -154,11 +158,11 @@ func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, e
 	return GetEpochMock(client, address)
 }
 
-func (u UtilsMock) 	GetCommitments(client *ethclient.Client, address  string) ([32]byte, error) {
+func (u UtilsMock) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	return GetCommitmentsMock(client, address)
 }
 
-func (u UtilsMock) AllZero( bytesValue [32]byte) bool {
+func (u UtilsMock) AllZero(bytesValue [32]byte) bool {
 	return AllZeroMock(bytesValue)
 }
 
@@ -167,7 +171,7 @@ func (u UtilsMock) GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error
 }
 
 func (u UtilsMock) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	return  GetEpochLastCommittedMock(client, address, stakerId)
+	return GetEpochLastCommittedMock(client, address, stakerId)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -244,4 +248,8 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 
 func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	return RevealMock(client, opts, epoch, values, secret)
+}
+
+func (t TreeMock) RootV1(tree *merkletree.MerkleTree) []byte {
+	return RootV1Mock(tree)
 }

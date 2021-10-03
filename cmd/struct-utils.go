@@ -25,6 +25,7 @@ type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type VoteManagerUtils struct{}
+type TreeUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -174,7 +175,11 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 	return flagSet.GetInt8("power")
 }
 
-func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error){
+func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
 	return voteManager.Reveal(opts, epoch, values, secret)
+}
+
+func (t TreeUtils) RootV1(tree *merkletree.MerkleTree) []byte {
+	return tree.RootV1()
 }

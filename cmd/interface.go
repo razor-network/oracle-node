@@ -26,10 +26,10 @@ type utilsInterface interface {
 	GetDefaultPath() (string, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client, string) (uint32, error)
-	GetCommitments( *ethclient.Client,  string) ([32]byte, error)
-	AllZero( [32]byte) bool
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	AllZero([32]byte) bool
 	GetMerkleTree([]*big.Int) (*merkletree.MerkleTree, error)
-	GetEpochLastCommitted( *ethclient.Client,  string,  uint32) (uint32, error)
+	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -72,5 +72,9 @@ type flagSetInterface interface {
 }
 
 type voteManagerInterface interface {
-	Reveal( *ethclient.Client,  *bind.TransactOpts,  uint32,  []*big.Int,  [32]byte) (*Types.Transaction, error)
+	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
+}
+
+type treeInterface interface {
+	RootV1(*merkletree.MerkleTree) []byte
 }
