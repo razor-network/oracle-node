@@ -171,8 +171,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
-		revealTxn, _ := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils)
-		utils.WaitForBlockCompletion(client, revealTxn.String())
+		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils, treeUtils)
+		if revealTxn != core.NilHash && err != nil {
+			utils.WaitForBlockCompletion(client, revealTxn.String())
+		}
 	case 2:
 		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
 		if err != nil {
@@ -304,6 +306,7 @@ func init() {
 	razorUtils = Utils{}
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	treeUtils = TreeUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 
