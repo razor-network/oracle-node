@@ -12,7 +12,7 @@ import (
 
 var voteManagerUtils voteManagerInterface
 
-func HandleCommitState(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+func HandleCommitState(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
 	data, err := razorUtils.GetActiveAssetsData(client, address, epoch)
 	if err != nil {
 		return nil, err
