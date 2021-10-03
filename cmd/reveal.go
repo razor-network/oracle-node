@@ -2,18 +2,17 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32) error {
-	epochLastCommitted, err := utils.GetEpochLastCommitted(client, address, staker.Id)
+var voteManagerUtils voteManagerInterface
+func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32, razorUtils utilsInterface) error {
+	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, address, staker.Id)
 	if err != nil {
 		return err
 	}
@@ -24,42 +23,40 @@ func HandleRevealState(client *ethclient.Client, address string, staker bindings
 	return nil
 }
 
-func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations) {
-	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
+func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations, razorUtils utilsInterface, voteManagerUtils voteManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
-		return
+		return core.NilHash, err
 	}
 
-	epoch, err := utils.GetEpoch(client, account.Address)
+	epoch, err := razorUtils.GetEpoch(client, account.Address)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
-	commitments, err := utils.GetCommitments(client, account.Address)
+	commitments, err := razorUtils.GetCommitments(client, account.Address)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
-	if utils.AllZero(commitments) {
+	if razorUtils.AllZero(commitments) {
 		log.Error("Did not commit")
-		return
+		return core.NilHash, err
 	}
 
-	tree, err := utils.GetMerkleTree(committedData)
+	tree, err := razorUtils.GetMerkleTree(committedData)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
 
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
 	})
-
-	voteManager := utils.GetVoteManager(client)
 
 	root := [32]byte{}
 	originalRoot := tree.RootV1()
@@ -75,11 +72,11 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		commitAccount,
 	)
 	log.Info("Revealing votes...")
-	txn, err := voteManager.Reveal(txnOpts, epoch, committedData, secretBytes32)
+	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, committedData, secretBytes32)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
