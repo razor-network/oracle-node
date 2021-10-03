@@ -7,6 +7,7 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/core/types"
 )
@@ -23,6 +24,12 @@ type utilsInterface interface {
 	GetAmountInDecimal(*big.Int) *big.Float
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	GetEpoch(*ethclient.Client, string) (uint32, error)
+	GetCommitments( *ethclient.Client,  string) ([32]byte, error)
+	AllZero( [32]byte) bool
+	GetMerkleTree([]*big.Int) (*merkletree.MerkleTree, error)
+	GetEpochLastCommitted( *ethclient.Client,  string,  uint32) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -62,4 +69,8 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+}
+
+type voteManagerInterface interface {
+	Reveal( *ethclient.Client,  *bind.TransactOpts,  uint32,  []*big.Int,  [32]byte) (*Types.Transaction, error)
 }

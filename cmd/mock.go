@@ -7,6 +7,7 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/core/types"
 )
@@ -26,6 +27,8 @@ type AccountMock struct{}
 type KeystoreMock struct{}
 
 type FlagSetMock struct{}
+
+type VoteManagerMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
@@ -48,6 +51,18 @@ var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.
 var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
+
+var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+
+var GetCommitmentsMock func( *ethclient.Client,  string) ([32]byte, error)
+
+var AllZeroMock func([32]byte) bool
+
+var GetMerkleTreeMock func([]*big.Int) (*merkletree.MerkleTree, error)
+
+var GetEpochLastCommittedMock func( *ethclient.Client,  string,  uint32) (uint32, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -84,6 +99,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var RevealMock func( *ethclient.Client,  *bind.TransactOpts,  uint32,  []*big.Int,  [32]byte) (*Types.Transaction, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -127,6 +144,30 @@ func (u UtilsMock) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 
 func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
+}
+
+func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return GetDelayedStateMock(client, buffer)
+}
+
+func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return GetEpochMock(client, address)
+}
+
+func (u UtilsMock) 	GetCommitments(client *ethclient.Client, address  string) ([32]byte, error) {
+	return GetCommitmentsMock(client, address)
+}
+
+func (u UtilsMock) AllZero( bytesValue [32]byte) bool {
+	return AllZeroMock(bytesValue)
+}
+
+func (u UtilsMock) GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
+	return GetMerkleTreeMock(data)
+}
+
+func (u UtilsMock) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return  GetEpochLastCommittedMock(client, address, stakerId)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -199,4 +240,8 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
+	return RevealMock(client, opts, epoch, values, secret)
 }
