@@ -60,11 +60,15 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 
 	log.Debugf("Epoch: %d, Sorted Votes: %s", epoch, sortedVotes)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.BlockManagerAddress,
+		ABI:             bindings.BlockManagerABI,
+		MethodName:      "giveSorted",
+		Parameters:      []interface{}{epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes)},
 	})
 
 	if !utils.Contains(giveSortedAssetIds, assetId) {
@@ -73,11 +77,15 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 
 	log.Info("Finalizing dispute...")
 	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.BlockManagerAddress,
+		ABI:             bindings.BlockManagerABI,
+		MethodName:      "finalizeDispute",
+		Parameters:      []interface{}{epoch, blockId},
 	})
 	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
