@@ -191,7 +191,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		Propose(client, account, config, stakerId, epoch, rogueMode)
+		proposeTxn, _ := Propose(client, account, config, stakerId, epoch, rogueMode, razorUtils, proposeUtils, blockManagerUtils, transactionUtils)
+		if proposeTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, proposeTxn.String())
+		}
 	case 3:
 		if lastVerification >= epoch {
 			break
@@ -299,6 +302,12 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	proposeUtils = ProposeUtils{}
+	blockManagerUtils = BlockManagerUtils{}
+	transactionUtils = TransactionUtils{}
+
 	rootCmd.AddCommand(voteCmd)
 
 	var (
