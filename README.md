@@ -7,9 +7,28 @@ Official node for running stakers in Golang.
 ## Installation
 
 ### Docker quick start
-One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
 
-`docker run -it razornetwork/razor-go /bin/bash`
+One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+```
+  docker run -d \
+  -it \
+  --name razor-go \
+  -v "$(echo $HOME)"/.razor:/root/.razor \
+  razornetwork/razor-go
+```
+Note that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
+
+You need to set a provider before you can operate razor-go cli on docker:
+
+```
+docker exec -it razor-go setconfig -p <provider_url>
+```
+
+You can now execute razor-go cli commands by running:
+
+```
+docker exec -it razor-go <command>
+```
 
 ### Prerequisites
 * Golang 1.15 or later must be installed.
@@ -40,6 +59,11 @@ Create an account using the `create` command. You'll be asked to enter a passwor
 $ ./razor create
 ```
 
+For docker:
+```
+$ docker exec -it razor-go razor create
+```
+
 Example:
 
 ```
@@ -53,6 +77,11 @@ To do that, you can use the `import` command. You'll be asked the private key fi
 
 ```
 $ ./razor import
+```
+
+For docker:
+```
+$ docker exec -it razor-go razor import
 ```
 
 Example:
@@ -72,6 +101,11 @@ If you have a minimum of 1000 razors in your account, you can stake those using 
 $ ./razor stake --address <address> --amount <amount>
 ```
 
+For docker:
+```
+$ docker exec -it razor-go razor stake --address <address> --amount <amount>
+```
+
 Example:
 ```
 $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000
@@ -82,6 +116,11 @@ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 10
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 ```
 $ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
+```
+
+For docker:
+```
+$ docker exec -it razor-go razor setDelegation --address <address> --status <true_or_false> --commission <commission>
 ```
 
 Example:
@@ -96,6 +135,11 @@ If you want to become a delegator use the `delegate` command. The staker whose `
 $ ./razor delegate --address <address> --amount <amount> --stakerId <staker_id>
 ```
 
+For docker:
+```
+$ docker exec -it razor-go razor delegate --address <address> --amount <amount> --stakerId <staker_id>
+```
+
 Example:
 ```
 $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
@@ -105,6 +149,11 @@ $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount
 You can start voting once you've staked some razors
 ```
 $ ./razor vote --address <address>
+```
+
+For docker:
+```
+$ docker exec -it razor-go razor vote --address <address>
 ```
 
 Example:
@@ -126,6 +175,11 @@ If you wish to withdraw your funds, you can run the `unstake` command followed b
 $ ./razor unstake --address <address> --stakerId <staker_id> --amount <amount> --autoWithdraw
 ```
 
+For docker:
+```
+$ docker exec -it razor-go razor unstake --address <address> --stakerId <staker_id> --amount <amount> --autoWithdraw
+```
+
 Example:
 ```
 $ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount 1000 --autoWithdraw
@@ -136,6 +190,11 @@ Once `unstake` has been called, you can withdraw your funds using the `withdraw`
 
 ```
 $ ./razor withdraw --address <address> --stakerId <staker_id>
+```
+
+For docker:
+```
+$ docker exec -it razor-go razor withdraw --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -150,6 +209,11 @@ If the withdrawal period is over, then the lock must be reset otherwise the user
 $ ./razor resetLock --address <address> --stakerId <staker_id>
 ```
 
+For docker:
+```
+$ docker exec -it razor-go razor resetLock --address <address> --stakerId <staker_id>
+```
+
 Example:
 
 ```
@@ -162,6 +226,10 @@ Transfers razor to other accounts.
 ```
 $ ./razor transfer --amount <amount> --to <transfer_to_address> --from <transfer_from_address>
 ```
+
+For docker:
+```
+$ docker exec -it razor-go razor transfer --amount <amount> --to <transfer_to_address> --from <transfer_from_address>
 
 Example:
 ```
