@@ -12,6 +12,7 @@ import (
 	"razor/accounts"
 	"razor/core/types"
 	"razor/path"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
@@ -23,6 +24,8 @@ type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type ProposeUtils struct{}
+type BlockManagerUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -66,6 +69,38 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 
 func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
+}
+
+func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utils.GetDelayedState(client, buffer)
+}
+
+func (u Utils) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetEpoch(client, address)
+}
+
+func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetStakerId(client, address)
+}
+
+func (u Utils) GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
+	return utils.GetRandaoHash(client, address)
+}
+
+func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
+	return utils.GetNumberOfProposedBlocks(client, address, epoch)
+}
+
+func (u Utils) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
+	return utils.GetMaxAltBlocks(client, address)
+}
+
+func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (types.Block, error) {
+	return utils.GetProposedBlock(client, address, epoch, proposedBlockId)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -146,4 +181,37 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndId(client, address)
+}
+
+func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
+	return getIteration(client, address, proposer)
+}
+
+func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
+	return isElectedProposer(client, address, proposer)
+}
+
+func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
+	return pseudoRandomNumberGenerator(seed, max, blockHashes)
+}
+
+func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
+	return MakeBlock(client, address, rogueMode)
+}
+
+func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
+	return getSortedVotes(client, address, assetId, epoch)
+}
+
+func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
+	return influencedMedian(sortedVotes, totalInfluenceRevealed)
+}
+
+func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
 }

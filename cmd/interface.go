@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 type utilsInterface interface {
@@ -23,6 +24,14 @@ type utilsInterface interface {
 	GetAmountInDecimal(*big.Int) *big.Float
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	GetEpoch(*ethclient.Client, string) (uint32, error)
+	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
+	GetRandaoHash(*ethclient.Client, string) ([32]byte, error)
+	GetNumberOfProposedBlocks(*ethclient.Client, string, uint32) (uint8, error)
+	GetMaxAltBlocks(*ethclient.Client, string) (uint8, error)
+	GetProposedBlock(*ethclient.Client, string, uint32, uint8) (types.Block, error)
 }
 
 type tokenManagerInterface interface {
@@ -62,4 +71,18 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+}
+
+type proposeUtilsInterface interface {
+	getBiggestInfluenceAndId(*ethclient.Client, string) (*big.Int, uint32, error)
+	getIteration(*ethclient.Client, string, types.ElectedProposer) int
+	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
+	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
+	MakeBlock(*ethclient.Client, string, bool) ([]uint32, error)
+	getSortedVotes(*ethclient.Client, string, uint8, uint32) ([]*big.Int, error)
+	influencedMedian([]*big.Int, *big.Int) *big.Int
+}
+
+type blockManagerInterface interface {
+	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 }

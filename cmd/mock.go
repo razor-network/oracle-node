@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 type UtilsMock struct{}
@@ -26,6 +27,10 @@ type AccountMock struct{}
 type KeystoreMock struct{}
 
 type FlagSetMock struct{}
+
+type ProposeUtilsMock struct{}
+
+type BlockManagerMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
@@ -48,6 +53,22 @@ var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.
 var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
+
+var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+
+var GetStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+
+var GetNumberOfStakersMock func(*ethclient.Client, string) (uint32, error)
+
+var GetRandaoHashMock func(*ethclient.Client, string) ([32]byte, error)
+
+var GetNumberOfProposedBlocksMock func(*ethclient.Client, string, uint32) (uint8, error)
+
+var GetMaxAltBlocksMock func(*ethclient.Client, string) (uint8, error)
+
+var GetProposedBlockMock func(*ethclient.Client, string, uint32, uint8) (types.Block, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -84,6 +105,22 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var getBiggestInfluenceAndIdMock func(*ethclient.Client, string) (*big.Int, uint32, error)
+
+var getIterationMock func(*ethclient.Client, string, types.ElectedProposer) int
+
+var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer) bool
+
+var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
+
+var MakeBlockMock func(*ethclient.Client, string, bool) ([]uint32, error)
+
+var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32) ([]*big.Int, error)
+
+var influencedMedianMock func([]*big.Int, *big.Int) *big.Int
+
+var ProposeMock func(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -127,6 +164,38 @@ func (u UtilsMock) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 
 func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
+}
+
+func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return GetDelayedStateMock(client, buffer)
+}
+
+func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return GetEpochMock(client, address)
+}
+
+func (u UtilsMock) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return GetStakerMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
+	return GetNumberOfStakersMock(client, address)
+}
+
+func (u UtilsMock) GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
+	return GetRandaoHashMock(client, address)
+}
+
+func (u UtilsMock) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
+	return GetNumberOfProposedBlocksMock(client, address, epoch)
+}
+
+func (u UtilsMock) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
+	return GetMaxAltBlocksMock(client, address)
+}
+
+func (u UtilsMock) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (types.Block, error) {
+	return GetProposedBlockMock(client, address, epoch, proposedBlockId)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -199,4 +268,36 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndIdMock(client, address)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
+	return getIterationMock(client, address, proposer)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
+	return isElectedProposerMock(client, address, proposer)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
+	return pseudoRandomNumberGeneratorMock(seed, max, blockHashes)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogueMode)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
+	return getSortedVotesMock(client, address, assetId, epoch)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
+	return influencedMedianMock(sortedVotes, totalInfluenceRevealed)
+}
+
+func (blockManagerMock BlockManagerMock) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
+	return ProposeMock(client, opts, epoch, medians, iteration, biggestInfluencerId)
 }
