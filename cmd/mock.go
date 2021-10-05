@@ -88,6 +88,8 @@ var GetStringFromMock func(*pflag.FlagSet) (string, error)
 
 var GetStringToMock func(*pflag.FlagSet) (string, error)
 
+var AddJobToCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
+
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
 var GetUint32StakerIdMock func(*pflag.FlagSet) (uint32, error)
@@ -103,6 +105,10 @@ var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
 var GetUint32AggregationMock func(*pflag.FlagSet) (uint32, error)
+
+var GetUint8JobIdMock func(*pflag.FlagSet) (uint8, error)
+
+var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
@@ -190,6 +196,10 @@ func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Clie
 	return CreateCollectionMock(client, opts, jobIDs, aggregationMethod, power, name)
 }
 
+func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	return AddJobToCollectionMock(client, opts, collectionID, jobID)
+}
+
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	return StakeMock(client, opts, epoch, amount)
 }
@@ -252,6 +262,14 @@ func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uin
 
 func (flagSetMock FlagSetMock) GetUint32Aggregation(flagSet *pflag.FlagSet) (uint32, error) {
 	return GetUint32AggregationMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8JobIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8CollectionIdMock(flagSet)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

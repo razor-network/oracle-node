@@ -131,6 +131,11 @@ func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Cl
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
 }
 
+func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.AddJobToCollection(opts, collectionID, jobID)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
 }
@@ -183,6 +188,14 @@ func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]u
 
 func (flagSetUtils FlagSetUtils) GetUint32Aggregation(flagSet *pflag.FlagSet) (uint32, error) {
 	return flagSet.GetUint32("aggregation")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("jobId")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("collectionId")
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

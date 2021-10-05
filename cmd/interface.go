@@ -43,6 +43,7 @@ type transactionInterface interface {
 type assetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
+	AddJobToCollection(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 }
 
 type stakeManagerInterface interface {
@@ -71,6 +72,8 @@ type flagSetInterface interface {
 	GetInt8Power(*pflag.FlagSet) (int8, error)
 	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)
 	GetUint32Aggregation(set *pflag.FlagSet) (uint32, error)
+	GetUint8JobId(*pflag.FlagSet) (uint8, error)
+	GetUint8CollectionId(*pflag.FlagSet) (uint8, error)
 }
 
 type cryptoInterface interface {
