@@ -40,6 +40,7 @@ type transactionInterface interface {
 
 type assetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+	AddJobToCollection(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 }
 
 type stakeManagerInterface interface {
@@ -66,6 +67,8 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+	GetUint8JobId(*pflag.FlagSet) (uint8, error)
+	GetUint8CollectionId(*pflag.FlagSet) (uint8, error)
 }
 
 type cryptoInterface interface {

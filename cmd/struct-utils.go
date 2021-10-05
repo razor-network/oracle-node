@@ -118,6 +118,11 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, power, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.AddJobToCollection(opts, collectionID, jobID)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
 }
@@ -162,6 +167,14 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("jobId")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("collectionId")
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
