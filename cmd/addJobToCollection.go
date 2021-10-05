@@ -17,7 +17,7 @@ var addJobToCollectionCmd = &cobra.Command{
 
 Example: 
   ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7 
-eErrer
+
 Note: 
   This command only works for the admin.
 `,
