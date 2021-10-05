@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,18 +16,24 @@ type utilsInterface interface {
 	GetOptions(bool, string, string) bind.CallOpts
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
-	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	AssignPassword(*pflag.FlagSet) string
-	GetDefaultPath() (string, error)
-	GetAmountInDecimal(*big.Int) *big.Float
 	ConnectToClient(string) *ethclient.Client
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
 	WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
+	PrivateKeyPrompt() string
+	PasswordPrompt() string
+	FetchBalance(*ethclient.Client, string) (*big.Int, error)
+	AssignAmountInWei(*pflag.FlagSet) *big.Int
+	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
+	GetAmountInDecimal(*big.Int) *big.Float
+	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
+	GetDefaultPath() (string, error)
 }
 
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
+	Transfer(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 }
 
 type transactionInterface interface {
@@ -40,6 +47,7 @@ type assetManagerInterface interface {
 
 type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+	ResetLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 }
 
@@ -47,12 +55,24 @@ type accountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
 }
 
+type keystoreInterface interface {
+	Accounts(string) []accounts.Account
+	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
+}
+
 type flagSetInterface interface {
+	GetStringFrom(*pflag.FlagSet) (string, error)
+	GetStringTo(*pflag.FlagSet) (string, error)
 	GetStringAddress(*pflag.FlagSet) (string, error)
+	GetUint32StakerId(*pflag.FlagSet) (uint32, error)
 	GetStringName(*pflag.FlagSet) (string, error)
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
 	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)
 	GetUint32Aggregation(set *pflag.FlagSet) (uint32, error)
+}
+
+type cryptoInterface interface {
+	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }

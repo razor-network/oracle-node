@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -19,31 +21,46 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetUint32("stakerId")
-
-		client := utils.ConnectToClient(config.Provider)
-		stakeManager := utils.GetStakeManager(client)
-
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
-		})
-
-		log.Info("Resetting lock...")
-		txn, err := stakeManager.ResetLock(txnOpts, stakerId)
+		txn, err := resetLock(cmd.Flags(), config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
 		utils.CheckError("Error in resetting lock: ", err)
-		log.Infof("Transaction Hash: %s", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
+func resetLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       password,
+		AccountAddress: address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	})
+
+	log.Info("Resetting lock...")
+	txn, err := stakeManagerUtils.ResetLock(client, txnOpts, stakerId)
+	if err != nil {
+		return core.NilHash, err
+	}
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
+}
+
 func init() {
+	razorUtils = Utils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FlagSetUtils{}
 	rootCmd.AddCommand(resetLockCmd)
 
 	var (

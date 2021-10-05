@@ -75,14 +75,7 @@ func WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
 	}
-	//s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
-	//s.Start()
-	//if err := s.Color("bgBlack", "bold", "fgYellow"); err != nil {
-	//	log.Error("Error in setting color for spinner")
-	//}
-	//s.Prefix = "Waiting for the next " + fmt.Sprint(waitTime) + " second(s) "
 	time.Sleep(time.Duration(waitTime) * time.Second)
-	//s.Stop()
 }
 
 func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
