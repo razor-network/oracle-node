@@ -126,6 +126,11 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, power, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateJob(opts, jobId, power, selector, url)
+}
+
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
