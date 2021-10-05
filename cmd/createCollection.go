@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -22,35 +24,67 @@ Note:
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		password := utils.AssignPassword(cmd.Flags())
-		name, _ := cmd.Flags().GetString("name")
-		address, _ := cmd.Flags().GetString("address")
-		jobIdInUint, _ := cmd.Flags().GetUintSlice("jobIds")
-		aggregation, _ := cmd.Flags().GetUint32("aggregation")
-		power, _ := cmd.Flags().GetInt8("power")
-
-		client := utils.ConnectToClient(config.Provider)
-
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
-		})
-		jobIds := utils.ConvertUintArrayToUint8Array(jobIdInUint)
-		assetManager := utils.GetAssetManager(client)
-		_, err = WaitForDisputeOrConfirmState(client, address, "create collection")
-		utils.CheckError("Error in fetching state: ", err)
-		txn, err := assetManager.CreateCollection(txnOpts, jobIds, aggregation, power, name)
-		utils.CheckError("Error in creating collection: ", err)
-		log.Info("Creating collection...")
-		log.Info("Txn Hash: ", txn.Hash())
-		utils.WaitForBlockCompletion(client, txn.Hash().String())
+		txn, err := createCollection(cmd.Flags(), config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+		utils.CheckError("CreateCollection error: ", err)
+		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
+func createCollection(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
+	password := razorUtils.AssignPassword(flagSet)
+	name, err := flagSetUtils.GetStringName(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	aggregation, err := flagSetUtils.GetUint32Aggregation(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	power, err := flagSetUtils.GetInt8Power(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       password,
+		AccountAddress: address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	})
+	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
+	_, err = razorUtils.WaitForDisputeOrConfirmState(client, address, "create collection")
+	if err != nil {
+		log.Error("Error in fetching state")
+		return core.NilHash, err
+	}
+	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, jobIds, aggregation, power, name)
+	if err != nil {
+		log.Error("Error in creating collection")
+		return core.NilHash, err
+	}
+	log.Info("Creating collection...")
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
+}
+
 func init() {
+
+	razorUtils = Utils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FlagSetUtils{}
+
 	rootCmd.AddCommand(createCollectionCmd)
 
 	var (

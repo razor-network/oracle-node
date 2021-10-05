@@ -18,6 +18,8 @@ type utilsInterface interface {
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client
+	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
+	WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
@@ -40,6 +42,7 @@ type transactionInterface interface {
 
 type assetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
 	AddJobToCollection(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 }
 
@@ -67,6 +70,8 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)
+	GetUint32Aggregation(set *pflag.FlagSet) (uint32, error)
 	GetUint8JobId(*pflag.FlagSet) (uint8, error)
 	GetUint8CollectionId(*pflag.FlagSet) (uint8, error)
 }
