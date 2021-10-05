@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,6 +18,8 @@ type utilsInterface interface {
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client
+	PrivateKeyPrompt() string
+	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
 	AssignAmountInWei(*pflag.FlagSet) *big.Int
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
@@ -52,6 +55,7 @@ type accountInterface interface {
 
 type keystoreInterface interface {
 	Accounts(string) []accounts.Account
+	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
 }
 
 type flagSetInterface interface {
@@ -65,4 +69,8 @@ type flagSetInterface interface {
 	GetInt8Power(*pflag.FlagSet) (int8, error)
 	GetUint8JobId(*pflag.FlagSet) (uint8, error)
 	GetUint8CollectionId(*pflag.FlagSet) (uint8, error)
+}
+
+type cryptoInterface interface {
+	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }

@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
@@ -23,6 +25,7 @@ type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type CryptoUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -62,6 +65,14 @@ func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *bi
 
 func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
+}
+
+func (u Utils) PrivateKeyPrompt() string {
+	return utils.PrivateKeyPrompt()
+}
+
+func (u Utils) PasswordPrompt() string {
+	return utils.PasswordPrompt()
 }
 
 func (u Utils) GetDefaultPath() (string, error) {
@@ -121,6 +132,11 @@ func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	return ks.Accounts()
 }
 
+func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.ImportECDSA(priv, passphrase)
+}
+
 func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("from")
 }
@@ -159,4 +175,8 @@ func (flagSetUtils FlagSetUtils) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, e
 
 func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
 	return flagSet.GetUint8("collectionId")
+}
+
+func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(hexKey)
 }
