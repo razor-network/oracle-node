@@ -53,11 +53,11 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	}
 	client := razorUtils.ConnectToClient(config.Provider)
 	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
-		ChainId:         core.ChainId,
-		Config:          config,
+		Client:         client,
+		Password:       password,
+		AccountAddress: address,
+		ChainId:        core.ChainId,
+		Config:         config,
 	})
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, power, selector, url)
 	if err != nil {
@@ -75,6 +75,7 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 
 	var (
+		JobId    uint8
 		URL      string
 		Selector string
 		Power    int8
@@ -82,6 +83,7 @@ func init() {
 		Password string
 	)
 
+	updateJobCmd.Flags().Uint8VarP(&JobId, "jobId", "", 0, "job id")
 	updateJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	updateJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	updateJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
