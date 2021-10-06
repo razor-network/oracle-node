@@ -25,7 +25,7 @@ Note:
 		utils.CheckError("Error in getting config: ", err)
 
 		txn, err := updateCollection(cmd.Flags(), config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
-		utils.CheckError("CreateCollection error: ", err)
+		utils.CheckError("Update Collection error: ", err)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
@@ -61,10 +61,10 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power)
 	if err != nil {
-		log.Error("Error in creating collection")
+		log.Error("Error in updating collection")
 		return core.NilHash, err
 	}
-	log.Info("Creating collection...")
+	log.Info("Updating collection...")
 	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil
 }
@@ -97,5 +97,6 @@ func init() {
 	utils.CheckError("Address Error: ", addrErr)
 	powerErr := updateCollectionCmd.MarkFlagRequired("power")
 	utils.CheckError("Power Error: ", powerErr)
-
+	aggregationMethodErr := updateCollectionCmd.MarkFlagRequired("aggregation")
+	utils.CheckError("Aggregation Method Error: ", aggregationMethodErr)
 }
