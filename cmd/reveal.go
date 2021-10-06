@@ -52,20 +52,25 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		return core.NilHash, err
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
-
 	root := [32]byte{}
 	originalRoot := treeUtils.RootV1(tree)
 	copy(root[:], originalRoot)
 
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
+
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.VoteManagerAddress,
+		ABI:             bindings.VoteManagerABI,
+		MethodName:      "reveal",
+		Parameters:      []interface{}{epoch, committedData, secretBytes32},
+	})
+
 	log.Debugf("Revealing vote for epoch: %d  votes: %s  root: %s  secret: %s  commitAccount: %s",
 		epoch,
 		committedData,

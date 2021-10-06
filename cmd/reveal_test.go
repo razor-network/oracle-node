@@ -312,11 +312,11 @@ func TestReveal(t *testing.T) {
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for Reveal function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for Reveal function, got = %v, want %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for Reveal function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for Reveal function, got = %v, want %v", err, tt.wantErr)
 				}
 			}
 		})

@@ -172,7 +172,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
 		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils, treeUtils)
-		if revealTxn != core.NilHash && err != nil {
+		if err != nil {
+			log.Error("Reveal error: ", err)
+			break
+		}
+		if revealTxn != core.NilHash {
 			utils.WaitForBlockCompletion(client, revealTxn.String())
 		}
 	case 2:
@@ -208,11 +212,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			ClaimBlockReward(types.TransactionOptions{
-				Client:         client,
-				Password:       account.Password,
-				AccountAddress: account.Address,
-				ChainId:        core.ChainId,
-				Config:         config,
+				Client:          client,
+				Password:        account.Password,
+				AccountAddress:  account.Address,
+				ChainId:         core.ChainId,
+				Config:          config,
+				ContractAddress: core.BlockManagerAddress,
+				MethodName:      "claimBlockReward",
+				ABI:             jobManager.BlockManagerABI,
 			})
 			blockConfirmed = epoch
 		}
