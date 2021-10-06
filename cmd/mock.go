@@ -28,6 +28,8 @@ type KeystoreMock struct{}
 
 type FlagSetMock struct{}
 
+type VoteManagerMock struct{}
+
 type BlockManagerMock struct{}
 
 type CryptoMock struct{}
@@ -53,6 +55,12 @@ var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.
 var GetAmountInDecimalMock func(*big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
+
+var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+
+var GetActiveAssetsDataMock func(*ethclient.Client, string, uint32) ([]*big.Int, error)
 
 var ConvertUintArrayToUint8ArrayMock func([]uint) []uint8
 
@@ -105,6 +113,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 
 var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 
@@ -160,6 +170,18 @@ func (u UtilsMock) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 
 func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
+}
+
+func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return GetDelayedStateMock(client, buffer)
+}
+
+func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return GetEpochMock(client, address)
+}
+
+func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return GetActiveAssetsDataMock(client, address, epoch)
 }
 
 func (u UtilsMock) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
@@ -264,6 +286,10 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	return CommitMock(client, opts, epoch, commitment)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

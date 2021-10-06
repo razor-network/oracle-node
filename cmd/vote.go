@@ -141,15 +141,17 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := HandleCommitState(client, account.Address, epoch)
+		data, err := HandleCommitState(client, account.Address, epoch, razorUtils)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
 		}
-		if err := Commit(client, data, secret, account, config); err != nil {
+		commitTxn, err := Commit(client, data, secret, account, config, razorUtils, voteManagerUtils, transactionUtils)
+		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
 		}
+		utils.WaitForBlockCompletion(client, commitTxn.String())
 		_committedData = data
 	case 1:
 		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
@@ -310,8 +312,9 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 func init() {
 
 	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
+	voteManagerUtils = VoteManagerUtils{}
 	blockManagerUtils = BlockManagerUtils{}
+	transactionUtils = TransactionUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 

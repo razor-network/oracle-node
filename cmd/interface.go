@@ -18,6 +18,9 @@ type utilsInterface interface {
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	GetEpoch(*ethclient.Client, string) (uint32, error)
+	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
 	WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
@@ -79,6 +82,10 @@ type flagSetInterface interface {
 
 type cryptoInterface interface {
 	HexToECDSA(string) (*ecdsa.PrivateKey, error)
+}
+
+type voteManagerInterface interface {
+	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 }
 
 type blockManagerInterface interface {

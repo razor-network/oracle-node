@@ -25,6 +25,7 @@ type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
 type CryptoUtils struct{}
 
@@ -66,6 +67,18 @@ func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *bi
 
 func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
+}
+
+func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utils.GetDelayedState(client, buffer)
+}
+
+func (u Utils) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetEpoch(client, address)
+}
+
+func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return utils.GetActiveAssetsData(client, address, epoch)
 }
 
 func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
@@ -186,6 +199,11 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Commit(opts, epoch, commitment)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

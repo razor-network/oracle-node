@@ -2,20 +2,19 @@ package cmd
 
 import (
 	"encoding/hex"
-	"errors"
-	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
-func HandleCommitState(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
-	data, err := utils.GetActiveAssetsData(client, address, epoch)
+var voteManagerUtils voteManagerInterface
+
+func HandleCommitState(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
+	data, err := razorUtils.GetActiveAssetsData(client, address, epoch)
 	if err != nil {
 		return nil, err
 	}
@@ -23,25 +22,21 @@ func HandleCommitState(client *ethclient.Client, address string, epoch uint32) (
 	return data, nil
 }
 
-func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) error {
-	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
+func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations, razorUtils utilsInterface, voteManagerUtils voteManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
-		return err
+		return core.NilHash, err
 	}
 
-	epoch, err := utils.GetEpoch(client, account.Address)
+	epoch, err := razorUtils.GetEpoch(client, account.Address)
 	if err != nil {
-		return err
+		return core.NilHash, err
 	}
 
 	commitment := solsha3.SoliditySHA3([]string{"uint32", "uint256[]", "bytes32"}, []interface{}{epoch, data, "0x" + hex.EncodeToString(secret)})
-	voteManager := utils.GetVoteManager(client)
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
-
-	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
-
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
@@ -53,14 +48,13 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		Parameters:      []interface{}{epoch, commitmentToSend},
 	})
 
+	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
+
 	log.Info("Commitment sent...")
-	txn, err := voteManager.Commit(txnOpts, epoch, commitmentToSend)
+	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)
 	if err != nil {
-		return err
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", txn.Hash())
-	if utils.WaitForBlockCompletion(client, fmt.Sprintf("%s", txn.Hash())) == 0 {
-		return errors.New("block not mined")
-	}
-	return nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
