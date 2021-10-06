@@ -26,6 +26,7 @@ type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type VoteManagerUtils struct{}
+type BlockManagerUtils struct{}
 type CryptoUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -139,6 +140,11 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, power, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateJob(opts, jobId, power, selector, url)
+}
+
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
@@ -198,6 +204,11 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
 	return voteManager.Commit(opts, epoch, commitment)
+}
+
+func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
 }
 
 func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {

@@ -30,6 +30,8 @@ type FlagSetMock struct{}
 
 type VoteManagerMock struct{}
 
+type BlockManagerMock struct{}
+
 type CryptoMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -86,6 +88,8 @@ var CreateAccountMock func(string, string) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
+var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, string, string) (*Types.Transaction, error)
+
 var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error)
 
 var AccountsMock func(string) []accounts.Account
@@ -111,6 +115,8 @@ var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
 var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
+
+var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
@@ -222,6 +228,10 @@ func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Cl
 	return AddJobToCollectionMock(client, opts, collectionID, jobID)
 }
 
+func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	return UpdateJobMock(client, opts, jobId, power, selector, url)
+}
+
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	return StakeMock(client, opts, epoch, amount)
 }
@@ -280,6 +290,10 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 
 func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	return CommitMock(client, opts, epoch, commitment)
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
 }
 
 func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
