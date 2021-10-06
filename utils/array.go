@@ -5,12 +5,12 @@ import (
 	"math/big"
 )
 
-func Contains(arr []*big.Int, val *big.Int) bool {
-	if val == nil || len(arr) == 0 {
+func Contains(arr []int, val int) bool {
+	if len(arr) == 0 {
 		return false
 	}
 	for _, value := range arr {
-		if value.Cmp(val) == 0 {
+		if value == val {
 			return true
 		}
 	}
