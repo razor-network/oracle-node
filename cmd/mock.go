@@ -102,6 +102,8 @@ var GetStringToMock func(*pflag.FlagSet) (string, error)
 
 var AddJobToCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 
+var RemoveJobFromCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
+
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
 var GetUint32StakerIdMock func(*pflag.FlagSet) (uint32, error)
@@ -226,6 +228,10 @@ func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Clie
 
 func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
 	return AddJobToCollectionMock(client, opts, collectionID, jobID)
+}
+
+func (assetManagerMock AssetManagerMock) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	return RemoveJobFromCollectionMock(client, opts, collectionID, jobID)
 }
 
 func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
