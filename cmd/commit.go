@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 var voteManagerUtils voteManagerInterface
@@ -33,15 +34,19 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 	}
 
 	commitment := solsha3.SoliditySHA3([]string{"uint32", "uint256[]", "bytes32"}, []interface{}{epoch, data, "0x" + hex.EncodeToString(secret)})
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.VoteManagerAddress,
+		ABI:             bindings.VoteManagerABI,
+		MethodName:      "commit",
+		Parameters:      []interface{}{epoch, commitmentToSend},
+	})
 
 	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 
