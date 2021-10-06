@@ -138,7 +138,7 @@ func Test_updateJob(t *testing.T) {
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
-			wantErr:  errors.New("url error"),
+			wantErr: errors.New("url error"),
 		},
 		{
 			name: "Test5:  When there is an error in getting selector from flags",
@@ -249,7 +249,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err :=updateJob(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+			got, err := updateJob(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
 			if got != tt.want {
 				t.Errorf("Txn hash for updateJob function, got = %v, want %v", got, tt.want)
 			}
