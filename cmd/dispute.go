@@ -10,6 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+var giveSortedAssetIds []int
+
 func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) {
 	numberOfProposedBlocks, err := utils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
@@ -46,6 +48,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			break
 		}
 	}
+	giveSortedAssetIds = []int{}
 }
 
 func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
@@ -57,30 +60,24 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 
 	log.Debugf("Epoch: %d, Sorted Votes: %s", epoch, sortedVotes)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
-		ChainId:         core.ChainId,
-		Config:          config,
-		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerABI,
-		MethodName:      "giveSorted",
-		Parameters:      []interface{}{epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes)},
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         config,
 	})
 
-	GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes))
+	if !utils.Contains(giveSortedAssetIds, assetId) {
+		GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes))
+	}
 
 	log.Info("Finalizing dispute...")
 	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
-		ChainId:         core.ChainId,
-		Config:          config,
-		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerABI,
-		MethodName:      "finalizeDispute",
-		Parameters:      []interface{}{epoch, blockId},
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         config,
 	})
 	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
@@ -101,5 +98,6 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	}
 	log.Info("Calling GiveSorted...")
 	log.Info("Txn Hash: ", txn.Hash())
+	giveSortedAssetIds = append(giveSortedAssetIds, int(assetId))
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
