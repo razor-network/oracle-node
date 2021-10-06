@@ -80,3 +80,7 @@ type flagSetInterface interface {
 type cryptoInterface interface {
 	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }
+
+type blockManagerInterface interface {
+	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
+}

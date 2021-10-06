@@ -28,6 +28,8 @@ type KeystoreMock struct{}
 
 type FlagSetMock struct{}
 
+type BlockManagerMock struct{}
+
 type CryptoMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
@@ -103,6 +105,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
@@ -260,6 +264,10 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
 }
 
 func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {

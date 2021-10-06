@@ -25,6 +25,7 @@ type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type BlockManagerUtils struct{}
 type CryptoUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -185,6 +186,11 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
 }
 
 func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {

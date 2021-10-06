@@ -204,7 +204,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		HandleDispute(client, config, account, epoch)
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
-			ClaimBlockReward(types.TransactionOptions{
+			txn, err := ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
@@ -213,7 +213,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
 				ABI:             jobManager.BlockManagerABI,
-			})
+			}, razorUtils, blockManagerUtils, transactionUtils)
+
+			if err != nil {
+				log.Error("ClaimBlockReward error: ", err)
+				break
+			}
+			utils.WaitForBlockCompletion(client, txn.Hex())
 			blockConfirmed = epoch
 		}
 	case -1:
@@ -302,6 +308,11 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	blockManagerUtils = BlockManagerUtils{}
+
 	rootCmd.AddCommand(voteCmd)
 
 	var (
