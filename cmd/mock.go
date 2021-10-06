@@ -78,6 +78,8 @@ var CreateAccountMock func(string, string) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
+var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, string, string) (*Types.Transaction, error)
+
 var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error)
 
 var AccountsMock func(string) []accounts.Account
@@ -198,6 +200,10 @@ func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Clie
 
 func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
 	return AddJobToCollectionMock(client, opts, collectionID, jobID)
+}
+
+func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	return UpdateJobMock(client, opts, jobId, power, selector, url)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {

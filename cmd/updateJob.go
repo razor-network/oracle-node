@@ -90,6 +90,8 @@ func init() {
 	updateJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	updateJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
+	jobIdErr := updateJobCmd.MarkFlagRequired("jobId")
+	utils.CheckError("Job Id error: ", jobIdErr)
 	urlErr := updateJobCmd.MarkFlagRequired("url")
 	utils.CheckError("URL error: ", urlErr)
 	selectorErr := updateJobCmd.MarkFlagRequired("selector")
