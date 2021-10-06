@@ -204,7 +204,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		HandleDispute(client, config, account, epoch)
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
-			txn, _ := ClaimBlockReward(types.TransactionOptions{
+			txn, err := ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
@@ -214,6 +214,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				MethodName:      "claimBlockReward",
 				ABI:             jobManager.BlockManagerABI,
 			}, razorUtils, blockManagerUtils, transactionUtils)
+
+			if err != nil {
+				log.Error("ClaimBlockReward error: ", err)
+				break
+			}
 			utils.WaitForBlockCompletion(client, txn.Hex())
 			blockConfirmed = epoch
 		}
