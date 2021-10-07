@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
@@ -67,6 +68,10 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		AccountAddress: address,
 		ChainId:        core.ChainId,
 		Config:         config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "createJob",
+		Parameters:      []interface{}{power, name, selector, url},
+		ABI:             bindings.AssetManagerABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
