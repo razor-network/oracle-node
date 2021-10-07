@@ -243,6 +243,20 @@ Example:
 $ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
 ```
 
+### Remove Job from Collection
+Remove jobs from existing collections using `removeJobFromCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
+
+```
+$ ./razor removeJobFromCollection --address <address> --jobId <job_id> --collectionId <collection_id>
+```
+
+Example:
+```
+$ ./razor removeJobFromCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
+```
+
 ### Modify Asset Status
 Modify the active status of an asset using the `modifyAssetStatus` command.
 
