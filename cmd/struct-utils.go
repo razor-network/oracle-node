@@ -155,6 +155,11 @@ func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.
 	return assetManager.AddJobToCollection(opts, collectionID, jobID)
 }
 
+func (assetManagerUtils AssetManagerUtils) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.RemoveJobFromCollection(opts, collectionID, jobID)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
 }

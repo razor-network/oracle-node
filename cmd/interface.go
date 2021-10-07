@@ -48,6 +48,8 @@ type assetManagerInterface interface {
 	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
 	AddJobToCollection(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 	UpdateJob(*ethclient.Client, *bind.TransactOpts, uint8, int8, string, string) (*Types.Transaction, error)
+
+	RemoveJobFromCollection(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 }
 
 type stakeManagerInterface interface {
