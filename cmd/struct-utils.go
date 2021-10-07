@@ -150,6 +150,11 @@ func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Cl
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
 }
 
+func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power)
+}
+
 func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.AddJobToCollection(opts, collectionID, jobID)
