@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -16,7 +17,6 @@ import (
 )
 
 var proposeUtils proposeUtilsInterface
-var blockManagerUtils blockManagerInterface
 
 func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
@@ -98,11 +98,15 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	log.Debugf("Medians: %d", medians)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.BlockManagerAddress,
+		ABI:             bindings.BlockManagerABI,
+		MethodName:      "propose",
+		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
 	})
 
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)

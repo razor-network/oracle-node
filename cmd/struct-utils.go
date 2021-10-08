@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
@@ -25,7 +27,9 @@ type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type ProposeUtils struct{}
+type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
+type CryptoUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -67,16 +71,36 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
 }
 
-func (u Utils) GetDefaultPath() (string, error) {
-	return path.GetDefaultPath()
-}
-
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	return utils.GetDelayedState(client, buffer)
 }
 
 func (u Utils) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
 	return utils.GetEpoch(client, address)
+}
+
+func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return utils.GetActiveAssetsData(client, address, epoch)
+}
+
+func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
+	return utils.ConvertUintArrayToUint8Array(uintArr)
+}
+
+func (u Utils) WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForDisputeOrConfirmState(client, accountAddress, action)
+}
+
+func (u Utils) PrivateKeyPrompt() string {
+	return utils.PrivateKeyPrompt()
+}
+
+func (u Utils) PasswordPrompt() string {
+	return utils.PasswordPrompt()
+}
+
+func (u Utils) GetDefaultPath() (string, error) {
+	return path.GetDefaultPath()
 }
 
 func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
@@ -142,6 +166,31 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, power, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateJob(opts, jobId, power, selector, url)
+}
+
+func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
+}
+
+func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power)
+}
+
+func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.AddJobToCollection(opts, collectionID, jobID)
+}
+
+func (assetManagerUtils AssetManagerUtils) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.RemoveJobFromCollection(opts, collectionID, jobID)
+}
+
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
 	return accounts.CreateAccount(path, password)
 }
@@ -149,6 +198,11 @@ func (account AccountUtils) CreateAccount(path string, password string) ethAccou
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.Accounts()
+}
+
+func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.ImportECDSA(priv, passphrase)
 }
 
 func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
@@ -183,6 +237,22 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 	return flagSet.GetInt8("power")
 }
 
+func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
+	return flagSet.GetUintSlice("jobIds")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint32Aggregation(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("aggregation")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("jobId")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("collectionId")
+}
+
 func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
 	return getBiggestInfluenceAndId(client, address)
 }
@@ -211,7 +281,21 @@ func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalI
 	return influencedMedian(sortedVotes, totalInfluenceRevealed)
 }
 
+func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Commit(opts, epoch, commitment)
+}
+
+func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
+}
+
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+}
+
+func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(hexKey)
 }
