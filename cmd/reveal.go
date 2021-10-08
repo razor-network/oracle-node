@@ -10,7 +10,6 @@ import (
 	"razor/pkg/bindings"
 )
 
-var voteManagerUtils voteManagerInterface
 var treeUtils treeInterface
 
 func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32, razorUtils utilsInterface) error {

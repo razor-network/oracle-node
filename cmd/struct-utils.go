@@ -27,6 +27,7 @@ type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type VoteManagerUtils struct{}
+type BlockManagerUtils struct{}
 type TreeUtils struct{}
 type CryptoUtils struct{}
 
@@ -70,6 +71,18 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
 }
 
+func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utils.GetDelayedState(client, buffer)
+}
+
+func (u Utils) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetEpoch(client, address)
+}
+
+func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return utils.GetActiveAssetsData(client, address, epoch)
+}
+
 func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
 	return utils.ConvertUintArrayToUint8Array(uintArr)
 }
@@ -88,14 +101,6 @@ func (u Utils) PasswordPrompt() string {
 
 func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
-}
-
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utils.GetDelayedState(client, buffer)
-}
-
-func (u Utils) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetEpoch(client, address)
 }
 
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
@@ -153,14 +158,29 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, power, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateJob(opts, jobId, power, selector, url)
+}
+
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
 }
 
+func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power)
+}
+
 func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.AddJobToCollection(opts, collectionID, jobID)
+}
+
+func (assetManagerUtils AssetManagerUtils) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.RemoveJobFromCollection(opts, collectionID, jobID)
 }
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
@@ -212,6 +232,16 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
 	return voteManager.Reveal(opts, epoch, values, secret)
+}
+
+func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Commit(opts, epoch, commitment)
+}
+
+func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
 }
 
 func (t TreeUtils) RootV1(tree *merkletree.MerkleTree) []byte {

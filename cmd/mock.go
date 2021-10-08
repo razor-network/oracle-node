@@ -31,6 +31,8 @@ type FlagSetMock struct{}
 
 type VoteManagerMock struct{}
 
+type BlockManagerMock struct{}
+
 type TreeMock struct{}
 
 type CryptoMock struct{}
@@ -69,6 +71,8 @@ var GetMerkleTreeMock func([]*big.Int) (*merkletree.MerkleTree, error)
 
 var GetEpochLastCommittedMock func(*ethclient.Client, string, uint32) (uint32, error)
 
+var GetActiveAssetsDataMock func(*ethclient.Client, string, uint32) ([]*big.Int, error)
+
 var ConvertUintArrayToUint8ArrayMock func([]uint) []uint8
 
 var WaitForDisputeOrConfirmStateMock func(*ethclient.Client, string, string) (uint32, error)
@@ -95,6 +99,10 @@ var CreateAccountMock func(string, string) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
+var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, string, string) (*Types.Transaction, error)
+
+var UpdateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8) (*Types.Transaction, error)
+
 var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error)
 
 var AccountsMock func(string) []accounts.Account
@@ -106,6 +114,8 @@ var GetStringFromMock func(*pflag.FlagSet) (string, error)
 var GetStringToMock func(*pflag.FlagSet) (string, error)
 
 var AddJobToCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
+
+var RemoveJobFromCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
@@ -122,6 +132,10 @@ var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 
 var RootV1Mock func(*merkletree.MerkleTree) []byte
+
+var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
+
+var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
@@ -201,6 +215,10 @@ func (u UtilsMock) GetEpochLastCommitted(client *ethclient.Client, address strin
 	return GetEpochLastCommittedMock(client, address, stakerId)
 }
 
+func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return GetActiveAssetsDataMock(client, address, epoch)
+}
+
 func (u UtilsMock) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
 	return ConvertUintArrayToUint8ArrayMock(uintArr)
 }
@@ -243,6 +261,18 @@ func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Clie
 
 func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
 	return AddJobToCollectionMock(client, opts, collectionID, jobID)
+}
+
+func (assetManagerMock AssetManagerMock) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	return RemoveJobFromCollectionMock(client, opts, collectionID, jobID)
+}
+
+func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	return UpdateJobMock(client, opts, jobId, power, selector, url)
+}
+
+func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
+	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -303,6 +333,14 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 
 func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	return RevealMock(client, opts, epoch, values, secret)
+}
+
+func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	return CommitMock(client, opts, epoch, commitment)
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
 }
 
 func (t TreeMock) RootV1(tree *merkletree.MerkleTree) []byte {
