@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -29,6 +30,12 @@ type FlagSetMock struct{}
 
 type UtilsCmdMock struct{}
 
+type VoteManagerMock struct{}
+
+type BlockManagerMock struct{}
+
+type CryptoMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -47,9 +54,21 @@ var AssignAmountInWeiMock func(flagSet *pflag.FlagSet) *big.Int
 
 var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.Int
 
-var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
+var GetAmountInDecimalMock func(*big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
+
+var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+
+var GetActiveAssetsDataMock func(*ethclient.Client, string, uint32) ([]*big.Int, error)
+
+var ConvertUintArrayToUint8ArrayMock func([]uint) []uint8
+
+var WaitForDisputeOrConfirmStateMock func(*ethclient.Client, string, string) (uint32, error)
+
+var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
 
@@ -69,13 +88,25 @@ var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *bi
 
 var CreateAccountMock func(string, string) accounts.Account
 
+var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+
+var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, string, string) (*Types.Transaction, error)
+
+var UpdateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8) (*Types.Transaction, error)
+
+var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error)
+
 var AccountsMock func(string) []accounts.Account
+
+var ImportECDSAMock func(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
 
 var GetStringFromMock func(*pflag.FlagSet) (string, error)
 
 var GetStringToMock func(*pflag.FlagSet) (string, error)
 
-var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+var AddJobToCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
+
+var RemoveJobFromCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 
 var SetAssetStatusMock func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error)
 
@@ -100,6 +131,20 @@ var GetStringStatusMock func(*pflag.FlagSet) (string, error)
 var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 
 var ParseBoolMock func(string) (bool, error)
+
+var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
+
+var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
+
+var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
+
+var GetUint32AggregationMock func(*pflag.FlagSet) (uint32, error)
+
+var GetUint8JobIdMock func(*pflag.FlagSet) (uint8, error)
+
+var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
+
+var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -153,6 +198,30 @@ func (u UtilsMock) ParseBool(str string) (bool, error) {
 	return ParseBoolMock(str)
 }
 
+func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return GetDelayedStateMock(client, buffer)
+}
+
+func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
+	return GetEpochMock(client, address)
+}
+
+func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+	return GetActiveAssetsDataMock(client, address, epoch)
+}
+
+func (u UtilsMock) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
+	return ConvertUintArrayToUint8ArrayMock(uintArr)
+}
+
+func (u UtilsMock) WaitForDisputeOrConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForDisputeOrConfirmStateMock(client, accountAddress, action)
+}
+
+func (u UtilsMock) PrivateKeyPrompt() string {
+	return PrivateKeyPromptMock()
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -170,7 +239,27 @@ func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash 
 }
 
 func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
-	return CreateJobMock(opts, power, name, selector, url)
+	return CreateJobMock(client, opts, power, name, selector, url)
+}
+
+func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+	return CreateCollectionMock(client, opts, jobIDs, aggregationMethod, power, name)
+}
+
+func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	return AddJobToCollectionMock(client, opts, collectionID, jobID)
+}
+
+func (assetManagerMock AssetManagerMock) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
+	return RemoveJobFromCollectionMock(client, opts, collectionID, jobID)
+}
+
+func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+	return UpdateJobMock(client, opts, jobId, power, selector, url)
+}
+
+func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
+	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power)
 }
 
 func (assetManagerMock AssetManagerMock) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
@@ -199,6 +288,10 @@ func (account AccountMock) CreateAccount(path string, password string) accounts.
 
 func (ks KeystoreMock) Accounts(path string) []accounts.Account {
 	return AccountsMock(path)
+}
+
+func (ks KeystoreMock) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (accounts.Account, error) {
+	return ImportECDSAMock(path, priv, passphrase)
 }
 
 func (flagSetMock FlagSetMock) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
@@ -241,6 +334,34 @@ func (flagSetMock FlagSetMock) GetStringStatus(flagSet *pflag.FlagSet) (string, 
 	return GetStringStatusMock(flagSet)
 }
 
+func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
+	return GetUintSliceJobIdsMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint32Aggregation(flagSet *pflag.FlagSet) (uint32, error) {
+	return GetUint32AggregationMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8JobIdMock(flagSet)
+}
+
 func (cmdUtilsMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
 	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
+}
+
+func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	return CommitMock(client, opts, epoch, commitment)
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
+}
+
+func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8CollectionIdMock(flagSet)
+}
+
+func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return HexToECDSAMock(hexKey)
 }

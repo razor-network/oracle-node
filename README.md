@@ -243,6 +243,20 @@ Example:
 $ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
 ```
 
+### Remove Job from Collection
+Remove jobs from existing collections using `removeJobFromCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
+
+```
+$ ./razor removeJobFromCollection --address <address> --jobId <job_id> --collectionId <collection_id>
+```
+
+Example:
+```
+$ ./razor removeJobFromCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
+```
+
 ### Modify Asset Status
 Modify the active status of an asset using the `modifyAssetStatus` command.
 
@@ -255,6 +269,20 @@ $ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <tr
 Example:
 ```
 $ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
+```
+
+### Update Collection
+Update the collection using `updateCollection` command.
+
+_Note: This command is restricted to "Admin Role"_
+
+```
+$ ./razor updateCollection --collectionId <collection_id> --address <address> --aggregation <aggregation_method> --power <power> 
+```
+
+Example:
+```
+$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4```
 ```
 
 ### Contribute to razor-go 

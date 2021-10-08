@@ -33,3 +33,5 @@ for c in "${contracts[@]}"
 do
     generate_binding "$c"
 done
+
+bash generate-contracts.sh

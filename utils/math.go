@@ -132,10 +132,10 @@ func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, c
 		}
 		return big.NewInt(int64(prevCommitmentData)), nil
 	}
-	return performAggregation(dataToCommit, collection.AggregationMethod, collection.Power)
+	return performAggregation(dataToCommit, collection.AggregationMethod)
 }
 
-func performAggregation(data []*big.Int, aggregationMethod uint32, power int8) (*big.Int, error) {
+func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, error) {
 	if len(data) == 0 {
 		return nil, errors.New("aggregation cannot be performed for nil data")
 	}
@@ -144,11 +144,11 @@ func performAggregation(data []*big.Int, aggregationMethod uint32, power int8) (
 	case 1:
 		sortutil.BigIntSlice.Sort(data)
 		median := data[len(data)/2]
-		return MultiplyWithPower(big.NewFloat(float64(median.Int64())), power), nil
+		return big.NewInt(median.Int64()), nil
 	case 2:
 		sum := CalculateSumOfArray(data)
 		mean := sum.Div(sum, big.NewInt(int64(len(data))))
-		return MultiplyWithPower(big.NewFloat(float64(mean.Int64())), power), nil
+		return big.NewInt(mean.Int64()), nil
 	}
 	return nil, errors.New("invalid aggregation method")
 }
