@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/manifoldco/promptui"
 
@@ -44,17 +43,22 @@ Example:
 		utils.CheckError("Error in fetching staker info: ", err)
 
 		stakeManager := utils.GetStakeManager(client)
-		txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+		txnOpts := types.TransactionOptions{
 			Client:         client,
 			Password:       password,
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			Config:         config,
-		})
+			ContractAddress: core.StakeManagerAddress,
+			ABI:             bindings.StakeManagerABI,
+		}
 
 		if stakerInfo.AcceptDelegation != status {
 			log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
-			delegationTxn, err := stakeManager.SetDelegationAcceptance(txnOpts, status)
+			txnOpts.MethodName = "setDelegationAcceptance"
+			txnOpts.Parameters = []interface{}{status}
+			setDelegationAcceptanceTxnOpts := utils.GetTxnOpts(txnOpts)
+			delegationTxn, err := stakeManager.SetDelegationAcceptance(setDelegationAcceptanceTxnOpts, status)
 			utils.CheckError("Error in setting delegation acceptance: ", err)
 			log.Infof("Transaction hash: %s", delegationTxn.Hash())
 			utils.WaitForBlockCompletion(client, delegationTxn.Hash().String())
@@ -78,15 +82,18 @@ Example:
 	},
 }
 
-func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8) {
+func SetCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId uint32, txnOpts types.TransactionOptions, commission uint8) {
 	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
-	commissionTxn, err := stakeManager.SetCommission(txnOpts, commission)
+	txnOpts.MethodName = "setCommission"
+	txnOpts.Parameters = []interface{}{commission}
+	setCommissionTxnOpts := utils.GetTxnOpts(txnOpts)
+	commissionTxn, err := stakeManager.SetCommission(setCommissionTxnOpts, commission)
 	utils.CheckError("Error in setting commission: ", err)
 	log.Infof("Transaction hash: %s", commissionTxn.Hash())
 	utils.WaitForBlockCompletion(client, commissionTxn.Hash().String())
 }
 
-func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8) {
+func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeManager, stakerId uint32, txnOpts types.TransactionOptions, commission uint8) {
 	log.Infof("Decreasing the commission value of Staker %d to %d%%", stakerId, commission)
 	prompt := promptui.Prompt{
 		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
@@ -96,7 +103,10 @@ func DecreaseCommission(client *ethclient.Client, stakeManager *bindings.StakeMa
 	utils.CheckError(result, err)
 	if strings.ToLower(result) == "y" {
 		log.Info("Sending DecreaseCommission transaction...")
-		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(txnOpts, commission)
+		txnOpts.MethodName = "decreaseCommission"
+		txnOpts.Parameters = []interface{}{commission}
+		decreaseCommissionTxnOpts := utils.GetTxnOpts(txnOpts)
+		decreaseCommissionTxn, err := stakeManager.DecreaseCommission(decreaseCommissionTxnOpts, commission)
 		utils.CheckError("Error in decreasing commission: ", err)
 		log.Infof("Transaction hash: %s", decreaseCommissionTxn.Hash())
 		utils.WaitForBlockCompletion(client, decreaseCommissionTxn.Hash().String())

@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 func approve(txnArgs types.TransactionOptions, razorUtils utilsInterface, tokenManagerUtils tokenManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
@@ -17,6 +18,10 @@ func approve(txnArgs types.TransactionOptions, razorUtils utilsInterface, tokenM
 		return common.Hash{0x00}, nil
 	} else {
 		log.Info("Sending Approve transaction...")
+		txnArgs.ContractAddress = core.RAZORAddress
+		txnArgs.MethodName = "approve"
+		txnArgs.ABI = bindings.StakeManagerABI
+		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
 		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
