@@ -13,6 +13,7 @@ import (
 	"razor/core/types"
 	"razor/path"
 	"razor/utils"
+	"strconv"
 )
 
 type Utils struct{}
@@ -23,6 +24,7 @@ type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type UtilsCmd struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -68,6 +70,14 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) PasswordPrompt() string {
+	return utils.PasswordPrompt()
+}
+
+func (u Utils) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -105,6 +115,16 @@ func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, op
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateJob(opts, power, name, selector, url)
+}
+
+func (assetManagerUtils AssetManagerUtils) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.SetAssetStatus(opts, assetStatus, id)
+}
+
+func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	assetMananger := utils.GetAssetManager(client)
+	return assetMananger.GetActiveStatus(opts, id)
 }
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
@@ -146,4 +166,16 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("assetId")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("status")
+}
+
+func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
 }

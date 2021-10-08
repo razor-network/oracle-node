@@ -23,6 +23,8 @@ type utilsInterface interface {
 	GetAmountInDecimal(*big.Int) *big.Float
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
+	PasswordPrompt() string
+	ParseBool(str string) (bool, error)
 }
 
 type tokenManagerInterface interface {
@@ -37,6 +39,8 @@ type transactionInterface interface {
 
 type assetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+	SetAssetStatus(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error)
+	GetActiveStatus(*ethclient.Client, *bind.CallOpts, uint8) (bool, error)
 }
 
 type stakeManagerInterface interface {
@@ -62,4 +66,10 @@ type flagSetInterface interface {
 	GetStringUrl(*pflag.FlagSet) (string, error)
 	GetStringSelector(*pflag.FlagSet) (string, error)
 	GetInt8Power(*pflag.FlagSet) (int8, error)
+	GetUint8AssetId(*pflag.FlagSet) (uint8, error)
+	GetStringStatus(*pflag.FlagSet) (string, error)
+}
+
+type cmdUtilsInterface interface {
+	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 }

@@ -27,6 +27,8 @@ type KeystoreMock struct{}
 
 type FlagSetMock struct{}
 
+type UtilsCmdMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -48,6 +50,8 @@ var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.
 var GetAmountInDecimalMock func(amountInWei *big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var PasswordPromptMock func() string
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -73,6 +77,10 @@ var GetStringToMock func(*pflag.FlagSet) (string, error)
 
 var CreateJobMock func(*bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
 
+var SetAssetStatusMock func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error)
+
+var GetActiveStatusMock func(*ethclient.Client, *bind.CallOpts, uint8) (bool, error)
+
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
 var GetUint32StakerIdMock func(*pflag.FlagSet) (uint32, error)
@@ -84,6 +92,14 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
+
+var GetStringStatusMock func(*pflag.FlagSet) (string, error)
+
+var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+
+var ParseBoolMock func(string) (bool, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -129,6 +145,14 @@ func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
 }
 
+func (u UtilsMock) PasswordPrompt() string {
+	return PasswordPromptMock()
+}
+
+func (u UtilsMock) ParseBool(str string) (bool, error) {
+	return ParseBoolMock(str)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -147,6 +171,14 @@ func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash 
 
 func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
 	return CreateJobMock(opts, power, name, selector, url)
+}
+
+func (assetManagerMock AssetManagerMock) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	return SetAssetStatusMock(client, opts, assetStatus, id)
+}
+
+func (assetManagerMock AssetManagerMock) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	return GetActiveStatusMock(client, opts, id)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -199,4 +231,16 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8AssetIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringStatusMock(flagSet)
+}
+
+func (cmdUtilsMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
 }
