@@ -69,12 +69,12 @@ __Before staking on Razor Network, please ensure your account has eth and RAZOR.
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 ```
-$ ./razor stake --address <address> --amount <amount>
+$ ./razor stake --address <address> --amount <amount> --logLevel <info_or_debug>
 ```
 
 Example:
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 info
 ```
 
 ### Set Delegation
@@ -208,11 +208,11 @@ $ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --
 
 Example:
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power <power> --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 OR
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -p 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd
 ```
 
 ### Create Collection
@@ -221,12 +221,12 @@ Create new collections using `creteCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power>
 ```
 
 Example:
 ```
-$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
+$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
 ```
 
 ### Add Job to Collection
