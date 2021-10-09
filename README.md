@@ -69,12 +69,12 @@ __Before staking on Razor Network, please ensure your account has eth and RAZOR.
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 ```
-$ ./razor stake --address <address> --amount <amount> --logLevel <info_or_debug>
+$ ./razor stake --address <address> --value <value> --logLevel <info_or_debug>
 ```
 
 Example:
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 info
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 info
 ```
 
 ### Set Delegation
@@ -93,12 +93,12 @@ $ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --s
 
 If you want to become a delegator use the `delegate` command. The staker whose `staker_id` is provided, their stake is increased.
 ```
-$ ./razor delegate --address <address> --amount <amount> --stakerId <staker_id>
+$ ./razor delegate --address <address> --value <value> --stakerId <staker_id>
 ```
 
 Example:
 ```
-$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
+$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
 ```
 
 ### Vote
@@ -123,7 +123,7 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue
 ### Unstake
 If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
 ```
-$ ./razor unstake --address <address> --stakerId <staker_id> --amount <amount> --autoWithdraw
+$ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --autoWithdraw
 ```
 
 Example:
@@ -160,12 +160,12 @@ $ ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stake
 Transfers razor to other accounts.
 
 ```
-$ ./razor transfer --amount <amount> --to <transfer_to_address> --from <transfer_from_address>
+$ ./razor transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
 ```
 
 Example:
 ```
-$ ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
 ### Set Config
