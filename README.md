@@ -285,5 +285,19 @@ Example:
 $ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4```
 ```
 
+### Update Job
+Update the existing parameters of the Job using `updateJob` command.
+  
+_Note: This command is restricted to "Admin Role"_
+
+```
+./razor updateJob -address <address> --jobID <job_Id> -s <selector> -u <job_url>
+```
+
+Example:
+```
+$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd 
+```
+
 ### Contribute to razor-go 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
