@@ -203,12 +203,12 @@ Create new jobs using `creteJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 ```
-$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
+$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --power <power>
 ```
 
 Example:
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power <power> --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 OR
 ```
