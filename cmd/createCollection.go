@@ -63,11 +63,11 @@ func createCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 		return core.NilHash, err
 	}
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createCollection",
 		Parameters:      []interface{}{jobIds, aggregation, power, name},

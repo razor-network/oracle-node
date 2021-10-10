@@ -44,11 +44,11 @@ Example:
 
 		stakeManager := utils.GetStakeManager(client)
 		txnOpts := types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
+			Client:          client,
+			Password:        password,
+			AccountAddress:  address,
+			ChainId:         core.ChainId,
+			Config:          config,
 			ContractAddress: core.StakeManagerAddress,
 			ABI:             bindings.StakeManagerABI,
 		}

@@ -63,11 +63,11 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	txnArgs := types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
 		Parameters:      []interface{}{power, name, selector, url},

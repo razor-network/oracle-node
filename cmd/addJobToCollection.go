@@ -51,11 +51,11 @@ func addJobToCollection(flagSet *pflag.FlagSet, config types.Configurations, raz
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "addJobToCollection",
 		Parameters:      []interface{}{collectionId, jobId},
