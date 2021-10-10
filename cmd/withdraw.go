@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -54,13 +54,16 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 	withdrawReleasePeriod, err := utils.GetWithdrawReleasePeriod(client, account.Address)
 	utils.CheckError("Error in fetching withdraw release period", err)
 	withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, big.NewInt(int64(withdrawReleasePeriod)))
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         configurations,
-	})
+	txnArgs := types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          configurations,
+		ContractAddress: core.StakeManagerAddress,
+		MethodName:      "withdraw",
+		ABI:             bindings.StakeManagerABI,
+	}
 
 	epoch, err := utils.GetEpoch(client, account.Address)
 	utils.CheckError("Error in fetching epoch: ", err)
@@ -72,7 +75,7 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 	for i := commitStateEpoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(commitStateEpoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(commitStateEpoch)).Cmp(withdrawBefore) <= 0 {
 			utils.CheckError("Error in fetching epoch: ", err)
-			withdraw(client, txnOpts, commitStateEpoch, stakerId)
+			withdraw(client, txnArgs, commitStateEpoch, stakerId)
 			break
 		} else {
 			i, err = WaitForCommitState(client, account.Address, "withdraw")
@@ -81,10 +84,12 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 	}
 }
 
-func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32) {
+func withdraw(client *ethclient.Client, txnArgs types.TransactionOptions, epoch uint32, stakerId uint32) {
 	log.Info("Withdrawing funds...")
 
 	stakeManager := utils.GetStakeManager(client)
+	txnArgs.Parameters = []interface{}{epoch, stakerId}
+	txnOpts := utils.GetTxnOpts(txnArgs)
 	txn, err := stakeManager.Withdraw(txnOpts, epoch, stakerId)
 	utils.CheckError("Error in withdrawing funds: ", err)
 
