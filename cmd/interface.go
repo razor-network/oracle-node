@@ -38,6 +38,7 @@ type utilsInterface interface {
 	GetNumberOfProposedBlocks(*ethclient.Client, string, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client, string) (uint8, error)
 	GetProposedBlock(*ethclient.Client, string, uint32, uint8) (types.Block, error)
+	GetInfluence(*ethclient.Client, string, uint32) (*big.Int, error)
 }
 
 type tokenManagerInterface interface {
@@ -103,8 +104,8 @@ type blockManagerInterface interface {
 }
 
 type proposeUtilsInterface interface {
-	getBiggestInfluenceAndId(*ethclient.Client, string) (*big.Int, uint32, error)
-	getIteration(*ethclient.Client, string, types.ElectedProposer) int
+	getBiggestInfluenceAndId(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error)
+	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
 	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
 	MakeBlock(*ethclient.Client, string, bool) ([]uint32, error)

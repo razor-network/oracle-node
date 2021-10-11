@@ -85,6 +85,8 @@ var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
 
+var GetInfluenceMock func(*ethclient.Client, string, uint32) (*big.Int, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -133,9 +135,9 @@ var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
-var getBiggestInfluenceAndIdMock func(*ethclient.Client, string) (*big.Int, uint32, error)
+var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error)
 
-var getIterationMock func(*ethclient.Client, string, types.ElectedProposer) int
+var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
 
 var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer) bool
 
@@ -259,6 +261,10 @@ func (u UtilsMock) PasswordPrompt() string {
 	return PasswordPromptMock()
 }
 
+func (u UtilsMock) GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
+	return GetInfluenceMock(client, address, stakerId)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -355,12 +361,12 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 	return GetInt8PowerMock(flagSet)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndIdMock(client, address)
+func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndIdMock(client, address, razorUtils)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
-	return getIterationMock(client, address, proposer)
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
+	return getIterationMock(client, address, proposer, proposeUtils)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {

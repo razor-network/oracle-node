@@ -127,6 +127,10 @@ func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch 
 	return utils.GetProposedBlock(client, address, epoch, proposedBlockId)
 }
 
+func (u Utils) GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
+	return utils.GetInfluence(client, address, stakerId)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -253,12 +257,12 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint8("collectionId")
 }
 
-func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndId(client, address)
+func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndId(client, address, razorUtils)
 }
 
-func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
-	return getIteration(client, address, proposer)
+func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtil proposeUtilsInterface) int {
+	return getIteration(client, address, proposer, proposeUtil)
 }
 
 func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {

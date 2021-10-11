@@ -526,7 +526,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numStakers, tt.args.numStakerErr
 		}
 
-		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string) (*big.Int, uint32, error) {
+		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error) {
 			return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 		}
 
@@ -534,7 +534,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.randaoHash, tt.args.randaoHashErr
 		}
 
-		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer) int {
+		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int {
 			return tt.args.iteration
 		}
 
@@ -622,6 +622,133 @@ func Test_influencedMedian(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := influencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getBiggestInfluenceAndId(t *testing.T) {
+	var client *ethclient.Client
+	var address string
+
+	razorUtils := UtilsMock{}
+
+	type args struct {
+		numOfStakers    uint32
+		numOfStakersErr error
+		influence       *big.Int
+		influenceErr    error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		wantInfluence *big.Int
+		wantId        uint32
+		wantErr       error
+	}{
+		{
+			name: "Test 1: When getBiggestInfluenceAndId function executes successfully",
+			args: args{
+				numOfStakers:    3,
+				numOfStakersErr: nil,
+				influence:       big.NewInt(1000),
+				influenceErr:    nil,
+			},
+			wantInfluence: big.NewInt(1000),
+			wantId:        1,
+			wantErr:       nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting numOfStakers",
+			args: args{
+				numOfStakersErr: errors.New("numOfStakers error"),
+				influence:       big.NewInt(1000),
+				influenceErr:    nil,
+			},
+			wantInfluence: nil,
+			wantId:        0,
+			wantErr:       errors.New("numOfStakers error"),
+		},
+		{
+			name: "Test 3: When there is an error in getting influence",
+			args: args{
+				numOfStakers:    3,
+				numOfStakersErr: nil,
+				influenceErr:    errors.New("influence error"),
+			},
+			wantInfluence: nil,
+			wantId:        0,
+			wantErr:       errors.New("influence error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetNumberOfStakersMock = func(*ethclient.Client, string) (uint32, error) {
+				return tt.args.numOfStakers, tt.args.numOfStakersErr
+			}
+
+			GetInfluenceMock = func(*ethclient.Client, string, uint32) (*big.Int, error) {
+				return tt.args.influence, tt.args.influenceErr
+			}
+
+			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, razorUtils)
+			if gotInfluence.Cmp(tt.wantInfluence) != 0 {
+				t.Errorf("Biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotInfluence, tt.wantInfluence)
+			}
+			if gotId != tt.wantId {
+				t.Errorf("Staker Id of staker having biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotId, tt.wantId)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getBiggestInfluenceAndId function, got = %v, want %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getBiggestInfluenceAndId function, got = %v, want %v", err, tt.wantErr)
+				}
+			}
+
+		})
+	}
+}
+
+func Test_getIteration(t *testing.T) {
+	var client *ethclient.Client
+	var address string
+	var proposer types.ElectedProposer
+
+	proposeUtils := ProposeUtilsMock{}
+
+	type args struct {
+		isElectedProposer bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "Test 1: When getIteration returns a valid iteration",
+			args: args{
+				isElectedProposer: true,
+			},
+			want: 0,
+		},
+		{
+			name: "Test 2: When getIteration returns an invalid iteration",
+			args: args{
+				isElectedProposer: false,
+			},
+			want: -1,
+		},
+	}
+	for _, tt := range tests {
+		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer) bool {
+			return tt.args.isElectedProposer
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getIteration(client, address, proposer, proposeUtils); got != tt.want {
+				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
 	}

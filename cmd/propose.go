@@ -35,7 +35,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestInfluence, biggestInfluenceId, err := proposeUtils.getBiggestInfluenceAndId(client, account.Address)
+	biggestInfluence, biggestInfluenceId, err := proposeUtils.getBiggestInfluenceAndId(client, account.Address, razorUtils)
 	if err != nil {
 		log.Error("Error in calculating biggest staker: ", err)
 		return core.NilHash, err
@@ -55,7 +55,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		BiggestInfluence: biggestInfluence,
 		NumberOfStakers:  numStakers,
 		RandaoHash:       randaoHash,
-	})
+	}, proposeUtils)
 
 	log.Debug("Iteration: ", iteration)
 
@@ -121,15 +121,15 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	return transactionUtils.Hash(txn), nil
 }
 
-func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
-	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
+func getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, 0, err
 	}
 	var biggestInfluenceId uint32
 	biggestInfluence := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		influence, err := utils.GetInfluence(client, address, uint32(i))
+		influence, err := razorUtils.GetInfluence(client, address, uint32(i))
 		if err != nil {
 			return nil, 0, err
 		}
@@ -141,10 +141,10 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.In
 	return biggestInfluence, biggestInfluenceId, nil
 }
 
-func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
+func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
 	for i := 0; i < 10000000000; i++ {
 		proposer.Iteration = i
-		isElected := isElectedProposer(client, address, proposer)
+		isElected := proposeUtils.isElectedProposer(client, address, proposer)
 		if isElected {
 			return i
 		}
