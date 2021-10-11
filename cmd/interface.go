@@ -65,5 +65,6 @@ type flagSetInterface interface {
 
 type utilsCmdInterface interface {
 	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
-	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
+	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
+	DecreaseCommissionPrompt() bool
 }

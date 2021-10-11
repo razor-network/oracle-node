@@ -157,6 +157,10 @@ func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32
 	return SetCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
 }
 
-func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
-	return DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtil utilsCmdInterface) error {
+	return DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtil)
+}
+
+func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
+	return DecreaseCommissionPrompt()
 }

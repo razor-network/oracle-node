@@ -110,7 +110,7 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 
 		// Call DecreaseCommission if the commission value is provided and the staker has already set commission
 		if stakerInfo.Commission > 0 && stakerInfo.Commission > commission {
-			err = cmdUtils.DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+			err = cmdUtils.DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
 			if err != nil {
 				return err
 			}
@@ -121,25 +121,19 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 
 func SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
 	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
-	commissionTxn, err := stakeManagerUtils.SetCommission(client, txnOpts, commission)
+	txn, err := stakeManagerUtils.SetCommission(client, txnOpts, commission)
 	if err != nil {
 		log.Error("Error in setting commission")
 		return err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(commissionTxn))
-	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(commissionTxn).String())
+	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
 	return nil
 }
 
-func DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
+func DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
 	log.Infof("Decreasing the commission value of Staker %d to %d%%", stakerId, commission)
-	prompt := promptui.Prompt{
-		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
-		IsConfirm: true,
-	}
-	result, err := prompt.Run()
-	utils.CheckError(result, err)
-	if strings.ToLower(result) == "y" {
+	if cmdUtils.DecreaseCommissionPrompt() {
 		log.Info("Sending DecreaseCommission transaction...")
 		decreaseCommissionTxn, err := stakeManagerUtils.DecreaseCommission(client, txnOpts, commission)
 		if err != nil {
@@ -150,6 +144,16 @@ func DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind
 		razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(decreaseCommissionTxn).String())
 	}
 	return nil
+}
+
+func DecreaseCommissionPrompt() bool {
+	prompt := promptui.Prompt{
+		Label:     "Decrease Commission? Once decreased, your commission cannot be increased.",
+		IsConfirm: true,
+	}
+	result, err := prompt.Run()
+	utils.CheckError(result, err)
+	return strings.ToLower(result) == "y"
 }
 
 func init() {

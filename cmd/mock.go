@@ -90,7 +90,9 @@ var GetUint8CommissionMock func(*pflag.FlagSet) (uint8, error)
 
 var SetCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
 
-var DecreaseCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
+var DecreaseCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
+
+var DecreaseCommissionPromptMock func() bool
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -216,6 +218,10 @@ func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerI
 	return SetCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils)
 }
 
-func (utilsCmdMock UtilsCmdMock) DecreaseCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
-	return DecreaseCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+func (utilsCmdMock UtilsCmdMock) DecreaseCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
+	return DecreaseCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
+}
+
+func (utilsCmdMock UtilsCmdMock) DecreaseCommissionPrompt() bool {
+	return DecreaseCommissionPromptMock()
 }
