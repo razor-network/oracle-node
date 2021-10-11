@@ -13,6 +13,7 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 )
 
 type Utils struct{}
@@ -64,8 +65,16 @@ func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint
 	return utils.GetStaker(client, address, stakerId)
 }
 
+func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
 func (u Utils) GetConfigData() (types.Configurations, error) {
 	return GetConfigData()
+}
+
+func (u Utils) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -101,6 +110,7 @@ func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Clien
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.SetCommission(opts, commission)
 }
+
 func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.DecreaseCommission(opts, commission)

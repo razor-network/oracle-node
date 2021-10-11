@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
-	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -26,12 +26,12 @@ Example:
   ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := SetDelegation(cmd.Flags(), razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
+		err := SetDelegation(cmd.Flags(), razorUtils, stakeManagerUtils, cmdUtils, transactionUtils, flagSetUtils)
 		utils.CheckError("SetDelegation error: ", err)
 	},
 }
 
-func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) error {
+func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, cmdUtils utilsCmdInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) error {
 
 	config, err := razorUtils.GetConfigData()
 	if err != nil {
@@ -52,8 +52,11 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		return err
 	}
 
-	status, err := strconv.ParseBool(statusString)
-	utils.CheckError("Error in parsing status to boolean: ", err)
+	status, err := razorUtils.ParseBool(statusString)
+	if err != nil {
+		log.Error("Error in parsing status to boolean")
+		return err
+	}
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -89,11 +92,13 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 	}
 
 	// Fetch updated stakerInfo
-	stakerInfo, err = razorUtils.GetStaker(client, address, stakerId)
+	stakerInfo, err = razorUtils.GetUpdatedStaker(client, address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
 	}
+	fmt.Println(stakerInfo.AcceptDelegation)
+	fmt.Println(commission)
 	if commission != 0 && stakerInfo.AcceptDelegation {
 		// Call SetCommission if the commission value is provided and the staker hasn't already set commission
 		if stakerInfo.Commission == 0 {

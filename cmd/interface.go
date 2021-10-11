@@ -23,7 +23,9 @@ type utilsInterface interface {
 	ConnectToClient(string) *ethclient.Client
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 	GetConfigData() (types.Configurations, error)
+	ParseBool(str string) (bool, error)
 }
 
 type tokenManagerInterface interface {

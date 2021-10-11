@@ -48,7 +48,11 @@ var GetStakerIdMock func(*ethclient.Client, string) (uint32, error)
 
 var GetStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 
+var GetUpdatedStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+
 var GetConfigDataMock func() (types.Configurations, error)
+
+var ParseBoolMock func(string) (bool, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -61,6 +65,10 @@ var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Ty
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var SetDelegationAcceptanceMock func(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
+
+var SetCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+
+var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -124,8 +132,16 @@ func (u UtilsMock) GetStaker(client *ethclient.Client, address string, stakerId 
 	return GetStakerMock(client, address, stakerId)
 }
 
+func (u UtilsMock) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return GetUpdatedStakerMock(client, address, stakerId)
+}
+
 func (u UtilsMock) GetConfigData() (types.Configurations, error) {
 	return GetConfigDataMock()
+}
+
+func (u UtilsMock) ParseBool(str string) (bool, error) {
+	return ParseBoolMock(str)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -154,6 +170,14 @@ func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts
 
 func (stakeManagerMock StakeManagerMock) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
 	return SetDelegationAcceptanceMock(client, opts, status)
+}
+
+func (stakeManagerMock StakeManagerMock) SetCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	return SetCommissionContractMock(client, opts, commission)
+}
+
+func (stakeManagerMock StakeManagerMock) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	return DecreaseCommissionContractMock(client, opts, commission)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
