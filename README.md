@@ -291,7 +291,7 @@ Update the existing parameters of the Job using `updateJob` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-./razor updateJob -address <address> --jobID <job_Id> -s <selector> -u <job_url>
+./razor updateJob --address <address> --jobID <job_Id> -s <selector> -u <job_url>
 ```
 
 Example:
