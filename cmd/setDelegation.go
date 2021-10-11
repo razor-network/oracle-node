@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -97,8 +96,7 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		log.Error("Error in fetching staker info")
 		return err
 	}
-	fmt.Println(stakerInfo.AcceptDelegation)
-	fmt.Println(commission)
+
 	if commission != 0 && stakerInfo.AcceptDelegation {
 		// Call SetCommission if the commission value is provided and the staker hasn't already set commission
 		if stakerInfo.Commission == 0 {
