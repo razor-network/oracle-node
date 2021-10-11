@@ -212,7 +212,7 @@ $ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QU
 ```
 OR
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -power 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd --power 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd
 ```
 
 ### Create Collection
@@ -221,7 +221,7 @@ Create new collections using `creteCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> -power <power>
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power>
 ```
 
 Example:
