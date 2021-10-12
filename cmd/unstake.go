@@ -81,10 +81,16 @@ func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
 	//s.Start()
 	time.Sleep(time.Duration(core.EpochLength) * time.Second)
 	//s.Stop()
-	checkForCommitStateAndWithdraw(txnArgs.Client, types.Account{
+	txn, err := checkForCommitStateAndWithdraw(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId)
+	}, txnArgs.Config, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
+	if err != nil {
+		log.Error("CheckForCommitStateAndWithdraw error ", err)
+	}
+	if txn != core.NilHash {
+		utils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+	}
 }
 
 func init() {
