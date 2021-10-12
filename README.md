@@ -87,12 +87,12 @@ __Before staking on Razor Network, please ensure your account has eth and RAZOR.
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 ```
-$ ./razor stake --address <address> --value <value>
+$ ./razor stake --address <address> --value <value> --pow <power>
 ```
 
 Example:
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10
 ```
 
 ### Set Delegation
@@ -111,12 +111,12 @@ $ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --s
 
 If you want to become a delegator use the `delegate` command. The staker whose `staker_id` is provided, their stake is increased.
 ```
-$ ./razor delegate --address <address> --value <value> --stakerId <staker_id>
+$ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
 ```
 
 Example:
 ```
-$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
+$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10 --stakerId 1
 ```
 
 ### Vote
