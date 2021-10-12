@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -28,7 +27,6 @@ type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
-type TreeUtils struct{}
 type CryptoUtils struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -109,10 +107,6 @@ func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byt
 
 func (u Utils) AllZero(bytesValue [32]byte) bool {
 	return utils.AllZero(bytesValue)
-}
-
-func (u Utils) GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
-	return utils.GetMerkleTree(data)
 }
 
 func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
@@ -242,10 +236,6 @@ func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
-}
-
-func (t TreeUtils) RootV1(tree *merkletree.MerkleTree) []byte {
-	return tree.RootV1()
 }
 
 func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {

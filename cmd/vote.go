@@ -173,7 +173,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
-		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils, treeUtils)
+		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils)
 		if err != nil {
 			log.Error("Reveal error: ", err)
 			break
@@ -323,7 +323,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	blockManagerUtils = BlockManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	treeUtils = TreeUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 

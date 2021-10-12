@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -100,7 +99,6 @@ func TestReveal(t *testing.T) {
 	razorUtils := UtilsMock{}
 	voteManagerUtils := VoteManagerMock{}
 	transactionUtils := TransactionMock{}
-	treeUtils := TreeMock{}
 
 	type args struct {
 		state          int64
@@ -110,10 +108,7 @@ func TestReveal(t *testing.T) {
 		commitments    [32]byte
 		commitmentsErr error
 		allZeroStatus  bool
-		tree           *merkletree.MerkleTree
-		treeErr        error
 		txnOpts        *bind.TransactOpts
-		originalRoot   []byte
 		revealTxn      *Types.Transaction
 		revealErr      error
 		hash           common.Hash
@@ -134,10 +129,7 @@ func TestReveal(t *testing.T) {
 				commitments:    [32]byte{1, 2},
 				commitmentsErr: nil,
 				allZeroStatus:  false,
-				tree:           &merkletree.MerkleTree{},
-				treeErr:        nil,
 				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
 				revealTxn:      &Types.Transaction{},
 				revealErr:      nil,
 				hash:           common.BigToHash(big.NewInt(1)),
@@ -154,10 +146,7 @@ func TestReveal(t *testing.T) {
 				commitments:    [32]byte{1, 2},
 				commitmentsErr: nil,
 				allZeroStatus:  false,
-				tree:           &merkletree.MerkleTree{},
-				treeErr:        nil,
 				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
 				revealTxn:      &Types.Transaction{},
 				revealErr:      nil,
 				hash:           common.BigToHash(big.NewInt(1)),
@@ -174,10 +163,7 @@ func TestReveal(t *testing.T) {
 				commitments:    [32]byte{1, 2},
 				commitmentsErr: nil,
 				allZeroStatus:  false,
-				tree:           &merkletree.MerkleTree{},
-				treeErr:        nil,
 				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
 				revealTxn:      &Types.Transaction{},
 				revealErr:      nil,
 				hash:           common.BigToHash(big.NewInt(1)),
@@ -194,10 +180,7 @@ func TestReveal(t *testing.T) {
 				epochErr:       nil,
 				commitmentsErr: errors.New("commitments error"),
 				allZeroStatus:  false,
-				tree:           &merkletree.MerkleTree{},
-				treeErr:        nil,
 				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
 				revealTxn:      &Types.Transaction{},
 				revealErr:      nil,
 				hash:           common.BigToHash(big.NewInt(1)),
@@ -215,10 +198,7 @@ func TestReveal(t *testing.T) {
 				commitments:    [32]byte{1, 2},
 				commitmentsErr: nil,
 				allZeroStatus:  true,
-				tree:           &merkletree.MerkleTree{},
-				treeErr:        nil,
 				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
 				revealTxn:      &Types.Transaction{},
 				revealErr:      nil,
 				hash:           common.BigToHash(big.NewInt(1)),
@@ -227,7 +207,7 @@ func TestReveal(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 6: When there is an error in getting merkle tree",
+			name: "Test 6: When Reveal transaction fails",
 			args: args{
 				state:          1,
 				stateErr:       nil,
@@ -236,30 +216,7 @@ func TestReveal(t *testing.T) {
 				commitments:    [32]byte{1, 2},
 				commitmentsErr: nil,
 				allZeroStatus:  false,
-				treeErr:        errors.New("merkle tree error"),
 				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
-				revealTxn:      &Types.Transaction{},
-				revealErr:      nil,
-				hash:           common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("merkle tree error"),
-		},
-		{
-			name: "Test 7: When Reveal transaction fails",
-			args: args{
-				state:          1,
-				stateErr:       nil,
-				epoch:          1,
-				epochErr:       nil,
-				commitments:    [32]byte{1, 2},
-				commitmentsErr: nil,
-				allZeroStatus:  false,
-				tree:           &merkletree.MerkleTree{},
-				treeErr:        nil,
-				txnOpts:        txnOpts,
-				originalRoot:   []byte{},
 				revealTxn:      &Types.Transaction{},
 				revealErr:      errors.New("reveal error"),
 				hash:           common.BigToHash(big.NewInt(1)),
@@ -286,16 +243,8 @@ func TestReveal(t *testing.T) {
 				return tt.args.allZeroStatus
 			}
 
-			GetMerkleTreeMock = func([]*big.Int) (*merkletree.MerkleTree, error) {
-				return tt.args.tree, tt.args.treeErr
-			}
-
 			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
-			}
-
-			RootV1Mock = func(*merkletree.MerkleTree) []byte {
-				return tt.args.originalRoot
 			}
 
 			RevealMock = func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error) {
@@ -306,17 +255,17 @@ func TestReveal(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := Reveal(client, committedData, secret, account, commitAccount, config, razorUtils, voteManagerUtils, transactionUtils, treeUtils)
+			got, err := Reveal(client, committedData, secret, account, commitAccount, config, razorUtils, voteManagerUtils, transactionUtils)
 			if got != tt.want {
-				t.Errorf("Txn hash for Reveal function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for Reveal function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for Reveal function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

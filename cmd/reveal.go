@@ -10,8 +10,6 @@ import (
 	"razor/pkg/bindings"
 )
 
-var treeUtils treeInterface
-
 func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32, razorUtils utilsInterface) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, address, staker.Id)
 	if err != nil {
@@ -24,7 +22,7 @@ func HandleRevealState(client *ethclient.Client, address string, staker bindings
 	return nil
 }
 
-func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations, razorUtils utilsInterface, voteManagerUtils voteManagerInterface, transactionUtils transactionInterface, treeUtils treeInterface) (common.Hash, error) {
+func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations, razorUtils utilsInterface, voteManagerUtils voteManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
@@ -45,16 +43,6 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		return core.NilHash, nil
 	}
 
-	tree, err := razorUtils.GetMerkleTree(committedData)
-	if err != nil {
-		log.Error(err)
-		return core.NilHash, err
-	}
-
-	root := [32]byte{}
-	originalRoot := treeUtils.RootV1(tree)
-	copy(root[:], originalRoot)
-
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
 
@@ -70,10 +58,9 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		Parameters:      []interface{}{epoch, committedData, secretBytes32},
 	})
 
-	log.Debugf("Revealing vote for epoch: %d  votes: %s  root: %s  secret: %s  commitAccount: %s",
+	log.Debugf("Revealing vote for epoch: %d  votes: %s secret: %s  commitAccount: %s",
 		epoch,
 		committedData,
-		"0x"+common.Bytes2Hex(originalRoot),
 		"0x"+common.Bytes2Hex(secret),
 		commitAccount,
 	)

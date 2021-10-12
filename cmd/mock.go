@@ -8,7 +8,6 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/core/types"
 )
@@ -32,8 +31,6 @@ type FlagSetMock struct{}
 type VoteManagerMock struct{}
 
 type BlockManagerMock struct{}
-
-type TreeMock struct{}
 
 type CryptoMock struct{}
 
@@ -66,8 +63,6 @@ var GetEpochMock func(*ethclient.Client, string) (uint32, error)
 var GetCommitmentsMock func(*ethclient.Client, string) ([32]byte, error)
 
 var AllZeroMock func([32]byte) bool
-
-var GetMerkleTreeMock func([]*big.Int) (*merkletree.MerkleTree, error)
 
 var GetEpochLastCommittedMock func(*ethclient.Client, string, uint32) (uint32, error)
 
@@ -130,8 +125,6 @@ var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
 var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
-
-var RootV1Mock func(*merkletree.MerkleTree) []byte
 
 var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 
@@ -205,10 +198,6 @@ func (u UtilsMock) GetCommitments(client *ethclient.Client, address string) ([32
 
 func (u UtilsMock) AllZero(bytesValue [32]byte) bool {
 	return AllZeroMock(bytesValue)
-}
-
-func (u UtilsMock) GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
-	return GetMerkleTreeMock(data)
 }
 
 func (u UtilsMock) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
@@ -341,10 +330,6 @@ func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bi
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	return ClaimBlockRewardMock(client, opts)
-}
-
-func (t TreeMock) RootV1(tree *merkletree.MerkleTree) []byte {
-	return RootV1Mock(tree)
 }
 
 func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {

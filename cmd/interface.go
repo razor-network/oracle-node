@@ -8,7 +8,6 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"github.com/wealdtech/go-merkletree"
 	"math/big"
 	"razor/core/types"
 )
@@ -34,7 +33,6 @@ type utilsInterface interface {
 	GetDefaultPath() (string, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
-	GetMerkleTree([]*big.Int) (*merkletree.MerkleTree, error)
 	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
 }
 
@@ -94,10 +92,6 @@ type cryptoInterface interface {
 type voteManagerInterface interface {
 	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
-}
-
-type treeInterface interface {
-	RootV1(*merkletree.MerkleTree) []byte
 }
 
 type blockManagerInterface interface {
