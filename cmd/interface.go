@@ -37,6 +37,9 @@ type utilsInterface interface {
 	GetAmountInDecimal(*big.Int) *big.Float
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	AllZero([32]byte) bool
+	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -105,6 +108,7 @@ type cryptoInterface interface {
 
 type voteManagerInterface interface {
 	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
+	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 }
 
 type blockManagerInterface interface {

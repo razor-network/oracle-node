@@ -124,6 +124,18 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	return utils.GetCommitments(client, address)
+}
+
+func (u Utils) AllZero(bytesValue [32]byte) bool {
+	return utils.AllZero(bytesValue)
+}
+
+func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, address, stakerId)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -253,6 +265,16 @@ func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string
 	return flagSet.GetString("status")
 }
 
+func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Reveal(opts, epoch, values, secret)
+}
+
+func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Commit(opts, epoch, commitment)
+}
+
 func (flagSetUtils FlagSetUtils) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
 	return flagSet.GetUint8("commission")
 }
@@ -283,11 +305,6 @@ func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId u
 
 func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
 	return DecreaseCommissionPrompt()
-}
-
-func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.GetVoteManager(client)
-	return voteManager.Commit(opts, epoch, commitment)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
