@@ -60,6 +60,12 @@ var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
 
 var GetEpochMock func(*ethclient.Client, string) (uint32, error)
 
+var GetCommitmentsMock func(*ethclient.Client, string) ([32]byte, error)
+
+var AllZeroMock func([32]byte) bool
+
+var GetEpochLastCommittedMock func(*ethclient.Client, string, uint32) (uint32, error)
+
 var GetActiveAssetsDataMock func(*ethclient.Client, string, uint32) ([]*big.Int, error)
 
 var ConvertUintArrayToUint8ArrayMock func([]uint) []uint8
@@ -117,6 +123,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 
 var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 
@@ -182,6 +190,18 @@ func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int6
 
 func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
 	return GetEpochMock(client, address)
+}
+
+func (u UtilsMock) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	return GetCommitmentsMock(client, address)
+}
+
+func (u UtilsMock) AllZero(bytesValue [32]byte) bool {
+	return AllZeroMock(bytesValue)
+}
+
+func (u UtilsMock) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return GetEpochLastCommittedMock(client, address, stakerId)
 }
 
 func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
@@ -298,6 +318,10 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
+	return RevealMock(client, opts, epoch, values, secret)
 }
 
 func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
