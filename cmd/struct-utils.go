@@ -28,6 +28,7 @@ type FlagSetUtils struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
 type CryptoUtils struct{}
+type UtilsCmd struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -46,6 +47,10 @@ func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead strin
 }
 
 func (u Utils) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForCommitState(client, accountAddress, action)
+}
+
+func (u Utils) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
 	return WaitForCommitState(client, accountAddress, action)
 }
 
@@ -101,6 +106,14 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
+	return utils.GetLock(client, address, stakerId)
+}
+
+func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	return utils.GetWithdrawReleasePeriod(client, address)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -133,6 +146,11 @@ func (stakeManagerUtils StakeManagerUtils) ResetLock(client *ethclient.Client, o
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Delegate(opts, epoch, stakerId, amount)
+}
+
+func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Withdraw(opts, epoch, stakerId)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -239,4 +257,8 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(hexKey)
+}
+
+func (c UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	return withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
 }

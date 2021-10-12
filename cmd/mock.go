@@ -34,6 +34,8 @@ type BlockManagerMock struct{}
 
 type CryptoMock struct{}
 
+type UtilsCmdMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -41,6 +43,8 @@ var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
 var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
+
+var WaitForCommitStateAgainMock func(*ethclient.Client, string, string) (uint32, error)
 
 var GetDefaultPathMock func() (string, error)
 
@@ -70,6 +74,10 @@ var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
 
+var GetLockMock func(*ethclient.Client, string, uint32) (types.Locks, error)
+
+var GetWithdrawReleasePeriodMock func(*ethclient.Client, string) (uint8, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -83,6 +91,8 @@ var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Ty
 var ResetLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+
+var WithdrawContractMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -132,6 +142,8 @@ var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
+var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
+
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
 }
@@ -146,6 +158,10 @@ func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead s
 
 func (u UtilsMock) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
 	return WaitForCommitStateMock(client, accountAddress, action)
+}
+
+func (u UtilsMock) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForCommitStateAgainMock(client, accountAddress, action)
 }
 
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
@@ -204,6 +220,14 @@ func (u UtilsMock) PasswordPrompt() string {
 	return PasswordPromptMock()
 }
 
+func (u UtilsMock) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
+	return GetLockMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	return GetWithdrawReleasePeriodMock(client, address)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -254,6 +278,10 @@ func (stakeManagerMock StakeManagerMock) ResetLock(client *ethclient.Client, opt
 
 func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	return DelegateMock(client, opts, epoch, stakerId, amount)
+}
+
+func (stakeManagerMock StakeManagerMock) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32) (*Types.Transaction, error) {
+	return WithdrawContractMock(client, opts, epoch, stakerId)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
@@ -326,4 +354,8 @@ func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uin
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return HexToECDSAMock(hexKey)
+}
+
+func (cmdUtilsMock UtilsCmdMock) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	return WithdrawMock(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
 }

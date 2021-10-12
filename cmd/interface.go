@@ -30,7 +30,10 @@ type utilsInterface interface {
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
+	WaitForCommitStateAgain(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
+	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
+	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 }
 
 type tokenManagerInterface interface {
@@ -56,6 +59,7 @@ type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	ResetLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
@@ -92,4 +96,8 @@ type voteManagerInterface interface {
 
 type blockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
+}
+
+type cmdUtilsInterface interface {
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
 }
