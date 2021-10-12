@@ -316,7 +316,7 @@ Example:
 ```
 $ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd 
 ```
-# Note : *All the commands have an additional --password flag that you can provide with the file path from which password must be picked.*
+Note : *All the commands have an additional --password flag that you can provide with the file path from which password must be picked.*
 
 ### Contribute to razor-go 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
