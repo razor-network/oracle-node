@@ -300,7 +300,7 @@ $ ./razor updateCollection --collectionId <collection_id> --address <address> --
 
 Example:
 ```
-$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4```
+$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4
 ```
 
 ### Update Job
