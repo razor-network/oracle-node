@@ -10,8 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/wealdtech/go-merkletree"
-	"github.com/wealdtech/go-merkletree/keccak256"
+
 )
 
 func ConnectToClient(provider string) *ethclient.Client {
@@ -76,19 +75,6 @@ func WaitTillNextNSecs(waitTime int32) {
 		waitTime = 1
 	}
 	time.Sleep(time.Duration(waitTime) * time.Second)
-}
-
-func GetMerkleTree(data []*big.Int) (*merkletree.MerkleTree, error) {
-	bytesData := GetDataInBytes(data)
-	return merkletree.NewUsingV1(bytesData, keccak256.New(), nil)
-}
-
-func GetMerkleTreeRoot(data []*big.Int) ([]byte, error) {
-	tree, err := GetMerkleTree(data)
-	if err != nil {
-		return nil, err
-	}
-	return tree.RootV1(), err
 }
 
 func CheckError(msg string, err error) {
