@@ -40,6 +40,8 @@ type utilsInterface interface {
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
 	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
+	GetConfigFilePath() (string, error)
+	ViperWriteConfigAs(filename string) error
 }
 
 type tokenManagerInterface interface {
@@ -94,9 +96,15 @@ type flagSetInterface interface {
 	GetStringStatus(*pflag.FlagSet) (string, error)
 	GetUint8Commission(*pflag.FlagSet) (uint8, error)
 	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)
-	GetUint32Aggregation(set *pflag.FlagSet) (uint32, error)
+	GetUint32Aggregation(*pflag.FlagSet) (uint32, error)
 	GetUint8JobId(*pflag.FlagSet) (uint8, error)
 	GetUint8CollectionId(*pflag.FlagSet) (uint8, error)
+	GetStringProvider(*pflag.FlagSet) (string, error)
+	GetFloat32GasMultiplier(*pflag.FlagSet) (float32, error)
+	GetInt32Buffer(*pflag.FlagSet) (int32, error)
+	GetInt32Wait(*pflag.FlagSet) (int32, error)
+	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
+	GetStringLogLevel(*pflag.FlagSet) (string, error)
 }
 
 type utilsCmdInterface interface {

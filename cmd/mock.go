@@ -89,6 +89,10 @@ var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
 
+var GetConfigFilePathMock func() (string, error)
+
+var ViperWriteConfigAsMock func(string) error
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -150,6 +154,18 @@ var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
 
 var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+
+var GetStringProviderMock func(*pflag.FlagSet) (string, error)
+
+var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
+
+var GetInt32BufferMock func(*pflag.FlagSet) (int32, error)
+
+var GetInt32WaitMock func(*pflag.FlagSet) (int32, error)
+
+var GetInt32GasPriceMock func(*pflag.FlagSet) (int32, error)
+
+var GetStringLogLevelMock func(*pflag.FlagSet) (string, error)
 
 var GetStringStatusMock func(*pflag.FlagSet) (string, error)
 
@@ -281,6 +297,14 @@ func (u UtilsMock) PrivateKeyPrompt() string {
 	return PrivateKeyPromptMock()
 }
 
+func (u UtilsMock) GetConfigFilePath() (string, error) {
+	return GetConfigFilePathMock()
+}
+
+func (u UtilsMock) ViperWriteConfigAs(path string) error {
+	return ViperWriteConfigAsMock(path)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -399,6 +423,30 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 
 func (flagSetMock FlagSetMock) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
 	return GetUint8AssetIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringProviderMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
+	return GetFloat32GasMultiplierMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error) {
+	return GetInt32BufferMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) {
+	return GetInt32WaitMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
+	return GetInt32GasPriceMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringLogLevelMock(flagSet)
 }
 
 func (flagSetMock FlagSetMock) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
