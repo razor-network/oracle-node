@@ -176,6 +176,15 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("writing config error"),
 		},
+		{
+			name: "Test 11: When only one of the flags is passed",
+			args: args{
+				gasmultiplier: 2,
+				path:          "/home/config",
+				configErr:     nil,
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		GetStringProviderMock = func(set *pflag.FlagSet) (string, error) {
