@@ -57,6 +57,7 @@ func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8)
 func ModifyAssetStatus(transactionOpts types.TransactionOptions, assetId uint8, status bool) error {
 	assetManager := utils.GetAssetManager(transactionOpts.Client)
 	txnOpts := utils.GetTxnOpts(transactionOpts)
+	razorUtils.WaitForDisputeOrConfirmState(transactionOpts.Client, transactionOpts.AccountAddress, "modify asset status")
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
 	txn, err := assetManager.SetAssetStatus(txnOpts, status, assetId)
 	if err != nil {
