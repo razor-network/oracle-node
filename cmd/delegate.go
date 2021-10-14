@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
@@ -60,11 +61,15 @@ Example:
 
 func delegate(txnArgs types.TransactionOptions, stakerId uint32, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
-	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "delegate")
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
+	txnArgs.ContractAddress = core.StakeManagerAddress
+	txnArgs.MethodName = "delegate"
+	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
+	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
 	if err != nil {

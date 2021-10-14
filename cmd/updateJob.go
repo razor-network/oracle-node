@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
@@ -58,11 +59,15 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	client := razorUtils.ConnectToClient(config.Provider)
 	selectorType := 1
 	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "updateJob",
+		Parameters:      []interface{}{jobId, power, selector, url},
+		ABI:             bindings.AssetManagerABI,
 	})
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, uint8(selectorType), selector, url)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
@@ -56,11 +57,15 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "updateCollection",
+		Parameters:      []interface{}{collectionId, aggregation, power},
+		ABI:             bindings.AssetManagerABI,
 	})
 
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)

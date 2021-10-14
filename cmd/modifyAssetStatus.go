@@ -3,6 +3,7 @@ package cmd
 import (
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	"strconv"
 
@@ -39,11 +40,15 @@ Example:
 		}
 
 		err = ModifyAssetStatus(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
+			Client:          client,
+			Password:        password,
+			AccountAddress:  address,
+			ChainId:         core.ChainId,
+			Config:          config,
+			ContractAddress: core.AssetManagerAddress,
+			MethodName:      "setAssetStatus",
+			Parameters:      []interface{}{status, assetId},
+			ABI:             bindings.AssetManagerABI,
 		}, assetId, status)
 		utils.CheckError("Error in changing asset active status: ", err)
 	},
