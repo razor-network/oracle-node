@@ -25,7 +25,6 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
 
 		client := utils.ConnectToClient(config.Provider)
@@ -33,6 +32,9 @@ Example:
 		valueInWei := utils.AssignAmountInWei(cmd.Flags())
 
 		utils.CheckEthBalanceIsZero(client, address)
+
+		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
+		utils.CheckError("StakerId error: ", err)
 
 		lock, err := utils.GetLock(client, address, stakerId)
 		utils.CheckError("Error in getting lock: ", err)

@@ -26,12 +26,14 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 
 		client := utils.ConnectToClient(config.Provider)
 		utils.CheckError("Error in fetching staker id: ", err)
 
 		utils.CheckEthBalanceIsZero(client, address)
+
+		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
+		utils.CheckError("StakerId error: ", err)
 
 		checkForCommitStateAndWithdraw(client, types.Account{
 			Address:  address,
