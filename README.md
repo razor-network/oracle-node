@@ -7,10 +7,28 @@ Official node for running stakers in Golang.
 ## Installation
 
 ### Docker quick start
+
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+```
+  docker run -d \
+  -it \
+  --name razor-go \
+  -v "$(echo $HOME)"/.razor:/root/.razor \
+  razornetwork/razor-go
+```
+Note that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
-`docker run -it razornetwork/razor-go /bin/bash`
+You need to set a provider before you can operate razor-go cli on docker:
 
+```
+docker exec -it razor-go setconfig -p <provider_url>
+```
+
+You can now execute razor-go cli commands by running:
+
+```
+docker exec -it razor-go <command>
+```
 ### Prerequisites
 * Golang 1.15 or later must be installed.
 * Latest stable version of node is required.
@@ -23,7 +41,7 @@ One of the quickest ways to get `razor-go` up and running on your machine is by 
 
    _Note: To build from scratch, `geth` and `abigen` must be installed in your system._
 3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary. 
-4. If you want to build the binary without wanting to set the configurations use `npm run dockerize-build`
+4. If you want to build the binary without wanting to set the configurations use `npm run build-noargs`
 5. While building the binary, supply the provider RPC url and the gas multiplier.
 6. The binary will be generated at `build/bin`.
 
@@ -63,18 +81,18 @@ $ ./razor import
 Password: 
 ```
 
-__Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please use the faucet here - https://razorscan.io/dashboard/faucet__
+__Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord.
 
 ### Stake
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 ```
-$ ./razor stake --address <address> --amount <amount>
+$ ./razor stake --address <address> --value <value> --pow <power>
 ```
 
 Example:
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10
 ```
 
 ### Set Delegation
@@ -93,12 +111,12 @@ $ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --s
 
 If you want to become a delegator use the `delegate` command. The staker whose `staker_id` is provided, their stake is increased.
 ```
-$ ./razor delegate --address <address> --amount <amount> --stakerId <staker_id>
+$ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
 ```
 
 Example:
 ```
-$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --amount 1000 --stakerId 1
+$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10 --stakerId 1
 ```
 
 ### Vote
@@ -123,12 +141,12 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue
 ### Unstake
 If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
 ```
-$ ./razor unstake --address <address> --stakerId <staker_id> --amount <amount> --autoWithdraw
+$ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
 ```
 
 Example:
 ```
-$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount 1000 --autoWithdraw
+$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount --pow 10 1000 --autoWithdraw
 ```
 
 ### Withdraw
@@ -160,12 +178,12 @@ $ ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stake
 Transfers razor to other accounts.
 
 ```
-$ ./razor transfer --amount <amount> --to <transfer_to_address> --from <transfer_from_address>
+$ ./razor transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
 ```
 
 Example:
 ```
-$ ./razor transfer --amount 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
 ### Set Config
@@ -203,16 +221,16 @@ Create new jobs using `creteJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 ```
-$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --repeat <true_or_false>
+$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --power <power>
 ```
 
 Example:
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --repeat false --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 OR
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd -r true -s last -u https://api.gemini.com/v1/pubticker/ethusd
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd --power 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd
 ```
 
 ### Create Collection
@@ -221,12 +239,12 @@ Create new collections using `creteCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method>
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power>
 ```
 
 Example:
 ```
-$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
+$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
 ```
 
 ### Add Job to Collection
@@ -282,8 +300,23 @@ $ ./razor updateCollection --collectionId <collection_id> --address <address> --
 
 Example:
 ```
-$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4```
+$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4
 ```
+
+### Update Job
+Update the existing parameters of the Job using `updateJob` command.
+  
+_Note: This command is restricted to "Admin Role"_
+
+```
+./razor updateJob --address <address> --jobID <job_Id> -s <selector> -u <job_url>
+```
+
+Example:
+```
+$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd 
+```
+Note : *All the commands have an additional --password flag that you can provide with the file path from which password must be picked.*
 
 ### Contribute to razor-go 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
