@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -134,6 +135,14 @@ func (u Utils) AllZero(bytesValue [32]byte) bool {
 
 func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
 	return utils.GetEpochLastCommitted(client, address, stakerId)
+}
+
+func (u Utils) GetConfigFilePath() (string, error) {
+	return path.GetConfigFilePath()
+}
+
+func (u Utils) ViperWriteConfigAs(path string) error {
+	return viper.WriteConfigAs(path)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -293,6 +302,30 @@ func (flagSetUtils FlagSetUtils) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, e
 
 func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
 	return flagSet.GetUint8("collectionId")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("provider")
+}
+
+func (flagSetUtils FlagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
+	return flagSet.GetFloat32("gasmultiplier")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("buffer")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("wait")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("gasprice")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("logLevel")
 }
 
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
