@@ -61,7 +61,7 @@ func CalculateWeightedSum(data []*big.Int, weight []uint8) *big.Int {
 
 func CalculateSumOfUint8Array(data []uint8) uint8 {
 	sum := uint8(0)
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		return sum
 	}
 	for _, datum := range data {

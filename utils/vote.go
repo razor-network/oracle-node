@@ -45,7 +45,7 @@ func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stake
 		voteValueErr error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
-		voteValue, voteValueErr = voteManager.GetVoteValue(&callOpts, assetId - 1, stakerId)
+		voteValue, voteValueErr = voteManager.GetVoteValue(&callOpts, assetId-1, stakerId)
 		if voteValueErr != nil {
 			Retry(retry, "Error in fetching last vote: ", voteValueErr)
 			continue

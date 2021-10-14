@@ -234,9 +234,10 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 			log.Error("Error in fetching value from parsed data: ", err)
 			return nil, err
 		}
-	} else {
-		//TODO: Add support for XHTML selector
 	}
+	//else {
+	//TODO: Add support for XHTML selector
+	//}
 
 	datum, err := ConvertToNumber(parsedData)
 	if err != nil {

@@ -101,7 +101,7 @@ func init() {
 		Power    int8
 		Account  string
 		Password string
-		Weight uint8
+		Weight   uint8
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
