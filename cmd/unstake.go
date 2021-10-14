@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
 
@@ -42,12 +43,15 @@ Example:
 		}
 
 		txnOptions := types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			Amount:         valueInWei,
-			ChainId:        core.ChainId,
-			Config:         config,
+			Client:          client,
+			Password:        password,
+			AccountAddress:  address,
+			Amount:          valueInWei,
+			ChainId:         core.ChainId,
+			Config:          config,
+			ContractAddress: core.StakeManagerAddress,
+			MethodName:      "unstake",
+			ABI:             bindings.StakeManagerABI,
 		}
 
 		Unstake(txnOptions, stakerId)
@@ -66,9 +70,10 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 	}
 
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
-	txnOpts := utils.GetTxnOpts(txnArgs)
 
 	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "unstake")
+	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
+	txnOpts := utils.GetTxnOpts(txnArgs)
 	utils.CheckError("Error in fetching epoch: ", err)
 	log.Info("Unstaking coins")
 	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
@@ -79,10 +84,7 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 
 func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
 	log.Info("Starting withdrawal now...")
-	//s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
-	//s.Start()
 	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	//s.Stop()
 	checkForCommitStateAndWithdraw(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
