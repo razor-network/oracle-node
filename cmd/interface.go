@@ -97,7 +97,7 @@ type flagSetInterface interface {
 	GetUint8JobId(*pflag.FlagSet) (uint8, error)
 	GetUint8CollectionId(*pflag.FlagSet) (uint8, error)
 	GetStringProvider(*pflag.FlagSet) (string, error)
-	GetFloat32GasMultiplier(set *pflag.FlagSet) (float32, error)
+	GetFloat32GasMultiplier(*pflag.FlagSet) (float32, error)
 	GetInt32Buffer(*pflag.FlagSet) (int32, error)
 	GetInt32Wait(*pflag.FlagSet) (int32, error)
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
