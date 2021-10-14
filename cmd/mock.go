@@ -86,17 +86,17 @@ var HashMock func(*Types.Transaction) common.Hash
 
 var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 
-var ResetLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+var ExtendLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
-var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error)
+var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 
-var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, string, string) (*Types.Transaction, error)
+var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8, int8, uint8, string, string) (*Types.Transaction, error)
 
-var UpdateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8) (*Types.Transaction, error)
+var UpdateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8, []uint8) (*Types.Transaction, error)
 
 var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error)
 
@@ -123,6 +123,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var GetUint8WeightMock func(*pflag.FlagSet) (uint8, error)
 
 var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 
@@ -240,36 +242,28 @@ func (transactionMock TransactionMock) Hash(txn *Types.Transaction) common.Hash 
 	return HashMock(txn)
 }
 
-func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
-	return CreateJobMock(client, opts, power, name, selector, url)
+func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
+	return CreateJobMock(client, opts, weight, power, selectorType, name, selector, url)
 }
 
 func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
 	return CreateCollectionMock(client, opts, jobIDs, aggregationMethod, power, name)
 }
 
-func (assetManagerMock AssetManagerMock) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
-	return AddJobToCollectionMock(client, opts, collectionID, jobID)
+func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
+	return UpdateJobMock(client, opts, jobId, weight, power, selectorType, selector, url)
 }
 
-func (assetManagerMock AssetManagerMock) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
-	return RemoveJobFromCollectionMock(client, opts, collectionID, jobID)
-}
-
-func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
-	return UpdateJobMock(client, opts, jobId, power, selector, url)
-}
-
-func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
-	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power)
+func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8, jobIds []uint8) (*Types.Transaction, error) {
+	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power, jobIds)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	return StakeMock(client, opts, epoch, amount)
 }
 
-func (stakeManagerMock StakeManagerMock) ResetLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	return ResetLockMock(client, opts, stakerId)
+func (stakeManagerMock StakeManagerMock) ExtendLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	return ExtendLockMock(client, opts, stakerId)
 }
 
 func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -318,6 +312,10 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8WeightMock(flagSet)
 }
 
 func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {

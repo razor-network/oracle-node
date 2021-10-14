@@ -51,14 +51,14 @@ Example:
 func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8) (bool, error) {
 	assetManager := utils.GetAssetManager(client)
 	callOpts := utils.GetOptions(false, address, "")
-	return assetManager.GetActiveStatus(&callOpts, assetId)
+	return assetManager.GetCollectionStatus(&callOpts, assetId)
 }
 
 func ModifyAssetStatus(transactionOpts types.TransactionOptions, assetId uint8, status bool) error {
 	assetManager := utils.GetAssetManager(transactionOpts.Client)
 	txnOpts := utils.GetTxnOpts(transactionOpts)
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
-	txn, err := assetManager.SetAssetStatus(txnOpts, status, assetId)
+	txn, err := assetManager.SetCollectionStatus(txnOpts, status, assetId)
 	if err != nil {
 		return err
 	}

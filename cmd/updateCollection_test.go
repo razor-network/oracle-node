@@ -199,7 +199,7 @@ func Test_updateCollection(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8) (*Types.Transaction, error) {
+			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8, []uint8) (*Types.Transaction, error) {
 				return tt.args.updateCollectionTxn, tt.args.updateCollectionErr
 			}
 

@@ -137,9 +137,9 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
-func (stakeManagerUtils StakeManagerUtils) ResetLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ExtendLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.ResetLock(opts, stakerId)
+	return stakeManager.ExtendLock(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -147,14 +147,14 @@ func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, op
 	return stakeManager.Delegate(opts, epoch, stakerId, amount)
 }
 
-func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
-	return assetManager.CreateJob(opts, power, name, selector, url)
+	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
 }
 
-func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
-	return assetManager.UpdateJob(opts, jobId, power, selector, url)
+	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
@@ -162,19 +162,9 @@ func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Cl
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
 }
 
-func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8, jobIds []uint8) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
-	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power)
-}
-
-func (assetManagerUtils AssetManagerUtils) AddJobToCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
-	return assetManager.AddJobToCollection(opts, collectionID, jobID)
-}
-
-func (assetManagerUtils AssetManagerUtils) RemoveJobFromCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionID uint8, jobID uint8) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
-	return assetManager.RemoveJobFromCollection(opts, collectionID, jobID)
+	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
 }
 
 func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
@@ -221,6 +211,10 @@ func (flagSetUtils FlagSetUtils) GetStringSelector(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return flagSet.GetInt8("power")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("weight")
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {

@@ -51,7 +51,12 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	if err != nil {
 		return core.NilHash, err
 	}
+	weight, err := flagSetUtils.GetUint8Weight(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
 	client := razorUtils.ConnectToClient(config.Provider)
+	selectorType := 1
 	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       password,
@@ -59,7 +64,7 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		ChainId:        core.ChainId,
 		Config:         config,
 	})
-	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, power, selector, url)
+	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, uint8(selectorType), selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}

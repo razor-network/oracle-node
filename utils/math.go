@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
-	"razor/core/types"
+	"razor/pkg/bindings"
 	"strconv"
 
 	"github.com/spf13/pflag"
@@ -111,11 +111,11 @@ func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
 
-func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, collection types.Collection) (*big.Int, error) {
+func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
 	if len(collection.JobIDs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	var jobs []types.Job
+	var jobs []bindings.StructsJob
 	for _, id := range collection.JobIDs {
 		job, err := GetActiveJob(client, address, id)
 		if err != nil {

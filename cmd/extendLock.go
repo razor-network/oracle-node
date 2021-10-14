@@ -10,24 +10,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var resetLockCmd = &cobra.Command{
-	Use:   "resetLock",
-	Short: "resetLock can be used to reset the lock once the withdraw lock period is over",
-	Long: `If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake. This can be done by resetLock command.
+var extendLockCmd = &cobra.Command{
+	Use:   "extendLock",
+	Short: "extendLock can be used to reset the lock once the withdraw lock period is over",
+	Long: `If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake. This can be done by extendLock command.
 
 Example:
-  ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
+  ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
-		txn, err := resetLock(cmd.Flags(), config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
-		utils.CheckError("Error in resetting lock: ", err)
+		txn, err := extendLock(cmd.Flags(), config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
+		utils.CheckError("Error in extending lock: ", err)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
-func resetLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
+func extendLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
 	password := razorUtils.AssignPassword(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
@@ -47,8 +47,8 @@ func resetLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		Config:         config,
 	})
 
-	log.Info("Resetting lock...")
-	txn, err := stakeManagerUtils.ResetLock(client, txnOpts, stakerId)
+	log.Info("Extending lock...")
+	txn, err := stakeManagerUtils.ExtendLock(client, txnOpts, stakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -61,7 +61,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
-	rootCmd.AddCommand(resetLockCmd)
+	rootCmd.AddCommand(extendLockCmd)
 
 	var (
 		Address  string
@@ -69,10 +69,10 @@ func init() {
 		StakerId uint32
 	)
 
-	resetLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	resetLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
-	resetLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
+	extendLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
+	extendLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
+	extendLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 
-	addrErr := resetLockCmd.MarkFlagRequired("address")
+	addrErr := extendLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 }

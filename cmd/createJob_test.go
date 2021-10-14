@@ -241,7 +241,7 @@ func Test_createJob(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			CreateJobMock = func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error) {
+			CreateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error) {
 				return tt.args.createJobTxn, tt.args.createJobErr
 			}
 

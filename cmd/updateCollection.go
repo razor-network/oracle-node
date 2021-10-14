@@ -48,7 +48,11 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 	if err != nil {
 		return core.NilHash, err
 	}
-
+	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -59,7 +63,7 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 		Config:         config,
 	})
 
-	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power)
+	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err

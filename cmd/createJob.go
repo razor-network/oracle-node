@@ -60,7 +60,13 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		return core.NilHash, err
 	}
 
+	weight, err := flagSetUtils.GetUint8Weight(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	client := razorUtils.ConnectToClient(config.Provider)
+	selectorType := 1
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		Password:       password,
@@ -71,7 +77,7 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, power, name, selector, url)
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
