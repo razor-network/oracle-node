@@ -30,7 +30,7 @@ jobs:
       - run:
           name: "Generate Coverage"
           command: |
-            go-acc ./...
+            go-acc ./... --ignore pkg 
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
