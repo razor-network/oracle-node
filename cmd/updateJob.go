@@ -84,6 +84,7 @@ func init() {
 		URL      string
 		Selector string
 		Power    int8
+		Weight   uint8
 		Account  string
 		Password string
 	)
@@ -92,6 +93,7 @@ func init() {
 	updateJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	updateJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	updateJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
+	updateJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight")
 	updateJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	updateJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
@@ -105,4 +107,6 @@ func init() {
 	utils.CheckError("Address error: ", addrErr)
 	powErr := updateJobCmd.MarkFlagRequired("power")
 	utils.CheckError("Power error: ", powErr)
+	weightErr := updateJobCmd.MarkFlagRequired("weight")
+	utils.CheckError("Power error: ", weightErr)
 }
