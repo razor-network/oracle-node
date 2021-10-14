@@ -131,6 +131,30 @@ func (u Utils) GetInfluence(client *ethclient.Client, address string, stakerId u
 	return utils.GetInfluence(client, address, stakerId)
 }
 
+func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastRevealed(client, address, stakerId)
+}
+
+func (u Utils) GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
+	return utils.GetVoteValue(client, address, assetId, stakerId)
+}
+
+func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return utils.GetInfluenceSnapshot(client, address, stakerId, epoch)
+}
+
+func (u Utils) GetNumActiveAssets(client *ethclient.Client, address string) (uint8, error) {
+	return utils.GetNumActiveAssets(client, address)
+}
+
+func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
+	return utils.GetTotalInfluenceRevealed(client, address, epoch)
+}
+
+func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
+	return utils.ConvertBigIntArrayToUint32Array(bigIntArray)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -273,12 +297,12 @@ func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max ui
 	return pseudoRandomNumberGenerator(seed, max, blockHashes)
 }
 
-func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
-	return MakeBlock(client, address, rogueMode)
+func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUtils utilsInterface, proposeUtil proposeUtilsInterface) ([]uint32, error) {
+	return MakeBlock(client, address, rogueMode, razorUtils, proposeUtil)
 }
 
-func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
-	return getSortedVotes(client, address, assetId, epoch)
+func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
+	return getSortedVotes(client, address, assetId, epoch, razorUtils)
 }
 
 func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {

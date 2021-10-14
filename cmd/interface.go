@@ -39,6 +39,12 @@ type utilsInterface interface {
 	GetMaxAltBlocks(*ethclient.Client, string) (uint8, error)
 	GetProposedBlock(*ethclient.Client, string, uint32, uint8) (types.Block, error)
 	GetInfluence(*ethclient.Client, string, uint32) (*big.Int, error)
+	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
+	GetVoteValue(*ethclient.Client, string, uint8, uint32) (*big.Int, error)
+	GetInfluenceSnapshot(*ethclient.Client, string, uint32, uint32) (*big.Int, error)
+	GetNumActiveAssets(*ethclient.Client, string) (uint8, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, string, uint32) (*big.Int, error)
+	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 }
 
 type tokenManagerInterface interface {
@@ -108,7 +114,7 @@ type proposeUtilsInterface interface {
 	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
 	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
-	MakeBlock(*ethclient.Client, string, bool) ([]uint32, error)
-	getSortedVotes(*ethclient.Client, string, uint8, uint32) ([]*big.Int, error)
+	MakeBlock(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
+	getSortedVotes(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
 	influencedMedian([]*big.Int, *big.Int) *big.Int
 }

@@ -87,6 +87,18 @@ var PasswordPromptMock func() string
 
 var GetInfluenceMock func(*ethclient.Client, string, uint32) (*big.Int, error)
 
+var GetEpochLastRevealedMock func(*ethclient.Client, string, uint32) (uint32, error)
+
+var GetVoteValueMock func(*ethclient.Client, string, uint8, uint32) (*big.Int, error)
+
+var GetInfluenceSnapshotMock func(*ethclient.Client, string, uint32, uint32) (*big.Int, error)
+
+var GetNumActiveAssetsMock func(*ethclient.Client, string) (uint8, error)
+
+var GetTotalInfluenceRevealedMock func(*ethclient.Client, string, uint32) (*big.Int, error)
+
+var ConvertBigIntArrayToUint32ArrayMock func([]*big.Int) []uint32
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -143,9 +155,9 @@ var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer)
 
 var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
 
-var MakeBlockMock func(*ethclient.Client, string, bool) ([]uint32, error)
+var MakeBlockMock func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
 
-var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32) ([]*big.Int, error)
+var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
 
 var influencedMedianMock func([]*big.Int, *big.Int) *big.Int
 
@@ -265,6 +277,30 @@ func (u UtilsMock) GetInfluence(client *ethclient.Client, address string, staker
 	return GetInfluenceMock(client, address, stakerId)
 }
 
+func (u UtilsMock) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return GetEpochLastRevealedMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
+	return GetVoteValueMock(client, address, assetId, stakerId)
+}
+
+func (u UtilsMock) GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return GetInfluenceSnapshotMock(client, address, stakerId, epoch)
+}
+
+func (u UtilsMock) GetNumActiveAssets(client *ethclient.Client, address string) (uint8, error) {
+	return GetNumActiveAssetsMock(client, address)
+}
+
+func (u UtilsMock) GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
+	return GetTotalInfluenceRevealedMock(client, address, epoch)
+}
+
+func (u UtilsMock) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
+	return ConvertBigIntArrayToUint32ArrayMock(bigIntArray)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -377,12 +413,12 @@ func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte
 	return pseudoRandomNumberGeneratorMock(seed, max, blockHashes)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
-	return MakeBlockMock(client, address, rogueMode)
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogueMode, razorUtils, proposeUtils)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
-	return getSortedVotesMock(client, address, assetId, epoch)
+func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
+	return getSortedVotesMock(client, address, assetId, epoch, razorUtils)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
