@@ -12,7 +12,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) {
+func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, razorUtils utilsInterface, proposeUtils proposeUtilsInterface) {
 	numberOfProposedBlocks, err := utils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
 		log.Error(err)
@@ -26,7 +26,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.BlockMedians)
-		medians, err := MakeBlock(client, account.Address, false)
+		medians, err := MakeBlock(client, account.Address, false, razorUtils, proposeUtils)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -38,7 +38,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.BlockMedians)
 			log.Debug("Local Calculations: ", medians)
-			err := Dispute(client, config, account, epoch, uint8(i), assetId)
+			err := Dispute(client, config, account, epoch, uint8(i), assetId, razorUtils)
 			if err != nil {
 				log.Error("Error in disputing...", err)
 				continue
@@ -51,9 +51,9 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 	giveSortedAssetIds = []int{}
 }
 
-func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
+func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, razorUtils utilsInterface) error {
 	blockManager := utils.GetBlockManager(client)
-	sortedVotes, err := getSortedVotes(client, account.Address, uint8(assetId), epoch)
+	sortedVotes, err := getSortedVotes(client, account.Address, uint8(assetId), epoch, razorUtils)
 	if err != nil {
 		return err
 	}

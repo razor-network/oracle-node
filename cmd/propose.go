@@ -89,7 +89,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := proposeUtils.MakeBlock(client, account.Address, rogueMode)
+	medians, err := proposeUtils.MakeBlock(client, account.Address, rogueMode, razorUtils, proposeUtils)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -181,28 +181,28 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
-	numAssets, err := utils.GetNumActiveAssets(client, address)
+func MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface) ([]uint32, error) {
+	numAssets, err := razorUtils.GetNumActiveAssets(client, address)
 	if err != nil {
 		return nil, err
 	}
 
 	var medians []*big.Int
 
-	epoch, err := utils.GetEpoch(client, address)
+	epoch, err := razorUtils.GetEpoch(client, address)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
 	for assetId := 1; assetId <= int(numAssets); assetId++ {
-		sortedVotes, err := getSortedVotes(client, address, uint8(assetId), epoch)
+		sortedVotes, err := proposeUtils.getSortedVotes(client, address, uint8(assetId), epoch, razorUtils)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 
-		totalInfluenceRevealed, err := utils.GetTotalInfluenceRevealed(client, address, epoch)
+		totalInfluenceRevealed, err := razorUtils.GetTotalInfluenceRevealed(client, address, epoch)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -215,32 +215,32 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 		if rogueMode {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
-			median = influencedMedian(sortedVotes, totalInfluenceRevealed)
+			median = proposeUtils.influencedMedian(sortedVotes, totalInfluenceRevealed)
 		}
 		log.Debugf("Median: %s", median)
 		medians = append(medians, median)
 	}
-	mediansInUint32 := utils.ConvertBigIntArrayToUint32Array(medians)
+	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(medians)
 	return mediansInUint32, nil
 }
 
-func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
-	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
+func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, err
 	}
 	var weightedVoteValues []*big.Int
 	for i := 1; i <= int(numberOfStakers); i++ {
-		epochLastRevealed, err := utils.GetEpochLastRevealed(client, address, uint32(i))
+		epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, address, uint32(i))
 		if err != nil {
 			return nil, err
 		}
 		if epoch == epochLastRevealed {
-			vote, err := utils.GetVoteValue(client, address, assetId, uint32(i))
+			vote, err := razorUtils.GetVoteValue(client, address, assetId, uint32(i))
 			if err != nil {
 				return nil, err
 			}
-			influence, err := utils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
+			influence, err := razorUtils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
 			if err != nil {
 				return nil, err
 			}
