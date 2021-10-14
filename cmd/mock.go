@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 type UtilsMock struct{}
@@ -27,6 +28,8 @@ type AccountMock struct{}
 type KeystoreMock struct{}
 
 type FlagSetMock struct{}
+
+type UtilsCmdMock struct{}
 
 type VoteManagerMock struct{}
 
@@ -55,6 +58,16 @@ var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.
 var GetAmountInDecimalMock func(*big.Int) *big.Float
 
 var ConnectToClientMock func(string) *ethclient.Client
+
+var GetStakerIdMock func(*ethclient.Client, string) (uint32, error)
+
+var GetStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+
+var GetUpdatedStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+
+var GetConfigDataMock func() (types.Configurations, error)
+
+var ParseBoolMock func(string) (bool, error)
 
 var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
 
@@ -93,6 +106,12 @@ var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Ty
 var ResetLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+
+var SetDelegationAcceptanceMock func(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
+
+var SetCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+
+var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -139,6 +158,16 @@ var GetInt32WaitMock func(*pflag.FlagSet) (int32, error)
 var GetInt32GasPriceMock func(*pflag.FlagSet) (int32, error)
 
 var GetStringLogLevelMock func(*pflag.FlagSet) (string, error)
+
+var GetStringStatusMock func(*pflag.FlagSet) (string, error)
+
+var GetUint8CommissionMock func(*pflag.FlagSet) (uint8, error)
+
+var SetCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
+
+var DecreaseCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
+
+var DecreaseCommissionPromptMock func() bool
 
 var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 
@@ -198,6 +227,26 @@ func (u UtilsMock) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 
 func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
+}
+
+func (u UtilsMock) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
+	return GetStakerIdMock(client, address)
+}
+
+func (u UtilsMock) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return GetStakerMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return GetUpdatedStakerMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetConfigData() (types.Configurations, error) {
+	return GetConfigDataMock()
+}
+
+func (u UtilsMock) ParseBool(str string) (bool, error) {
+	return ParseBoolMock(str)
 }
 
 func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -300,6 +349,18 @@ func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts
 	return DelegateMock(client, opts, epoch, stakerId, amount)
 }
 
+func (stakeManagerMock StakeManagerMock) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
+	return SetDelegationAcceptanceMock(client, opts, status)
+}
+
+func (stakeManagerMock StakeManagerMock) SetCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	return SetCommissionContractMock(client, opts, commission)
+}
+
+func (stakeManagerMock StakeManagerMock) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	return DecreaseCommissionContractMock(client, opts, commission)
+}
+
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
 	return CreateAccountMock(path, password)
 }
@@ -368,6 +429,10 @@ func (flagSetMock FlagSetMock) GetStringLogLevel(flagSet *pflag.FlagSet) (string
 	return GetStringLogLevelMock(flagSet)
 }
 
+func (flagSetMock FlagSetMock) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringStatusMock(flagSet)
+}
+
 func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	return RevealMock(client, opts, epoch, values, secret)
 }
@@ -376,8 +441,8 @@ func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bi
 	return CommitMock(client, opts, epoch, commitment)
 }
 
-func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	return ClaimBlockRewardMock(client, opts)
+func (flagSetMock FlagSetMock) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8CommissionMock(flagSet)
 }
 
 func (flagSetMock FlagSetMock) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
@@ -394,6 +459,22 @@ func (flagSetMock FlagSetMock) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, err
 
 func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
 	return GetUint8CollectionIdMock(flagSet)
+}
+
+func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
+	return SetCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+}
+
+func (utilsCmdMock UtilsCmdMock) DecreaseCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
+	return DecreaseCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
+}
+
+func (utilsCmdMock UtilsCmdMock) DecreaseCommissionPrompt() bool {
+	return DecreaseCommissionPromptMock()
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
