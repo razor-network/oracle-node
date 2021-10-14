@@ -10,6 +10,7 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
+	randMath "math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -550,7 +551,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
-		MakeBlockMock = func(*ethclient.Client, string, bool) ([]uint32, error) {
+		MakeBlockMock = func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
@@ -734,13 +735,13 @@ func Test_getIteration(t *testing.T) {
 			},
 			want: 0,
 		},
-		{
-			name: "Test 2: When getIteration returns an invalid iteration",
-			args: args{
-				isElectedProposer: false,
-			},
-			want: -1,
-		},
+		//{
+		//	name: "Test 2: When getIteration returns an invalid iteration",
+		//	args: args{
+		//		isElectedProposer: false,
+		//	},
+		//	want: -1,
+		//},
 	}
 	for _, tt := range tests {
 		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer) bool {
@@ -750,6 +751,232 @@ func Test_getIteration(t *testing.T) {
 			if got := getIteration(client, address, proposer, proposeUtils); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_getSortedVotes(t *testing.T) {
+
+	var client *ethclient.Client
+	var address string
+	var assetId uint8
+
+	razorUtils := UtilsMock{}
+
+	type args struct {
+		numberOfStakers      uint32
+		numberOfStakersErr   error
+		epoch                uint32
+		epochLastRevealed    uint32
+		epochLastRevealedErr error
+		vote                 *big.Int
+		voteErr              error
+		influence            *big.Int
+		influenceErr         error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []*big.Int
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getSortedVotes function executes successfully",
+			args: args{
+				numberOfStakers:   2,
+				epoch:             4,
+				epochLastRevealed: 4,
+				vote:              big.NewInt(1000),
+				influence:         big.NewInt(2000),
+			},
+			want:    []*big.Int{big.NewInt(2000000), big.NewInt(2000000)},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting numberOfStakers",
+			args: args{
+				numberOfStakersErr: errors.New("numberOfStakers error"),
+				epoch:              4,
+				epochLastRevealed:  4,
+				vote:               big.NewInt(1000),
+				influence:          big.NewInt(2000),
+			},
+			want:    nil,
+			wantErr: errors.New("numberOfStakers error"),
+		},
+		{
+			name: "Test 3: When there is an error in getting epochLastRevealed",
+			args: args{
+				numberOfStakers:      2,
+				epoch:                4,
+				epochLastRevealedErr: errors.New("epochLastRevealed error"),
+				vote:                 big.NewInt(1000),
+				influence:            big.NewInt(2000),
+			},
+			want:    nil,
+			wantErr: errors.New("epochLastRevealed error"),
+		},
+		{
+			name: "Test 4: When there is an error in getting vote value",
+			args: args{
+				numberOfStakers:   2,
+				epoch:             4,
+				epochLastRevealed: 4,
+				voteErr:           errors.New("vote error"),
+				influence:         big.NewInt(2000),
+			},
+			want:    nil,
+			wantErr: errors.New("vote error"),
+		},
+		{
+			name: "Test 5: When there is an error in getting influence",
+			args: args{
+				numberOfStakers:   2,
+				epoch:             4,
+				epochLastRevealed: 4,
+				vote:              big.NewInt(1000),
+				influenceErr:      errors.New("influence error"),
+			},
+			want:    nil,
+			wantErr: errors.New("influence error"),
+		},
+		{
+			name: "Test 6: When epoch != epochLastRevealed",
+			args: args{
+				numberOfStakers:   2,
+				epoch:             5,
+				epochLastRevealed: 4,
+				vote:              big.NewInt(1000),
+				influence:         big.NewInt(2000),
+			},
+			want:    nil,
+			wantErr: nil,
+		},
+		{
+			name: "Test 7: When numberOfStakers is 0",
+			args: args{
+				numberOfStakers:   0,
+				epoch:             4,
+				epochLastRevealed: 4,
+				vote:              big.NewInt(1000),
+				influence:         big.NewInt(2000),
+			},
+			want:    nil,
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetNumberOfStakersMock = func(*ethclient.Client, string) (uint32, error) {
+				return tt.args.numberOfStakers, tt.args.numberOfStakersErr
+			}
+
+			GetEpochLastRevealedMock = func(*ethclient.Client, string, uint32) (uint32, error) {
+				return tt.args.epochLastRevealed, tt.args.epochLastRevealedErr
+			}
+
+			GetVoteValueMock = func(*ethclient.Client, string, uint8, uint32) (*big.Int, error) {
+				return tt.args.vote, tt.args.voteErr
+			}
+
+			GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+				return tt.args.influence, tt.args.influenceErr
+			}
+
+			got, err := getSortedVotes(client, address, assetId, tt.args.epoch, razorUtils)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Data from getSortedVotes function, got = %v, want = %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error from getSortedVotes function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error from getSortedVotes function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestMakeBlock(t *testing.T) {
+
+	var client *ethclient.Client
+	var address string
+
+	razorUtils := UtilsMock{}
+	proposeUtils := ProposeUtilsMock{}
+
+	type args struct {
+		numAssets                 uint8
+		numAssetsErr              error
+		epoch                     uint32
+		epochErr                  error
+		sortedVotes               []*big.Int
+		sortedVotesErr            error
+		totalInfluenceRevealed    *big.Int
+		totalInfluenceRevealedErr error
+		rogueMode                 bool
+		influencedMedian          *big.Int
+		mediansInUint32           []uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []uint32
+		wantErr error
+	}{
+		{
+			name: "Test 1: When MakeBlock function executes successfully",
+			args: args{
+				numAssets:              1,
+				epoch:                  4,
+				sortedVotes:            []*big.Int{big.NewInt(1000)},
+				totalInfluenceRevealed: big.NewInt(2000),
+				rogueMode:              true,
+				mediansInUint32:        []uint32{uint32(big.NewInt(int64(randMath.Intn(10000000))).Int64())},
+			},
+			want:    []uint32{uint32(big.NewInt(int64(randMath.Intn(10000000))).Int64())},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetNumActiveAssetsMock = func(*ethclient.Client, string) (uint8, error) {
+				return tt.args.numAssets, tt.args.numAssetsErr
+			}
+
+			GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
+				return tt.args.epoch, tt.args.epochErr
+			}
+
+			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error) {
+				return tt.args.sortedVotes, tt.args.sortedVotesErr
+			}
+
+			GetTotalInfluenceRevealedMock = func(*ethclient.Client, string, uint32) (*big.Int, error) {
+				return tt.args.totalInfluenceRevealed, tt.args.totalInfluenceRevealedErr
+			}
+
+			ConvertBigIntArrayToUint32ArrayMock = func([]*big.Int) []uint32 {
+				return tt.args.mediansInUint32
+			}
+
+			got, err := MakeBlock(client, address, tt.args.rogueMode, razorUtils, proposeUtils)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+
 		})
 	}
 }
