@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"github.com/spf13/pflag"
 	"math"
 	"math/big"
 	"os"
@@ -126,4 +127,11 @@ func GetStateName(stateNumber int64) string {
 		stateName = "-1"
 	}
 	return stateName
+}
+
+func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+	if IsFlagPassed("stakerId") {
+		return flagSet.GetUint32("stakerId")
+	}
+	return GetStakerId(client, address)
 }
