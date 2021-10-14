@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 	"strconv"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/spf13/cobra"
 )
@@ -57,6 +58,10 @@ func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8)
 func ModifyAssetStatus(transactionOpts types.TransactionOptions, assetId uint8, status bool) error {
 	assetManager := utils.GetAssetManager(transactionOpts.Client)
 	txnOpts := utils.GetTxnOpts(transactionOpts)
+	_, err := razorUtils.WaitForConfirmState(transactionOpts.Client, transactionOpts.AccountAddress, "modify asset status")
+	if err != nil {
+		return err
+	}
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
 	txn, err := assetManager.SetCollectionStatus(txnOpts, status, assetId)
 	if err != nil {
