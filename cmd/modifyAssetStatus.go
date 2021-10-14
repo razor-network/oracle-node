@@ -10,7 +10,6 @@ import (
 	"razor/utils"
 )
 
-var cmdUtils cmdUtilsInterface
 var modifyAssetStatusCmd = &cobra.Command{
 	Use:   "modifyAssetStatus",
 	Short: "modify the active status of an asset",
@@ -34,7 +33,7 @@ func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8,
 	return assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
 
-func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, cmdUtils cmdUtilsInterface, flagSetUtils flagSetInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, cmdUtils utilsCmdInterface, flagSetUtils flagSetInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return core.NilHash, err
@@ -75,6 +74,10 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		Config:         config,
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	_, err = razorUtils.WaitForDisputeOrConfirmState(client, address, "modify asset status")
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
 	txn, err := assetManagerUtils.SetAssetStatus(client, txnOpts, status, assetId)
 	if err != nil {
