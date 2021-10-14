@@ -132,6 +132,30 @@ func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32)
 	return data, nil
 }
 
+func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
+	if len(collection.JobIDs) == 0 {
+		return nil, errors.New("no jobs present in the collection")
+	}
+	var jobs []bindings.StructsJob
+	for _, id := range collection.JobIDs {
+		job, err := GetActiveJob(client, address, id)
+		if err != nil {
+			log.Errorf("Error in fetching job %d: %s", id, err)
+			continue
+		}
+		jobs = append(jobs, job)
+	}
+	dataToCommit, weight, err := GetDataToCommitFromJobs(jobs)
+	if err != nil || len(dataToCommit) == 0 {
+		prevCommitmentData, err := FetchPreviousValue(client, address, previousEpoch, collection.Id)
+		if err != nil {
+			return nil, err
+		}
+		return big.NewInt(int64(prevCommitmentData)), nil
+	}
+	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
+}
+
 func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (bindings.StructsJob, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions(false, address, "")
@@ -165,16 +189,20 @@ func GetActiveCollection(client *ethclient.Client, address string, collectionId 
 	return collection, nil
 }
 
-func GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, error) {
-	var data []*big.Int
+func GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
+	var (
+		data   []*big.Int
+		weight []uint8
+	)
 	for _, job := range jobs {
 		dataToAppend, err := GetDataToCommitFromJob(job)
 		if err != nil {
 			continue
 		}
 		data = append(data, dataToAppend)
+		weight = append(weight, job.Weight)
 	}
-	return data, nil
+	return data, weight, nil
 }
 
 func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
@@ -199,11 +227,15 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 		log.Error("Error in parsing data from API: ", err)
 		return nil, err
 	}
-
-	parsedData, err := GetDataFromJSON(parsedJSON, job.Selector)
-	if err != nil {
-		log.Error("Error in fetching value from parsed data: ", err)
-		return nil, err
+	var parsedData interface{}
+	if job.SelectorType == 1 {
+		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
+		if err != nil {
+			log.Error("Error in fetching value from parsed data: ", err)
+			return nil, err
+		}
+	} else {
+		//TODO: Add support for XHTML selector
 	}
 
 	datum, err := ConvertToNumber(parsedData)

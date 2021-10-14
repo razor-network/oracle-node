@@ -50,10 +50,22 @@ func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
 	return arr
 }
 
-func CalculateSumOfArray(data []*big.Int) *big.Int {
+func CalculateWeightedSum(data []*big.Int, weight []uint8) *big.Int {
 	sum := big.NewInt(0)
+	for index, datum := range data {
+		weighedData := big.NewInt(1).Mul(datum, big.NewInt(int64(weight[index])))
+		sum.Add(sum, weighedData)
+	}
+	return sum
+}
+
+func CalculateSumOfUint8Array(data []uint8) uint8 {
+	sum := uint8(0)
+	if data == nil || len(data) == 0 {
+		return sum
+	}
 	for _, datum := range data {
-		sum.Add(sum, datum)
+		sum += datum
 	}
 	return sum
 }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"github.com/PaesslerAG/jsonpath"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +15,9 @@ func GetDataFromAPI(url string) ([]byte, error) {
 	response, err := client.Get(url)
 	if err != nil {
 		return nil, err
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New("API not responding")
 	}
 	return ioutil.ReadAll(response.Body)
 }
