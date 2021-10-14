@@ -15,7 +15,7 @@ import (
 func ConnectToClient(provider string) *ethclient.Client {
 	client, err := ethclient.Dial(provider)
 	if err != nil {
-		log.Fatal("Error in connecting...\n", err)
+		log.Fatal("Error in connecting...", err)
 	}
 	log.Info("Connected to: ", provider)
 	return client

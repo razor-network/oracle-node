@@ -19,6 +19,7 @@ func GetDataFromAPI(url string) ([]byte, error) {
 	if response.StatusCode != http.StatusOK {
 		return nil, errors.New("API not responding")
 	}
+	defer response.Body.Close()
 	return ioutil.ReadAll(response.Body)
 }
 
