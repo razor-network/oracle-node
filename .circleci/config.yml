@@ -34,7 +34,7 @@ jobs:
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+            goveralls -coverprofile=coverage.txt -service semaphore -ignore=pkg/*.go  -repotoken $COVERALLS_TOKEN
 
 workflows:
   tests:
