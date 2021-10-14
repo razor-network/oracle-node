@@ -30,11 +30,11 @@ jobs:
       - run:
           name: "Generate Coverage"
           command: |
-            go-acc ./...
+            go-acc ./... --ignore pkg 
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            goveralls -coverprofile=coverage.txt -service semaphore -ignore=pkg/*  -repotoken $COVERALLS_TOKEN
+            goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
 
 workflows:
   tests:
