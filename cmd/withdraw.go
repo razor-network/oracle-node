@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cmdUtils cmdUtilsInterface
-
 var withdrawCmd = &cobra.Command{
 	Use:   "withdraw",
 	Short: "withdraw your razors once you've unstaked",
@@ -29,12 +27,14 @@ Example:
 
 		password := utils.AssignPassword(cmd.Flags())
 		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 
 		client := utils.ConnectToClient(config.Provider)
 		utils.CheckError("Error in fetching staker id: ", err)
 
 		utils.CheckEthBalanceIsZero(client, address)
+
+		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
+		utils.CheckError("StakerId error: ", err)
 
 		txn, err := checkForCommitStateAndWithdraw(client, types.Account{
 			Address:  address,
@@ -48,7 +48,7 @@ Example:
 	},
 }
 
-func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, razorUtils utilsInterface, cmdUtils cmdUtilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, razorUtils utilsInterface, cmdUtils utilsCmdInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 
 	lock, err := razorUtils.GetLock(client, account.Address, stakerId)
 	if err != nil {

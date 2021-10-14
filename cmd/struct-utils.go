@@ -14,7 +14,9 @@ import (
 	"razor/accounts"
 	"razor/core/types"
 	"razor/path"
+	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 )
 
 type Utils struct{}
@@ -25,10 +27,10 @@ type AssetManagerUtils struct{}
 type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
+type UtilsCmd struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
 type CryptoUtils struct{}
-type UtilsCmd struct{}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -74,6 +76,26 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
 }
 
+func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetStakerId(client, address)
+}
+
+func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u Utils) GetConfigData() (types.Configurations, error) {
+	return GetConfigData()
+}
+
+func (u Utils) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
+}
+
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	return utils.GetDelayedState(client, buffer)
 }
@@ -114,6 +136,18 @@ func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string
 	return utils.GetWithdrawReleasePeriod(client, address)
 }
 
+func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	return utils.GetCommitments(client, address)
+}
+
+func (u Utils) AllZero(bytesValue [32]byte) bool {
+	return utils.AllZero(bytesValue)
+}
+
+func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, address, stakerId)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -151,6 +185,21 @@ func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, op
 func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Withdraw(opts, epoch, stakerId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.SetDelegationAcceptance(opts, status)
+}
+
+func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.SetCommission(opts, commission)
+}
+
+func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.DecreaseCommission(opts, commission)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -229,14 +278,22 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 	return flagSet.GetInt8("power")
 }
 
+func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("status")
+}
+
+func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Reveal(opts, epoch, values, secret)
+}
+
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
 	return voteManager.Commit(opts, epoch, commitment)
 }
 
-func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
-	return blockManager.ClaimBlockReward(opts)
+func (flagSetUtils FlagSetUtils) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("commission")
 }
 
 func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
@@ -255,10 +312,27 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint8("collectionId")
 }
 
-func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
-	return crypto.HexToECDSA(hexKey)
+func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
+	return SetCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
 }
 
-func (c UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtil utilsCmdInterface) error {
+	return DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtil)
+}
+
+func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
+	return DecreaseCommissionPrompt()
+}
+
+func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	return withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+}
+
+func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
+}
+
+func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(hexKey)
 }
