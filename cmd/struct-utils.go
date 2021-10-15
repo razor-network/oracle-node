@@ -200,6 +200,16 @@ func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, o
 	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
 }
 
+func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.SetCollectionStatus(opts, assetStatus, id)
+}
+
+func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	assetMananger := utils.GetAssetManager(client)
+	return assetMananger.GetCollectionStatus(opts, id)
+}
+
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
@@ -263,6 +273,10 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 
 func (flagSetUtils FlagSetUtils) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, error) {
 	return flagSet.GetUint8("weight")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("assetId")
 }
 
 func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
@@ -333,6 +347,10 @@ func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId u
 
 func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
 	return DecreaseCommissionPrompt()
+}
+
+func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
