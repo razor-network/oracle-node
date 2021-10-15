@@ -135,6 +135,10 @@ var AddJobToCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, ui
 
 var RemoveJobFromCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 
+var SetAssetStatusMock func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error)
+
+var GetActiveStatusMock func(*ethclient.Client, *bind.CallOpts, uint8) (bool, error)
+
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
 var GetUint32StakerIdMock func(*pflag.FlagSet) (uint32, error)
@@ -146,6 +150,10 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
+
+var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
@@ -229,6 +237,10 @@ func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
 }
 
+func (u UtilsMock) PasswordPrompt() string {
+	return PasswordPromptMock()
+}
+
 func (u UtilsMock) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
 	return GetStakerIdMock(client, address)
 }
@@ -285,10 +297,6 @@ func (u UtilsMock) PrivateKeyPrompt() string {
 	return PrivateKeyPromptMock()
 }
 
-func (u UtilsMock) PasswordPrompt() string {
-	return PasswordPromptMock()
-}
-
 func (u UtilsMock) GetConfigFilePath() (string, error) {
 	return GetConfigFilePathMock()
 }
@@ -335,6 +343,14 @@ func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opt
 
 func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
 	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power)
+}
+
+func (assetManagerMock AssetManagerMock) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	return SetAssetStatusMock(client, opts, assetStatus, id)
+}
+
+func (assetManagerMock AssetManagerMock) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	return GetActiveStatusMock(client, opts, id)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -405,6 +421,10 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 	return GetInt8PowerMock(flagSet)
 }
 
+func (flagSetMock FlagSetMock) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8AssetIdMock(flagSet)
+}
+
 func (flagSetMock FlagSetMock) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
 	return GetStringProviderMock(flagSet)
 }
@@ -457,6 +477,10 @@ func (flagSetMock FlagSetMock) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, err
 	return GetUint8JobIdMock(flagSet)
 }
 
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
+}
+
 func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
 	return GetUint8CollectionIdMock(flagSet)
 }
@@ -473,8 +497,8 @@ func (utilsCmdMock UtilsCmdMock) DecreaseCommissionPrompt() bool {
 	return DecreaseCommissionPromptMock()
 }
 
-func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	return ClaimBlockRewardMock(client, opts)
+func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
