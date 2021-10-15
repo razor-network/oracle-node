@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
@@ -50,11 +51,15 @@ func addJobToCollection(flagSet *pflag.FlagSet, config types.Configurations, raz
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "addJobToCollection",
+		Parameters:      []interface{}{collectionId, jobId},
+		ABI:             bindings.AssetManagerABI,
 	})
 
 	log.Infof("Adding Job %d to collection %d", jobId, collectionId)

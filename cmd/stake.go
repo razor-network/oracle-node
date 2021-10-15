@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
@@ -59,13 +60,17 @@ Example:
 }
 
 func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
 
 	log.Info("Sending stake transactions...")
+	txnArgs.ContractAddress = core.StakeManagerAddress
+	txnArgs.MethodName = "stake"
+	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
+	txnArgs.ABI = bindings.StakeManagerABI
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
