@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ var createJobCmd = &cobra.Command{
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The createJob command can be used to create a job that the stakers can vote upon.
 
 Example:
-  ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -r true -s last -u https://api.gemini.com/v1/pubticker/btcusd
+  ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -p 2 -s last -u https://api.gemini.com/v1/pubticker/btcusd
 
 Note: 
   This command only works for the admin.
@@ -62,11 +63,15 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	txnArgs := types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "createJob",
+		Parameters:      []interface{}{power, name, selector, url},
+		ABI:             bindings.AssetManagerABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

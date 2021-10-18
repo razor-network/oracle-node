@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 )
 
@@ -15,7 +16,7 @@ var createCollectionCmd = &cobra.Command{
 	Long: `A collection is a group of jobs that reports the aggregated value of jobs. createCollection can be used to club multiple jobs into one collection bound by an aggregation method.
 
 Example: 
-  ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2
+  ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
 
 Note: 
   This command only works for the admin.
@@ -55,19 +56,23 @@ func createCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
 	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
 	_, err = razorUtils.WaitForDisputeOrConfirmState(client, address, "create collection")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "createCollection",
+		Parameters:      []interface{}{jobIds, aggregation, power, name},
+		ABI:             bindings.AssetManagerABI,
+	})
 	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, jobIds, aggregation, power, name)
 	if err != nil {
 		log.Error("Error in creating collection")

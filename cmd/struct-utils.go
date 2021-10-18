@@ -10,12 +10,14 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 )
 
 type Utils struct{}
@@ -27,6 +29,7 @@ type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type ProposeUtils struct{}
+type UtilsCmd struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
 type CryptoUtils struct{}
@@ -71,6 +74,26 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return utils.GetAmountInDecimal(amountInWei)
 }
 
+func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetStakerId(client, address)
+}
+
+func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u Utils) GetConfigData() (types.Configurations, error) {
+	return GetConfigData()
+}
+
+func (u Utils) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
+}
+
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	return utils.GetDelayedState(client, buffer)
 }
@@ -101,10 +124,6 @@ func (u Utils) PasswordPrompt() string {
 
 func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
-}
-
-func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.GetStaker(client, address, stakerId)
 }
 
 func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
@@ -155,6 +174,26 @@ func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 
 	return utils.ConvertBigIntArrayToUint32Array(bigIntArray)
 }
 
+func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	return utils.GetCommitments(client, address)
+}
+
+func (u Utils) AllZero(bytesValue [32]byte) bool {
+	return utils.AllZero(bytesValue)
+}
+
+func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, address, stakerId)
+}
+
+func (u Utils) GetConfigFilePath() (string, error) {
+	return path.GetConfigFilePath()
+}
+
+func (u Utils) ViperWriteConfigAs(path string) error {
+	return viper.WriteConfigAs(path)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -189,9 +228,34 @@ func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, op
 	return stakeManager.Delegate(opts, epoch, stakerId, amount)
 }
 
+func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.SetDelegationAcceptance(opts, status)
+}
+
+func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.SetCommission(opts, commission)
+}
+
+func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.DecreaseCommission(opts, commission)
+}
+
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateJob(opts, power, name, selector, url)
+}
+
+func (assetManagerUtils AssetManagerUtils) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.SetAssetStatus(opts, assetStatus, id)
+}
+
+func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	assetMananger := utils.GetAssetManager(client)
+	return assetMananger.GetActiveStatus(opts, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
@@ -265,6 +329,28 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 	return flagSet.GetInt8("power")
 }
 
+func (flagSetUtils FlagSetUtils) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("assetId")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("status")
+}
+
+func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Reveal(opts, epoch, values, secret)
+}
+
+func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	return voteManager.Commit(opts, epoch, commitment)
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("commission")
+}
+
 func (flagSetUtils FlagSetUtils) GetUintSliceJobIds(flagSet *pflag.FlagSet) ([]uint, error) {
 	return flagSet.GetUintSlice("jobIds")
 }
@@ -309,19 +395,54 @@ func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalI
 	return influencedMedian(sortedVotes, totalInfluenceRevealed)
 }
 
-func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.GetVoteManager(client)
-	return voteManager.Commit(opts, epoch, commitment)
+func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+}
+
+func (flagSetUtils FlagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("provider")
+}
+
+func (flagSetUtils FlagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
+	return flagSet.GetFloat32("gasmultiplier")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("buffer")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("wait")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("gasprice")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("logLevel")
+}
+
+func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
+	return SetCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+}
+
+func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtil utilsCmdInterface) error {
+	return DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtil)
+}
+
+func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
+	return DecreaseCommissionPrompt()
+}
+
+func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
-}
-
-func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
-	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

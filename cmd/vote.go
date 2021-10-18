@@ -168,12 +168,19 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := HandleRevealState(client, account.Address, staker, epoch); err != nil {
+		if err := HandleRevealState(client, account.Address, staker, epoch, razorUtils); err != nil {
 			log.Error(err)
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
-		Reveal(client, _committedData, secret, account, account.Address, config)
+		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils)
+		if err != nil {
+			log.Error("Reveal error: ", err)
+			break
+		}
+		if revealTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, revealTxn.String())
+		}
 	case 2:
 		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
 		if err != nil {
@@ -321,6 +328,7 @@ func init() {
 	razorUtils = Utils{}
 	proposeUtils = ProposeUtils{}
 	voteManagerUtils = VoteManagerUtils{}
+	transactionUtils = TransactionUtils{}
 	blockManagerUtils = BlockManagerUtils{}
 	transactionUtils = TransactionUtils{}
 

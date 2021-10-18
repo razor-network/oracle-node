@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
-	"strconv"
-
-	"github.com/spf13/cobra"
 )
 
 var modifyAssetStatusCmd = &cobra.Command{
@@ -20,54 +21,86 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in fetching config data: ", err)
 
-		address, _ := cmd.Flags().GetString("address")
-		assetId, _ := cmd.Flags().GetUint8("assetId")
-		statusString, _ := cmd.Flags().GetString("status")
-
-		status, err := strconv.ParseBool(statusString)
-		utils.CheckError("Error in parsing status to boolean: ", err)
-
-		password := utils.PasswordPrompt()
-
-		client := utils.ConnectToClient(config.Provider)
-
-		currentStatus, err := CheckCurrentStatus(client, address, assetId)
-		utils.CheckError("Error in fetching active status: ", err)
-		if currentStatus == status {
-			log.Fatalf("Asset %d has the active status already set to %t", assetId, status)
-		}
-
-		err = ModifyAssetStatus(types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
-		}, assetId, status)
+		txn, err := ModifyAssetStatus(cmd.Flags(), config, razorUtils, assetManagerUtils, cmdUtils, flagSetUtils, transactionUtils)
 		utils.CheckError("Error in changing asset active status: ", err)
+		if txn != core.NilHash {
+			utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
+		}
 	},
 }
 
-func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8) (bool, error) {
-	assetManager := utils.GetAssetManager(client)
-	callOpts := utils.GetOptions(false, address, "")
-	return assetManager.GetActiveStatus(&callOpts, assetId)
+func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	callOpts := razorUtils.GetOptions(false, address, "")
+	return assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
 
-func ModifyAssetStatus(transactionOpts types.TransactionOptions, assetId uint8, status bool) error {
-	assetManager := utils.GetAssetManager(transactionOpts.Client)
-	txnOpts := utils.GetTxnOpts(transactionOpts)
-	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
-	txn, err := assetManager.SetAssetStatus(txnOpts, status, assetId)
+func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, cmdUtils utilsCmdInterface, flagSetUtils flagSetInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
-		return err
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", txn.Hash().String())
-	utils.WaitForBlockCompletion(transactionOpts.Client, txn.Hash().String())
-	return nil
+	assetId, err := flagSetUtils.GetUint8AssetId(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	statusString, err := flagSetUtils.GetStringStatus(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	status, err := razorUtils.ParseBool(statusString)
+	if err != nil {
+		log.Error("Error in parsing status to boolean")
+		return core.NilHash, err
+	}
+
+	password := razorUtils.PasswordPrompt()
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	currentStatus, err := cmdUtils.CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
+	if err != nil {
+		log.Error("Error in fetching active status")
+		return core.NilHash, err
+	}
+	if currentStatus == status {
+		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
+		return core.NilHash, nil
+	}
+
+	txnArgs := types.TransactionOptions{
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.AssetManagerAddress,
+		MethodName:      "setAssetStatus",
+		Parameters:      []interface{}{status, assetId},
+		ABI:             bindings.AssetManagerABI,
+	}
+
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	_, err = razorUtils.WaitForDisputeOrConfirmState(client, address, "modify asset status")
+	if err != nil {
+		return core.NilHash, err
+	}
+	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
+	txn, err := assetManagerUtils.SetAssetStatus(client, txnOpts, status, assetId)
+	if err != nil {
+		return core.NilHash, err
+	}
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn).String())
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	cmdUtils = UtilsCmd{}
+	flagSetUtils = FlagSetUtils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 
 	var (
