@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"github.com/spf13/pflag"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/spf13/pflag"
+
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/manifoldco/promptui"
 
@@ -71,17 +73,22 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		return err
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
+	txnOpts := types.TransactionOptions{
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.StakeManagerAddress,
+		ABI:             bindings.StakeManagerABI,
+	}
 
 	if stakerInfo.AcceptDelegation != status {
 		log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
-		delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, txnOpts, status)
+		txnOpts.MethodName = "setDelegationAcceptance"
+		txnOpts.Parameters = []interface{}{status}
+		setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+		delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
 		if err != nil {
 			log.Error("Error in setting delegation acceptance")
 			return err
@@ -100,7 +107,10 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 	if commission != 0 && stakerInfo.AcceptDelegation {
 		// Call SetCommission if the commission value is provided and the staker hasn't already set commission
 		if stakerInfo.Commission == 0 {
-			err = cmdUtils.SetCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+			txnOpts.MethodName = "setCommission"
+			txnOpts.Parameters = []interface{}{commission}
+			setCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+			err = cmdUtils.SetCommission(client, stakerId, setCommissionTxnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
 			if err != nil {
 				return err
 			}
@@ -108,7 +118,10 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 
 		// Call DecreaseCommission if the commission value is provided and the staker has already set commission
 		if stakerInfo.Commission > 0 && stakerInfo.Commission > commission {
-			err = cmdUtils.DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
+			txnOpts.MethodName = "decreaseCommission"
+			txnOpts.Parameters = []interface{}{commission}
+			decreaseCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+			err = cmdUtils.DecreaseCommission(client, stakerId, decreaseCommissionTxnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
 			if err != nil {
 				return err
 			}
@@ -117,9 +130,9 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 	return nil
 }
 
-func SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
+func SetCommission(client *ethclient.Client, stakerId uint32, setCommissionTxnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
 	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
-	txn, err := stakeManagerUtils.SetCommission(client, txnOpts, commission)
+	txn, err := stakeManagerUtils.SetCommission(client, setCommissionTxnOpts, commission)
 	if err != nil {
 		log.Error("Error in setting commission")
 		return err
@@ -129,11 +142,11 @@ func SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.Tran
 	return nil
 }
 
-func DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
+func DecreaseCommission(client *ethclient.Client, stakerId uint32, decreaseCommissionTxnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
 	log.Infof("Decreasing the commission value of Staker %d to %d%%", stakerId, commission)
 	if cmdUtils.DecreaseCommissionPrompt() {
 		log.Info("Sending DecreaseCommission transaction...")
-		decreaseCommissionTxn, err := stakeManagerUtils.DecreaseCommission(client, txnOpts, commission)
+		decreaseCommissionTxn, err := stakeManagerUtils.DecreaseCommission(client, decreaseCommissionTxnOpts, commission)
 		if err != nil {
 			log.Error("Error in decreasing commission")
 			return err

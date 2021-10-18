@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -51,11 +52,15 @@ func transfer(flagSet *pflag.FlagSet, config types.Configurations, razorUtils ut
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: fromAddress,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  fromAddress,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.RAZORAddress,
+		MethodName:      "transfer",
+		Parameters:      []interface{}{common.HexToAddress(toAddress), valueInWei},
+		ABI:             bindings.RAZORABI,
 	})
 	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
 

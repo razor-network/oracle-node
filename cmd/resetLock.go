@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/spf13/cobra"
@@ -40,11 +41,15 @@ func resetLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.StakeManagerAddress,
+		MethodName:      "resetLock",
+		Parameters:      []interface{}{stakerId},
+		ABI:             bindings.StakeManagerABI,
 	})
 
 	log.Info("Resetting lock...")

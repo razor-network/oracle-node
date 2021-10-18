@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -67,14 +68,16 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 		return core.NilHash, err
 	}
 	withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, big.NewInt(int64(withdrawReleasePeriod)))
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         configurations,
-	})
-
+	txnArgs := types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          configurations,
+		ContractAddress: core.StakeManagerAddress,
+		MethodName:      "withdraw",
+		ABI:             bindings.StakeManagerABI,
+	}
 	epoch, err := razorUtils.GetEpoch(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching epoch")
@@ -90,6 +93,10 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
 	}
+
+	txnArgs.Parameters = []interface{}{commitStateEpoch, stakerId}
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+
 	for i := commitStateEpoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(commitStateEpoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(commitStateEpoch)).Cmp(withdrawBefore) <= 0 {
 			return cmdUtils.Withdraw(client, txnOpts, commitStateEpoch, stakerId, stakeManagerUtils, transactionUtils)

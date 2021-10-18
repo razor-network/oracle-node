@@ -95,6 +95,10 @@ var GetLockMock func(*ethclient.Client, string, uint32) (types.Locks, error)
 
 var GetWithdrawReleasePeriodMock func(*ethclient.Client, string) (uint8, error)
 
+var GetConfigFilePathMock func() (string, error)
+
+var ViperWriteConfigAsMock func(string) error
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -139,6 +143,10 @@ var AddJobToCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, ui
 
 var RemoveJobFromCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint8, uint8) (*Types.Transaction, error)
 
+var SetAssetStatusMock func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error)
+
+var GetActiveStatusMock func(*ethclient.Client, *bind.CallOpts, uint8) (bool, error)
+
 var GetStringAddressMock func(*pflag.FlagSet) (string, error)
 
 var GetUint32StakerIdMock func(*pflag.FlagSet) (uint32, error)
@@ -150,6 +158,22 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
+
+var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+
+var GetStringProviderMock func(*pflag.FlagSet) (string, error)
+
+var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
+
+var GetInt32BufferMock func(*pflag.FlagSet) (int32, error)
+
+var GetInt32WaitMock func(*pflag.FlagSet) (int32, error)
+
+var GetInt32GasPriceMock func(*pflag.FlagSet) (int32, error)
+
+var GetStringLogLevelMock func(*pflag.FlagSet) (string, error)
 
 var GetStringStatusMock func(*pflag.FlagSet) (string, error)
 
@@ -227,6 +251,10 @@ func (u UtilsMock) ConnectToClient(provider string) *ethclient.Client {
 	return ConnectToClientMock(provider)
 }
 
+func (u UtilsMock) PasswordPrompt() string {
+	return PasswordPromptMock()
+}
+
 func (u UtilsMock) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
 	return GetStakerIdMock(client, address)
 }
@@ -283,8 +311,12 @@ func (u UtilsMock) PrivateKeyPrompt() string {
 	return PrivateKeyPromptMock()
 }
 
-func (u UtilsMock) PasswordPrompt() string {
-	return PasswordPromptMock()
+func (u UtilsMock) GetConfigFilePath() (string, error) {
+	return GetConfigFilePathMock()
+}
+
+func (u UtilsMock) ViperWriteConfigAs(path string) error {
+	return ViperWriteConfigAsMock(path)
 }
 
 func (u UtilsMock) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
@@ -333,6 +365,14 @@ func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opt
 
 func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8) (*Types.Transaction, error) {
 	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power)
+}
+
+func (assetManagerMock AssetManagerMock) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	return SetAssetStatusMock(client, opts, assetStatus, id)
+}
+
+func (assetManagerMock AssetManagerMock) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	return GetActiveStatusMock(client, opts, id)
 }
 
 func (stakeManagerMock StakeManagerMock) Stake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -407,6 +447,34 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 	return GetInt8PowerMock(flagSet)
 }
 
+func (flagSetMock FlagSetMock) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8AssetIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringProviderMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
+	return GetFloat32GasMultiplierMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error) {
+	return GetInt32BufferMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) {
+	return GetInt32WaitMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
+	return GetInt32GasPriceMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringLogLevelMock(flagSet)
+}
+
 func (flagSetMock FlagSetMock) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
 	return GetStringStatusMock(flagSet)
 }
@@ -453,6 +521,10 @@ func (utilsCmdMock UtilsCmdMock) DecreaseCommissionPrompt() bool {
 
 func (utilsCmdMock UtilsCmdMock) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	return WithdrawMock(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+}
+
+func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

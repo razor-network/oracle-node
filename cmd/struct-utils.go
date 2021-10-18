@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -148,6 +149,14 @@ func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, s
 	return utils.GetEpochLastCommitted(client, address, stakerId)
 }
 
+func (u Utils) GetConfigFilePath() (string, error) {
+	return path.GetConfigFilePath()
+}
+
+func (u Utils) ViperWriteConfigAs(path string) error {
+	return viper.WriteConfigAs(path)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -205,6 +214,16 @@ func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, power int8, name string, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateJob(opts, power, name, selector, url)
+}
+
+func (assetManagerUtils AssetManagerUtils) SetAssetStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.SetAssetStatus(opts, assetStatus, id)
+}
+
+func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+	assetMananger := utils.GetAssetManager(client)
+	return assetMananger.GetActiveStatus(opts, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, power int8, selector string, url string) (*Types.Transaction, error) {
@@ -278,6 +297,10 @@ func (flagSetUtils FlagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 	return flagSet.GetInt8("power")
 }
 
+func (flagSetUtils FlagSetUtils) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("assetId")
+}
+
 func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("status")
 }
@@ -312,6 +335,30 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint8("collectionId")
 }
 
+func (flagSetUtils FlagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("provider")
+}
+
+func (flagSetUtils FlagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
+	return flagSet.GetFloat32("gasmultiplier")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("buffer")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("wait")
+}
+
+func (flagSetUtils FlagSetUtils) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
+	return flagSet.GetInt32("gasprice")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("logLevel")
+}
+
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
 	return SetCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
 }
@@ -326,6 +373,10 @@ func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
 
 func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	return withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+}
+
+func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
+	return CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
