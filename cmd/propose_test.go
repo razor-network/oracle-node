@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -71,31 +72,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 1: When Propose function executes successfully",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -103,30 +94,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting state",
 			args: args{
-				stateErr:                   errors.New("state error"),
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				stateErr:                errors.New("state error"),
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("state error"),
@@ -134,30 +116,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting staker",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				stakerErr:                  errors.New("staker error"),
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				stakerErr:               errors.New("staker error"),
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("staker error"),
@@ -165,30 +138,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting number of stakers",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakerErr:               errors.New("numberOfStakers error"),
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakerErr:            errors.New("numberOfStakers error"),
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("numberOfStakers error"),
@@ -196,29 +160,20 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting biggest influence staker",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluenceErr:        errors.New("biggest influence staker error"),
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluenceErr:     errors.New("biggest influence staker error"),
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("biggest influence staker error"),
@@ -226,30 +181,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting randaoHash",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHashErr:              errors.New("randao hash error"),
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHashErr:           errors.New("randao hash error"),
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("randao hash error"),
@@ -257,31 +203,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 7: When iteration is -1",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  -1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               -1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: nil,
@@ -289,30 +225,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 8: When there is an error in getting number of proposed blocks",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocksErr:     errors.New("numOfProposedBlocks error"),
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocksErr:  errors.New("numOfProposedBlocks error"),
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("numOfProposedBlocks error"),
@@ -320,30 +247,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 9: When there is an error in getting maxAltBlocks",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocksErr:            errors.New("maxAltBlocks error"),
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocksErr:         errors.New("maxAltBlocks error"),
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("maxAltBlocks error"),
@@ -352,28 +270,19 @@ func TestPropose(t *testing.T) {
 			name: "Test 10: When numOfProposedBlocks >= maxAltBlocks and there is an error in getting lastProposedBlockStruct",
 			args: args{
 				state:                      2,
-				stateErr:                   nil,
 				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
 				numStakers:                 2,
-				numStakerErr:               nil,
 				biggestInfluence:           big.NewInt(1000),
 				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
 				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
 				iteration:                  1,
 				numOfProposedBlocks:        4,
-				numOfProposedBlocksErr:     nil,
 				maxAltBlocks:               2,
-				maxAltBlocksErr:            nil,
 				lastIteration:              big.NewInt(5),
 				lastProposedBlockStructErr: errors.New("lastProposedBlockStruct error"),
 				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
 				txnOpts:                    txnOpts,
 				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -382,35 +291,25 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 11: When numOfProposedBlocks >= maxAltBlocks and current iteration is greater than iteration of last proposed block ",
 			args: args{
-				state:                  2,
-				stateErr:               nil,
-				staker:                 bindings.StructsStaker{},
-				stakerErr:              nil,
-				numStakers:             2,
-				numStakerErr:           nil,
-				biggestInfluence:       big.NewInt(1000),
-				biggestInfluenceId:     2,
-				biggestInfluenceErr:    nil,
-				randaoHash:             [32]byte{1, 2, 3},
-				randaoHashErr:          nil,
-				iteration:              2,
-				numOfProposedBlocks:    4,
-				numOfProposedBlocksErr: nil,
-				maxAltBlocks:           2,
-				maxAltBlocksErr:        nil,
-				lastIteration:          big.NewInt(5),
+				state:               2,
+				staker:              bindings.StructsStaker{},
+				numStakers:          2,
+				biggestInfluence:    big.NewInt(1000),
+				biggestInfluenceId:  2,
+				randaoHash:          [32]byte{1, 2, 3},
+				iteration:           2,
+				numOfProposedBlocks: 4,
+				maxAltBlocks:        2,
+				lastIteration:       big.NewInt(5),
 				lastProposedBlockStruct: types.Block{
 					Block: bindings.StructsBlock{
 						Iteration: big.NewInt(1),
 					},
 				},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				medians:    []uint32{1, 2, 3, 4},
+				txnOpts:    txnOpts,
+				proposeTxn: &Types.Transaction{},
+				hash:       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: nil,
@@ -418,35 +317,25 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 12: When numOfProposedBlocks >= maxAltBlocks and current iteration is less than iteration of last proposed block and propose transaction is successful",
 			args: args{
-				state:                  2,
-				stateErr:               nil,
-				staker:                 bindings.StructsStaker{},
-				stakerErr:              nil,
-				numStakers:             2,
-				numStakerErr:           nil,
-				biggestInfluence:       big.NewInt(1000),
-				biggestInfluenceId:     2,
-				biggestInfluenceErr:    nil,
-				randaoHash:             [32]byte{1, 2, 3},
-				randaoHashErr:          nil,
-				iteration:              1,
-				numOfProposedBlocks:    4,
-				numOfProposedBlocksErr: nil,
-				maxAltBlocks:           2,
-				maxAltBlocksErr:        nil,
-				lastIteration:          big.NewInt(5),
+				state:               2,
+				staker:              bindings.StructsStaker{},
+				numStakers:          2,
+				biggestInfluence:    big.NewInt(1000),
+				biggestInfluenceId:  2,
+				randaoHash:          [32]byte{1, 2, 3},
+				iteration:           1,
+				numOfProposedBlocks: 4,
+				maxAltBlocks:        2,
+				lastIteration:       big.NewInt(5),
 				lastProposedBlockStruct: types.Block{
 					Block: bindings.StructsBlock{
 						Iteration: big.NewInt(2),
 					},
 				},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				medians:    []uint32{1, 2, 3, 4},
+				txnOpts:    txnOpts,
+				proposeTxn: &Types.Transaction{},
+				hash:       common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -454,30 +343,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 13: When there is an error in getting medians",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				mediansErr:                 errors.New("makeBlock error"),
-				txnOpts:                    txnOpts,
-				proposeTxn:                 &Types.Transaction{},
-				proposeErr:                 nil,
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				mediansErr:              errors.New("makeBlock error"),
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("makeBlock error"),
@@ -485,30 +365,21 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 14: When Propose transaction fails",
 			args: args{
-				state:                      2,
-				stateErr:                   nil,
-				staker:                     bindings.StructsStaker{},
-				stakerErr:                  nil,
-				numStakers:                 2,
-				numStakerErr:               nil,
-				biggestInfluence:           big.NewInt(1000),
-				biggestInfluenceId:         2,
-				biggestInfluenceErr:        nil,
-				randaoHash:                 [32]byte{1, 2, 3},
-				randaoHashErr:              nil,
-				iteration:                  1,
-				numOfProposedBlocks:        2,
-				numOfProposedBlocksErr:     nil,
-				maxAltBlocks:               4,
-				maxAltBlocksErr:            nil,
-				lastIteration:              big.NewInt(5),
-				lastProposedBlockStruct:    types.Block{},
-				lastProposedBlockStructErr: nil,
-				medians:                    []uint32{1, 2, 3, 4},
-				mediansErr:                 nil,
-				txnOpts:                    txnOpts,
-				proposeErr:                 errors.New("propose error"),
-				hash:                       common.BigToHash(big.NewInt(1)),
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              2,
+				biggestInfluence:        big.NewInt(1000),
+				biggestInfluenceId:      2,
+				randaoHash:              [32]byte{1, 2, 3},
+				iteration:               1,
+				numOfProposedBlocks:     2,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: types.Block{},
+				medians:                 []uint32{1, 2, 3, 4},
+				txnOpts:                 txnOpts,
+				proposeErr:              errors.New("propose error"),
+				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("propose error"),
@@ -580,49 +451,6 @@ func TestPropose(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for Propose function, got = %v, want %v", err, tt.wantErr)
 				}
-			}
-		})
-	}
-}
-func Test_influencedMedian(t *testing.T) {
-	type args struct {
-		sortedVotes            []*big.Int
-		totalInfluenceRevealed *big.Int
-	}
-	tests := []struct {
-		name string
-		args args
-		want *big.Int
-	}{
-		{
-			name: "Test if sortedVotes is empty",
-			args: args{
-				sortedVotes:            []*big.Int{},
-				totalInfluenceRevealed: big.NewInt(100000000),
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test if totalInfluenceRevealed is 0",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(100)},
-				totalInfluenceRevealed: big.NewInt(0),
-			},
-			want: big.NewInt(100),
-		},
-		{
-			name: "Test if all the values are present",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(100), big.NewInt(110), big.NewInt(115), big.NewInt(118)},
-				totalInfluenceRevealed: big.NewInt(400),
-			},
-			want: big.NewInt(1),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := influencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -751,6 +579,174 @@ func Test_getIteration(t *testing.T) {
 			if got := getIteration(client, address, proposer, proposeUtils); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestMakeBlock(t *testing.T) {
+
+	var client *ethclient.Client
+	var address string
+
+	rogueModeMedian := big.NewInt(int64(randMath.Intn(10000000)))
+
+	razorUtils := UtilsMock{}
+	proposeUtils := ProposeUtilsMock{}
+
+	type args struct {
+		numAssets                 uint8
+		numAssetsErr              error
+		epoch                     uint32
+		epochErr                  error
+		sortedVotes               []*big.Int
+		sortedVotesErr            error
+		totalInfluenceRevealed    *big.Int
+		totalInfluenceRevealedErr error
+		rogueMode                 bool
+		influencedMedian          *big.Int
+		mediansInUint32           []uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []uint32
+		wantErr error
+	}{
+		{
+			name: "Test 1: When rogueMode is true and MakeBlock function executes successfully",
+			args: args{
+				numAssets:              1,
+				epoch:                  4,
+				sortedVotes:            []*big.Int{big.NewInt(1000)},
+				totalInfluenceRevealed: big.NewInt(2000),
+				rogueMode:              true,
+				mediansInUint32:        []uint32{uint32(rogueModeMedian.Int64())},
+			},
+			want:    []uint32{uint32(rogueModeMedian.Int64())},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When rogueMode is false and MakeBlock function executes successfully",
+			args: args{
+				numAssets:              1,
+				epoch:                  4,
+				sortedVotes:            []*big.Int{big.NewInt(2000), big.NewInt(4000)},
+				totalInfluenceRevealed: big.NewInt(1000),
+				rogueMode:              false,
+				influencedMedian:       big.NewInt(6),
+				mediansInUint32:        []uint32{uint32(big.NewInt(6).Int64())},
+			},
+			want:    []uint32{6},
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in getting number of assets",
+			args: args{
+				numAssetsErr:           errors.New("numAssets error"),
+				epoch:                  4,
+				sortedVotes:            []*big.Int{big.NewInt(2000)},
+				totalInfluenceRevealed: big.NewInt(1000),
+				rogueMode:              false,
+				influencedMedian:       big.NewInt(2),
+				mediansInUint32:        []uint32{uint32(big.NewInt(2).Int64())},
+			},
+			want:    nil,
+			wantErr: errors.New("numAssets error"),
+		},
+		{
+			name: "Test 3: When there is an error in getting epoch",
+			args: args{
+				numAssets:              1,
+				epochErr:               errors.New("epoch error"),
+				sortedVotes:            []*big.Int{big.NewInt(2000)},
+				totalInfluenceRevealed: big.NewInt(1000),
+				rogueMode:              false,
+				influencedMedian:       big.NewInt(2),
+				mediansInUint32:        []uint32{uint32(big.NewInt(2).Int64())},
+			},
+			want:    nil,
+			wantErr: errors.New("epoch error"),
+		},
+		{
+			name: "Test 4: When there is an error in getting sorted votes",
+			args: args{
+				numAssets:              1,
+				epoch:                  4,
+				sortedVotesErr:         errors.New("sorted votes error"),
+				totalInfluenceRevealed: big.NewInt(1000),
+				mediansInUint32:        nil,
+			},
+			want:    nil,
+			wantErr: nil,
+		},
+		{
+			name: "Test 5: When there is an error in getting totalInfluenceRevealed",
+			args: args{
+				numAssets:                 1,
+				epoch:                     4,
+				sortedVotes:               []*big.Int{big.NewInt(2000)},
+				totalInfluenceRevealedErr: errors.New("totalInfluenceRevealed error"),
+				mediansInUint32:           nil,
+			},
+			want:    nil,
+			wantErr: nil,
+		},
+		{
+			name: "Test 6: When number of assets is greater than 1 and MakeBlock function executes successfully",
+			args: args{
+				numAssets:              2,
+				epoch:                  4,
+				sortedVotes:            []*big.Int{big.NewInt(2000), big.NewInt(4000)},
+				totalInfluenceRevealed: big.NewInt(1000),
+				rogueMode:              false,
+				influencedMedian:       big.NewInt(6),
+				mediansInUint32:        []uint32{uint32(big.NewInt(6).Int64()), uint32(big.NewInt(6).Int64())},
+			},
+			want:    []uint32{6, 6},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetNumActiveAssetsMock = func(*ethclient.Client, string) (uint8, error) {
+				return tt.args.numAssets, tt.args.numAssetsErr
+			}
+
+			GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
+				return tt.args.epoch, tt.args.epochErr
+			}
+
+			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error) {
+				return tt.args.sortedVotes, tt.args.sortedVotesErr
+			}
+
+			GetTotalInfluenceRevealedMock = func(*ethclient.Client, string, uint32) (*big.Int, error) {
+				return tt.args.totalInfluenceRevealed, tt.args.totalInfluenceRevealedErr
+			}
+
+			influencedMedianMock = func([]*big.Int, *big.Int) *big.Int {
+				return tt.args.influencedMedian
+			}
+
+			ConvertBigIntArrayToUint32ArrayMock = func([]*big.Int) []uint32 {
+				return tt.args.mediansInUint32
+			}
+
+			got, err := MakeBlock(client, address, tt.args.rogueMode, razorUtils, proposeUtils)
+			fmt.Println(got)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+
 		})
 	}
 }
@@ -900,83 +896,46 @@ func Test_getSortedVotes(t *testing.T) {
 	}
 }
 
-func TestMakeBlock(t *testing.T) {
-
-	var client *ethclient.Client
-	var address string
-
-	razorUtils := UtilsMock{}
-	proposeUtils := ProposeUtilsMock{}
-
+func Test_influencedMedian(t *testing.T) {
 	type args struct {
-		numAssets                 uint8
-		numAssetsErr              error
-		epoch                     uint32
-		epochErr                  error
-		sortedVotes               []*big.Int
-		sortedVotesErr            error
-		totalInfluenceRevealed    *big.Int
-		totalInfluenceRevealedErr error
-		rogueMode                 bool
-		influencedMedian          *big.Int
-		mediansInUint32           []uint32
+		sortedVotes            []*big.Int
+		totalInfluenceRevealed *big.Int
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    []uint32
-		wantErr error
+		name string
+		args args
+		want *big.Int
 	}{
 		{
-			name: "Test 1: When MakeBlock function executes successfully",
+			name: "Test if sortedVotes is empty",
 			args: args{
-				numAssets:              1,
-				epoch:                  4,
-				sortedVotes:            []*big.Int{big.NewInt(1000)},
-				totalInfluenceRevealed: big.NewInt(2000),
-				rogueMode:              true,
-				mediansInUint32:        []uint32{uint32(big.NewInt(int64(randMath.Intn(10000000))).Int64())},
+				sortedVotes:            []*big.Int{},
+				totalInfluenceRevealed: big.NewInt(100000000),
 			},
-			want:    []uint32{uint32(big.NewInt(int64(randMath.Intn(10000000))).Int64())},
-			wantErr: nil,
+			want: big.NewInt(0),
+		},
+		{
+			name: "Test if totalInfluenceRevealed is 0",
+			args: args{
+				sortedVotes:            []*big.Int{big.NewInt(100)},
+				totalInfluenceRevealed: big.NewInt(0),
+			},
+			want: big.NewInt(100),
+		},
+		{
+			name: "Test if all the values are present",
+			args: args{
+				sortedVotes:            []*big.Int{big.NewInt(100), big.NewInt(110), big.NewInt(115), big.NewInt(118)},
+				totalInfluenceRevealed: big.NewInt(400),
+			},
+			want: big.NewInt(1),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetNumActiveAssetsMock = func(*ethclient.Client, string) (uint8, error) {
-				return tt.args.numAssets, tt.args.numAssetsErr
+			if got := influencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
 			}
-
-			GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
-
-			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error) {
-				return tt.args.sortedVotes, tt.args.sortedVotesErr
-			}
-
-			GetTotalInfluenceRevealedMock = func(*ethclient.Client, string, uint32) (*big.Int, error) {
-				return tt.args.totalInfluenceRevealed, tt.args.totalInfluenceRevealedErr
-			}
-
-			ConvertBigIntArrayToUint32ArrayMock = func([]*big.Int) []uint32 {
-				return tt.args.mediansInUint32
-			}
-
-			got, err := MakeBlock(client, address, tt.args.rogueMode, razorUtils, proposeUtils)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-
 		})
 	}
 }
