@@ -39,6 +39,9 @@ func Test_updateCollection(t *testing.T) {
 		aggregationErr      error
 		power               int8
 		powerErr            error
+		jobId               []uint
+		jobIdErr            error
+		jobIdUint8          []uint8
 		txnOpts             *bind.TransactOpts
 		updateCollectionTxn *Types.Transaction
 		updateCollectionErr error
@@ -63,6 +66,9 @@ func Test_updateCollection(t *testing.T) {
 				aggregationErr:      nil,
 				power:               0,
 				powerErr:            nil,
+				jobId:               []uint{1, 2},
+				jobIdErr:            nil,
+				jobIdUint8:          []uint8{1, 2},
 				txnOpts:             txnOpts,
 				updateCollectionTxn: &Types.Transaction{},
 				updateCollectionErr: nil,
@@ -82,6 +88,9 @@ func Test_updateCollection(t *testing.T) {
 				aggregationErr:      nil,
 				power:               0,
 				powerErr:            nil,
+				jobId:               []uint{1, 2},
+				jobIdErr:            nil,
+				jobIdUint8:          []uint8{1, 2},
 				txnOpts:             txnOpts,
 				updateCollectionTxn: &Types.Transaction{},
 				updateCollectionErr: nil,
@@ -102,6 +111,9 @@ func Test_updateCollection(t *testing.T) {
 				aggregationErr:      nil,
 				power:               0,
 				powerErr:            nil,
+				jobId:               []uint{1, 2},
+				jobIdErr:            nil,
+				jobIdUint8:          []uint8{1, 2},
 				txnOpts:             txnOpts,
 				updateCollectionTxn: &Types.Transaction{},
 				updateCollectionErr: nil,
@@ -121,6 +133,9 @@ func Test_updateCollection(t *testing.T) {
 				aggregationErr:      errors.New("aggregation error"),
 				power:               0,
 				powerErr:            nil,
+				jobId:               []uint{1, 2},
+				jobIdErr:            nil,
+				jobIdUint8:          []uint8{1, 2},
 				txnOpts:             txnOpts,
 				updateCollectionTxn: &Types.Transaction{},
 				updateCollectionErr: nil,
@@ -140,6 +155,9 @@ func Test_updateCollection(t *testing.T) {
 				aggregation:         1,
 				aggregationErr:      nil,
 				powerErr:            errors.New("power error"),
+				jobId:               []uint{1, 2},
+				jobIdErr:            nil,
+				jobIdUint8:          []uint8{1, 2},
 				txnOpts:             txnOpts,
 				updateCollectionTxn: &Types.Transaction{},
 				updateCollectionErr: nil,
@@ -149,7 +167,29 @@ func Test_updateCollection(t *testing.T) {
 			wantErr: errors.New("power error"),
 		},
 		{
-			name: "Test 6: When updateCollection transaction fails",
+			name: "Test 6: When there is an error in getting jobIds from flags",
+			args: args{
+				password:            "test",
+				collectionId:        3,
+				collectionIdErr:     nil,
+				address:             "0x000000000000000000000000000000000000dead",
+				addressErr:          nil,
+				aggregation:         1,
+				aggregationErr:      nil,
+				powerErr:            nil,
+				jobId:               nil,
+				jobIdErr:            errors.New("job Id error"),
+				jobIdUint8:          nil,
+				txnOpts:             txnOpts,
+				updateCollectionTxn: &Types.Transaction{},
+				updateCollectionErr: nil,
+				hash:                common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("job Id error"),
+		},
+		{
+			name: "Test 7: When updateCollection transaction fails",
 			args: args{
 				password:            "test",
 				collectionId:        3,
@@ -183,6 +223,10 @@ func Test_updateCollection(t *testing.T) {
 				return tt.args.address, tt.args.addressErr
 			}
 
+			GetUintSliceJobIdsMock = func(*pflag.FlagSet) ([]uint, error) {
+				return tt.args.jobId, tt.args.jobIdErr
+			}
+
 			GetUint32AggregationMock = func(*pflag.FlagSet) (uint32, error) {
 				return tt.args.aggregation, tt.args.aggregationErr
 			}
@@ -197,6 +241,10 @@ func Test_updateCollection(t *testing.T) {
 
 			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
+			}
+
+			ConvertUintArrayToUint8ArrayMock = func([]uint) []uint8 {
+				return tt.args.jobIdUint8
 			}
 
 			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8, []uint8) (*Types.Transaction, error) {
