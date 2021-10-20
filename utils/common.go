@@ -2,12 +2,13 @@ package utils
 
 import (
 	"context"
-	"github.com/spf13/pflag"
 	"math"
 	"math/big"
 	"os"
 	"razor/core"
 	"time"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

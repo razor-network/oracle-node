@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"

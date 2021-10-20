@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"razor/utils"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
-	"razor/utils"
-	"strings"
 )
 
 var cryptoUtils cryptoInterface

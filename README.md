@@ -267,12 +267,11 @@ Update the collection using `updateCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor updateCollection --collectionId <collection_id> --address <address> --aggregation <aggregation_method> --power <power> 
+$ ./razor updateCollection --collectionId <collection_id> --address <address> --aggregation <aggregation_method> --power <power> --jobIds <list_of_jobIds>
 ```
 
-Example:
 ```
-$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4
+$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4 --jobIds 1,2
 ```
 
 ### Update Job

@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32, razorUtils utilsInterface) error {

@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"razor/utils"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/spf13/cobra"
-	"razor/utils"
 )
 
 var keystoreUtils keystoreInterface

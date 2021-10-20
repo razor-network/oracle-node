@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
-	"testing"
 )
 
 func TestCreate(t *testing.T) {

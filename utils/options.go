@@ -3,12 +3,13 @@ package utils
 import (
 	"context"
 	"errors"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"razor/accounts"
 	"razor/core/types"
 	"razor/path"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 

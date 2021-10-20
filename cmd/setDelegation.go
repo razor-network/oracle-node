@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/spf13/pflag"
 

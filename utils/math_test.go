@@ -472,6 +472,7 @@ func Test_performAggregation(t *testing.T) {
 		data              []*big.Int
 		weight            []uint8
 		aggregationMethod uint32
+		power             int8
 	}
 	tests := []struct {
 		name    string
@@ -486,7 +487,7 @@ func Test_performAggregation(t *testing.T) {
 				aggregationMethod: 1,
 				weight:            []uint8{1, 1, 1},
 			},
-			want:    big.NewInt(1),
+			want:    big.NewInt(100),
 			wantErr: false,
 		},
 		{
@@ -496,7 +497,7 @@ func Test_performAggregation(t *testing.T) {
 				aggregationMethod: 1,
 				weight:            []uint8{1, 1},
 			},
-			want:    big.NewInt(1),
+			want:    big.NewInt(1000),
 			wantErr: false,
 		},
 		{
@@ -516,7 +517,7 @@ func Test_performAggregation(t *testing.T) {
 				aggregationMethod: 1,
 				weight:            []uint8{1, 1, 1, 1},
 			},
-			want:    big.NewInt(1500),
+			want:    big.NewInt(150000000000),
 			wantErr: false,
 		},
 		{
@@ -589,6 +590,99 @@ func Test_performAggregation(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("performAggregation() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMultiplyWithPower(t *testing.T) {
+	type args struct {
+		num   *big.Float
+		power int8
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test value when power is 8",
+			args: args{
+				num:   big.NewFloat(1.22342),
+				power: 8,
+			},
+			want: big.NewInt(122342000),
+		},
+		{
+			name: "Test value when number is 0",
+			args: args{
+				num:   big.NewFloat(0),
+				power: 0,
+			},
+			want: big.NewInt(0),
+		},
+		{
+			name: "Test value when number is nil",
+			args: args{
+				num:   nil,
+				power: 10,
+			},
+			want: big.NewInt(0),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MultiplyWithPower(tt.args.num, tt.args.power); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MultiplyWithPower() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertWeiToEth(t *testing.T) {
+	type args struct {
+		data *big.Int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Float
+		wantErr bool
+	}{
+		{
+			name:    "Test if the value is 0",
+			args:    args{big.NewInt(0)},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name:    "Test if data is bigger than 1e18",
+			args:    args{big.NewInt(2 * 1e18)},
+			want:    big.NewFloat(2).SetPrec(32),
+			wantErr: false,
+		},
+		{
+			name:    "Test if data is smaller than 1e18",
+			args:    args{big.NewInt(234 * 1e12)},
+			want:    big.NewFloat(234 * 1e-6).SetPrec(32),
+			wantErr: false,
+		},
+		{
+			name:    "Test if data is in the order of 1e18",
+			args:    args{big.NewInt(392 * 1e16)},
+			want:    big.NewFloat(3.92).SetPrec(32),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertWeiToEth(tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertWeiToEth() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertWeiToEth() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

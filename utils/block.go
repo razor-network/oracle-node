@@ -1,9 +1,10 @@
 package utils
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/pkg/bindings"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
