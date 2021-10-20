@@ -134,7 +134,7 @@ func Test_resetLock(t *testing.T) {
 				return txnOpts
 			}
 
-			ResetLockMock = func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error) {
+			ExtendLockMock = func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error) {
 				return tt.args.resetLockTxn, tt.args.resetLockErr
 			}
 
@@ -142,7 +142,7 @@ func Test_resetLock(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := resetLock(flagSet, config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
+			got, err := extendLock(flagSet, config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
 			if got != tt.want {
 				t.Errorf("Txn hash for resetLock function, got = %v, want %v", got, tt.want)
 			}

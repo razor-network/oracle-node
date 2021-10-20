@@ -531,12 +531,9 @@ func TestSetDelegation(t *testing.T) {
 				SetDelegationAcceptanceTxn:   &Types.Transaction{},
 				SetDelegationAcceptanceErr:   errors.New("SetDelegationAcceptance error"),
 				WaitForBlockCompletionStatus: 1,
-				updatedStaker: bindings.StructsStaker{
-					AcceptDelegation: true,
-				},
-				updatedStakerErr:      nil,
-				SetCommissionErr:      nil,
-				DecreaseCommissionErr: nil,
+				updatedStakerErr:             nil,
+				SetCommissionErr:             nil,
+				DecreaseCommissionErr:        nil,
 			},
 			wantErr: errors.New("SetDelegationAcceptance error"),
 		},
@@ -590,6 +587,7 @@ func TestSetDelegation(t *testing.T) {
 				stakerIdErr:    nil,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: false,
+					Commission:       5,
 				},
 				stakerErr:                    nil,
 				SetDelegationAcceptanceTxn:   &Types.Transaction{},

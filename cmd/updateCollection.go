@@ -49,7 +49,11 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 	if err != nil {
 		return core.NilHash, err
 	}
-
+	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -64,7 +68,7 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 		ABI:             bindings.AssetManagerABI,
 	})
 
-	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power)
+	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
@@ -88,6 +92,7 @@ func init() {
 		AggregationMethod uint32
 		Password          string
 		Power             int8
+		JobIds            []uint
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
@@ -95,6 +100,7 @@ func init() {
 	updateCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
+	updateCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
 
 	collectionIdErr := updateCollectionCmd.MarkFlagRequired("collectionId")
 	utils.CheckError("Collection Id error: ", collectionIdErr)
@@ -104,4 +110,6 @@ func init() {
 	utils.CheckError("Power Error: ", powerErr)
 	aggregationMethodErr := updateCollectionCmd.MarkFlagRequired("aggregation")
 	utils.CheckError("Aggregation Method Error: ", aggregationMethodErr)
+	jobIdErr := updateCollectionCmd.MarkFlagRequired("jobIds")
+	utils.CheckError("Job Id Error: ", jobIdErr)
 }

@@ -198,7 +198,7 @@ func Test_createCollection(t *testing.T) {
 			wantErr: errors.New("power error"),
 		},
 		{
-			name: "Test 7: When there is an error in WaitForDisputeOrConfirmState",
+			name: "Test 7: When there is an error in WaitForConfirmState",
 			args: args{
 				password:                        "test",
 				name:                            "ETH-Collection",

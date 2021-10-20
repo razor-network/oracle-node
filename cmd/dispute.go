@@ -25,7 +25,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			continue
 		}
 		log.Debug("Values in the block")
-		log.Debugf("Medians: %d", proposedBlock.BlockMedians)
+		log.Debugf("Medians: %d", proposedBlock.Medians)
 		medians, err := MakeBlock(client, account.Address, false, razorUtils, proposeUtils)
 		if err != nil {
 			log.Error(err)
@@ -33,10 +33,10 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Debug("Locally calculated data:")
 		log.Debugf("Medians: %d\n", medians)
-		isEqual, assetId := utils.IsEqual(proposedBlock.BlockMedians, medians)
+		isEqual, assetId := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
-			log.Debug("Block Values: ", proposedBlock.BlockMedians)
+			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			err := Dispute(client, config, account, epoch, uint8(i), assetId, razorUtils)
 			if err != nil {

@@ -100,23 +100,23 @@ func TestModifyAssetStatus(t *testing.T) {
 	flagSetUtils := FlagSetMock{}
 
 	type args struct {
-		address           string
-		addressErr        error
-		assetId           uint8
-		assetIdErr        error
-		status            string
-		statusErr         error
-		parseStatus       bool
-		parseStatusErr    error
-		password          string
-		currentStatus     bool
-		currentStatusErr  error
-		epoch             uint32
-		epochErr          error
-		txnOpts           *bind.TransactOpts
-		SetAssetStatusTxn *Types.Transaction
-		SetAssetStatusErr error
-		hash              common.Hash
+		address             string
+		addressErr          error
+		assetId             uint8
+		assetIdErr          error
+		status              string
+		statusErr           error
+		parseStatus         bool
+		parseStatusErr      error
+		password            string
+		currentStatus       bool
+		currentStatusErr    error
+		epoch               uint32
+		epochErr            error
+		txnOpts             *bind.TransactOpts
+		SetCollectionStatus *Types.Transaction
+		SetAssetStatusErr   error
+		hash                common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -127,15 +127,15 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 1: When ModifyAssetStatus executes successfully",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
-				currentStatus:     false,
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetId:             1,
+				status:              "true",
+				parseStatus:         true,
+				password:            "test",
+				currentStatus:       false,
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -143,16 +143,16 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting address",
 			args: args{
-				address:           "",
-				addressErr:        errors.New("address error"),
-				assetId:           1,
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
-				currentStatus:     false,
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "",
+				addressErr:          errors.New("address error"),
+				assetId:             1,
+				status:              "true",
+				parseStatus:         true,
+				password:            "test",
+				currentStatus:       false,
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("address error"),
@@ -160,15 +160,15 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting assetId",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetIdErr:        errors.New("assetId error"),
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
-				currentStatus:     false,
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetIdErr:          errors.New("assetId error"),
+				status:              "true",
+				parseStatus:         true,
+				password:            "test",
+				currentStatus:       false,
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("assetId error"),
@@ -176,15 +176,15 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting status string",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				statusErr:         errors.New("status error"),
-				parseStatus:       true,
-				password:          "test",
-				currentStatus:     false,
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetId:             1,
+				statusErr:           errors.New("status error"),
+				parseStatus:         true,
+				password:            "test",
+				currentStatus:       false,
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("status error"),
@@ -192,15 +192,15 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in parsing status to bool",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				status:            "true",
-				parseStatusErr:    errors.New("parsing status error"),
-				password:          "test",
-				currentStatus:     false,
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetId:             1,
+				status:              "true",
+				parseStatusErr:      errors.New("parsing status error"),
+				password:            "test",
+				currentStatus:       false,
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("parsing status error"),
@@ -208,15 +208,15 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting current status",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
-				currentStatusErr:  errors.New("current status error"),
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetId:             1,
+				status:              "true",
+				parseStatus:         true,
+				password:            "test",
+				currentStatusErr:    errors.New("current status error"),
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("current status error"),
@@ -224,15 +224,15 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 7: When currentStatus == status",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
-				currentStatus:     true,
-				txnOpts:           txnOpts,
-				SetAssetStatusTxn: &Types.Transaction{},
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetId:             1,
+				status:              "true",
+				parseStatus:         true,
+				password:            "test",
+				currentStatus:       true,
+				txnOpts:             txnOpts,
+				SetCollectionStatus: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: nil,
@@ -256,17 +256,17 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 9: When WaitForDisputeOrConfirmState fails",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
-				currentStatus:     false,
-				txnOpts:           txnOpts,
-				epochErr:          errors.New("WaitForDisputeOrConfirmState error"),
-				SetAssetStatusTxn: &Types.Transaction{},
-				SetAssetStatusErr: nil,
-				hash:              common.BigToHash(big.NewInt(1)),
+				address:             "0x000000000000000000000000000000000000dea1",
+				assetId:             1,
+				status:              "true",
+				parseStatus:         true,
+				password:            "test",
+				currentStatus:       false,
+				txnOpts:             txnOpts,
+				epochErr:            errors.New("WaitForDisputeOrConfirmState error"),
+				SetCollectionStatus: &Types.Transaction{},
+				SetAssetStatusErr:   nil,
+				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("WaitForDisputeOrConfirmState error"),
@@ -311,8 +311,8 @@ func TestModifyAssetStatus(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			SetAssetStatusMock = func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error) {
-				return tt.args.SetAssetStatusTxn, tt.args.SetAssetStatusErr
+			SetCollectionStatusMock = func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error) {
+				return tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr
 			}
 
 			HashMock = func(*Types.Transaction) common.Hash {

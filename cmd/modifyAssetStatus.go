@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var modifyAssetStatusCmd = &cobra.Command{
@@ -66,6 +67,10 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
 		return core.NilHash, nil
 	}
+	_, err = razorUtils.WaitForConfirmState(client, address, "modify asset status")
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	txnArgs := types.TransactionOptions{
 		Client:          client,
@@ -74,18 +79,14 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
-		MethodName:      "setAssetStatus",
+		MethodName:      "setCollectionStatus",
 		Parameters:      []interface{}{status, assetId},
 		ABI:             bindings.AssetManagerABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-	_, err = razorUtils.WaitForDisputeOrConfirmState(client, address, "modify asset status")
-	if err != nil {
-		return core.NilHash, err
-	}
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
-	txn, err := assetManagerUtils.SetAssetStatus(client, txnOpts, status, assetId)
+	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, status, assetId)
 	if err != nil {
 		return core.NilHash, err
 	}
