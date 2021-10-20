@@ -162,16 +162,16 @@ Example:
 $ ./razor withdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
 
-### Reset Lock
-If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake.
+### Extend Lock
+If the withdrawal period is over, then extendLock can be called to extend the lock period.
 ```
-$ ./razor resetLock --address <address> --stakerId <staker_id>
+$ ./razor extendLock --address <address> --stakerId <staker_id>
 ```
 
 Example:
 
 ```
-$ ./razor resetLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+$ ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
 
 ### Transfer
@@ -221,16 +221,16 @@ Create new jobs using `creteJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 ```
-$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --power <power>
+$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --power <power> --weight <weight>
 ```
 
 Example:
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --weight 32
 ```
 OR
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd --power 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd --power 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd --weight 10
 ```
 
 ### Create Collection
@@ -245,34 +245,6 @@ $ ./razor createCollection --name <collection_name> --address <address> --jobIds
 Example:
 ```
 $ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
-```
-
-### Add Job to Collection
-Add existing jobs to existing collections using `addJobToCollection` command.
-
-_Note: This command is restricted to "Admin Role"_
-
-```
-$ ./razor addJobToCollection --address <address> --jobId <job_id> --collectionId <collection_id>
-```
-
-Example:
-```
-$ ./razor addJobToCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
-```
-
-### Remove Job from Collection
-Remove jobs from existing collections using `removeJobFromCollection` command.
-
-_Note: This command is restricted to "Admin Role"_
-
-```
-$ ./razor removeJobFromCollection --address <address> --jobId <job_id> --collectionId <collection_id>
-```
-
-Example:
-```
-$ ./razor removeJobFromCollection --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 6 --jobId 7
 ```
 
 ### Modify Asset Status
@@ -309,12 +281,12 @@ Update the existing parameters of the Job using `updateJob` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-./razor updateJob --address <address> --jobID <job_Id> -s <selector> -u <job_url>
+./razor updateJob --address <address> --jobID <job_Id> -s <selector> -u <job_url> --power <power> --weight <weight>
 ```
 
 Example:
 ```
-$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd 
+$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10 
 ```
 Note : *All the commands have an additional --password flag that you can provide with the file path from which password must be picked.*
 

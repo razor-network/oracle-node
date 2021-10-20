@@ -79,7 +79,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 			//TODO: Add retry mechanism
 			return
 		}
-		lastIteration := lastProposedBlockStruct.Block.Iteration
+		lastIteration := lastProposedBlockStruct.Iteration
 		if lastIteration.Cmp(big.NewInt(int64(iteration))) < 0 {
 			log.Info("Current iteration is greater than iteration of last proposed block, cannot propose")
 			return
@@ -193,7 +193,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 		return nil, err
 	}
 
-	for assetId := 1; assetId <= int(numAssets); assetId++ {
+	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
 		sortedVotes, err := getSortedVotes(client, address, uint8(assetId), epoch)
 		if err != nil {
 			log.Error(err)

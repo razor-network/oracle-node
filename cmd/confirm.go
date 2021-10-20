@@ -10,7 +10,9 @@ var blockManagerUtils blockManagerInterface
 
 func ClaimBlockReward(options types.TransactionOptions, razorUtils utilsInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	log.Info("Claiming block reward...")
-	txn, err := blockManagerUtils.ClaimBlockReward(options.Client, razorUtils.GetTxnOpts(options))
+	txnOpts := razorUtils.GetTxnOpts(options)
+	txnOpts.GasLimit = 250000
+	txn, err := blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
 	if err != nil {
 		log.Error("Error in claiming block reward: ", err)
 		return core.NilHash, err

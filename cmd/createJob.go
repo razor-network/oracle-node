@@ -61,7 +61,13 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		return core.NilHash, err
 	}
 
+	weight, err := flagSetUtils.GetUint8Weight(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	client := razorUtils.ConnectToClient(config.Provider)
+	selectorType := 1
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        password,
@@ -76,7 +82,7 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, power, name, selector, url)
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -100,12 +106,14 @@ func init() {
 		Power    int8
 		Account  string
 		Password string
+		Weight   uint8
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
+	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")
 	createJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
@@ -119,4 +127,6 @@ func init() {
 	utils.CheckError("Address error: ", addrErr)
 	powErr := createJobCmd.MarkFlagRequired("power")
 	utils.CheckError("Power error: ", powErr)
+	weightErr := createJobCmd.MarkFlagRequired("weight")
+	utils.CheckError("Weight error: ", weightErr)
 }

@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
-	"razor/core/types"
+	"razor/pkg/bindings"
 )
 
 func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
@@ -27,11 +27,11 @@ func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch u
 	return numProposedBlocks, nil
 }
 
-func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (types.Block, error) {
+func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions(false, address, "")
 	var (
-		proposedBlock types.Block
+		proposedBlock bindings.StructsBlock
 		err           error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
@@ -43,7 +43,7 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 		break
 	}
 	if err != nil {
-		return types.Block{}, err
+		return bindings.StructsBlock{}, err
 	}
 	return proposedBlock, nil
 }
@@ -52,11 +52,11 @@ func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, 
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions(false, address, "")
 	var (
-		blockMedians []uint32
-		err          error
+		block bindings.StructsBlock
+		err   error
 	)
 	for retry := 1; retry <= core.MaxRetries; retry++ {
-		blockMedians, err = blockManager.GetBlockMedians(&callOpts, epoch)
+		block, err = blockManager.GetBlock(&callOpts, epoch)
 		if err != nil {
 			Retry(retry, "Error in fetching proposed block: ", err)
 			continue
@@ -66,5 +66,5 @@ func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, 
 	if err != nil {
 		return 0, err
 	}
-	return blockMedians[assetId-1], nil
+	return block.Medians[assetId-1], nil
 }

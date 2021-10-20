@@ -4,12 +4,10 @@ import (
 	"errors"
 	"math"
 	"math/big"
-	"razor/core/types"
 	"strconv"
 
 	"github.com/spf13/pflag"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"modernc.org/sortutil"
 )
 
@@ -111,44 +109,22 @@ func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
 
-func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, collection types.Collection) (*big.Int, error) {
-	if len(collection.JobIDs) == 0 {
-		return nil, errors.New("no jobs present in the collection")
-	}
-	var jobs []types.Job
-	for _, id := range collection.JobIDs {
-		job, err := GetActiveJob(client, address, id)
-		if err != nil {
-			log.Errorf("Error in fetching job %d: %s", id, err)
-			continue
-		}
-		jobs = append(jobs, job)
-	}
-	dataToCommit, err := GetDataToCommitFromJobs(jobs)
-	if err != nil || len(dataToCommit) == 0 {
-		prevCommitmentData, err := FetchPreviousValue(client, address, previousEpoch, collection.Id)
-		if err != nil {
-			return nil, err
-		}
-		return big.NewInt(int64(prevCommitmentData)), nil
-	}
-	return performAggregation(dataToCommit, collection.AggregationMethod)
-}
-
-func performAggregation(data []*big.Int, aggregationMethod uint32) (*big.Int, error) {
+func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint32) (*big.Int, error) {
 	if len(data) == 0 {
 		return nil, errors.New("aggregation cannot be performed for nil data")
 	}
 	// convention is 1 for median and 2 for mean
 	switch aggregationMethod {
 	case 1:
+		//TODO check the formula of weighted median
 		sortutil.BigIntSlice.Sort(data)
 		median := data[len(data)/2]
 		return big.NewInt(median.Int64()), nil
 	case 2:
-		sum := CalculateSumOfArray(data)
-		mean := sum.Div(sum, big.NewInt(int64(len(data))))
-		return big.NewInt(mean.Int64()), nil
+		weightedSum := CalculateWeightedSum(data, weight)
+		totalWeight := CalculateSumOfUint8Array(weight)
+		weightedMean := weightedSum.Div(weightedSum, big.NewInt(int64(totalWeight)))
+		return big.NewInt(weightedMean.Int64()), nil
 	}
 	return nil, errors.New("invalid aggregation method")
 }

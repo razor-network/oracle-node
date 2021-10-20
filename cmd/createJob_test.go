@@ -42,6 +42,8 @@ func Test_createJob(t *testing.T) {
 		selectorErr  error
 		power        int8
 		powerErr     error
+		weight       uint8
+		weightErr    error
 		txnOpts      *bind.TransactOpts
 		createJobTxn *Types.Transaction
 		createJobErr error
@@ -67,6 +69,8 @@ func Test_createJob(t *testing.T) {
 				selectorErr:  nil,
 				power:        1,
 				powerErr:     nil,
+				weight:       10,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
@@ -89,6 +93,8 @@ func Test_createJob(t *testing.T) {
 				selectorErr:  nil,
 				power:        1,
 				powerErr:     nil,
+				weight:       20,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
@@ -111,6 +117,8 @@ func Test_createJob(t *testing.T) {
 				selectorErr:  nil,
 				power:        1,
 				powerErr:     nil,
+				weight:       20,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
@@ -133,6 +141,8 @@ func Test_createJob(t *testing.T) {
 				selectorErr:  nil,
 				power:        1,
 				powerErr:     nil,
+				weight:       20,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
@@ -155,6 +165,8 @@ func Test_createJob(t *testing.T) {
 				selectorErr:  errors.New("selector error"),
 				power:        1,
 				powerErr:     nil,
+				weight:       20,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
@@ -176,6 +188,8 @@ func Test_createJob(t *testing.T) {
 				selector:     "last",
 				selectorErr:  nil,
 				powerErr:     errors.New("power error"),
+				weight:       20,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: nil,
@@ -185,7 +199,29 @@ func Test_createJob(t *testing.T) {
 			wantErr: errors.New("power error"),
 		},
 		{
-			name: "Test7:  When createJob transaction fails",
+			name: "Test7:  When there is an error in getting weight from flag",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				name:         "ETH-1",
+				nameErr:      nil,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				urlErr:       nil,
+				selector:     "last",
+				selectorErr:  nil,
+				powerErr:     nil,
+				weightErr:    errors.New("weight error"),
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
+				createJobErr: nil,
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("weight error"),
+		},
+		{
+			name: "Test8:  When createJob transaction fails",
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
@@ -198,6 +234,8 @@ func Test_createJob(t *testing.T) {
 				selectorErr:  nil,
 				power:        1,
 				powerErr:     nil,
+				weight:       20,
+				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: errors.New("createJob error"),
@@ -233,6 +271,10 @@ func Test_createJob(t *testing.T) {
 				return tt.args.power, tt.args.powerErr
 			}
 
+			GetUint8WeightMock = func(*pflag.FlagSet) (uint8, error) {
+				return tt.args.weight, tt.args.weightErr
+			}
+
 			ConnectToClientMock = func(string) *ethclient.Client {
 				return client
 			}
@@ -241,7 +283,7 @@ func Test_createJob(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			CreateJobMock = func(*ethclient.Client, *bind.TransactOpts, int8, string, string, string) (*Types.Transaction, error) {
+			CreateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error) {
 				return tt.args.createJobTxn, tt.args.createJobErr
 			}
 
