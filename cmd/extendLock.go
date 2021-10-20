@@ -47,7 +47,7 @@ func extendLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils 
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "resetLock",
+		MethodName:      "extendLock",
 		Parameters:      []interface{}{stakerId},
 		ABI:             bindings.StakeManagerABI,
 	})
