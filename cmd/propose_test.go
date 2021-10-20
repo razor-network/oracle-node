@@ -54,7 +54,7 @@ func TestPropose(t *testing.T) {
 		maxAltBlocks               uint8
 		maxAltBlocksErr            error
 		lastIteration              *big.Int
-		lastProposedBlockStruct    types.Block
+		lastProposedBlockStruct    bindings.StructsBlock
 		lastProposedBlockStructErr error
 		medians                    []uint32
 		mediansErr                 error
@@ -82,7 +82,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -104,7 +104,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -126,7 +126,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -148,7 +148,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -169,7 +169,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -191,7 +191,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -213,7 +213,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -235,7 +235,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocksErr:  errors.New("numOfProposedBlocks error"),
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -257,7 +257,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocksErr:         errors.New("maxAltBlocks error"),
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -301,10 +301,8 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks: 4,
 				maxAltBlocks:        2,
 				lastIteration:       big.NewInt(5),
-				lastProposedBlockStruct: types.Block{
-					Block: bindings.StructsBlock{
-						Iteration: big.NewInt(1),
-					},
+				lastProposedBlockStruct: bindings.StructsBlock{
+					Iteration: big.NewInt(1),
 				},
 				medians:    []uint32{1, 2, 3, 4},
 				txnOpts:    txnOpts,
@@ -327,10 +325,8 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks: 4,
 				maxAltBlocks:        2,
 				lastIteration:       big.NewInt(5),
-				lastProposedBlockStruct: types.Block{
-					Block: bindings.StructsBlock{
-						Iteration: big.NewInt(2),
-					},
+				lastProposedBlockStruct: bindings.StructsBlock{
+					Iteration: big.NewInt(2),
 				},
 				medians:    []uint32{1, 2, 3, 4},
 				txnOpts:    txnOpts,
@@ -353,7 +349,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				mediansErr:              errors.New("makeBlock error"),
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
@@ -375,7 +371,7 @@ func TestPropose(t *testing.T) {
 				numOfProposedBlocks:     2,
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
-				lastProposedBlockStruct: types.Block{},
+				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []uint32{1, 2, 3, 4},
 				txnOpts:                 txnOpts,
 				proposeErr:              errors.New("propose error"),
@@ -418,7 +414,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr
 		}
 
-		GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint8) (types.Block, error) {
+		GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
@@ -594,7 +590,7 @@ func TestMakeBlock(t *testing.T) {
 	proposeUtils := ProposeUtilsMock{}
 
 	type args struct {
-		numAssets                 uint8
+		numAssets                 *big.Int
 		numAssetsErr              error
 		epoch                     uint32
 		epochErr                  error
@@ -615,7 +611,7 @@ func TestMakeBlock(t *testing.T) {
 		{
 			name: "Test 1: When rogueMode is true and MakeBlock function executes successfully",
 			args: args{
-				numAssets:              1,
+				numAssets:              big.NewInt(1),
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(1000)},
 				totalInfluenceRevealed: big.NewInt(2000),
@@ -628,7 +624,7 @@ func TestMakeBlock(t *testing.T) {
 		{
 			name: "Test 2: When rogueMode is false and MakeBlock function executes successfully",
 			args: args{
-				numAssets:              1,
+				numAssets:              big.NewInt(1),
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(2000), big.NewInt(4000)},
 				totalInfluenceRevealed: big.NewInt(1000),
@@ -656,7 +652,7 @@ func TestMakeBlock(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting epoch",
 			args: args{
-				numAssets:              1,
+				numAssets:              big.NewInt(1),
 				epochErr:               errors.New("epoch error"),
 				sortedVotes:            []*big.Int{big.NewInt(2000)},
 				totalInfluenceRevealed: big.NewInt(1000),
@@ -670,7 +666,7 @@ func TestMakeBlock(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting sorted votes",
 			args: args{
-				numAssets:              1,
+				numAssets:              big.NewInt(1),
 				epoch:                  4,
 				sortedVotesErr:         errors.New("sorted votes error"),
 				totalInfluenceRevealed: big.NewInt(1000),
@@ -682,7 +678,7 @@ func TestMakeBlock(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting totalInfluenceRevealed",
 			args: args{
-				numAssets:                 1,
+				numAssets:                 big.NewInt(1),
 				epoch:                     4,
 				sortedVotes:               []*big.Int{big.NewInt(2000)},
 				totalInfluenceRevealedErr: errors.New("totalInfluenceRevealed error"),
@@ -694,7 +690,7 @@ func TestMakeBlock(t *testing.T) {
 		{
 			name: "Test 6: When number of assets is greater than 1 and MakeBlock function executes successfully",
 			args: args{
-				numAssets:              2,
+				numAssets:              big.NewInt(2),
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(2000), big.NewInt(4000)},
 				totalInfluenceRevealed: big.NewInt(1000),
@@ -708,7 +704,7 @@ func TestMakeBlock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetNumActiveAssetsMock = func(*ethclient.Client, string) (uint8, error) {
+			GetNumActiveAssetsMock = func(*ethclient.Client, string) (*big.Int, error) {
 				return tt.args.numAssets, tt.args.numAssetsErr
 			}
 

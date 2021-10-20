@@ -143,7 +143,7 @@ func (u Utils) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8,
 	return utils.GetMaxAltBlocks(client, address)
 }
 
-func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (types.Block, error) {
+func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
 	return utils.GetProposedBlock(client, address, epoch, proposedBlockId)
 }
 
@@ -163,7 +163,7 @@ func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, address string, st
 	return utils.GetInfluenceSnapshot(client, address, stakerId, epoch)
 }
 
-func (u Utils) GetNumActiveAssets(client *ethclient.Client, address string) (uint8, error) {
+func (u Utils) GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
 	return utils.GetNumActiveAssets(client, address)
 }
 
