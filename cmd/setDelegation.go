@@ -83,28 +83,7 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		ABI:             bindings.StakeManagerABI,
 	}
 
-	if stakerInfo.AcceptDelegation != status {
-		log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
-		txnOpts.MethodName = "setDelegationAcceptance"
-		txnOpts.Parameters = []interface{}{status}
-		setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
-		delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
-		if err != nil {
-			log.Error("Error in setting delegation acceptance")
-			return err
-		}
-		log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
-		razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(delegationAcceptanceTxn).String())
-	}
-
-	// Fetch updated stakerInfo
-	stakerInfo, err = razorUtils.GetUpdatedStaker(client, address, stakerId)
-	if err != nil {
-		log.Error("Error in fetching staker info")
-		return err
-	}
-
-	if commission != 0 && stakerInfo.AcceptDelegation {
+	if commission != 0 {
 		// Call SetCommission if the commission value is provided and the staker hasn't already set commission
 		if stakerInfo.Commission == 0 {
 			txnOpts.MethodName = "setCommission"
@@ -126,6 +105,27 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 				return err
 			}
 		}
+	}
+
+	// Fetch updated stakerInfo
+	stakerInfo, err = razorUtils.GetUpdatedStaker(client, address, stakerId)
+	if err != nil {
+		log.Error("Error in fetching staker info")
+		return err
+	}
+
+	if stakerInfo.AcceptDelegation != status {
+		log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
+		txnOpts.MethodName = "setDelegationAcceptance"
+		txnOpts.Parameters = []interface{}{status}
+		setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+		delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
+		if err != nil {
+			log.Error("Error in setting delegation acceptance")
+			return err
+		}
+		log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
+		razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(delegationAcceptanceTxn).String())
 	}
 	return nil
 }
