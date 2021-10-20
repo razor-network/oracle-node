@@ -67,6 +67,10 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
 		return core.NilHash, nil
 	}
+	_, err = razorUtils.WaitForConfirmState(client, address, "modify asset status")
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	txnArgs := types.TransactionOptions{
 		Client:          client,
@@ -81,10 +85,6 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-	_, err = razorUtils.WaitForConfirmState(client, address, "modify asset status")
-	if err != nil {
-		return core.NilHash, err
-	}
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
 	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, status, assetId)
 	if err != nil {
