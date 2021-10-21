@@ -54,6 +54,10 @@ func (u Utils) WaitForCommitState(client *ethclient.Client, accountAddress strin
 	return WaitForCommitState(client, accountAddress, action)
 }
 
+func (u Utils) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForCommitState(client, accountAddress, action)
+}
+
 func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	return utils.AssignPassword(flagSet)
 }
@@ -126,6 +130,14 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
+	return utils.GetLock(client, address, stakerId)
+}
+
+func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	return utils.GetWithdrawReleasePeriod(client, address)
+}
+
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	return utils.GetCommitments(client, address)
 }
@@ -178,6 +190,11 @@ func (stakeManagerUtils StakeManagerUtils) ExtendLock(client *ethclient.Client, 
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Delegate(opts, epoch, stakerId, amount)
+}
+
+func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Withdraw(opts, epoch, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
@@ -347,6 +364,10 @@ func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId u
 
 func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
 	return DecreaseCommissionPrompt()
+}
+
+func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	return withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
 }
 
 func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
