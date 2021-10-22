@@ -514,7 +514,7 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(500), big.NewInt(1000), big.NewInt(1500), big.NewInt(2000)},
 				aggregationMethod: 1,
-				weight:            []uint8{1, 1, 1, 1},
+				weight:            []uint8{100, 100, 100, 100},
 			},
 			want:    big.NewInt(1500),
 			wantErr: false,
@@ -554,9 +554,9 @@ func Test_performAggregation(t *testing.T) {
 			args: args{
 				data:              []*big.Int{big.NewInt(500), big.NewInt(1000), big.NewInt(1500), big.NewInt(2000)},
 				aggregationMethod: 2,
-				weight:            []uint8{1, 15, 95, 42},
+				weight:            []uint8{100, 100, 100, 100},
 			},
-			want:    big.NewInt(1581),
+			want:    big.NewInt(1250),
 			wantErr: false,
 		},
 		{
