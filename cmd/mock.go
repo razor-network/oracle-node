@@ -46,6 +46,8 @@ var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
 var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
 
+var WaitForCommitStateAgainMock func(*ethclient.Client, string, string) (uint32, error)
+
 var GetDefaultPathMock func() (string, error)
 
 var AssignPasswordMock func(*pflag.FlagSet) string
@@ -90,6 +92,10 @@ var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
 
+var GetLockMock func(*ethclient.Client, string, uint32) (types.Locks, error)
+
+var GetWithdrawReleasePeriodMock func(*ethclient.Client, string) (uint8, error)
+
 var GetConfigFilePathMock func() (string, error)
 
 var ViperWriteConfigAsMock func(string) error
@@ -107,6 +113,8 @@ var StakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Ty
 var ExtendLockMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 
 var DelegateMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+
+var WithdrawContractMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32) (*Types.Transaction, error)
 
 var SetDelegationAcceptanceMock func(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 
@@ -192,6 +200,8 @@ var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
+var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
+
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
 }
@@ -206,6 +216,10 @@ func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead s
 
 func (u UtilsMock) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
 	return WaitForCommitStateMock(client, accountAddress, action)
+}
+
+func (u UtilsMock) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitForCommitStateAgainMock(client, accountAddress, action)
 }
 
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
@@ -304,6 +318,14 @@ func (u UtilsMock) ViperWriteConfigAs(path string) error {
 	return ViperWriteConfigAsMock(path)
 }
 
+func (u UtilsMock) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
+	return GetLockMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	return GetWithdrawReleasePeriodMock(client, address)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -354,6 +376,10 @@ func (stakeManagerMock StakeManagerMock) ExtendLock(client *ethclient.Client, op
 
 func (stakeManagerMock StakeManagerMock) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	return DelegateMock(client, opts, epoch, stakerId, amount)
+}
+
+func (stakeManagerMock StakeManagerMock) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32) (*Types.Transaction, error) {
+	return WithdrawContractMock(client, opts, epoch, stakerId)
 }
 
 func (stakeManagerMock StakeManagerMock) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
@@ -472,10 +498,6 @@ func (flagSetMock FlagSetMock) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, err
 	return GetUint8JobIdMock(flagSet)
 }
 
-func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	return ClaimBlockRewardMock(client, opts)
-}
-
 func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
 	return GetUint8CollectionIdMock(flagSet)
 }
@@ -492,8 +514,16 @@ func (utilsCmdMock UtilsCmdMock) DecreaseCommissionPrompt() bool {
 	return DecreaseCommissionPromptMock()
 }
 
+func (utilsCmdMock UtilsCmdMock) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	return WithdrawMock(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+}
+
 func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
 	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
+}
+
+func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	return ClaimBlockRewardMock(client, opts)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
