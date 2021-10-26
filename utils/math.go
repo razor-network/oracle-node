@@ -120,7 +120,7 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	case 2:
 		weightedSum := CalculateWeightedSum(data, weight)
 		weightedMean := weightedSum.Div(weightedSum, big.NewInt(int64(totalWeight)))
-		return big.NewInt(weightedMean.Int64()), nil
+		return weightedMean, nil
 	}
 	return nil, errors.New("invalid aggregation method")
 }

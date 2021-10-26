@@ -147,3 +147,43 @@ func TestIsEqual(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculateSumOfUint8Array(t *testing.T) {
+	type args struct {
+		data []uint8
+	}
+	tests := []struct {
+		name string
+		args args
+		want uint
+	}{
+		{
+			name: "Test1: If the data is provided",
+			args: args{
+				data: []uint8{100, 100, 100},
+			},
+			want: uint(300),
+		},
+		{
+			name: "Test2: If the data is not provided",
+			args: args{
+				data: nil,
+			},
+			want: uint(0),
+		},
+		{
+			name: "Test3: If the data is empty",
+			args: args{
+				data: []uint8{},
+			},
+			want: uint(0),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CalculateSumOfUint8Array(tt.args.data); got != tt.want {
+				t.Errorf("CalculateSumOfUint8Array() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
