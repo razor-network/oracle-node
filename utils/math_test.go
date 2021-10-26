@@ -598,7 +598,7 @@ func Test_calculateWeightedMedian(t *testing.T) {
 	type args struct {
 		data        []*big.Int
 		weight      []uint8
-		totalWeight uint8
+		totalWeight uint
 	}
 	tests := []struct {
 		name    string

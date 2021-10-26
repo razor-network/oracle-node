@@ -125,18 +125,7 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	return nil, errors.New("invalid aggregation method")
 }
 
-func getFractionalWeight(weights []uint8, totalWeight uint8) []float32 {
-	if len(weights) == 0 {
-		return nil
-	}
-	var fractionalWeight []float32
-	for _, weight := range weights {
-		fractionalWeight = append(fractionalWeight, float32(weight)/float32(totalWeight))
-	}
-	return fractionalWeight
-}
-
-func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint8) (*big.Int, error) {
+func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) (*big.Int, error) {
 	fractionalWeights := getFractionalWeight(weight, totalWeight)
 	var pairs [][]interface{}
 	for i := 0; i < len(data); i++ {
@@ -153,6 +142,17 @@ func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint8)
 		}
 	}
 	return nil, nil
+}
+
+func getFractionalWeight(weights []uint8, totalWeight uint) []float32 {
+	if len(weights) == 0 {
+		return nil
+	}
+	var fractionalWeight []float32
+	for _, weight := range weights {
+		fractionalWeight = append(fractionalWeight, float32(weight)/float32(totalWeight))
+	}
+	return fractionalWeight
 }
 
 func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
