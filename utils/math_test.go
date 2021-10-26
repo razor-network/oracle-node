@@ -593,3 +593,50 @@ func Test_performAggregation(t *testing.T) {
 		})
 	}
 }
+
+func Test_calculateWeightedMedian(t *testing.T) {
+	type args struct {
+		data        []*big.Int
+		weight      []uint8
+		totalWeight uint8
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test1",
+			args: args{
+				data:        []*big.Int{big.NewInt(4), big.NewInt(1), big.NewInt(3), big.NewInt(2)},
+				weight:      []uint8{25, 49, 25, 1},
+				totalWeight: 100,
+			},
+			want:    big.NewInt(2),
+			wantErr: false,
+		},
+		{
+			name: "Test2",
+			args: args{
+				data:        []*big.Int{big.NewInt(5), big.NewInt(1), big.NewInt(3), big.NewInt(2), big.NewInt(4)},
+				weight:      []uint8{25, 15, 20, 10, 30},
+				totalWeight: 100,
+			},
+			want:    big.NewInt(4),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := calculateWeightedMedian(tt.args.data, tt.args.weight, tt.args.totalWeight)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("calculateWeightedMedian() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("calculateWeightedMedian() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
