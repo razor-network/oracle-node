@@ -33,8 +33,11 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Debug("Locally calculated data:")
 		log.Debugf("Medians: %d\n", medians)
-		isEqual, assetId := utils.IsEqual(proposedBlock.Medians, medians)
+		activeAssetIds, _ := utils.GetActiveAssetIds(client, account.Address, epoch)
+
+		isEqual, i := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
+			assetId := int(activeAssetIds[i])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
@@ -65,7 +68,6 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		if err != nil {
 			return err
 		}
-
 		if votes.Epoch == epoch {
 			sortedStakers = append(sortedStakers, uint32(i))
 		}
