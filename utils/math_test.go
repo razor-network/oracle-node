@@ -496,7 +496,7 @@ func Test_performAggregation(t *testing.T) {
 				aggregationMethod: 1,
 				weight:            []uint8{1, 1},
 			},
-			want:    big.NewInt(1),
+			want:    big.NewInt(0),
 			wantErr: false,
 		},
 		{
@@ -516,7 +516,7 @@ func Test_performAggregation(t *testing.T) {
 				aggregationMethod: 1,
 				weight:            []uint8{100, 100, 100, 100},
 			},
-			want:    big.NewInt(1500),
+			want:    big.NewInt(1000),
 			wantErr: false,
 		},
 		{
@@ -601,41 +601,129 @@ func Test_calculateWeightedMedian(t *testing.T) {
 		totalWeight uint
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    *big.Int
-		wantErr bool
+		name string
+		args args
+		want *big.Int
 	}{
 		{
-			name: "Test1",
+			name: "Test 1: Weighted median for even number of elements",
 			args: args{
 				data:        []*big.Int{big.NewInt(4), big.NewInt(1), big.NewInt(3), big.NewInt(2)},
 				weight:      []uint8{25, 49, 25, 1},
 				totalWeight: 100,
 			},
-			want:    big.NewInt(2),
-			wantErr: false,
+			want: big.NewInt(2),
 		},
 		{
-			name: "Test2",
+			name: "Test 2: Weighted median for odd number of elements",
 			args: args{
 				data:        []*big.Int{big.NewInt(5), big.NewInt(1), big.NewInt(3), big.NewInt(2), big.NewInt(4)},
 				weight:      []uint8{25, 15, 20, 10, 30},
 				totalWeight: 100,
 			},
-			want:    big.NewInt(4),
-			wantErr: false,
+			want: big.NewInt(4),
+		},
+		{
+			name: "Test 3: Weighted median for eth values",
+			args: args{
+				data:        []*big.Int{big.NewInt(423469), big.NewInt(423322), big.NewInt(423402)},
+				weight:      []uint8{100, 100, 100},
+				totalWeight: 300,
+			},
+			want: big.NewInt(423402),
+		},
+		{
+			name: "Test 4: When the data array is empty",
+			args: args{
+				data:        []*big.Int{},
+				weight:      []uint8{100, 100, 100},
+				totalWeight: 300,
+			},
+			want: nil,
+		},
+		{
+			name: "Test 5:  When the weight array is empty",
+			args: args{
+				data:        []*big.Int{big.NewInt(423469), big.NewInt(423322), big.NewInt(423402)},
+				weight:      []uint8{},
+				totalWeight: 0,
+			},
+			want: nil,
+		},
+		{
+			name: "Test 6:  When the total weight is 0",
+			args: args{
+				data:        []*big.Int{big.NewInt(423469), big.NewInt(423322), big.NewInt(423402)},
+				weight:      []uint8{100, 100, 100},
+				totalWeight: 0,
+			},
+			want: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := calculateWeightedMedian(tt.args.data, tt.args.weight, tt.args.totalWeight)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("calculateWeightedMedian() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if got := calculateWeightedMedian(tt.args.data, tt.args.weight, tt.args.totalWeight); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("calculateWeightedMedian() = %v, want %v", got, tt.want)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("calculateWeightedMedian() got = %v, want %v", got, tt.want)
+		})
+	}
+}
+
+func Test_getFractionalWeight(t *testing.T) {
+	type args struct {
+		weights     []uint8
+		totalWeight uint
+	}
+	tests := []struct {
+		name string
+		args args
+		want []float32
+	}{
+		{
+			name: "Test 1: Odd number of array elements if total weight = 100",
+			args: args{
+				weights:     []uint8{25, 15, 20, 10, 30},
+				totalWeight: 100,
+			},
+			want: []float32{0.25, 0.15, 0.2, 0.1, 0.3},
+		},
+		{
+			name: "Test 2: Even number of array elements if total weight = 100",
+			args: args{
+				weights:     []uint8{25, 49, 25, 1},
+				totalWeight: 100,
+			},
+			want: []float32{0.25, 0.49, 0.25, 0.01},
+		},
+		{
+			name: "Test 3: Weight is more than 100",
+			args: args{
+				weights:     []uint8{100, 100, 100},
+				totalWeight: 300,
+			},
+			want: []float32{0.33333334, 0.33333334, 0.33333334},
+		},
+		{
+			name: "Test 4: Weight array is empty",
+			args: args{
+				weights:     []uint8{},
+				totalWeight: 100,
+			},
+			want: nil,
+		},
+		{
+			name: "Test 5: Total weight it 0",
+			args: args{
+				weights:     []uint8{25, 49, 25, 1},
+				totalWeight: 0,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getFractionalWeight(tt.args.weights, tt.args.totalWeight); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getFractionalWeight() = %v, want %v", got, tt.want)
 			}
 		})
 	}

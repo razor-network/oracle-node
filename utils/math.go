@@ -116,7 +116,7 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	// convention is 1 for median and 2 for mean
 	switch aggregationMethod {
 	case 1:
-		return calculateWeightedMedian(data, weight, totalWeight)
+		return calculateWeightedMedian(data, weight, totalWeight), nil
 	case 2:
 		weightedSum := CalculateWeightedSum(data, weight)
 		weightedMean := weightedSum.Div(weightedSum, big.NewInt(int64(totalWeight)))
@@ -125,27 +125,35 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	return nil, errors.New("invalid aggregation method")
 }
 
-func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) (*big.Int, error) {
+func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) *big.Int {
+	if len(data) == 0 || len(weight) == 0 || totalWeight == 0 {
+		return nil
+	}
 	fractionalWeights := getFractionalWeight(weight, totalWeight)
+	//Create a pair of [data, weight]
 	var pairs [][]interface{}
 	for i := 0; i < len(data); i++ {
 		pairs = append(pairs, []interface{}{data[i], fractionalWeights[i]})
 	}
+	//Sort the weight according to the data in increasing order
 	sort.SliceStable(pairs, func(i, j int) bool {
 		return pairs[i][0].(*big.Int).Cmp(pairs[j][0].(*big.Int)) < 0
 	})
+
 	sum := float32(0)
 	for _, pair := range pairs {
+		//Calculate the sum of weights from the sorted pair
 		sum += pair[1].(float32)
+		//If the sum exceeds 0.5 then that pair contains the median data
 		if sum >= 0.5 {
-			return pair[0].(*big.Int), nil
+			return pair[0].(*big.Int)
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 func getFractionalWeight(weights []uint8, totalWeight uint) []float32 {
-	if len(weights) == 0 {
+	if len(weights) == 0 || totalWeight == 0 {
 		return nil
 	}
 	var fractionalWeight []float32
