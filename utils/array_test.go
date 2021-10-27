@@ -114,7 +114,7 @@ func TestIsEqual(t *testing.T) {
 				arr2: []uint32{1234, 1, 2321},
 			},
 			want:  false,
-			want1: 3,
+			want1: 2,
 		},
 		{
 			name: "Test when both arrays are empty",
