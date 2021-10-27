@@ -98,6 +98,35 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint8)
 	return asset.Collection, nil
 }
 
+func GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+	var assetIds []uint8
+
+	numOfAssets, err := GetNumAssets(client, address)
+	if err != nil {
+		return assetIds, err
+	}
+
+	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
+		assetType, err := GetAssetType(client, address, uint8(assetIndex))
+		if err != nil {
+			log.Error("Error in fetching asset type: ", assetType)
+			return nil, err
+		}
+		if assetType == 2 {
+			activeCollection, err := GetActiveCollection(client, address, uint8(assetIndex))
+			if err != nil {
+				log.Error(err)
+				if err == errors.New("collection inactive") {
+					continue
+				}
+				return nil, err
+			}
+			assetIds = append(assetIds, activeCollection.Id)
+		}
+	}
+	return assetIds, nil
+}
+
 func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
 	var data []*big.Int
 
