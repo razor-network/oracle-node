@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -105,7 +106,10 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
 	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedStakers)
-	if err != nil {
+	if err != nil && err.Error() != errors.New("gas limit reached").Error() {
+		return
+	}
+	if err != nil && err.Error() == errors.New("gas limit reached").Error() {
 		log.Error("Error in calling GiveSorted: ", err)
 		mid := len(sortedStakers) / 2
 		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers[:mid])
