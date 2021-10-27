@@ -105,7 +105,7 @@ func TestIsEqual(t *testing.T) {
 				arr2: []uint32{1234, 1, 2321},
 			},
 			want:  false,
-			want1: 1,
+			want1: 0,
 		},
 		{
 			name: "Test when both arrays have different length",
