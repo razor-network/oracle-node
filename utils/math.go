@@ -4,11 +4,10 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"sort"
 	"strconv"
 
 	"github.com/spf13/pflag"
-
-	"modernc.org/sortutil"
 )
 
 func ConvertToNumber(num interface{}) (*big.Float, error) {
@@ -113,20 +112,55 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	if len(data) == 0 {
 		return nil, errors.New("aggregation cannot be performed for nil data")
 	}
+	totalWeight := CalculateSumOfUint8Array(weight)
 	// convention is 1 for median and 2 for mean
 	switch aggregationMethod {
 	case 1:
-		//TODO check the formula of weighted median
-		sortutil.BigIntSlice.Sort(data)
-		median := data[len(data)/2]
-		return big.NewInt(median.Int64()), nil
+		return calculateWeightedMedian(data, weight, totalWeight), nil
 	case 2:
 		weightedSum := CalculateWeightedSum(data, weight)
-		totalWeight := CalculateSumOfUint8Array(weight)
 		weightedMean := weightedSum.Div(weightedSum, big.NewInt(int64(totalWeight)))
 		return weightedMean, nil
 	}
 	return nil, errors.New("invalid aggregation method")
+}
+
+func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) *big.Int {
+	if len(data) == 0 || len(weight) == 0 || totalWeight == 0 {
+		return nil
+	}
+	fractionalWeights := getFractionalWeight(weight, totalWeight)
+	//Create a pair of [data, weight]
+	var pairs [][]interface{}
+	for i := 0; i < len(data); i++ {
+		pairs = append(pairs, []interface{}{data[i], fractionalWeights[i]})
+	}
+	//Sort the weight according to the data in increasing order
+	sort.SliceStable(pairs, func(i, j int) bool {
+		return pairs[i][0].(*big.Int).Cmp(pairs[j][0].(*big.Int)) < 0
+	})
+
+	sum := float32(0)
+	for _, pair := range pairs {
+		//Calculate the sum of weights from the sorted pair
+		sum += pair[1].(float32)
+		//If the sum exceeds 0.5 then that pair contains the median data
+		if sum >= 0.5 {
+			return pair[0].(*big.Int)
+		}
+	}
+	return nil
+}
+
+func getFractionalWeight(weights []uint8, totalWeight uint) []float32 {
+	if len(weights) == 0 || totalWeight == 0 {
+		return nil
+	}
+	var fractionalWeight []float32
+	for _, weight := range weights {
+		fractionalWeight = append(fractionalWeight, float32(weight)/float32(totalWeight))
+	}
+	return fractionalWeight
 }
 
 func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
