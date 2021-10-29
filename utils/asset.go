@@ -98,6 +98,26 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint8)
 	return asset.Collection, nil
 }
 
+func GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+	var (
+		activeAssetIds []uint8
+		err            error
+	)
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		activeAssetIds, err = assetManager.GetActiveAssets(&callOpts)
+		if err != nil {
+			Retry(retry, "Error in fetching active assets: ", err)
+			continue
+		}
+		break
+	}
+	if err != nil {
+		return nil, err
+	}
+	return activeAssetIds, nil
+}
+
 func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
 	var data []*big.Int
 

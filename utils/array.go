@@ -19,13 +19,13 @@ func Contains(arr []int, val int) bool {
 
 func IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	if len(arr1) > len(arr2) {
-		return false, len(arr2) + 1
+		return false, len(arr2)
 	} else if len(arr1) < len(arr2) {
-		return false, len(arr1) + 1
+		return false, len(arr1)
 	}
 	for i := 0; i < len(arr1); i++ {
 		if arr2[i] != arr1[i] {
-			return false, i + 1
+			return false, i
 		}
 	}
 	return true, -1
