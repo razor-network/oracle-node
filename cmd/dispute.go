@@ -36,9 +36,9 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		log.Debugf("Medians: %d\n", medians)
 		activeAssetIds, _ := utils.GetActiveAssetIds(client, account.Address, epoch)
 
-		isEqual, i := utils.IsEqual(proposedBlock.Medians, medians)
+		isEqual, j := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
-			assetId := int(activeAssetIds[i])
+			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
