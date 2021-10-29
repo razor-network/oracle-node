@@ -58,6 +58,26 @@ func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stake
 	return voteValue, nil
 }
 
+func GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	var (
+		votes    bindings.StructsVote
+		votesErr error
+	)
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		votes, votesErr = voteManager.GetVote(&callOpts, stakerId)
+		if votesErr != nil {
+			Retry(retry, "Error in fetching votes: ", votesErr)
+			continue
+		}
+		break
+	}
+	if votesErr != nil {
+		return bindings.StructsVote{}, votesErr
+	}
+	return votes, nil
+}
+
 func GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client, address)
 	var (

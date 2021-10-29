@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -33,8 +34,11 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Debug("Locally calculated data:")
 		log.Debugf("Medians: %d\n", medians)
-		isEqual, assetId := utils.IsEqual(proposedBlock.Medians, medians)
+		activeAssetIds, _ := utils.GetActiveAssetIds(client, account.Address, epoch)
+
+		isEqual, j := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
+			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
@@ -53,12 +57,24 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 
 func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, razorUtils utilsInterface) error {
 	blockManager := utils.GetBlockManager(client)
-	sortedVotes, err := getSortedVotes(client, account.Address, uint8(assetId), epoch, razorUtils)
+	numOfStakers, err := utils.GetNumberOfStakers(client, account.Address)
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("Epoch: %d, Sorted Votes: %s", epoch, sortedVotes)
+	var sortedStakers []uint32
+
+	for i := 1; i <= int(numOfStakers); i++ {
+		votes, err := utils.GetVotes(client, account.Address, uint32(i))
+		if err != nil {
+			return err
+		}
+		if votes.Epoch == epoch {
+			sortedStakers = append(sortedStakers, uint32(i))
+		}
+	}
+
+	log.Debugf("Epoch: %d, StakerId's who voted: %d", epoch, sortedStakers)
 	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
@@ -68,7 +84,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	})
 
 	if !utils.Contains(giveSortedAssetIds, assetId) {
-		GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), utils.ConvertBigIntArrayToUint32Array(sortedVotes))
+		GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
@@ -88,13 +104,17 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	return nil
 }
 
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedVotes []uint32) {
-	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedVotes)
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
+	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedStakers)
 	if err != nil {
-		log.Error("Error in calling GiveSorted: ", err)
-		mid := len(sortedVotes) / 2
-		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedVotes[:mid])
-		GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedVotes[mid:])
+		if err.Error() == errors.New("gas limit reached").Error() {
+			log.Error("Error in calling GiveSorted: ", err)
+			mid := len(sortedStakers) / 2
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers[:mid])
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers[mid:])
+		} else {
+			return
+		}
 	}
 	log.Info("Calling GiveSorted...")
 	log.Info("Txn Hash: ", txn.Hash())
