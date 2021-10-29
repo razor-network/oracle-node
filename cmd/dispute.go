@@ -42,7 +42,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
-			err := Dispute(client, config, account, epoch, uint8(j), assetId)
+			err := Dispute(client, config, account, epoch, uint8(i), assetId)
 			if err != nil {
 				log.Error("Error in disputing...", err)
 				continue
