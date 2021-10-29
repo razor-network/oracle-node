@@ -99,32 +99,23 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint8)
 }
 
 func GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
-	var assetIds []uint8
-
-	numOfAssets, err := GetNumAssets(client, address)
-	if err != nil {
-		return assetIds, err
-	}
-
-	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
-		assetType, err := GetAssetType(client, address, uint8(assetIndex))
+	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+	var (
+		activeAssetIds []uint8
+		err            error
+	)
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		activeAssetIds, err = assetManager.GetActiveAssets(&callOpts)
 		if err != nil {
-			log.Error("Error in fetching asset type: ", assetType)
-			return nil, err
+			Retry(retry, "Error in fetching active assets: ", err)
+			continue
 		}
-		if assetType == 2 {
-			activeCollection, err := GetActiveCollection(client, address, uint8(assetIndex))
-			if err != nil {
-				log.Error(err)
-				if err == errors.New("collection inactive") {
-					continue
-				}
-				return nil, err
-			}
-			assetIds = append(assetIds, activeCollection.Id)
-		}
+		break
 	}
-	return assetIds, nil
+	if err != nil {
+		return nil, err
+	}
+	return activeAssetIds, nil
 }
 
 func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
