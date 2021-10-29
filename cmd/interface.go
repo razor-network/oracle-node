@@ -37,6 +37,7 @@ type utilsInterface interface {
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
+	WaitForCommitStateAgain(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
 	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
 	GetRandaoHash(*ethclient.Client, string) ([32]byte, error)
@@ -50,6 +51,8 @@ type utilsInterface interface {
 	GetNumActiveAssets(*ethclient.Client, string) (*big.Int, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, string, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
+	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
+	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
 	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
@@ -80,6 +83,7 @@ type stakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	ExtendLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32) (*Types.Transaction, error)
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
@@ -123,6 +127,7 @@ type utilsCmdInterface interface {
 	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
 	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
 	DecreaseCommissionPrompt() bool
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 }
 

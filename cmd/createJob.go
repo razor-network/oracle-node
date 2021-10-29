@@ -76,7 +76,7 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
-		Parameters:      []interface{}{power, name, selector, url},
+		Parameters:      []interface{}{weight, power, uint8(selectorType), name, selector, url},
 		ABI:             bindings.AssetManagerABI,
 	}
 
