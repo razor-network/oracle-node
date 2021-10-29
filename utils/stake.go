@@ -83,20 +83,10 @@ func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error
 	return numStakers, nil
 }
 
-func GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
-	var (
-		influence    *big.Int
-		influenceErr error
-	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		influence, influenceErr = stakeManager.GetInfluence(&callOpts, stakerId)
-		if influenceErr != nil {
-			Retry(retry, "Error in fetching influence: ", influenceErr)
-			continue
-		}
-		break
-	}
+//TODO: Remove this method entirely
+
+func GetInfluence(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
+	influence, influenceErr := GetInfluenceSnapshot(client, address, stakerId, epoch)
 	if influenceErr != nil {
 		return big.NewInt(0), influenceErr
 	}
@@ -125,4 +115,9 @@ func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.L
 		return types.Locks{}, lockErr
 	}
 	return locks, nil
+}
+
+func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	return stakeManager.WithdrawReleasePeriod(&callOpts)
 }

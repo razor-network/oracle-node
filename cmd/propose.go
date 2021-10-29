@@ -32,7 +32,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestInfluence, biggestInfluenceId, err := getBiggestInfluenceAndId(client, account.Address)
+	biggestInfluence, biggestInfluenceId, err := getBiggestInfluenceAndId(client, account.Address, epoch)
 	if err != nil {
 		log.Error("Error in calculating biggest staker: ", err)
 		return
@@ -52,7 +52,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		BiggestInfluence: biggestInfluence,
 		NumberOfStakers:  numStakers,
 		RandaoHash:       randaoHash,
-	})
+	}, epoch)
 
 	log.Debug("Iteration: ", iteration)
 
@@ -119,7 +119,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	utils.WaitForBlockCompletion(client, txn.Hash().String())
 }
 
-func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
+func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, 0, err
@@ -127,7 +127,7 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.In
 	var biggestInfluenceId uint32
 	biggestInfluence := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		influence, err := utils.GetInfluence(client, address, uint32(i))
+		influence, err := utils.GetInfluence(client, address, uint32(i), epoch)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -139,10 +139,10 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.In
 	return biggestInfluence, biggestInfluenceId, nil
 }
 
-func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
+func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, epoch uint32) int {
 	for i := 0; i < 10000000000; i++ {
 		proposer.Iteration = i
-		isElected := isElectedProposer(client, address, proposer)
+		isElected := isElectedProposer(client, address, proposer, epoch)
 		if isElected {
 			return i
 		}
@@ -150,7 +150,7 @@ func getIteration(client *ethclient.Client, address string, proposer types.Elect
 	return -1
 }
 
-func isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
+func isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, epoch uint32) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
@@ -163,7 +163,7 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
-	influence, err := utils.GetInfluence(client, address, proposer.StakerId)
+	influence, err := utils.GetInfluence(client, address, proposer.StakerId, epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return false
