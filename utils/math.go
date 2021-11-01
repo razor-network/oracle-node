@@ -2,12 +2,11 @@ package utils
 
 import (
 	"errors"
+	"github.com/spf13/pflag"
 	"math"
 	"math/big"
 	"sort"
 	"strconv"
-
-	"github.com/spf13/pflag"
 )
 
 func ConvertToNumber(num interface{}) (*big.Float, error) {
@@ -23,7 +22,7 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 		convertedNumber, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Error("Error in converting from string to float: ", err)
-			return big.NewFloat(0), nil
+			return big.NewFloat(0), err
 		}
 		return big.NewFloat(convertedNumber), nil
 	}

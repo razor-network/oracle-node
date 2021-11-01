@@ -90,6 +90,22 @@ func TestConvertToNumber(t *testing.T) {
 			want:    big.NewFloat(0),
 			wantErr: true,
 		},
+		{
+			name: "Test incorrect string",
+			args: args{
+				num: "4w",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test when variable type is out of switch case",
+			args: args{
+				num: big.NewInt(4),
+			},
+			want:    big.NewFloat(0),
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
