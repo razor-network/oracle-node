@@ -46,6 +46,8 @@ var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
 var WaitForAppropriateStateMock func(*ethclient.Client, string, string, ...int) (uint32, error)
 
+var WaitIfCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
+
 var GetDefaultPathMock func() (string, error)
 
 var AssignPasswordMock func(*pflag.FlagSet) string
@@ -214,6 +216,10 @@ func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead s
 
 func (u UtilsMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
 	return WaitForAppropriateStateMock(client, accountAddress, action, states...)
+}
+
+func (u UtilsMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitIfCommitStateMock(client, accountAddress, action)
 }
 
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {

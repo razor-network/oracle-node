@@ -110,6 +110,10 @@ func (u Utils) WaitForAppropriateState(client *ethclient.Client, accountAddress 
 	return WaitForAppropriateState(client, accountAddress, action, states...)
 }
 
+func (u Utils) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitIfCommitState(client, accountAddress, action)
+}
+
 func (u Utils) PrivateKeyPrompt() string {
 	return utils.PrivateKeyPrompt()
 }

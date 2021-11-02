@@ -37,3 +37,16 @@ func WaitForAppropriateState(client *ethclient.Client, accountAddress string, ac
 		}
 	}
 }
+
+func WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	for {
+		epoch, state, err := GetEpochAndState(client, accountAddress)
+		utils.CheckError("Error in fetching epoch and state: ", err)
+		if state == 0 || state == -1 {
+			log.Debugf("Cannot perform %s during commit state. Retrying in 5 seconds...", action)
+			time.Sleep(5 * time.Second)
+		} else {
+			return epoch, nil
+		}
+	}
+}
