@@ -76,7 +76,6 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
-			//TODO: Add retry mechanism
 			return
 		}
 		lastIteration := lastProposedBlockStruct.Iteration
@@ -127,7 +126,7 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch ui
 	var biggestInfluenceId uint32
 	biggestInfluence := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		influence, err := utils.GetInfluence(client, address, uint32(i), epoch)
+		influence, err := utils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -163,7 +162,7 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
-	influence, err := utils.GetInfluence(client, address, proposer.StakerId, epoch)
+	influence, err := utils.GetInfluenceSnapshot(client, address, proposer.StakerId, epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return false
@@ -187,7 +186,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 
 	var medians []*big.Int
 
-	epoch, err := utils.GetEpoch(client, address)
+	epoch, err := utils.GetEpoch(client)
 	if err != nil {
 		log.Error(err)
 		return nil, err

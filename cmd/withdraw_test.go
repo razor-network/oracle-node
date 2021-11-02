@@ -15,7 +15,7 @@ import (
 	"testing"
 )
 
-func Test_checkForCommitStateAndWithdraw(t *testing.T) {
+func Test_withdrawFunds(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -31,19 +31,15 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 	transactionUtils := TransactionMock{}
 
 	type args struct {
-		lock                       types.Locks
-		lockErr                    error
-		withdrawReleasePeriod      uint8
-		withdrawReleasePeriodErr   error
-		txnOpts                    *bind.TransactOpts
-		epoch                      uint32
-		epochErr                   error
-		commitStateEpoch           uint32
-		commitStateEpochErr        error
-		withdrawHash               common.Hash
-		withdrawErr                error
-		updatedCommitStateEpoch    uint32
-		updatedCommitStateEpochErr error
+		lock                     types.Locks
+		lockErr                  error
+		withdrawReleasePeriod    uint8
+		withdrawReleasePeriodErr error
+		txnOpts                  *bind.TransactOpts
+		epoch                    uint32
+		epochErr                 error
+		withdrawHash             common.Hash
+		withdrawErr              error
 	}
 	tests := []struct {
 		name    string
@@ -52,23 +48,19 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test 1: When checkForCommitStateAndWithdraw function executes successfully",
+			name: "Test 1: When withdrawFunds function executes successfully",
 			args: args{
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(4),
 				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      5,
-				epochErr:                   nil,
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    5,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -76,18 +68,14 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting lock",
 			args: args{
-				lockErr:                    errors.New("lock error"),
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      5,
-				epochErr:                   nil,
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  errors.New("lock error"),
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    5,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("lock error"),
@@ -98,18 +86,14 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(0),
 				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      5,
-				epochErr:                   nil,
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    5,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    core.NilHash,
 			wantErr: nil,
@@ -120,17 +104,13 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(4),
 				},
-				lockErr:                    nil,
-				withdrawReleasePeriodErr:   errors.New("withdrawReleasePeriod error"),
-				txnOpts:                    txnOpts,
-				epoch:                      5,
-				epochErr:                   nil,
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  nil,
+				withdrawReleasePeriodErr: errors.New("withdrawReleasePeriod error"),
+				txnOpts:                  txnOpts,
+				epoch:                    5,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("withdrawReleasePeriod error"),
@@ -141,17 +121,13 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(4),
 				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epochErr:                   errors.New("epoch error"),
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epochErr:                 errors.New("epoch error"),
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("epoch error"),
@@ -162,82 +138,32 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(4),
 				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      9,
-				epochErr:                   nil,
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    9,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    core.NilHash,
 			wantErr: nil,
 		},
 		{
-			name: "Test 7: When there is an error in getting commitStateEpoch from WaitForCommitState ",
+			name: "Test 7: When withdraw function is not being called",
 			args: args{
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(4),
 				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      5,
-				epochErr:                   nil,
-				commitStateEpochErr:        errors.New("waitForCommitState error"),
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("waitForCommitState error"),
-		},
-		{
-			name: "Test 8: When there is an error in getting updated commitStateEpoch from WaitForCommitStateAgain",
-			args: args{
-				lock: types.Locks{
-					WithdrawAfter: big.NewInt(5),
-				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      4,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      4,
-				epochErr:                   nil,
-				commitStateEpoch:           4,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpochErr: errors.New("waitForCommitState error"),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("waitForCommitState error"),
-		},
-		{
-			name: "Test 9: When withdraw function is not being called",
-			args: args{
-				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
-				},
-				lockErr:                    nil,
-				withdrawReleasePeriod:      1,
-				withdrawReleasePeriodErr:   nil,
-				txnOpts:                    txnOpts,
-				epoch:                      5,
-				epochErr:                   nil,
-				commitStateEpoch:           6,
-				commitStateEpochErr:        nil,
-				withdrawHash:               common.BigToHash(big.NewInt(1)),
-				withdrawErr:                nil,
-				updatedCommitStateEpoch:    7,
-				updatedCommitStateEpochErr: nil,
+				lockErr:                  nil,
+				withdrawReleasePeriod:    1,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    5,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
 			},
 			want:    core.NilHash,
 			wantErr: nil,
@@ -257,34 +183,26 @@ func Test_checkForCommitStateAndWithdraw(t *testing.T) {
 			return tt.args.txnOpts
 		}
 
-		GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
+		GetEpochMock = func(*ethclient.Client) (uint32, error) {
 			return tt.args.epoch, tt.args.epochErr
-		}
-
-		WaitForCommitStateMock = func(*ethclient.Client, string, string) (uint32, error) {
-			return tt.args.commitStateEpoch, tt.args.commitStateEpochErr
 		}
 
 		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error) {
 			return tt.args.withdrawHash, tt.args.withdrawErr
 		}
 
-		WaitForCommitStateAgainMock = func(*ethclient.Client, string, string) (uint32, error) {
-			return tt.args.updatedCommitStateEpoch, tt.args.updatedCommitStateEpochErr
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := checkForCommitStateAndWithdraw(client, account, configurations, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
+			got, err := withdrawFunds(client, account, configurations, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
 			if got != tt.want {
-				t.Errorf("Txn hash for checkForCommitStateAndWithdraw function, got = %v, want = %v", got, tt.want)
+				t.Errorf("Txn hash for withdrawFunds function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for checkForCommitStateAndWithdraw function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for withdrawFunds function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for checkForCommitStateAndWithdraw function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for withdrawFunds function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 

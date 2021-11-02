@@ -60,7 +60,7 @@ Example:
 }
 
 func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}

@@ -26,18 +26,16 @@ type utilsInterface interface {
 	GetConfigData() (types.Configurations, error)
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
-	GetEpoch(*ethclient.Client, string) (uint32, error)
+	GetEpoch(*ethclient.Client) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
-	WaitForConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
+	WaitForAppropriateState(*ethclient.Client, string, string, ...int) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
 	AssignAmountInWei(*pflag.FlagSet) *big.Int
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
-	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
-	WaitForCommitStateAgain(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)

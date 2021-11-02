@@ -83,16 +83,6 @@ func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error
 	return numStakers, nil
 }
 
-//TODO: Remove this method entirely
-
-func GetInfluence(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
-	influence, influenceErr := GetInfluenceSnapshot(client, address, stakerId, epoch)
-	if influenceErr != nil {
-		return big.NewInt(0), influenceErr
-	}
-	return influence, nil
-}
-
 func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	staker, err := GetStaker(client, address, stakerId)

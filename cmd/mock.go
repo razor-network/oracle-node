@@ -44,9 +44,7 @@ var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
-var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
-
-var WaitForCommitStateAgainMock func(*ethclient.Client, string, string) (uint32, error)
+var WaitForAppropriateStateMock func(*ethclient.Client, string, string, ...int) (uint32, error)
 
 var GetDefaultPathMock func() (string, error)
 
@@ -74,7 +72,7 @@ var ParseBoolMock func(string) (bool, error)
 
 var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
 
-var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+var GetEpochMock func(*ethclient.Client) (uint32, error)
 
 var GetCommitmentsMock func(*ethclient.Client, string) ([32]byte, error)
 
@@ -214,12 +212,8 @@ func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead s
 	return WaitForBlockCompletionMock(client, hashToRead)
 }
 
-func (u UtilsMock) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForCommitStateMock(client, accountAddress, action)
-}
-
-func (u UtilsMock) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForCommitStateAgainMock(client, accountAddress, action)
+func (u UtilsMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
+	return WaitForAppropriateStateMock(client, accountAddress, action, states...)
 }
 
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
@@ -278,8 +272,8 @@ func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int6
 	return GetDelayedStateMock(client, buffer)
 }
 
-func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
-	return GetEpochMock(client, address)
+func (u UtilsMock) GetEpoch(client *ethclient.Client) (uint32, error) {
+	return GetEpochMock(client)
 }
 
 func (u UtilsMock) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {

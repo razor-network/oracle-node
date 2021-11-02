@@ -135,3 +135,13 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 	}
 	return GetStakerId(client, address)
 }
+
+func GetEpoch(client *ethclient.Client) (uint32, error) {
+	latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		log.Error("Error in fetching block: ", err)
+		return 0, err
+	}
+	epoch := latestHeader.Number.Int64() / core.EpochLength
+	return uint32(epoch), nil
+}
