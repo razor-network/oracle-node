@@ -30,7 +30,7 @@ func WaitForAppropriateState(client *ethclient.Client, accountAddress string, ac
 		epoch, state, err := GetEpochAndState(client, accountAddress)
 		utils.CheckError("Error in fetching epoch and state: ", err)
 		if !utils.Contains(states, int(state)) {
-			log.Debugf("Can only %s during confirm state. Retrying in 5 seconds...", action)
+			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
 			time.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
