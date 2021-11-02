@@ -55,7 +55,11 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 	}
 	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
 	client := razorUtils.ConnectToClient(config.Provider)
-
+	_, err = razorUtils.WaitIfCommitState(client, address, "update collection")
+	if err != nil {
+		log.Error("Error in fetching state")
+		return core.NilHash, err
+	}
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        password,
