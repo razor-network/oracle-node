@@ -216,6 +216,10 @@ func (u UtilsMock) WaitForAppropriateState(client *ethclient.Client, accountAddr
 	return WaitForAppropriateStateMock(client, accountAddress, action, states...)
 }
 
+func (u UtilsMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitIfCommitStateMock(client, accountAddress, action)
+}
+
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
 	return AssignPasswordMock(flagSet)
 }
