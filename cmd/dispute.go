@@ -12,37 +12,38 @@ import (
 )
 
 var giveSortedAssetIds []int
+var proposeUtils proposeUtilsInterface
 
-func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) {
-	numberOfProposedBlocks, err := utils.GetNumberOfProposedBlocks(client, account.Address, epoch)
+func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, razorUtils utilsInterface, proposeUtils proposeUtilsInterface, cmdUtils utilsCmdInterface) error {
+	numberOfProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
 		log.Error(err)
-		return
+		return err
 	}
 	for i := 0; i < int(numberOfProposedBlocks); i++ {
-		proposedBlock, err := utils.GetProposedBlock(client, account.Address, epoch, uint8(i))
+		proposedBlock, err := razorUtils.GetProposedBlock(client, account.Address, epoch, uint8(i))
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
-		medians, err := MakeBlock(client, account.Address, false)
+		medians, err := proposeUtils.MakeBlock(client, account.Address, false)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 		log.Debug("Locally calculated data:")
 		log.Debugf("Medians: %d\n", medians)
-		activeAssetIds, _ := utils.GetActiveAssetIds(client, account.Address, epoch)
+		activeAssetIds, _ := razorUtils.GetActiveAssetIds(client, account.Address, epoch)
 
-		isEqual, j := utils.IsEqual(proposedBlock.Medians, medians)
+		isEqual, j := razorUtils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
-			err := Dispute(client, config, account, epoch, uint8(i), assetId)
+			err := cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId)
 			if err != nil {
 				log.Error("Error in disputing...", err)
 				continue
@@ -53,11 +54,12 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 	}
 	giveSortedAssetIds = []int{}
+	return nil
 }
 
-func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
-	blockManager := utils.GetBlockManager(client)
-	numOfStakers, err := utils.GetNumberOfStakers(client, account.Address)
+func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, razorUtils utilsInterface, cmdUtils utilsCmdInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) error {
+	blockManager := razorUtils.GetBlockManager(client)
+	numOfStakers, err := razorUtils.GetNumberOfStakers(client, account.Address)
 	if err != nil {
 		return err
 	}
@@ -65,7 +67,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	var sortedStakers []uint32
 
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := utils.GetVotes(client, account.Address, uint32(i))
+		votes, err := razorUtils.GetVotes(client, account.Address, uint32(i))
 		if err != nil {
 			return err
 		}
@@ -75,7 +77,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	}
 
 	log.Debugf("Epoch: %d, StakerId's who voted: %d", epoch, sortedStakers)
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
@@ -83,24 +85,24 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Config:         config,
 	})
 
-	if !utils.Contains(giveSortedAssetIds, assetId) {
-		GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), sortedStakers)
+	if !razorUtils.Contains(giveSortedAssetIds, assetId) {
+		cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
-	finalizeDisputeTxnOpts := utils.GetTxnOpts(types.TransactionOptions{
+	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
 	})
-	finalizeTxn, err := blockManager.FinalizeDispute(finalizeDisputeTxnOpts, epoch, blockId)
+	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
 		return err
 	}
-	log.Info("Txn Hash: ", finalizeTxn.Hash())
-	utils.WaitForBlockCompletion(client, finalizeTxn.Hash().String())
+	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
 	return nil
 }
 

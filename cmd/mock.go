@@ -38,6 +38,8 @@ type BlockManagerMock struct{}
 
 type CryptoMock struct{}
 
+type ProposeUtilsMock struct{}
+
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
 var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
@@ -99,6 +101,22 @@ var GetWithdrawReleasePeriodMock func(*ethclient.Client, string) (uint8, error)
 var GetConfigFilePathMock func() (string, error)
 
 var ViperWriteConfigAsMock func(string) error
+
+var GetNumberOfProposedBlocksMock func(*ethclient.Client, string, uint32) (uint8, error)
+
+var GetProposedBlockMock func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error)
+
+var IsEqualMock func(arr1 []uint32, arr2 []uint32) (bool, int)
+
+var GetActiveAssetIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
+
+var GetBlockManagerMock func(*ethclient.Client) *bindings.BlockManager
+
+var GetNumberOfStakersMock func(*ethclient.Client, string) (uint32, error)
+
+var GetVotesMock func(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
+
+var ContainsMock func([]int, int) bool
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -162,6 +180,10 @@ var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
 
 var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 
+var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
+
+var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
 var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
@@ -190,6 +212,8 @@ var CommitMock func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*T
 
 var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 
+var FinalizeDisputeMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
+
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
 var GetUint32AggregationMock func(*pflag.FlagSet) (uint32, error)
@@ -201,6 +225,10 @@ var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
 var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
+
+var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32) ([]*big.Int, error)
+
+var MakeBlockMock func(*ethclient.Client, string, bool) ([]uint32, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -324,6 +352,38 @@ func (u UtilsMock) GetLock(client *ethclient.Client, address string, stakerId ui
 
 func (u UtilsMock) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
 	return GetWithdrawReleasePeriodMock(client, address)
+}
+
+func (u UtilsMock) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
+	return GetNumberOfProposedBlocksMock(client, address, epoch)
+}
+
+func (u UtilsMock) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
+	return GetProposedBlockMock(client, address, epoch, proposedBlockId)
+}
+
+func (u UtilsMock) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
+	return IsEqualMock(arr1, arr2)
+}
+
+func (u UtilsMock) GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+	return GetActiveAssetIdsMock(client, address, epoch)
+}
+
+func (u UtilsMock) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
+	return GetBlockManagerMock(client)
+}
+
+func (u UtilsMock) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
+	return GetNumberOfStakersMock(client, address)
+}
+
+func (u UtilsMock) GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
+	return GetVotesMock(client, address, stakerId)
+}
+
+func (u UtilsMock) Contains(arr []int, val int) bool {
+	return ContainsMock(arr, val)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -522,10 +582,30 @@ func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, ad
 	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
+func (utilsCmdMock UtilsCmdMock) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
+	return DisputeMock(client, config, account, epoch, blockId, assetId)
+}
+
+func (utilsCmdMock UtilsCmdMock) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
+	GiveSortedMock(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	return ClaimBlockRewardMock(client, opts)
 }
 
+func (blockManagerMock BlockManagerMock) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
+	return FinalizeDisputeMock(client, opts, epoch, blockIndex)
+}
+
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return HexToECDSAMock(hexKey)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
+	return getSortedVotesMock(client, address, assetId, epoch)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogueMode)
 }
