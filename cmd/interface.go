@@ -38,6 +38,17 @@ type utilsInterface interface {
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
+	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
+	GetRandaoHash(*ethclient.Client, string) ([32]byte, error)
+	GetNumberOfProposedBlocks(*ethclient.Client, string, uint32) (uint8, error)
+	GetMaxAltBlocks(*ethclient.Client, string) (uint8, error)
+	GetProposedBlock(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error)
+	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
+	GetVoteValue(*ethclient.Client, string, uint8, uint32) (*big.Int, error)
+	GetInfluenceSnapshot(*ethclient.Client, string, uint32, uint32) (*big.Int, error)
+	GetNumActiveAssets(*ethclient.Client, string) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, string, uint32) (*big.Int, error)
+	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
@@ -129,4 +140,15 @@ type voteManagerInterface interface {
 
 type blockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
+	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
+}
+
+type proposeUtilsInterface interface {
+	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
+	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
+	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
+	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
+	MakeBlock(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
+	getSortedVotes(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
+	influencedMedian([]*big.Int, *big.Int) *big.Int
 }
