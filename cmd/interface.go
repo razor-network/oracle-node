@@ -30,6 +30,7 @@ type utilsInterface interface {
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
 	WaitForConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
+	WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)

@@ -42,9 +42,14 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
-			err := Dispute(client, config, account, epoch, uint8(i), assetId, razorUtils)
-			if err != nil {
-				log.Error("Error in disputing...", err)
+			if proposedBlock.Valid {
+				err := Dispute(client, config, account, epoch, uint8(i), assetId)
+				if err != nil {
+					log.Error("Error in disputing...", err)
+					continue
+				}
+			} else {
+				log.Info("Block already disputed")
 				continue
 			}
 		} else {
@@ -55,7 +60,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 	giveSortedAssetIds = []int{}
 }
 
-func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, razorUtils utilsInterface) error {
+func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
 	blockManager := utils.GetBlockManager(client)
 	numOfStakers, err := utils.GetNumberOfStakers(client, account.Address)
 	if err != nil {
