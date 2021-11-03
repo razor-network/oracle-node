@@ -30,6 +30,7 @@ type utilsInterface interface {
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
 	WaitForConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
+	WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
@@ -125,7 +126,7 @@ type utilsCmdInterface interface {
 	DecreaseCommissionPrompt() bool
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
-	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
+	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, utilsInterface, utilsCmdInterface, blockManagerInterface, transactionInterface) error
 	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32)
 }
 

@@ -210,7 +210,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		HandleDispute(client, config, account, epoch, razorUtils, proposeUtils, cmdUtils)
+		HandleDispute(client, config, account, epoch, razorUtils, proposeUtils, cmdUtils, blockManagerUtils, transactionUtils)
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := ClaimBlockReward(types.TransactionOptions{

@@ -14,7 +14,7 @@ import (
 var giveSortedAssetIds []int
 var proposeUtils proposeUtilsInterface
 
-func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, razorUtils utilsInterface, proposeUtils proposeUtilsInterface, cmdUtils utilsCmdInterface) error {
+func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, razorUtils utilsInterface, proposeUtils proposeUtilsInterface, cmdUtils utilsCmdInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) error {
 	numberOfProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
 		log.Error(err)
@@ -43,9 +43,14 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
-			err := cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId)
-			if err != nil {
-				log.Error("Error in disputing...", err)
+			if proposedBlock.Valid {
+				err := Dispute(client, config, account, epoch, uint8(i), assetId, razorUtils, cmdUtils, blockManagerUtils, transactionUtils)
+				if err != nil {
+					log.Error("Error in disputing...", err)
+					continue
+				}
+			} else {
+				log.Info("Block already disputed")
 				continue
 			}
 		} else {

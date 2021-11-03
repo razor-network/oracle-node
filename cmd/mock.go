@@ -48,6 +48,8 @@ var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
 var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
 
+var WaitIfCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
+
 var WaitForCommitStateAgainMock func(*ethclient.Client, string, string) (uint32, error)
 
 var GetDefaultPathMock func() (string, error)
@@ -180,7 +182,7 @@ var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
 
 var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 
-var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
+var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, utilsInterface, utilsCmdInterface, blockManagerInterface, transactionInterface) error
 
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 
@@ -248,6 +250,10 @@ func (u UtilsMock) WaitForCommitState(client *ethclient.Client, accountAddress s
 
 func (u UtilsMock) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
 	return WaitForCommitStateAgainMock(client, accountAddress, action)
+}
+
+func (u UtilsMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+	return WaitIfCommitStateMock(client, accountAddress, action)
 }
 
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
@@ -582,8 +588,8 @@ func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, ad
 	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
-func (utilsCmdMock UtilsCmdMock) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
-	return DisputeMock(client, config, account, epoch, blockId, assetId)
+func (utilsCmdMock UtilsCmdMock) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, razorUtils utilsInterface, cmdUtils utilsCmdInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) error {
+	return DisputeMock(client, config, account, epoch, blockId, assetId, razorUtils, cmdUtils, blockManagerUtils, transactionUtils)
 }
 
 func (utilsCmdMock UtilsCmdMock) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
