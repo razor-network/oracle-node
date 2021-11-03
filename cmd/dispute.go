@@ -12,7 +12,6 @@ import (
 )
 
 var giveSortedAssetIds []int
-var proposeUtils proposeUtilsInterface
 
 func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, razorUtils utilsInterface, proposeUtils proposeUtilsInterface, cmdUtils utilsCmdInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) error {
 	numberOfProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
@@ -28,7 +27,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
-		medians, err := proposeUtils.MakeBlock(client, account.Address, false)
+		medians, err := proposeUtils.MakeBlock(client, account.Address, false, razorUtils, proposeUtils)
 		if err != nil {
 			log.Error(err)
 			continue

@@ -30,6 +30,8 @@ type KeystoreMock struct{}
 
 type FlagSetMock struct{}
 
+type ProposeUtilsMock struct{}
+
 type UtilsCmdMock struct{}
 
 type VoteManagerMock struct{}
@@ -37,8 +39,6 @@ type VoteManagerMock struct{}
 type BlockManagerMock struct{}
 
 type CryptoMock struct{}
-
-type ProposeUtilsMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
@@ -80,6 +80,16 @@ var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
 
 var GetEpochMock func(*ethclient.Client, string) (uint32, error)
 
+var GetNumberOfStakersMock func(*ethclient.Client, string) (uint32, error)
+
+var GetRandaoHashMock func(*ethclient.Client, string) ([32]byte, error)
+
+var GetNumberOfProposedBlocksMock func(*ethclient.Client, string, uint32) (uint8, error)
+
+var GetMaxAltBlocksMock func(*ethclient.Client, string) (uint8, error)
+
+var GetProposedBlockMock func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error)
+
 var GetCommitmentsMock func(*ethclient.Client, string) ([32]byte, error)
 
 var AllZeroMock func([32]byte) bool
@@ -96,6 +106,20 @@ var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
 
+var GetInfluenceMock func(*ethclient.Client, string, uint32) (*big.Int, error)
+
+var GetEpochLastRevealedMock func(*ethclient.Client, string, uint32) (uint32, error)
+
+var GetVoteValueMock func(*ethclient.Client, string, uint8, uint32) (*big.Int, error)
+
+var GetInfluenceSnapshotMock func(*ethclient.Client, string, uint32, uint32) (*big.Int, error)
+
+var GetNumActiveAssetsMock func(*ethclient.Client, string) (*big.Int, error)
+
+var GetTotalInfluenceRevealedMock func(*ethclient.Client, string, uint32) (*big.Int, error)
+
+var ConvertBigIntArrayToUint32ArrayMock func([]*big.Int) []uint32
+
 var GetLockMock func(*ethclient.Client, string, uint32) (types.Locks, error)
 
 var GetWithdrawReleasePeriodMock func(*ethclient.Client, string) (uint8, error)
@@ -104,17 +128,11 @@ var GetConfigFilePathMock func() (string, error)
 
 var ViperWriteConfigAsMock func(string) error
 
-var GetNumberOfProposedBlocksMock func(*ethclient.Client, string, uint32) (uint8, error)
-
-var GetProposedBlockMock func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error)
-
 var IsEqualMock func(arr1 []uint32, arr2 []uint32) (bool, int)
 
 var GetActiveAssetIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
 
 var GetBlockManagerMock func(*ethclient.Client) *bindings.BlockManager
-
-var GetNumberOfStakersMock func(*ethclient.Client, string) (uint32, error)
 
 var GetVotesMock func(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 
@@ -176,6 +194,22 @@ var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
+var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error)
+
+var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
+
+var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer) bool
+
+var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
+
+var MakeBlockMock func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
+
+var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
+
+var influencedMedianMock func([]*big.Int, *big.Int) *big.Int
+
+var ProposeMock func(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
+
 var GetUint8WeightMock func(*pflag.FlagSet) (uint8, error)
 
 var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
@@ -227,10 +261,6 @@ var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
 var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
-
-var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32) ([]*big.Int, error)
-
-var MakeBlockMock func(*ethclient.Client, string, bool) ([]uint32, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -316,6 +346,26 @@ func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, e
 	return GetEpochMock(client, address)
 }
 
+func (u UtilsMock) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
+	return GetNumberOfStakersMock(client, address)
+}
+
+func (u UtilsMock) GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
+	return GetRandaoHashMock(client, address)
+}
+
+func (u UtilsMock) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
+	return GetNumberOfProposedBlocksMock(client, address, epoch)
+}
+
+func (u UtilsMock) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
+	return GetMaxAltBlocksMock(client, address)
+}
+
+func (u UtilsMock) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
+	return GetProposedBlockMock(client, address, epoch, proposedBlockId)
+}
+
 func (u UtilsMock) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	return GetCommitmentsMock(client, address)
 }
@@ -352,20 +402,40 @@ func (u UtilsMock) ViperWriteConfigAs(path string) error {
 	return ViperWriteConfigAsMock(path)
 }
 
+func (u UtilsMock) GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
+	return GetInfluenceMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return GetEpochLastRevealedMock(client, address, stakerId)
+}
+
+func (u UtilsMock) GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
+	return GetVoteValueMock(client, address, assetId, stakerId)
+}
+
+func (u UtilsMock) GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return GetInfluenceSnapshotMock(client, address, stakerId, epoch)
+}
+
+func (u UtilsMock) GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
+	return GetNumActiveAssetsMock(client, address)
+}
+
+func (u UtilsMock) GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
+	return GetTotalInfluenceRevealedMock(client, address, epoch)
+}
+
+func (u UtilsMock) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
+	return ConvertBigIntArrayToUint32ArrayMock(bigIntArray)
+}
+
 func (u UtilsMock) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
 	return GetLockMock(client, address, stakerId)
 }
 
 func (u UtilsMock) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
 	return GetWithdrawReleasePeriodMock(client, address)
-}
-
-func (u UtilsMock) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
-	return GetNumberOfProposedBlocksMock(client, address, epoch)
-}
-
-func (u UtilsMock) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
-	return GetProposedBlockMock(client, address, epoch, proposedBlockId)
 }
 
 func (u UtilsMock) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
@@ -378,10 +448,6 @@ func (u UtilsMock) GetActiveAssetIds(client *ethclient.Client, address string, e
 
 func (u UtilsMock) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
 	return GetBlockManagerMock(client)
-}
-
-func (u UtilsMock) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
-	return GetNumberOfStakersMock(client, address)
 }
 
 func (u UtilsMock) GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
@@ -504,6 +570,34 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 	return GetInt8PowerMock(flagSet)
 }
 
+func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndIdMock(client, address, razorUtils)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
+	return getIterationMock(client, address, proposer, proposeUtils)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
+	return isElectedProposerMock(client, address, proposer)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
+	return pseudoRandomNumberGeneratorMock(seed, max, blockHashes)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogueMode, razorUtils, proposeUtils)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
+	return getSortedVotesMock(client, address, assetId, epoch, razorUtils)
+}
+
+func (proposeUtilsMock ProposeUtilsMock) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
+	return influencedMedianMock(sortedVotes, totalInfluenceRevealed)
+}
+
 func (flagSetMock FlagSetMock) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, error) {
 	return GetUint8WeightMock(flagSet)
 }
@@ -546,6 +640,10 @@ func (voteManagerMock VoteManagerMock) Reveal(client *ethclient.Client, opts *bi
 
 func (voteManagerMock VoteManagerMock) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	return CommitMock(client, opts, epoch, commitment)
+}
+
+func (blockManagerMock BlockManagerMock) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
+	return ProposeMock(client, opts, epoch, medians, iteration, biggestInfluencerId)
 }
 
 func (flagSetMock FlagSetMock) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
@@ -606,12 +704,4 @@ func (blockManagerMock BlockManagerMock) FinalizeDispute(client *ethclient.Clien
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return HexToECDSAMock(hexKey)
-}
-
-func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
-	return getSortedVotesMock(client, address, assetId, epoch)
-}
-
-func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
-	return MakeBlockMock(client, address, rogueMode)
 }

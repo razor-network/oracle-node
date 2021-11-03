@@ -337,7 +337,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.proposedBlock, tt.args.proposedBlockErr
 			}
 
-			MakeBlockMock = func(*ethclient.Client, string, bool) ([]uint32, error) {
+			MakeBlockMock = func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error) {
 				return tt.args.medians, tt.args.mediansErr
 			}
 
