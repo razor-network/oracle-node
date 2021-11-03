@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/hex"
+	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"math/big"
 	"math/rand"
@@ -15,86 +16,88 @@ import (
 	"modernc.org/sortutil"
 )
 
-func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueMode bool) {
-	if state, err := utils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+var proposeUtils proposeUtilsInterface
+
+func Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
-		return
+		return core.NilHash, err
 	}
-	staker, err := utils.GetStaker(client, account.Address, stakerId)
+	staker, err := razorUtils.GetStaker(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching staker: ", err)
-		return
+		return core.NilHash, err
 	}
-	numStakers, err := utils.GetNumberOfStakers(client, account.Address)
+	numStakers, err := razorUtils.GetNumberOfStakers(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching number of stakers: ", err)
-		return
+		return core.NilHash, err
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestInfluence, biggestInfluenceId, err := getBiggestInfluenceAndId(client, account.Address)
+	biggestInfluence, biggestInfluenceId, err := proposeUtils.getBiggestInfluenceAndId(client, account.Address, razorUtils)
 	if err != nil {
 		log.Error("Error in calculating biggest staker: ", err)
-		return
+		return core.NilHash, err
 	}
 
-	randaoHash, err := utils.GetRandaoHash(client, account.Address)
+	randaoHash, err := razorUtils.GetRandaoHash(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching random hash: ", err)
-		return
+		return core.NilHash, err
 	}
 	log.Debug("Biggest Influence Id: ", biggestInfluenceId)
 	log.Debugf("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
-	iteration := getIteration(client, account.Address, types.ElectedProposer{
+	iteration := proposeUtils.getIteration(client, account.Address, types.ElectedProposer{
 		Stake:            staker.Stake,
 		StakerId:         stakerId,
 		BiggestInfluence: biggestInfluence,
 		NumberOfStakers:  numStakers,
 		RandaoHash:       randaoHash,
-	})
+	}, proposeUtils)
 
 	log.Debug("Iteration: ", iteration)
 
 	if iteration == -1 {
-		return
+		return core.NilHash, nil
 	}
-	numOfProposedBlocks, err := utils.GetNumberOfProposedBlocks(client, account.Address, epoch)
+	numOfProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
-	maxAltBlocks, err := utils.GetMaxAltBlocks(client, account.Address)
+	maxAltBlocks, err := razorUtils.GetMaxAltBlocks(client, account.Address)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
 	if numOfProposedBlocks >= maxAltBlocks {
 		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
 		lastBlockIndex := numOfProposedBlocks - 1
-		lastProposedBlockStruct, err := utils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
+		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
 			//TODO: Add retry mechanism
-			return
+			return core.NilHash, err
 		}
 		lastIteration := lastProposedBlockStruct.Iteration
 		if lastIteration.Cmp(big.NewInt(int64(iteration))) < 0 {
 			log.Info("Current iteration is greater than iteration of last proposed block, cannot propose")
-			return
+			return core.NilHash, nil
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := MakeBlock(client, account.Address, rogueMode)
+	medians, err := proposeUtils.MakeBlock(client, account.Address, rogueMode, razorUtils, proposeUtils)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
 
 	log.Debugf("Medians: %d", medians)
 
-	txnOpts := utils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
@@ -105,29 +108,28 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
 	})
-	blockManager := utils.GetBlockManager(client)
 
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Influence Id: %d", iteration, biggestInfluenceId)
 	log.Info("Proposing block...")
-	txn, err := blockManager.Propose(txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
+	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
 	if err != nil {
 		log.Error(err)
-		return
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
-func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.Int, uint32, error) {
-	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
+func getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, 0, err
 	}
 	var biggestInfluenceId uint32
 	biggestInfluence := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		influence, err := utils.GetInfluence(client, address, uint32(i))
+		influence, err := razorUtils.GetInfluence(client, address, uint32(i))
 		if err != nil {
 			return nil, 0, err
 		}
@@ -139,10 +141,10 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string) (*big.In
 	return biggestInfluence, biggestInfluenceId, nil
 }
 
-func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer) int {
+func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
 	for i := 0; i < 10000000000; i++ {
 		proposer.Iteration = i
-		isElected := isElectedProposer(client, address, proposer)
+		isElected := proposeUtils.isElectedProposer(client, address, proposer)
 		if isElected {
 			return i
 		}
@@ -179,28 +181,28 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint32, error) {
-	numAssets, err := utils.GetNumActiveAssets(client, address)
+func MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface) ([]uint32, error) {
+	numAssets, err := razorUtils.GetNumActiveAssets(client, address)
 	if err != nil {
 		return nil, err
 	}
 
 	var medians []*big.Int
 
-	epoch, err := utils.GetEpoch(client, address)
+	epoch, err := razorUtils.GetEpoch(client, address)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
 	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		sortedVotes, err := getSortedVotes(client, address, uint8(assetId), epoch)
+		sortedVotes, err := proposeUtils.getSortedVotes(client, address, uint8(assetId), epoch, razorUtils)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 
-		totalInfluenceRevealed, err := utils.GetTotalInfluenceRevealed(client, address, epoch)
+		totalInfluenceRevealed, err := razorUtils.GetTotalInfluenceRevealed(client, address, epoch)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -213,32 +215,32 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool) ([]uint
 		if rogueMode {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
-			median = influencedMedian(sortedVotes, totalInfluenceRevealed)
+			median = proposeUtils.influencedMedian(sortedVotes, totalInfluenceRevealed)
 		}
 		log.Debugf("Median: %s", median)
 		medians = append(medians, median)
 	}
-	mediansInUint32 := utils.ConvertBigIntArrayToUint32Array(medians)
+	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(medians)
 	return mediansInUint32, nil
 }
 
-func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32) ([]*big.Int, error) {
-	numberOfStakers, err := utils.GetNumberOfStakers(client, address)
+func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, err
 	}
 	var weightedVoteValues []*big.Int
 	for i := 1; i <= int(numberOfStakers); i++ {
-		epochLastRevealed, err := utils.GetEpochLastRevealed(client, address, uint32(i))
+		epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, address, uint32(i))
 		if err != nil {
 			return nil, err
 		}
 		if epoch == epochLastRevealed {
-			vote, err := utils.GetVoteValue(client, address, assetId, uint32(i))
+			vote, err := razorUtils.GetVoteValue(client, address, assetId, uint32(i))
 			if err != nil {
 				return nil, err
 			}
-			influence, err := utils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
+			influence, err := razorUtils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
 			if err != nil {
 				return nil, err
 			}

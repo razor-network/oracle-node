@@ -23,6 +23,7 @@ func Test_updateCollection(t *testing.T) {
 	var client *ethclient.Client
 	var flagSet *pflag.FlagSet
 	var config types.Configurations
+	var WaitIfCommitStateStatus uint32
 
 	razorUtils := UtilsMock{}
 	assetManagerUtils := AssetManagerMock{}
@@ -30,22 +31,23 @@ func Test_updateCollection(t *testing.T) {
 	flagSetUtils := FlagSetMock{}
 
 	type args struct {
-		password            string
-		collectionId        uint8
-		collectionIdErr     error
-		address             string
-		addressErr          error
-		aggregation         uint32
-		aggregationErr      error
-		power               int8
-		powerErr            error
-		jobId               []uint
-		jobIdErr            error
-		jobIdUint8          []uint8
-		txnOpts             *bind.TransactOpts
-		updateCollectionTxn *Types.Transaction
-		updateCollectionErr error
-		hash                common.Hash
+		password             string
+		collectionId         uint8
+		collectionIdErr      error
+		address              string
+		addressErr           error
+		aggregation          uint32
+		aggregationErr       error
+		power                int8
+		powerErr             error
+		jobId                []uint
+		jobIdErr             error
+		jobIdUint8           []uint8
+		txnOpts              *bind.TransactOpts
+		updateCollectionTxn  *Types.Transaction
+		updateCollectionErr  error
+		waitIfCommitStateErr error
+		hash                 common.Hash
 	}
 
 	tests := []struct {
@@ -57,22 +59,23 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 1: When updateCollection function executes successfully",
 			args: args{
-				password:            "test",
-				collectionId:        3,
-				collectionIdErr:     nil,
-				address:             "0x000000000000000000000000000000000000dead",
-				addressErr:          nil,
-				aggregation:         1,
-				aggregationErr:      nil,
-				power:               0,
-				powerErr:            nil,
-				jobId:               []uint{1, 2},
-				jobIdErr:            nil,
-				jobIdUint8:          []uint8{1, 2},
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregation:          1,
+				aggregationErr:       nil,
+				power:                0,
+				powerErr:             nil,
+				jobId:                []uint{1, 2},
+				jobIdErr:             nil,
+				jobIdUint8:           []uint8{1, 2},
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -80,21 +83,22 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting collection id from flags",
 			args: args{
-				password:            "test",
-				collectionIdErr:     errors.New("collectionIdErr error"),
-				address:             "0x000000000000000000000000000000000000dead",
-				addressErr:          nil,
-				aggregation:         1,
-				aggregationErr:      nil,
-				power:               0,
-				powerErr:            nil,
-				jobId:               []uint{1, 2},
-				jobIdErr:            nil,
-				jobIdUint8:          []uint8{1, 2},
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionIdErr:      errors.New("collectionIdErr error"),
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregation:          1,
+				aggregationErr:       nil,
+				power:                0,
+				powerErr:             nil,
+				jobId:                []uint{1, 2},
+				jobIdErr:             nil,
+				jobIdUint8:           []uint8{1, 2},
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("collectionIdErr error"),
@@ -102,22 +106,23 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting address from flags",
 			args: args{
-				password:            "test",
-				collectionId:        3,
-				collectionIdErr:     nil,
-				address:             "",
-				addressErr:          errors.New("address error"),
-				aggregation:         1,
-				aggregationErr:      nil,
-				power:               0,
-				powerErr:            nil,
-				jobId:               []uint{1, 2},
-				jobIdErr:            nil,
-				jobIdUint8:          []uint8{1, 2},
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "",
+				addressErr:           errors.New("address error"),
+				aggregation:          1,
+				aggregationErr:       nil,
+				power:                0,
+				powerErr:             nil,
+				jobId:                []uint{1, 2},
+				jobIdErr:             nil,
+				jobIdUint8:           []uint8{1, 2},
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("address error"),
@@ -125,21 +130,22 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting aggregation method from flags",
 			args: args{
-				password:            "test",
-				collectionId:        3,
-				collectionIdErr:     nil,
-				address:             "0x000000000000000000000000000000000000dead",
-				addressErr:          nil,
-				aggregationErr:      errors.New("aggregation error"),
-				power:               0,
-				powerErr:            nil,
-				jobId:               []uint{1, 2},
-				jobIdErr:            nil,
-				jobIdUint8:          []uint8{1, 2},
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregationErr:       errors.New("aggregation error"),
+				power:                0,
+				powerErr:             nil,
+				jobId:                []uint{1, 2},
+				jobIdErr:             nil,
+				jobIdUint8:           []uint8{1, 2},
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("aggregation error"),
@@ -147,21 +153,22 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting power from flags",
 			args: args{
-				password:            "test",
-				collectionId:        3,
-				collectionIdErr:     nil,
-				address:             "0x000000000000000000000000000000000000dead",
-				addressErr:          nil,
-				aggregation:         1,
-				aggregationErr:      nil,
-				powerErr:            errors.New("power error"),
-				jobId:               []uint{1, 2},
-				jobIdErr:            nil,
-				jobIdUint8:          []uint8{1, 2},
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregation:          1,
+				aggregationErr:       nil,
+				powerErr:             errors.New("power error"),
+				jobId:                []uint{1, 2},
+				jobIdErr:             nil,
+				jobIdUint8:           []uint8{1, 2},
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("power error"),
@@ -169,21 +176,22 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting jobIds from flags",
 			args: args{
-				password:            "test",
-				collectionId:        3,
-				collectionIdErr:     nil,
-				address:             "0x000000000000000000000000000000000000dead",
-				addressErr:          nil,
-				aggregation:         1,
-				aggregationErr:      nil,
-				powerErr:            nil,
-				jobId:               nil,
-				jobIdErr:            errors.New("job Id error"),
-				jobIdUint8:          nil,
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregation:          1,
+				aggregationErr:       nil,
+				powerErr:             nil,
+				jobId:                nil,
+				jobIdErr:             errors.New("job Id error"),
+				jobIdUint8:           nil,
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("job Id error"),
@@ -191,22 +199,44 @@ func Test_updateCollection(t *testing.T) {
 		{
 			name: "Test 7: When updateCollection transaction fails",
 			args: args{
-				password:            "test",
-				collectionId:        3,
-				collectionIdErr:     nil,
-				address:             "0x000000000000000000000000000000000000dead",
-				addressErr:          nil,
-				aggregation:         1,
-				aggregationErr:      nil,
-				power:               0,
-				powerErr:            nil,
-				txnOpts:             txnOpts,
-				updateCollectionTxn: &Types.Transaction{},
-				updateCollectionErr: errors.New("updateCollection error"),
-				hash:                common.BigToHash(big.NewInt(1)),
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregation:          1,
+				aggregationErr:       nil,
+				power:                0,
+				powerErr:             nil,
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  errors.New("updateCollection error"),
+				waitIfCommitStateErr: nil,
+				hash:                 common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("updateCollection error"),
+		},
+		{
+			name: "Test 8: When there is an error in WaitIfConfirmState",
+			args: args{
+				password:             "test",
+				collectionId:         3,
+				collectionIdErr:      nil,
+				address:              "0x000000000000000000000000000000000000dead",
+				addressErr:           nil,
+				aggregation:          1,
+				aggregationErr:       nil,
+				power:                0,
+				powerErr:             nil,
+				txnOpts:              txnOpts,
+				updateCollectionTxn:  &Types.Transaction{},
+				updateCollectionErr:  nil,
+				waitIfCommitStateErr: errors.New("waitIfCommitState error"),
+				hash:                 common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("waitIfCommitState error"),
 		},
 	}
 	for _, tt := range tests {
@@ -253,6 +283,10 @@ func Test_updateCollection(t *testing.T) {
 
 			HashMock = func(*Types.Transaction) common.Hash {
 				return tt.args.hash
+			}
+
+			WaitIfCommitStateMock = func(*ethclient.Client, string, string) (uint32, error) {
+				return WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr
 			}
 
 			got, err := updateCollection(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
