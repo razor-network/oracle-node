@@ -44,7 +44,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			if proposedBlock.Valid {
-				err := Dispute(client, config, account, epoch, uint8(i), assetId, razorUtils, cmdUtils, blockManagerUtils, transactionUtils)
+				err := cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId, razorUtils, cmdUtils, blockManagerUtils, transactionUtils)
 				if err != nil {
 					log.Error("Error in disputing...", err)
 					continue
