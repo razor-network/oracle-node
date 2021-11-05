@@ -34,6 +34,13 @@ type UtilsCmd struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
 type CryptoUtils struct{}
+type UtilsStruct struct {
+	razorUtils        utilsInterface
+	cmdUtils          utilsCmdInterface
+	proposeUtils      proposeUtilsInterface
+	blockManagerUtils blockManagerInterface
+	transactionUtils  transactionInterface
+}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -480,8 +487,8 @@ func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address st
 	return CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
-func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, razorUtils utilsInterface, cmdutils utilsCmdInterface, blockManagerUtils blockManagerInterface, transactionUtils transactionInterface) error {
-	return Dispute(client, config, account, epoch, blockId, assetId, razorUtils, cmdutils, blockManagerUtils, transactionUtils)
+func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
+	return Dispute(client, config, account, epoch, blockId, assetId, utilsStruct)
 }
 
 func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {

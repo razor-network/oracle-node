@@ -135,7 +135,7 @@ type utilsCmdInterface interface {
 	DecreaseCommissionPrompt() bool
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
-	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, utilsInterface, utilsCmdInterface, blockManagerInterface, transactionInterface) error
+	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 }
 

@@ -16,7 +16,6 @@ import (
 )
 
 func TestDispute(t *testing.T) {
-
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
@@ -27,10 +26,12 @@ func TestDispute(t *testing.T) {
 	var blockId uint8
 	var assetId int
 
-	razorUtils = UtilsMock{}
-	cmdUtils = UtilsCmdMock{}
-	blockManagerUtils = BlockManagerMock{}
-	transactionUtils = TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		cmdUtils:          UtilsCmdMock{},
+		blockManagerUtils: BlockManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		epoch              uint32
@@ -159,7 +160,7 @@ func TestDispute(t *testing.T) {
 				return 1
 			}
 
-			err := Dispute(client, config, account, tt.args.epoch, blockId, assetId, razorUtils, cmdUtils, blockManagerUtils, transactionUtils)
+			err := Dispute(client, config, account, tt.args.epoch, blockId, assetId, utilsStruct)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for Dispute function, got = %v, want = %v", err, tt.want)
@@ -169,43 +170,23 @@ func TestDispute(t *testing.T) {
 					t.Errorf("Error for Dispute function, got = %v, want = %v", err, tt.want)
 				}
 			}
-
 		})
 	}
 }
 
-//func TestGiveSorted(t *testing.T) {
-//	type args struct {
-//		client        *ethclient.Client
-//		blockManager  *bindings.BlockManager
-//		txnOpts       *bind.TransactOpts
-//		epoch         uint32
-//		assetId       uint8
-//		sortedStakers []uint32
-//	}
-//	tests := []struct {
-//		name string
-//		args args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//		})
-//	}
-//}
-//
 func TestHandleDispute(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
 	var account types.Account
 	var epoch uint32
 
-	razorUtils = UtilsMock{}
-	proposeUtils = ProposeUtilsMock{}
-	cmdUtils = UtilsCmdMock{}
-	blockManagerUtils = BlockManagerMock{}
-	transactionUtils = TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		proposeUtils:      ProposeUtilsMock{},
+		cmdUtils:          UtilsCmdMock{},
+		blockManagerUtils: BlockManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		numberOfProposedBlocks    uint8
@@ -349,11 +330,11 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.isEqual, tt.args.iteration
 			}
 
-			DisputeMock = func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, utilsInterface, utilsCmdInterface, blockManagerInterface, transactionInterface) error {
+			DisputeMock = func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error {
 				return tt.args.disputeErr
 			}
 
-			err := HandleDispute(client, config, account, epoch, razorUtils, proposeUtils, cmdUtils, blockManagerUtils, transactionUtils)
+			err := HandleDispute(client, config, account, epoch, utilsStruct)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)
@@ -363,8 +344,6 @@ func TestHandleDispute(t *testing.T) {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)
 				}
 			}
-
 		})
 	}
-
 }
