@@ -24,29 +24,33 @@ Example:
 
 		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetUint32("stakerId")
-		err = GetStakerInfo(client, address, stakerId, stakeManagerUtils, razorUtils)
+		utilsStruct := &UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+		}
+		err = utilsStruct.GetStakerInfo(client, address, stakerId)
 		if err != nil {
 			log.Error("Error in getting staker info: ", err)
 		}
 	},
 }
 
-func GetStakerInfo(client *ethclient.Client, address string, stakerId uint32, stakeManagerUtils stakeManagerInterface, razorUtils utilsInterface) error {
+func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, address string, stakerId uint32) error {
 	callOpts := razorUtils.GetOptions(false, address, "")
-	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
+	stakerInfo, err := utilsStruct.stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
 		return err
 	}
-	maturity, err := stakeManagerUtils.GetMaturity(client, &callOpts, stakerInfo.Age)
+	maturity, err := utilsStruct.stakeManagerUtils.GetMaturity(client, &callOpts, stakerInfo.Age)
 	if err != nil {
 		return err
 	}
 	//TODO: change this once v0.1.76 is merged
-	epoch, err := razorUtils.GetEpoch(client, address)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, address)
 	if err != nil {
 		return err
 	}
-	influence, err := razorUtils.GetInfluenceSnapshot(client, address, stakerId, epoch)
+	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, address, stakerId, epoch)
 	if err != nil {
 		return err
 	}

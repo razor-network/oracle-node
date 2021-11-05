@@ -39,6 +39,7 @@ type UtilsStruct struct {
 	cmdUtils          utilsCmdInterface
 	proposeUtils      proposeUtilsInterface
 	blockManagerUtils blockManagerInterface
+	stakeManagerUtils stakeManagerInterface
 	transactionUtils  transactionInterface
 }
 
