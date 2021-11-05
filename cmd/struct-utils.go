@@ -34,6 +34,13 @@ type UtilsCmd struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
 type CryptoUtils struct{}
+type UtilsStruct struct {
+	razorUtils        utilsInterface
+	cmdUtils          utilsCmdInterface
+	proposeUtils      proposeUtilsInterface
+	blockManagerUtils blockManagerInterface
+	transactionUtils  transactionInterface
+}
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
@@ -209,6 +216,26 @@ func (u Utils) GetConfigFilePath() (string, error) {
 
 func (u Utils) ViperWriteConfigAs(path string) error {
 	return viper.WriteConfigAs(path)
+}
+
+func (u Utils) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
+	return utils.IsEqual(arr1, arr2)
+}
+
+func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+	return utils.GetActiveAssetIds(client, address, epoch)
+}
+
+func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
+	return utils.GetBlockManager(client)
+}
+
+func (u Utils) GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
+	return utils.GetVotes(client, address, stakerId)
+}
+
+func (u Utils) Contains(arr []int, val int) bool {
+	return utils.Contains(arr, val)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -460,9 +487,22 @@ func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address st
 	return CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
 }
 
+func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
+	return Dispute(client, config, account, epoch, blockId, assetId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
+	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
+}
+
+func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.FinalizeDispute(opts, epoch, blockIndex)
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

@@ -58,7 +58,12 @@ type utilsInterface interface {
 	AllZero([32]byte) bool
 	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
 	GetConfigFilePath() (string, error)
-	ViperWriteConfigAs(filename string) error
+	ViperWriteConfigAs(string) error
+	IsEqual([]uint32, []uint32) (bool, int)
+	GetActiveAssetIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	GetBlockManager(*ethclient.Client) *bindings.BlockManager
+	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
+	Contains([]int, int) bool
 }
 
 type tokenManagerInterface interface {
@@ -130,6 +135,8 @@ type utilsCmdInterface interface {
 	DecreaseCommissionPrompt() bool
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
+	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 }
 
 type cryptoInterface interface {
@@ -144,6 +151,7 @@ type voteManagerInterface interface {
 type blockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
+	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 }
 
 type proposeUtilsInterface interface {

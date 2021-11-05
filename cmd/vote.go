@@ -65,6 +65,13 @@ var (
 )
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
+	utilsStruct := UtilsStruct{
+		razorUtils:        razorUtils,
+		proposeUtils:      proposeUtils,
+		transactionUtils:  transactionUtils,
+		blockManagerUtils: blockManagerUtils,
+		cmdUtils:          cmdUtils,
+	}
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -217,7 +224,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		HandleDispute(client, config, account, epoch, razorUtils, proposeUtils)
+		err := HandleDispute(client, config, account, epoch, utilsStruct)
+		if err != nil {
+			log.Error(err)
+			break
+		}
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := ClaimBlockReward(types.TransactionOptions{
@@ -331,6 +342,8 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	blockManagerUtils = BlockManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	proposeUtils = ProposeUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(voteCmd)
 
