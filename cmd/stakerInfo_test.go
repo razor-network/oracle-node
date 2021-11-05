@@ -72,7 +72,7 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 				influence:    big.NewInt(0),
 				influenceErr: nil,
 				epoch:        1,
-				epochErr:     nil,  ̰
+				epochErr:     nil,
 			},
 			wantErr: nil,
 		},
