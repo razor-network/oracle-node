@@ -11,8 +11,11 @@ import (
 
 var stakerInfoCmd = &cobra.Command{
 	Use:   "stakerInfo",
-	Short: "A brief description of your command",
-	Long:  ``,
+	Short: "staker details",
+	Long: `Provides the staker details like age, stake, maturity etc.
+
+Example:
+  ./razor stakerInfo --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 2`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
