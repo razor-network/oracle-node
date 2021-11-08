@@ -27,7 +27,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 
 	type args struct {
 		client        *ethclient.Client
-		address       string
 		stakerId      uint32
 		callOpts      bind.CallOpts
 		stakerInfo    types.Staker
@@ -50,7 +49,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			fields: testUtils,
 			args: args{
 				client:   client,
-				address:  "0x000000000000000000000000000000000000dead",
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -83,7 +81,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			fields: testUtils,
 			args: args{
 				client:   client,
-				address:  "0x000000000000000000000000000000000000dead",
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -116,7 +113,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			fields: testUtils,
 			args: args{
 				client:   client,
-				address:  "0x000000000000000000000000000000000000dead",
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -149,7 +145,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			fields: testUtils,
 			args: args{
 				client:   client,
-				address:  "0x000000000000000000000000000000000000dead",
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -182,7 +177,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			fields: testUtils,
 			args: args{
 				client:   client,
-				address:  "0x000000000000000000000000000000000000dead",
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -234,11 +228,11 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			err := utilsStruct.GetStakerInfo(tt.args.client, tt.args.address, tt.args.stakerId)
+			err := utilsStruct.GetStakerInfo(tt.args.client, tt.args.stakerId)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for approve function, got = %v, want %v", err, tt.wantErr)
