@@ -45,7 +45,7 @@ func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId
 		return err
 	}
 	//TODO: change this once v0.1.76 is merged
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client, "")
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
 	if err != nil {
 		return err
 	}
