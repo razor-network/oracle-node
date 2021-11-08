@@ -1,10 +1,16 @@
 package utils
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 	"razor/core"
 	"razor/pkg/bindings"
 )
+
+func getBlockManagerWithOpts(client *ethclient.Client, address string) (*bindings.BlockManager, bind.CallOpts) {
+	return GetBlockManager(client), GetOptions(false, address, "")
+}
 
 func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
 	blockManager := GetBlockManager(client)
@@ -67,4 +73,14 @@ func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, 
 		return 0, err
 	}
 	return block.Medians[assetId-1], nil
+}
+
+func GetMinStakeAmount(client *ethclient.Client, address string) (*big.Int, error) {
+	blockManager, callOpts := getBlockManagerWithOpts(client, address)
+	return blockManager.MinStake(&callOpts)
+}
+
+func GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
+	blockManager, callOpts := getBlockManagerWithOpts(client, address)
+	return blockManager.MaxAltBlocks(&callOpts)
 }

@@ -57,7 +57,7 @@ func createCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
-	_, err = razorUtils.WaitForConfirmState(client, address, "create collection")
+	_, err = razorUtils.WaitForAppropriateState(client, address, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err

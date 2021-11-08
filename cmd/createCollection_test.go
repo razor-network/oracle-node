@@ -32,23 +32,23 @@ func Test_createCollection(t *testing.T) {
 	flagSetUtils := FlagSetMock{}
 
 	type args struct {
-		password                        string
-		name                            string
-		nameErr                         error
-		address                         string
-		addressErr                      error
-		jobId                           []uint
-		jobIdErr                        error
-		aggregation                     uint32
-		aggregationErr                  error
-		power                           int8
-		powerErr                        error
-		txnOpts                         *bind.TransactOpts
-		jobIdUint8                      []uint8
-		waitForDisputeOrConfirmStateErr error
-		createCollectionTxn             *Types.Transaction
-		createCollectionErr             error
-		hash                            common.Hash
+		password                   string
+		name                       string
+		nameErr                    error
+		address                    string
+		addressErr                 error
+		jobId                      []uint
+		jobIdErr                   error
+		aggregation                uint32
+		aggregationErr             error
+		power                      int8
+		powerErr                   error
+		txnOpts                    *bind.TransactOpts
+		jobIdUint8                 []uint8
+		waitForAppropriateStateErr error
+		createCollectionTxn        *Types.Transaction
+		createCollectionErr        error
+		hash                       common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -59,23 +59,23 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 1: When createCollection function executes successfully",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregation:                1,
+				aggregationErr:             nil,
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -83,23 +83,23 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting name from flags",
 			args: args{
-				password:                        "test",
-				name:                            "",
-				nameErr:                         errors.New("name error"),
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "",
+				nameErr:                    errors.New("name error"),
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregation:                1,
+				aggregationErr:             nil,
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("name error"),
@@ -107,23 +107,23 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting address from flags",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "",
-				addressErr:                      errors.New("address error"),
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "",
+				addressErr:                 errors.New("address error"),
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregation:                1,
+				aggregationErr:             nil,
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("address error"),
@@ -131,22 +131,22 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting jobId's from flags",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobIdErr:                        errors.New("jobId error"),
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobIdErr:                   errors.New("jobId error"),
+				aggregation:                1,
+				aggregationErr:             nil,
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("jobId error"),
@@ -154,22 +154,22 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting aggregation method from flags",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregationErr:                  errors.New("aggregation error"),
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregationErr:             errors.New("aggregation error"),
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("aggregation error"),
@@ -177,22 +177,22 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting power from flags",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				powerErr:                        errors.New("power error"),
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregation:                1,
+				aggregationErr:             nil,
+				powerErr:                   errors.New("power error"),
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("power error"),
@@ -200,23 +200,23 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 7: When there is an error in WaitForConfirmState",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: errors.New("waitForDisputeOrConfirmState error"),
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             nil,
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregation:                1,
+				aggregationErr:             nil,
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: errors.New("waitForDisputeOrConfirmState error"),
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("waitForDisputeOrConfirmState error"),
@@ -224,23 +224,23 @@ func Test_createCollection(t *testing.T) {
 		{
 			name: "Test 8: When CreateCollection transaction fails",
 			args: args{
-				password:                        "test",
-				name:                            "ETH-Collection",
-				nameErr:                         nil,
-				address:                         "0x000000000000000000000000000000000000dead",
-				addressErr:                      nil,
-				jobId:                           []uint{1, 2},
-				jobIdErr:                        nil,
-				aggregation:                     1,
-				aggregationErr:                  nil,
-				power:                           0,
-				powerErr:                        nil,
-				txnOpts:                         txnOpts,
-				jobIdUint8:                      []uint8{1, 2},
-				waitForDisputeOrConfirmStateErr: nil,
-				createCollectionTxn:             &Types.Transaction{},
-				createCollectionErr:             errors.New("createCollection error"),
-				hash:                            common.BigToHash(big.NewInt(1)),
+				password:                   "test",
+				name:                       "ETH-Collection",
+				nameErr:                    nil,
+				address:                    "0x000000000000000000000000000000000000dead",
+				addressErr:                 nil,
+				jobId:                      []uint{1, 2},
+				jobIdErr:                   nil,
+				aggregation:                1,
+				aggregationErr:             nil,
+				power:                      0,
+				powerErr:                   nil,
+				txnOpts:                    txnOpts,
+				jobIdUint8:                 []uint8{1, 2},
+				waitForAppropriateStateErr: nil,
+				createCollectionTxn:        &Types.Transaction{},
+				createCollectionErr:        errors.New("createCollection error"),
+				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("createCollection error"),
@@ -285,8 +285,8 @@ func Test_createCollection(t *testing.T) {
 				return tt.args.jobIdUint8
 			}
 
-			WaitForDisputeOrConfirmStateMock = func(*ethclient.Client, string, string) (uint32, error) {
-				return WaitForDisputeOrConfirmStateStatus, tt.args.waitForDisputeOrConfirmStateErr
+			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, ...int) (uint32, error) {
+				return WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr
 			}
 
 			CreateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error) {

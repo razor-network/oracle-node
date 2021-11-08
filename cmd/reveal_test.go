@@ -231,7 +231,7 @@ func TestReveal(t *testing.T) {
 				return tt.args.state, tt.args.stateErr
 			}
 
-			GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

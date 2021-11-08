@@ -67,7 +67,7 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
 		return core.NilHash, nil
 	}
-	_, err = razorUtils.WaitForConfirmState(client, address, "modify asset status")
+	_, err = razorUtils.WaitForAppropriateState(client, address, "modify asset status", 4)
 	if err != nil {
 		return core.NilHash, err
 	}

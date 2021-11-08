@@ -16,7 +16,6 @@ contracts=(
   "ACL acl.go"
   "BlockManager blockManager.go"
   "BlockStorage blockStorage.go"
-  "Parameters parameters.go"
   "Delegator delegator.go"
   "ERC20 erc20.go"
   "ERC165 erc165.go"

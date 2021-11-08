@@ -26,10 +26,10 @@ type utilsInterface interface {
 	GetConfigData() (types.Configurations, error)
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
-	GetEpoch(*ethclient.Client, string) (uint32, error)
+	GetEpoch(*ethclient.Client) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
-	WaitForConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
+	WaitForAppropriateState(*ethclient.Client, string, string, ...int) (uint32, error)
 	WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
@@ -37,15 +37,12 @@ type utilsInterface interface {
 	AssignAmountInWei(*pflag.FlagSet) *big.Int
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
-	WaitForCommitState(*ethclient.Client, string, string) (uint32, error)
-	WaitForCommitStateAgain(*ethclient.Client, string, string) (uint32, error)
 	GetDefaultPath() (string, error)
 	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
 	GetRandaoHash(*ethclient.Client, string) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, string, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client, string) (uint8, error)
 	GetProposedBlock(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error)
-	GetInfluence(*ethclient.Client, string, uint32) (*big.Int, error)
 	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
 	GetVoteValue(*ethclient.Client, string, uint8, uint32) (*big.Int, error)
 	GetInfluenceSnapshot(*ethclient.Client, string, uint32, uint32) (*big.Int, error)
@@ -159,7 +156,7 @@ type blockManagerInterface interface {
 }
 
 type proposeUtilsInterface interface {
-	getBiggestInfluenceAndId(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error)
+	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
 	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
 	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int

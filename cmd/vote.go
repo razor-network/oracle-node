@@ -77,7 +77,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting state: ", err)
 		return
 	}
-	epoch, err := utils.GetEpoch(client, account.Address)
+	epoch, err := utils.GetEpoch(client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return
