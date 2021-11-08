@@ -40,6 +40,14 @@ type UtilsStruct struct {
 	proposeUtils      proposeUtilsInterface
 	blockManagerUtils blockManagerInterface
 	transactionUtils  transactionInterface
+	assetManagerUtils assetManagerInterface
+	voteManagerUtils  voteManagerInterface
+	stakeManagerUtils stakeManagerInterface
+	tokenManagerUtils tokenManagerInterface
+	keystoreUtils     keystoreInterface
+	accountUtils      accountInterface
+	flagSetUtils      flagSetInterface
+	cryptoUtils       cryptoInterface
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
