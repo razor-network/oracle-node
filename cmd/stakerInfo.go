@@ -15,28 +15,27 @@ var stakerInfoCmd = &cobra.Command{
 	Long: `Provides the staker details like age, stake, maturity etc.
 
 Example:
-  ./razor stakerInfo --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 2`,
+  ./razor stakerInfo --stakerId 2`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
 
-		address, _ := cmd.Flags().GetString("address")
 		stakerId, _ := cmd.Flags().GetUint32("stakerId")
 		utilsStruct := &UtilsStruct{
 			razorUtils:        razorUtils,
 			stakeManagerUtils: stakeManagerUtils,
 		}
-		err = utilsStruct.GetStakerInfo(client, address, stakerId)
+		err = utilsStruct.GetStakerInfo(client, stakerId)
 		if err != nil {
 			log.Error("Error in getting staker info: ", err)
 		}
 	},
 }
 
-func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, address string, stakerId uint32) error {
-	callOpts := razorUtils.GetOptions(false, address, "")
+func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
+	callOpts := razorUtils.GetOptions(false, "", "")
 	stakerInfo, err := utilsStruct.stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
 		return err
@@ -46,11 +45,11 @@ func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, address 
 		return err
 	}
 	//TODO: change this once v0.1.76 is merged
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client, address)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, "")
 	if err != nil {
 		return err
 	}
-	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, address, stakerId, epoch)
+	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, "", stakerId, epoch)
 	if err != nil {
 		return err
 	}
@@ -75,10 +74,8 @@ func init() {
 	rootCmd.AddCommand(stakerInfoCmd)
 
 	var (
-		Address  string
 		StakerId uint32
 	)
 
-	stakerInfoCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	stakerInfoCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 }
