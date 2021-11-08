@@ -15,6 +15,8 @@ var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
 var stakeManagerUtils stakeManagerInterface
 
+//var utilsStructInterface structUtilsInterface
+
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some razors",
@@ -45,22 +47,30 @@ Example:
 			ChainId:        core.ChainId,
 			Config:         config,
 		}
-		approveTxnHash, err := approve(txnArgs, razorUtils, tokenManagerUtils, transactionUtils)
+
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			transactionUtils:  transactionUtils,
+			tokenManagerUtils: tokenManagerUtils,
+		}
+
+		approveTxnHash, err := utilsStruct.approve(txnArgs)
 		utils.CheckError("Approve error: ", err)
 
 		if approveTxnHash != core.NilHash {
 			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
 
-		stakeTxnHash, err := stakeCoins(txnArgs, razorUtils, stakeManagerUtils, transactionUtils)
+		stakeTxnHash, err := utilsStruct.stakeCoins(txnArgs)
 		utils.CheckError("Stake error: ", err)
 		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
 	},
 }
 
-func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
+	epoch, err := utilsStruct.razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -70,13 +80,13 @@ func stakeCoins(txnArgs types.TransactionOptions, razorUtils utilsInterface, sta
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	tx, err := utilsStruct.stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
-	return transactionUtils.Hash(tx), nil
+	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(tx).Hex())
+	return utilsStruct.transactionUtils.Hash(tx), nil
 }
 
 func init() {

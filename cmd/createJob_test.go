@@ -25,10 +25,12 @@ func Test_createJob(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	assetManagerUtils := AssetManagerMock{}
-	transactionUtils := TransactionMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		assetManagerUtils: AssetManagerMock{},
+		transactionUtils:  TransactionMock{},
+		flagSetUtils:      FlagSetMock{},
+	}
 
 	type args struct {
 		password     string
@@ -291,17 +293,17 @@ func Test_createJob(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := createJob(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+			got, err := utilsStruct.createJob(flagSet, config)
 			if got != tt.want {
-				t.Errorf("Txn hash for createJob function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for createJob function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for createJob function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for createJob function, got = %v, want = %v", got, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for createJob function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for createJob function, got = %v, want = %v", got, tt.wantErr)
 				}
 			}
 

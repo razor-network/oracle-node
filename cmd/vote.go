@@ -70,6 +70,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		proposeUtils:      proposeUtils,
 		transactionUtils:  transactionUtils,
 		blockManagerUtils: blockManagerUtils,
+		voteManagerUtils:  voteManagerUtils,
 		cmdUtils:          cmdUtils,
 	}
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
@@ -148,12 +149,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := HandleCommitState(client, account.Address, epoch, razorUtils)
+		data, err := utilsStruct.HandleCommitState(client, account.Address, epoch)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
 		}
-		commitTxn, err := Commit(client, data, secret, account, config, razorUtils, voteManagerUtils, transactionUtils)
+		commitTxn, err := utilsStruct.Commit(client, data, secret, account, config)
 		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
@@ -224,14 +225,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		err := HandleDispute(client, config, account, epoch, utilsStruct)
+		err := utilsStruct.HandleDispute(client, config, account, epoch)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
-			txn, err := ClaimBlockReward(types.TransactionOptions{
+			txn, err := utilsStruct.ClaimBlockReward(types.TransactionOptions{
 				Client:         client,
 				Password:       account.Password,
 				AccountAddress: account.Address,
@@ -240,7 +241,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				//ContractAddress: core.BlockManagerAddress,
 				//MethodName:      "claimBlockReward",
 				//ABI:             jobManager.BlockManagerABI,
-			}, razorUtils, blockManagerUtils, transactionUtils)
+			})
 
 			if err != nil {
 				log.Error("ClaimBlockReward error: ", err)

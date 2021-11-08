@@ -22,9 +22,11 @@ func TestClaimBlockReward(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	blockManagerUtils := BlockManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		blockManagerUtils: BlockManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		txnOpts             *bind.TransactOpts
@@ -76,17 +78,17 @@ func TestClaimBlockReward(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := ClaimBlockReward(options, razorUtils, blockManagerUtils, transactionUtils)
+			got, err := utilsStruct.ClaimBlockReward(options)
 			if got != tt.want {
-				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for ClaimBlockReward function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for ClaimBlockReward function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for ClaimBlockReward function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for ClaimBlockReward function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 

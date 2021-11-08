@@ -24,6 +24,12 @@ func Test_stakeCoins(t *testing.T) {
 	transactionUtils := TransactionMock{}
 	stakeManagerUtils := StakeManagerMock{}
 
+	utilsStruct := UtilsStruct{
+		razorUtils:        razorUtils,
+		transactionUtils:  transactionUtils,
+		stakeManagerUtils: stakeManagerUtils,
+	}
+
 	txnArgs := types.TransactionOptions{
 		Amount: big.NewInt(10000),
 	}
@@ -108,7 +114,7 @@ func Test_stakeCoins(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := stakeCoins(txnArgs, razorUtils, stakeManagerUtils, transactionUtils)
+			got, err := utilsStruct.stakeCoins(txnArgs)
 			if got != tt.want {
 				t.Errorf("Txn hash for stake function, got = %v, want %v", got, tt.want)
 			}

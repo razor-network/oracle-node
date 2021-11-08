@@ -18,21 +18,25 @@ var createCmd = &cobra.Command{
 Example: 
   ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
-		account, err := Create(cmd.Flags(), razorUtils, accountUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:   razorUtils,
+			accountUtils: accountUtils,
+		}
+		account, err := utilsStruct.Create(cmd.Flags())
 		utils.CheckError("Create error: ", err)
 		log.Info("Account address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)
 	},
 }
 
-func Create(flagSet *pflag.FlagSet, razorUtils utilsInterface, accountUtils accountInterface) (accounts.Account, error) {
-	password := razorUtils.AssignPassword(flagSet)
-	path, err := razorUtils.GetDefaultPath()
+func (utilsStruct UtilsStruct) Create(flagSet *pflag.FlagSet) (accounts.Account, error) {
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	path, err := utilsStruct.razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account := accountUtils.CreateAccount(path, password)
+	account := utilsStruct.accountUtils.CreateAccount(path, password)
 	return account, nil
 }
 

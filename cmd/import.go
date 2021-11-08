@@ -17,30 +17,35 @@ var importCmd = &cobra.Command{
 Example:
   ./razor import`,
 	Run: func(cmd *cobra.Command, args []string) {
-		account, err := importAccount(razorUtils, keystoreUtils, cryptoUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:    razorUtils,
+			keystoreUtils: keystoreUtils,
+			cryptoUtils:   cryptoUtils,
+		}
+		account, err := utilsStruct.importAccount()
 		utils.CheckError("Import error: ", err)
 		log.Info("Account Address: ", account.Address)
 		log.Info("Keystore Path: ", account.URL)
 	},
 }
 
-func importAccount(razorUtils utilsInterface, keystoreUtils keystoreInterface, cryptoUtils cryptoInterface) (accounts.Account, error) {
-	privateKey := razorUtils.PrivateKeyPrompt()
+func (utilsStruct UtilsStruct) importAccount() (accounts.Account, error) {
+	privateKey := utilsStruct.razorUtils.PrivateKeyPrompt()
 	// Remove 0x from the private key
 	privateKey = strings.TrimPrefix(privateKey, "0x")
 	log.Info("Enter password to protect keystore file")
-	password := razorUtils.PasswordPrompt()
-	path, err := razorUtils.GetDefaultPath()
+	password := utilsStruct.razorUtils.PasswordPrompt()
+	path, err := utilsStruct.razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	priv, err := cryptoUtils.HexToECDSA(privateKey)
+	priv, err := utilsStruct.cryptoUtils.HexToECDSA(privateKey)
 	if err != nil {
 		log.Error("Error in parsing private key")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account, err := keystoreUtils.ImportECDSA(path, priv, password)
+	account, err := utilsStruct.keystoreUtils.ImportECDSA(path, priv, password)
 	if err != nil {
 		log.Error("Error in importing account")
 		return accounts.Account{Address: common.Address{0x00}}, err

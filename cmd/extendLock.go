@@ -20,27 +20,33 @@ Example:
   ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
-		txn, err := extendLock(cmd.Flags(), config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
+		txn, err := utilsStruct.extendLock(cmd.Flags(), config)
 		utils.CheckError("Error in extending lock: ", err)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
-func extendLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
-	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
+func (utilsStruct UtilsStruct) extendLock(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
+	stakerId, err := utilsStruct.flagSetUtils.GetUint32StakerId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	client := razorUtils.ConnectToClient(config.Provider)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        password,
 		AccountAddress:  address,
@@ -53,12 +59,12 @@ func extendLock(flagSet *pflag.FlagSet, config types.Configurations, razorUtils 
 	})
 
 	log.Info("Extending lock...")
-	txn, err := stakeManagerUtils.ExtendLock(client, txnOpts, stakerId)
+	txn, err := utilsStruct.stakeManagerUtils.ExtendLock(client, txnOpts, stakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {
