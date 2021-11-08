@@ -28,7 +28,7 @@ func Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, a
 		return core.NilHash, err
 	}
 
-	epoch, err := razorUtils.GetEpoch(client, account.Address)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err

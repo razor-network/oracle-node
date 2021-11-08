@@ -21,12 +21,14 @@ import (
 
 func TestPropose(t *testing.T) {
 
-	var client *ethclient.Client
-	var account types.Account
-	var config types.Configurations
-	var stakerId uint32
-	var epoch uint32
-	var rogueMode bool
+	var (
+		client    *ethclient.Client
+		account   types.Account
+		config    types.Configurations
+		stakerId  uint32
+		epoch     uint32
+		rogueMode bool
+	)
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -394,7 +396,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numStakers, tt.args.numStakerErr
 		}
 
-		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error) {
+		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error) {
 			return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 		}
 
@@ -455,6 +457,7 @@ func TestPropose(t *testing.T) {
 func Test_getBiggestInfluenceAndId(t *testing.T) {
 	var client *ethclient.Client
 	var address string
+	var epoch uint32
 
 	razorUtils := UtilsMock{}
 
@@ -512,11 +515,11 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 				return tt.args.numOfStakers, tt.args.numOfStakersErr
 			}
 
-			GetInfluenceMock = func(*ethclient.Client, string, uint32) (*big.Int, error) {
+			GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, razorUtils)
+			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, epoch, razorUtils)
 			if gotInfluence.Cmp(tt.wantInfluence) != 0 {
 				t.Errorf("Biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotInfluence, tt.wantInfluence)
 			}
@@ -708,7 +711,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.numAssets, tt.args.numAssetsErr
 			}
 
-			GetEpochMock = func(*ethclient.Client, string) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

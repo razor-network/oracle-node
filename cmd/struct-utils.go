@@ -58,14 +58,6 @@ func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead strin
 	return utils.WaitForBlockCompletion(client, hashToRead)
 }
 
-func (u Utils) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForCommitState(client, accountAddress, action)
-}
-
-func (u Utils) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForCommitState(client, accountAddress, action)
-}
-
 func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	return utils.AssignPassword(flagSet)
 }
@@ -110,8 +102,8 @@ func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, e
 	return utils.GetDelayedState(client, buffer)
 }
 
-func (u Utils) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetEpoch(client, address)
+func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
+	return utils.GetEpoch(client)
 }
 
 func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
@@ -122,8 +114,8 @@ func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
 	return utils.ConvertUintArrayToUint8Array(uintArr)
 }
 
-func (u Utils) WaitForConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForConfirmState(client, accountAddress, action)
+func (u Utils) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
+	return WaitForAppropriateState(client, accountAddress, action, states...)
 }
 
 func (u Utils) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
@@ -160,10 +152,6 @@ func (u Utils) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8,
 
 func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
 	return utils.GetProposedBlock(client, address, epoch, proposedBlockId)
-}
-
-func (u Utils) GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
-	return utils.GetInfluence(client, address, stakerId)
 }
 
 func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
@@ -410,8 +398,8 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint8("collectionId")
 }
 
-func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndId(client, address, razorUtils)
+func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndId(client, address, epoch, razorUtils)
 }
 
 func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtil proposeUtilsInterface) int {

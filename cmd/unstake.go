@@ -71,7 +71,7 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 
-	epoch, err := WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "unstake")
+	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utils.GetTxnOpts(txnArgs)
 	utils.CheckError("Error in fetching epoch: ", err)
@@ -85,12 +85,12 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
 	log.Info("Starting withdrawal now...")
 	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := checkForCommitStateAndWithdraw(txnArgs.Client, types.Account{
+	txn, err := withdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
 	}, txnArgs.Config, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
 	if err != nil {
-		log.Error("CheckForCommitStateAndWithdraw error ", err)
+		log.Error("WithdrawFunds error ", err)
 	}
 	if txn != core.NilHash {
 		utils.WaitForBlockCompletion(txnArgs.Client, txn.String())

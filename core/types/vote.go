@@ -9,6 +9,7 @@ type ElectedProposer struct {
 	BiggestInfluence *big.Int
 	NumberOfStakers  uint32
 	RandaoHash       [32]byte
+	Epoch            uint32
 }
 
 type Commitment struct {
