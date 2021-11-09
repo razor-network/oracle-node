@@ -232,14 +232,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := ClaimBlockReward(types.TransactionOptions{
-				Client:         client,
-				Password:       account.Password,
-				AccountAddress: account.Address,
-				ChainId:        core.ChainId,
-				Config:         config,
-				//ContractAddress: core.BlockManagerAddress,
-				//MethodName:      "claimBlockReward",
-				//ABI:             jobManager.BlockManagerABI,
+				Client:          client,
+				Password:        account.Password,
+				AccountAddress:  account.Address,
+				ChainId:         core.ChainId,
+				Config:          config,
+				ContractAddress: core.BlockManagerAddress,
+				MethodName:      "claimBlockReward",
+				ABI:             jobManager.BlockManagerABI,
 			}, razorUtils, blockManagerUtils, transactionUtils)
 
 			if err != nil {

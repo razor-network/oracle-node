@@ -135,7 +135,7 @@ func (u Utils) GetDefaultPath() (string, error) {
 }
 
 func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetStakerId(client, address)
+	return utils.GetNumberOfStakers(client, address)
 }
 
 func (u Utils) GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
