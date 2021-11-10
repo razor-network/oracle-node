@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -20,66 +21,110 @@ Example:
   ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --autoWithdraw
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
-
-		client := utils.ConnectToClient(config.Provider)
-
-		valueInWei := utils.AssignAmountInWei(cmd.Flags())
-
-		utils.CheckEthBalanceIsZero(client, address)
-
-		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
-		utils.CheckError("StakerId error: ", err)
-
-		lock, err := utils.GetLock(client, address, stakerId)
-		utils.CheckError("Error in getting lock: ", err)
-		if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-			log.Fatal("Existing lock")
-		}
-
-		txnOptions := types.TransactionOptions{
-			Client:          client,
-			Password:        password,
-			AccountAddress:  address,
-			Amount:          valueInWei,
-			ChainId:         core.ChainId,
-			Config:          config,
-			ContractAddress: core.StakeManagerAddress,
-			MethodName:      "unstake",
-			ABI:             bindings.StakeManagerABI,
-		}
-
-		Unstake(txnOptions, stakerId)
-
-		if autoWithdraw {
-			AutoWithdraw(txnOptions, stakerId)
-		}
+		err := initialiseUnstake(cmd)
+		utils.CheckError("Error in initialising unstake function: ", err)
 	},
 }
 
-func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
-	lock, err := utils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
-	utils.CheckError("Error in getting lock: ", err)
+func initialiseUnstake(cmd *cobra.Command) error {
+	config, err := GetConfigData()
+	if err != nil {
+		log.Error("Error in getting config: ", err)
+		return err
+	}
+
+	password := utils.AssignPassword(cmd.Flags())
+	address, err := cmd.Flags().GetString("address")
+	if err != nil {
+		log.Error("Error in getting address: ", err)
+		return err
+	}
+	autoWithdraw, err := cmd.Flags().GetBool("autoWithdraw")
+	if err != nil {
+		log.Error("Error in getting autoWithdraw status: ", err)
+		return err
+	}
+
+
+	client := utils.ConnectToClient(config.Provider)
+
+	valueInWei := utils.AssignAmountInWei(cmd.Flags())
+
+	utils.CheckEthBalanceIsZero(client, address)
+
+	stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
+	if err != nil {
+		log.Error("StakerId error: ", err)
+		return err
+	}
+
+	lock, err := utils.GetLock(client, address, stakerId)
+	if err != nil {
+		log.Error("Error in getting lock: ", err)
+		return err
+	}
+
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		log.Fatal("Existing lock")
+		err = errors.New("existing lock")
+		log.Error(err)
+		return err
+	}
+
+	txnOptions := types.TransactionOptions{
+		Client:          client,
+		Password:        password,
+		AccountAddress:  address,
+		Amount:          valueInWei,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.StakeManagerAddress,
+		MethodName:      "unstake",
+		ABI:             bindings.StakeManagerABI,
+	}
+
+	err = Unstake(txnOptions, stakerId)
+	if err != nil {
+		log.Error("Unstake Error: ", err)
+		return err
+	}
+
+	if autoWithdraw {
+		AutoWithdraw(txnOptions, stakerId)
+	}
+
+	return nil
+}
+
+func Unstake(txnArgs types.TransactionOptions, stakerId uint32) error {
+	lock, err := utils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+	if err != nil {
+		log.Error("Error in getting lock: ", err)
+		return err
+	}
+	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
+		err := errors.New("existing lock")
+		log.Error(err)
+		return err
 	}
 
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 
 	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	if err != nil {
+		log.Error("Error in fetching epoch: ", err)
+		return err
+	}
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utils.GetTxnOpts(txnArgs)
-	utils.CheckError("Error in fetching epoch: ", err)
 	log.Info("Unstaking coins")
 	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
-	utils.CheckError("Error in un-staking: ", err)
+	if err != nil {
+		log.Error("Error in un-staking: ", err)
+		return err
+	}
 	log.Info("Transaction hash: ", txn.Hash())
 	utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
+	return nil
 }
 
 func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
