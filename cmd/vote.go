@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"os"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -108,11 +109,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	}
 	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
-		log.Error("Error in converting stakedAmount from wei denomination")
+		log.Error("Error in converting stakedAmount from wei denomination: ", err)
 	}
 	actualBalance, err := utils.ConvertWeiToEth(ethBalance)
 	if err != nil {
-		log.Error("Error in converting ethBalance from wei denomination")
+		log.Error("Error in converting ethBalance from wei denomination: ", err)
 	}
 	log.Debug("Block:", blockNumber, " Epoch:", epoch, " State:", utils.GetStateName(state), " Address:", account.Address, " Staker ID:", stakerId, " Stake:", actualStake, " Eth Balance:", actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
@@ -124,7 +125,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
-		return
+		os.Exit(0)
 	}
 
 	staker, err := utils.GetStaker(client, account.Address, stakerId)
