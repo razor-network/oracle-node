@@ -161,7 +161,7 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	if pseudoRandomNumber.Cmp(big.NewInt(int64(proposer.StakerId))) != 0 {
 		return false
 	}
-	seed2 := solsha3.SoliditySHA3([]string{"uint32", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
+	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{big.NewInt(int64(proposer.StakerId)), big.NewInt(int64(proposer.Iteration))})
 	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
