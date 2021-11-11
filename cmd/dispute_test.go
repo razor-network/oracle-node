@@ -209,12 +209,12 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 1: When HandleDispute function executes successfully when there is a dispute case",
 			args: args{
-				sortedProposedBlockIds: []uint8{3, 1, 2},
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians: []uint32{6901548, 498307},
 					Valid:   true,
 				},
-				medians:        []uint32{101, 200, 300},
+				medians:        []uint32{6701548, 478307},
 				activeAssetIds: []uint8{3, 4, 6},
 				isEqual:        false,
 				iteration:      0,
@@ -225,11 +225,11 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 2: When HandleDispute function executes successfully when there is no dispute case",
 			args: args{
-				sortedProposedBlockIds: []uint8{3, 1, 2},
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians: []uint32{6701548, 478307},
 				},
-				medians:        []uint32{100, 200, 300},
+				medians:        []uint32{6701548, 478307},
 				activeAssetIds: []uint8{3, 4, 6},
 				isEqual:        true,
 				disputeErr:     nil,
@@ -241,9 +241,9 @@ func TestHandleDispute(t *testing.T) {
 			args: args{
 				sortedProposedBlockIdsErr: errors.New("sortedProposedBlockIds error"),
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians:[]uint32{6701548, 478307},
 				},
-				medians:        []uint32{100, 200, 300},
+				medians:        []uint32{6701548, 478307},
 				activeAssetIds: []uint8{3, 4, 6},
 				isEqual:        true,
 				disputeErr:     nil,
@@ -253,9 +253,9 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting proposedBlock",
 			args: args{
-				sortedProposedBlockIds: []uint8{3, 1, 2},
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlockErr:       errors.New("proposedBlock error"),
-				medians:                []uint32{100, 200, 300},
+				medians:                []uint32{6701548, 478307},
 				activeAssetIds:         []uint8{3, 4, 6},
 				isEqual:                true,
 				disputeErr:             nil,
@@ -265,7 +265,7 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting medians from MakeBlock",
 			args: args{
-				sortedProposedBlockIds: []uint8{3, 1, 2},
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 				},
@@ -279,12 +279,12 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 6: When there is an error from Dispute function",
 			args: args{
-				sortedProposedBlockIds: []uint8{3, 1, 2},
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians: []uint32{6901548, 498307},
 					Valid:   true,
 				},
-				medians:        []uint32{101, 200, 300},
+				medians:       []uint32{6701548, 478307},
 				activeAssetIds: []uint8{3, 4, 6},
 				isEqual:        false,
 				iteration:      0,
@@ -295,11 +295,11 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 6: When there is a case of Dispute but block is already disputed",
 			args: args{
-				sortedProposedBlockIds: []uint8{3, 1, 2},
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians: []uint32{6701548, 478307},
 				},
-				medians:        []uint32{101, 200, 300},
+				medians:        []uint32{6901548, 498307},
 				activeAssetIds: []uint8{3, 4, 6},
 				isEqual:        false,
 				iteration:      0,

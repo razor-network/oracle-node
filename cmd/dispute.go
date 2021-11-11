@@ -18,7 +18,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 	if err != nil {
 		return err
 	}
-	log.Info("SortedProposedBlockIds: ", sortedProposedBlockIds)
+	log.Debug("SortedProposedBlockIds: ", sortedProposedBlockIds)
 
 	for i := 0; i < len(sortedProposedBlockIds); i++ {
 		blockId := sortedProposedBlockIds[i]
