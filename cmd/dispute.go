@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -14,7 +15,7 @@ import (
 var giveSortedAssetIds []int
 
 func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, utilsStruct UtilsStruct) error {
-	sortedProposedBlockIds, err := utils.GetSortedProposedBlockIds(client, account.Address, epoch)
+	sortedProposedBlockIds, err := utilsStruct.razorUtils.GetSortedProposedBlockIds(client, account.Address, epoch)
 	if err != nil {
 		return err
 	}
@@ -45,6 +46,8 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			if proposedBlock.Valid {
+				fmt.Println("BlockIndex: ", uint8(i))
+				fmt.Println("BlockId: ", blockId)
 				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId, utilsStruct)
 				if err != nil {
 					log.Error("Error in disputing...", err)

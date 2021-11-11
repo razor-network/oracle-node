@@ -61,6 +61,7 @@ type utilsInterface interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
+	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 }
 
 type tokenManagerInterface interface {
