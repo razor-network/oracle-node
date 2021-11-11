@@ -241,7 +241,7 @@ func TestHandleDispute(t *testing.T) {
 			args: args{
 				sortedProposedBlockIdsErr: errors.New("sortedProposedBlockIds error"),
 				proposedBlock: bindings.StructsBlock{
-					Medians:[]uint32{6701548, 478307},
+					Medians: []uint32{6701548, 478307},
 				},
 				medians:        []uint32{6701548, 478307},
 				activeAssetIds: []uint8{3, 4, 6},
@@ -284,7 +284,7 @@ func TestHandleDispute(t *testing.T) {
 					Medians: []uint32{6901548, 498307},
 					Valid:   true,
 				},
-				medians:       []uint32{6701548, 478307},
+				medians:        []uint32{6701548, 478307},
 				activeAssetIds: []uint8{3, 4, 6},
 				isEqual:        false,
 				iteration:      0,
