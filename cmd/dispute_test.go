@@ -189,8 +189,8 @@ func TestHandleDispute(t *testing.T) {
 	}
 
 	type args struct {
-		numberOfProposedBlocks    uint8
-		numberOfProposedBlocksErr error
+		sortedProposedBlockIds    []uint8
+		sortedProposedBlockIdsErr error
 		proposedBlock             bindings.StructsBlock
 		proposedBlockErr          error
 		medians                   []uint32
@@ -209,7 +209,7 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 1: When HandleDispute function executes successfully when there is a dispute case",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2},
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 					Valid:   true,
@@ -225,7 +225,7 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 2: When HandleDispute function executes successfully when there is no dispute case",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2},
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 				},
@@ -237,9 +237,9 @@ func TestHandleDispute(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "Test 3: When there is an error in getting numberOfProposedBlocks",
+			name: "Test 3: When there is an error in getting sortedProposedBlockIds",
 			args: args{
-				numberOfProposedBlocksErr: errors.New("numberOfProposedBlocks error"),
+				sortedProposedBlockIdsErr: errors.New("sortedProposedBlockIds error"),
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 				},
@@ -248,12 +248,12 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:        true,
 				disputeErr:     nil,
 			},
-			want: errors.New("numberOfProposedBlocks error"),
+			want: errors.New("sortedProposedBlockIds error"),
 		},
 		{
 			name: "Test 4: When there is an error in getting proposedBlock",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2},
 				proposedBlockErr:       errors.New("proposedBlock error"),
 				medians:                []uint32{100, 200, 300},
 				activeAssetIds:         []uint8{3, 4, 6},
@@ -263,9 +263,9 @@ func TestHandleDispute(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "Test 5: When there is an error in getting medians from MakeBlock ",
+			name: "Test 5: When there is an error in getting medians from MakeBlock",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2},
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 				},
@@ -279,7 +279,7 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 6: When there is an error from Dispute function",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2},
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 					Valid:   true,
@@ -295,7 +295,7 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 6: When there is a case of Dispute but block is already disputed",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2},
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{100, 200, 300},
 				},
@@ -310,8 +310,9 @@ func TestHandleDispute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetNumberOfProposedBlocksMock = func(*ethclient.Client, string, uint32) (uint8, error) {
-				return tt.args.numberOfProposedBlocks, tt.args.numberOfProposedBlocksErr
+
+			GetSortedProposedBlockIdsMock = func(*ethclient.Client, string, uint32) ([]uint8, error) {
+				return tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr
 			}
 
 			GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error) {
