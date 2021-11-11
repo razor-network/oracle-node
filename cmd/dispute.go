@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -46,8 +45,6 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			if proposedBlock.Valid {
-				fmt.Println("BlockIndex: ", uint8(i))
-				fmt.Println("BlockId: ", blockId)
 				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId, utilsStruct)
 				if err != nil {
 					log.Error("Error in disputing...", err)
