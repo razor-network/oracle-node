@@ -226,6 +226,10 @@ func (u Utils) Contains(arr []int, val int) bool {
 	return utils.Contains(arr, val)
 }
 
+func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
+	return utils.GetLatestBlock(client)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
