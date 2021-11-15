@@ -138,6 +138,8 @@ var CheckEthBalanceIsZeroMock func(*ethclient.Client, string)
 
 var AssignStakerIdMock func(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 
+var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -460,6 +462,10 @@ func (u UtilsMock) CheckEthBalanceIsZero(client *ethclient.Client, address strin
 
 func (u UtilsMock) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
 	return AssignStakerIdMock(flagSet, client, address)
+}
+
+func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+	return GetSortedProposedBlockIdsMock(client, address, epoch)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {

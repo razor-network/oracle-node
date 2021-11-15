@@ -63,6 +63,7 @@ type utilsInterface interface {
 	Contains([]int, int) bool
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
+	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 }
 
 type tokenManagerInterface interface {
