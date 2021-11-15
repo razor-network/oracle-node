@@ -334,7 +334,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.disputeErr
 			}
 
-			err := HandleDispute(client, config, account, epoch, utilsStruct)
+			err := utilsStruct.HandleDispute(client, config, account, epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)

@@ -13,7 +13,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, utilsStruct UtilsStruct) error {
+func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
 	numberOfProposedBlocks, err := utilsStruct.razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
 	if err != nil {
 		log.Error(err)
