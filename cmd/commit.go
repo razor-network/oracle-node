@@ -28,7 +28,7 @@ func (utilsStruct UtilsStruct) Commit(client *ethclient.Client, data []*big.Int,
 		return core.NilHash, err
 	}
 
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client, account.Address)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
 	if err != nil {
 		return core.NilHash, err
 	}

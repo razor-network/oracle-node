@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"math/big"
 	"math/rand"
@@ -10,6 +9,8 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -35,7 +36,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestInfluence, biggestInfluenceId, err := proposeUtils.getBiggestInfluenceAndId(client, account.Address, razorUtils)
+	biggestInfluence, biggestInfluenceId, err := proposeUtils.getBiggestInfluenceAndId(client, account.Address, epoch, razorUtils)
 	if err != nil {
 		log.Error("Error in calculating biggest staker: ", err)
 		return core.NilHash, err
@@ -55,6 +56,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		BiggestInfluence: biggestInfluence,
 		NumberOfStakers:  numStakers,
 		RandaoHash:       randaoHash,
+		Epoch:            epoch,
 	}, proposeUtils)
 
 	log.Debug("Iteration: ", iteration)
@@ -79,7 +81,6 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
-			//TODO: Add retry mechanism
 			return core.NilHash, err
 		}
 		lastIteration := lastProposedBlockStruct.Iteration
@@ -121,7 +122,7 @@ func Propose(client *ethclient.Client, account types.Account, config types.Confi
 	return transactionUtils.Hash(txn), nil
 }
 
-func getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
+func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, 0, err
@@ -129,7 +130,7 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUti
 	var biggestInfluenceId uint32
 	biggestInfluence := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		influence, err := razorUtils.GetInfluence(client, address, uint32(i))
+		influence, err := razorUtils.GetInfluenceSnapshot(client, address, uint32(i), epoch)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -160,12 +161,12 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	if pseudoRandomNumber.Cmp(big.NewInt(int64(proposer.StakerId))) != 0 {
 		return false
 	}
-	seed2 := solsha3.SoliditySHA3([]string{"uint32", "uint256"}, []interface{}{proposer.StakerId, big.NewInt(int64(proposer.Iteration))})
+	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{big.NewInt(int64(proposer.StakerId)), big.NewInt(int64(proposer.Iteration))})
 	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
-	influence, err := utils.GetInfluence(client, address, proposer.StakerId)
+	influence, err := utils.GetInfluenceSnapshot(client, address, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return false
@@ -189,7 +190,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUt
 
 	var medians []*big.Int
 
-	epoch, err := razorUtils.GetEpoch(client, address)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error(err)
 		return nil, err

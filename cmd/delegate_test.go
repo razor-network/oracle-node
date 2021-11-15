@@ -29,13 +29,13 @@ func Test_delegate(t *testing.T) {
 	var stakerId uint32 = 1
 
 	type args struct {
-		amount                *big.Float
-		txnOpts               *bind.TransactOpts
-		epoch                 uint32
-		waitForCommitStateErr error
-		delegateTxn           *Types.Transaction
-		delegateErr           error
-		hash                  common.Hash
+		amount      *big.Float
+		txnOpts     *bind.TransactOpts
+		epoch       uint32
+		epochErr    error
+		delegateTxn *Types.Transaction
+		delegateErr error
+		hash        common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -46,44 +46,44 @@ func Test_delegate(t *testing.T) {
 		{
 			name: "Test 1: When delegate function executes successfully",
 			args: args{
-				amount:                big.NewFloat(1000),
-				txnOpts:               txnOpts,
-				epoch:                 1,
-				waitForCommitStateErr: nil,
-				delegateTxn:           &Types.Transaction{},
-				delegateErr:           nil,
-				hash:                  common.BigToHash(big.NewInt(1)),
+				amount:      big.NewFloat(1000),
+				txnOpts:     txnOpts,
+				epoch:       1,
+				epochErr:    nil,
+				delegateTxn: &Types.Transaction{},
+				delegateErr: nil,
+				hash:        common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When WaitForCommitState fails",
+			name: "Test 2: When delegate transaction fails",
 			args: args{
-				amount:                big.NewFloat(1000),
-				txnOpts:               txnOpts,
-				epoch:                 1,
-				waitForCommitStateErr: errors.New("waitForCommitState error"),
-				delegateTxn:           &Types.Transaction{},
-				delegateErr:           nil,
-				hash:                  common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("waitForCommitState error"),
-		},
-		{
-			name: "Test 3: When delegate transaction fails",
-			args: args{
-				amount:                big.NewFloat(1000),
-				txnOpts:               txnOpts,
-				epoch:                 1,
-				waitForCommitStateErr: nil,
-				delegateTxn:           &Types.Transaction{},
-				delegateErr:           errors.New("delegate error"),
-				hash:                  common.BigToHash(big.NewInt(1)),
+				amount:      big.NewFloat(1000),
+				txnOpts:     txnOpts,
+				epoch:       1,
+				epochErr:    nil,
+				delegateTxn: &Types.Transaction{},
+				delegateErr: errors.New("delegate error"),
+				hash:        common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("delegate error"),
+		},
+		{
+			name: "Test 3: When GetEpoch fails",
+			args: args{
+				amount:      big.NewFloat(1000),
+				txnOpts:     txnOpts,
+				epoch:       1,
+				epochErr:    errors.New("GetEpoch error"),
+				delegateTxn: &Types.Transaction{},
+				delegateErr: nil,
+				hash:        common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("GetEpoch error"),
 		},
 	}
 	for _, tt := range tests {
@@ -96,8 +96,8 @@ func Test_delegate(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			WaitForCommitStateMock = func(*ethclient.Client, string, string) (uint32, error) {
-				return tt.args.epoch, tt.args.waitForCommitStateErr
+			GetEpochMock = func(client *ethclient.Client) (uint32, error) {
+				return tt.args.epoch, tt.args.epochErr
 			}
 
 			DelegateMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error) {

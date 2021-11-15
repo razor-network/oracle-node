@@ -8,6 +8,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -37,7 +38,7 @@ Example:
 		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
 		utils.CheckError("StakerId error: ", err)
 
-		txn, err := checkForCommitStateAndWithdraw(client, types.Account{
+		txn, err := withdrawFunds(client, types.Account{
 			Address:  address,
 			Password: password,
 		}, config, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
@@ -49,7 +50,7 @@ Example:
 	},
 }
 
-func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, razorUtils utilsInterface, cmdUtils utilsCmdInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, razorUtils utilsInterface, cmdUtils utilsCmdInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 
 	lock, err := razorUtils.GetLock(client, account.Address, stakerId)
 	if err != nil {
@@ -78,7 +79,7 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 		MethodName:      "withdraw",
 		ABI:             bindings.StakeManagerABI,
 	}
-	epoch, err := razorUtils.GetEpoch(client, account.Address)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
@@ -88,25 +89,16 @@ func checkForCommitStateAndWithdraw(client *ethclient.Client, account types.Acco
 		return core.NilHash, nil
 	}
 
-	commitStateEpoch, err := razorUtils.WaitForCommitState(client, account.Address, "withdraw")
-	if err != nil {
-		log.Error("Error in fetching epoch")
-		return core.NilHash, err
-	}
-
-	txnArgs.Parameters = []interface{}{commitStateEpoch, stakerId}
+	txnArgs.Parameters = []interface{}{epoch, stakerId}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	for i := commitStateEpoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
-		if big.NewInt(int64(commitStateEpoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(commitStateEpoch)).Cmp(withdrawBefore) <= 0 {
-			return cmdUtils.Withdraw(client, txnOpts, commitStateEpoch, stakerId, stakeManagerUtils, transactionUtils)
-		} else {
-			i, err = razorUtils.WaitForCommitStateAgain(client, account.Address, "withdraw")
-			if err != nil {
-				log.Error("Error in fetching epoch")
-				return core.NilHash, err
-			}
+	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
+		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
+			return cmdUtils.Withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
 		}
+		log.Debug("Waiting for lock period to get over....")
+		// Wait for 30 seconds if lock period isn't over
+		time.Sleep(30 * time.Second)
 	}
 	return core.NilHash, nil
 }

@@ -13,14 +13,16 @@ import (
 
 var giveSortedAssetIds []int
 
-func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
-	numberOfProposedBlocks, err := utilsStruct.razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
+func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, utilsStruct UtilsStruct) error {
+	sortedProposedBlockIds, err := utilsStruct.razorUtils.GetSortedProposedBlockIds(client, account.Address, epoch)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
-	for i := 0; i < int(numberOfProposedBlocks); i++ {
-		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, uint8(i))
+	log.Debug("SortedProposedBlockIds: ", sortedProposedBlockIds)
+
+	for i := 0; i < len(sortedProposedBlockIds); i++ {
+		blockId := sortedProposedBlockIds[i]
+		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, blockId)
 		if err != nil {
 			log.Error(err)
 			continue

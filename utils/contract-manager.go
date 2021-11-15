@@ -25,14 +25,6 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	return stakeManagerContract
 }
 
-func GetParametersManager(client *ethclient.Client) *bindings.Parameters {
-	parametersManager, err := bindings.NewParameters(common.HexToAddress(core.ParametersAddress), client)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return parametersManager
-}
-
 func GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
 	assetManager, err := bindings.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
 	if err != nil {

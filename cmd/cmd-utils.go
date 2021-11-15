@@ -8,7 +8,7 @@ import (
 )
 
 func GetEpochAndState(client *ethclient.Client, accountAddress string) (uint32, int64, error) {
-	epoch, err := utils.GetEpoch(client, accountAddress)
+	epoch, err := utils.GetEpoch(client)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -25,25 +25,12 @@ func GetEpochAndState(client *ethclient.Client, accountAddress string) (uint32, 
 	return epoch, state, nil
 }
 
-func WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
+func WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
 	for {
 		epoch, state, err := GetEpochAndState(client, accountAddress)
 		utils.CheckError("Error in fetching epoch and state: ", err)
-		if state != 0 {
-			log.Debugf("Can only %s during state 0 (commit). Retrying in 5 second...", action)
-			time.Sleep(5 * time.Second)
-		} else {
-			return epoch, nil
-		}
-	}
-}
-
-func WaitForConfirmState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	for {
-		epoch, state, err := GetEpochAndState(client, accountAddress)
-		utils.CheckError("Error in fetching epoch and state: ", err)
-		if state != 4 {
-			log.Debugf("Can only %s during confirm state. Retrying in 5 seconds...", action)
+		if !utils.Contains(states, int(state)) {
+			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
 			time.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil

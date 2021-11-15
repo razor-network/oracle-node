@@ -69,8 +69,8 @@ Example:
 	},
 }
 
-func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
-	epoch, err := utilsStruct.razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "stake")
+func (utilsStruct UtilsStruct)stakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
+	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}

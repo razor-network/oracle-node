@@ -46,11 +46,9 @@ var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
-var WaitForCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
+var WaitForAppropriateStateMock func(*ethclient.Client, string, string, ...int) (uint32, error)
 
 var WaitIfCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
-
-var WaitForCommitStateAgainMock func(*ethclient.Client, string, string) (uint32, error)
 
 var GetDefaultPathMock func() (string, error)
 
@@ -78,7 +76,7 @@ var ParseBoolMock func(string) (bool, error)
 
 var GetDelayedStateMock func(*ethclient.Client, int32) (int64, error)
 
-var GetEpochMock func(*ethclient.Client, string) (uint32, error)
+var GetEpochMock func(*ethclient.Client) (uint32, error)
 
 var GetNumberOfStakersMock func(*ethclient.Client, string) (uint32, error)
 
@@ -105,8 +103,6 @@ var WaitForDisputeOrConfirmStateMock func(*ethclient.Client, string, string) (ui
 var PrivateKeyPromptMock func() string
 
 var PasswordPromptMock func() string
-
-var GetInfluenceMock func(*ethclient.Client, string, uint32) (*big.Int, error)
 
 var GetEpochLastRevealedMock func(*ethclient.Client, string, uint32) (uint32, error)
 
@@ -137,6 +133,8 @@ var GetBlockManagerMock func(*ethclient.Client) *bindings.BlockManager
 var GetVotesMock func(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 
 var ContainsMock func([]int, int) bool
+
+var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -194,7 +192,7 @@ var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
-var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, utilsInterface) (*big.Int, uint32, error)
+var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
 
 var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
 
@@ -274,12 +272,8 @@ func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead s
 	return WaitForBlockCompletionMock(client, hashToRead)
 }
 
-func (u UtilsMock) WaitForCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForCommitStateMock(client, accountAddress, action)
-}
-
-func (u UtilsMock) WaitForCommitStateAgain(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitForCommitStateAgainMock(client, accountAddress, action)
+func (u UtilsMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
+	return WaitForAppropriateStateMock(client, accountAddress, action, states...)
 }
 
 func (u UtilsMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
@@ -342,8 +336,8 @@ func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32) (int6
 	return GetDelayedStateMock(client, buffer)
 }
 
-func (u UtilsMock) GetEpoch(client *ethclient.Client, address string) (uint32, error) {
-	return GetEpochMock(client, address)
+func (u UtilsMock) GetEpoch(client *ethclient.Client) (uint32, error) {
+	return GetEpochMock(client)
 }
 
 func (u UtilsMock) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
@@ -402,10 +396,6 @@ func (u UtilsMock) ViperWriteConfigAs(path string) error {
 	return ViperWriteConfigAsMock(path)
 }
 
-func (u UtilsMock) GetInfluence(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
-	return GetInfluenceMock(client, address, stakerId)
-}
-
 func (u UtilsMock) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
 	return GetEpochLastRevealedMock(client, address, stakerId)
 }
@@ -456,6 +446,10 @@ func (u UtilsMock) GetVotes(client *ethclient.Client, address string, stakerId u
 
 func (u UtilsMock) Contains(arr []int, val int) bool {
 	return ContainsMock(arr, val)
+}
+
+func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+	return GetSortedProposedBlockIdsMock(client, address, epoch)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -570,8 +564,8 @@ func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error
 	return GetInt8PowerMock(flagSet)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, razorUtils utilsInterface) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndIdMock(client, address, razorUtils)
+func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndIdMock(client, address, epoch, razorUtils)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
