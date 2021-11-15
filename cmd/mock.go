@@ -134,6 +134,10 @@ var GetVotesMock func(*ethclient.Client, string, uint32) (bindings.StructsVote, 
 
 var ContainsMock func([]int, int) bool
 
+var CheckEthBalanceIsZeroMock func(*ethclient.Client, string)
+
+var AssignStakerIdMock func(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -155,6 +159,8 @@ var SetDelegationAcceptanceMock func(*ethclient.Client, *bind.TransactOpts, bool
 var SetCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+
+var UnstakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -189,6 +195,8 @@ var GetStringUrlMock func(*pflag.FlagSet) (string, error)
 var GetStringSelectorMock func(*pflag.FlagSet) (string, error)
 
 var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
+
+var GetBoolAutoWithdrawMock func(*pflag.FlagSet) (bool, error)
 
 var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
 
@@ -446,6 +454,14 @@ func (u UtilsMock) Contains(arr []int, val int) bool {
 	return ContainsMock(arr, val)
 }
 
+func (u UtilsMock) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	CheckEthBalanceIsZeroMock(client, address)
+}
+
+func (u UtilsMock) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+	return AssignStakerIdMock(flagSet, client, address)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -514,6 +530,10 @@ func (stakeManagerMock StakeManagerMock) DecreaseCommission(client *ethclient.Cl
 	return DecreaseCommissionContractMock(client, opts, commission)
 }
 
+func (stakeManagerMock StakeManagerMock) Unstake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
+	return UnstakeMock(client, opts, epoch, stakerId, sAmount)
+}
+
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
 	return CreateAccountMock(path, password)
 }
@@ -556,6 +576,10 @@ func (flagSetMock FlagSetMock) GetStringSelector(flagSet *pflag.FlagSet) (string
 
 func (flagSetMock FlagSetMock) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return GetInt8PowerMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool, error) {
+	return GetBoolAutoWithdrawMock(flagSet)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) (*big.Int, uint32, error) {

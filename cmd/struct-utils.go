@@ -40,6 +40,8 @@ type UtilsStruct struct {
 	proposeUtils      proposeUtilsInterface
 	blockManagerUtils blockManagerInterface
 	transactionUtils  transactionInterface
+	stakeManagerUtils stakeManagerInterface
+	flagSetUtils      flagSetInterface
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -226,6 +228,14 @@ func (u Utils) Contains(arr []int, val int) bool {
 	return utils.Contains(arr, val)
 }
 
+func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	utils.CheckEthBalanceIsZero(client, address)
+}
+
+func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+	return utils.AssignStakerId(flagSet, client, address)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -278,6 +288,11 @@ func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Clien
 func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.DecreaseCommission(opts, commission)
+}
+
+func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Unstake(opts, epoch, stakerId, sAmount)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -455,6 +470,10 @@ func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
+func (flagSetUtils FlagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("autoWithdraw")
+}
+
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
 	return SetCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
 }
@@ -481,6 +500,10 @@ func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configur
 
 func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (cmdUtils UtilsCmd) Unstake(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+	return Unstake(txnArgs, stakerId, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

@@ -61,6 +61,8 @@ type utilsInterface interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
+	CheckEthBalanceIsZero(*ethclient.Client, string)
+	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -90,6 +92,7 @@ type stakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 }
 
 type accountInterface interface {
@@ -124,6 +127,7 @@ type flagSetInterface interface {
 	GetInt32Wait(*pflag.FlagSet) (int32, error)
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
+	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 }
 
 type utilsCmdInterface interface {
@@ -134,6 +138,7 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+	Unstake(types.TransactionOptions, uint32, UtilsStruct) error
 }
 
 type cryptoInterface interface {

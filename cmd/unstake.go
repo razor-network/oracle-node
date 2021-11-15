@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var utilsStruct UtilsStruct
+
 var unstakeCmd = &cobra.Command{
 	Use:   "unstake",
 	Short: "Unstake your razors",
@@ -21,44 +23,50 @@ Example:
   ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --autoWithdraw
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := initialiseUnstake(cmd)
+		err := utilsStruct.initialiseUnstake(cmd)
 		utils.CheckError("Error in initialising unstake function: ", err)
 	},
 }
 
-func initialiseUnstake(cmd *cobra.Command) error {
-	config, err := GetConfigData()
+//Run:  utilsStruct.initialiseUnstake(cmd *cobra.Command, args []string) {
+//err := utilsStruct.initialiseUnstake(cmd)
+//utils.CheckError("Error in initialising unstake function: ", err)
+//},
+//}
+
+func (utilsStruct UtilsStruct) initialiseUnstake(cmd *cobra.Command) error {
+	config, err := utilsStruct.razorUtils.GetConfigData()
+	flagSet := cmd.Flags()
 	if err != nil {
 		log.Error("Error in getting config: ", err)
 		return err
 	}
 
-	password := utils.AssignPassword(cmd.Flags())
-	address, err := cmd.Flags().GetString("address")
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		log.Error("Error in getting address: ", err)
 		return err
 	}
-	autoWithdraw, err := cmd.Flags().GetBool("autoWithdraw")
+	autoWithdraw, err := utilsStruct.flagSetUtils.GetBoolAutoWithdraw(flagSet)
 	if err != nil {
 		log.Error("Error in getting autoWithdraw status: ", err)
 		return err
 	}
 
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	client := utils.ConnectToClient(config.Provider)
+	valueInWei := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
 
-	valueInWei := utils.AssignAmountInWei(cmd.Flags())
+	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
 
-	utils.CheckEthBalanceIsZero(client, address)
-
-	stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
+	stakerId, err := utilsStruct.razorUtils.AssignStakerId(flagSet, client, address)
 	if err != nil {
 		log.Error("StakerId error: ", err)
 		return err
 	}
 
-	lock, err := utils.GetLock(client, address, stakerId)
+	lock, err := utilsStruct.razorUtils.GetLock(client, address, stakerId)
 	if err != nil {
 		log.Error("Error in getting lock: ", err)
 		return err
@@ -82,7 +90,7 @@ func initialiseUnstake(cmd *cobra.Command) error {
 		ABI:             bindings.StakeManagerABI,
 	}
 
-	err = Unstake(txnOptions, stakerId)
+	err = utilsStruct.cmdUtils.Unstake(txnOptions, stakerId, utilsStruct)
 	if err != nil {
 		log.Error("Unstake Error: ", err)
 		return err
@@ -95,8 +103,8 @@ func initialiseUnstake(cmd *cobra.Command) error {
 	return nil
 }
 
-func Unstake(txnArgs types.TransactionOptions, stakerId uint32) error {
-	lock, err := utils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+func Unstake(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+	lock, err := utilsStruct.razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
 	if err != nil {
 		log.Error("Error in getting lock: ", err)
 		return err
@@ -107,23 +115,21 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) error {
 		return err
 	}
 
-	stakeManager := utils.GetStakeManager(txnArgs.Client)
-
-	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	epoch, err := utilsStruct.razorUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return err
 	}
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	txnOpts := utils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
-	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
+	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return err
 	}
-	log.Info("Transaction hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
+	log.Info("Transaction hash: ", utilsStruct.transactionUtils.Hash(txn))
+	utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, utilsStruct.transactionUtils.Hash(txn).String())
 	return nil
 }
 
