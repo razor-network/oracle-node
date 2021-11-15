@@ -49,7 +49,10 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 				continue
 			}
 			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn))
-			utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			status := utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			if status == 1 {
+				continue
+			}
 		}
 
 		log.Debug("Values in the block")
