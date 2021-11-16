@@ -176,5 +176,9 @@ func increasePercentageValue(gasLimit uint64, percentageIncrease int32) uint64 {
 		return gasLimit
 	}
 	increase := (uint64(percentageIncrease) * gasLimit) / 100
-	return gasLimit + increase
+	gasLimit = gasLimit + increase
+	if gasLimit > 21000000 {
+		return 21000000
+	}
+	return gasLimit
 }

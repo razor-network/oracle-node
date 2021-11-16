@@ -779,6 +779,22 @@ func Test_increasePercentageValue(t *testing.T) {
 			},
 			want: 290786,
 		},
+		{
+			name: "Test 6: When the percentage increase is 300%",
+			args: args{
+				gasLimit:           290786,
+				percentageIncrease: 300,
+			},
+			want: 1163144,
+		},
+		{
+			name: "Test 7: When the gas limit goes beyond 21 million",
+			args: args{
+				gasLimit:           8907860,
+				percentageIncrease: 400,
+			},
+			want: 21000000,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
