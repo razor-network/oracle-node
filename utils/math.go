@@ -170,3 +170,11 @@ func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 	dataInFloat := new(big.Float).SetInt(data)
 	return dataInFloat.Quo(dataInFloat, big.NewFloat(1e18)).SetPrec(32), nil
 }
+
+func increasePercentageValue(gasLimit uint64, percentageIncrease int32) uint64 {
+	if gasLimit == 0 || percentageIncrease <= 0 {
+		return gasLimit
+	}
+	increase := (uint64(percentageIncrease) * gasLimit) / 100
+	return gasLimit + increase
+}
