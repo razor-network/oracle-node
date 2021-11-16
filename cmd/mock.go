@@ -158,6 +158,10 @@ var SetCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8)
 
 var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
+var StakerInfoMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
+
+var GetMaturityMock func(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
+
 var CreateAccountMock func(string, string) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
@@ -520,6 +524,14 @@ func (stakeManagerMock StakeManagerMock) SetCommission(client *ethclient.Client,
 
 func (stakeManagerMock StakeManagerMock) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	return DecreaseCommissionContractMock(client, opts, commission)
+}
+
+func (stakeManagerMock StakeManagerMock) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
+	return StakerInfoMock(client, opts, stakerId)
+}
+
+func (stakeManagerMock StakeManagerMock) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
+	return GetMaturityMock(client, opts, age)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {

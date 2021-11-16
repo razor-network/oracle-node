@@ -39,6 +39,7 @@ type UtilsStruct struct {
 	cmdUtils          utilsCmdInterface
 	proposeUtils      proposeUtilsInterface
 	blockManagerUtils blockManagerInterface
+	stakeManagerUtils stakeManagerInterface
 	transactionUtils  transactionInterface
 }
 
@@ -282,6 +283,17 @@ func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Clien
 func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.DecreaseCommission(opts, commission)
+}
+
+func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Stakers(opts, stakerId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
+	stakeManager := utils.GetStakeManager(client)
+	index := age / 10000
+	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {

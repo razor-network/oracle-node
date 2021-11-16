@@ -91,6 +91,10 @@ type stakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+
+	//Getter methods
+	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
+	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 }
 
 type accountInterface interface {
