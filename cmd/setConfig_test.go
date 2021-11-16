@@ -29,6 +29,8 @@ func TestSetConfig(t *testing.T) {
 		path             string
 		pathErr          error
 		configErr        error
+		gasLimit         int32
+		gasLimitErr      error
 	}
 	tests := []struct {
 		name    string
@@ -46,6 +48,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: nil,
 		},
@@ -60,6 +64,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "",
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: nil,
 		},
@@ -74,6 +80,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("provider error"),
 		},
@@ -88,6 +96,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:         "debug",
 				path:             "/home/config",
 				configErr:        nil,
+				gasLimit:         10,
+				gasLimitErr:      nil,
 			},
 			wantErr: errors.New("gasmultiplier error"),
 		},
@@ -102,6 +112,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("buffer error"),
 		},
@@ -116,6 +128,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("waitTime error"),
 		},
@@ -130,6 +144,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("gasprice error"),
 		},
@@ -144,6 +160,8 @@ func TestSetConfig(t *testing.T) {
 				logLevelErr:   errors.New("logLevel error"),
 				path:          "/home/config",
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("logLevel error"),
 		},
@@ -158,10 +176,11 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				pathErr:       errors.New("path error"),
 				configErr:     nil,
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("path error"),
 		},
-
 		{
 			name: "Test 10: When there is an error in writing config",
 			args: args{
@@ -173,6 +192,8 @@ func TestSetConfig(t *testing.T) {
 				logLevel:      "debug",
 				path:          "/home/config",
 				configErr:     errors.New("writing config error"),
+				gasLimit:      10,
+				gasLimitErr:   nil,
 			},
 			wantErr: errors.New("writing config error"),
 		},
@@ -184,6 +205,22 @@ func TestSetConfig(t *testing.T) {
 				configErr:     nil,
 			},
 			wantErr: nil,
+		},
+		{
+			name: "Test 12: When there is an error in getting gas limit",
+			args: args{
+				provider:      "http://127.0.0.1",
+				gasmultiplier: 2,
+				buffer:        20,
+				waitTime:      2,
+				gasPrice:      1,
+				logLevel:      "debug",
+				path:          "/home/config",
+				configErr:     nil,
+				gasLimit:      -1,
+				gasLimitErr:   errors.New("gasLimit error"),
+			},
+			wantErr: errors.New("gasLimit error"),
 		},
 	}
 	for _, tt := range tests {
@@ -209,6 +246,10 @@ func TestSetConfig(t *testing.T) {
 
 		GetStringLogLevelMock = func(set *pflag.FlagSet) (string, error) {
 			return tt.args.logLevel, tt.args.logLevelErr
+		}
+
+		GetInt32GasLimitMock = func(set *pflag.FlagSet) (int32, error) {
+			return tt.args.gasLimit, tt.args.gasLimitErr
 		}
 
 		GetConfigFilePathMock = func() (string, error) {
