@@ -7,4 +7,5 @@ type Configurations struct {
 	WaitTime      int32
 	GasPrice      int32
 	LogLevel      string
+	GasLimit      int32
 }

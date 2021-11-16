@@ -124,6 +124,7 @@ type flagSetInterface interface {
 	GetInt32Buffer(*pflag.FlagSet) (int32, error)
 	GetInt32Wait(*pflag.FlagSet) (int32, error)
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
+	GetInt32GasLimit(set *pflag.FlagSet) (int32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
 }
 
