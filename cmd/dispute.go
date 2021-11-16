@@ -27,6 +27,34 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 			log.Error(err)
 			continue
 		}
+		biggestInfluence, biggestInfluenceId, err := utilsStruct.proposeUtils.getBiggestInfluenceAndId(client, account.Address, epoch, razorUtils)
+		if err != nil {
+			return err
+		}
+		log.Debug("Biggest Influence: ", biggestInfluence)
+		if proposedBlock.BiggestInfluence.Cmp(biggestInfluence) != 0 && proposedBlock.Valid {
+			log.Debug("Biggest Influence in proposed block: ", proposedBlock.BiggestInfluence)
+			log.Warn("PROPOSED BIGGEST INFLUENCE DOES NOT MATCH WITH ACTUAL BIGGEST INFLUENCE")
+			log.Info("Disputing BiggestInfluenceProposed...")
+			txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+				Client:         client,
+				Password:       account.Password,
+				AccountAddress: account.Address,
+				ChainId:        core.ChainId,
+				Config:         config,
+			})
+			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn))
+			status := utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			if status == 1 {
+				continue
+			}
+		}
+
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
 		medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, false, razorUtils, proposeUtils)

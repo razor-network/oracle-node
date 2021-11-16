@@ -31,6 +31,8 @@ func TestClaimBlockReward(t *testing.T) {
 		ClaimBlockRewardTxn *Types.Transaction
 		ClaimBlockRewardErr error
 		hash                common.Hash
+		header              *Types.Header
+		headerErr           error
 	}
 	tests := []struct {
 		name    string
@@ -45,6 +47,11 @@ func TestClaimBlockReward(t *testing.T) {
 				ClaimBlockRewardTxn: &Types.Transaction{},
 				ClaimBlockRewardErr: nil,
 				hash:                common.BigToHash(big.NewInt(1)),
+				header: &Types.Header{
+					Number:   big.NewInt(1000),
+					GasLimit: 2100000,
+				},
+				headerErr: nil,
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -56,9 +63,30 @@ func TestClaimBlockReward(t *testing.T) {
 				ClaimBlockRewardTxn: &Types.Transaction{},
 				ClaimBlockRewardErr: errors.New("claimBlockReward error"),
 				hash:                common.BigToHash(big.NewInt(1)),
+				header: &Types.Header{
+					Number:   big.NewInt(1000),
+					GasLimit: 2100000,
+				},
+				headerErr: nil,
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("claimBlockReward error"),
+		},
+		{
+			name: "Test3: When ClaimBlockReward transaction fails",
+			args: args{
+				txnOpts:             txnOpts,
+				ClaimBlockRewardTxn: &Types.Transaction{},
+				ClaimBlockRewardErr: errors.New("claimBlockReward error"),
+				hash:                common.BigToHash(big.NewInt(1)),
+				header: &Types.Header{
+					Number:   nil,
+					GasLimit: 0,
+				},
+				headerErr: errors.New("GetLatestBlock error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("GetLatestBlock error"),
 		},
 	}
 	for _, tt := range tests {
@@ -74,6 +102,10 @@ func TestClaimBlockReward(t *testing.T) {
 
 			HashMock = func(*Types.Transaction) common.Hash {
 				return tt.args.hash
+			}
+
+			GetLatestBlockMock = func(client *ethclient.Client) (*Types.Header, error) {
+				return tt.args.header, tt.args.headerErr
 			}
 
 			got, err := ClaimBlockReward(options, razorUtils, blockManagerUtils, transactionUtils)
