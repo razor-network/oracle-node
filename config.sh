@@ -33,4 +33,8 @@ if [ -z "$GAS_PRICE" ]; then
    GAS_PRICE=0
 fi
 
-$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE
+read -rp "Gas Limit Increment (in %): (0) " GAS_LIMIT
+if [ -z "$GAS_LIMIT" ]; then
+   GAS_LIMIT=0
+fi
+$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT
