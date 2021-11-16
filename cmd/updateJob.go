@@ -58,6 +58,11 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 	}
 	client := razorUtils.ConnectToClient(config.Provider)
 	selectorType := 1
+	_, err = razorUtils.WaitIfCommitState(client, address, "update job")
+	if err != nil {
+		log.Error("Error in fetching state")
+		return core.NilHash, err
+	}
 	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        password,
@@ -66,7 +71,7 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateJob",
-		Parameters:      []interface{}{jobId, power, selector, url},
+		Parameters:      []interface{}{jobId, weight, power, uint8(selectorType), selector, url},
 		ABI:             bindings.AssetManagerABI,
 	})
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, uint8(selectorType), selector, url)

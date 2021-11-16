@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"os"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -38,7 +39,7 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		client := utils.ConnectToClient(config.Provider)
-		header, err := client.HeaderByNumber(context.Background(), nil)
+		header, err := razorUtils.GetLatestBlock(client)
 		utils.CheckError("Error in getting block: ", err)
 
 		address, _ := cmd.Flags().GetString("address")
@@ -65,12 +66,19 @@ var (
 )
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
+	utilsStruct := UtilsStruct{
+		razorUtils:        razorUtils,
+		proposeUtils:      proposeUtils,
+		transactionUtils:  transactionUtils,
+		blockManagerUtils: blockManagerUtils,
+		cmdUtils:          cmdUtils,
+	}
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
 	}
-	epoch, err := utils.GetEpoch(client, account.Address)
+	epoch, err := utils.GetEpoch(client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return
@@ -101,11 +109,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	}
 	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
-		log.Error("Error in converting stakedAmount from wei denomination")
+		log.Error("Error in converting stakedAmount from wei denomination: ", err)
 	}
 	actualBalance, err := utils.ConvertWeiToEth(ethBalance)
 	if err != nil {
-		log.Error("Error in converting ethBalance from wei denomination")
+		log.Error("Error in converting ethBalance from wei denomination: ", err)
 	}
 	log.Debug("Block:", blockNumber, " Epoch:", epoch, " State:", utils.GetStateName(state), " Address:", account.Address, " Staker ID:", stakerId, " Stake:", actualStake, " Eth Balance:", actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
@@ -117,7 +125,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
-		return
+		os.Exit(0)
 	}
 
 	staker, err := utils.GetStaker(client, account.Address, stakerId)
@@ -200,7 +208,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		Propose(client, account, config, stakerId, epoch, rogueMode)
+		proposeTxn, err := Propose(client, account, config, stakerId, epoch, rogueMode, razorUtils, proposeUtils, blockManagerUtils, transactionUtils)
+		if err != nil {
+			log.Error("Propose error: ", err)
+			break
+		}
+		if proposeTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, proposeTxn.String())
+		}
 	case 3:
 		if lastVerification >= epoch {
 			break
@@ -210,7 +225,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		HandleDispute(client, config, account, epoch)
+		err := HandleDispute(client, config, account, epoch, utilsStruct)
+		if err != nil {
+			log.Error(err)
+			break
+		}
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := ClaimBlockReward(types.TransactionOptions{
@@ -319,10 +338,13 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 func init() {
 
 	razorUtils = Utils{}
+	proposeUtils = ProposeUtils{}
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	blockManagerUtils = BlockManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	proposeUtils = ProposeUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(voteCmd)
 

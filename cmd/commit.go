@@ -28,7 +28,7 @@ func Commit(client *ethclient.Client, data []*big.Int, secret []byte, account ty
 		return core.NilHash, err
 	}
 
-	epoch, err := razorUtils.GetEpoch(client, account.Address)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		return core.NilHash, err
 	}

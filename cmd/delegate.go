@@ -61,7 +61,7 @@ Example:
 
 func delegate(txnArgs types.TransactionOptions, stakerId uint32, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
-	epoch, err := razorUtils.WaitForCommitState(txnArgs.Client, txnArgs.AccountAddress, "delegate")
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}

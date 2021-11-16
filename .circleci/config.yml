@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Install go-ethereum and abigen
           command: |
-            go get -u github.com/ethereum/go-ethereum@v1.10.7
+            go get -u github.com/ethereum/go-ethereum@v1.10.6
             go install github.com/ethereum/go-ethereum/cmd/abigen
       - node/install:
           install-yarn: false
@@ -30,12 +30,11 @@ jobs:
       - run:
           name: "Generate Coverage"
           command: |
-            go-acc ./...
+            go-acc ./... --ignore pkg 
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
             goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
-
 workflows:
   tests:
     jobs:
