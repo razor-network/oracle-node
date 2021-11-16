@@ -13,7 +13,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, utilsStruct UtilsStruct) error {
+func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
 	sortedProposedBlockIds, err := utilsStruct.razorUtils.GetSortedProposedBlockIds(client, account.Address, epoch)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func HandleDispute(client *ethclient.Client, config types.Configurations, accoun
 		}
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
-		medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, false, razorUtils, proposeUtils)
+		medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, false, utilsStruct)
 		if err != nil {
 			log.Error(err)
 			continue

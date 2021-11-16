@@ -20,14 +20,10 @@ func Test_stakeCoins(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
-	razorUtils := UtilsMock{}
-	transactionUtils := TransactionMock{}
-	stakeManagerUtils := StakeManagerMock{}
-
 	utilsStruct := UtilsStruct{
-		razorUtils:        razorUtils,
-		transactionUtils:  transactionUtils,
-		stakeManagerUtils: stakeManagerUtils,
+		razorUtils:        UtilsMock{},
+		transactionUtils:  TransactionMock{},
+		stakeManagerUtils: StakeManagerMock{},
 	}
 
 	txnArgs := types.TransactionOptions{

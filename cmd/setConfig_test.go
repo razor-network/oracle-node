@@ -10,8 +10,10 @@ func TestSetConfig(t *testing.T) {
 
 	var flagSet *pflag.FlagSet
 
-	razorUtils := UtilsMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:   UtilsMock{},
+		flagSetUtils: FlagSetMock{},
+	}
 
 	type args struct {
 		provider         string
@@ -220,7 +222,7 @@ func TestSetConfig(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := SetConfig(flagSet, razorUtils, flagSetUtils)
+			gotErr := utilsStruct.SetConfig(flagSet)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for SetConfig function, got = %v, want = %v", gotErr, tt.wantErr)

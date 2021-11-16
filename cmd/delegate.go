@@ -66,7 +66,7 @@ Example:
 	},
 }
 
-func (utilsStruct UtilsStruct)delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
+func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", utilsStruct.razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {

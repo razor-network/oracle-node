@@ -22,7 +22,15 @@ Example:
 		config, err := GetConfigData()
 		utils.CheckError("Error in fetching config data: ", err)
 
-		txn, err := ModifyAssetStatus(cmd.Flags(), config, razorUtils, assetManagerUtils, cmdUtils, flagSetUtils, transactionUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			cmdUtils:          cmdUtils,
+			flagSetUtils:      flagSetUtils,
+			assetManagerUtils: assetManagerUtils,
+			transactionUtils:  transactionUtils,
+		}
+
+		txn, err := utilsStruct.ModifyAssetStatus(cmd.Flags(), config)
 		utils.CheckError("Error in changing asset active status: ", err)
 		if txn != core.NilHash {
 			utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
@@ -30,35 +38,35 @@ Example:
 	},
 }
 
-func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
-	callOpts := razorUtils.GetOptions(false, address, "")
-	return assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
+func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
+	callOpts := utilsStruct.razorUtils.GetOptions(false, address, "")
+	return utilsStruct.assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
 
-func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, cmdUtils utilsCmdInterface, flagSetUtils flagSetInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	address, err := flagSetUtils.GetStringAddress(flagSet)
+func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	assetId, err := flagSetUtils.GetUint8AssetId(flagSet)
+	assetId, err := utilsStruct.flagSetUtils.GetUint8AssetId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	statusString, err := flagSetUtils.GetStringStatus(flagSet)
+	statusString, err := utilsStruct.flagSetUtils.GetStringStatus(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	status, err := razorUtils.ParseBool(statusString)
+	status, err := utilsStruct.razorUtils.ParseBool(statusString)
 	if err != nil {
 		log.Error("Error in parsing status to boolean")
 		return core.NilHash, err
 	}
 
-	password := razorUtils.PasswordPrompt()
+	password := utilsStruct.razorUtils.PasswordPrompt()
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	currentStatus, err := cmdUtils.CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
+	currentStatus, err := utilsStruct.cmdUtils.CheckCurrentStatus(client, address, assetId, utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching active status")
 		return core.NilHash, err
@@ -67,7 +75,7 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
 		return core.NilHash, nil
 	}
-	_, err = razorUtils.WaitForAppropriateState(client, address, "modify asset status", 4)
+	_, err = utilsStruct.razorUtils.WaitForAppropriateState(client, address, "modify asset status", 4)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -84,14 +92,14 @@ func ModifyAssetStatus(flagSet *pflag.FlagSet, config types.Configurations, razo
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
-	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, status, assetId)
+	txn, err := utilsStruct.assetManagerUtils.SetCollectionStatus(client, txnOpts, status, assetId)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn).String())
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn).String())
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {

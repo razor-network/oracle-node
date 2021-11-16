@@ -33,10 +33,12 @@ func TestPropose(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	proposeUtils := ProposeUtilsMock{}
-	blockManagerUtils := BlockManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		proposeUtils:      ProposeUtilsMock{},
+		blockManagerUtils: BlockManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		state                      int64
@@ -396,7 +398,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numStakers, tt.args.numStakerErr
 		}
 
-		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error) {
+		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
 			return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 		}
 
@@ -404,7 +406,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.randaoHash, tt.args.randaoHashErr
 		}
 
-		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int {
+		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int {
 			return tt.args.iteration
 		}
 
@@ -420,7 +422,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
-		MakeBlockMock = func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error) {
+		MakeBlockMock = func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
@@ -437,7 +439,7 @@ func TestPropose(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Propose(client, account, config, stakerId, epoch, rogueMode, razorUtils, proposeUtils, blockManagerUtils, transactionUtils)
+			got, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
 			if got != tt.want {
 				t.Errorf("Txn hash for Propose function, got = %v, want %v", got, tt.want)
 			}
@@ -459,7 +461,9 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 	var address string
 	var epoch uint32
 
-	razorUtils := UtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
 
 	type args struct {
 		numOfStakers    uint32
@@ -519,7 +523,7 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, epoch, razorUtils)
+			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
 			if gotInfluence.Cmp(tt.wantInfluence) != 0 {
 				t.Errorf("Biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotInfluence, tt.wantInfluence)
 			}
@@ -545,7 +549,9 @@ func Test_getIteration(t *testing.T) {
 	var address string
 	var proposer types.ElectedProposer
 
-	proposeUtils := ProposeUtilsMock{}
+	utilsStruct := UtilsStruct{
+		proposeUtils: ProposeUtilsMock{},
+	}
 
 	type args struct {
 		isElectedProposer bool
@@ -575,7 +581,7 @@ func Test_getIteration(t *testing.T) {
 			return tt.args.isElectedProposer
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getIteration(client, address, proposer, proposeUtils); got != tt.want {
+			if got := getIteration(client, address, proposer, utilsStruct); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -589,8 +595,10 @@ func TestMakeBlock(t *testing.T) {
 
 	rogueModeMedian := big.NewInt(int64(randMath.Intn(10000000)))
 
-	razorUtils := UtilsMock{}
-	proposeUtils := ProposeUtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:   UtilsMock{},
+		proposeUtils: ProposeUtilsMock{},
+	}
 
 	type args struct {
 		numAssets                 *big.Int
@@ -715,7 +723,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error) {
+			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error) {
 				return tt.args.sortedVotes, tt.args.sortedVotesErr
 			}
 
@@ -731,7 +739,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.mediansInUint32
 			}
 
-			got, err := MakeBlock(client, address, tt.args.rogueMode, razorUtils, proposeUtils)
+			got, err := MakeBlock(client, address, tt.args.rogueMode, utilsStruct)
 			fmt.Println(got)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
@@ -756,7 +764,9 @@ func Test_getSortedVotes(t *testing.T) {
 	var address string
 	var assetId uint8
 
-	razorUtils := UtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
 
 	type args struct {
 		numberOfStakers      uint32
@@ -878,7 +888,7 @@ func Test_getSortedVotes(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			got, err := getSortedVotes(client, address, assetId, tt.args.epoch, razorUtils)
+			got, err := getSortedVotes(client, address, assetId, tt.args.epoch, utilsStruct)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from getSortedVotes function, got = %v, want = %v", got, tt.want)
 			}

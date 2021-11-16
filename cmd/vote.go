@@ -123,7 +123,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Error("Stopped voting as total stake is already withdrawn.")
 		} else {
 			log.Debug("Auto starting Unstake followed by Withdraw")
-			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
+			AutoUnstakeAndWithdraw(client, account, stakedAmount, config, utilsStruct)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
 		os.Exit(0)
@@ -177,12 +177,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := HandleRevealState(client, account.Address, staker, epoch, razorUtils); err != nil {
+		if err := utilsStruct.HandleRevealState(client, account.Address, staker, epoch); err != nil {
 			log.Error(err)
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
-		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils)
+		revealTxn, err := utilsStruct.Reveal(client, _committedData, secret, account, account.Address, config)
 		if err != nil {
 			log.Error("Reveal error: ", err)
 			break
@@ -209,7 +209,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := Propose(client, account, config, stakerId, epoch, rogueMode, razorUtils, proposeUtils, blockManagerUtils, transactionUtils)
+		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -226,7 +226,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		err := HandleDispute(client, config, account, epoch, utilsStruct)
+		err := utilsStruct.HandleDispute(client, config, account, epoch)
 		if err != nil {
 			log.Error(err)
 			break
@@ -321,7 +321,7 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 	return secret
 }
 
-func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
+func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations, utilsStruct UtilsStruct) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: account.Address,
@@ -333,7 +333,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 	stakerId, err := utils.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
 	Unstake(txnArgs, stakerId)
-	AutoWithdraw(txnArgs, stakerId)
+	AutoWithdraw(txnArgs, stakerId, utilsStruct)
 }
 
 func init() {
