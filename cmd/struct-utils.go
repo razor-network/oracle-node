@@ -497,6 +497,11 @@ func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Cli
 	return blockManager.FinalizeDispute(opts, epoch, blockIndex)
 }
 
+func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+}
+
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(hexKey)
 }

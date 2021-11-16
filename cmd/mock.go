@@ -248,6 +248,8 @@ var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Tra
 
 var FinalizeDisputeMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 
+var DisputeBiggestInfluenceProposedMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
 var GetUint32AggregationMock func(*pflag.FlagSet) (uint32, error)
@@ -694,6 +696,10 @@ func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Clie
 
 func (blockManagerMock BlockManagerMock) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
 	return FinalizeDisputeMock(client, opts, epoch, blockIndex)
+}
+
+func (bu BlockManagerMock) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+	return DisputeBiggestInfluenceProposedMock(client, opts, epoch, blockIndex, correctBiggestInfluencerId)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
