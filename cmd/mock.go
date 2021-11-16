@@ -138,6 +138,8 @@ var GetLatestBlockMock func(*ethclient.Client) (*Types.Header, error)
 
 var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
 
+var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -462,6 +464,10 @@ func (u UtilsMock) GetLatestBlock(client *ethclient.Client) (*Types.Header, erro
 
 func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
 	return GetSortedProposedBlockIdsMock(client, address, epoch)
+}
+
+func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
+	return GetUpdatedEpochMock(client)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
