@@ -134,6 +134,8 @@ var GetVotesMock func(*ethclient.Client, string, uint32) (bindings.StructsVote, 
 
 var ContainsMock func([]int, int) bool
 
+var GetLatestBlockMock func(*ethclient.Client) (*Types.Header, error)
+
 var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
@@ -452,6 +454,10 @@ func (u UtilsMock) GetVotes(client *ethclient.Client, address string, stakerId u
 
 func (u UtilsMock) Contains(arr []int, val int) bool {
 	return ContainsMock(arr, val)
+}
+
+func (u UtilsMock) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
+	return GetLatestBlockMock(client)
 }
 
 func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {

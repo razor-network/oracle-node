@@ -39,7 +39,7 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		client := utils.ConnectToClient(config.Provider)
-		header, err := client.HeaderByNumber(context.Background(), nil)
+		header, err := razorUtils.GetLatestBlock(client)
 		utils.CheckError("Error in getting block: ", err)
 
 		address, _ := cmd.Flags().GetString("address")
@@ -233,14 +233,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := ClaimBlockReward(types.TransactionOptions{
-				Client:          client,
-				Password:        account.Password,
-				AccountAddress:  account.Address,
-				ChainId:         core.ChainId,
-				Config:          config,
-				ContractAddress: core.BlockManagerAddress,
-				MethodName:      "claimBlockReward",
-				ABI:             jobManager.BlockManagerABI,
+				Client:         client,
+				Password:       account.Password,
+				AccountAddress: account.Address,
+				ChainId:        core.ChainId,
+				Config:         config,
+				//ContractAddress: core.BlockManagerAddress,
+				//MethodName:      "claimBlockReward",
+				//ABI:             jobManager.BlockManagerABI,
 			}, razorUtils, blockManagerUtils, transactionUtils)
 
 			if err != nil {

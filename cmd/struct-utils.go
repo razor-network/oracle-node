@@ -227,6 +227,10 @@ func (u Utils) Contains(arr []int, val int) bool {
 	return utils.Contains(arr, val)
 }
 
+func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
+	return utils.GetLatestBlock(client)
+}
+
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
 	return utils.GetSortedProposedBlockIds(client, address, epoch)
 }
