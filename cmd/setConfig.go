@@ -79,7 +79,7 @@ func SetConfig(flagSet *pflag.FlagSet, razorUtils utilsInterface, flagSetUtils f
 		viper.Set("wait", 3)
 		viper.Set("gasprice", 0)
 		viper.Set("logLevel", "")
-		viper.Set("gasLimit", 0)
+		viper.Set("gasLimit", 100)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 	path, pathErr := razorUtils.GetConfigFilePath()
