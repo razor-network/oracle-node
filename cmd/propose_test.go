@@ -551,6 +551,7 @@ func Test_getIteration(t *testing.T) {
 
 	utilsStruct := UtilsStruct{
 		proposeUtils: ProposeUtilsMock{},
+		razorUtils:   UtilsMock{},
 	}
 
 	type args struct {
@@ -577,7 +578,7 @@ func Test_getIteration(t *testing.T) {
 		//},
 	}
 	for _, tt := range tests {
-		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer) bool {
+		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool {
 			return tt.args.isElectedProposer
 		}
 		t.Run(tt.name, func(t *testing.T) {
@@ -944,6 +945,185 @@ func Test_influencedMedian(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := influencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func influenceSnapshotValue(infl string) *big.Int {
+	influence, _ := new(big.Int).SetString(infl, 10)
+	return influence
+}
+
+func Test_isElectedProposer(t *testing.T) {
+	var client *ethclient.Client
+
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
+
+	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	randaoHashBytes32 := [32]byte{}
+	copy(randaoHashBytes32[:], randaoHash)
+
+	biggestInfluence, _ := new(big.Int).SetString("2592145500000000000000000", 10)
+
+	type args struct {
+		client               *ethclient.Client
+		address              string
+		proposer             types.ElectedProposer
+		influenceSnapshot    *big.Int
+		influenceSnapshotErr error
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test1: When staker is 3 and isElectedProposer returns true",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        0,
+					Stake:            nil,
+					StakerId:         3,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
+				influenceSnapshotErr: nil,
+			},
+			want: true,
+		},
+		{
+			name: "Test2: When staker is 2 and isElectedProposer returns false",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        11,
+					Stake:            nil,
+					StakerId:         2,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            29,
+				},
+				influenceSnapshot:    influenceSnapshotValue("529422500000000000000000"),
+				influenceSnapshotErr: nil,
+			},
+			want: false,
+		},
+		{
+			name: "When staker is 1 and isElectedProposer returns true",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        2,
+					Stake:            nil,
+					StakerId:         1,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
+				influenceSnapshotErr: nil,
+			},
+			want: true,
+		},
+		{
+			name: "Test4: When there is an error getting influence snapshot",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        0,
+					Stake:            nil,
+					StakerId:         3,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    nil,
+				influenceSnapshotErr: errors.New("error in getting influence snapshot"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+
+		GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+			return tt.args.influenceSnapshot, tt.args.influenceSnapshotErr
+		}
+
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isElectedProposer(tt.args.client, tt.args.address, tt.args.proposer, utilsStruct); got != tt.want {
+				t.Errorf("isElectedProposer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_pseudoRandomNumberGenerator(t *testing.T) {
+	type args struct {
+		seed        []byte
+		max         uint32
+		blockHashes []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test1",
+			args: args{
+				seed:        []byte{41, 13, 236, 217, 84, 139, 98, 168, 214, 3, 69, 169, 136, 56, 111, 200, 75, 166, 188, 149, 72, 64, 8, 246, 54, 47, 147, 22, 14, 243, 229, 99},
+				max:         3,
+				blockHashes: []byte{238, 196, 19, 129, 113, 45, 90, 98, 254, 154, 67, 248, 115, 100, 254, 121, 34, 129, 153, 210, 235, 121, 174, 197, 55, 114, 117, 71, 242, 0, 127, 107},
+			},
+			want: big.NewInt(00),
+		},
+		{
+			name: "Test2",
+			args: args{
+				seed:        []byte{41, 13, 236, 217, 84, 139, 98, 168, 214, 3, 69, 169, 136, 56, 111, 200, 75, 166, 188, 149, 72, 64, 8, 246, 54, 47, 147, 22, 14, 243, 229, 99},
+				max:         3,
+				blockHashes: []byte{115, 40, 207, 108, 82, 172, 126, 50, 166, 119, 197, 130, 100, 28, 32, 116, 90, 94, 97, 221, 187, 229, 219, 58, 248, 210, 212, 124, 85, 128, 237, 31},
+			},
+			want: big.NewInt(0),
+		},
+		{
+			name: "Test3",
+			args: args{
+				seed:        []byte{177, 14, 45, 82, 118, 18, 7, 59, 38, 238, 205, 253, 113, 126, 106, 50, 12, 244, 75, 74, 250, 194, 176, 115, 45, 159, 203, 226, 183, 250, 12, 246},
+				max:         3,
+				blockHashes: []byte{28, 141, 74, 0, 129, 83, 89, 19, 163, 132, 11, 86, 189, 167, 73, 56, 94, 155, 35, 125, 134, 134, 159, 60, 66, 71, 8, 155, 92, 97, 38, 38},
+			},
+			want: big.NewInt(2),
+		},
+		{
+			name: "Test4",
+			args: args{
+				seed:        []byte{138, 53, 172, 251, 193, 95, 248, 26, 57, 174, 125, 52, 79, 215, 9, 242, 142, 134, 0, 180, 170, 140, 101, 198, 182, 75, 254, 127, 227, 107, 209, 155},
+				max:         3,
+				blockHashes: []byte{28, 141, 74, 0, 129, 83, 89, 19, 163, 132, 11, 86, 189, 167, 73, 56, 94, 155, 35, 125, 134, 134, 159, 60, 66, 71, 8, 155, 92, 97, 38, 38},
+			},
+			want: big.NewInt(2),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pseudoRandomNumberGenerator(tt.args.seed, tt.args.max, tt.args.blockHashes); got.Cmp(tt.want) != 0 {
+				t.Errorf("pseudoRandomNumberGenerator() = %v, want %v", got, tt.want)
 			}
 		})
 	}

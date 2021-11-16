@@ -39,10 +39,10 @@ type UtilsStruct struct {
 	cmdUtils          utilsCmdInterface
 	proposeUtils      proposeUtilsInterface
 	blockManagerUtils blockManagerInterface
+	stakeManagerUtils stakeManagerInterface
 	transactionUtils  transactionInterface
 	assetManagerUtils assetManagerInterface
 	voteManagerUtils  voteManagerInterface
-	stakeManagerUtils stakeManagerInterface
 	tokenManagerUtils tokenManagerInterface
 	keystoreUtils     keystoreInterface
 	accountUtils      accountInterface
@@ -234,6 +234,10 @@ func (u Utils) Contains(arr []int, val int) bool {
 	return utils.Contains(arr, val)
 }
 
+func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
+	return utils.GetLatestBlock(client)
+}
+
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
 	return utils.GetSortedProposedBlockIds(client, address, epoch)
 }
@@ -290,6 +294,17 @@ func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Clien
 func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.DecreaseCommission(opts, commission)
+}
+
+func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Stakers(opts, stakerId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
+	stakeManager := utils.GetStakeManager(client)
+	index := age / 10000
+	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -418,8 +433,8 @@ func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address 
 	return getIteration(client, address, proposer, utilsStruct)
 }
 
-func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
-	return isElectedProposer(client, address, proposer)
+func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
+	return isElectedProposer(client, address, proposer, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
@@ -503,6 +518,11 @@ func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Cl
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.FinalizeDispute(opts, epoch, blockIndex)
+}
+
+func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+	blockManager := utils.GetBlockManager(client)
+	return blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

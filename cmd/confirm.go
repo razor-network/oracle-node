@@ -11,7 +11,13 @@ var blockManagerUtils blockManagerInterface
 func (utilsStruct UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	log.Info("Claiming block reward...")
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(options)
-	txnOpts.GasLimit = 250000
+	latestBlock, err := utilsStruct.razorUtils.GetLatestBlock(options.Client)
+	if err != nil {
+		log.Error("Error in fetching block: ", err)
+		return core.NilHash, err
+	}
+	txnOpts.GasLimit = latestBlock.GasLimit
+	log.Debug("Gas Limit: ", txnOpts.GasLimit)
 	txn, err := utilsStruct.blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
 	if err != nil {
 		log.Error("Error in claiming block reward: ", err)

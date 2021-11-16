@@ -61,6 +61,7 @@ type utilsInterface interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
+	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 }
 
@@ -91,6 +92,10 @@ type stakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+
+	//Getter methods
+	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
+	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 }
 
 type accountInterface interface {
@@ -150,12 +155,13 @@ type blockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
+	DisputeBiggestInfluenceProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 }
 
 type proposeUtilsInterface interface {
 	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
 	getIteration(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
-	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
+	isElectedProposer(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
 	MakeBlock(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
 	getSortedVotes(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)

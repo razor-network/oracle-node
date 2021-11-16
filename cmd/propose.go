@@ -2,15 +2,13 @@ package cmd
 
 import (
 	"encoding/hex"
+	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"math/big"
 	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -145,7 +143,7 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch ui
 func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
 	for i := 0; i < 10000000000; i++ {
 		proposer.Iteration = i
-		isElected := utilsStruct.proposeUtils.isElectedProposer(client, address, proposer)
+		isElected := utilsStruct.proposeUtils.isElectedProposer(client, address, proposer, utilsStruct)
 		if isElected {
 			return i
 		}
@@ -153,7 +151,7 @@ func getIteration(client *ethclient.Client, address string, proposer types.Elect
 	return -1
 }
 
-func isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
+func isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
@@ -166,7 +164,7 @@ func isElectedProposer(client *ethclient.Client, address string, proposer types.
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
-	influence, err := utils.GetInfluenceSnapshot(client, address, proposer.StakerId, proposer.Epoch)
+	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, address, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return false
