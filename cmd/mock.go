@@ -198,9 +198,9 @@ var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
 var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
 
-var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
+var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface, utilsInterface) int
 
-var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer) bool
+var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer, utilsInterface) bool
 
 var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
 
@@ -582,12 +582,12 @@ func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethcli
 	return getBiggestInfluenceAndIdMock(client, address, epoch, razorUtils)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
-	return getIterationMock(client, address, proposer, proposeUtils)
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface, razorUtils utilsInterface) int {
+	return getIterationMock(client, address, proposer, proposeUtils, razorUtils)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
-	return isElectedProposerMock(client, address, proposer)
+func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, razorUtils utilsInterface) bool {
+	return isElectedProposerMock(client, address, proposer, razorUtils)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {

@@ -418,12 +418,12 @@ func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Clie
 	return getBiggestInfluenceAndId(client, address, epoch, razorUtils)
 }
 
-func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtil proposeUtilsInterface) int {
-	return getIteration(client, address, proposer, proposeUtil)
+func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtil proposeUtilsInterface, razorUtils utilsInterface) int {
+	return getIteration(client, address, proposer, proposeUtil, razorUtils)
 }
 
-func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
-	return isElectedProposer(client, address, proposer)
+func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, razorUtils utilsInterface) bool {
+	return isElectedProposer(client, address, proposer, razorUtils)
 }
 
 func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {

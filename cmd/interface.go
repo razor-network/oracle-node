@@ -159,8 +159,8 @@ type blockManagerInterface interface {
 
 type proposeUtilsInterface interface {
 	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
-	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
-	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
+	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface, utilsInterface) int
+	isElectedProposer(*ethclient.Client, string, types.ElectedProposer, utilsInterface) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
 	MakeBlock(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
 	getSortedVotes(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
