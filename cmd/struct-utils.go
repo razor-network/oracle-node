@@ -235,6 +235,10 @@ func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address strin
 	return utils.GetSortedProposedBlockIds(client, address, epoch)
 }
 
+func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
+	return utils.GetEpoch(client)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)

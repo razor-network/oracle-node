@@ -63,6 +63,7 @@ type utilsInterface interface {
 	Contains([]int, int) bool
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 }
 
 type tokenManagerInterface interface {
