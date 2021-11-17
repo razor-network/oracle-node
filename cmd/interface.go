@@ -64,6 +64,7 @@ type utilsInterface interface {
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	CheckError(msg string, err error)
 }
 
 type tokenManagerInterface interface {
@@ -139,7 +140,8 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
-	Unstake(types.TransactionOptions, uint32, UtilsStruct) error
+	Unstake(types.Configurations, *ethclient.Client, string, string, *big.Int, uint32, UtilsStruct) (types.TransactionOptions, error)
+	AutoWithdraw(types.TransactionOptions, uint32)
 }
 
 type cryptoInterface interface {

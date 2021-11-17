@@ -240,6 +240,10 @@ func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address strin
 	return utils.GetSortedProposedBlockIds(client, address, epoch)
 }
 
+func (u Utils) CheckError(msg string, err error) {
+	utils.CheckError(msg, err)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -506,8 +510,12 @@ func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bind
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
-func (cmdUtils UtilsCmd) Unstake(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
-	return Unstake(txnArgs, stakerId, utilsStruct)
+func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	return Unstake(config, client, address, password, valueInWei, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
+	AutoWithdraw(txnArgs, stakerId)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

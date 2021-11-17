@@ -140,6 +140,8 @@ var AssignStakerIdMock func(*pflag.FlagSet, *ethclient.Client, string) (uint32, 
 
 var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
 
+var CheckErrorMock func(string, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -162,7 +164,7 @@ var SetCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8)
 
 var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
-var UnstakeMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+var UnstakeContractMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -225,6 +227,10 @@ var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface
 var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+
+var UnstakeMock func(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error)
+
+var AutoWithdrawMock func(types.TransactionOptions, uint32)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
@@ -468,6 +474,10 @@ func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address s
 	return GetSortedProposedBlockIdsMock(client, address, epoch)
 }
 
+func (u UtilsMock) CheckError(msg string, err error) {
+	CheckErrorMock(msg, err)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -537,7 +547,7 @@ func (stakeManagerMock StakeManagerMock) DecreaseCommission(client *ethclient.Cl
 }
 
 func (stakeManagerMock StakeManagerMock) Unstake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
-	return UnstakeMock(client, opts, epoch, stakerId, sAmount)
+	return UnstakeContractMock(client, opts, epoch, stakerId, sAmount)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
@@ -710,6 +720,14 @@ func (utilsCmdMock UtilsCmdMock) Dispute(client *ethclient.Client, config types.
 
 func (utilsCmdMock UtilsCmdMock) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
 	GiveSortedMock(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (utilsCmdMock UtilsCmdMock) Unstake(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	return UnstakeMock(config, client, address, password, valueInWei, stakerId, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
+	AutoWithdrawMock(txnArgs, stakerId)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
