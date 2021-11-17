@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -22,37 +24,30 @@ var unstakeCmd = &cobra.Command{
 Example:	
   ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --autoWithdraw
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := utilsStruct.initialiseUnstake(cmd)
-		utils.CheckError("Error in initialising unstake function: ", err)
-	},
+	Run: initialiseUnstake,
 }
 
-//Run:  utilsStruct.initialiseUnstake(cmd *cobra.Command, args []string) {
-//err := utilsStruct.initialiseUnstake(cmd)
-//utils.CheckError("Error in initialising unstake function: ", err)
-//},
-//}
-
-func (utilsStruct UtilsStruct) initialiseUnstake(cmd *cobra.Command) error {
-	config, err := utilsStruct.razorUtils.GetConfigData()
-	flagSet := cmd.Flags()
-	if err != nil {
-		log.Error("Error in getting config: ", err)
-		return err
+func initialiseUnstake(cmd *cobra.Command, args []string) {
+	utilsStruct := UtilsStruct{
+		stakeManagerUtils: stakeManagerUtils,
+		razorUtils:        razorUtils,
+		transactionUtils:  transactionUtils,
+		cmdUtils:          cmdUtils,
+		flagSetUtils:      flagSetUtils,
 	}
+	utilsStruct.executeUnstake(cmd.Flags())
+}
+
+func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
+	config, err := utilsStruct.razorUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
 
 	password := utilsStruct.razorUtils.AssignPassword(flagSet)
 	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		log.Error("Error in getting address: ", err)
-		return err
-	}
+	utils.CheckError("Error in getting address: ", err)
+
 	autoWithdraw, err := utilsStruct.flagSetUtils.GetBoolAutoWithdraw(flagSet)
-	if err != nil {
-		log.Error("Error in getting autoWithdraw status: ", err)
-		return err
-	}
+	utils.CheckError("Error in getting autoWithdraw status: ", err)
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
@@ -61,24 +56,26 @@ func (utilsStruct UtilsStruct) initialiseUnstake(cmd *cobra.Command) error {
 	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
 
 	stakerId, err := utilsStruct.razorUtils.AssignStakerId(flagSet, client, address)
-	if err != nil {
-		log.Error("StakerId error: ", err)
-		return err
-	}
+	utils.CheckError("StakerId error: ", err)
 
 	lock, err := utilsStruct.razorUtils.GetLock(client, address, stakerId)
-	if err != nil {
-		log.Error("Error in getting lock: ", err)
-		return err
-	}
+	utils.CheckError("Error in getting lock: ", err)
 
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
 		err = errors.New("existing lock")
-		log.Error(err)
-		return err
+		log.Fatal(err)
 	}
 
-	txnOptions := types.TransactionOptions{
+	txnOptions, err := utilsStruct.cmdUtils.Unstake(config, client, address, password, valueInWei, stakerId, utilsStruct)
+	utils.CheckError("Unstake Error: ", err)
+
+	if autoWithdraw {
+		utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId)
+	}
+}
+
+func Unstake(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        password,
 		AccountAddress:  address,
@@ -89,36 +86,21 @@ func (utilsStruct UtilsStruct) initialiseUnstake(cmd *cobra.Command) error {
 		MethodName:      "unstake",
 		ABI:             bindings.StakeManagerABI,
 	}
-
-	err = utilsStruct.cmdUtils.Unstake(txnOptions, stakerId, utilsStruct)
-	if err != nil {
-		log.Error("Unstake Error: ", err)
-		return err
-	}
-
-	if autoWithdraw {
-		AutoWithdraw(txnOptions, stakerId)
-	}
-
-	return nil
-}
-
-func Unstake(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
 	lock, err := utilsStruct.razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
 	if err != nil {
 		log.Error("Error in getting lock: ", err)
-		return err
+		return txnArgs, err
 	}
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
 		err := errors.New("existing lock")
 		log.Error(err)
-		return err
+		return txnArgs, err
 	}
 
 	epoch, err := utilsStruct.razorUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
-		return err
+		return txnArgs, err
 	}
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
@@ -126,11 +108,11 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct Util
 	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
-		return err
+		return txnArgs, err
 	}
 	log.Info("Transaction hash: ", utilsStruct.transactionUtils.Hash(txn))
 	utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, utilsStruct.transactionUtils.Hash(txn).String())
-	return nil
+	return txnArgs, nil
 }
 
 func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
@@ -144,11 +126,18 @@ func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
 		log.Error("WithdrawFunds error ", err)
 	}
 	if txn != core.NilHash {
-		utils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
 	}
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	cmdUtils = UtilsCmd{}
+	flagSetUtils = FlagSetUtils{}
+
 	rootCmd.AddCommand(unstakeCmd)
 
 	var (

@@ -331,7 +331,8 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 	}
 	stakerId, err := utils.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
-	Unstake(txnArgs, stakerId, utilsStruct)
+	_, err = Unstake(config, client, account.Address, account.Password, amount, stakerId, utilsStruct)
+	utils.CheckError("Error in Unstake: ", err)
 	AutoWithdraw(txnArgs, stakerId)
 }
 
