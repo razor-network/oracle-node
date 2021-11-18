@@ -51,7 +51,7 @@ func (utilsStruct UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	gasLimit, err := flagSetUtils.GetFloat32GasLimit(flagSet)
+	gasLimit, err := utilsStruct.flagSetUtils.GetFloat32GasLimit(flagSet)
 	if err != nil {
 		return err
 	}
