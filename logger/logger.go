@@ -68,19 +68,19 @@ func (logger *StandardLogger) Error(args ...interface{}) {
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
 	sentry.CaptureException(err)
-	logger.Errorln(args)
+	logger.Errorln(args...)
 }
 
 func (logger *StandardLogger) Info(args ...interface{}) {
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
-	logger.Infoln(args)
+	logger.Infoln(args...)
 }
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
-	logger.Debugln(args)
+	logger.Debugln(args...)
 }
 
 func (logger *StandardLogger) Fatal(args ...interface{}) {
