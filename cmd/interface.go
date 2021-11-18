@@ -134,11 +134,11 @@ type flagSetInterface interface {
 }
 
 type utilsCmdInterface interface {
-	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
-	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
+	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
+	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
 	DecreaseCommissionPrompt() bool
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
-	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error)
+	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 }
@@ -160,11 +160,11 @@ type blockManagerInterface interface {
 }
 
 type proposeUtilsInterface interface {
-	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
-	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface, utilsInterface) int
-	isElectedProposer(*ethclient.Client, string, types.ElectedProposer, utilsInterface) bool
+	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
+	getIteration(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
+	isElectedProposer(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
-	MakeBlock(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
-	getSortedVotes(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
+	MakeBlock(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
+	getSortedVotes(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)
 	influencedMedian([]*big.Int, *big.Int) *big.Int
 }

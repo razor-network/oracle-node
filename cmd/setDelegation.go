@@ -27,47 +27,54 @@ Example:
   ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := SetDelegation(cmd.Flags(), razorUtils, stakeManagerUtils, cmdUtils, transactionUtils, flagSetUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			cmdUtils:          cmdUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
+		err := utilsStruct.SetDelegation(cmd.Flags())
 		utils.CheckError("SetDelegation error: ", err)
 	},
 }
 
-func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, cmdUtils utilsCmdInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) error {
+func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 
-	config, err := razorUtils.GetConfigData()
+	config, err := utilsStruct.razorUtils.GetConfigData()
 	if err != nil {
 		log.Error("Error in getting config")
 		return err
 	}
-	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return err
 	}
-	statusString, err := flagSetUtils.GetStringStatus(flagSet)
+	statusString, err := utilsStruct.flagSetUtils.GetStringStatus(flagSet)
 	if err != nil {
 		return err
 	}
-	commission, err := flagSetUtils.GetUint8Commission(flagSet)
+	commission, err := utilsStruct.flagSetUtils.GetUint8Commission(flagSet)
 	if err != nil {
 		return err
 	}
 
-	status, err := razorUtils.ParseBool(statusString)
+	status, err := utilsStruct.razorUtils.ParseBool(statusString)
 	if err != nil {
 		log.Error("Error in parsing status to boolean")
 		return err
 	}
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	stakerId, err := razorUtils.GetStakerId(client, address)
+	stakerId, err := utilsStruct.razorUtils.GetStakerId(client, address)
 	if err != nil {
 		log.Error("Error in fetching staker id")
 		return err
 	}
 
-	stakerInfo, err := razorUtils.GetStaker(client, address, stakerId)
+	stakerInfo, err := utilsStruct.razorUtils.GetStaker(client, address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
@@ -88,8 +95,8 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		if stakerInfo.Commission == 0 {
 			txnOpts.MethodName = "setCommission"
 			txnOpts.Parameters = []interface{}{commission}
-			setCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
-			err = cmdUtils.SetCommission(client, stakerId, setCommissionTxnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+			setCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
+			err = utilsStruct.cmdUtils.SetCommission(client, stakerId, setCommissionTxnOpts, commission, utilsStruct)
 			if err != nil {
 				return err
 			}
@@ -99,8 +106,8 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		if stakerInfo.Commission > 0 && stakerInfo.Commission > commission {
 			txnOpts.MethodName = "decreaseCommission"
 			txnOpts.Parameters = []interface{}{commission}
-			decreaseCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
-			err = cmdUtils.DecreaseCommission(client, stakerId, decreaseCommissionTxnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
+			decreaseCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
+			err = utilsStruct.cmdUtils.DecreaseCommission(client, stakerId, decreaseCommissionTxnOpts, commission, utilsStruct)
 			if err != nil {
 				return err
 			}
@@ -108,7 +115,7 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 	}
 
 	// Fetch updated stakerInfo
-	stakerInfo, err = razorUtils.GetUpdatedStaker(client, address, stakerId)
+	stakerInfo, err = utilsStruct.razorUtils.GetUpdatedStaker(client, address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
@@ -118,41 +125,41 @@ func SetDelegation(flagSet *pflag.FlagSet, razorUtils utilsInterface, stakeManag
 		log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
 		txnOpts.MethodName = "setDelegationAcceptance"
 		txnOpts.Parameters = []interface{}{status}
-		setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
-		delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
+		setDelegationAcceptanceTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
+		delegationAcceptanceTxn, err := utilsStruct.stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
 		if err != nil {
 			log.Error("Error in setting delegation acceptance")
 			return err
 		}
-		log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
-		razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(delegationAcceptanceTxn).String())
+		log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(delegationAcceptanceTxn))
+		utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(delegationAcceptanceTxn).String())
 	}
 	return nil
 }
 
-func SetCommission(client *ethclient.Client, stakerId uint32, setCommissionTxnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
+func SetCommission(client *ethclient.Client, stakerId uint32, setCommissionTxnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
-	txn, err := stakeManagerUtils.SetCommission(client, setCommissionTxnOpts, commission)
+	txn, err := utilsStruct.stakeManagerUtils.SetCommission(client, setCommissionTxnOpts, commission)
 	if err != nil {
 		log.Error("Error in setting commission")
 		return err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
-	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(txn))
+	utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(txn).String())
 	return nil
 }
 
-func DecreaseCommission(client *ethclient.Client, stakerId uint32, decreaseCommissionTxnOpts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
+func DecreaseCommission(client *ethclient.Client, stakerId uint32, decreaseCommissionTxnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	log.Infof("Decreasing the commission value of Staker %d to %d%%", stakerId, commission)
-	if cmdUtils.DecreaseCommissionPrompt() {
+	if utilsStruct.cmdUtils.DecreaseCommissionPrompt() {
 		log.Info("Sending DecreaseCommission transaction...")
-		decreaseCommissionTxn, err := stakeManagerUtils.DecreaseCommission(client, decreaseCommissionTxnOpts, commission)
+		decreaseCommissionTxn, err := utilsStruct.stakeManagerUtils.DecreaseCommission(client, decreaseCommissionTxnOpts, commission)
 		if err != nil {
 			log.Error("Error in decreasing commission")
 			return err
 		}
-		log.Infof("Transaction hash: %s", transactionUtils.Hash(decreaseCommissionTxn))
-		razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(decreaseCommissionTxn).String())
+		log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(decreaseCommissionTxn))
+		utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(decreaseCommissionTxn).String())
 	}
 	return nil
 }

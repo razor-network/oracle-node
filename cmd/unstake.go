@@ -42,6 +42,13 @@ Example:
 			log.Fatal("Existing lock")
 		}
 
+		utilsStruct := UtilsStruct{
+			stakeManagerUtils: stakeManagerUtils,
+			transactionUtils:  transactionUtils,
+			cmdUtils:          cmdUtils,
+			razorUtils:        razorUtils,
+		}
+
 		txnOptions := types.TransactionOptions{
 			Client:          client,
 			Password:        password,
@@ -57,7 +64,7 @@ Example:
 		Unstake(txnOptions, stakerId)
 
 		if autoWithdraw {
-			AutoWithdraw(txnOptions, stakerId)
+			AutoWithdraw(txnOptions, stakerId, utilsStruct)
 		}
 	},
 }
@@ -82,13 +89,13 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 	utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
 }
 
-func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
+func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
 	log.Info("Starting withdrawal now...")
 	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := withdrawFunds(txnArgs.Client, types.Account{
+	txn, err := utilsStruct.withdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
+	}, txnArgs.Config, stakerId)
 	if err != nil {
 		log.Error("WithdrawFunds error ", err)
 	}

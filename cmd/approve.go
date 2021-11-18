@@ -7,9 +7,9 @@ import (
 	"razor/pkg/bindings"
 )
 
-func approve(txnArgs types.TransactionOptions, razorUtils utilsInterface, tokenManagerUtils tokenManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	opts := razorUtils.GetOptions(false, txnArgs.AccountAddress, "")
-	allowance, err := tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+func (utilsStruct UtilsStruct) approve(txnArgs types.TransactionOptions) (common.Hash, error) {
+	opts := utilsStruct.razorUtils.GetOptions(false, txnArgs.AccountAddress, "")
+	allowance, err := utilsStruct.tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -22,12 +22,12 @@ func approve(txnArgs types.TransactionOptions, razorUtils utilsInterface, tokenM
 		txnArgs.MethodName = "approve"
 		txnArgs.ABI = bindings.RAZORABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
-		txnOpts := razorUtils.GetTxnOpts(txnArgs)
-		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
+		txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+		txn, err := utilsStruct.tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			return common.Hash{0x00}, err
 		}
-		log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-		return transactionUtils.Hash(txn), nil
+		log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
+		return utilsStruct.transactionUtils.Hash(txn), nil
 	}
 }
