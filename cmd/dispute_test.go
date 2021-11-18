@@ -406,7 +406,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.proposedBlock, tt.args.proposedBlockErr
 			}
 
-			getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error) {
+			getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
 				return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 			}
 
@@ -426,7 +426,7 @@ func TestHandleDispute(t *testing.T) {
 				return 1
 			}
 
-			MakeBlockMock = func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error) {
+			MakeBlockMock = func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error) {
 				return tt.args.medians, tt.args.mediansErr
 			}
 
@@ -442,7 +442,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.disputeErr
 			}
 
-			err := HandleDispute(client, config, account, epoch, utilsStruct)
+			err := utilsStruct.HandleDispute(client, config, account, epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)

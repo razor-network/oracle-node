@@ -17,33 +17,37 @@ Example:
   ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug --gasLimit 50
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := SetConfig(cmd.Flags(), razorUtils, flagSetUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:   razorUtils,
+			flagSetUtils: flagSetUtils,
+		}
+		err := utilsStruct.SetConfig(cmd.Flags())
 		utils.CheckError("SetConfig error: ", err)
 	},
 }
 
-func SetConfig(flagSet *pflag.FlagSet, razorUtils utilsInterface, flagSetUtils flagSetInterface) error {
-	provider, err := flagSetUtils.GetStringProvider(flagSet)
+func (utilsStruct UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
+	provider, err := utilsStruct.flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err
 	}
-	gasMultiplier, err := flagSetUtils.GetFloat32GasMultiplier(flagSet)
+	gasMultiplier, err := utilsStruct.flagSetUtils.GetFloat32GasMultiplier(flagSet)
 	if err != nil {
 		return err
 	}
-	bufferPercent, err := flagSetUtils.GetInt32Buffer(flagSet)
+	bufferPercent, err := utilsStruct.flagSetUtils.GetInt32Buffer(flagSet)
 	if err != nil {
 		return err
 	}
-	waitTime, err := flagSetUtils.GetInt32Wait(flagSet)
+	waitTime, err := utilsStruct.flagSetUtils.GetInt32Wait(flagSet)
 	if err != nil {
 		return err
 	}
-	gasPrice, err := flagSetUtils.GetInt32GasPrice(flagSet)
+	gasPrice, err := utilsStruct.flagSetUtils.GetInt32GasPrice(flagSet)
 	if err != nil {
 		return err
 	}
-	logLevel, err := flagSetUtils.GetStringLogLevel(flagSet)
+	logLevel, err := utilsStruct.flagSetUtils.GetStringLogLevel(flagSet)
 	if err != nil {
 		return err
 	}
@@ -82,12 +86,12 @@ func SetConfig(flagSet *pflag.FlagSet, razorUtils utilsInterface, flagSetUtils f
 		viper.Set("gasLimit", 100)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
-	path, pathErr := razorUtils.GetConfigFilePath()
+	path, pathErr := utilsStruct.razorUtils.GetConfigFilePath()
 	if pathErr != nil {
 		log.Error("Error in fetching config file path")
 		return pathErr
 	}
-	configErr := razorUtils.ViperWriteConfigAs(path)
+	configErr := utilsStruct.razorUtils.ViperWriteConfigAs(path)
 	if configErr != nil {
 		log.Error("Error in writing config")
 		return configErr

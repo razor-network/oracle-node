@@ -1,6 +1,9 @@
 package logger
 
 import (
+	"errors"
+	"fmt"
+	"github.com/getsentry/sentry-go"
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -50,4 +53,40 @@ func init() {
 
 func NewLogger() *StandardLogger {
 	return standardLogger
+}
+
+func joinString(args ...interface{}) string {
+	str := ""
+	for index := 0; index < len(args); index++ {
+		msg := fmt.Sprintf("%v", args[index])
+		str += " " + msg
+	}
+	return str
+}
+
+func (logger *StandardLogger) Error(args ...interface{}) {
+	errMsg := joinString(args)
+	err := errors.New(errMsg)
+	sentry.CaptureException(err)
+	logger.Errorln(args...)
+}
+
+func (logger *StandardLogger) Info(args ...interface{}) {
+	msg := joinString(args)
+	sentry.CaptureMessage(msg)
+	logger.Infoln(args...)
+}
+
+func (logger *StandardLogger) Debug(args ...interface{}) {
+	msg := joinString(args)
+	sentry.CaptureMessage(msg)
+	logger.Debugln(args...)
+}
+
+func (logger *StandardLogger) Fatal(args ...interface{}) {
+	defer sentry.Recover()
+	errMsg := joinString(args)
+	err := errors.New(errMsg)
+	sentry.CaptureException(err)
+	logger.Fatalln(err)
 }

@@ -25,10 +25,12 @@ func TestDecreaseCommission(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	stakeManagerUtils := StakeManagerMock{}
-	transactionUtils := TransactionMock{}
-	cmdUtils := UtilsCmdMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		stakeManagerUtils: StakeManagerMock{},
+		transactionUtils:  TransactionMock{},
+		cmdUtils:          UtilsCmdMock{},
+	}
 
 	type args struct {
 		decreaseCommissionPrompt     bool
@@ -95,7 +97,7 @@ func TestDecreaseCommission(t *testing.T) {
 				return tt.args.WaitForBlockCompletionStatus
 			}
 
-			gotErr := DecreaseCommission(client, stakerId, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
+			gotErr := DecreaseCommission(client, stakerId, txnOpts, commission, utilsStruct)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for DecreaseCommission function, got = %v, want = %v", gotErr, tt.wantErr)
@@ -117,9 +119,11 @@ func TestSetCommission(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	stakeManagerUtils := StakeManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		stakeManagerUtils: StakeManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		setCommissionTxn             *Types.Transaction
@@ -167,7 +171,7 @@ func TestSetCommission(t *testing.T) {
 				return tt.args.WaitForBlockCompletionStatus
 			}
 
-			gotErr := SetCommission(client, stakerID, txnOpts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+			gotErr := SetCommission(client, stakerID, txnOpts, commission, utilsStruct)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for SetCommission function, got = %v, want = %v", gotErr, tt.wantErr)
@@ -195,11 +199,13 @@ func TestSetDelegation(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	stakeManagerUtils := StakeManagerMock{}
-	transactionUtils := TransactionMock{}
-	flagSetUtils := FlagSetMock{}
-	cmdUtils := UtilsCmdMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		stakeManagerUtils: StakeManagerMock{},
+		transactionUtils:  TransactionMock{},
+		flagSetUtils:      FlagSetMock{},
+		cmdUtils:          UtilsCmdMock{},
+	}
 
 	type args struct {
 		config                       types.Configurations
@@ -662,15 +668,15 @@ func TestSetDelegation(t *testing.T) {
 				return tt.args.updatedStaker, tt.args.updatedStakerErr
 			}
 
-			SetCommissionMock = func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error {
+			SetCommissionMock = func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error {
 				return tt.args.SetCommissionErr
 			}
 
-			DecreaseCommissionMock = func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error {
+			DecreaseCommissionMock = func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error {
 				return tt.args.DecreaseCommissionErr
 			}
 
-			gotErr := SetDelegation(flagSet, razorUtils, stakeManagerUtils, cmdUtils, transactionUtils, flagSetUtils)
+			gotErr := utilsStruct.SetDelegation(flagSet)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for SetDelegation function, got = %v, want = %v", gotErr, tt.wantErr)

@@ -20,9 +20,11 @@ func Test_stakeCoins(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
-	razorUtils := UtilsMock{}
-	transactionUtils := TransactionMock{}
-	stakeManagerUtils := StakeManagerMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		transactionUtils:  TransactionMock{},
+		stakeManagerUtils: StakeManagerMock{},
+	}
 
 	txnArgs := types.TransactionOptions{
 		Amount: big.NewInt(10000),
@@ -110,7 +112,7 @@ func Test_stakeCoins(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := stakeCoins(txnArgs, razorUtils, stakeManagerUtils, transactionUtils)
+			got, err := utilsStruct.stakeCoins(txnArgs)
 			if got != tt.want {
 				t.Errorf("Txn hash for stake function, got = %v, want %v", got, tt.want)
 			}

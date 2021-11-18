@@ -25,10 +25,12 @@ func Test_updateCollection(t *testing.T) {
 	var config types.Configurations
 	var WaitIfCommitStateStatus uint32
 
-	razorUtils := UtilsMock{}
-	assetManagerUtils := AssetManagerMock{}
-	transactionUtils := TransactionMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		assetManagerUtils: AssetManagerMock{},
+		transactionUtils:  TransactionMock{},
+		flagSetUtils:      FlagSetMock{},
+	}
 
 	type args struct {
 		password             string
@@ -289,17 +291,17 @@ func Test_updateCollection(t *testing.T) {
 				return WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr
 			}
 
-			got, err := updateCollection(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+			got, err := utilsStruct.updateCollection(flagSet, config)
 			if got != tt.want {
-				t.Errorf("Txn hash for updateCollection function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for updateCollection function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for updateCollection function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for updateCollection function, got = %v, want = %v", got, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for updateCollection function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for updateCollection function, got = %v, want = %v", got, tt.wantErr)
 				}
 			}
 		})

@@ -10,8 +10,10 @@ import (
 
 func TestCreate(t *testing.T) {
 
-	razorUtils := UtilsMock{}
-	accountUtils := AccountMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:   UtilsMock{},
+		accountUtils: AccountMock{},
+	}
 
 	var flagSet *pflag.FlagSet
 
@@ -75,7 +77,7 @@ func TestCreate(t *testing.T) {
 				}
 			}
 
-			got, err := Create(flagSet, razorUtils, accountUtils)
+			got, err := utilsStruct.Create(flagSet)
 
 			if got.Address != tt.want.Address {
 				t.Errorf("New address created, got = %v, want %v", got, tt.want.Address)
