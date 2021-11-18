@@ -24,10 +24,12 @@ func Test_transfer(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
-	razorUtils := UtilsMock{}
-	transactionUtils := TransactionMock{}
-	tokenManagerUtils := TokenManagerMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		transactionUtils:  TransactionMock{},
+		tokenManagerUtils: TokenManagerMock{},
+		flagSetUtils:      FlagSetMock{},
+	}
 
 	type args struct {
 		from          string
@@ -189,17 +191,17 @@ func Test_transfer(t *testing.T) {
 				return tt.args.transferHash
 			}
 
-			got, err := transfer(flagSet, config, razorUtils, tokenManagerUtils, transactionUtils, flagSetUtils)
+			got, err := utilsStruct.transfer(flagSet, config)
 			if got != tt.want {
-				t.Errorf("Txn hash for transfer function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for transfer function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for transfer function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for transfer function, got = %v, want = %v", got, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for transfer function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for transfer function, got = %v, want = %v", got, tt.wantErr)
 				}
 			}
 

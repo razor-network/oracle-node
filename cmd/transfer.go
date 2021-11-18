@@ -19,39 +19,45 @@ var transferCmd = &cobra.Command{
 Example:
   ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
 	Run: func(cmd *cobra.Command, args []string) {
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			tokenManagerUtils: tokenManagerUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
-		txn, err := transfer(cmd.Flags(), config, razorUtils, tokenManagerUtils, transactionUtils, flagSetUtils)
+		txn, err := utilsStruct.transfer(cmd.Flags(), config)
 		utils.CheckError("Transfer error: ", err)
 		log.Info("Transaction Hash: ", txn)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
-func transfer(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, tokenManagerUtils tokenManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
+func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
 
-	password := razorUtils.AssignPassword(flagSet)
-	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	fromAddress, err := utilsStruct.flagSetUtils.GetStringFrom(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	toAddress, err := flagSetUtils.GetStringTo(flagSet)
+	toAddress, err := utilsStruct.flagSetUtils.GetStringTo(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	balance, err := razorUtils.FetchBalance(client, fromAddress)
+	balance, err := utilsStruct.razorUtils.FetchBalance(client, fromAddress)
 	if err != nil {
 		log.Errorf("Error in fetching balance for account " + fromAddress)
 		return core.NilHash, err
 	}
 
-	valueInWei := razorUtils.AssignAmountInWei(flagSet)
-	razorUtils.CheckAmountAndBalance(valueInWei, balance)
+	valueInWei := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	utilsStruct.razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        password,
 		AccountAddress:  fromAddress,
@@ -62,15 +68,15 @@ func transfer(flagSet *pflag.FlagSet, config types.Configurations, razorUtils ut
 		Parameters:      []interface{}{common.HexToAddress(toAddress), valueInWei},
 		ABI:             bindings.RAZORABI,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
+	log.Infof("Transferring %g tokens from %s to %s", utilsStruct.razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
 
-	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(toAddress), valueInWei)
+	txn, err := utilsStruct.tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(toAddress), valueInWei)
 	if err != nil {
 		log.Errorf("Error in transferring tokens ")
 		return core.NilHash, err
 	}
 
-	return transactionUtils.Hash(txn), err
+	return utilsStruct.transactionUtils.Hash(txn), err
 }
 
 func init() {

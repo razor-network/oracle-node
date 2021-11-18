@@ -10,8 +10,10 @@ import (
 
 func Test_listAccounts(t *testing.T) {
 
-	razorUtils := UtilsMock{}
-	keystoreUtils := KeystoreMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:    UtilsMock{},
+		keystoreUtils: KeystoreMock{},
+	}
 
 	accountsList := []accounts.Account{
 		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
@@ -65,7 +67,7 @@ func Test_listAccounts(t *testing.T) {
 				return tt.args.accounts
 			}
 
-			got, err := listAccounts(razorUtils, keystoreUtils)
+			got, err := utilsStruct.listAccounts()
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("List of accounts , got = %v, want %v", got, tt.want)
@@ -73,11 +75,11 @@ func Test_listAccounts(t *testing.T) {
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for listAccounts function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for listAccounts function, got = %v, want = %v", got, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for listAccounts function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for listAccounts function, got = %v, want = %v", got, tt.wantErr)
 				}
 			}
 

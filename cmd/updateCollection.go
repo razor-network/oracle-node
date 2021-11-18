@@ -22,45 +22,51 @@ Note:
   This command only works for the admin.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			assetManagerUtils: assetManagerUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
-		txn, err := updateCollection(cmd.Flags(), config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+		txn, err := utilsStruct.updateCollection(cmd.Flags(), config)
 		utils.CheckError("Update Collection error: ", err)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
-func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
-	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
+func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	collectionId, err := flagSetUtils.GetUint8CollectionId(flagSet)
+	collectionId, err := utilsStruct.flagSetUtils.GetUint8CollectionId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	aggregation, err := flagSetUtils.GetUint32Aggregation(flagSet)
+	aggregation, err := utilsStruct.flagSetUtils.GetUint32Aggregation(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	power, err := flagSetUtils.GetInt8Power(flagSet)
+	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
+	jobIdInUint, err := utilsStruct.flagSetUtils.GetUintSliceJobIds(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobIds := razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
-	client := razorUtils.ConnectToClient(config.Provider)
-	_, err = razorUtils.WaitIfCommitState(client, address, "update collection")
+	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+	_, err = utilsStruct.razorUtils.WaitIfCommitState(client, address, "update collection")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        password,
 		AccountAddress:  address,
@@ -72,14 +78,14 @@ func updateCollection(flagSet *pflag.FlagSet, config types.Configurations, razor
 		ABI:             bindings.AssetManagerABI,
 	})
 
-	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
+	txn, err := utilsStruct.assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
 	}
 	log.Info("Updating collection...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {
