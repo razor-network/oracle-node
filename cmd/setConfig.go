@@ -14,7 +14,7 @@ var setConfig = &cobra.Command{
 Setting the gas multiplier value enables the CLI to multiply the gas with that value for all the transactions
 
 Example:
-  ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug --gasLimit 50
+  ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug --gasLimit 5
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		utilsStruct := UtilsStruct{
