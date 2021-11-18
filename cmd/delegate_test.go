@@ -19,9 +19,11 @@ func Test_delegate(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	transactionUtils := TransactionMock{}
-	stakeManagerUtils := StakeManagerMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		transactionUtils:  TransactionMock{},
+		stakeManagerUtils: StakeManagerMock{},
+	}
 
 	var txnArgs types.TransactionOptions
 	var stakerId uint32 = 1
@@ -106,7 +108,7 @@ func Test_delegate(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := delegate(txnArgs, stakerId, razorUtils, stakeManagerUtils, transactionUtils)
+			got, err := utilsStruct.delegate(txnArgs, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for delegate function, got = %v, want %v", got, tt.want)
 			}

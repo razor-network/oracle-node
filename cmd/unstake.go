@@ -14,8 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var utilsStruct UtilsStruct
-
 var unstakeCmd = &cobra.Command{
 	Use:   "unstake",
 	Short: "Unstake your razors",
@@ -70,7 +68,7 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Unstake Error: ", err)
 
 	if autoWithdraw {
-		utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId)
+		utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId, utilsStruct)
 	}
 }
 
@@ -115,13 +113,13 @@ func Unstake(config types.Configurations, client *ethclient.Client, address stri
 	return txnArgs, nil
 }
 
-func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
+func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
 	log.Info("Starting withdrawal now...")
 	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := withdrawFunds(txnArgs.Client, types.Account{
+	txn, err := utilsStruct.withdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
+	}, txnArgs.Config, stakerId)
 	if err != nil {
 		log.Error("WithdrawFunds error ", err)
 	}

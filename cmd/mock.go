@@ -142,6 +142,10 @@ var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uin
 
 var CheckErrorMock func(string, error)
 
+var GetLatestBlockMock func(*ethclient.Client) (*Types.Header, error)
+
+var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -165,6 +169,10 @@ var SetCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8)
 var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 var UnstakeContractMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+
+var StakerInfoMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
+
+var GetMaturityMock func(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -202,17 +210,17 @@ var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
 var GetBoolAutoWithdrawMock func(*pflag.FlagSet) (bool, error)
 
-var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
+var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
 
-var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
+var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
 
-var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer) bool
+var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool
 
 var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
 
-var MakeBlockMock func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
+var MakeBlockMock func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
 
-var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
+var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)
 
 var influencedMedianMock func([]*big.Int, *big.Int) *big.Int
 
@@ -222,7 +230,7 @@ var GetUint8WeightMock func(*pflag.FlagSet) (uint8, error)
 
 var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
 
-var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 
 var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 
@@ -230,7 +238,7 @@ var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.Transac
 
 var UnstakeMock func(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error)
 
-var AutoWithdrawMock func(types.TransactionOptions, uint32)
+var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
@@ -248,9 +256,9 @@ var GetStringStatusMock func(*pflag.FlagSet) (string, error)
 
 var GetUint8CommissionMock func(*pflag.FlagSet) (uint8, error)
 
-var SetCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
+var SetCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
 
-var DecreaseCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
+var DecreaseCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
 
 var DecreaseCommissionPromptMock func() bool
 
@@ -262,6 +270,8 @@ var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Tra
 
 var FinalizeDisputeMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 
+var DisputeBiggestInfluenceProposedMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
 var GetUint32AggregationMock func(*pflag.FlagSet) (uint32, error)
@@ -272,7 +282,7 @@ var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
-var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
+var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error)
 
 func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	return GetOptionsMock(pending, from, blockNumber)
@@ -470,12 +480,20 @@ func (u UtilsMock) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Clie
 	return AssignStakerIdMock(flagSet, client, address)
 }
 
+func (u UtilsMock) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
+	return GetLatestBlockMock(client)
+}
+
 func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
 	return GetSortedProposedBlockIdsMock(client, address, epoch)
 }
 
 func (u UtilsMock) CheckError(msg string, err error) {
 	CheckErrorMock(msg, err)
+}
+
+func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
+	return GetUpdatedEpochMock(client)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -550,6 +568,14 @@ func (stakeManagerMock StakeManagerMock) Unstake(client *ethclient.Client, opts 
 	return UnstakeContractMock(client, opts, epoch, stakerId, sAmount)
 }
 
+func (stakeManagerMock StakeManagerMock) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
+	return StakerInfoMock(client, opts, stakerId)
+}
+
+func (stakeManagerMock StakeManagerMock) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
+	return GetMaturityMock(client, opts, age)
+}
+
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
 	return CreateAccountMock(path, password)
 }
@@ -598,28 +624,28 @@ func (flagSetMock FlagSetMock) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool
 	return GetBoolAutoWithdrawMock(flagSet)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, razorUtils utilsInterface) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndIdMock(client, address, epoch, razorUtils)
+func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
+	return getBiggestInfluenceAndIdMock(client, address, epoch, utilsStruct)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, proposeUtils proposeUtilsInterface) int {
-	return getIterationMock(client, address, proposer, proposeUtils)
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	return getIterationMock(client, address, proposer, utilsStruct)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer) bool {
-	return isElectedProposerMock(client, address, proposer)
+func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
+	return isElectedProposerMock(client, address, proposer, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
 	return pseudoRandomNumberGeneratorMock(seed, max, blockHashes)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool, razorUtils utilsInterface, proposeUtils proposeUtilsInterface) ([]uint32, error) {
-	return MakeBlockMock(client, address, rogueMode, razorUtils, proposeUtils)
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsStruct UtilsStruct) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogueMode, utilsStruct)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, razorUtils utilsInterface) ([]*big.Int, error) {
-	return getSortedVotesMock(client, address, assetId, epoch, razorUtils)
+func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
+	return getSortedVotesMock(client, address, assetId, epoch, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
@@ -694,24 +720,24 @@ func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uin
 	return GetUint8CollectionIdMock(flagSet)
 }
 
-func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) error {
-	return SetCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils)
+func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
+	return SetCommissionMock(client, stakerId, opts, commission, utilsStruct)
 }
 
-func (utilsCmdMock UtilsCmdMock) DecreaseCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface, cmdUtils utilsCmdInterface) error {
-	return DecreaseCommissionMock(client, stakerId, opts, commission, razorUtils, stakeManagerUtils, transactionUtils, cmdUtils)
+func (utilsCmdMock UtilsCmdMock) DecreaseCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
+	return DecreaseCommissionMock(client, stakerId, opts, commission, utilsStruct)
 }
 
 func (utilsCmdMock UtilsCmdMock) DecreaseCommissionPrompt() bool {
 	return DecreaseCommissionPromptMock()
 }
 
-func (utilsCmdMock UtilsCmdMock) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	return WithdrawMock(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+func (utilsCmdMock UtilsCmdMock) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+	return WithdrawMock(client, txnOpts, epoch, stakerId, utilsStruct)
 }
 
-func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, razorUtils utilsInterface, assetManagerUtils assetManagerInterface) (bool, error) {
-	return CheckCurrentStatusMock(client, address, assetId, razorUtils, assetManagerUtils)
+func (utilsCmdMock UtilsCmdMock) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
+	return CheckCurrentStatusMock(client, address, assetId, utilsStruct)
 }
 
 func (utilsCmdMock UtilsCmdMock) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
@@ -726,8 +752,8 @@ func (utilsCmdMock UtilsCmdMock) Unstake(config types.Configurations, client *et
 	return UnstakeMock(config, client, address, password, valueInWei, stakerId, utilsStruct)
 }
 
-func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) {
-	AutoWithdrawMock(txnArgs, stakerId)
+func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
+	AutoWithdrawMock(txnArgs, stakerId, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
@@ -736,6 +762,10 @@ func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Clie
 
 func (blockManagerMock BlockManagerMock) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
 	return FinalizeDisputeMock(client, opts, epoch, blockIndex)
+}
+
+func (blockManagerMock BlockManagerMock) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+	return DisputeBiggestInfluenceProposedMock(client, opts, epoch, blockIndex, correctBiggestInfluencerId)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

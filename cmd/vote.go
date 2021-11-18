@@ -39,7 +39,7 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		client := utils.ConnectToClient(config.Provider)
-		header, err := client.HeaderByNumber(context.Background(), nil)
+		header, err := razorUtils.GetLatestBlock(client)
 		utils.CheckError("Error in getting block: ", err)
 
 		address, _ := cmd.Flags().GetString("address")
@@ -71,6 +71,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		proposeUtils:      proposeUtils,
 		transactionUtils:  transactionUtils,
 		blockManagerUtils: blockManagerUtils,
+		voteManagerUtils:  voteManagerUtils,
 		cmdUtils:          cmdUtils,
 	}
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
@@ -122,7 +123,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Error("Stopped voting as total stake is already withdrawn.")
 		} else {
 			log.Debug("Auto starting Unstake followed by Withdraw")
-			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
+			AutoUnstakeAndWithdraw(client, account, stakedAmount, config, utilsStruct)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
 		os.Exit(0)
@@ -149,12 +150,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := HandleCommitState(client, account.Address, epoch, razorUtils)
+		data, err := utilsStruct.HandleCommitState(client, account.Address, epoch)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
 		}
-		commitTxn, err := Commit(client, data, secret, account, config, razorUtils, voteManagerUtils, transactionUtils)
+		commitTxn, err := utilsStruct.Commit(client, data, secret, account, config)
 		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
@@ -176,12 +177,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := HandleRevealState(client, account.Address, staker, epoch, razorUtils); err != nil {
+		if err := utilsStruct.HandleRevealState(client, account.Address, staker, epoch); err != nil {
 			log.Error(err)
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
-		revealTxn, err := Reveal(client, _committedData, secret, account, account.Address, config, razorUtils, voteManagerUtils, transactionUtils)
+		revealTxn, err := utilsStruct.Reveal(client, _committedData, secret, account, account.Address, config)
 		if err != nil {
 			log.Error("Reveal error: ", err)
 			break
@@ -208,7 +209,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := Propose(client, account, config, stakerId, epoch, rogueMode, razorUtils, proposeUtils, blockManagerUtils, transactionUtils)
+		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -225,14 +226,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		err := HandleDispute(client, config, account, epoch, utilsStruct)
+		err := utilsStruct.HandleDispute(client, config, account, epoch)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
-			txn, err := ClaimBlockReward(types.TransactionOptions{
+			txn, err := utilsStruct.ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
@@ -241,7 +242,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
 				ABI:             jobManager.BlockManagerABI,
-			}, razorUtils, blockManagerUtils, transactionUtils)
+			})
 
 			if err != nil {
 				log.Error("ClaimBlockReward error: ", err)
@@ -320,7 +321,7 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 	return secret
 }
 
-func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
+func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations, utilsStruct UtilsStruct) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: account.Address,
@@ -333,7 +334,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 	utils.CheckError("Error in getting staker id: ", err)
 	_, err = Unstake(config, client, account.Address, account.Password, amount, stakerId, utilsStruct)
 	utils.CheckError("Error in Unstake: ", err)
-	AutoWithdraw(txnArgs, stakerId)
+	AutoWithdraw(txnArgs, stakerId, utilsStruct)
 }
 
 func init() {

@@ -26,47 +26,53 @@ Note:
   This command only works for the admin.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			assetManagerUtils: assetManagerUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
-		txn, err := createJob(cmd.Flags(), config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+		txn, err := utilsStruct.createJob(cmd.Flags(), config)
 		utils.CheckError("CreateJob error: ", err)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
-func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
-	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
+func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	name, err := flagSetUtils.GetStringName(flagSet)
+	name, err := utilsStruct.flagSetUtils.GetStringName(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	url, err := flagSetUtils.GetStringUrl(flagSet)
+	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	selector, err := flagSetUtils.GetStringSelector(flagSet)
+	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	power, err := flagSetUtils.GetInt8Power(flagSet)
+	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	weight, err := flagSetUtils.GetUint8Weight(flagSet)
+	weight, err := utilsStruct.flagSetUtils.GetUint8Weight(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 	selectorType := 1
 	txnArgs := types.TransactionOptions{
 		Client:          client,
@@ -80,14 +86,14 @@ func createJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
+	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Transaction Hash: ", utilsStruct.transactionUtils.Hash(txn))
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {

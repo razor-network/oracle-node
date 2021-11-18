@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/spf13/pflag"
 	"math"
 	"math/big"
@@ -137,11 +138,30 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 }
 
 func GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+	latestHeader, err := GetLatestBlock(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
 	epoch := latestHeader.Number.Int64() / core.EpochLength
 	return uint32(epoch), nil
+}
+
+func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
+	var (
+		latestHeader *types.Header
+		err          error
+	)
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		latestHeader, err = client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			Retry(retry, "Error in fetching latest block: ", err)
+			continue
+		}
+		break
+	}
+	if err != nil {
+		return nil, err
+	}
+	return latestHeader, nil
 }

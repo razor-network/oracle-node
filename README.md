@@ -95,6 +95,17 @@ Example:
 $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10
 ```
 
+### Staker Info
+
+If you want to know the details of a staker, you can use stakerInfo command.
+```
+$ ./razor stakerInfo --stakerId <staker_id_of_the_staker>
+```
+
+Example:
+```
+$ ./razor stakerInfo --stakerId 2
+```
 ### Set Delegation
 
 If you are a staker you can accept delegation from delegators and charge a commission from them.

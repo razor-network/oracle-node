@@ -373,7 +373,7 @@ func Test_executeUnstake(t *testing.T) {
 				return txnArgs, tt.args.unstakeErr
 			}
 
-			AutoWithdrawMock = func(types.TransactionOptions, uint32) {
+			AutoWithdrawMock = func(types.TransactionOptions, uint32, UtilsStruct) {
 
 			}
 
