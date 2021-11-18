@@ -106,6 +106,11 @@ func (utilsStruct UtilsStruct) withdrawFunds(client *ethclient.Client, account t
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
 		time.Sleep(30 * time.Second)
+		epoch, err = utilsStruct.razorUtils.GetUpdatedEpoch(client)
+		if err != nil {
+			log.Error("Error in fetching epoch")
+			return core.NilHash, err
+		}
 	}
 	return core.NilHash, nil
 }
