@@ -46,22 +46,29 @@ Example:
 			Config:         config,
 		}
 
-		approveTxnHash, err := approve(txnArgs, razorUtils, tokenManagerUtils, transactionUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			tokenManagerUtils: tokenManagerUtils,
+			transactionUtils:  transactionUtils,
+			stakeManagerUtils: stakeManagerUtils,
+		}
+
+		approveTxnHash, err := utilsStruct.approve(txnArgs)
 		utils.CheckError("Approve error: ", err)
 
 		if approveTxnHash != core.NilHash {
 			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
 
-		delegateTxnHash, err := delegate(txnArgs, stakerId, razorUtils, stakeManagerUtils, transactionUtils)
+		delegateTxnHash, err := utilsStruct.delegate(txnArgs, stakerId)
 		utils.CheckError("Delegate error: ", err)
 		utils.WaitForBlockCompletion(client, delegateTxnHash.String())
 	},
 }
 
-func delegate(txnArgs types.TransactionOptions, stakerId uint32, razorUtils utilsInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
-	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
-	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
+func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
+	log.Infof("Delegating %g razors to Staker %d", utilsStruct.razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -69,14 +76,14 @@ func delegate(txnArgs types.TransactionOptions, stakerId uint32, razorUtils util
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
+	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
-	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
+	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(txn))
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {

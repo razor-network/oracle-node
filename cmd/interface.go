@@ -61,6 +61,9 @@ type utilsInterface interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
+	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
+	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 }
 
 type tokenManagerInterface interface {
@@ -90,6 +93,10 @@ type stakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+
+	//Getter methods
+	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
+	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 }
 
 type accountInterface interface {
@@ -123,15 +130,16 @@ type flagSetInterface interface {
 	GetInt32Buffer(*pflag.FlagSet) (int32, error)
 	GetInt32Wait(*pflag.FlagSet) (int32, error)
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
+	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
 }
 
 type utilsCmdInterface interface {
-	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface) error
-	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, utilsInterface, stakeManagerInterface, transactionInterface, utilsCmdInterface) error
+	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
+	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
 	DecreaseCommissionPrompt() bool
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error)
-	CheckCurrentStatus(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error)
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error)
+	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 }
@@ -149,14 +157,15 @@ type blockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
+	DisputeBiggestInfluenceProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 }
 
 type proposeUtilsInterface interface {
-	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error)
-	getIteration(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int
-	isElectedProposer(*ethclient.Client, string, types.ElectedProposer) bool
+	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
+	getIteration(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
+	isElectedProposer(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
-	MakeBlock(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error)
-	getSortedVotes(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error)
+	MakeBlock(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
+	getSortedVotes(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)
 	influencedMedian([]*big.Int, *big.Int) *big.Int
 }

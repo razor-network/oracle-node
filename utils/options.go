@@ -50,10 +50,8 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	if err != nil {
 		log.Error("Error in getting gas limit: ", err)
 	}
-	log.Debug("Estimated Gas: ", gasLimit)
-	txnOpts.GasLimit = (gasLimit*7)/20 + gasLimit
-	log.Debug("Gas Limit after increment: ", txnOpts.GasLimit)
-
+	log.Debug("Gas after increment: ", gasLimit)
+	txnOpts.GasLimit = gasLimit
 	return txnOpts
 }
 
@@ -94,5 +92,30 @@ func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.Transac
 		Value:    txnOpts.Value,
 		Data:     inputData,
 	}
-	return transactionData.Client.EstimateGas(context.Background(), msg)
+	gasLimit, err := transactionData.Client.EstimateGas(context.Background(), msg)
+	if err != nil {
+		return 0, err
+	}
+	log.Debug("Estimated Gas: ", gasLimit)
+	return increaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
+}
+
+func increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+	if gasLimit == 0 || gasLimitMultiplier <= 0 {
+		return gasLimit, nil
+	}
+	gasLimitIncremented := float64(gasLimitMultiplier) * float64(gasLimit)
+	gasLimit = uint64(gasLimitIncremented)
+
+	latestBlock, err := GetLatestBlock(client)
+	if err != nil {
+		log.Error("Error in fetching block: ", err)
+		return 0, err
+	}
+
+	if gasLimit > latestBlock.GasLimit {
+		return latestBlock.GasLimit, nil
+	}
+
+	return gasLimit, nil
 }

@@ -175,6 +175,9 @@ func TestDispute(t *testing.T) {
 }
 
 func TestHandleDispute(t *testing.T) {
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
+
 	var client *ethclient.Client
 	var config types.Configurations
 	var account types.Account
@@ -189,17 +192,23 @@ func TestHandleDispute(t *testing.T) {
 	}
 
 	type args struct {
-		numberOfProposedBlocks    uint8
-		numberOfProposedBlocksErr error
-		proposedBlock             bindings.StructsBlock
-		proposedBlockErr          error
-		medians                   []uint32
-		mediansErr                error
-		activeAssetIds            []uint8
-		activeAssetIdsErr         error
-		isEqual                   bool
-		iteration                 int
-		disputeErr                error
+		sortedProposedBlockIds     []uint8
+		sortedProposedBlockIdsErr  error
+		proposedBlock              bindings.StructsBlock
+		proposedBlockErr           error
+		biggestInfluence           *big.Int
+		biggestInfluenceId         uint32
+		biggestInfluenceErr        error
+		disputeBiggestInfluenceTxn *Types.Transaction
+		disputeBiggestInfluenceErr error
+		Hash                       common.Hash
+		medians                    []uint32
+		mediansErr                 error
+		activeAssetIds             []uint8
+		activeAssetIdsErr          error
+		isEqual                    bool
+		iteration                  int
+		disputeErr                 error
 	}
 	tests := []struct {
 		name string
@@ -207,15 +216,18 @@ func TestHandleDispute(t *testing.T) {
 		want error
 	}{
 		{
-			name: "Test 1: When HandleDispute function executes successfully when there is a dispute case",
+			name: "Test 1: When HandleDispute function executes successfully when there is a medians dispute case",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
-					Valid:   true,
+					Medians:          []uint32{6901548, 498307},
+					Valid:            true,
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				medians:        []uint32{101, 200, 300},
-				activeAssetIds: []uint8{3, 4, 6},
+				medians:        []uint32{6701548, 478307},
+				activeAssetIds: []uint8{3, 5},
 				isEqual:        false,
 				iteration:      0,
 				disputeErr:     nil,
@@ -225,52 +237,58 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 2: When HandleDispute function executes successfully when there is no dispute case",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians:          []uint32{6701548, 478307},
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				medians:        []uint32{100, 200, 300},
-				activeAssetIds: []uint8{3, 4, 6},
+				medians:        []uint32{6701548, 478307},
+				activeAssetIds: []uint8{3, 5},
 				isEqual:        true,
 				disputeErr:     nil,
 			},
 			want: nil,
 		},
 		{
-			name: "Test 3: When there is an error in getting numberOfProposedBlocks",
+			name: "Test 3: When there is an error in getting sortedProposedBlockIds",
 			args: args{
-				numberOfProposedBlocksErr: errors.New("numberOfProposedBlocks error"),
+				sortedProposedBlockIdsErr: errors.New("sortedProposedBlockIds error"),
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians: []uint32{6701548, 478307},
 				},
-				medians:        []uint32{100, 200, 300},
-				activeAssetIds: []uint8{3, 4, 6},
+				medians:        []uint32{6701548, 478307},
+				activeAssetIds: []uint8{3, 5},
 				isEqual:        true,
 				disputeErr:     nil,
 			},
-			want: errors.New("numberOfProposedBlocks error"),
+			want: errors.New("sortedProposedBlockIds error"),
 		},
 		{
 			name: "Test 4: When there is an error in getting proposedBlock",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
 				proposedBlockErr:       errors.New("proposedBlock error"),
-				medians:                []uint32{100, 200, 300},
-				activeAssetIds:         []uint8{3, 4, 6},
+				medians:                []uint32{6701548, 478307},
+				activeAssetIds:         []uint8{3, 5},
 				isEqual:                true,
 				disputeErr:             nil,
 			},
 			want: nil,
 		},
 		{
-			name: "Test 5: When there is an error in getting medians from MakeBlock ",
+			name: "Test 5: When there is an error in getting medians from MakeBlock",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians:          []uint32{6701548, 478307},
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
 				mediansErr:     errors.New("medians error"),
-				activeAssetIds: []uint8{3, 4, 6},
+				activeAssetIds: []uint8{3, 5},
 				isEqual:        true,
 				disputeErr:     nil,
 			},
@@ -279,13 +297,16 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 6: When there is an error from Dispute function",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
-					Valid:   true,
+					Medians:          []uint32{6901548, 498307},
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+					Valid:            true,
 				},
-				medians:        []uint32{101, 200, 300},
-				activeAssetIds: []uint8{3, 4, 6},
+				medians:        []uint32{6701548, 478307},
+				activeAssetIds: []uint8{3, 5},
 				isEqual:        false,
 				iteration:      0,
 				disputeErr:     errors.New("dispute error"),
@@ -293,16 +314,82 @@ func TestHandleDispute(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "Test 6: When there is a case of Dispute but block is already disputed",
+			name: "Test 7: When there is a case of Dispute but block is already disputed",
 			args: args{
-				numberOfProposedBlocks: 4,
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{100, 200, 300},
+					Medians:          []uint32{6701548, 478307},
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				medians:        []uint32{101, 200, 300},
-				activeAssetIds: []uint8{3, 4, 6},
+				medians:        []uint32{6901548, 498307},
+				activeAssetIds: []uint8{3, 5},
 				isEqual:        false,
 				iteration:      0,
+			},
+			want: nil,
+		},
+		{
+			name: "Test 8: When HandleDispute function executes successfully when there is a biggest influence dispute case",
+			args: args{
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:          []uint32{6701548, 478307},
+					Valid:            true,
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
+				},
+				disputeBiggestInfluenceTxn: &Types.Transaction{},
+				Hash:                       common.BigToHash(big.NewInt(1)),
+				medians:                    []uint32{6701548, 478307},
+				activeAssetIds:             []uint8{3, 5},
+				isEqual:                    false,
+				iteration:                  0,
+				disputeErr:                 nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Test 9: When there is an error in getting biggestInfluenceAndId",
+			args: args{
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluenceErr:    errors.New("biggestInfluenceAndIdErr"),
+				proposedBlock: bindings.StructsBlock{
+					Medians:          []uint32{6701548, 478307},
+					Valid:            true,
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
+				},
+				disputeBiggestInfluenceTxn: &Types.Transaction{},
+				Hash:                       common.BigToHash(big.NewInt(1)),
+				medians:                    []uint32{6701548, 478307},
+				activeAssetIds:             []uint8{3, 5},
+				isEqual:                    false,
+				iteration:                  0,
+				disputeErr:                 nil,
+			},
+			want: errors.New("biggestInfluenceAndIdErr"),
+		},
+
+		{
+			name: "Test 10: When DisputeBiggestInfluenceProposed transaction fails",
+			args: args{
+				sortedProposedBlockIds: []uint8{3, 1, 2, 5, 4},
+				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:     2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:          []uint32{6701548, 478307},
+					Valid:            true,
+					BiggestInfluence: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
+				},
+				disputeBiggestInfluenceErr: errors.New("disputeBiggestInfluence error"),
+				Hash:                       common.BigToHash(big.NewInt(1)),
+				medians:                    []uint32{6701548, 478307},
+				activeAssetIds:             []uint8{3, 5},
+				isEqual:                    false,
+				iteration:                  0,
+				disputeErr:                 nil,
 			},
 			want: nil,
 		},
@@ -310,15 +397,36 @@ func TestHandleDispute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetNumberOfProposedBlocksMock = func(*ethclient.Client, string, uint32) (uint8, error) {
-				return tt.args.numberOfProposedBlocks, tt.args.numberOfProposedBlocksErr
+
+			GetSortedProposedBlockIdsMock = func(*ethclient.Client, string, uint32) ([]uint8, error) {
+				return tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr
 			}
 
 			GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error) {
 				return tt.args.proposedBlock, tt.args.proposedBlockErr
 			}
 
-			MakeBlockMock = func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error) {
+			getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
+				return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
+			}
+
+			DisputeBiggestInfluenceProposedMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error) {
+				return tt.args.disputeBiggestInfluenceTxn, tt.args.disputeBiggestInfluenceErr
+			}
+
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+				return txnOpts
+			}
+
+			HashMock = func(*Types.Transaction) common.Hash {
+				return tt.args.Hash
+			}
+
+			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
+				return 1
+			}
+
+			MakeBlockMock = func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error) {
 				return tt.args.medians, tt.args.mediansErr
 			}
 
@@ -334,7 +442,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.disputeErr
 			}
 
-			err := HandleDispute(client, config, account, epoch, utilsStruct)
+			err := utilsStruct.HandleDispute(client, config, account, epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)

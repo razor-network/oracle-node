@@ -13,21 +13,51 @@ import (
 
 var giveSortedAssetIds []int
 
-func HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, utilsStruct UtilsStruct) error {
-	numberOfProposedBlocks, err := utilsStruct.razorUtils.GetNumberOfProposedBlocks(client, account.Address, epoch)
+func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
+	sortedProposedBlockIds, err := utilsStruct.razorUtils.GetSortedProposedBlockIds(client, account.Address, epoch)
 	if err != nil {
-		log.Error(err)
 		return err
 	}
-	for i := 0; i < int(numberOfProposedBlocks); i++ {
-		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, uint8(i))
+	log.Debug("SortedProposedBlockIds: ", sortedProposedBlockIds)
+
+	for i := 0; i < len(sortedProposedBlockIds); i++ {
+		blockId := sortedProposedBlockIds[i]
+		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, blockId)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
+		biggestInfluence, biggestInfluenceId, err := utilsStruct.proposeUtils.getBiggestInfluenceAndId(client, account.Address, epoch, utilsStruct)
+		if err != nil {
+			return err
+		}
+		log.Debug("Biggest Influence: ", biggestInfluence)
+		if proposedBlock.BiggestInfluence.Cmp(biggestInfluence) != 0 && proposedBlock.Valid {
+			log.Debug("Biggest Influence in proposed block: ", proposedBlock.BiggestInfluence)
+			log.Warn("PROPOSED BIGGEST INFLUENCE DOES NOT MATCH WITH ACTUAL BIGGEST INFLUENCE")
+			log.Info("Disputing BiggestInfluenceProposed...")
+			txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+				Client:         client,
+				Password:       account.Password,
+				AccountAddress: account.Address,
+				ChainId:        core.ChainId,
+				Config:         config,
+			})
+			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn))
+			status := utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			if status == 1 {
+				continue
+			}
+		}
+
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
-		medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, false, razorUtils, proposeUtils)
+		medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, false, utilsStruct)
 		if err != nil {
 			log.Error(err)
 			continue

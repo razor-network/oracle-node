@@ -12,12 +12,13 @@ import (
 )
 
 var (
-	Provider      string
-	GasMultiplier float32
-	BufferPercent int32
-	WaitTime      int32
-	GasPrice      int32
-	LogLevel      string
+	Provider           string
+	GasMultiplier      float32
+	BufferPercent      int32
+	WaitTime           int32
+	GasPrice           int32
+	LogLevel           string
+	GasLimitMultiplier float32
 )
 
 var log = logger.NewLogger()
@@ -55,6 +56,7 @@ func init() {
 	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
 	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
 	rootCmd.PersistentFlags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
+	rootCmd.PersistentFlags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -97,8 +99,8 @@ func setLogLevel() {
 	log.Debugf("Provider: %s", config.Provider)
 	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
 	log.Debugf("Buffer Percent: %d", config.BufferPercent)
-	log.Debugf("WaitTime: %d", config.WaitTime)
-	log.Debugf("GasPrice: %d", config.GasPrice)
-	log.Debugf("LogLevel: %s", config.LogLevel)
-
+	log.Debugf("Wait Time: %d", config.WaitTime)
+	log.Debugf("Gas Price: %d", config.GasPrice)
+	log.Debugf("Log Level: %s", config.LogLevel)
+	log.Debugf("Gas Limit: %.2f", config.GasLimitMultiplier)
 }
