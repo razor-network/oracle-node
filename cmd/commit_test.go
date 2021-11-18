@@ -165,10 +165,10 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 1: When HandleCommitState executes successfully",
 			args: args{
-				data:    []*big.Int{big.NewInt(0), big.NewInt(1)},
+				data:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				dataErr: nil,
 			},
-			want:    []*big.Int{big.NewInt(0), big.NewInt(1)},
+			want:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 			wantErr: nil,
 		},
 		{
