@@ -399,8 +399,8 @@ func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string
 	return flagSet.GetString("status")
 }
 
-func (flagSetUtils FlagSetUtils) GetInt32GasLimit(flagSet *pflag.FlagSet) (int32, error) {
-	return flagSet.GetInt32("gasLimit")
+func (flagSetUtils FlagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error) {
+	return flagSet.GetFloat32("gasLimit")
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {

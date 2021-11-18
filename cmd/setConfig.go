@@ -51,7 +51,7 @@ func (utilsStruct UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	gasLimit, err := flagSetUtils.GetInt32GasLimit(flagSet)
+	gasLimit, err := flagSetUtils.GetFloat32GasLimit(flagSet)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (utilsStruct UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("wait", 3)
 		viper.Set("gasprice", 0)
 		viper.Set("logLevel", "")
-		viper.Set("gasLimit", 100)
+		viper.Set("gasLimit", 2)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 	path, pathErr := utilsStruct.razorUtils.GetConfigFilePath()
@@ -107,13 +107,13 @@ func init() {
 	rootCmd.AddCommand(setConfig)
 
 	var (
-		Provider        string
-		GasMultiplier   float32
-		BufferPercent   int32
-		WaitTime        int32
-		GasPrice        int32
-		LogLevel        string
-		GasLimitPercent int32
+		Provider           string
+		GasMultiplier      float32
+		BufferPercent      int32
+		WaitTime           int32
+		GasPrice           int32
+		LogLevel           string
+		GasLimitMultiplier float32
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
@@ -121,6 +121,6 @@ func init() {
 	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
-	setConfig.Flags().Int32VarP(&GasLimitPercent, "gasLimit", "", -1, "gas limit percentage increase")
+	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
 
 }
