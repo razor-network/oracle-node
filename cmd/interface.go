@@ -34,7 +34,7 @@ type utilsInterface interface {
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
-	AssignAmountInWei(*pflag.FlagSet) *big.Int
+	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
