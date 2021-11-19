@@ -20,9 +20,11 @@ func Test_approve(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	tokenManagerUtils := TokenManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		tokenManagerUtils: TokenManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		txnArgs         types.TransactionOptions
@@ -152,17 +154,17 @@ func Test_approve(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := approve(tt.args.txnArgs, razorUtils, tokenManagerUtils, transactionUtils)
+			got, err := utilsStruct.approve(tt.args.txnArgs)
 			if got != tt.want {
-				t.Errorf("Txn hash for approve function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for approve function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for approve function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for approve function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for approve function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for approve function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

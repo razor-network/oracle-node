@@ -46,6 +46,18 @@ func TestGetDataFromAPI(t *testing.T) {
 			want:    getAPIByteArray(1),
 			wantErr: false,
 		},
+		{
+			name:    "When API is invalid",
+			args:    args{url: "https:api.gemini.com/v1/pubticker"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "When API is not responding",
+			args:    args{url: "https://api.gemini.com/v1/pubticker/TEST"},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

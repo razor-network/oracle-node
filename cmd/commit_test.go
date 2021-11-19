@@ -26,9 +26,11 @@ func TestCommit(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	voteManagerUtils := VoteManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:       UtilsMock{},
+		voteManagerUtils: VoteManagerMock{},
+		transactionUtils: TransactionMock{},
+	}
 
 	type args struct {
 		state     int64
@@ -128,17 +130,17 @@ func TestCommit(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := Commit(client, data, secret, account, config, razorUtils, voteManagerUtils, transactionUtils)
+			got, err := utilsStruct.Commit(client, data, secret, account, config)
 			if got != tt.want {
-				t.Errorf("Txn hash for Commit function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for Commit function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for Commit function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for Commit function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for Commit function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
@@ -150,7 +152,9 @@ func TestHandleCommitState(t *testing.T) {
 	var address string
 	var epoch uint32
 
-	razorUtils := UtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
 
 	type args struct {
 		data    []*big.Int
@@ -187,17 +191,17 @@ func TestHandleCommitState(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := HandleCommitState(client, address, epoch, razorUtils)
+			got, err := utilsStruct.HandleCommitState(client, address, epoch)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Data from HandleCommitState function, got = %v, want %v", got, tt.want)
+				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error from HandleCommitState function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error from HandleCommitState function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error from HandleCommitState function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error from HandleCommitState function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 

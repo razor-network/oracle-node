@@ -33,10 +33,12 @@ func TestPropose(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	proposeUtils := ProposeUtilsMock{}
-	blockManagerUtils := BlockManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		proposeUtils:      ProposeUtilsMock{},
+		blockManagerUtils: BlockManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		state                      int64
@@ -396,7 +398,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numStakers, tt.args.numStakerErr
 		}
 
-		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, utilsInterface) (*big.Int, uint32, error) {
+		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
 			return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 		}
 
@@ -404,7 +406,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.randaoHash, tt.args.randaoHashErr
 		}
 
-		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, proposeUtilsInterface) int {
+		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int {
 			return tt.args.iteration
 		}
 
@@ -420,7 +422,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
-		MakeBlockMock = func(*ethclient.Client, string, bool, utilsInterface, proposeUtilsInterface) ([]uint32, error) {
+		MakeBlockMock = func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
@@ -437,7 +439,7 @@ func TestPropose(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Propose(client, account, config, stakerId, epoch, rogueMode, razorUtils, proposeUtils, blockManagerUtils, transactionUtils)
+			got, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
 			if got != tt.want {
 				t.Errorf("Txn hash for Propose function, got = %v, want %v", got, tt.want)
 			}
@@ -459,7 +461,9 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 	var address string
 	var epoch uint32
 
-	razorUtils := UtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
 
 	type args struct {
 		numOfStakers    uint32
@@ -519,7 +523,7 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, epoch, razorUtils)
+			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
 			if gotInfluence.Cmp(tt.wantInfluence) != 0 {
 				t.Errorf("Biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotInfluence, tt.wantInfluence)
 			}
@@ -545,7 +549,10 @@ func Test_getIteration(t *testing.T) {
 	var address string
 	var proposer types.ElectedProposer
 
-	proposeUtils := ProposeUtilsMock{}
+	utilsStruct := UtilsStruct{
+		proposeUtils: ProposeUtilsMock{},
+		razorUtils:   UtilsMock{},
+	}
 
 	type args struct {
 		isElectedProposer bool
@@ -571,11 +578,11 @@ func Test_getIteration(t *testing.T) {
 		//},
 	}
 	for _, tt := range tests {
-		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer) bool {
+		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool {
 			return tt.args.isElectedProposer
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getIteration(client, address, proposer, proposeUtils); got != tt.want {
+			if got := getIteration(client, address, proposer, utilsStruct); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -589,8 +596,10 @@ func TestMakeBlock(t *testing.T) {
 
 	rogueModeMedian := big.NewInt(int64(randMath.Intn(10000000)))
 
-	razorUtils := UtilsMock{}
-	proposeUtils := ProposeUtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:   UtilsMock{},
+		proposeUtils: ProposeUtilsMock{},
+	}
 
 	type args struct {
 		numAssets                 *big.Int
@@ -715,7 +724,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, utilsInterface) ([]*big.Int, error) {
+			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error) {
 				return tt.args.sortedVotes, tt.args.sortedVotesErr
 			}
 
@@ -731,7 +740,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.mediansInUint32
 			}
 
-			got, err := MakeBlock(client, address, tt.args.rogueMode, razorUtils, proposeUtils)
+			got, err := MakeBlock(client, address, tt.args.rogueMode, utilsStruct)
 			fmt.Println(got)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
@@ -756,7 +765,9 @@ func Test_getSortedVotes(t *testing.T) {
 	var address string
 	var assetId uint8
 
-	razorUtils := UtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
 
 	type args struct {
 		numberOfStakers      uint32
@@ -878,7 +889,7 @@ func Test_getSortedVotes(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			got, err := getSortedVotes(client, address, assetId, tt.args.epoch, razorUtils)
+			got, err := getSortedVotes(client, address, assetId, tt.args.epoch, utilsStruct)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from getSortedVotes function, got = %v, want = %v", got, tt.want)
 			}
@@ -934,6 +945,185 @@ func Test_influencedMedian(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := influencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func influenceSnapshotValue(infl string) *big.Int {
+	influence, _ := new(big.Int).SetString(infl, 10)
+	return influence
+}
+
+func Test_isElectedProposer(t *testing.T) {
+	var client *ethclient.Client
+
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
+
+	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	randaoHashBytes32 := [32]byte{}
+	copy(randaoHashBytes32[:], randaoHash)
+
+	biggestInfluence, _ := new(big.Int).SetString("2592145500000000000000000", 10)
+
+	type args struct {
+		client               *ethclient.Client
+		address              string
+		proposer             types.ElectedProposer
+		influenceSnapshot    *big.Int
+		influenceSnapshotErr error
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test1: When staker is 3 and isElectedProposer returns true",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        0,
+					Stake:            nil,
+					StakerId:         3,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
+				influenceSnapshotErr: nil,
+			},
+			want: true,
+		},
+		{
+			name: "Test2: When staker is 2 and isElectedProposer returns false",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        11,
+					Stake:            nil,
+					StakerId:         2,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            29,
+				},
+				influenceSnapshot:    influenceSnapshotValue("529422500000000000000000"),
+				influenceSnapshotErr: nil,
+			},
+			want: false,
+		},
+		{
+			name: "When staker is 1 and isElectedProposer returns true",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        2,
+					Stake:            nil,
+					StakerId:         1,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
+				influenceSnapshotErr: nil,
+			},
+			want: true,
+		},
+		{
+			name: "Test4: When there is an error getting influence snapshot",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        0,
+					Stake:            nil,
+					StakerId:         3,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    nil,
+				influenceSnapshotErr: errors.New("error in getting influence snapshot"),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+
+		GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+			return tt.args.influenceSnapshot, tt.args.influenceSnapshotErr
+		}
+
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isElectedProposer(tt.args.client, tt.args.address, tt.args.proposer, utilsStruct); got != tt.want {
+				t.Errorf("isElectedProposer() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_pseudoRandomNumberGenerator(t *testing.T) {
+	type args struct {
+		seed        []byte
+		max         uint32
+		blockHashes []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test1",
+			args: args{
+				seed:        []byte{41, 13, 236, 217, 84, 139, 98, 168, 214, 3, 69, 169, 136, 56, 111, 200, 75, 166, 188, 149, 72, 64, 8, 246, 54, 47, 147, 22, 14, 243, 229, 99},
+				max:         3,
+				blockHashes: []byte{238, 196, 19, 129, 113, 45, 90, 98, 254, 154, 67, 248, 115, 100, 254, 121, 34, 129, 153, 210, 235, 121, 174, 197, 55, 114, 117, 71, 242, 0, 127, 107},
+			},
+			want: big.NewInt(00),
+		},
+		{
+			name: "Test2",
+			args: args{
+				seed:        []byte{41, 13, 236, 217, 84, 139, 98, 168, 214, 3, 69, 169, 136, 56, 111, 200, 75, 166, 188, 149, 72, 64, 8, 246, 54, 47, 147, 22, 14, 243, 229, 99},
+				max:         3,
+				blockHashes: []byte{115, 40, 207, 108, 82, 172, 126, 50, 166, 119, 197, 130, 100, 28, 32, 116, 90, 94, 97, 221, 187, 229, 219, 58, 248, 210, 212, 124, 85, 128, 237, 31},
+			},
+			want: big.NewInt(0),
+		},
+		{
+			name: "Test3",
+			args: args{
+				seed:        []byte{177, 14, 45, 82, 118, 18, 7, 59, 38, 238, 205, 253, 113, 126, 106, 50, 12, 244, 75, 74, 250, 194, 176, 115, 45, 159, 203, 226, 183, 250, 12, 246},
+				max:         3,
+				blockHashes: []byte{28, 141, 74, 0, 129, 83, 89, 19, 163, 132, 11, 86, 189, 167, 73, 56, 94, 155, 35, 125, 134, 134, 159, 60, 66, 71, 8, 155, 92, 97, 38, 38},
+			},
+			want: big.NewInt(2),
+		},
+		{
+			name: "Test4",
+			args: args{
+				seed:        []byte{138, 53, 172, 251, 193, 95, 248, 26, 57, 174, 125, 52, 79, 215, 9, 242, 142, 134, 0, 180, 170, 140, 101, 198, 182, 75, 254, 127, 227, 107, 209, 155},
+				max:         3,
+				blockHashes: []byte{28, 141, 74, 0, 129, 83, 89, 19, 163, 132, 11, 86, 189, 167, 73, 56, 94, 155, 35, 125, 134, 134, 159, 60, 66, 71, 8, 155, 92, 97, 38, 38},
+			},
+			want: big.NewInt(2),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pseudoRandomNumberGenerator(tt.args.seed, tt.args.max, tt.args.blockHashes); got.Cmp(tt.want) != 0 {
+				t.Errorf("pseudoRandomNumberGenerator() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -22,48 +22,54 @@ Note:
   This command only works for the admin.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			assetManagerUtils: assetManagerUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
-		txn, err := updateJob(cmd.Flags(), config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+		txn, err := utilsStruct.updateJob(cmd.Flags(), config)
 		utils.CheckError("UpdateJob error: ", err)
 		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
 	},
 }
 
-func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils utilsInterface, assetManagerUtils assetManagerInterface, transactionUtils transactionInterface, flagSetUtils flagSetInterface) (common.Hash, error) {
-	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
+func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobId, err := flagSetUtils.GetUint8JobId(flagSet)
+	jobId, err := utilsStruct.flagSetUtils.GetUint8JobId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	power, err := flagSetUtils.GetInt8Power(flagSet)
+	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	selector, err := flagSetUtils.GetStringSelector(flagSet)
+	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	url, err := flagSetUtils.GetStringUrl(flagSet)
+	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	weight, err := flagSetUtils.GetUint8Weight(flagSet)
+	weight, err := utilsStruct.flagSetUtils.GetUint8Weight(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
-	client := razorUtils.ConnectToClient(config.Provider)
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 	selectorType := 1
-	_, err = razorUtils.WaitIfCommitState(client, address, "update job")
+	_, err = utilsStruct.razorUtils.WaitIfCommitState(client, address, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnArgs := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        password,
 		AccountAddress:  address,
@@ -74,11 +80,11 @@ func updateJob(flagSet *pflag.FlagSet, config types.Configurations, razorUtils u
 		Parameters:      []interface{}{jobId, weight, power, uint8(selectorType), selector, url},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, uint8(selectorType), selector, url)
+	txn, err := utilsStruct.assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, uint8(selectorType), selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	return transactionUtils.Hash(txn), nil
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {

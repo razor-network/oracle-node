@@ -15,7 +15,11 @@ var listAccountsCmd = &cobra.Command{
 Example:
   ./razor listAccounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		allAccounts, err := listAccounts(razorUtils, keystoreUtils)
+		utilsStruct := UtilsStruct{
+			razorUtils:    razorUtils,
+			keystoreUtils: keystoreUtils,
+		}
+		allAccounts, err := utilsStruct.listAccounts()
 		utils.CheckError("ListAccounts error: ", err)
 		log.Info("The available accounts are: ")
 		for _, account := range allAccounts {
@@ -24,14 +28,14 @@ Example:
 	},
 }
 
-func listAccounts(razorUtils utilsInterface, keystoreUtils keystoreInterface) ([]accounts.Account, error) {
-	path, err := razorUtils.GetDefaultPath()
+func (utilsStruct UtilsStruct) listAccounts() ([]accounts.Account, error) {
+	path, err := utilsStruct.razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return nil, err
 	}
 
-	return keystoreUtils.Accounts(path), nil
+	return utilsStruct.keystoreUtils.Accounts(path), nil
 }
 
 func init() {
