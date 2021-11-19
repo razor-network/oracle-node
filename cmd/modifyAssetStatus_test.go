@@ -22,8 +22,10 @@ func TestCheckCurrentStatus(t *testing.T) {
 	var address string
 	var assetId uint8
 
-	razorUtils := UtilsMock{}
-	assetManagerUtils := AssetManagerMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		assetManagerUtils: AssetManagerMock{},
+	}
 
 	type args struct {
 		callOpts        bind.CallOpts
@@ -66,7 +68,7 @@ func TestCheckCurrentStatus(t *testing.T) {
 				return tt.args.activeStatus, tt.args.activeStatusErr
 			}
 
-			got, err := CheckCurrentStatus(client, address, assetId, razorUtils, assetManagerUtils)
+			got, err := CheckCurrentStatus(client, address, assetId, utilsStruct)
 			if got != tt.want {
 				t.Errorf("Status from CheckCurrentStatus function, got = %v, want %v", got, tt.want)
 			}
@@ -93,11 +95,13 @@ func TestModifyAssetStatus(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
 
-	razorUtils := UtilsMock{}
-	assetManagerUtils := AssetManagerMock{}
-	cmdUtils := UtilsCmdMock{}
-	transactionUtils := TransactionMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		assetManagerUtils: AssetManagerMock{},
+		cmdUtils:          UtilsCmdMock{},
+		transactionUtils:  TransactionMock{},
+		flagSetUtils:      FlagSetMock{},
+	}
 
 	type args struct {
 		address             string
@@ -299,7 +303,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return client
 			}
 
-			CheckCurrentStatusMock = func(*ethclient.Client, string, uint8, utilsInterface, assetManagerInterface) (bool, error) {
+			CheckCurrentStatusMock = func(*ethclient.Client, string, uint8, UtilsStruct) (bool, error) {
 				return tt.args.currentStatus, tt.args.currentStatusErr
 			}
 
@@ -319,7 +323,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := ModifyAssetStatus(flagSet, config, razorUtils, assetManagerUtils, cmdUtils, flagSetUtils, transactionUtils)
+			got, err := utilsStruct.ModifyAssetStatus(flagSet, config)
 			if got != tt.want {
 				t.Errorf("Txn hash for modifyAssetStatus function, got = %v, want %v", got, tt.want)
 			}

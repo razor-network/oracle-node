@@ -18,9 +18,11 @@ func Test_importAccount(t *testing.T) {
 		URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 	}
 
-	razorUtils := UtilsMock{}
-	keystoreUtils := KeystoreMock{}
-	cryptoUtils := CryptoMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:    UtilsMock{},
+		keystoreUtils: KeystoreMock{},
+		cryptoUtils:   CryptoMock{},
+	}
 
 	type args struct {
 		privateKey         string
@@ -127,7 +129,7 @@ func Test_importAccount(t *testing.T) {
 				return tt.args.importAccount, tt.args.importAccountErr
 			}
 
-			got, err := importAccount(razorUtils, keystoreUtils, cryptoUtils)
+			got, err := utilsStruct.importAccount()
 			if got.Address != tt.want.Address {
 				t.Errorf("New address imported, got = %v, want %v", got, tt.want.Address)
 			}

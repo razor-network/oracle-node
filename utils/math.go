@@ -2,12 +2,11 @@ package utils
 
 import (
 	"errors"
+	"github.com/spf13/pflag"
 	"math"
 	"math/big"
 	"sort"
 	"strconv"
-
-	"github.com/spf13/pflag"
 )
 
 func ConvertToNumber(num interface{}) (*big.Float, error) {

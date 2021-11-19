@@ -23,7 +23,9 @@ func TestHandleRevealState(t *testing.T) {
 		Id: 1,
 	}
 
-	razorUtils := UtilsMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
 
 	type args struct {
 		epoch                 uint32
@@ -70,7 +72,7 @@ func TestHandleRevealState(t *testing.T) {
 				return tt.args.epochLastCommitted, tt.args.epochLastCommittedErr
 			}
 
-			err := HandleRevealState(client, address, staker, tt.args.epoch, razorUtils)
+			err := utilsStruct.HandleRevealState(client, address, staker, tt.args.epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleRevealState function, got = %v, want %v", err, tt.want)
@@ -96,9 +98,11 @@ func TestReveal(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	voteManagerUtils := VoteManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:       UtilsMock{},
+		voteManagerUtils: VoteManagerMock{},
+		transactionUtils: TransactionMock{},
+	}
 
 	type args struct {
 		state          int64
@@ -255,7 +259,7 @@ func TestReveal(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := Reveal(client, committedData, secret, account, commitAccount, config, razorUtils, voteManagerUtils, transactionUtils)
+			got, err := utilsStruct.Reveal(client, committedData, secret, account, commitAccount, config)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}

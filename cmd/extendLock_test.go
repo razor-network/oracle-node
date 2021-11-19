@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-func Test_resetLock(t *testing.T) {
+func Test_extendLock(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
@@ -25,10 +25,12 @@ func Test_resetLock(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
 
-	razorUtils := UtilsMock{}
-	transactionUtils := TransactionMock{}
-	stakeManagerUtils := StakeManagerMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		stakeManagerUtils: StakeManagerMock{},
+		transactionUtils:  TransactionMock{},
+		flagSetUtils:      FlagSetMock{},
+	}
 
 	type args struct {
 		password     string
@@ -142,17 +144,17 @@ func Test_resetLock(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := extendLock(flagSet, config, razorUtils, stakeManagerUtils, transactionUtils, flagSetUtils)
+			got, err := utilsStruct.extendLock(flagSet, config)
 			if got != tt.want {
-				t.Errorf("Txn hash for resetLock function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for resetLock function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for resetLock function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for resetLock function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for resetLock function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for resetLock function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 

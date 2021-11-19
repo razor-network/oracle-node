@@ -25,10 +25,12 @@ func Test_withdrawFunds(t *testing.T) {
 	var configurations types.Configurations
 	var stakerId uint32
 
-	razorUtils := UtilsMock{}
-	cmdUtils := UtilsCmdMock{}
-	stakeManagerUtils := StakeManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		cmdUtils:          UtilsCmdMock{},
+		stakeManagerUtils: StakeManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	type args struct {
 		lock                     types.Locks
@@ -231,12 +233,12 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.updatedEpoch, tt.args.updatedEpochErr
 		}
 
-		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, stakeManagerInterface, transactionInterface) (common.Hash, error) {
+		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error) {
 			return tt.args.withdrawHash, tt.args.withdrawErr
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := withdrawFunds(client, account, configurations, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
+			got, err := utilsStruct.withdrawFunds(client, account, configurations, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdrawFunds function, got = %v, want = %v", got, tt.want)
 			}
@@ -259,8 +261,10 @@ func Test_withdraw(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	stakeManagerUtils := StakeManagerMock{}
-	transactionUtils := TransactionMock{}
+	utilsStruct := UtilsStruct{
+		stakeManagerUtils: StakeManagerMock{},
+		transactionUtils:  TransactionMock{},
+	}
 
 	var client *ethclient.Client
 	var epoch uint32
@@ -308,7 +312,7 @@ func Test_withdraw(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+			got, err := withdraw(client, txnOpts, epoch, stakerId, utilsStruct)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdraw function, got = %v, want = %v", got, tt.want)
 			}

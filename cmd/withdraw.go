@@ -38,10 +38,17 @@ Example:
 		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
 		utils.CheckError("StakerId error: ", err)
 
-		txn, err := withdrawFunds(client, types.Account{
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			cmdUtils:          cmdUtils,
+			transactionUtils:  transactionUtils,
+		}
+
+		txn, err := utilsStruct.withdrawFunds(client, types.Account{
 			Address:  address,
 			Password: password,
-		}, config, stakerId, razorUtils, cmdUtils, stakeManagerUtils, transactionUtils)
+		}, config, stakerId)
 
 		utils.CheckError("Withdraw error: ", err)
 		if txn != core.NilHash {
@@ -50,9 +57,9 @@ Example:
 	},
 }
 
-func withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, razorUtils utilsInterface, cmdUtils utilsCmdInterface, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func (utilsStruct UtilsStruct) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 
-	lock, err := razorUtils.GetLock(client, account.Address, stakerId)
+	lock, err := utilsStruct.razorUtils.GetLock(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching lock")
 		return core.NilHash, err
@@ -63,7 +70,7 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 		return core.NilHash, nil
 	}
 
-	withdrawReleasePeriod, err := razorUtils.GetWithdrawReleasePeriod(client, account.Address)
+	withdrawReleasePeriod, err := utilsStruct.razorUtils.GetWithdrawReleasePeriod(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching withdraw release period")
 		return core.NilHash, err
@@ -79,7 +86,7 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 		MethodName:      "withdraw",
 		ABI:             bindings.StakeManagerABI,
 	}
-	epoch, err := razorUtils.GetEpoch(client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
@@ -90,16 +97,16 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 	}
 
 	txnArgs.Parameters = []interface{}{epoch, stakerId}
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-			return cmdUtils.Withdraw(client, txnOpts, epoch, stakerId, stakeManagerUtils, transactionUtils)
+			return utilsStruct.cmdUtils.Withdraw(client, txnOpts, epoch, stakerId, utilsStruct)
 		}
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
 		time.Sleep(30 * time.Second)
-		epoch, err = razorUtils.GetUpdatedEpoch(client)
+		epoch, err = utilsStruct.razorUtils.GetUpdatedEpoch(client)
 		if err != nil {
 			log.Error("Error in fetching epoch")
 			return core.NilHash, err
@@ -108,18 +115,18 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 	return core.NilHash, nil
 }
 
-func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, stakeManagerUtils stakeManagerInterface, transactionUtils transactionInterface) (common.Hash, error) {
+func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 	log.Info("Withdrawing funds...")
 
-	txn, err := stakeManagerUtils.Withdraw(client, txnOpts, epoch, stakerId)
+	txn, err := utilsStruct.stakeManagerUtils.Withdraw(client, txnOpts, epoch, stakerId)
 	if err != nil {
 		log.Error("Error in withdrawing funds")
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
 
-	return transactionUtils.Hash(txn), nil
+	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
 func init() {

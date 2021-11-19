@@ -25,10 +25,12 @@ func Test_createJob(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := UtilsMock{}
-	assetManagerUtils := AssetManagerMock{}
-	transactionUtils := TransactionMock{}
-	flagSetUtils := FlagSetMock{}
+	utilsStruct := UtilsStruct{
+		razorUtils:        UtilsMock{},
+		assetManagerUtils: AssetManagerMock{},
+		transactionUtils:  TransactionMock{},
+		flagSetUtils:      FlagSetMock{},
+	}
 
 	type args struct {
 		password     string
@@ -60,20 +62,13 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "last",
-				selectorErr:  nil,
 				power:        1,
-				powerErr:     nil,
 				weight:       10,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
@@ -86,18 +81,12 @@ func Test_createJob(t *testing.T) {
 				address:      "",
 				addressErr:   errors.New("address error"),
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "last",
-				selectorErr:  nil,
 				power:        1,
-				powerErr:     nil,
 				weight:       20,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -108,20 +97,14 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "",
 				nameErr:      errors.New("name error"),
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "last",
-				selectorErr:  nil,
 				power:        1,
-				powerErr:     nil,
 				weight:       20,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -132,20 +115,14 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "",
 				urlErr:       errors.New("url error"),
 				selector:     "last",
-				selectorErr:  nil,
 				power:        1,
-				powerErr:     nil,
 				weight:       20,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -156,20 +133,14 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "",
 				selectorErr:  errors.New("selector error"),
 				power:        1,
-				powerErr:     nil,
 				weight:       20,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -180,19 +151,13 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "last",
-				selectorErr:  nil,
 				powerErr:     errors.New("power error"),
 				weight:       20,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -203,18 +168,12 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "last",
-				selectorErr:  nil,
-				powerErr:     nil,
 				weightErr:    errors.New("weight error"),
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
-				createJobErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -225,17 +184,11 @@ func Test_createJob(t *testing.T) {
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
-				addressErr:   nil,
 				name:         "ETH-1",
-				nameErr:      nil,
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:       nil,
 				selector:     "last",
-				selectorErr:  nil,
 				power:        1,
-				powerErr:     nil,
 				weight:       20,
-				weightErr:    nil,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: errors.New("createJob error"),
@@ -291,17 +244,17 @@ func Test_createJob(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := createJob(flagSet, config, razorUtils, assetManagerUtils, transactionUtils, flagSetUtils)
+			got, err := utilsStruct.createJob(flagSet, config)
 			if got != tt.want {
-				t.Errorf("Txn hash for createJob function, got = %v, want %v", got, tt.want)
+				t.Errorf("Txn hash for createJob function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for createJob function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for createJob function, got = %v, want = %v", got, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for createJob function, got = %v, want %v", got, tt.wantErr)
+					t.Errorf("Error for createJob function, got = %v, want = %v", got, tt.wantErr)
 				}
 			}
 
