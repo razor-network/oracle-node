@@ -343,6 +343,15 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 			want:    nil,
 			wantErr: errors.New("SetString: error"),
 		},
+		{
+			name: "Test when there is a decimal input type for power",
+			args: args{
+				amount: big.NewInt(0),
+				power:  "11.5",
+			},
+			want:    nil,
+			wantErr: errors.New("SetString: error"),
+		},
 	}
 
 	for _, tt := range tests {
