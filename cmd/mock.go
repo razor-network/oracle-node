@@ -250,6 +250,8 @@ var GetInt32WaitMock func(*pflag.FlagSet) (int32, error)
 
 var GetInt32GasPriceMock func(*pflag.FlagSet) (int32, error)
 
+var GetFloat32GasLimitMock func(*pflag.FlagSet) (float32, error)
+
 var GetStringLogLevelMock func(*pflag.FlagSet) (string, error)
 
 var GetStringStatusMock func(*pflag.FlagSet) (string, error)
@@ -678,6 +680,10 @@ func (flagSetMock FlagSetMock) GetInt32Wait(flagSet *pflag.FlagSet) (int32, erro
 
 func (flagSetMock FlagSetMock) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
 	return GetInt32GasPriceMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error) {
+	return GetFloat32GasLimitMock(flagSet)
 }
 
 func (flagSetMock FlagSetMock) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
