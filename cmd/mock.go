@@ -46,9 +46,9 @@ var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
-var WaitForAppropriateStateMock func(*ethclient.Client, string, string, ...int) (uint32, error)
+var WaitForAppropriateStateMock func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
 
-var WaitIfCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
+var WaitIfCommitStateMock func(*ethclient.Client, string, string, UtilsStruct) (uint32, error)
 
 var GetDefaultPathMock func() (string, error)
 
@@ -140,6 +140,10 @@ var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uin
 
 var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
 
+var getBufferPercentMock func() (int32, error)
+
+var GetStateNameMock func(int64) string
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -224,6 +228,8 @@ var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, UtilsStruct) (
 
 var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 
+var GetEpochAndStateMock func(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
+
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
@@ -282,14 +288,6 @@ func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions) *bind.Tr
 
 func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	return WaitForBlockCompletionMock(client, hashToRead)
-}
-
-func (u UtilsMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
-	return WaitForAppropriateStateMock(client, accountAddress, action, states...)
-}
-
-func (u UtilsMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitIfCommitStateMock(client, accountAddress, action)
 }
 
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
@@ -470,6 +468,14 @@ func (u UtilsMock) GetSortedProposedBlockIds(client *ethclient.Client, address s
 
 func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return GetUpdatedEpochMock(client)
+}
+
+func (u UtilsMock) GetStateName(stateNumber int64) string {
+	return GetStateNameMock(stateNumber)
+}
+
+func (u UtilsMock) getBufferPercent() (int32, error) {
+	return getBufferPercentMock()
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -718,6 +724,18 @@ func (utilsCmdMock UtilsCmdMock) Dispute(client *ethclient.Client, config types.
 
 func (utilsCmdMock UtilsCmdMock) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
 	GiveSortedMock(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (utilsCmdMock UtilsCmdMock) GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
+	return GetEpochAndStateMock(client, accountAddress, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
+	return WaitForAppropriateStateMock(client, accountAddress, action, utilsStruct, states...)
+}
+
+func (utilsCmdMock UtilsCmdMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
+	return WaitIfCommitStateMock(client, accountAddress, action, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

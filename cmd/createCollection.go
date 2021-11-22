@@ -63,7 +63,7 @@ func (utilsStruct UtilsStruct) createCollection(flagSet *pflag.FlagSet, config t
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
 	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
-	_, err = utilsStruct.razorUtils.WaitForAppropriateState(client, address, "create collection", 4)
+	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(client, address, "create collection", utilsStruct, 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err

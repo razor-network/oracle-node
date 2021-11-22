@@ -29,8 +29,6 @@ type utilsInterface interface {
 	GetEpoch(*ethclient.Client) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
-	WaitForAppropriateState(*ethclient.Client, string, string, ...int) (uint32, error)
-	WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
@@ -64,6 +62,8 @@ type utilsInterface interface {
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
+	GetStateName(int64) string
+	getBufferPercent() (int32, error)
 }
 
 type tokenManagerInterface interface {
@@ -142,6 +142,9 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+	GetEpochAndState(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
+	WaitForAppropriateState(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
+	WaitIfCommitState(*ethclient.Client, string, string, UtilsStruct) (uint32, error)
 }
 
 type cryptoInterface interface {

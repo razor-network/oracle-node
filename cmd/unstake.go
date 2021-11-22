@@ -78,7 +78,14 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 
 	stakeManager := utils.GetStakeManager(txnArgs.Client)
 
-	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	utilsStruct := UtilsStruct{
+		stakeManagerUtils: stakeManagerUtils,
+		transactionUtils:  transactionUtils,
+		cmdUtils:          cmdUtils,
+		razorUtils:        razorUtils,
+	}
+
+	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 0, 1, 4)
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utils.GetTxnOpts(txnArgs)
 	utils.CheckError("Error in fetching epoch: ", err)

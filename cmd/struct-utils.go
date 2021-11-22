@@ -122,14 +122,6 @@ func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
 	return utils.ConvertUintArrayToUint8Array(uintArr)
 }
 
-func (u Utils) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
-	return WaitForAppropriateState(client, accountAddress, action, states...)
-}
-
-func (u Utils) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitIfCommitState(client, accountAddress, action)
-}
-
 func (u Utils) PrivateKeyPrompt() string {
 	return utils.PrivateKeyPrompt()
 }
@@ -244,6 +236,14 @@ func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address strin
 
 func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
+}
+
+func (u Utils) GetStateName(stateNumber int64) string {
+	return utils.GetStateName(stateNumber)
+}
+
+func (u Utils) getBufferPercent() (int32, error) {
+	return getBufferPercent()
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -516,6 +516,18 @@ func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configur
 
 func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (cmdUtils UtilsCmd) GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
+	return GetEpochAndState(client, accountAddress, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
+	return WaitForAppropriateState(client, accountAddress, action, utilsStruct, states...)
+}
+
+func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
+	return WaitIfCommitState(client, accountAddress, action, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
