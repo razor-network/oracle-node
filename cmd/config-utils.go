@@ -8,11 +8,12 @@ import (
 
 func GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
-		Provider:      "",
-		GasMultiplier: 0,
-		BufferPercent: 0,
-		WaitTime:      0,
-		LogLevel:      "",
+		Provider:           "",
+		GasMultiplier:      0,
+		BufferPercent:      0,
+		WaitTime:           0,
+		LogLevel:           "",
+		GasLimitMultiplier: 0,
 	}
 
 	provider, err := getProvider()
@@ -39,13 +40,17 @@ func GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
-
+	gasLimit, err := getGasLimit()
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
 	config.GasPrice = gasPrice
 	config.LogLevel = logLevel
+	config.GasLimitMultiplier = gasLimit
 
 	return config, nil
 }
@@ -117,4 +122,15 @@ func getLogLevel() (string, error) {
 		logLevel = viper.GetString("logLevel")
 	}
 	return logLevel, nil
+}
+
+func getGasLimit() (float32, error) {
+	gasLimit, err := rootCmd.PersistentFlags().GetFloat32("gasLimit")
+	if err != nil {
+		return -1, err
+	}
+	if gasLimit == -1 {
+		gasLimit = float32(viper.GetFloat64("gasLimit"))
+	}
+	return gasLimit, nil
 }
