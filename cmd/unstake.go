@@ -64,7 +64,14 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 		log.Fatal(err)
 	}
 
-	txnOptions, err := utilsStruct.cmdUtils.Unstake(config, client, address, password, valueInWei, stakerId, utilsStruct)
+	unstakeInput := types.UnstakeInput{
+		Address:    address,
+		Password:   password,
+		ValueInWei: valueInWei,
+		StakerId:   stakerId,
+	}
+
+	txnOptions, err := utilsStruct.cmdUtils.Unstake(config, client, unstakeInput, utilsStruct)
 	utils.CheckError("Unstake Error: ", err)
 
 	if autoWithdraw {
@@ -72,18 +79,19 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 	}
 }
 
-func Unstake(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+func Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
-		Amount:          valueInWei,
+		Password:        input.Password,
+		AccountAddress:  input.Address,
+		Amount:          input.ValueInWei,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "unstake",
 		ABI:             bindings.StakeManagerABI,
 	}
+	stakerId := input.StakerId
 	lock, err := utilsStruct.razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
 	if err != nil {
 		log.Error("Error in getting lock: ", err)

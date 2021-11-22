@@ -16,23 +16,6 @@ import (
 	"testing"
 )
 
-//func TestAutoWithdraw(t *testing.T) {
-//	type args struct {
-//		txnArgs  types.TransactionOptions
-//		stakerId uint32
-//	}
-//	tests := []struct {
-//		name string
-//		args args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//		})
-//	}
-//}
-
 func TestUnstake(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -149,7 +132,13 @@ func TestUnstake(t *testing.T) {
 				return 1
 			}
 
-			_, gotErr := Unstake(config, client, address, password, valueInWei, stakerId, utilsStruct)
+			_, gotErr := Unstake(config, client,
+				types.UnstakeInput{
+					Address:    address,
+					Password:   password,
+					StakerId:   stakerId,
+					ValueInWei: valueInWei,
+				}, utilsStruct)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for Unstake function, got = %v, want = %v", gotErr, tt.wantErr)
@@ -294,20 +283,6 @@ func Test_executeUnstake(t *testing.T) {
 			},
 			expectedFatal: true,
 		},
-		//{
-		//	name : "Test 6: When there is an error in getting lock",
-		//	args: args{
-		//		config: types.Configurations{},
-		//		password: "test",
-		//		address: "0x000000000000000000000000000000000000dead",
-		//		autoWithdraw: true,
-		//		value: big.NewInt(10000),
-		//		stakerId: 1,
-		//		lockErr: errors.New("lock error"),
-		//		unstakeErr: nil,
-		//	},
-		//	expectedFatal: true,
-		//},
 		{
 			name: "Test 7: When there is an error from Unstake function",
 			args: args{
@@ -369,7 +344,7 @@ func Test_executeUnstake(t *testing.T) {
 				return tt.args.lock, tt.args.lockErr
 			}
 
-			UnstakeMock = func(types.Configurations, *ethclient.Client, string, string, *big.Int, uint32, UtilsStruct) (types.TransactionOptions, error) {
+			UnstakeMock = func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error) {
 				return txnArgs, tt.args.unstakeErr
 			}
 

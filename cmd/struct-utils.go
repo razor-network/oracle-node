@@ -539,8 +539,8 @@ func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bind
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
-func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
-	return Unstake(config, client, address, password, valueInWei, stakerId, utilsStruct)
+func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, unstakeInput types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	return Unstake(config, client, unstakeInput, utilsStruct)
 }
 
 func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {

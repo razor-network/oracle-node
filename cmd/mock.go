@@ -236,7 +236,7 @@ var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uin
 
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 
-var UnstakeMock func(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error)
+var UnstakeMock func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 
 var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct)
 
@@ -754,8 +754,8 @@ func (utilsCmdMock UtilsCmdMock) GiveSorted(client *ethclient.Client, blockManag
 	GiveSortedMock(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
-func (utilsCmdMock UtilsCmdMock) Unstake(config types.Configurations, client *ethclient.Client, address string, password string, valueInWei *big.Int, stakerId uint32, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
-	return UnstakeMock(config, client, address, password, valueInWei, stakerId, utilsStruct)
+func (utilsCmdMock UtilsCmdMock) Unstake(config types.Configurations, client *ethclient.Client, inputUnstake types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	return UnstakeMock(config, client, inputUnstake, utilsStruct)
 }
 
 func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {

@@ -147,7 +147,7 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
-	Unstake(types.Configurations, *ethclient.Client, string, string, *big.Int, uint32, UtilsStruct) (types.TransactionOptions, error)
+	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct)
 }
 
