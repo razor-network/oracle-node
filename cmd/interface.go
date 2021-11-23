@@ -65,7 +65,6 @@ type utilsInterface interface {
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 }
-
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
