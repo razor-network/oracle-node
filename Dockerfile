@@ -15,8 +15,9 @@ COPY . /app
 RUN PATH="/usr/local/go/bin:${PATH}" \
     && apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python \
     && apk add --update make gcc musl musl-dev g++ libc-dev bash linux-headers \
+    && apk add --no-cache jq \
     && npm install \
-    && npm run dockerize-build \
+    && npm run build-noargs \
     && cp build/bin/razor /usr/local/bin/
 
 
