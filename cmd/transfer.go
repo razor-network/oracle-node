@@ -54,7 +54,12 @@ func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Con
 		return core.NilHash, err
 	}
 
-	valueInWei := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	if err != nil {
+		log.Error("Error in getting amount: ", err)
+		return core.NilHash, err
+	}
+
 	utilsStruct.razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{

@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"errors"
+	"github.com/spf13/pflag"
+	"math/big"
 	"razor/utils"
 	"time"
 
@@ -49,4 +52,31 @@ func WaitIfCommitState(client *ethclient.Client, accountAddress string, action s
 			return epoch, nil
 		}
 	}
+}
+
+func AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
+	amount, err := flagSet.GetString("value")
+	if err != nil {
+		log.Error("Error in reading value: ", err)
+		return nil, err
+	}
+	_amount, ok := new(big.Int).SetString(amount, 10)
+	if !ok {
+		return nil, errors.New("SetString: error")
+	}
+	var amountInWei *big.Int
+	if utils.IsFlagPassed("pow") {
+		power, err := flagSet.GetString("pow")
+		if err != nil {
+			log.Error("Error in getting power: ", err)
+			return nil, err
+		}
+		amountInWei, err = utils.GetFractionalAmountInWei(_amount, power)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		amountInWei = utils.GetAmountInWei(_amount)
+	}
+	return amountInWei, nil
 }

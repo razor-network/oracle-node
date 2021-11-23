@@ -29,7 +29,8 @@ Example:
 
 		client := utils.ConnectToClient(config.Provider)
 
-		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		valueInWei, err := AssignAmountInWei(cmd.Flags())
+		utils.CheckError("Error in getting amount: ", err)
 
 		utils.CheckEthBalanceIsZero(client, address)
 
