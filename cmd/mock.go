@@ -56,7 +56,7 @@ var AssignPasswordMock func(*pflag.FlagSet) string
 
 var FetchBalanceMock func(*ethclient.Client, string) (*big.Int, error)
 
-var AssignAmountInWeiMock func(flagSet *pflag.FlagSet) *big.Int
+var AssignAmountInWeiMock func(flagSet *pflag.FlagSet) (*big.Int, error)
 
 var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.Int
 
@@ -298,7 +298,7 @@ func (u UtilsMock) FetchBalance(client *ethclient.Client, accountAddress string)
 	return FetchBalanceMock(client, accountAddress)
 }
 
-func (u UtilsMock) AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
+func (u UtilsMock) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
 	return AssignAmountInWeiMock(flagSet)
 }
 
