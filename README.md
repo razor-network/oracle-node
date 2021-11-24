@@ -23,7 +23,7 @@ Note that we are leveraging docker bind-mounts to mount `.razor` directory so th
 You need to set a provider before you can operate razor-go cli on docker:
 
 ```
-docker exec -it razor-go setconfig -p <provider_url>
+docker exec -it razor-go setConfig -p <provider_url>
 ```
 
 You can now execute razor-go cli commands by running:
@@ -58,6 +58,7 @@ docker exec -it razor-go ...
 - Latest stable version of node is required.
 - Silicon chip based Mac users must go for node 15.3.0+
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
+- `solc` and `jq` must be installed.
 
 ### Building the source
 
@@ -109,7 +110,7 @@ $ ./razor import
 Password:
 ```
 
-\_\_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord.
+_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord._
 
 ### Stake
 
