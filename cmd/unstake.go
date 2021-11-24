@@ -29,7 +29,15 @@ Example:
 
 		client := utils.ConnectToClient(config.Provider)
 
-		valueInWei, err := AssignAmountInWei(cmd.Flags())
+		utilsStruct := UtilsStruct{
+			stakeManagerUtils: stakeManagerUtils,
+			transactionUtils:  transactionUtils,
+			cmdUtils:          cmdUtils,
+			razorUtils:        razorUtils,
+			flagSetUtils:      flagSetUtils,
+		}
+
+		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
 		utils.CheckError("Error in getting amount: ", err)
 
 		utils.CheckEthBalanceIsZero(client, address)
@@ -41,13 +49,6 @@ Example:
 		utils.CheckError("Error in getting lock: ", err)
 		if lock.Amount.Cmp(big.NewInt(0)) != 0 {
 			log.Fatal("Existing lock")
-		}
-
-		utilsStruct := UtilsStruct{
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			cmdUtils:          cmdUtils,
-			razorUtils:        razorUtils,
 		}
 
 		txnOptions := types.TransactionOptions{

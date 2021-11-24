@@ -31,6 +31,7 @@ func Test_createCollection(t *testing.T) {
 		assetManagerUtils: AssetManagerMock{},
 		transactionUtils:  TransactionMock{},
 		flagSetUtils:      FlagSetMock{},
+		cmdUtils:          UtilsCmdMock{},
 	}
 
 	type args struct {
@@ -238,7 +239,7 @@ func Test_createCollection(t *testing.T) {
 				return tt.args.jobIdUint8
 			}
 
-			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, ...int) (uint32, error) {
+			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
 				return WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr
 			}
 

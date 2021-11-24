@@ -32,7 +32,6 @@ type utilsInterface interface {
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
-	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
@@ -64,6 +63,9 @@ type utilsInterface interface {
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetStateName(int64) string
 	getBufferPercent() (int32, error)
+	IsFlagPassed(string) bool
+	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
+	GetAmountInWei(*big.Int) *big.Int
 }
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
@@ -131,6 +133,8 @@ type flagSetInterface interface {
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
+	GetStringValue(*pflag.FlagSet) (string, error)
+	GetStringPow(*pflag.FlagSet) (string, error)
 }
 
 type utilsCmdInterface interface {
@@ -144,6 +148,7 @@ type utilsCmdInterface interface {
 	GetEpochAndState(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
 	WaitIfCommitState(*ethclient.Client, string, string, UtilsStruct) (uint32, error)
+	AssignAmountInWei(*pflag.FlagSet, UtilsStruct) (*big.Int, error)
 }
 
 type cryptoInterface interface {

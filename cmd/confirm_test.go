@@ -33,8 +33,6 @@ func TestClaimBlockReward(t *testing.T) {
 		ClaimBlockRewardTxn *Types.Transaction
 		ClaimBlockRewardErr error
 		hash                common.Hash
-		header              *Types.Header
-		headerErr           error
 	}
 	tests := []struct {
 		name    string

@@ -74,10 +74,6 @@ func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*b
 	return utils.FetchBalance(client, accountAddress)
 }
 
-func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
-	return AssignAmountInWei(flagSet)
-}
-
 func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	return utils.CheckAmountAndBalance(amountInWei, balance)
 }
@@ -244,6 +240,18 @@ func (u Utils) GetStateName(stateNumber int64) string {
 
 func (u Utils) getBufferPercent() (int32, error) {
 	return getBufferPercent()
+}
+
+func (u Utils) IsFlagPassed(name string) bool {
+	return utils.IsFlagPassed(name)
+}
+
+func (u Utils) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
+	return utils.GetFractionalAmountInWei(amount, power)
+}
+
+func (u Utils) GetAmountInWei(amount *big.Int) *big.Int {
+	return utils.GetAmountInWei(amount)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -433,6 +441,10 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint8("collectionId")
 }
 
+func (flagSetUtils FlagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("value")
+}
+
 func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
 	return getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
 }
@@ -490,6 +502,10 @@ func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
+func (flagSetUtils FlagSetUtils) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("pow")
+}
+
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	return SetCommission(client, stakerId, txnOpts, commission, utilsStruct)
 }
@@ -528,6 +544,10 @@ func (cmdUtils UtilsCmd) WaitForAppropriateState(client *ethclient.Client, accou
 
 func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
 	return WaitIfCommitState(client, accountAddress, action, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
+	return AssignAmountInWei(flagSet, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
