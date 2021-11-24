@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/spf13/pflag"
 	"math/big"
-	"razor/utils"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -60,8 +59,8 @@ func WaitIfCommitState(client *ethclient.Client, accountAddress string, action s
 	}
 }
 
-func AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
-	amount, err := flagSet.GetString("value")
+func AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
+	amount, err := utilsStruct.flagSetUtils.GetStringValue(flagSet)
 	if err != nil {
 		log.Error("Error in reading value: ", err)
 		return nil, err
@@ -71,18 +70,18 @@ func AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
 		return nil, errors.New("SetString: error")
 	}
 	var amountInWei *big.Int
-	if utils.IsFlagPassed("pow") {
-		power, err := flagSet.GetString("pow")
+	if utilsStruct.razorUtils.IsFlagPassed("pow") {
+		power, err := utilsStruct.flagSetUtils.GetStringPow(flagSet)
 		if err != nil {
 			log.Error("Error in getting power: ", err)
 			return nil, err
 		}
-		amountInWei, err = utils.GetFractionalAmountInWei(_amount, power)
+		amountInWei, err = utilsStruct.razorUtils.GetFractionalAmountInWei(_amount, power)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		amountInWei = utils.GetAmountInWei(_amount)
+		amountInWei = utilsStruct.razorUtils.GetAmountInWei(_amount)
 	}
 	return amountInWei, nil
 }
