@@ -49,7 +49,8 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	valueInWei := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	utils.CheckError("Error in getting amountInWei: ", err)
 
 	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
 
@@ -75,7 +76,8 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Unstake Error: ", err)
 
 	if autoWithdraw {
-		utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId, utilsStruct)
+		err = utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId, utilsStruct)
+		utils.CheckError("AutoWithdraw Error: ", err)
 	}
 }
 
@@ -121,19 +123,21 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 	return txnArgs, nil
 }
 
-func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
+func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
 	log.Info("Starting withdrawal now...")
-	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := utilsStruct.withdrawFunds(txnArgs.Client, types.Account{
+	utilsStruct.razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+	txn, err := utilsStruct.cmdUtils.withdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId)
+	}, txnArgs.Config, stakerId, utilsStruct)
 	if err != nil {
 		log.Error("WithdrawFunds error ", err)
+		return err
 	}
 	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
 	}
+	return nil
 }
 
 func init() {

@@ -341,7 +341,8 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 			StakerId:   stakerId,
 		}, utilsStruct)
 	utils.CheckError("Error in Unstake: ", err)
-	AutoWithdraw(txnArgs, stakerId, utilsStruct)
+	err = AutoWithdraw(txnArgs, stakerId, utilsStruct)
+	utils.CheckError("Error in AutoWithdraw: ", err)
 }
 
 func init() {
