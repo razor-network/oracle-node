@@ -74,8 +74,8 @@ func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*b
 	return utils.FetchBalance(client, accountAddress)
 }
 
-func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
-	return utils.AssignAmountInWei(flagSet)
+func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
+	return AssignAmountInWei(flagSet)
 }
 
 func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {

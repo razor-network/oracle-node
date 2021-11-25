@@ -34,7 +34,7 @@ type utilsInterface interface {
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
-	AssignAmountInWei(*pflag.FlagSet) *big.Int
+	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
@@ -68,7 +68,6 @@ type utilsInterface interface {
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 }
-
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)

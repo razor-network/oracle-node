@@ -40,6 +40,7 @@ func Test_transfer(t *testing.T) {
 		balance       *big.Int
 		balanceErr    error
 		amount        *big.Int
+		amountErr     error
 		decimalAmount *big.Float
 		txnOpts       *bind.TransactOpts
 		transferTxn   *Types.Transaction
@@ -132,6 +133,25 @@ func Test_transfer(t *testing.T) {
 			wantErr: errors.New("balance error"),
 		},
 		{
+			name: "When there is an error in fetching amount",
+			args: args{
+				password:      "test",
+				from:          "0x000000000000000000000000000000000000dea1",
+				fromErr:       nil,
+				to:            "0x000000000000000000000000000000000000dea2",
+				toErr:         nil,
+				balance:       big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
+				amountErr:     errors.New("amount error"),
+				decimalAmount: big.NewFloat(1000),
+				txnOpts:       txnOpts,
+				transferTxn:   &Types.Transaction{},
+				transferErr:   nil,
+				transferHash:  common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("amount error"),
+		},
+		{
 			name: "When transfer transaction fails",
 			args: args{
 				password:      "test",
@@ -172,8 +192,8 @@ func Test_transfer(t *testing.T) {
 			FetchBalanceMock = func(*ethclient.Client, string) (*big.Int, error) {
 				return tt.args.balance, tt.args.balanceErr
 			}
-			AssignAmountInWeiMock = func(set *pflag.FlagSet) *big.Int {
-				return tt.args.amount
+			AssignAmountInWeiMock = func(set *pflag.FlagSet) (*big.Int, error) {
+				return tt.args.amount, tt.args.amountErr
 			}
 			CheckAmountAndBalanceMock = func(*big.Int, *big.Int) *big.Int {
 				return tt.args.amount
@@ -197,11 +217,11 @@ func Test_transfer(t *testing.T) {
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for transfer function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for transfer function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for transfer function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for transfer function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 
