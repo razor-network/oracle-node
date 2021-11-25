@@ -5,15 +5,16 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"testing"
+	"time"
 )
 
 func TestUnstake(t *testing.T) {
@@ -148,7 +149,6 @@ func TestUnstake(t *testing.T) {
 					t.Errorf("Error for Unstake function, got = %v, want = %v", gotErr, tt.wantErr)
 				}
 			}
-
 		})
 	}
 }
@@ -168,19 +168,21 @@ func Test_executeUnstake(t *testing.T) {
 	}
 
 	type args struct {
-		config          types.Configurations
-		configErr       error
-		password        string
-		address         string
-		addressErr      error
-		autoWithdraw    bool
-		autoWithdrawErr error
-		value           *big.Int
-		stakerId        uint32
-		stakerIdErr     error
-		lock            types.Locks
-		lockErr         error
-		unstakeErr      error
+		config              types.Configurations
+		configErr           error
+		password            string
+		address             string
+		addressErr          error
+		autoWithdraw        bool
+		autoWithdrawErr     error
+		value               *big.Int
+		valueErr            error
+		stakerId            uint32
+		stakerIdErr         error
+		lock                types.Locks
+		lockErr             error
+		unstakeErr          error
+		autoWithdrawFuncErr error
 	}
 	tests := []struct {
 		name          string
@@ -328,8 +330,8 @@ func Test_executeUnstake(t *testing.T) {
 				return client
 			}
 
-			AssignAmountInWeiMock = func(*pflag.FlagSet) *big.Int {
-				return tt.args.value
+			AssignAmountInWeiMock = func(*pflag.FlagSet) (*big.Int, error) {
+				return tt.args.value, tt.args.valueErr
 			}
 
 			CheckEthBalanceIsZeroMock = func(*ethclient.Client, string) {
@@ -348,21 +350,85 @@ func Test_executeUnstake(t *testing.T) {
 				return txnArgs, tt.args.unstakeErr
 			}
 
-			AutoWithdrawMock = func(types.TransactionOptions, uint32, UtilsStruct) {
-
+			AutoWithdrawMock = func(types.TransactionOptions, uint32, UtilsStruct) error {
+				return tt.args.autoWithdrawFuncErr
 			}
 
 			fatal = false
 
 			utilsStruct.executeUnstake(flagSet)
 
-			fmt.Println(fatal)
-			fmt.Println(tt.expectedFatal)
-
 			if fatal != tt.expectedFatal {
 				t.Error("The inputUnstake function didn't execute as expected")
 			}
 
+		})
+	}
+}
+
+func TestAutoWithdraw(t *testing.T) {
+	var txnArgs types.TransactionOptions
+	var stakerId uint32
+
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+		cmdUtils:   UtilsCmdMock{},
+	}
+
+	type args struct {
+		withdrawFundsHash common.Hash
+		withdrawFundsErr  error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "Test 1: When AutoWithdraw function exceutes successfully",
+			args: args{
+				withdrawFundsHash: common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error from withdrawFunds",
+			args: args{
+				withdrawFundsErr: errors.New("withdrawFunds error"),
+			},
+			wantErr: errors.New("withdrawFunds error"),
+		},
+		{
+			name: "Test 3: When withdrawFundsTxn is 0x00",
+			args: args{
+				withdrawFundsHash: core.NilHash,
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withdrawFundsMock = func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error) {
+				return tt.args.withdrawFundsHash, tt.args.withdrawFundsErr
+			}
+
+			SleepMock = func(time.Duration) {
+
+			}
+
+			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
+				return 1
+			}
+			gotErr := AutoWithdraw(txnArgs, stakerId, utilsStruct)
+			if gotErr == nil || tt.wantErr == nil {
+				if gotErr != tt.wantErr {
+					t.Errorf("Error for AutoWithdraw function, got = %v, want = %v", gotErr, tt.wantErr)
+				}
+			} else {
+				if gotErr.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for AutoWithdraw function, got = %v, want = %v", gotErr, tt.wantErr)
+				}
+			}
 		})
 	}
 }
