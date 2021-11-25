@@ -9,6 +9,7 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strconv"
+	"time"
 
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -256,6 +257,10 @@ func (u Utils) CheckError(msg string, err error) {
 
 func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
+}
+
+func (u Utils) Sleep(duration time.Duration) {
+	utils.Sleep(duration)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -543,8 +548,12 @@ func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.
 	return Unstake(config, client, unstakeInput, utilsStruct)
 }
 
-func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
-	AutoWithdraw(txnArgs, stakerId, utilsStruct)
+func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+	return AutoWithdraw(txnArgs, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+	return withdrawFunds(client, account, configurations, stakerId, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

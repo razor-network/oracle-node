@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -146,6 +147,8 @@ var GetLatestBlockMock func(*ethclient.Client) (*Types.Header, error)
 
 var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
 
+var SleepMock func(time.Duration)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -238,7 +241,9 @@ var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.Transac
 
 var UnstakeMock func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 
-var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct)
+var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
+
+var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
@@ -496,6 +501,10 @@ func (u UtilsMock) CheckError(msg string, err error) {
 
 func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return GetUpdatedEpochMock(client)
+}
+
+func (u UtilsMock) Sleep(duration time.Duration) {
+	SleepMock(duration)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -758,8 +767,12 @@ func (utilsCmdMock UtilsCmdMock) Unstake(config types.Configurations, client *et
 	return UnstakeMock(config, client, inputUnstake, utilsStruct)
 }
 
-func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
-	AutoWithdrawMock(txnArgs, stakerId, utilsStruct)
+func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+	return AutoWithdrawMock(txnArgs, stakerId, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+	return withdrawFundsMock(client, account, configurations, stakerId, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

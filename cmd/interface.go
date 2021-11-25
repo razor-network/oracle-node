@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -67,6 +68,7 @@ type utilsInterface interface {
 	CheckError(msg string, err error)
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
+	Sleep(time.Duration)
 }
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
@@ -147,7 +149,8 @@ type utilsCmdInterface interface {
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
-	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct)
+	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
+	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 }
 
 type cryptoInterface interface {
