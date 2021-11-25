@@ -162,6 +162,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		utils.WaitForBlockCompletion(client, commitTxn.String())
 		_committedData = data
+		log.Debug("Saving committed data for recovery")
+		//TODO: Save the committed data to a json file
+		utilsStruct.razorUtils.SaveCommittedDataToFile(_committedData)
+		log.Debug("Data saved!")
 	case 1:
 		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
 		if err != nil {

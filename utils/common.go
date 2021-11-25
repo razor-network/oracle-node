@@ -2,8 +2,10 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/spf13/pflag"
+	"io/ioutil"
 	"math"
 	"math/big"
 	"os"
@@ -164,4 +166,26 @@ func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
 		return nil, err
 	}
 	return latestHeader, nil
+}
+
+func SaveCommittedDataToFile(committedData []*big.Int) error {
+	if len(committedData) == 0 {
+		return errors.New("committed data is empty")
+	}
+	for _, datum := range committedData {
+		err := ioutil.WriteFile("myfile.data", datum.Bytes(), 0777)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ReadCommittedDataFromFile(fileName string) ([]*big.Int, error) {
+	committedData, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return
 }
