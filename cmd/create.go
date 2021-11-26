@@ -19,6 +19,7 @@ Example:
 		utilsStruct := UtilsStruct{
 			razorUtils: razorUtils,
 			cmdUtils:   cmdUtils,
+			keystoreUtils: keystoreUtils,
 		}
 		account, err := utilsStruct.Create(cmd.Flags())
 		utils.CheckError("Create error: ", err)
@@ -41,6 +42,7 @@ func (utilsStruct UtilsStruct) Create(flagSet *pflag.FlagSet) (accounts.Account,
 func init() {
 	razorUtils = Utils{}
 	cmdUtils = UtilsCmd{}
+	keystoreUtils = KeystoreUtils{}
 
 	rootCmd.AddCommand(createCmd)
 
