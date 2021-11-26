@@ -39,6 +39,9 @@ You can build razor-go docker image by running:
 ```
 docker-compose build
 ```
+> **_NOTE:_**  Add platform: linux/x86_64 for Silicon based MAC in docker-compose.yml.
+
+
 
 Run razor-go locally with:
 
