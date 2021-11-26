@@ -77,6 +77,7 @@ func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, 
 
 func GetMinStakeAmount(client *ethclient.Client, address string) (*big.Int, error) {
 	blockManager, callOpts := getBlockManagerWithOpts(client, address)
+	//TODO: Add retry
 	return blockManager.MinStake(&callOpts)
 }
 

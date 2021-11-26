@@ -35,6 +35,7 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
+	//TODO: Add retry
 	nonce, err := transactionData.Client.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching pending nonce: ", err)
 
@@ -61,6 +62,7 @@ func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
 	} else {
 		var err error
+		//TODO: Add retry
 		gas, err = client.SuggestGasPrice(context.Background())
 		if err != nil {
 			log.Fatal(err)
@@ -92,6 +94,7 @@ func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.Transac
 		Value:    txnOpts.Value,
 		Data:     inputData,
 	}
+	//TODO: Add retry
 	gasLimit, err := transactionData.Client.EstimateGas(context.Background(), msg)
 	if err != nil {
 		return 0, err

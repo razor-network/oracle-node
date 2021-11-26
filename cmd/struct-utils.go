@@ -405,11 +405,13 @@ func (flagSetUtils FlagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (flo
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
+	//TODO: Retry for 504 or 503 error
 	return voteManager.Reveal(opts, epoch, values, secret)
 }
 
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
+	//TODO: Retry for 504 or 503 error
 	return voteManager.Commit(opts, epoch, commitment)
 }
 
@@ -463,6 +465,7 @@ func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalI
 
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
+	//TODO: Retry for 504 or 503 error
 	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
 }
 
@@ -525,11 +528,13 @@ func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Cl
 
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
+	//TODO: Retry for 504 or 503 error
 	return blockManager.FinalizeDispute(opts, epoch, blockIndex)
 }
 
 func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
+	//TODO: Retry for 504 or 503 error
 	return blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
 }
 

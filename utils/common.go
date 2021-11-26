@@ -31,6 +31,7 @@ func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, er
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	//TODO: Add retry
 	blockNumber, err := client.BlockNumber(context.Background())
 	if err != nil {
 		return -1, err

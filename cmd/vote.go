@@ -98,6 +98,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staked amount: ", err)
 		return
 	}
+	// TODO: Add retry
 	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(account.Address), nil)
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
