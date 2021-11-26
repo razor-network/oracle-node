@@ -165,3 +165,7 @@ func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
 	}
 	return latestHeader, nil
 }
+
+func Sleep(duration time.Duration) {
+	time.Sleep(duration)
+}
