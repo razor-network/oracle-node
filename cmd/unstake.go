@@ -81,7 +81,7 @@ func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
 
 	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	txnOpts := utils.GetTxnOpts(txnArgs)
+	txnOpts := GetTxnOpts(txnArgs)
 	utils.CheckError("Error in fetching epoch: ", err)
 	log.Info("Unstaking coins")
 	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)

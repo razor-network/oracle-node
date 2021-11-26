@@ -8,8 +8,6 @@ import (
 	"razor/utils"
 )
 
-var accountUtils accountInterface
-
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create command can be used to create new accounts",
@@ -19,8 +17,8 @@ Example:
   ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utilsStruct := UtilsStruct{
-			razorUtils:   razorUtils,
-			accountUtils: accountUtils,
+			razorUtils: razorUtils,
+			cmdUtils:   cmdUtils,
 		}
 		account, err := utilsStruct.Create(cmd.Flags())
 		utils.CheckError("Create error: ", err)
@@ -36,13 +34,13 @@ func (utilsStruct UtilsStruct) Create(flagSet *pflag.FlagSet) (accounts.Account,
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account := utilsStruct.accountUtils.CreateAccount(path, password)
+	account := utilsStruct.cmdUtils.CreateAccount(path, password, utilsStruct)
 	return account, nil
 }
 
 func init() {
 	razorUtils = Utils{}
-	accountUtils = AccountUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(createCmd)
 

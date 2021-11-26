@@ -11,8 +11,8 @@ import (
 func TestCreate(t *testing.T) {
 
 	utilsStruct := UtilsStruct{
-		razorUtils:   UtilsMock{},
-		accountUtils: AccountMock{},
+		razorUtils: UtilsMock{},
+		cmdUtils:   UtilsCmdMock{},
 	}
 
 	var flagSet *pflag.FlagSet
@@ -70,7 +70,7 @@ func TestCreate(t *testing.T) {
 				return tt.args.path, tt.args.pathErr
 			}
 
-			CreateAccountMock = func(string, string) accounts.Account {
+			CreateAccountMock = func(string, string, UtilsStruct) accounts.Account {
 				return accounts.Account{
 					Address: tt.args.account.Address,
 					URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
