@@ -10,6 +10,6 @@ var StateLength uint64 = 60
 var EpochLength int64 = 300
 
 var NumberOfStates int64 = 5
-var ChainId = big.NewInt(80001)
+var ChainId = big.NewInt(31337)
 var MaxRetries = 3
 var NilHash = common.Hash{0x00}
