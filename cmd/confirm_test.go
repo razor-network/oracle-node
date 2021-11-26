@@ -5,14 +5,15 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func TestClaimBlockReward(t *testing.T) {

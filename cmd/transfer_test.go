@@ -5,15 +5,16 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"testing"
 )
 
 func Test_transfer(t *testing.T) {
