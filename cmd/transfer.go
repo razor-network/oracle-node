@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
@@ -54,7 +55,12 @@ func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Con
 		return core.NilHash, err
 	}
 
-	valueInWei := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	if err != nil {
+		log.Error("Error in getting amount: ", err)
+		return core.NilHash, err
+	}
+
 	utilsStruct.razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{

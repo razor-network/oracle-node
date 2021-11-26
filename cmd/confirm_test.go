@@ -5,14 +5,15 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func TestClaimBlockReward(t *testing.T) {
@@ -74,22 +75,6 @@ func TestClaimBlockReward(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("claimBlockReward error"),
 		},
-		{
-			name: "Test3: When ClaimBlockReward transaction fails",
-			args: args{
-				txnOpts:             txnOpts,
-				ClaimBlockRewardTxn: &Types.Transaction{},
-				ClaimBlockRewardErr: errors.New("claimBlockReward error"),
-				hash:                common.BigToHash(big.NewInt(1)),
-				header: &Types.Header{
-					Number:   nil,
-					GasLimit: 0,
-				},
-				headerErr: errors.New("GetLatestBlock error"),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("GetLatestBlock error"),
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,10 +89,6 @@ func TestClaimBlockReward(t *testing.T) {
 
 			HashMock = func(*Types.Transaction) common.Hash {
 				return tt.args.hash
-			}
-
-			GetLatestBlockMock = func(client *ethclient.Client) (*Types.Header, error) {
-				return tt.args.header, tt.args.headerErr
 			}
 
 			got, err := utilsStruct.ClaimBlockReward(options)

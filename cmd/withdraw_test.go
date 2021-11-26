@@ -13,6 +13,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"testing"
+	"time"
 )
 
 func Test_withdrawFunds(t *testing.T) {
@@ -237,8 +238,12 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.withdrawHash, tt.args.withdrawErr
 		}
 
+		SleepMock = func(time.Duration) {
+
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utilsStruct.withdrawFunds(client, account, configurations, stakerId)
+			got, err := withdrawFunds(client, account, configurations, stakerId, utilsStruct)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdrawFunds function, got = %v, want = %v", got, tt.want)
 			}

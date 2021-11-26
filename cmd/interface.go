@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -34,7 +35,7 @@ type utilsInterface interface {
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
-	AssignAmountInWei(*pflag.FlagSet) *big.Int
+	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
@@ -61,11 +62,14 @@ type utilsInterface interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
-	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
+	CheckEthBalanceIsZero(*ethclient.Client, string)
+	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	CheckError(msg string, err error)
+	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
+	Sleep(time.Duration)
 }
-
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -93,6 +97,7 @@ type stakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -132,6 +137,7 @@ type flagSetInterface interface {
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
+	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 }
 
 type utilsCmdInterface interface {
@@ -142,6 +148,9 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
+	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
+	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 }
 
 type cryptoInterface interface {

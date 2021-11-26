@@ -292,7 +292,7 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:        true,
 				disputeErr:     nil,
 			},
-			want: nil,
+			want: errors.New("medians error"),
 		},
 		{
 			name: "Test 6: When there is an error from Dispute function",

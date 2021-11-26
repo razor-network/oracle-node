@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/spf13/pflag"
 	"math"
 	"math/big"
 	"sort"
@@ -22,7 +21,7 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 		convertedNumber, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Error("Error in converting from string to float: ", err)
-			return big.NewFloat(0), nil
+			return big.NewFloat(0), err
 		}
 		return big.NewFloat(convertedNumber), nil
 	}
@@ -75,32 +74,13 @@ func GetAmountInWei(amount *big.Int) *big.Int {
 	return amountInWei
 }
 
-func GetFractionalAmountInWei(amount *big.Int, power string) *big.Int {
+func GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
 	_power, err := new(big.Int).SetString(power, 10)
 	if !err {
-		log.Fatal("SetString: error")
+		return nil, errors.New("SetString: error")
 	}
 	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1).Exp(big.NewInt(10), _power, nil))
-	return amountInWei
-}
-
-func AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
-	amount, err := flagSet.GetString("value")
-	if err != nil {
-		log.Fatal("Error in reading value", err)
-	}
-	_amount, ok := new(big.Int).SetString(amount, 10)
-	if !ok {
-		log.Fatal("SetString: error")
-	}
-	var amountInWei *big.Int
-	if IsFlagPassed("pow") {
-		power, _ := flagSet.GetString("pow")
-		amountInWei = GetFractionalAmountInWei(_amount, power)
-	} else {
-		amountInWei = GetAmountInWei(_amount)
-	}
-	return amountInWei
+	return amountInWei, nil
 }
 
 func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
