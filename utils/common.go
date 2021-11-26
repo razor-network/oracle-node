@@ -54,7 +54,7 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 }
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
-	timeout := core.StateLength * 2
+	timeout := core.BlockCompletionTimeout
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Debug("Checking if transaction is mined....")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
