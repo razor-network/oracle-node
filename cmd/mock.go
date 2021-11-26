@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -140,6 +141,8 @@ var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uin
 
 var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
 
+var ReadFileMock func(string) ([]byte, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -166,7 +169,7 @@ var StakerInfoMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker
 
 var GetMaturityMock func(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 
-var CreateAccountMock func(string, string) accounts.Account
+var CreateAccountMock func(string, string, UtilsStruct) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 
@@ -179,6 +182,10 @@ var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint8, ui
 var AccountsMock func(string) []accounts.Account
 
 var ImportECDSAMock func(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
+
+var NewAccountMock func(string, string) (accounts.Account, error)
+
+var DecryptKeyMock func([]byte, string) (*keystore.Key, error)
 
 var GetStringFromMock func(*pflag.FlagSet) (string, error)
 
@@ -226,6 +233,10 @@ var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uin
 
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 
+var getPrivateKeyFromKeystoreMock func(string, string, UtilsStruct) *ecdsa.PrivateKey
+
+var GetPrivateKeyMock func(string, string, string, UtilsStruct) *ecdsa.PrivateKey
+
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
 var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
@@ -269,6 +280,8 @@ var GetUint8JobIdMock func(*pflag.FlagSet) (uint8, error)
 var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
+
+var SignMock func([]byte, *ecdsa.PrivateKey) (sig []byte, err error)
 
 var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error)
 
@@ -472,6 +485,10 @@ func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return GetUpdatedEpochMock(client)
 }
 
+func (u UtilsMock) ReadFile(filename string) ([]byte, error) {
+	return ReadFileMock(filename)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -548,16 +565,20 @@ func (stakeManagerMock StakeManagerMock) GetMaturity(client *ethclient.Client, o
 	return GetMaturityMock(client, opts, age)
 }
 
-func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
-	return CreateAccountMock(path, password)
-}
-
 func (ks KeystoreMock) Accounts(path string) []accounts.Account {
 	return AccountsMock(path)
 }
 
 func (ks KeystoreMock) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (accounts.Account, error) {
 	return ImportECDSAMock(path, priv, passphrase)
+}
+
+func (ks KeystoreMock) NewAccount(path string, passphrase string) (accounts.Account, error) {
+	return NewAccountMock(path, passphrase)
+}
+
+func (ks KeystoreMock) DecryptKey(jsonBytes []byte, password string) (*keystore.Key, error) {
+	return DecryptKeyMock(jsonBytes, password)
 }
 
 func (flagSetMock FlagSetMock) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
@@ -720,6 +741,18 @@ func (utilsCmdMock UtilsCmdMock) GiveSorted(client *ethclient.Client, blockManag
 	GiveSortedMock(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
+func (utilsCmdMock UtilsCmdMock) getPrivateKeyFromKeystore(keystorePath string, password string, utilsStruct UtilsStruct) *ecdsa.PrivateKey {
+	return getPrivateKeyFromKeystoreMock(keystorePath, password, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) GetPrivateKey(address string, password string, keystorePath string, utilsStruct UtilsStruct) *ecdsa.PrivateKey {
+	return GetPrivateKeyMock(address, password, keystorePath, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account {
+	return CreateAccountMock(path, password, utilsStruct)
+}
+
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	return ClaimBlockRewardMock(client, opts)
 }
@@ -734,4 +767,8 @@ func (blockManagerMock BlockManagerMock) DisputeBiggestInfluenceProposed(client 
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return HexToECDSAMock(hexKey)
+}
+
+func (c CryptoMock) Sign(digestHash []byte, prv *ecdsa.PrivateKey) (sig []byte, err error) {
+	return SignMock(digestHash, prv)
 }

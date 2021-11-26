@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -64,7 +65,9 @@ type utilsInterface interface {
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
+	ReadFile(string) ([]byte, error)
 }
+
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -98,13 +101,11 @@ type stakeManagerInterface interface {
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 }
 
-type accountInterface interface {
-	CreateAccount(path string, password string) accounts.Account
-}
-
 type keystoreInterface interface {
 	Accounts(string) []accounts.Account
 	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
+	NewAccount(string, string) (accounts.Account, error)
+	DecryptKey(keyjson []byte, auth string) (*keystore.Key, error)
 }
 
 type flagSetInterface interface {
@@ -141,10 +142,14 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+	getPrivateKeyFromKeystore(string, string, UtilsStruct) *ecdsa.PrivateKey
+	GetPrivateKey(string, string, string, UtilsStruct) *ecdsa.PrivateKey
+	CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account
 }
 
 type cryptoInterface interface {
 	HexToECDSA(string) (*ecdsa.PrivateKey, error)
+	Sign([]byte, *ecdsa.PrivateKey) (sig []byte, err error)
 }
 
 type voteManagerInterface interface {

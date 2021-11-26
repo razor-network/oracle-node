@@ -2,15 +2,15 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"io/ioutil"
 	"math/big"
-	"razor/accounts"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strconv"
 
-	ethAccounts "github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -45,7 +45,6 @@ type UtilsStruct struct {
 	voteManagerUtils  voteManagerInterface
 	tokenManagerUtils tokenManagerInterface
 	keystoreUtils     keystoreInterface
-	accountUtils      accountInterface
 	flagSetUtils      flagSetInterface
 	cryptoUtils       cryptoInterface
 }
@@ -59,7 +58,7 @@ func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.Ca
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	return utils.GetTxnOpts(transactionData)
+	return GetTxnOpts(transactionData)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -246,6 +245,10 @@ func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
 }
 
+func (u Utils) ReadFile(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filename)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -341,18 +344,24 @@ func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Cl
 	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
 }
 
-func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
-	return accounts.CreateAccount(path, password)
-}
-
-func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
+func (keystoreUtils KeystoreUtils) Accounts(path string) []accounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.Accounts()
 }
 
-func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
+func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (accounts.Account, error) {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.ImportECDSA(priv, passphrase)
+}
+
+func (keystoreUtils KeystoreUtils) NewAccount(path string, passphrase string) (accounts.Account, error) {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	accounts.NewManager(&accounts.Config{InsecureUnlockAllowed: false}, ks)
+	return ks.NewAccount(passphrase)
+}
+
+func (keystoreUtils KeystoreUtils) DecryptKey(jsonBytes []byte, password string) (*keystore.Key, error) {
+	return keystore.DecryptKey(jsonBytes, password)
 }
 
 func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
@@ -518,6 +527,18 @@ func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bind
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
+func (cmdUtils UtilsCmd) getPrivateKeyFromKeystore(keystorePath string, password string, utilsStruct UtilsStruct) *ecdsa.PrivateKey {
+	return getPrivateKeyFromKeystore(keystorePath, password, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) GetPrivateKey(address string, password string, keystorePath string, utilsStruct UtilsStruct) *ecdsa.PrivateKey {
+	return GetPrivateKey(address, password, keystorePath, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account {
+	return CreateAccount(path, password, utilsStruct)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
@@ -535,4 +556,8 @@ func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(clien
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(hexKey)
+}
+
+func (c CryptoUtils) Sign(digestHash []byte, prv *ecdsa.PrivateKey) (sig []byte, err error) {
+	return crypto.Sign(digestHash, prv)
 }
