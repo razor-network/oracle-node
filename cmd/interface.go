@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -62,10 +63,14 @@ type utilsInterface interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
-	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
+	CheckEthBalanceIsZero(*ethclient.Client, string)
+	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	CheckError(msg string, err error)
+	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	ReadFile(string) ([]byte, error)
+	Sleep(time.Duration)
 }
 
 type tokenManagerInterface interface {
@@ -95,6 +100,7 @@ type stakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -132,6 +138,7 @@ type flagSetInterface interface {
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
+	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 }
 
 type utilsCmdInterface interface {
@@ -145,6 +152,9 @@ type utilsCmdInterface interface {
 	getPrivateKeyFromKeystore(string, string, UtilsStruct) *ecdsa.PrivateKey
 	GetPrivateKey(string, string, string, UtilsStruct) *ecdsa.PrivateKey
 	CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account
+	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
+	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
+	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 }
 
 type cryptoInterface interface {

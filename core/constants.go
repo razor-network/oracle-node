@@ -13,3 +13,4 @@ var NumberOfStates int64 = 5
 var ChainId = big.NewInt(31337)
 var MaxRetries = 3
 var NilHash = common.Hash{0x00}
+var BlockCompletionTimeout = 30

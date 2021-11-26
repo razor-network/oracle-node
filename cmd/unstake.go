@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -19,93 +22,132 @@ var unstakeCmd = &cobra.Command{
 Example:	
   ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --autoWithdraw
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		autoWithdraw, _ := cmd.Flags().GetBool("autoWithdraw")
-
-		client := utils.ConnectToClient(config.Provider)
-
-		valueInWei, err := AssignAmountInWei(cmd.Flags())
-		utils.CheckError("Error in getting amount: ", err)
-
-		utils.CheckEthBalanceIsZero(client, address)
-
-		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
-		utils.CheckError("StakerId error: ", err)
-
-		lock, err := utils.GetLock(client, address, stakerId)
-		utils.CheckError("Error in getting lock: ", err)
-		if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-			log.Fatal("Existing lock")
-		}
-
-		utilsStruct := UtilsStruct{
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			cmdUtils:          cmdUtils,
-			razorUtils:        razorUtils,
-		}
-
-		txnOptions := types.TransactionOptions{
-			Client:          client,
-			Password:        password,
-			AccountAddress:  address,
-			Amount:          valueInWei,
-			ChainId:         core.ChainId,
-			Config:          config,
-			ContractAddress: core.StakeManagerAddress,
-			MethodName:      "unstake",
-			ABI:             bindings.StakeManagerABI,
-		}
-
-		Unstake(txnOptions, stakerId)
-
-		if autoWithdraw {
-			AutoWithdraw(txnOptions, stakerId, utilsStruct)
-		}
-	},
+	Run: initialiseUnstake,
 }
 
-func Unstake(txnArgs types.TransactionOptions, stakerId uint32) {
-	lock, err := utils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+func initialiseUnstake(cmd *cobra.Command, args []string) {
+	utilsStruct := UtilsStruct{
+		stakeManagerUtils: stakeManagerUtils,
+		razorUtils:        razorUtils,
+		transactionUtils:  transactionUtils,
+		cmdUtils:          cmdUtils,
+		flagSetUtils:      flagSetUtils,
+	}
+	utilsStruct.executeUnstake(cmd.Flags())
+}
+
+func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
+	config, err := utilsStruct.razorUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := utilsStruct.razorUtils.AssignPassword(flagSet)
+	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	autoWithdraw, err := utilsStruct.flagSetUtils.GetBoolAutoWithdraw(flagSet)
+	utils.CheckError("Error in getting autoWithdraw status: ", err)
+
+	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+
+	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	utils.CheckError("Error in getting amountInWei: ", err)
+
+	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
+
+	stakerId, err := utilsStruct.razorUtils.AssignStakerId(flagSet, client, address)
+	utils.CheckError("StakerId error: ", err)
+
+	lock, err := utilsStruct.razorUtils.GetLock(client, address, stakerId)
 	utils.CheckError("Error in getting lock: ", err)
+
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		log.Fatal("Existing lock")
+		err = errors.New("existing lock")
+		log.Fatal(err)
 	}
 
-	stakeManager := utils.GetStakeManager(txnArgs.Client)
+	unstakeInput := types.UnstakeInput{
+		Address:    address,
+		Password:   password,
+		ValueInWei: valueInWei,
+		StakerId:   stakerId,
+	}
 
-	epoch, err := WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	txnOptions, err := utilsStruct.cmdUtils.Unstake(config, client, unstakeInput, utilsStruct)
+	utils.CheckError("Unstake Error: ", err)
+
+	if autoWithdraw {
+		err = utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId, utilsStruct)
+		utils.CheckError("AutoWithdraw Error: ", err)
+	}
+}
+
+func Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	txnArgs := types.TransactionOptions{
+		Client:          client,
+		Password:        input.Password,
+		AccountAddress:  input.Address,
+		Amount:          input.ValueInWei,
+		ChainId:         core.ChainId,
+		Config:          config,
+		ContractAddress: core.StakeManagerAddress,
+		MethodName:      "unstake",
+		ABI:             bindings.StakeManagerABI,
+	}
+	stakerId := input.StakerId
+	lock, err := utilsStruct.razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+	if err != nil {
+		log.Error("Error in getting lock: ", err)
+		return txnArgs, err
+	}
+	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
+		err := errors.New("existing lock")
+		log.Error(err)
+		return txnArgs, err
+	}
+
+	epoch, err := utilsStruct.razorUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	if err != nil {
+		log.Error("Error in fetching epoch: ", err)
+		return txnArgs, err
+	}
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := GetTxnOpts(txnArgs)
-	utils.CheckError("Error in fetching epoch: ", err)
 	log.Info("Unstaking coins")
-	txn, err := stakeManager.Unstake(txnOpts, epoch, stakerId, txnArgs.Amount)
-	utils.CheckError("Error in un-staking: ", err)
-	log.Info("Transaction hash: ", txn.Hash())
-	utils.WaitForBlockCompletion(txnArgs.Client, txn.Hash().String())
+	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, txnArgs.Amount)
+	if err != nil {
+		log.Error("Error in un-staking: ", err)
+		return txnArgs, err
+	}
+	log.Info("Transaction hash: ", utilsStruct.transactionUtils.Hash(txn))
+	utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, utilsStruct.transactionUtils.Hash(txn).String())
+	return txnArgs, nil
 }
 
-func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) {
+func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
 	log.Info("Starting withdrawal now...")
-	time.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := utilsStruct.withdrawFunds(txnArgs.Client, types.Account{
+	utilsStruct.razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+	txn, err := utilsStruct.cmdUtils.withdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId)
+	}, txnArgs.Config, stakerId, utilsStruct)
 	if err != nil {
 		log.Error("WithdrawFunds error ", err)
+		return err
 	}
 	if txn != core.NilHash {
-		utils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
 	}
+	return nil
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	cmdUtils = UtilsCmd{}
+	flagSetUtils = FlagSetUtils{}
+
 	rootCmd.AddCommand(unstakeCmd)
 
 	var (
