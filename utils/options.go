@@ -2,12 +2,9 @@ package utils
 
 import (
 	"context"
-	"errors"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"razor/accounts"
 	"razor/core/types"
-	"razor/path"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -28,34 +25,7 @@ func GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
 	}
 }
 
-func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	defaultPath, err := path.GetDefaultPath()
-	CheckError("Error in fetching default path: ", err)
-	privateKey := accounts.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath)
-	if privateKey == nil {
-		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
-	}
-	nonce, err := transactionData.Client.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress))
-	CheckError("Error in fetching pending nonce: ", err)
-
-	gasPrice := getGasPrice(transactionData.Client, transactionData.Config)
-
-	txnOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
-	CheckError("Error in getting transactor: ", err)
-	txnOpts.Nonce = big.NewInt(int64(nonce))
-	txnOpts.GasPrice = gasPrice
-	txnOpts.Value = transactionData.EtherValue
-
-	gasLimit, err := getGasLimit(transactionData, txnOpts)
-	if err != nil {
-		log.Error("Error in getting gas limit: ", err)
-	}
-	log.Debug("Gas after increment: ", gasLimit)
-	txnOpts.GasLimit = gasLimit
-	return txnOpts
-}
-
-func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+func GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
@@ -70,7 +40,7 @@ func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int
 	return gasPrice
 }
 
-func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+func GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
