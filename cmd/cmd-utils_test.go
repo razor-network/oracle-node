@@ -143,7 +143,7 @@ func TestWaitForAppropriateState(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test 1: When WaitForAppropriateState function executes successfully",
+			name: "Test 1: When WaitForAppropriateState function executes successfully for reveal state",
 			args: args{
 				epoch:    4,
 				state:    1,
@@ -155,7 +155,31 @@ func TestWaitForAppropriateState(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When there is an error in getting epoch or state",
+			name: "Test 2: When WaitForAppropriateState function executes successfully for commit state",
+			args: args{
+				epoch:    4,
+				state:    0,
+				action:   "commit",
+				states:   0,
+				contains: true,
+			},
+			want:    4,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When WaitForAppropriateState function executes successfully for dispute state",
+			args: args{
+				epoch:    4,
+				state:    3,
+				action:   "dispute",
+				states:   3,
+				contains: true,
+			},
+			want:    4,
+			wantErr: nil,
+		},
+		{
+			name: "Test 4: When there is an error in getting epoch or state",
 			args: args{
 				epochOrStateErr: errors.New("error in fetching epoch and state"),
 				action:          "commit",
