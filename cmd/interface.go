@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"math/big"
@@ -18,7 +19,7 @@ import (
 
 type utilsInterface interface {
 	GetOptions(bool, string, string) bind.CallOpts
-	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
+	GetTxnOpts(types.TransactionOptions, UtilsStruct) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client
@@ -71,6 +72,10 @@ type utilsInterface interface {
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	ReadFile(string) ([]byte, error)
 	Sleep(time.Duration)
+	GetGasPrice(*ethclient.Client, types.Configurations) *big.Int
+	GetGasLimit(types.TransactionOptions, *bind.TransactOpts) (uint64, error)
+	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
+	PendingNonceAt(context.Context, common.Address, types.TransactionOptions) (uint64, error)
 }
 
 type tokenManagerInterface interface {
@@ -151,6 +156,7 @@ type utilsCmdInterface interface {
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 	getPrivateKeyFromKeystore(string, string, UtilsStruct) *ecdsa.PrivateKey
 	GetPrivateKey(string, string, string, UtilsStruct) *ecdsa.PrivateKey
+	Sign([]byte, types.Account, string, UtilsStruct) ([]byte, error)
 	CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
@@ -159,7 +165,7 @@ type utilsCmdInterface interface {
 
 type cryptoInterface interface {
 	HexToECDSA(string) (*ecdsa.PrivateKey, error)
-	Sign([]byte, *ecdsa.PrivateKey) (sig []byte, err error)
+	Sign([]byte, *ecdsa.PrivateKey) ([]byte, error)
 }
 
 type voteManagerInterface interface {

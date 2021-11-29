@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"math/big"
@@ -44,7 +45,7 @@ type CryptoMock struct{}
 
 var GetOptionsMock func(bool, string, string) bind.CallOpts
 
-var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
+var GetTxnOptsMock func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
@@ -152,6 +153,14 @@ var ReadFileMock func(string) ([]byte, error)
 
 var SleepMock func(time.Duration)
 
+var GetGasPriceMock func(*ethclient.Client, types.Configurations) *big.Int
+
+var GetGasLimitMock func(types.TransactionOptions, *bind.TransactOpts) (uint64, error)
+
+var NewKeyedTransactorWithChainIDMock func(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
+
+var PendingNonceAtMock func(context.Context, common.Address, types.TransactionOptions) (uint64, error)
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -250,6 +259,8 @@ var getPrivateKeyFromKeystoreMock func(string, string, UtilsStruct) *ecdsa.Priva
 
 var GetPrivateKeyMock func(string, string, string, UtilsStruct) *ecdsa.PrivateKey
 
+var SignMockCmdUtils func([]byte, types.Account, string, UtilsStruct) ([]byte, error)
+
 var UnstakeMock func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 
 var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
@@ -308,8 +319,8 @@ func (u UtilsMock) GetOptions(pending bool, from string, blockNumber string) bin
 	return GetOptionsMock(pending, from, blockNumber)
 }
 
-func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	return GetTxnOptsMock(transactionData)
+func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, utilsStruct UtilsStruct) *bind.TransactOpts {
+	return GetTxnOptsMock(transactionData, utilsStruct)
 }
 
 func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -522,6 +533,22 @@ func (u UtilsMock) ReadFile(filename string) ([]byte, error) {
 
 func (u UtilsMock) Sleep(duration time.Duration) {
 	SleepMock(duration)
+}
+
+func (u UtilsMock) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+	return GetGasPriceMock(client, config)
+}
+
+func (u UtilsMock) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+	return GetGasLimitMock(transactionData, txnOpts)
+}
+
+func (u UtilsMock) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
+	return NewKeyedTransactorWithChainIDMock(key, chainID)
+}
+
+func (u UtilsMock) PendingNonceAt(ctx context.Context, account common.Address, transactionData types.TransactionOptions) (uint64, error) {
+	return PendingNonceAtMock(ctx, account, transactionData)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -790,6 +817,10 @@ func (utilsCmdMock UtilsCmdMock) getPrivateKeyFromKeystore(keystorePath string, 
 
 func (utilsCmdMock UtilsCmdMock) GetPrivateKey(address string, password string, keystorePath string, utilsStruct UtilsStruct) *ecdsa.PrivateKey {
 	return GetPrivateKeyMock(address, password, keystorePath, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) Sign(hash []byte, account types.Account, defaultPath string, utilsStruct UtilsStruct) ([]byte, error) {
+	return SignMockCmdUtils(hash, account, defaultPath, utilsStruct)
 }
 
 func (utilsCmdMock UtilsCmdMock) CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account {

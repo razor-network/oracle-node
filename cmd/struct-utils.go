@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"io/ioutil"
 	"math/big"
@@ -58,8 +59,8 @@ func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.Ca
 	return utils.GetOptions(pending, from, blockNumber)
 }
 
-func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	return GetTxnOpts(transactionData)
+func (u Utils) GetTxnOpts(transactionData types.TransactionOptions, utilsStruct UtilsStruct) *bind.TransactOpts {
+	return GetTxnOpts(transactionData, utilsStruct)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -264,6 +265,22 @@ func (u Utils) ReadFile(filename string) ([]byte, error) {
 
 func (u Utils) Sleep(duration time.Duration) {
 	utils.Sleep(duration)
+}
+
+func (u Utils) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+	return utils.GetGasLimit(transactionData, txnOpts)
+}
+
+func (u Utils) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+	return utils.GetGasPrice(client, config)
+}
+
+func (u Utils) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
+	return bind.NewKeyedTransactorWithChainID(key, chainID)
+}
+
+func (u Utils) PendingNonceAt(ctx context.Context, account common.Address, transactionData types.TransactionOptions) (uint64, error) {
+	return transactionData.Client.PendingNonceAt(ctx, account)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -559,6 +576,10 @@ func (cmdUtils UtilsCmd) getPrivateKeyFromKeystore(keystorePath string, password
 
 func (cmdUtils UtilsCmd) GetPrivateKey(address string, password string, keystorePath string, utilsStruct UtilsStruct) *ecdsa.PrivateKey {
 	return GetPrivateKey(address, password, keystorePath, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) Sign(hash []byte, account types.Account, defaultPath string, utilsStruct UtilsStruct) ([]byte, error) {
+	return Sign(hash, account, defaultPath, utilsStruct)
 }
 
 func (cmdUtils UtilsCmd) CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account {
