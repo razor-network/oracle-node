@@ -5,14 +5,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/spf13/pflag"
 	"math"
 	"math/big"
 	"os"
 	"razor/core"
 	"strconv"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -58,7 +59,7 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 }
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
-	timeout := core.StateLength * 2
+	timeout := core.BlockCompletionTimeout
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Debug("Checking if transaction is mined....")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
@@ -222,4 +223,8 @@ func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
 		return 0, nil, err
 	}
 	return epoch, committedData, nil
+}
+
+func Sleep(duration time.Duration) {
+	time.Sleep(duration)
 }
