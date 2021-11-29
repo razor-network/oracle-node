@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
-	"razor/path"
 	"razor/utils"
 	"time"
 
@@ -86,28 +85,25 @@ func AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
 	return amountInWei, nil
 }
 
-func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	defaultPath, err := path.GetDefaultPath()
+func GetTxnOpts(transactionData types.TransactionOptions, utilsStruct UtilsStruct) *bind.TransactOpts {
+	defaultPath, err := utilsStruct.razorUtils.GetDefaultPath()
 	utils.CheckError("Error in fetching default path: ", err)
-	privateKey := GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, UtilsStruct{
-		keystoreUtils: keystoreUtils,
-		cmdUtils:      cmdUtils,
-	})
+	privateKey := utilsStruct.cmdUtils.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, utilsStruct)
 	if privateKey == nil {
 		utils.CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
-	nonce, err := transactionData.Client.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress))
+	nonce, err := utilsStruct.razorUtils.PendingNonceAt(context.Background(), common.HexToAddress(transactionData.AccountAddress), transactionData)
 	utils.CheckError("Error in fetching pending nonce: ", err)
 
-	gasPrice := utils.GetGasPrice(transactionData.Client, transactionData.Config)
+	gasPrice := utilsStruct.razorUtils.GetGasPrice(transactionData.Client, transactionData.Config)
 
-	txnOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
+	txnOpts, err := utilsStruct.razorUtils.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	utils.CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
 
-	gasLimit, err := utils.GetGasLimit(transactionData, txnOpts)
+	gasLimit, err := utilsStruct.razorUtils.GetGasLimit(transactionData, txnOpts)
 	if err != nil {
 		log.Error("Error in getting gas limit: ", err)
 	}
