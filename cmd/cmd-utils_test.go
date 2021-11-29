@@ -1,11 +1,20 @@
 package cmd
 
 import (
+	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/magiconair/properties/assert"
 	"github.com/spf13/pflag"
 	"math/big"
+	"razor/core/types"
 	"testing"
+	"time"
 )
 
 func TestGetEpochAndState(t *testing.T) {
@@ -189,6 +198,18 @@ func TestWaitForAppropriateState(t *testing.T) {
 			want:    0,
 			wantErr: errors.New("error in fetching epoch and state"),
 		},
+		{
+			name: "Test 5: When WaitForAppropriateState function executes successfully after waiting for sometime",
+			args: args{
+				epoch:    4,
+				state:    1,
+				action:   "propose",
+				states:   2,
+				contains: false,
+			},
+			want:    4,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -198,6 +219,11 @@ func TestWaitForAppropriateState(t *testing.T) {
 
 			ContainsMock = func([]int, int) bool {
 				return tt.args.contains
+			}
+
+			SleepMock = func(time.Duration) {
+				tt.args.contains = true
+				tt.args.state = 2
 			}
 
 			got, err := WaitForAppropriateState(client, address, tt.args.action, utilsStruct, tt.args.states)
@@ -238,7 +264,7 @@ func TestWaitIfCommitState(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test 1: When WaitIfCommitState function execute successffuly",
+			name: "Test 1: When WaitIfCommitState function execute successfully",
 			args: args{
 				epoch: 5,
 				state: 2,
@@ -254,11 +280,24 @@ func TestWaitIfCommitState(t *testing.T) {
 			want:    0,
 			wantErr: errors.New("error in fetching epoch and state"),
 		},
+		{
+			name: "Test 3: When WaitIfCommitState function execute successfully after waiting for sometime",
+			args: args{
+				epoch: 5,
+				state: 0,
+			},
+			want:    5,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			GetEpochAndStateMock = func(*ethclient.Client, string, UtilsStruct) (uint32, int64, error) {
 				return tt.args.epoch, tt.args.state, tt.args.epochOrStateErr
+			}
+
+			SleepMock = func(time.Duration) {
+				tt.args.state = 1
 			}
 
 			got, err := WaitIfCommitState(client, address, action, utilsStruct)
@@ -406,6 +445,155 @@ func TestAssignAmountInWei1(t *testing.T) {
 					t.Errorf("Error for AssignAmountInWei function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestGetTxnOpts(t *testing.T) {
+	var transactionData types.TransactionOptions
+	var gasPrice *big.Int
+
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
+
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+		cmdUtils:   UtilsCmdMock{},
+	}
+
+	type args struct {
+		path        string
+		pathErr     error
+		privateKey  *ecdsa.PrivateKey
+		nonce       uint64
+		nonceErr    error
+		txnOpts     *bind.TransactOpts
+		txnOptsErr  error
+		gasLimit    uint64
+		gasLimitErr error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		want          *bind.TransactOpts
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When GetTxnOptions execute successfully",
+			args: args{
+				path:       "/home/local",
+				privateKey: privateKey,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				path:       "/home/local",
+				pathErr:    errors.New("path error"),
+				privateKey: privateKey,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When the privateKey is nil",
+			args: args{
+				path:       "/home/local",
+				privateKey: nil,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting nonce",
+			args: args{
+				path:       "/home/local",
+				privateKey: privateKey,
+				nonce:      2,
+				nonceErr:   errors.New("nonce error"),
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting transactor",
+			args: args{
+				path:       "/home/local",
+				privateKey: privateKey,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				txnOptsErr: errors.New("transactor error"),
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting gasLimit",
+			args: args{
+				path:        "/home/local",
+				privateKey:  privateKey,
+				nonce:       2,
+				txnOpts:     txnOpts,
+				gasLimitErr: errors.New("gasLimit error"),
+			},
+			want:          txnOpts,
+			expectedFatal: false,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetDefaultPathMock = func() (string, error) {
+				return tt.args.path, tt.args.pathErr
+			}
+
+			GetPrivateKeyMock = func(string, string, string, UtilsStruct) *ecdsa.PrivateKey {
+				return tt.args.privateKey
+			}
+
+			PendingNonceAtMock = func(context.Context, common.Address, types.TransactionOptions) (uint64, error) {
+				return tt.args.nonce, tt.args.nonceErr
+			}
+
+			GetGasPriceMock = func(*ethclient.Client, types.Configurations) *big.Int {
+				return gasPrice
+			}
+
+			NewKeyedTransactorWithChainIDMock = func(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error) {
+				return tt.args.txnOpts, tt.args.txnOptsErr
+			}
+
+			GetGasLimitMock = func(types.TransactionOptions, *bind.TransactOpts) (uint64, error) {
+				return tt.args.gasLimit, tt.args.gasLimitErr
+			}
+
+			fatal = false
+			got := GetTxnOpts(transactionData, utilsStruct)
+			if tt.expectedFatal {
+				assert.Equal(t, tt.expectedFatal, fatal)
+			}
+			if got != tt.want {
+				t.Errorf("GetTxnOpts() function, got = %v, want = %v", got, tt.want)
+			}
+
 		})
 	}
 }
