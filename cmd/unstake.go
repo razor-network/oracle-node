@@ -49,7 +49,7 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
 	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
@@ -105,7 +105,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 
-	epoch, err := utilsStruct.razorUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	epoch, err := utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err

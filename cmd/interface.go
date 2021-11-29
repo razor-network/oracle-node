@@ -30,12 +30,9 @@ type utilsInterface interface {
 	GetEpoch(*ethclient.Client) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
-	WaitForAppropriateState(*ethclient.Client, string, string, ...int) (uint32, error)
-	WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
-	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
@@ -68,6 +65,11 @@ type utilsInterface interface {
 	CheckError(msg string, err error)
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
+	GetStateName(int64) string
+	getBufferPercent() (int32, error)
+	IsFlagPassed(string) bool
+	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
+	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
 }
 type tokenManagerInterface interface {
@@ -137,6 +139,8 @@ type flagSetInterface interface {
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
+	GetStringValue(*pflag.FlagSet) (string, error)
+	GetStringPow(*pflag.FlagSet) (string, error)
 	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 }
 
@@ -148,6 +152,10 @@ type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
+	GetEpochAndState(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
+	WaitForAppropriateState(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
+	WaitIfCommitState(*ethclient.Client, string, string, UtilsStruct) (uint32, error)
+	AssignAmountInWei(*pflag.FlagSet, UtilsStruct) (*big.Int, error)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
 	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)

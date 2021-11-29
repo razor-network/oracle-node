@@ -113,7 +113,7 @@ func TestUnstake(t *testing.T) {
 				return tt.args.lock, tt.args.lockErr
 			}
 
-			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, ...int) (uint32, error) {
+			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
@@ -330,7 +330,7 @@ func Test_executeUnstake(t *testing.T) {
 				return client
 			}
 
-			AssignAmountInWeiMock = func(*pflag.FlagSet) (*big.Int, error) {
+			AssignAmountInWeiMock = func(*pflag.FlagSet, UtilsStruct) (*big.Int, error) {
 				return tt.args.value, tt.args.valueErr
 			}
 
