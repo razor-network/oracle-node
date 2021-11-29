@@ -1,15 +1,17 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/spf13/pflag"
-	"io/ioutil"
 	"math"
 	"math/big"
 	"os"
 	"razor/core"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -168,24 +170,56 @@ func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
 	return latestHeader, nil
 }
 
-func SaveCommittedDataToFile(committedData []*big.Int) error {
+func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
 	if len(committedData) == 0 {
 		return errors.New("committed data is empty")
 	}
+	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(f, epoch)
 	for _, datum := range committedData {
-		err := ioutil.WriteFile("myfile.data", datum.Bytes(), 0777)
+		_, err := fmt.Fprintln(f, datum.String())
 		if err != nil {
 			return err
 		}
 	}
+	defer f.Close()
 	return nil
 }
 
-func ReadCommittedDataFromFile(fileName string) ([]*big.Int, error) {
-	committedData, err := ioutil.ReadFile(fileName)
+func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+	var (
+		committedData []*big.Int
+		epoch         uint32
+	)
+	file, err := os.Open(fileName)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lineCount := 0
+	for scanner.Scan() {
+		if lineCount > 0 {
+			data, ok := big.NewInt(0).SetString(scanner.Text(), 10)
+			if ok {
+				committedData = append(committedData, data)
+			}
+		} else {
+			value, err := strconv.Atoi(scanner.Text())
+			if err != nil {
+				return 0, nil, err
+			}
+			epoch = uint32(value)
+		}
+		lineCount++
 	}
 
-	return
+	if err := scanner.Err(); err != nil {
+		return 0, nil, err
+	}
+	return epoch, committedData, nil
 }
