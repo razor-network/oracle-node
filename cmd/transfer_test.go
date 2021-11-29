@@ -30,6 +30,7 @@ func Test_transfer(t *testing.T) {
 		transactionUtils:  TransactionMock{},
 		tokenManagerUtils: TokenManagerMock{},
 		flagSetUtils:      FlagSetMock{},
+		cmdUtils:          UtilsCmdMock{},
 	}
 
 	type args struct {
@@ -193,7 +194,7 @@ func Test_transfer(t *testing.T) {
 			FetchBalanceMock = func(*ethclient.Client, string) (*big.Int, error) {
 				return tt.args.balance, tt.args.balanceErr
 			}
-			AssignAmountInWeiMock = func(set *pflag.FlagSet) (*big.Int, error) {
+			AssignAmountInWeiMock = func(*pflag.FlagSet, UtilsStruct) (*big.Int, error) {
 				return tt.args.amount, tt.args.amountErr
 			}
 			CheckAmountAndBalanceMock = func(*big.Int, *big.Int) *big.Int {

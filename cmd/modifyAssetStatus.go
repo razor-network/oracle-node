@@ -76,7 +76,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
 		return core.NilHash, nil
 	}
-	_, err = utilsStruct.razorUtils.WaitForAppropriateState(client, address, "modify asset status", 4)
+	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(client, address, "modify asset status", utilsStruct, 4)
 	if err != nil {
 		return core.NilHash, err
 	}

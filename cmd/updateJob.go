@@ -66,7 +66,7 @@ func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Co
 	}
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 	selectorType := 1
-	_, err = utilsStruct.razorUtils.WaitIfCommitState(client, address, "update job")
+	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update job", utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err

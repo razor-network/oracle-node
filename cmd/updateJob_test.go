@@ -31,6 +31,7 @@ func Test_updateJob(t *testing.T) {
 		assetManagerUtils: AssetManagerMock{},
 		transactionUtils:  TransactionMock{},
 		flagSetUtils:      FlagSetMock{},
+		cmdUtils:          UtilsCmdMock{},
 	}
 
 	type args struct {
@@ -328,7 +329,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.hash
 			}
 
-			WaitIfCommitStateMock = func(*ethclient.Client, string, string) (uint32, error) {
+			WaitIfCommitStateMock = func(*ethclient.Client, string, string, UtilsStruct) (uint32, error) {
 				return WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr
 			}
 

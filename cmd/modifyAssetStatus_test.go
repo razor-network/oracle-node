@@ -311,7 +311,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, ...int) (uint32, error) {
+			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

@@ -49,9 +49,9 @@ var GetTxnOptsMock func(types.TransactionOptions, UtilsStruct) *bind.TransactOpt
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
-var WaitForAppropriateStateMock func(*ethclient.Client, string, string, ...int) (uint32, error)
+var WaitForAppropriateStateMock func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
 
-var WaitIfCommitStateMock func(*ethclient.Client, string, string) (uint32, error)
+var WaitIfCommitStateMock func(*ethclient.Client, string, string, UtilsStruct) (uint32, error)
 
 var GetDefaultPathMock func() (string, error)
 
@@ -59,7 +59,7 @@ var AssignPasswordMock func(*pflag.FlagSet) string
 
 var FetchBalanceMock func(*ethclient.Client, string) (*big.Int, error)
 
-var AssignAmountInWeiMock func(flagSet *pflag.FlagSet) (*big.Int, error)
+var AssignAmountInWeiMock func(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error)
 
 var CheckAmountAndBalanceMock func(amountInWei *big.Int, balance *big.Int) *big.Int
 
@@ -150,6 +150,16 @@ var GetLatestBlockMock func(*ethclient.Client) (*Types.Header, error)
 var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
 
 var ReadFileMock func(string) ([]byte, error)
+
+var getBufferPercentMock func() (int32, error)
+
+var GetStateNameMock func(int64) string
+
+var IsFlagPassedMock func(string) bool
+
+var GetFractionalAmountInWeiMock func(*big.Int, string) (*big.Int, error)
+
+var GetAmountInWeiMock func(*big.Int) *big.Int
 
 var SleepMock func(time.Duration)
 
@@ -253,6 +263,8 @@ var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, UtilsStruct) (
 
 var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 
+var GetEpochAndStateMock func(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
+
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 
 var getPrivateKeyFromKeystoreMock func(string, string, UtilsStruct) *ecdsa.PrivateKey
@@ -309,6 +321,10 @@ var GetUint8JobIdMock func(*pflag.FlagSet) (uint8, error)
 
 var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 
+var GetStringValueMock func(*pflag.FlagSet) (string, error)
+
+var GetStringPowMock func(*pflag.FlagSet) (string, error)
+
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
 var SignMock func([]byte, *ecdsa.PrivateKey) (sig []byte, err error)
@@ -327,24 +343,12 @@ func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead s
 	return WaitForBlockCompletionMock(client, hashToRead)
 }
 
-func (u UtilsMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
-	return WaitForAppropriateStateMock(client, accountAddress, action, states...)
-}
-
-func (u UtilsMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitIfCommitStateMock(client, accountAddress, action)
-}
-
 func (u UtilsMock) AssignPassword(flagSet *pflag.FlagSet) string {
 	return AssignPasswordMock(flagSet)
 }
 
 func (u UtilsMock) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	return FetchBalanceMock(client, accountAddress)
-}
-
-func (u UtilsMock) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
-	return AssignAmountInWeiMock(flagSet)
 }
 
 func (u UtilsMock) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
@@ -529,6 +533,26 @@ func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 
 func (u UtilsMock) ReadFile(filename string) ([]byte, error) {
 	return ReadFileMock(filename)
+}
+
+func (u UtilsMock) GetStateName(stateNumber int64) string {
+	return GetStateNameMock(stateNumber)
+}
+
+func (u UtilsMock) getBufferPercent() (int32, error) {
+	return getBufferPercentMock()
+}
+
+func (u UtilsMock) IsFlagPassed(flagName string) bool {
+	return IsFlagPassedMock(flagName)
+}
+
+func (u UtilsMock) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
+	return GetFractionalAmountInWeiMock(amount, power)
+}
+
+func (u UtilsMock) GetAmountInWei(amount *big.Int) *big.Int {
+	return GetAmountInWeiMock(amount)
 }
 
 func (u UtilsMock) Sleep(duration time.Duration) {
@@ -783,6 +807,14 @@ func (flagSetMock FlagSetMock) GetUint8CollectionId(flagSet *pflag.FlagSet) (uin
 	return GetUint8CollectionIdMock(flagSet)
 }
 
+func (flagSetMock FlagSetMock) GetStringValue(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringValueMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
+	return GetStringPowMock(flagSet)
+}
+
 func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	return SetCommissionMock(client, stakerId, opts, commission, utilsStruct)
 }
@@ -825,6 +857,22 @@ func (utilsCmdMock UtilsCmdMock) Sign(hash []byte, account types.Account, defaul
 
 func (utilsCmdMock UtilsCmdMock) CreateAccount(path string, password string, utilsStruct UtilsStruct) accounts.Account {
 	return CreateAccountMock(path, password, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
+	return GetEpochAndStateMock(client, accountAddress, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
+	return WaitForAppropriateStateMock(client, accountAddress, action, utilsStruct, states...)
+}
+
+func (utilsCmdMock UtilsCmdMock) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
+	return WaitIfCommitStateMock(client, accountAddress, action, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
+	return AssignAmountInWeiMock(flagSet, utilsStruct)
 }
 
 func (utilsCmdMock UtilsCmdMock) Unstake(config types.Configurations, client *ethclient.Client, inputUnstake types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {

@@ -57,7 +57,7 @@ func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Con
 		return core.NilHash, err
 	}
 
-	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
 	if err != nil {
 		log.Error("Error in getting amount: ", err)
 		return core.NilHash, err
