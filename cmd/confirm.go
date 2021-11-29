@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var blockManagerUtils blockManagerInterface
