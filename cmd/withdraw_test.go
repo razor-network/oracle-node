@@ -222,7 +222,7 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 			return tt.args.txnOpts
 		}
 

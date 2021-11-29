@@ -138,7 +138,7 @@ func Test_approve(t *testing.T) {
 			GetOptionsMock = func(bool, string, string) bind.CallOpts {
 				return tt.args.callOpts
 			}
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return tt.args.transactOpts
 			}
 

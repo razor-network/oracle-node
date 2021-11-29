@@ -247,7 +247,7 @@ func TestReveal(t *testing.T) {
 				return tt.args.allZeroStatus
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

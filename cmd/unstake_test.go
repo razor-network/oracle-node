@@ -117,7 +117,7 @@ func TestUnstake(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return txnOpts
 			}
 

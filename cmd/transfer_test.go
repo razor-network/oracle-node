@@ -199,7 +199,7 @@ func Test_transfer(t *testing.T) {
 			CheckAmountAndBalanceMock = func(*big.Int, *big.Int) *big.Int {
 				return tt.args.amount
 			}
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 			GetAmountInDecimalMock = func(*big.Int) *big.Float {

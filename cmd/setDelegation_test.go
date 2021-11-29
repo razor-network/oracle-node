@@ -648,7 +648,7 @@ func TestSetDelegation(t *testing.T) {
 				return tt.args.staker, tt.args.stakerErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return txnOpts
 			}
 

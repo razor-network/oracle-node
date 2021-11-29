@@ -307,7 +307,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return tt.args.currentStatus, tt.args.currentStatusErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

@@ -430,7 +430,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 			return tt.args.txnOpts
 		}
 

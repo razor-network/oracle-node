@@ -132,7 +132,7 @@ func Test_extendLock(t *testing.T) {
 				return client
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return txnOpts
 			}
 

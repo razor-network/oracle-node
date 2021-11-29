@@ -92,7 +92,7 @@ func Test_delegate(t *testing.T) {
 				return tt.args.amount
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, UtilsStruct) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
