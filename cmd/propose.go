@@ -106,7 +106,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		ABI:             bindings.BlockManagerABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
-	})
+	}, utilsStruct)
 
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Influence Id: %d", iteration, biggestInfluenceId)

@@ -17,8 +17,8 @@ Example:
   ./razor create`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utilsStruct := UtilsStruct{
-			razorUtils: razorUtils,
-			cmdUtils:   cmdUtils,
+			razorUtils:    razorUtils,
+			cmdUtils:      cmdUtils,
 			keystoreUtils: keystoreUtils,
 		}
 		account, err := utilsStruct.Create(cmd.Flags())

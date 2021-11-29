@@ -72,6 +72,8 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		blockManagerUtils: blockManagerUtils,
 		voteManagerUtils:  voteManagerUtils,
 		cmdUtils:          cmdUtils,
+		keystoreUtils:     keystoreUtils,
+		cryptoUtils:       cryptoUtils,
 	}
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
@@ -145,7 +147,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 			break
 		}
-		secret := calculateSecret(account, epoch)
+		secret := calculateSecret(account, epoch, utilsStruct)
 		if secret == nil {
 			break
 		}
@@ -172,7 +174,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot reveal in epoch %d", epoch)
 			break
 		}
-		secret := calculateSecret(account, epoch)
+		secret := calculateSecret(account, epoch, utilsStruct)
 		if secret == nil {
 			break
 		}
@@ -305,17 +307,13 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 	return epochLastProposed, nil
 }
 
-func calculateSecret(account types.Account, epoch uint32) []byte {
-	utilsStruct := UtilsStruct{
-		cmdUtils:    cmdUtils,
-		cryptoUtils: cryptoUtils,
-	}
+func calculateSecret(account types.Account, epoch uint32, utilsStruct UtilsStruct) []byte {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
 	razorPath, err := path.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory: ", err)
 	}
-	signedData, err := Sign(hash, account, razorPath, utilsStruct)
+	signedData, err := utilsStruct.cmdUtils.Sign(hash, account, razorPath, utilsStruct)
 	if err != nil {
 		log.Error("Error in signing the data: ", err)
 		return nil
@@ -358,6 +356,8 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	keystoreUtils = KeystoreUtils{}
+	cryptoUtils = CryptoUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 

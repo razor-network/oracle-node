@@ -56,7 +56,7 @@ func (utilsStruct UtilsStruct) Reveal(client *ethclient.Client, committedData []
 		ABI:             bindings.VoteManagerABI,
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, committedData, secretBytes32},
-	})
+	}, utilsStruct)
 
 	log.Debugf("Revealing vote for epoch: %d  votes: %s secret: %s  commitAccount: %s",
 		epoch,

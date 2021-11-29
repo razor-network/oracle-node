@@ -50,7 +50,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 				AccountAddress: account.Address,
 				ChainId:        core.ChainId,
 				Config:         config,
-			})
+			}, utilsStruct)
 			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
 			if err != nil {
 				log.Error(err)
@@ -118,7 +118,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
-	})
+	}, utilsStruct)
 
 	if !razorUtils.Contains(giveSortedAssetIds, assetId) {
 		utilsStruct.cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), sortedStakers)
@@ -131,7 +131,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
-	})
+	}, utilsStruct)
 	finalizeTxn, err := utilsStruct.blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
 		return err

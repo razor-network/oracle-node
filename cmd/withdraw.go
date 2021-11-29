@@ -43,6 +43,7 @@ Example:
 			stakeManagerUtils: stakeManagerUtils,
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
+			keystoreUtils:     keystoreUtils,
 		}
 
 		txn, err := withdrawFunds(client, types.Account{
@@ -97,7 +98,7 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 	}
 
 	txnArgs.Parameters = []interface{}{epoch, stakerId}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
@@ -135,6 +136,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
+	keystoreUtils = KeystoreUtils{}
 
 	rootCmd.AddCommand(withdrawCmd)
 

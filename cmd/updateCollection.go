@@ -27,6 +27,8 @@ Note:
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			cmdUtils:          cmdUtils,
+			keystoreUtils:     keystoreUtils,
 		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
@@ -76,7 +78,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 		MethodName:      "updateCollection",
 		Parameters:      []interface{}{collectionId, aggregation, power},
 		ABI:             bindings.AssetManagerABI,
-	})
+	}, utilsStruct)
 
 	txn, err := utilsStruct.assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
 	if err != nil {
@@ -93,6 +95,8 @@ func init() {
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtils = UtilsCmd{}
+	keystoreUtils = KeystoreUtils{}
 
 	rootCmd.AddCommand(updateCollectionCmd)
 

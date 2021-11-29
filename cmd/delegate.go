@@ -53,6 +53,8 @@ Example:
 			tokenManagerUtils: tokenManagerUtils,
 			transactionUtils:  transactionUtils,
 			stakeManagerUtils: stakeManagerUtils,
+			cmdUtils:          cmdUtils,
+			keystoreUtils:     keystoreUtils,
 		}
 
 		approveTxnHash, err := utilsStruct.approve(txnArgs)
@@ -78,7 +80,7 @@ func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, staker
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct)
 	log.Info("Sending Delegate transaction...")
 	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
 	if err != nil {
@@ -92,6 +94,8 @@ func init() {
 	razorUtils = Utils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	cmdUtils = UtilsCmd{}
+	keystoreUtils = KeystoreUtils{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

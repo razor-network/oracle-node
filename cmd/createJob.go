@@ -31,6 +31,8 @@ Note:
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			cmdUtils:          cmdUtils,
+			keystoreUtils:     keystoreUtils,
 		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
@@ -86,7 +88,7 @@ func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Co
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct)
 	log.Info("Creating Job...")
 	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
 	if err != nil {
@@ -102,6 +104,8 @@ func init() {
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtils = UtilsCmd{}
+	keystoreUtils = KeystoreUtils{}
 
 	rootCmd.AddCommand(createJobCmd)
 

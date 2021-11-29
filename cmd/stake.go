@@ -55,6 +55,8 @@ Example:
 			stakeManagerUtils: stakeManagerUtils,
 			transactionUtils:  transactionUtils,
 			tokenManagerUtils: tokenManagerUtils,
+			cmdUtils:          cmdUtils,
+			keystoreUtils:     keystoreUtils,
 		}
 
 		approveTxnHash, err := utilsStruct.approve(txnArgs)
@@ -82,7 +84,7 @@ func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (com
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct)
 	tx, err := utilsStruct.stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
@@ -96,6 +98,7 @@ func init() {
 	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (
