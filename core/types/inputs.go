@@ -8,3 +8,9 @@ type UnstakeInput struct {
 	ValueInWei *big.Int
 	StakerId   uint32
 }
+
+type RedeemBountyInput struct {
+	Address  string
+	Password string
+	BountyId uint32
+}
