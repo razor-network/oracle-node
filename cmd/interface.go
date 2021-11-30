@@ -57,7 +57,7 @@ type utilsInterface interface {
 	GetConfigFilePath() (string, error)
 	ViperWriteConfigAs(string) error
 	IsEqual([]uint32, []uint32) (bool, int)
-	GetActiveAssetIds(*ethclient.Client, string, uint32) ([]uint8, error)
+	GetActiveAssetIds(*ethclient.Client, string) ([]uint8, error)
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool

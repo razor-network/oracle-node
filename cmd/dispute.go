@@ -68,7 +68,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 
 		isEqual, j := utilsStruct.razorUtils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
-			activeAssetIds, _ := utilsStruct.razorUtils.GetActiveAssetIds(client, account.Address, epoch)
+			activeAssetIds, _ := utilsStruct.razorUtils.GetActiveAssetIds(client, account.Address)
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)

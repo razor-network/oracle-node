@@ -218,8 +218,8 @@ func (u Utils) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return utils.IsEqual(arr1, arr2)
 }
 
-func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
-	return utils.GetActiveAssetIds(client, address, epoch)
+func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
+	return utils.GetActiveAssetIds(client, address)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {

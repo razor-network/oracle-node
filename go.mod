@@ -4,13 +4,14 @@ go 1.15
 
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.8
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/magiconair/properties v1.8.4
 	github.com/manifoldco/promptui v0.8.0
 	github.com/miguelmota/go-solidity-sha3 v0.1.1
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/razor-network/goInfo v0.0.0-20200404012835-b5f882ee2288
 	github.com/sirupsen/logrus v1.8.1
