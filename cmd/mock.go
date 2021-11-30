@@ -183,9 +183,13 @@ var DecreaseCommissionContractMock func(*ethclient.Client, *bind.TransactOpts, u
 
 var UnstakeContractMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
 
+var RedeemBountyMock func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+
 var StakerInfoMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 
 var GetMaturityMock func(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
+
+var GetBountyLockMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
 
 var CreateAccountMock func(string, string) accounts.Account
 
@@ -257,6 +261,8 @@ var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
 
 var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
+var claimBountyMock func(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
+
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
 var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
@@ -302,6 +308,8 @@ var GetUint8CollectionIdMock func(*pflag.FlagSet) (uint8, error)
 var GetStringValueMock func(*pflag.FlagSet) (string, error)
 
 var GetStringPowMock func(*pflag.FlagSet) (string, error)
+
+var GetUint32BountyIdMock func(*pflag.FlagSet) (uint32, error)
 
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
@@ -603,12 +611,20 @@ func (stakeManagerMock StakeManagerMock) Unstake(client *ethclient.Client, opts 
 	return UnstakeContractMock(client, opts, epoch, stakerId, sAmount)
 }
 
+func (stakeManagerMock StakeManagerMock) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
+	return RedeemBountyMock(client, opts, bountyId)
+}
+
 func (stakeManagerMock StakeManagerMock) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
 	return StakerInfoMock(client, opts, stakerId)
 }
 
 func (stakeManagerMock StakeManagerMock) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
 	return GetMaturityMock(client, opts, age)
+}
+
+func (stakeManagerMock StakeManagerMock) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
+	return GetBountyLockMock(client, opts, bountyId)
 }
 
 func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
@@ -767,6 +783,10 @@ func (flagSetMock FlagSetMock) GetStringPow(flagSet *pflag.FlagSet) (string, err
 	return GetStringPowMock(flagSet)
 }
 
+func (flagSetMock FlagSetMock) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
+	return GetUint32BountyIdMock(flagSet)
+}
+
 func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	return SetCommissionMock(client, stakerId, opts, commission, utilsStruct)
 }
@@ -821,6 +841,10 @@ func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, 
 
 func (utilsCmdMock UtilsCmdMock) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 	return withdrawFundsMock(client, account, configurations, stakerId, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
+	return claimBountyMock(config, client, redeemBountyInput, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
