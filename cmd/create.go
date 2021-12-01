@@ -24,7 +24,7 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 	utilsStruct := UtilsStruct{
 		razorUtils:   razorUtils,
 		accountUtils: accountUtils,
-		cmdUtils: cmdUtils,
+		cmdUtils:     cmdUtils,
 	}
 	utilsStruct.executeCreate(cmd.Flags())
 }
