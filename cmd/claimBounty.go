@@ -94,6 +94,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		return core.NilHash, err
 	}
 
+	log.Info("Claiming bounty transaction...")
 	waitFor := big.NewInt(1).Sub(bountyLock.RedeemAfter, big.NewInt(int64(epoch)))
 	if waitFor.Cmp(big.NewInt(0)) == 1 {
 		log.Debug("Waiting for lock period to get over....")
@@ -102,7 +103,6 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
-	log.Info("Claiming bounty transaction...")
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
 	for retry := 1; retry <= core.MaxRetries; retry++ {
