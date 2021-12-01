@@ -71,6 +71,7 @@ type utilsInterface interface {
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
+	CalculateBlockTime(*ethclient.Client) int64
 }
 
 type tokenManagerInterface interface {

@@ -169,3 +169,16 @@ func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
 func Sleep(duration time.Duration) {
 	time.Sleep(duration)
 }
+
+func CalculateBlockTime(client *ethclient.Client) int64 {
+	latestBlock, err := GetLatestBlock(client)
+	if err != nil {
+		log.Fatalf("Error in fetching latest Block: %s", err)
+	}
+	latestBlockNumber := latestBlock.Number
+	lastSecondBlock, err := client.HeaderByNumber(context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	if err != nil {
+		log.Fatalf("Error in fetching last second Block: %s", err)
+	}
+	return int64(latestBlock.Time - lastSecondBlock.Time)
+}

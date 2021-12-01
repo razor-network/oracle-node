@@ -271,6 +271,10 @@ func (u Utils) Sleep(duration time.Duration) {
 	utils.Sleep(duration)
 }
 
+func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
+	return utils.CalculateBlockTime(client)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)

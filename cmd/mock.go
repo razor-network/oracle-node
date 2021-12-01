@@ -159,6 +159,8 @@ var GetAmountInWeiMock func(*big.Int) *big.Int
 
 var SleepMock func(time.Duration)
 
+var CalculateBlockTimeMock func(*ethclient.Client) int64
+
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
 var ApproveMock func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -537,6 +539,10 @@ func (u UtilsMock) GetAmountInWei(amount *big.Int) *big.Int {
 
 func (u UtilsMock) Sleep(duration time.Duration) {
 	SleepMock(duration)
+}
+
+func (u UtilsMock) CalculateBlockTime(client *ethclient.Client) int64 {
+	return CalculateBlockTimeMock(client)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
