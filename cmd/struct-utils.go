@@ -271,6 +271,10 @@ func (u Utils) Sleep(duration time.Duration) {
 	utils.Sleep(duration)
 }
 
+func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
+	return utils.CalculateBlockTime(client)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -330,6 +334,11 @@ func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opt
 	return stakeManager.Unstake(opts, epoch, stakerId, sAmount)
 }
 
+func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.RedeemBounty(opts, bountyId)
+}
+
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Stakers(opts, stakerId)
@@ -339,6 +348,11 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 	stakeManager := utils.GetStakeManager(client)
 	index := age / 10000
 	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.BountyLocks(opts, bountyId)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -532,6 +546,10 @@ func (flagSetUtils FlagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bo
 	return flagSet.GetBool("autoWithdraw")
 }
 
+func (flagSetUtils FlagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("bountyId")
+}
+
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	return SetCommission(client, stakerId, txnOpts, commission, utilsStruct)
 }
@@ -586,6 +604,10 @@ func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId
 
 func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 	return withdrawFunds(client, account, configurations, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
+	return claimBounty(config, client, redeemBountyInput, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
