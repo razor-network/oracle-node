@@ -56,9 +56,11 @@ func (utilsStruct UtilsStruct) executeClaimBounty(flagSet *pflag.FlagSet) {
 	}
 
 	txn, err := utilsStruct.cmdUtils.claimBounty(config, client, redeemBountyInput, utilsStruct)
-
 	utils.CheckError("ClaimBounty error: ", err)
-	utilsStruct.razorUtils.WaitForBlockCompletion(client, txn.String())
+
+	if txn != core.NilHash {
+		utilsStruct.razorUtils.WaitForBlockCompletion(client, txn.String())
+	}
 }
 
 func claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
@@ -97,18 +99,26 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()))
+		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64() * core.EpochLength * utilsStruct.razorUtils.CalculateBlockTime(client)))
 	}
 
 	log.Info("Claiming bounty transaction...")
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
-	tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
-	if err != nil {
-		return common.Hash{0x00}, err
+	for retry := 1; retry <= core.MaxRetries; retry++ {
+		tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
+		if err == nil {
+			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(tx).Hex())
+			return utilsStruct.transactionUtils.Hash(tx), nil
+		}
+		log.Error("Error while claiming bounty: ", err)
+		if retry != core.MaxRetries {
+			log.Info("Retrying again...")
+			log.Info("Waiting for 1 more epoch...")
+			utilsStruct.razorUtils.Sleep(time.Duration(core.EpochLength))
+		}
 	}
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(tx).Hex())
-	return utilsStruct.transactionUtils.Hash(tx), nil
+	return core.NilHash, err
 }
 
 func init() {

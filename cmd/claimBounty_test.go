@@ -153,6 +153,7 @@ func Test_claimBounty(t *testing.T) {
 	var client *ethclient.Client
 	var bountyInput types.RedeemBountyInput
 	var callOpts bind.CallOpts
+	var blockTime int64
 
 	utilsStruct := UtilsStruct{
 		razorUtils:        UtilsMock{},
@@ -244,7 +245,7 @@ func Test_claimBounty(t *testing.T) {
 				redeemBountyErr: errors.New("redeemBounty error"),
 			},
 			want:    core.NilHash,
-			wantErr: errors.New("redeemBounty error"),
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
@@ -262,6 +263,10 @@ func Test_claimBounty(t *testing.T) {
 
 		SleepMock = func(time.Duration) {
 
+		}
+
+		CalculateBlockTimeMock = func(*ethclient.Client) int64 {
+			return blockTime
 		}
 
 		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
@@ -283,11 +288,11 @@ func Test_claimBounty(t *testing.T) {
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for claimBounty function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for claimBounty function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for claimBounty function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for claimBounty function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
