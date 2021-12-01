@@ -257,6 +257,8 @@ var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
 
 var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
+var CreateMock func( string,  UtilsStruct) (accounts.Account, error)
+
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
 var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
@@ -821,6 +823,10 @@ func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, 
 
 func (utilsCmdMock UtilsCmdMock) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 	return withdrawFundsMock(client, account, configurations, stakerId, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) Create(password string, utilsStruct UtilsStruct) (accounts.Account, error) {
+	return CreateMock(password, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

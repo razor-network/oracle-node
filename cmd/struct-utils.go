@@ -588,6 +588,10 @@ func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.A
 	return withdrawFunds(client, account, configurations, stakerId, utilsStruct)
 }
 
+func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAccounts.Account, error) {
+	return Create(password, utilsStruct)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
