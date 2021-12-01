@@ -17,9 +17,9 @@ func TestCreate(t *testing.T) {
 	}
 
 	type args struct {
-		path     string
-		pathErr  error
-		account  accounts.Account
+		path    string
+		pathErr error
+		account accounts.Account
 	}
 	tests := []struct {
 		name    string
@@ -30,8 +30,8 @@ func TestCreate(t *testing.T) {
 		{
 			name: "Test 1: When create function executes successfully",
 			args: args{
-				path:     "/home/local",
-				pathErr:  nil,
+				path:    "/home/local",
+				pathErr: nil,
 				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
 					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 				},
@@ -44,8 +44,8 @@ func TestCreate(t *testing.T) {
 		{
 			name: "Test 2: When create fails due to path error",
 			args: args{
-				path:     "/home/local",
-				pathErr:  errors.New("path error"),
+				path:    "/home/local",
+				pathErr: errors.New("path error"),
 				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
 					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 				},
@@ -93,19 +93,19 @@ func Test_executeCreate(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		password string
-		account accounts.Account
+		password   string
+		account    accounts.Account
 		accountErr error
 	}
 
 	utilsStruct := UtilsStruct{
 		razorUtils: UtilsMock{},
-		cmdUtils: UtilsCmdMock{},
+		cmdUtils:   UtilsCmdMock{},
 	}
 
 	tests := []struct {
-		name   string
-		args   args
+		name          string
+		args          args
 		expectedFatal bool
 	}{
 		{
@@ -116,7 +116,18 @@ func Test_executeCreate(t *testing.T) {
 					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 				},
 			},
-
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error from create function",
+			args: args{
+				password: "test",
+				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+				},
+				accountErr: errors.New("create error"),
+			},
+			expectedFatal: true,
 		},
 	}
 

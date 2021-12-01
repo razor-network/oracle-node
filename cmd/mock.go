@@ -257,7 +257,7 @@ var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
 
 var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
-var CreateMock func( string,  UtilsStruct) (accounts.Account, error)
+var CreateMock func(string, UtilsStruct) (accounts.Account, error)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 

@@ -159,7 +159,7 @@ type utilsCmdInterface interface {
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
 	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
-	Create( string, UtilsStruct) (accounts.Account, error)
+	Create(string, UtilsStruct) (accounts.Account, error)
 }
 
 type cryptoInterface interface {
