@@ -71,7 +71,9 @@ type utilsInterface interface {
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
+	CalculateBlockTime(*ethclient.Client) int64
 }
+
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -100,10 +102,12 @@ type stakeManagerInterface interface {
 	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error)
+	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
+	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
 }
 
 type accountInterface interface {
@@ -142,6 +146,7 @@ type flagSetInterface interface {
 	GetStringValue(*pflag.FlagSet) (string, error)
 	GetStringPow(*pflag.FlagSet) (string, error)
 	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
+	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
 }
 
 type utilsCmdInterface interface {
@@ -160,6 +165,7 @@ type utilsCmdInterface interface {
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
 	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 	Create(string, UtilsStruct) (accounts.Account, error)
+	claimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
 }
 
 type cryptoInterface interface {

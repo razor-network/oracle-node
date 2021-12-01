@@ -162,16 +162,45 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		utils.WaitForBlockCompletion(client, commitTxn.String())
 		_committedData = data
+		log.Debug("Saving committed data for recovery")
+		fileName, err := getCommitDataFileName(account.Address, utilsStruct)
+		if err != nil {
+			log.Error("Error in getting file name to save committed data: ", err)
+			break
+		}
+		err = utils.SaveCommittedDataToFile(fileName, epoch, _committedData)
+		if err != nil {
+			log.Errorf("Error in saving data to file %s: %t", fileName, err)
+			break
+		}
+		log.Debug("Data saved!")
 	case 1:
 		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last reveal: ", err)
 			break
 		}
-		if _committedData == nil || lastReveal >= epoch {
+		if lastReveal >= epoch {
 			log.Warnf("Last reveal: %d", lastReveal)
 			log.Warnf("Cannot reveal in epoch %d", epoch)
 			break
+		}
+		if _committedData == nil {
+			fileName, err := getCommitDataFileName(account.Address, utilsStruct)
+			if err != nil {
+				log.Error("Error in getting file name to save committed data: ", err)
+				break
+			}
+			epochInFile, committedDataFromFile, err := utils.ReadCommittedDataFromFile(fileName)
+			if err != nil {
+				log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
+				break
+			}
+			if epochInFile != epoch {
+				log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
+				break
+			}
+			_committedData = committedDataFromFile
 		}
 		secret := calculateSecret(account, epoch)
 		if secret == nil {
@@ -319,6 +348,14 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret
+}
+
+func getCommitDataFileName(address string, utilsStruct UtilsStruct) (string, error) {
+	homeDir, err := utilsStruct.razorUtils.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_data", nil
 }
 
 func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations, utilsStruct UtilsStruct) {

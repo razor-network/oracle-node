@@ -15,3 +15,9 @@ type Staker struct {
 	EpochFirstStakedOrLastPenalized uint32
 	Stake                           *big.Int
 }
+
+type BountyLock struct {
+	BountyHunter common.Address
+	Amount       *big.Int
+	RedeemAfter  *big.Int
+}

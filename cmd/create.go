@@ -24,6 +24,7 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 	utilsStruct := UtilsStruct{
 		razorUtils:   razorUtils,
 		accountUtils: accountUtils,
+		cmdUtils: cmdUtils,
 	}
 	utilsStruct.executeCreate(cmd.Flags())
 }
@@ -49,6 +50,7 @@ func Create(password string, utilsStruct UtilsStruct) (accounts.Account, error) 
 func init() {
 	razorUtils = Utils{}
 	accountUtils = AccountUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(createCmd)
 
