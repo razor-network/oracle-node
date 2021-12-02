@@ -263,6 +263,8 @@ var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
 
 var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
+var CreateMock func(string, UtilsStruct) (accounts.Account, error)
+
 var claimBountyMock func(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
@@ -847,6 +849,10 @@ func (utilsCmdMock UtilsCmdMock) AutoWithdraw(txnArgs types.TransactionOptions, 
 
 func (utilsCmdMock UtilsCmdMock) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 	return withdrawFundsMock(client, account, configurations, stakerId, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) Create(password string, utilsStruct UtilsStruct) (accounts.Account, error) {
+	return CreateMock(password, utilsStruct)
 }
 
 func (utilsCmdMock UtilsCmdMock) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
