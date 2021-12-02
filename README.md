@@ -235,6 +235,21 @@ Example:
 $ ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
 
+### Claim Bounty
+
+If you want to claim your bounty after disputing a rogue staker, you can run `claimBounty` command
+
+```
+$ ./razor claimBounty --address <address> --bountyId <bounty_id>
+```
+
+Example:
+
+```
+$ ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bountyId 5
+```
+
+
 ### Transfer
 
 Transfers razor to other accounts.

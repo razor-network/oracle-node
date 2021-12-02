@@ -1,14 +1,19 @@
 package utils
 
 import (
+	"bufio"
 	"context"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/spf13/pflag"
+	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"os"
 	"razor/core"
+	"strconv"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -166,6 +171,73 @@ func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
 	return latestHeader, nil
 }
 
+func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
+	if len(committedData) == 0 {
+		return errors.New("committed data is empty")
+	}
+	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(f, epoch)
+	for _, datum := range committedData {
+		_, err := fmt.Fprintln(f, datum.String())
+		if err != nil {
+			return err
+		}
+	}
+	defer f.Close()
+	return nil
+}
+
+func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+	var (
+		committedData []*big.Int
+		epoch         uint32
+	)
+	file, err := os.Open(fileName)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lineCount := 0
+	for scanner.Scan() {
+		if lineCount > 0 {
+			data, ok := big.NewInt(0).SetString(scanner.Text(), 10)
+			if ok {
+				committedData = append(committedData, data)
+			}
+		} else {
+			value, err := strconv.Atoi(scanner.Text())
+			if err != nil {
+				return 0, nil, err
+			}
+			epoch = uint32(value)
+		}
+		lineCount++
+	}
+
+	if err := scanner.Err(); err != nil {
+		return 0, nil, err
+	}
+	return epoch, committedData, nil
+}
+
 func Sleep(duration time.Duration) {
 	time.Sleep(duration)
+}
+
+func CalculateBlockTime(client *ethclient.Client) int64 {
+	latestBlock, err := GetLatestBlock(client)
+	if err != nil {
+		log.Fatalf("Error in fetching latest Block: %s", err)
+	}
+	latestBlockNumber := latestBlock.Number
+	lastSecondBlock, err := client.HeaderByNumber(context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	if err != nil {
+		log.Fatalf("Error in fetching last second Block: %s", err)
+	}
+	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
