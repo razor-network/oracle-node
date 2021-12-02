@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"fmt"
-	"math"
 	"math/big"
 	"os"
 	"razor/accounts"
@@ -19,7 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/cobra"
@@ -45,7 +42,7 @@ Example:
 		address, _ := cmd.Flags().GetString("address")
 		account := types.Account{Address: address, Password: password}
 		for {
-			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+			latestHeader, err := utils.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -98,8 +95,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staked amount: ", err)
 		return
 	}
-	// TODO: Add retry
-	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(account.Address), nil)
+	ethBalance, err := utils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
@@ -271,21 +267,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			common.HexToAddress(core.BlockManagerAddress),
 		},
 	}
-	var (
-		logs []types2.Log
-		err  error
-	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		logs, err = client.FilterLogs(context.Background(), query)
-		if err != nil {
-			log.Error("Error in fetching logs: ", err)
-			retryingIn := math.Pow(2, float64(retry))
-			log.Debugf("Retrying in %f seconds.....", retryingIn)
-			time.Sleep(time.Duration(retryingIn) * time.Second)
-			continue
-		}
-		break
-	}
+	logs, err := utils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return 0, err
 	}

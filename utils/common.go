@@ -2,9 +2,7 @@ package utils
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/spf13/pflag"
-	"math"
 	"math/big"
 	"os"
 	"razor/core"
@@ -31,11 +29,11 @@ func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, er
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	//TODO: Add retry
-	blockNumber, err := client.BlockNumber(context.Background())
+	block, err := GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
 	}
+	blockNumber := uint64(block.Number.Int64())
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
@@ -105,13 +103,6 @@ func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	}
 }
 
-func Retry(retry int, errMsg string, err error) {
-	log.Error(errMsg, err)
-	retryingIn := math.Pow(2, float64(retry))
-	log.Debugf("Retrying in %f seconds.....", retryingIn)
-	time.Sleep(time.Duration(retryingIn) * time.Second)
-}
-
 func GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
@@ -139,30 +130,11 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 }
 
 func GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := GetLatestBlock(client)
+	latestHeader, err := GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
 	epoch := latestHeader.Number.Int64() / core.EpochLength
 	return uint32(epoch), nil
-}
-
-func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
-	var (
-		latestHeader *types.Header
-		err          error
-	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		latestHeader, err = client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			Retry(retry, "Error in fetching latest block: ", err)
-			continue
-		}
-		break
-	}
-	if err != nil {
-		return nil, err
-	}
-	return latestHeader, nil
 }
