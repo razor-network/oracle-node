@@ -12,7 +12,7 @@ import (
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client, address string) (*bindings.AssetManager, bind.CallOpts) {
-	return GetAssetManager(client), GetOptions(false, address, "")
+	return GetAssetManager(client), GetOptions()
 }
 
 func GetNumAssets(client *ethclient.Client, address string) (uint8, error) {
@@ -178,7 +178,7 @@ func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, c
 
 func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (bindings.StructsJob, error) {
 	assetManager := GetAssetManager(client)
-	callOpts := GetOptions(false, address, "")
+	callOpts := GetOptions()
 	var (
 		job bindings.StructsJob
 		err error

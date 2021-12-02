@@ -81,7 +81,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		return common.Hash{0x00}, err
 	}
 
-	callOpts := utilsStruct.razorUtils.GetOptions(false, "", "")
+	callOpts := utilsStruct.razorUtils.GetOptions()
 	bountyLock, err := utilsStruct.stakeManagerUtils.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
 	if err != nil {
 		log.Error("Error in getting bounty lock: ", err)

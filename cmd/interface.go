@@ -16,7 +16,7 @@ import (
 )
 
 type utilsInterface interface {
-	GetOptions(bool, string, string) bind.CallOpts
+	GetOptions() bind.CallOpts
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
@@ -37,27 +37,27 @@ type utilsInterface interface {
 	GetAmountInDecimal(*big.Int) *big.Float
 	GetDefaultPath() (string, error)
 	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
-	GetRandaoHash(*ethclient.Client, string) ([32]byte, error)
+	GetRandaoHash(*ethclient.Client) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, string, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client, string) (uint8, error)
 	GetProposedBlock(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error)
 	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
-	GetVoteValue(*ethclient.Client, string, uint8, uint32) (*big.Int, error)
-	GetInfluenceSnapshot(*ethclient.Client, string, uint32, uint32) (*big.Int, error)
+	GetVoteValue(*ethclient.Client, uint8, uint32) (*big.Int, error)
+	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	GetNumActiveAssets(*ethclient.Client, string) (*big.Int, error)
-	GetTotalInfluenceRevealed(*ethclient.Client, string, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
-	GetEpochLastCommitted(*ethclient.Client, string, uint32) (uint32, error)
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetConfigFilePath() (string, error)
 	ViperWriteConfigAs(string) error
 	IsEqual([]uint32, []uint32) (bool, int)
 	GetActiveAssetIds(*ethclient.Client, string, uint32) ([]uint8, error)
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
-	GetVotes(*ethclient.Client, string, uint32) (bindings.StructsVote, error)
+	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
 	Contains([]int, int) bool
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
@@ -154,7 +154,7 @@ type utilsCmdInterface interface {
 	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
 	DecreaseCommissionPrompt() bool
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error)
-	CheckCurrentStatus(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
+	CheckCurrentStatus(*ethclient.Client, uint8, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint8, []uint32)
 	GetEpochAndState(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
@@ -187,7 +187,7 @@ type blockManagerInterface interface {
 type proposeUtilsInterface interface {
 	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
 	getIteration(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
-	isElectedProposer(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool
+	isElectedProposer(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
 	MakeBlock(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
 	getSortedVotes(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)

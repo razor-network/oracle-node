@@ -102,7 +102,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	var sortedStakers []uint32
 
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := utilsStruct.razorUtils.GetVotes(client, account.Address, uint32(i))
+		votes, err := utilsStruct.razorUtils.GetVotes(client, uint32(i))
 		if err != nil {
 			return err
 		}
