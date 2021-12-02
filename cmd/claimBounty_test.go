@@ -253,7 +253,7 @@ func Test_claimBounty(t *testing.T) {
 			return tt.args.epoch, tt.args.epochErr
 		}
 
-		GetOptionsMock = func(bool, string, string) bind.CallOpts {
+		GetOptionsMock = func() bind.CallOpts {
 			return callOpts
 		}
 

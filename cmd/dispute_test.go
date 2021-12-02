@@ -132,7 +132,7 @@ func TestDispute(t *testing.T) {
 				return tt.args.numOfStakers, tt.args.numOfStakersErr
 			}
 
-			GetVotesMock = func(*ethclient.Client, string, uint32) (bindings.StructsVote, error) {
+			GetVotesMock = func(*ethclient.Client, uint32) (bindings.StructsVote, error) {
 				return tt.args.votes, tt.args.votesErr
 			}
 

@@ -233,7 +233,7 @@ var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, UtilsSt
 
 var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
 
-var isElectedProposerMock func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool
+var isElectedProposerMock func(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
 
 var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
 
@@ -691,8 +691,8 @@ func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, 
 	return getIterationMock(client, address, proposer, utilsStruct)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
-	return isElectedProposerMock(client, address, proposer, utilsStruct)
+func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
+	return isElectedProposerMock(client, proposer, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {

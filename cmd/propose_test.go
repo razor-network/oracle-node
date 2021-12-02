@@ -406,7 +406,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 		}
 
-		GetRandaoHashMock = func(*ethclient.Client, string) ([32]byte, error) {
+		GetRandaoHashMock = func(*ethclient.Client) ([32]byte, error) {
 			return tt.args.randaoHash, tt.args.randaoHashErr
 		}
 
@@ -523,7 +523,7 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 				return tt.args.numOfStakers, tt.args.numOfStakersErr
 			}
 
-			GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+			GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
@@ -582,7 +582,7 @@ func Test_getIteration(t *testing.T) {
 		//},
 	}
 	for _, tt := range tests {
-		isElectedProposerMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) bool {
+		isElectedProposerMock = func(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool {
 			return tt.args.isElectedProposer
 		}
 		t.Run(tt.name, func(t *testing.T) {
@@ -732,7 +732,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.sortedVotes, tt.args.sortedVotesErr
 			}
 
-			GetTotalInfluenceRevealedMock = func(*ethclient.Client, string, uint32) (*big.Int, error) {
+			GetTotalInfluenceRevealedMock = func(*ethclient.Client, uint32) (*big.Int, error) {
 				return tt.args.totalInfluenceRevealed, tt.args.totalInfluenceRevealedErr
 			}
 
@@ -884,11 +884,11 @@ func Test_getSortedVotes(t *testing.T) {
 				return tt.args.epochLastRevealed, tt.args.epochLastRevealedErr
 			}
 
-			GetVoteValueMock = func(*ethclient.Client, string, uint8, uint32) (*big.Int, error) {
+			GetVoteValueMock = func(*ethclient.Client, uint8, uint32) (*big.Int, error) {
 				return tt.args.vote, tt.args.voteErr
 			}
 
-			GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+			GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
@@ -1063,12 +1063,12 @@ func Test_isElectedProposer(t *testing.T) {
 	}
 	for _, tt := range tests {
 
-		GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+		GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
 			return tt.args.influenceSnapshot, tt.args.influenceSnapshotErr
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isElectedProposer(tt.args.client, tt.args.address, tt.args.proposer, utilsStruct); got != tt.want {
+			if got := isElectedProposer(tt.args.client, tt.args.proposer, utilsStruct); got != tt.want {
 				t.Errorf("isElectedProposer() = %v, want %v", got, tt.want)
 			}
 		})
