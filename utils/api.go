@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"github.com/PaesslerAG/jsonpath"
 	"github.com/avast/retry-go"
 	"io/ioutil"
@@ -21,6 +22,9 @@ func GetDataFromAPI(url string) ([]byte, error) {
 				return err
 			}
 			defer response.Body.Close()
+			if response.StatusCode != 200 {
+				return errors.New("unable to reach API")
+			}
 			body, err = ioutil.ReadAll(response.Body)
 			if err != nil {
 				return err

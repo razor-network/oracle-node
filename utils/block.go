@@ -118,7 +118,7 @@ func GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
 	if err != nil {
 		return 0, err
 	}
-	return blockManager.MaxAltBlocks(&callOpts)
+	return maxAltBlocks, nil
 }
 
 func GetSortedProposedBlockId(client *ethclient.Client, address string, epoch uint32, index *big.Int) (uint8, error) {
