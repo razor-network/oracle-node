@@ -34,7 +34,15 @@ Example:
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account: "+address, err)
 
-		valueInWei, err := AssignAmountInWei(cmd.Flags())
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			transactionUtils:  transactionUtils,
+			tokenManagerUtils: tokenManagerUtils,
+			flagSetUtils:      flagSetUtils,
+		}
+
+		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
 		utils.CheckError("Error in getting amount: ", err)
 
 		utils.CheckAmountAndBalance(valueInWei, balance)
@@ -48,13 +56,6 @@ Example:
 			Amount:         valueInWei,
 			ChainId:        core.ChainId,
 			Config:         config,
-		}
-
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			tokenManagerUtils: tokenManagerUtils,
 		}
 
 		approveTxnHash, err := utilsStruct.approve(txnArgs)
@@ -96,6 +97,7 @@ func init() {
 	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (

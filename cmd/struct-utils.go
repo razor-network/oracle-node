@@ -10,6 +10,7 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strconv"
+	"time"
 
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -75,10 +76,6 @@ func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*b
 	return utils.FetchBalance(client, accountAddress)
 }
 
-func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
-	return AssignAmountInWei(flagSet)
-}
-
 func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	return utils.CheckAmountAndBalance(amountInWei, balance)
 }
@@ -121,14 +118,6 @@ func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epo
 
 func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
 	return utils.ConvertUintArrayToUint8Array(uintArr)
-}
-
-func (u Utils) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
-	return WaitForAppropriateState(client, accountAddress, action, states...)
-}
-
-func (u Utils) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitIfCommitState(client, accountAddress, action)
 }
 
 func (u Utils) PrivateKeyPrompt() string {
@@ -235,6 +224,14 @@ func (u Utils) Contains(arr []int, val int) bool {
 	return utils.Contains(arr, val)
 }
 
+func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	utils.CheckEthBalanceIsZero(client, address)
+}
+
+func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+	return utils.AssignStakerId(flagSet, client, address)
+}
+
 func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
 	return utils.GetLatestBlockWithRetry(client)
 }
@@ -243,8 +240,40 @@ func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address strin
 	return utils.GetSortedProposedBlockIds(client, address, epoch)
 }
 
+func (u Utils) CheckError(msg string, err error) {
+	utils.CheckError(msg, err)
+}
+
 func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
+}
+
+func (u Utils) GetStateName(stateNumber int64) string {
+	return utils.GetStateName(stateNumber)
+}
+
+func (u Utils) getBufferPercent() (int32, error) {
+	return getBufferPercent()
+}
+
+func (u Utils) IsFlagPassed(name string) bool {
+	return utils.IsFlagPassed(name)
+}
+
+func (u Utils) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
+	return utils.GetFractionalAmountInWei(amount, power)
+}
+
+func (u Utils) GetAmountInWei(amount *big.Int) *big.Int {
+	return utils.GetAmountInWei(amount)
+}
+
+func (u Utils) Sleep(duration time.Duration) {
+	utils.Sleep(duration)
+}
+
+func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
+	return utils.CalculateBlockTime(client)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -301,6 +330,16 @@ func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.
 	return stakeManager.DecreaseCommission(opts, commission)
 }
 
+func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Unstake(opts, epoch, stakerId, sAmount)
+}
+
+func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.RedeemBounty(opts, bountyId)
+}
+
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.Stakers(opts, stakerId)
@@ -310,6 +349,11 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 	stakeManager := utils.GetStakeManager(client)
 	index := age / 10000
 	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.BountyLocks(opts, bountyId)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -464,6 +508,10 @@ func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint8("collectionId")
 }
 
+func (flagSetUtils FlagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("value")
+}
+
 func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
 	return getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
 }
@@ -536,6 +584,18 @@ func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
+func (flagSetUtils FlagSetUtils) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("pow")
+}
+
+func (flagSetUtils FlagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("autoWithdraw")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("bountyId")
+}
+
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	return SetCommission(client, stakerId, txnOpts, commission, utilsStruct)
 }
@@ -562,6 +622,42 @@ func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configur
 
 func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (cmdUtils UtilsCmd) GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
+	return GetEpochAndState(client, accountAddress, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
+	return WaitForAppropriateState(client, accountAddress, action, utilsStruct, states...)
+}
+
+func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
+	return WaitIfCommitState(client, accountAddress, action, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
+	return AssignAmountInWei(flagSet, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, unstakeInput types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	return Unstake(config, client, unstakeInput, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+	return AutoWithdraw(txnArgs, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+	return withdrawFunds(client, account, configurations, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAccounts.Account, error) {
+	return Create(password, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
+	return claimBounty(config, client, redeemBountyInput, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

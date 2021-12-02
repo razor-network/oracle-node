@@ -27,6 +27,7 @@ Note:
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			cmdUtils:          cmdUtils,
 		}
 		config, err := GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
@@ -61,7 +62,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	}
 	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	_, err = utilsStruct.razorUtils.WaitIfCommitState(client, address, "update collection")
+	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update collection", utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
@@ -93,6 +94,7 @@ func init() {
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(updateCollectionCmd)
 

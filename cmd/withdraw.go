@@ -45,10 +45,10 @@ Example:
 			transactionUtils:  transactionUtils,
 		}
 
-		txn, err := utilsStruct.withdrawFunds(client, types.Account{
+		txn, err := withdrawFunds(client, types.Account{
 			Address:  address,
 			Password: password,
-		}, config, stakerId)
+		}, config, stakerId, utilsStruct)
 
 		utils.CheckError("Withdraw error: ", err)
 		if txn != core.NilHash {
@@ -57,7 +57,7 @@ Example:
 	},
 }
 
-func (utilsStruct UtilsStruct) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+func withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 
 	lock, err := utilsStruct.razorUtils.GetLock(client, account.Address, stakerId)
 	if err != nil {
@@ -105,7 +105,7 @@ func (utilsStruct UtilsStruct) withdrawFunds(client *ethclient.Client, account t
 		}
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
-		time.Sleep(30 * time.Second)
+		utilsStruct.razorUtils.Sleep(30 * time.Second)
 		epoch, err = utilsStruct.razorUtils.GetUpdatedEpoch(client)
 		if err != nil {
 			log.Error("Error in fetching epoch")
