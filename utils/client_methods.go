@@ -65,7 +65,7 @@ func SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
 				return err
 			}
 			return nil
-		}, retry.Attempts(core.MaxRetries))
+		}, retry.Attempts(3))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (u
 				return err
 			}
 			return nil
-		}, retry.Attempts(core.MaxRetries))
+		}, retry.Attempts(3))
 	if err != nil {
 		return 0, err
 	}
