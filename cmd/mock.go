@@ -249,6 +249,8 @@ var GetUint8WeightMock func(*pflag.FlagSet) (uint8, error)
 
 var GetUint8AssetIdMock func(*pflag.FlagSet) (uint8, error)
 
+var GetUint8SelectorTypeMock func(set *pflag.FlagSet) (uint8, error)
+
 var CheckCurrentStatusMock func(*ethclient.Client, string, uint8, UtilsStruct) (bool, error)
 
 var DisputeMock func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
@@ -717,6 +719,10 @@ func (flagSetMock FlagSetMock) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, er
 
 func (flagSetMock FlagSetMock) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
 	return GetUint8AssetIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint8SelectorType(flagSet *pflag.FlagSet) (uint8, error) {
+	return GetUint8SelectorTypeMock(flagSet)
 }
 
 func (flagSetMock FlagSetMock) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {

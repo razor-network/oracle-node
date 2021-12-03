@@ -234,28 +234,29 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 	)
 
 	// Fetch data from API with retry mechanism
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		response, apiErr = GetDataFromAPI(job.Url)
-		if apiErr != nil {
-			Retry(retry, "Error in fetching data from API: ", apiErr)
-			continue
-		}
-		break
-	}
-
-	err := json.Unmarshal(response, &parsedJSON)
-	if err != nil {
-		log.Error("Error in parsing data from API: ", err)
-		return nil, err
-	}
 	var parsedData interface{}
 	if job.SelectorType == 1 {
+		for retry := 1; retry <= core.MaxRetries; retry++ {
+			response, apiErr = GetDataFromAPI(job.Url)
+			if apiErr != nil {
+				Retry(retry, "Error in fetching data from API: ", apiErr)
+				continue
+			}
+			break
+		}
+
+		err := json.Unmarshal(response, &parsedJSON)
+		if err != nil {
+			log.Error("Error in parsing data from API: ", err)
+			return nil, err
+		}
 		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed data: ", err)
 			return nil, err
 		}
 	} else {
+		//TODO: Add retry here.
 		dataPoint, err := GetDataFromHTML(job.Url, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed XHTML: ", err)

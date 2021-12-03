@@ -33,23 +33,25 @@ func Test_createJob(t *testing.T) {
 	}
 
 	type args struct {
-		password     string
-		address      string
-		addressErr   error
-		name         string
-		nameErr      error
-		url          string
-		urlErr       error
-		selector     string
-		selectorErr  error
-		power        int8
-		powerErr     error
-		weight       uint8
-		weightErr    error
-		txnOpts      *bind.TransactOpts
-		createJobTxn *Types.Transaction
-		createJobErr error
-		hash         common.Hash
+		password        string
+		address         string
+		addressErr      error
+		name            string
+		nameErr         error
+		url             string
+		urlErr          error
+		selector        string
+		selectorErr     error
+		selectorType    uint8
+		selectorTypeErr error
+		power           int8
+		powerErr        error
+		weight          uint8
+		weightErr       error
+		txnOpts         *bind.TransactOpts
+		createJobTxn    *Types.Transaction
+		createJobErr    error
+		hash            common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -65,6 +67,7 @@ func Test_createJob(t *testing.T) {
 				name:         "ETH-1",
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
 				selector:     "last",
+				selectorType: 1,
 				power:        1,
 				weight:       10,
 				txnOpts:      txnOpts,
@@ -83,6 +86,7 @@ func Test_createJob(t *testing.T) {
 				name:         "ETH-1",
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
 				selector:     "last",
+				selectorType: 1,
 				power:        1,
 				weight:       20,
 				txnOpts:      txnOpts,
@@ -101,6 +105,7 @@ func Test_createJob(t *testing.T) {
 				nameErr:      errors.New("name error"),
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
 				selector:     "last",
+				selectorType: 1,
 				power:        1,
 				weight:       20,
 				txnOpts:      txnOpts,
@@ -119,6 +124,7 @@ func Test_createJob(t *testing.T) {
 				url:          "",
 				urlErr:       errors.New("url error"),
 				selector:     "last",
+				selectorType: 1,
 				power:        1,
 				weight:       20,
 				txnOpts:      txnOpts,
@@ -138,6 +144,7 @@ func Test_createJob(t *testing.T) {
 				selector:     "",
 				selectorErr:  errors.New("selector error"),
 				power:        1,
+				selectorType: 1,
 				weight:       20,
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
@@ -154,6 +161,7 @@ func Test_createJob(t *testing.T) {
 				name:         "ETH-1",
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
 				selector:     "last",
+				selectorType: 1,
 				powerErr:     errors.New("power error"),
 				weight:       20,
 				txnOpts:      txnOpts,
@@ -171,6 +179,7 @@ func Test_createJob(t *testing.T) {
 				name:         "ETH-1",
 				url:          "https://api.gemini.com/v1/pubticker/ethusd",
 				selector:     "last",
+				selectorType: 1,
 				weightErr:    errors.New("weight error"),
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
@@ -180,7 +189,39 @@ func Test_createJob(t *testing.T) {
 			wantErr: errors.New("weight error"),
 		},
 		{
-			name: "Test8:  When createJob transaction fails",
+			name: "Test8:  When there is an error in getting selectorType from flag",
+			args: args{
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				name:            "ETH-1",
+				url:             "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:        "last",
+				selectorTypeErr: errors.New("selectorType error"),
+				txnOpts:         txnOpts,
+				createJobTxn:    &Types.Transaction{},
+				hash:            common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("selectorType error"),
+		},
+		{
+			name: "Test9:  When the selector type is for XHTML link",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				name:         "BTC_COIN_GECKO",
+				url:          "https://www.coingecko.com/en ",
+				selector:     `table tbody tr td span[data-coin-id="1"][data-target="price.price"] span`,
+				selectorType: 0,
+				txnOpts:      txnOpts,
+				createJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    common.BigToHash(big.NewInt(1)),
+			wantErr: nil,
+		},
+		{
+			name: "Test10:  When createJob transaction fails",
 			args: args{
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
@@ -226,6 +267,10 @@ func Test_createJob(t *testing.T) {
 
 			GetUint8WeightMock = func(*pflag.FlagSet) (uint8, error) {
 				return tt.args.weight, tt.args.weightErr
+			}
+
+			GetUint8SelectorTypeMock = func(set *pflag.FlagSet) (uint8, error) {
+				return tt.args.selectorType, tt.args.selectorTypeErr
 			}
 
 			ConnectToClientMock = func(string) *ethclient.Client {

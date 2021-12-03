@@ -130,6 +130,7 @@ type flagSetInterface interface {
 	GetInt8Power(*pflag.FlagSet) (int8, error)
 	GetUint8Weight(*pflag.FlagSet) (uint8, error)
 	GetUint8AssetId(*pflag.FlagSet) (uint8, error)
+	GetUint8SelectorType(set *pflag.FlagSet) (uint8, error)
 	GetStringStatus(*pflag.FlagSet) (string, error)
 	GetUint8Commission(*pflag.FlagSet) (uint8, error)
 	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)

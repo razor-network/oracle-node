@@ -72,8 +72,12 @@ func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Co
 		return core.NilHash, err
 	}
 
+	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	selectorType := 1
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        password,
@@ -82,13 +86,13 @@ func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Co
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
-		Parameters:      []interface{}{weight, power, uint8(selectorType), name, selector, url},
+		Parameters:      []interface{}{weight, power, selectorType, name, selector, url},
 		ABI:             bindings.AssetManagerABI,
 	}
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
+	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, selectorType, name, selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -106,17 +110,19 @@ func init() {
 	rootCmd.AddCommand(createJobCmd)
 
 	var (
-		URL      string
-		Selector string
-		Name     string
-		Power    int8
-		Account  string
-		Password string
-		Weight   uint8
+		URL          string
+		Selector     string
+		SelectorType uint8
+		Name         string
+		Power        int8
+		Account      string
+		Password     string
+		Weight       uint8
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
-	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
+	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
+	createJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")
