@@ -9,6 +9,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"regexp"
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client, address string) (*bindings.AssetManager, bind.CallOpts) {
@@ -254,10 +255,15 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 			log.Error("Error in fetching value from parsed data: ", err)
 			return nil, err
 		}
+	} else {
+		dataPoint, err := GetDataFromHTML(job.Url, job.Selector)
+		if err != nil {
+			log.Error("Error in fetching value from parsed XHTML: ", err)
+			return nil, err
+		}
+		// remove "," and currency symbols
+		parsedData = regexp.MustCompile(`[\p{Sc},]`).ReplaceAllString(dataPoint, "")
 	}
-	//else {
-	//TODO: Add support for XHTML selector
-	//}
 
 	datum, err := ConvertToNumber(parsedData)
 	if err != nil {

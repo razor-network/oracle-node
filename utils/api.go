@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"github.com/PaesslerAG/jsonpath"
+	"github.com/gocolly/colly"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -30,4 +31,17 @@ func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interf
 		selector = "$." + selector
 	}
 	return jsonpath.Get(selector, jsonObject)
+}
+
+func GetDataFromHTML(url string, selector string) (string, error) {
+	c := colly.NewCollector()
+	var priceData string
+	c.OnHTML(selector, func(e *colly.HTMLElement) {
+		priceData = e.Text
+	})
+	err := c.Visit(url)
+	if err != nil {
+		return "", err
+	}
+	return priceData, nil
 }
