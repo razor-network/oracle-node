@@ -794,3 +794,99 @@ func Test_getFractionalWeight(t *testing.T) {
 		})
 	}
 }
+
+func TestConvertRZRToSRZR(t *testing.T) {
+	type args struct {
+		amount       *big.Int
+		currentStake *big.Int
+		totalSupply  *big.Int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When currentStake and totalSupply are equal",
+			args: args{
+				amount:       big.NewInt(500),
+				currentStake: big.NewInt(2000),
+				totalSupply:  big.NewInt(2000),
+			},
+			want:    big.NewInt(500),
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When totalSupply < currentStake ",
+			args: args{
+				amount:       big.NewInt(500),
+				currentStake: big.NewInt(4000),
+				totalSupply:  big.NewInt(2000),
+			},
+			want:    big.NewInt(250),
+			wantErr: false,
+		},
+		{
+			name: "Test 3: When currentStake is 0",
+			args: args{
+				amount:       big.NewInt(500),
+				currentStake: big.NewInt(0),
+				totalSupply:  big.NewInt(2000),
+			},
+			want:    big.NewInt(0),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertRZRToSRZR(tt.args.amount, tt.args.currentStake, tt.args.totalSupply)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertRZRToSRZR() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got.Cmp(tt.want) != 0 {
+				t.Errorf("ConvertRZRToSRZR() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertSRZRToRZR(t *testing.T) {
+	type args struct {
+		sAmount      *big.Int
+		currentStake *big.Int
+		totalSupply  *big.Int
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test 1: When current stake totalSupply are equal",
+			args: args{
+				sAmount:      big.NewInt(500),
+				currentStake: big.NewInt(1000),
+				totalSupply:  big.NewInt(1000),
+			},
+			want: big.NewInt(500),
+		},
+		{
+			name: "Test 2: When totalSupply < currentStake",
+			args: args{
+				sAmount:      big.NewInt(500),
+				currentStake: big.NewInt(2000),
+				totalSupply:  big.NewInt(1000),
+			},
+			want: big.NewInt(1000),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ConvertSRZRToRZR(tt.args.sAmount, tt.args.currentStake, tt.args.totalSupply); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertSRZRToRZR() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

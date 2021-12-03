@@ -101,6 +101,12 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 
+	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
+		err := errors.New("existing lock")
+		log.Error(err)
+		return txnArgs, err
+	}
+
 	staker, err := utilsStruct.razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
 	if err != nil {
 		log.Error("Error in getting staker: ", err)
@@ -123,7 +129,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 	}
 
 	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
-	log.Infof("The maximum RZRs you can unstake: %f RZRs", utils.GetAmountInDecimal(maxUnstake))
+	log.Infof("The maximum RZRs you can unstake: %f RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
 
 	if maxUnstake.Cmp(txnArgs.Amount) < 0 {
 		log.Error("Amount exceeds maximum unstake amount")
@@ -133,12 +139,6 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 	sAmount, err := utilsStruct.razorUtils.ConvertRZRToSRZR(txnArgs.Amount, staker.Stake, totalSupply)
 	if err != nil {
 		log.Error("Error in getting sAmount: ", err)
-		return txnArgs, err
-	}
-
-	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		err := errors.New("existing lock")
-		log.Error(err)
 		return txnArgs, err
 	}
 

@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"testing"
 	"time"
 )
@@ -25,8 +26,10 @@ func TestUnstake(t *testing.T) {
 	var client *ethclient.Client
 	var address string
 	var password string
-	var valueInWei *big.Int
 	var stakerId uint32
+	var callOpts bind.CallOpts
+	var stakedToken *bindings.StakedToken
+
 	utilsStruct := UtilsStruct{
 		razorUtils:        UtilsMock{},
 		stakeManagerUtils: StakeManagerMock{},
@@ -35,13 +38,24 @@ func TestUnstake(t *testing.T) {
 	}
 
 	type args struct {
-		lock       types.Locks
-		lockErr    error
-		epoch      uint32
-		epochErr   error
-		unstakeTxn *Types.Transaction
-		unstakeErr error
-		hash       common.Hash
+		amount         *big.Int
+		lock           types.Locks
+		lockErr        error
+		epoch          uint32
+		epochErr       error
+		staker         bindings.StructsStaker
+		stakerErr      error
+		balance        *big.Int
+		balanceErr     error
+		totalSupply    *big.Int
+		totalSupplyErr error
+		RZR            *big.Int
+		decimalAmount  *big.Float
+		sRZR           *big.Int
+		sRZRErr        error
+		unstakeTxn     *Types.Transaction
+		unstakeErr     error
+		hash           common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -54,9 +68,16 @@ func TestUnstake(t *testing.T) {
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
-				epoch:      5,
-				unstakeTxn: &Types.Transaction{},
-				hash:       common.BigToHash(big.NewInt(1)),
+				epoch:         5,
+				staker:        bindings.StructsStaker{},
+				balance:       big.NewInt(1000),
+				totalSupply:   big.NewInt(1000),
+				RZR:           big.NewInt(1000),
+				sRZR:          big.NewInt(1000),
+				amount:        big.NewInt(1000),
+				decimalAmount: big.NewFloat(1000),
+				unstakeTxn:    &Types.Transaction{},
+				hash:          common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: nil,
 		},
@@ -76,9 +97,10 @@ func TestUnstake(t *testing.T) {
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
-				epochErr:   errors.New("epoch error"),
-				unstakeTxn: &Types.Transaction{},
-				hash:       common.BigToHash(big.NewInt(1)),
+				decimalAmount: big.NewFloat(1000),
+				epochErr:      errors.New("epoch error"),
+				unstakeTxn:    &Types.Transaction{},
+				hash:          common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: errors.New("epoch error"),
 		},
@@ -88,9 +110,15 @@ func TestUnstake(t *testing.T) {
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
-				epoch:      5,
-				unstakeErr: errors.New("unstake error"),
-				hash:       common.BigToHash(big.NewInt(1)),
+				epoch:         5,
+				balance:       big.NewInt(1000),
+				totalSupply:   big.NewInt(1000),
+				RZR:           big.NewInt(1000),
+				sRZR:          big.NewInt(1000),
+				amount:        big.NewInt(1000),
+				decimalAmount: big.NewFloat(1000),
+				unstakeErr:    errors.New("unstake error"),
+				hash:          common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: errors.New("unstake error"),
 		},
@@ -106,11 +134,114 @@ func TestUnstake(t *testing.T) {
 			},
 			wantErr: errors.New("existing lock"),
 		},
+		{
+			name: "Test 6: When there is an error in getting staker",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				epoch:     5,
+				stakerErr: errors.New("staker error"),
+			},
+			wantErr: errors.New("staker error"),
+		},
+		{
+			name: "Test 7: When there is an error in getting sRZR balance",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				epoch:      5,
+				staker:     bindings.StructsStaker{},
+				balanceErr: errors.New("balance error"),
+			},
+			wantErr: errors.New("balance error"),
+		},
+		{
+			name: "Test 8: When there is an error in getting total supply",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				epoch:          5,
+				staker:         bindings.StructsStaker{},
+				balance:        big.NewInt(1000),
+				totalSupplyErr: errors.New("totalSupply error"),
+			},
+			wantErr: errors.New("totalSupply error"),
+		},
+		{
+			name: "Test 9: When there is an error in getting sRZR",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				epoch:       5,
+				staker:      bindings.StructsStaker{},
+				balance:     big.NewInt(1000),
+				totalSupply: big.NewInt(1000),
+				RZR:         big.NewInt(1000),
+				amount:      big.NewInt(1000),
+				sRZRErr:     errors.New("sRZR error"),
+			},
+			wantErr: errors.New("sRZR error"),
+		},
+		{
+			name: "Test 10: When amount exceeds maxUnstake amount",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				epoch:         5,
+				staker:        bindings.StructsStaker{},
+				balance:       big.NewInt(1000),
+				totalSupply:   big.NewInt(1000),
+				RZR:           big.NewInt(1000),
+				sRZR:          big.NewInt(1000),
+				amount:        big.NewInt(2000),
+				decimalAmount: big.NewFloat(1000),
+				unstakeTxn:    &Types.Transaction{},
+				hash:          common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: errors.New("invalid amount"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			GetLockMock = func(*ethclient.Client, string, uint32) (types.Locks, error) {
 				return tt.args.lock, tt.args.lockErr
+			}
+
+			GetStakerMock = func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error) {
+				return tt.args.staker, tt.args.stakerErr
+			}
+
+			GetStakedTokenMock = func(*ethclient.Client, common.Address) *bindings.StakedToken {
+				return stakedToken
+			}
+
+			GetOptionsMock = func(bool, string, string) bind.CallOpts {
+				return callOpts
+			}
+
+			BalanceOfMock = func(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error) {
+				return tt.args.balance, tt.args.balanceErr
+			}
+
+			GetTotalSupplyMock = func(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error) {
+				return tt.args.totalSupply, tt.args.totalSupplyErr
+			}
+
+			ConvertSRZRToRZRMock = func(*big.Int, *big.Int, *big.Int) *big.Int {
+				return tt.args.RZR
+			}
+
+			GetAmountInDecimalMock = func(*big.Int) *big.Float {
+				return tt.args.decimalAmount
+			}
+
+			ConvertRZRToSRZRMock = func(*big.Int, *big.Int, *big.Int) (*big.Int, error) {
+				return tt.args.sRZR, tt.args.sRZRErr
 			}
 
 			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
@@ -138,7 +269,7 @@ func TestUnstake(t *testing.T) {
 					Address:    address,
 					Password:   password,
 					StakerId:   stakerId,
-					ValueInWei: valueInWei,
+					ValueInWei: tt.args.amount,
 				}, utilsStruct)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
