@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
@@ -99,6 +100,42 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		log.Error("Error in getting lock: ", err)
 		return txnArgs, err
 	}
+
+	staker, err := utilsStruct.razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
+	if err != nil {
+		log.Error("Error in getting staker: ", err)
+		return txnArgs, err
+	}
+
+	stakedToken := utilsStruct.razorUtils.GetStakedToken(client, staker.TokenAddress)
+	callOpts := utilsStruct.razorUtils.GetOptions(false, "", "")
+
+	sRZRBalance, err := utilsStruct.stakeManagerUtils.BalanceOf(stakedToken, &callOpts, common.HexToAddress(txnArgs.AccountAddress))
+	if err != nil {
+		log.Error("Error in getting sRZRBalance: ", err)
+		return txnArgs, err
+	}
+
+	totalSupply, err := utilsStruct.stakeManagerUtils.GetTotalSupply(stakedToken, &callOpts)
+	if err != nil {
+		log.Error("Error in getting total supply: ", err)
+		return txnArgs, err
+	}
+
+	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
+	log.Infof("The maximum RZRs you can unstake: %f RZRs", utils.GetAmountInDecimal(maxUnstake))
+
+	if maxUnstake.Cmp(txnArgs.Amount) < 0 {
+		log.Error("Amount exceeds maximum unstake amount")
+		return txnArgs, errors.New("invalid amount")
+	}
+
+	sAmount, err := utilsStruct.razorUtils.ConvertRZRToSRZR(txnArgs.Amount, staker.Stake, totalSupply)
+	if err != nil {
+		log.Error("Error in getting sAmount: ", err)
+		return txnArgs, err
+	}
+
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
 		err := errors.New("existing lock")
 		log.Error(err)
@@ -113,7 +150,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
-	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, txnArgs.Amount)
+	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, sAmount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return txnArgs, err
