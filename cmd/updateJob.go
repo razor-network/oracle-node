@@ -16,7 +16,7 @@ var updateJobCmd = &cobra.Command{
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The updateJob command can be used to update an existing job that the stakers can vote upon.
 
 Example:
-  ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -r true -s last -u https://api.gemini.com/v1/pubticker/btcusd
+  ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -r true -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd
 
 Note: 
   This command only works for the admin.
