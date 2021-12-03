@@ -48,3 +48,11 @@ func GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
 	}
 	return blockManager
 }
+
+func GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
+	stakedTokenContract, err := bindings.NewStakedToken(tokenAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return stakedTokenContract
+}
