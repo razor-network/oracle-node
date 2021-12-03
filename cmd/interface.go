@@ -72,6 +72,9 @@ type utilsInterface interface {
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
 	CalculateBlockTime(*ethclient.Client) int64
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
+	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 }
 
 type tokenManagerInterface interface {
@@ -108,6 +111,8 @@ type stakeManagerInterface interface {
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
 type accountInterface interface {
