@@ -41,7 +41,7 @@ jobs:
             - .
   push-build:
     docker:
-      - image: circleci/docker:1.15.8]
+      - image: circleci/golang:1.15.8]
     steps:
       - checkout
       # - attach_workspace:
