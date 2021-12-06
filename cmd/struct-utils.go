@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -207,8 +208,8 @@ func (u Utils) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return utils.IsEqual(arr1, arr2)
 }
 
-func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
-	return utils.GetActiveAssetIds(client, address, epoch)
+func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
+	return utils.GetActiveAssetIds(client, address)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
@@ -232,7 +233,7 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 }
 
 func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
-	return utils.GetLatestBlock(client)
+	return utils.GetLatestBlockWithRetry(client)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
@@ -453,12 +454,42 @@ func (flagSetUtils FlagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (flo
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
-	return voteManager.Reveal(opts, epoch, values, secret)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = voteManager.Reveal(opts, epoch, values, secret)
+		if err != nil {
+			log.Error("Error in revealing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
-	return voteManager.Commit(opts, epoch, commitment)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = voteManager.Commit(opts, epoch, commitment)
+		if err != nil {
+			log.Error("Error in committing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (flagSetUtils FlagSetUtils) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
@@ -515,7 +546,22 @@ func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalI
 
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
-	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+		if err != nil {
+			log.Error("Error in proposing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (flagSetUtils FlagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
@@ -625,12 +671,42 @@ func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Cl
 
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
-	return blockManager.FinalizeDispute(opts, epoch, blockIndex)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.FinalizeDispute(opts, epoch, blockIndex)
+		if err != nil {
+			log.Error("Error in finalizing dispute.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
-	return blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+		if err != nil {
+			log.Error("Error in disputing biggest influence proposed.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

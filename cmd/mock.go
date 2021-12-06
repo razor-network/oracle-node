@@ -127,7 +127,7 @@ var ViperWriteConfigAsMock func(string) error
 
 var IsEqualMock func(arr1 []uint32, arr2 []uint32) (bool, int)
 
-var GetActiveAssetIdsMock func(*ethclient.Client, string, uint32) ([]uint8, error)
+var GetActiveAssetIdsMock func(*ethclient.Client, string) ([]uint8, error)
 
 var GetBlockManagerMock func(*ethclient.Client) *bindings.BlockManager
 
@@ -481,8 +481,8 @@ func (u UtilsMock) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return IsEqualMock(arr1, arr2)
 }
 
-func (u UtilsMock) GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
-	return GetActiveAssetIdsMock(client, address, epoch)
+func (u UtilsMock) GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
+	return GetActiveAssetIdsMock(client, address)
 }
 
 func (u UtilsMock) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
