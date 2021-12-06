@@ -30,12 +30,33 @@ jobs:
       - run:
           name: "Generate Coverage"
           command: |
-            go-acc ./... --ignore pkg 
+            go-acc ./... --ignore pkg
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
             goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+    push-build:
+      docker:
+        - image: circleci/golang:1.15.8
+      steps:
+        - checkout
+        # - attach_workspace:
+        #   at: .
+        - run:
+            name: "Build docker image"
+            command: |
+              docker build -t razor-go .
 workflows:
   tests:
     jobs:
       - test
+      - push-build
+        # requires:
+        #   - test
+        # filters:
+        #   tags:
+        #     only: /^v.*/
