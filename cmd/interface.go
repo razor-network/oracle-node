@@ -110,10 +110,6 @@ type stakeManagerInterface interface {
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
 }
 
-type accountInterface interface {
-	CreateAccount(path string, password string) accounts.Account
-}
-
 type keystoreInterface interface {
 	Accounts(string) []accounts.Account
 	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
