@@ -435,6 +435,10 @@ func (flagSetUtils FlagSetUtils) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8,
 	return flagSet.GetUint8("assetId")
 }
 
+func (flagSetUtils FlagSetUtils) GetUint8SelectorType(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("selectorType")
+}
+
 func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("status")
 }

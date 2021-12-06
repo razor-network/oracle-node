@@ -16,7 +16,7 @@ var updateJobCmd = &cobra.Command{
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The updateJob command can be used to update an existing job that the stakers can vote upon.
 
 Example:
-  ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -r true -s last -u https://api.gemini.com/v1/pubticker/btcusd
+  ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -r true -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd
 
 Note: 
   This command only works for the admin.
@@ -64,7 +64,10 @@ func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Co
 		return core.NilHash, err
 	}
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	selectorType := 1
+	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
 	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update job", utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching state")
@@ -78,10 +81,10 @@ func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Co
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateJob",
-		Parameters:      []interface{}{jobId, weight, power, uint8(selectorType), selector, url},
+		Parameters:      []interface{}{jobId, weight, power, selectorType, selector, url},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := utilsStruct.assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, uint8(selectorType), selector, url)
+	txn, err := utilsStruct.assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, selectorType, selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -98,18 +101,20 @@ func init() {
 	cmdUtils = UtilsCmd{}
 
 	var (
-		JobId    uint8
-		URL      string
-		Selector string
-		Power    int8
-		Weight   uint8
-		Account  string
-		Password string
+		JobId        uint8
+		URL          string
+		Selector     string
+		SelectorType uint8
+		Power        int8
+		Weight       uint8
+		Account      string
+		Password     string
 	)
 
 	updateJobCmd.Flags().Uint8VarP(&JobId, "jobId", "", 0, "job id")
 	updateJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
-	updateJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
+	updateJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
+	updateJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
 	updateJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	updateJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight")
 	updateJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")

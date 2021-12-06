@@ -3,13 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"regexp"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client, address string) (*bindings.AssetManager, bind.CallOpts) {
@@ -237,32 +239,40 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 		response []byte
 		apiErr   error
 	)
-	apiErr = retry.Do(
-		func() error {
-			response, apiErr = GetDataFromAPI(job.Url)
-			if apiErr != nil {
-				log.Error("Error in fetching data from API: ", apiErr)
-				return apiErr
-			}
-			return nil
-		}, retry.Attempts(core.MaxRetries))
 
-	err := json.Unmarshal(response, &parsedJSON)
-	if err != nil {
-		log.Error("Error in parsing data from API: ", err)
-		return nil, err
-	}
+	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 1 {
+		apiErr = retry.Do(
+			func() error {
+				response, apiErr = GetDataFromAPI(job.Url)
+				if apiErr != nil {
+					log.Error("Error in fetching data from API: ", apiErr)
+					return apiErr
+				}
+				return nil
+			}, retry.Attempts(core.MaxRetries))
+
+		err := json.Unmarshal(response, &parsedJSON)
+		if err != nil {
+			log.Error("Error in parsing data from API: ", err)
+			return nil, err
+		}
 		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed data: ", err)
 			return nil, err
 		}
+	} else {
+		//TODO: Add retry here.
+		dataPoint, err := GetDataFromHTML(job.Url, job.Selector)
+		if err != nil {
+			log.Error("Error in fetching value from parsed XHTML: ", err)
+			return nil, err
+		}
+		// remove "," and currency symbols
+		parsedData = regexp.MustCompile(`[\p{Sc},]`).ReplaceAllString(dataPoint, "")
 	}
-	//else {
-	//TODO: Add support for XHTML selector
-	//}
 
 	datum, err := ConvertToNumber(parsedData)
 	if err != nil {
