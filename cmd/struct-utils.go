@@ -680,6 +680,10 @@ func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethcli
 	return claimBounty(config, client, redeemBountyInput, utilsStruct)
 }
 
+func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)

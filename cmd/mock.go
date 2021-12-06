@@ -277,6 +277,8 @@ var CreateMock func(string, UtilsStruct) (accounts.Account, error)
 
 var claimBountyMock func(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
 
+var GetAmountInSRZRsMock func(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
+
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
 var GetFloat32GasMultiplierMock func(set *pflag.FlagSet) (float32, error)
@@ -887,6 +889,10 @@ func (utilsCmdMock UtilsCmdMock) Create(password string, utilsStruct UtilsStruct
 
 func (utilsCmdMock UtilsCmdMock) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
 	return claimBountyMock(config, client, redeemBountyInput, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	return GetAmountInSRZRsMock(client, address, staker, amount, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
