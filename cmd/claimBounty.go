@@ -105,14 +105,14 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
-	for retry := 1; retry <= core.MaxRetries; retry++ {
+	for retry := 1; retry <= int(core.MaxRetries); retry++ {
 		tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
 		if err == nil {
 			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(tx).Hex())
 			return utilsStruct.transactionUtils.Hash(tx), nil
 		}
 		log.Error("Error while claiming bounty: ", err)
-		if retry != core.MaxRetries {
+		if retry != int(core.MaxRetries) {
 			log.Info("Retrying again...")
 			log.Info("Waiting for 1 more epoch...")
 			utilsStruct.razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)

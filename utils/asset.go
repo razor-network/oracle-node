@@ -3,13 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"regexp"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client, address string) (*bindings.AssetManager, bind.CallOpts) {
@@ -22,14 +24,15 @@ func GetNumAssets(client *ethclient.Client, address string) (uint8, error) {
 		numAssets uint8
 		err       error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		numAssets, err = assetManager.GetNumAssets(&callOpts)
-		if err != nil {
-			Retry(retry, "Error in fetching numAssets: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			numAssets, err = assetManager.GetNumAssets(&callOpts)
+			if err != nil {
+				log.Error("Error in fetching numAssets.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -42,14 +45,15 @@ func GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, err
 		numActiveAssets *big.Int
 		err             error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		numActiveAssets, err = assetManager.GetNumActiveAssets(&callOpts)
-		if err != nil {
-			Retry(retry, "Error in fetching numActiveAssets: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			numActiveAssets, err = assetManager.GetNumActiveAssets(&callOpts)
+			if err != nil {
+				log.Error("Error in fetching active assets.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -62,14 +66,15 @@ func GetAssetType(client *ethclient.Client, address string, assetId uint8) (uint
 		activeAsset types.Asset
 		err         error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		activeAsset, err = assetManager.GetAsset(&callOpts, assetId)
-		if err != nil {
-			Retry(retry, "Error in fetching asset type: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			activeAsset, err = assetManager.GetAsset(&callOpts, assetId)
+			if err != nil {
+				log.Error("Error in fetching asset.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -85,34 +90,36 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint8)
 		asset types.Asset
 		err   error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		asset, err = assetManager.GetAsset(&callOpts, collectionId)
-		if err != nil {
-			Retry(retry, "Error in fetching collection "+string(collectionId)+": ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			asset, err = assetManager.GetAsset(&callOpts, collectionId)
+			if err != nil {
+				log.Error("Error in fetching collection.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}
 	return asset.Collection, nil
 }
 
-func GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+func GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client, address)
 	var (
 		activeAssetIds []uint8
 		err            error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		activeAssetIds, err = assetManager.GetActiveAssets(&callOpts)
-		if err != nil {
-			Retry(retry, "Error in fetching active assets: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			activeAssetIds, err = assetManager.GetActiveAssets(&callOpts)
+			if err != nil {
+				log.Error("Error in fetching active assets.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -184,15 +191,15 @@ func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (bindin
 		job bindings.StructsJob
 		err error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		job, err = assetManager.Jobs(&callOpts, jobId)
-		if err != nil {
-			Retry(retry, "Error in fetching job "+string(jobId)+": ", err)
-			continue
-		}
-		break
-	}
-
+	err = retry.Do(
+		func() error {
+			job, err = assetManager.Jobs(&callOpts, jobId)
+			if err != nil {
+				log.Errorf("Error in fetching job %d.... Retrying", jobId)
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsJob{}, err
 	}
@@ -236,14 +243,15 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 1 {
-		for retry := 1; retry <= core.MaxRetries; retry++ {
-			response, apiErr = GetDataFromAPI(job.Url)
-			if apiErr != nil {
-				Retry(retry, "Error in fetching data from API: ", apiErr)
-				continue
-			}
-			break
-		}
+		apiErr = retry.Do(
+			func() error {
+				response, apiErr = GetDataFromAPI(job.Url)
+				if apiErr != nil {
+					log.Error("Error in fetching data from API: ", apiErr)
+					return apiErr
+				}
+				return nil
+			}, retry.Attempts(core.MaxRetries))
 
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
