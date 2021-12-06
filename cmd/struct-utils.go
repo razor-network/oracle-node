@@ -28,7 +28,6 @@ type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AssetManagerUtils struct{}
-type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type ProposeUtils struct{}
@@ -47,9 +46,9 @@ type UtilsStruct struct {
 	voteManagerUtils  voteManagerInterface
 	tokenManagerUtils tokenManagerInterface
 	keystoreUtils     keystoreInterface
-	accountUtils      accountInterface
 	flagSetUtils      flagSetInterface
 	cryptoUtils       cryptoInterface
+	accountUtils      accounts.AccountInterface
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -404,10 +403,6 @@ func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Cl
 func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8, jobIds []uint8) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
-}
-
-func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
-	return accounts.CreateAccount(path, password)
 }
 
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {

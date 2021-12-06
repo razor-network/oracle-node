@@ -115,10 +115,6 @@ type stakeManagerInterface interface {
 	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
-type accountInterface interface {
-	CreateAccount(path string, password string) accounts.Account
-}
-
 type keystoreInterface interface {
 	Accounts(string) []accounts.Account
 	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)

@@ -25,8 +25,6 @@ type AssetManagerMock struct{}
 
 type StakeManagerMock struct{}
 
-type AccountMock struct{}
-
 type KeystoreMock struct{}
 
 type FlagSetMock struct{}
@@ -202,8 +200,6 @@ var GetBountyLockMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Bou
 var BalanceOfMock func(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
 
 var GetTotalSupplyMock func(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
-
-var CreateAccountMock func(string, string) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 
@@ -665,10 +661,6 @@ func (stakeManagerMock StakeManagerMock) BalanceOf(stakedToken *bindings.StakedT
 
 func (stakeManagerMock StakeManagerMock) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
 	return GetTotalSupplyMock(token, callOpts)
-}
-
-func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
-	return CreateAccountMock(path, password)
 }
 
 func (ks KeystoreMock) Accounts(path string) []accounts.Account {
