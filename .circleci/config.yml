@@ -39,17 +39,17 @@ jobs:
           root: .
           paths:
             - .
-    push-build:
-      docker:
-        - image: circleci/golang:1.15.8
-      steps:
-        - checkout
-        # - attach_workspace:
-        #   at: .
-        - run:
-            name: "Build docker image"
-            command: |
-              docker build -t razor-go .
+  push-build:
+    docker:
+      - image: circleci/golang:1.15.8
+    steps:
+      - checkout
+      # - attach_workspace:
+      #   at: .
+      - run:
+          name: "Build docker image"
+          command: |
+            docker build -t razor-go .
 workflows:
   tests:
     jobs:
