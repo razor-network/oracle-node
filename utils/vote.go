@@ -10,12 +10,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func getVoteManagerWithOpts(client *ethclient.Client, address string) (*bindings.VoteManager, bind.CallOpts) {
-	return GetVoteManager(client), GetOptions(false, address, "")
+func getVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts) {
+	return GetVoteManager(client), GetOptions()
 }
 
 func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	stakerId, err := GetStakerId(client, address)
 	if err != nil {
 		return [32]byte{}, err
@@ -39,8 +39,8 @@ func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) 
 	return commitments.CommitmentHash, nil
 }
 
-func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+func GetVoteValue(client *ethclient.Client, assetId uint8, stakerId uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		voteValue    *big.Int
 		voteValueErr error
@@ -60,8 +60,8 @@ func GetVoteValue(client *ethclient.Client, address string, assetId uint8, stake
 	return voteValue, nil
 }
 
-func GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+func GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		votes    bindings.StructsVote
 		votesErr error
@@ -81,8 +81,8 @@ func GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindin
 	return votes, nil
 }
 
-func GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+func GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		influenceSnapshot *big.Int
 		influenceErr      error
@@ -102,8 +102,8 @@ func GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uin
 	return influenceSnapshot, nil
 }
 
-func GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+func GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		totalInfluenceRevealed *big.Int
 		influenceErr           error
@@ -123,8 +123,8 @@ func GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch u
 	return totalInfluenceRevealed, nil
 }
 
-func GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+func GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		randaoHash [32]byte
 		randaoErr  error
@@ -144,8 +144,8 @@ func GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
 	return randaoHash, nil
 }
 
-func GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+func GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		epochLastCommitted uint32
 		err                error
@@ -166,7 +166,7 @@ func GetEpochLastCommitted(client *ethclient.Client, address string, stakerId ui
 }
 
 func GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	voteManager, callOpts := getVoteManagerWithOpts(client, address)
+	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		epochLastRevealed uint32
 		err               error

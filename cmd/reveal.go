@@ -11,7 +11,7 @@ import (
 )
 
 func (utilsStruct UtilsStruct) HandleRevealState(client *ethclient.Client, address string, staker bindings.StructsStaker, epoch uint32) error {
-	epochLastCommitted, err := utilsStruct.razorUtils.GetEpochLastCommitted(client, address, staker.Id)
+	epochLastCommitted, err := utilsStruct.razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
 		return err
 	}

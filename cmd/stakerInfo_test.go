@@ -212,7 +212,7 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 				stakeManagerUtils: tt.fields.stakeManagerUtils,
 			}
 
-			GetOptionsMock = func(bool, string, string) bind.CallOpts {
+			GetOptionsMock = func() bind.CallOpts {
 				return tt.args.callOpts
 			}
 
@@ -224,7 +224,7 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 				return tt.args.maturity, tt.args.maturityErr
 			}
 
-			GetInfluenceSnapshotMock = func(*ethclient.Client, string, uint32, uint32) (*big.Int, error) {
+			GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 

@@ -19,7 +19,6 @@ import (
 func TestCheckCurrentStatus(t *testing.T) {
 
 	var client *ethclient.Client
-	var address string
 	var assetId uint8
 
 	utilsStruct := UtilsStruct{
@@ -60,7 +59,7 @@ func TestCheckCurrentStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetOptionsMock = func(bool, string, string) bind.CallOpts {
+			GetOptionsMock = func() bind.CallOpts {
 				return tt.args.callOpts
 			}
 
@@ -68,7 +67,7 @@ func TestCheckCurrentStatus(t *testing.T) {
 				return tt.args.activeStatus, tt.args.activeStatusErr
 			}
 
-			got, err := CheckCurrentStatus(client, address, assetId, utilsStruct)
+			got, err := CheckCurrentStatus(client, assetId, utilsStruct)
 			if got != tt.want {
 				t.Errorf("Status from CheckCurrentStatus function, got = %v, want %v", got, tt.want)
 			}
@@ -303,7 +302,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return client
 			}
 
-			CheckCurrentStatusMock = func(*ethclient.Client, string, uint8, UtilsStruct) (bool, error) {
+			CheckCurrentStatusMock = func(*ethclient.Client, uint8, UtilsStruct) (bool, error) {
 				return tt.args.currentStatus, tt.args.currentStatusErr
 			}
 

@@ -10,12 +10,12 @@ import (
 )
 
 func getBlockManagerWithOpts(client *ethclient.Client, address string) (*bindings.BlockManager, bind.CallOpts) {
-	return GetBlockManager(client), GetOptions(false, address, "")
+	return GetBlockManager(client), GetOptions()
 }
 
 func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
 	blockManager := GetBlockManager(client)
-	callOpts := GetOptions(false, address, "")
+	callOpts := GetOptions()
 	var (
 		numProposedBlocks uint8
 		err               error
@@ -37,7 +37,7 @@ func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch u
 
 func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
 	blockManager := GetBlockManager(client)
-	callOpts := GetOptions(false, address, "")
+	callOpts := GetOptions()
 	var (
 		proposedBlock bindings.StructsBlock
 		err           error
@@ -59,7 +59,7 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 
 func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, assetId uint8) (uint32, error) {
 	blockManager := GetBlockManager(client)
-	callOpts := GetOptions(false, address, "")
+	callOpts := GetOptions()
 	var (
 		block bindings.StructsBlock
 		err   error

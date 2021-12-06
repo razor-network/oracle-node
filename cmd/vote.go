@@ -134,7 +134,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 
 	switch state {
 	case 0:
-		lastCommit, err := utils.GetEpochLastCommitted(client, account.Address, stakerId)
+		lastCommit, err := utils.GetEpochLastCommitted(client, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last commit: ", err)
 			break

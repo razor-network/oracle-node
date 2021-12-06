@@ -18,11 +18,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
-	block, _ := new(big.Int).SetString(blockNumber, 10)
+func GetOptions() bind.CallOpts {
+	block, _ := new(big.Int).SetString("", 10)
 	return bind.CallOpts{
-		Pending:     pending,
-		From:        common.HexToAddress(from),
+		Pending:     false,
 		BlockNumber: block,
 		Context:     context.Background(),
 	}

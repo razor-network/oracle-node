@@ -12,7 +12,7 @@ import (
 )
 
 func getStakeManagerWithOpts(client *ethclient.Client, address string) (*bindings.StakeManager, bind.CallOpts) {
-	return GetStakeManager(client), GetOptions(false, address, "")
+	return GetStakeManager(client), GetOptions()
 }
 
 func GetStakerId(client *ethclient.Client, address string) (uint32, error) {
