@@ -5,18 +5,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"math/big"
 	"os"
 	"razor/core"
 	"strconv"
 	"time"
 
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/spf13/pflag"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 )
 
 func ConnectToClient(provider string) *ethclient.Client {
@@ -31,15 +28,16 @@ func ConnectToClient(provider string) *ethclient.Client {
 func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
 	coinContract := GetTokenManager(client)
-	opts := GetOptions(false, accountAddress, "")
+	opts := GetOptions()
 	return coinContract.BalanceOf(&opts, address)
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	blockNumber, err := client.BlockNumber(context.Background())
+	block, err := GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
 	}
+	blockNumber := uint64(block.Number.Int64())
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
@@ -109,13 +107,6 @@ func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	}
 }
 
-func Retry(retry int, errMsg string, err error) {
-	log.Error(errMsg, err)
-	retryingIn := math.Pow(2, float64(retry))
-	log.Debugf("Retrying in %f seconds.....", retryingIn)
-	time.Sleep(time.Duration(retryingIn) * time.Second)
-}
-
 func GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
@@ -143,32 +134,13 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 }
 
 func GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := GetLatestBlock(client)
+	latestHeader, err := GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
 	epoch := latestHeader.Number.Int64() / core.EpochLength
 	return uint32(epoch), nil
-}
-
-func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
-	var (
-		latestHeader *types.Header
-		err          error
-	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		latestHeader, err = client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			Retry(retry, "Error in fetching latest block: ", err)
-			continue
-		}
-		break
-	}
-	if err != nil {
-		return nil, err
-	}
-	return latestHeader, nil
 }
 
 func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
@@ -230,7 +202,7 @@ func Sleep(duration time.Duration) {
 }
 
 func CalculateBlockTime(client *ethclient.Client) int64 {
-	latestBlock, err := GetLatestBlock(client)
+	latestBlock, err := GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}

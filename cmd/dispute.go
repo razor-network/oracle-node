@@ -68,7 +68,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 
 		isEqual, j := utilsStruct.razorUtils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
-			activeAssetIds, _ := utilsStruct.razorUtils.GetActiveAssetIds(client, account.Address, epoch)
+			activeAssetIds, _ := utilsStruct.razorUtils.GetActiveAssetIds(client, account.Address)
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -102,7 +102,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	var sortedStakers []uint32
 
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := utilsStruct.razorUtils.GetVotes(client, account.Address, uint32(i))
+		votes, err := utilsStruct.razorUtils.GetVotes(client, uint32(i))
 		if err != nil {
 			return err
 		}

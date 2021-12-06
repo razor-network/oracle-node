@@ -132,7 +132,7 @@ func TestDispute(t *testing.T) {
 				return tt.args.numOfStakers, tt.args.numOfStakersErr
 			}
 
-			GetVotesMock = func(*ethclient.Client, string, uint32) (bindings.StructsVote, error) {
+			GetVotesMock = func(*ethclient.Client, uint32) (bindings.StructsVote, error) {
 				return tt.args.votes, tt.args.votesErr
 			}
 
@@ -430,7 +430,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.medians, tt.args.mediansErr
 			}
 
-			GetActiveAssetIdsMock = func(*ethclient.Client, string, uint32) ([]uint8, error) {
+			GetActiveAssetIdsMock = func(*ethclient.Client, string) ([]uint8, error) {
 				return tt.args.activeAssetIds, tt.args.activeAssetIdsErr
 			}
 

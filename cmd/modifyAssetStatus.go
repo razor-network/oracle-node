@@ -38,8 +38,8 @@ Example:
 	},
 }
 
-func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
-	callOpts := utilsStruct.razorUtils.GetOptions(false, address, "")
+func CheckCurrentStatus(client *ethclient.Client, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
+	callOpts := utilsStruct.razorUtils.GetOptions()
 	return utilsStruct.assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
 
@@ -66,7 +66,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	currentStatus, err := utilsStruct.cmdUtils.CheckCurrentStatus(client, address, assetId, utilsStruct)
+	currentStatus, err := utilsStruct.cmdUtils.CheckCurrentStatus(client, assetId, utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching active status")
 		return core.NilHash, err

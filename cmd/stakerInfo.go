@@ -35,7 +35,7 @@ Example:
 }
 
 func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
-	callOpts := razorUtils.GetOptions(false, "", "")
+	callOpts := razorUtils.GetOptions()
 	stakerInfo, err := utilsStruct.stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId
 	if err != nil {
 		return err
 	}
-	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, "", stakerId, epoch)
+	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, stakerId, epoch)
 	if err != nil {
 		return err
 	}
