@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
+	razorAccounts "razor/accounts"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func TestCreate(t *testing.T) {
 
 	utilsStruct := UtilsStruct{
 		razorUtils:   UtilsMock{},
-		accountUtils: AccountMock{},
+		accountUtils: razorAccounts.AccountUtilsMock{},
 	}
 
 	type args struct {
@@ -63,7 +64,7 @@ func TestCreate(t *testing.T) {
 				return tt.args.path, tt.args.pathErr
 			}
 
-			CreateAccountMock = func(string, string) accounts.Account {
+			razorAccounts.CreateAccountMock = func(string, string, razorAccounts.AccountInterface) accounts.Account {
 				return accounts.Account{
 					Address: tt.args.account.Address,
 					URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
