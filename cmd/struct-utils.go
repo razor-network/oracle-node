@@ -56,8 +56,8 @@ func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
 }
 
-func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
-	return utils.GetOptions(pending, from, blockNumber)
+func (u Utils) GetOptions() bind.CallOpts {
+	return utils.GetOptions()
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
@@ -136,8 +136,8 @@ func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uin
 	return utils.GetNumberOfStakers(client, address)
 }
 
-func (u Utils) GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
-	return utils.GetRandaoHash(client, address)
+func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
+	return utils.GetRandaoHash(client)
 }
 
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
@@ -156,20 +156,20 @@ func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, st
 	return utils.GetEpochLastRevealed(client, address, stakerId)
 }
 
-func (u Utils) GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
-	return utils.GetVoteValue(client, address, assetId, stakerId)
+func (u Utils) GetVoteValue(client *ethclient.Client, assetId uint8, stakerId uint32) (*big.Int, error) {
+	return utils.GetVoteValue(client, assetId, stakerId)
 }
 
-func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.GetInfluenceSnapshot(client, address, stakerId, epoch)
+func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
 	return utils.GetNumActiveAssets(client, address)
 }
 
-func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
-	return utils.GetTotalInfluenceRevealed(client, address, epoch)
+func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
+	return utils.GetTotalInfluenceRevealed(client, epoch)
 }
 
 func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
@@ -192,8 +192,8 @@ func (u Utils) AllZero(bytesValue [32]byte) bool {
 	return utils.AllZero(bytesValue)
 }
 
-func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastCommitted(client, address, stakerId)
+func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, stakerId)
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -216,8 +216,8 @@ func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager 
 	return utils.GetBlockManager(client)
 }
 
-func (u Utils) GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
-	return utils.GetVotes(client, address, stakerId)
+func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
+	return utils.GetVotes(client, stakerId)
 }
 
 func (u Utils) Contains(arr []int, val int) bool {
@@ -520,8 +520,8 @@ func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address 
 	return getIteration(client, address, proposer, utilsStruct)
 }
 
-func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
-	return isElectedProposer(client, address, proposer, utilsStruct)
+func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
+	return isElectedProposer(client, proposer, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
@@ -612,8 +612,8 @@ func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.Transa
 	return withdraw(client, txnOpts, epoch, stakerId, utilsStruct)
 }
 
-func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
-	return CheckCurrentStatus(client, address, assetId, utilsStruct)
+func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
+	return CheckCurrentStatus(client, assetId, utilsStruct)
 }
 
 func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
