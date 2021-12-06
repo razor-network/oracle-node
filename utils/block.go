@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
@@ -19,14 +20,15 @@ func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch u
 		numProposedBlocks uint8
 		err               error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		numProposedBlocks, err = blockManager.GetNumProposedBlocks(&callOpts, epoch)
-		if err != nil {
-			Retry(retry, "Error in fetching numProposedBlocks: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			numProposedBlocks, err = blockManager.GetNumProposedBlocks(&callOpts, epoch)
+			if err != nil {
+				log.Error("Error in fetching numProposedBlocks.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -40,14 +42,15 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 		proposedBlock bindings.StructsBlock
 		err           error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		proposedBlock, err = blockManager.GetProposedBlock(&callOpts, epoch, proposedBlockId)
-		if err != nil {
-			Retry(retry, "Error in fetching proposed block: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			proposedBlock, err = blockManager.GetProposedBlock(&callOpts, epoch, proposedBlockId)
+			if err != nil {
+				log.Error("Error in fetching proposed block.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
@@ -61,14 +64,15 @@ func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, 
 		block bindings.StructsBlock
 		err   error
 	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		block, err = blockManager.GetBlock(&callOpts, epoch)
-		if err != nil {
-			Retry(retry, "Error in fetching proposed block: ", err)
-			continue
-		}
-		break
-	}
+	err = retry.Do(
+		func() error {
+			block, err = blockManager.GetBlock(&callOpts, epoch)
+			if err != nil {
+				log.Error("Error in fetching proposed block.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -77,17 +81,65 @@ func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, 
 
 func GetMinStakeAmount(client *ethclient.Client, address string) (*big.Int, error) {
 	blockManager, callOpts := getBlockManagerWithOpts(client, address)
-	return blockManager.MinStake(&callOpts)
+	var (
+		minStake *big.Int
+		err      error
+	)
+	err = retry.Do(
+		func() error {
+			minStake, err = blockManager.MinStake(&callOpts)
+			if err != nil {
+				log.Error("Error in fetching minimum stake amount.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
+	if err != nil {
+		return nil, err
+	}
+	return minStake, nil
 }
 
 func GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
 	blockManager, callOpts := getBlockManagerWithOpts(client, address)
-	return blockManager.MaxAltBlocks(&callOpts)
+	var (
+		maxAltBlocks uint8
+		err          error
+	)
+	err = retry.Do(
+		func() error {
+			maxAltBlocks, err = blockManager.MaxAltBlocks(&callOpts)
+			if err != nil {
+				log.Error("Error in fetching max alt blocks.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return maxAltBlocks, nil
 }
 
 func GetSortedProposedBlockId(client *ethclient.Client, address string, epoch uint32, index *big.Int) (uint8, error) {
 	blockManager, callOpts := getBlockManagerWithOpts(client, address)
-	return blockManager.SortedProposedBlockIds(&callOpts, epoch, index)
+	var (
+		sortedProposedBlockId uint8
+		err                   error
+	)
+	err = retry.Do(
+		func() error {
+			sortedProposedBlockId, err = blockManager.SortedProposedBlockIds(&callOpts, epoch, index)
+			if err != nil {
+				log.Error("Error in fetching max alt blocks.... Retrying")
+				return err
+			}
+			return nil
+		}, retry.Attempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return sortedProposedBlockId, nil
 }
 
 func GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
