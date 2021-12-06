@@ -113,32 +113,9 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 
-	stakedToken := utilsStruct.razorUtils.GetStakedToken(client, staker.TokenAddress)
-	callOpts := utilsStruct.razorUtils.GetOptions(false, "", "")
-
-	sRZRBalance, err := utilsStruct.stakeManagerUtils.BalanceOf(stakedToken, &callOpts, common.HexToAddress(txnArgs.AccountAddress))
+	sAmount, err := utilsStruct.cmdUtils.GetAmountInSRZRs(client, txnArgs.AccountAddress, staker, txnArgs.Amount, utilsStruct)
 	if err != nil {
-		log.Error("Error in getting sRZRBalance: ", err)
-		return txnArgs, err
-	}
-
-	totalSupply, err := utilsStruct.stakeManagerUtils.GetTotalSupply(stakedToken, &callOpts)
-	if err != nil {
-		log.Error("Error in getting total supply: ", err)
-		return txnArgs, err
-	}
-
-	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
-	log.Infof("The maximum RZRs you can unstake: %f RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
-
-	if maxUnstake.Cmp(txnArgs.Amount) < 0 {
-		log.Error("Amount exceeds maximum unstake amount")
-		return txnArgs, errors.New("invalid amount")
-	}
-
-	sAmount, err := utilsStruct.razorUtils.ConvertRZRToSRZR(txnArgs.Amount, staker.Stake, totalSupply)
-	if err != nil {
-		log.Error("Error in getting sAmount: ", err)
+		log.Error("Error in getting sRZR amount: ", err)
 		return txnArgs, err
 	}
 
@@ -175,6 +152,38 @@ func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct
 		utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
 	}
 	return nil
+}
+
+func GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	stakedToken := utilsStruct.razorUtils.GetStakedToken(client, staker.TokenAddress)
+	callOpts := utilsStruct.razorUtils.GetOptions()
+
+	sRZRBalance, err := utilsStruct.stakeManagerUtils.BalanceOf(stakedToken, &callOpts, common.HexToAddress(address))
+	if err != nil {
+		log.Error("Error in getting sRZRBalance: ", err)
+		return nil, err
+	}
+
+	totalSupply, err := utilsStruct.stakeManagerUtils.GetTotalSupply(stakedToken, &callOpts)
+	if err != nil {
+		log.Error("Error in getting total supply: ", err)
+		return nil, err
+	}
+
+	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
+	log.Infof("The maximum RZRs you can unstake: %f RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
+
+	if maxUnstake.Cmp(amount) < 0 {
+		log.Error("Amount exceeds maximum unstake amount")
+		return nil, errors.New("invalid amount")
+	}
+
+	sAmount, err := utilsStruct.razorUtils.ConvertRZRToSRZR(amount, staker.Stake, totalSupply)
+	if err != nil {
+		log.Error("Error in getting sAmount: ", err)
+		return nil, err
+	}
+	return sAmount, nil
 }
 
 func init() {
