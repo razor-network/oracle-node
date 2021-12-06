@@ -5,10 +5,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	razorAccounts "razor/accounts"
+
 	"razor/utils"
 )
-
-var accountUtils accountInterface
 
 var createCmd = &cobra.Command{
 	Use:   "create",
@@ -23,7 +23,7 @@ Example:
 func initialiseCreate(cmd *cobra.Command, args []string) {
 	utilsStruct := UtilsStruct{
 		razorUtils:   razorUtils,
-		accountUtils: accountUtils,
+		accountUtils: razorAccounts.AccountUtilsInterface,
 		cmdUtils:     cmdUtils,
 	}
 	utilsStruct.executeCreate(cmd.Flags())
@@ -43,13 +43,13 @@ func Create(password string, utilsStruct UtilsStruct) (accounts.Account, error) 
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account := utilsStruct.accountUtils.CreateAccount(path, password)
+	account := utilsStruct.accountUtils.CreateAccount(path, password, utilsStruct.accountUtils)
 	return account, nil
 }
 
 func init() {
 	razorUtils = Utils{}
-	accountUtils = AccountUtils{}
+	razorAccounts.AccountUtilsInterface = razorAccounts.AccountUtils{}
 	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(createCmd)

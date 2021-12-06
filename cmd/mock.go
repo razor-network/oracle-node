@@ -25,8 +25,6 @@ type AssetManagerMock struct{}
 
 type StakeManagerMock struct{}
 
-type AccountMock struct{}
-
 type KeystoreMock struct{}
 
 type FlagSetMock struct{}
@@ -192,8 +190,6 @@ var StakerInfoMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker
 var GetMaturityMock func(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 
 var GetBountyLockMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
-
-var CreateAccountMock func(string, string) accounts.Account
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 
@@ -633,10 +629,6 @@ func (stakeManagerMock StakeManagerMock) GetMaturity(client *ethclient.Client, o
 
 func (stakeManagerMock StakeManagerMock) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	return GetBountyLockMock(client, opts, bountyId)
-}
-
-func (account AccountMock) CreateAccount(path string, password string) accounts.Account {
-	return CreateAccountMock(path, password)
 }
 
 func (ks KeystoreMock) Accounts(path string) []accounts.Account {
