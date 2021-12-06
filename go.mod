@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.8
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/magiconair/properties v1.8.4
