@@ -171,7 +171,7 @@ func GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.
 	}
 
 	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
-	log.Infof("The maximum RZRs you can unstake: %f RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
+	log.Infof("The maximum RZRs you can unstake: %g RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
 
 	if maxUnstake.Cmp(amount) < 0 {
 		log.Error("Amount exceeds maximum unstake amount")
