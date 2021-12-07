@@ -29,7 +29,7 @@ Note:
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.updateJob(cmd.Flags(), config)
 		utils.CheckError("UpdateJob error: ", err)

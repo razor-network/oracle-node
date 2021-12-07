@@ -95,8 +95,8 @@ func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, staker
 	return utils.GetStaker(client, address, stakerId)
 }
 
-func (u Utils) GetConfigData() (types.Configurations, error) {
-	return GetConfigData()
+func (u Utils) GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
+	return GetConfigData(utilsStruct)
 }
 
 func (u Utils) ParseBool(str string) (bool, error) {
@@ -251,8 +251,8 @@ func (u Utils) GetStateName(stateNumber int64) string {
 	return utils.GetStateName(stateNumber)
 }
 
-func (u Utils) getBufferPercent() (int32, error) {
-	return getBufferPercent()
+func (u Utils) getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
+	return getBufferPercent(utilsStruct)
 }
 
 func (u Utils) IsFlagPassed(name string) bool {
@@ -269,6 +269,30 @@ func (u Utils) GetAmountInWei(amount *big.Int) *big.Int {
 
 func (u Utils) Sleep(duration time.Duration) {
 	utils.Sleep(duration)
+}
+
+func (u Utils) getProvider(utilsStruct UtilsStruct) (string, error) {
+	return getProvider(utilsStruct)
+}
+
+func (u Utils) getMultiplier(utilsStruct UtilsStruct) (float32, error) {
+	return getMultiplier(utilsStruct)
+}
+
+func (u Utils) getWaitTime(utilsStruct UtilsStruct) (int32, error) {
+	return getWaitTime(utilsStruct)
+}
+
+func (u Utils) getGasPrice(utilsStruct UtilsStruct) (int32, error) {
+	return getGasPrice(utilsStruct)
+}
+
+func (u Utils) getLogLevel(utilsStruct UtilsStruct) (string, error) {
+	return getLogLevel(utilsStruct)
+}
+
+func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
+	return getGasLimit(utilsStruct)
 }
 
 func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
@@ -613,6 +637,34 @@ func (flagSetUtils FlagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bo
 
 func (flagSetUtils FlagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 	return flagSet.GetUint32("bountyId")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootStringProvider() (string, error) {
+	return rootCmd.PersistentFlags().GetString("provider")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootFloat32GasMultiplier() (float32, error) {
+	return rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32Buffer() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("buffer")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32Wait() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("wait")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32GasPrice() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("gasprice")
+}
+
+func (flagSetUtils FlagSetUtils) getRootStringLogLevel() (string, error) {
+	return rootCmd.PersistentFlags().GetString("logLevel")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootFloat32GasLimit() (float32, error) {
+	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
 }
 
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {

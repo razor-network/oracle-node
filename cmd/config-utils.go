@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetConfigData() (types.Configurations, error) {
+func GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
 		GasMultiplier:      0,
@@ -16,31 +16,31 @@ func GetConfigData() (types.Configurations, error) {
 		GasLimitMultiplier: 0,
 	}
 
-	provider, err := getProvider()
+	provider, err := utilsStruct.razorUtils.getProvider(utilsStruct)
 	if err != nil {
 		return config, err
 	}
-	gasMultiplier, err := getMultiplier()
+	gasMultiplier, err := utilsStruct.razorUtils.getMultiplier(utilsStruct)
 	if err != nil {
 		return config, err
 	}
-	bufferPercent, err := getBufferPercent()
+	bufferPercent, err := utilsStruct.razorUtils.getBufferPercent(utilsStruct)
 	if err != nil {
 		return config, err
 	}
-	waitTime, err := getWaitTime()
+	waitTime, err := utilsStruct.razorUtils.getWaitTime(utilsStruct)
 	if err != nil {
 		return config, err
 	}
-	gasPrice, err := getGasPrice()
+	gasPrice, err := utilsStruct.razorUtils.getGasPrice(utilsStruct)
 	if err != nil {
 		return config, err
 	}
-	logLevel, err := getLogLevel()
+	logLevel, err := utilsStruct.razorUtils.getLogLevel(utilsStruct)
 	if err != nil {
 		return config, err
 	}
-	gasLimit, err := getGasLimit()
+	gasLimit, err := utilsStruct.razorUtils.getGasLimit(utilsStruct)
 	if err != nil {
 		return config, err
 	}
@@ -55,8 +55,8 @@ func GetConfigData() (types.Configurations, error) {
 	return config, nil
 }
 
-func getProvider() (string, error) {
-	provider, err := rootCmd.PersistentFlags().GetString("provider")
+func getProvider(utilsStruct UtilsStruct) (string, error) {
+	provider, err := utilsStruct.flagSetUtils.GetRootStringProvider()
 	if err != nil {
 		return "", err
 	}
@@ -69,8 +69,8 @@ func getProvider() (string, error) {
 	return provider, nil
 }
 
-func getMultiplier() (float32, error) {
-	gasMultiplier, err := rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
+func getMultiplier(utilsStruct UtilsStruct) (float32, error) {
+	gasMultiplier, err := utilsStruct.flagSetUtils.GetRootFloat32GasMultiplier()
 	if err != nil {
 		return 1, err
 	}
@@ -80,8 +80,8 @@ func getMultiplier() (float32, error) {
 	return gasMultiplier, nil
 }
 
-func getBufferPercent() (int32, error) {
-	bufferPercent, err := rootCmd.PersistentFlags().GetInt32("buffer")
+func getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
+	bufferPercent, err := utilsStruct.flagSetUtils.GetRootInt32Buffer()
 	if err != nil {
 		return 30, err
 	}
@@ -91,8 +91,8 @@ func getBufferPercent() (int32, error) {
 	return bufferPercent, nil
 }
 
-func getWaitTime() (int32, error) {
-	waitTime, err := rootCmd.PersistentFlags().GetInt32("wait")
+func getWaitTime(utilsStruct UtilsStruct) (int32, error) {
+	waitTime, err := utilsStruct.flagSetUtils.GetRootInt32Wait()
 	if err != nil {
 		return 3, err
 	}
@@ -102,8 +102,8 @@ func getWaitTime() (int32, error) {
 	return waitTime, nil
 }
 
-func getGasPrice() (int32, error) {
-	gasPrice, err := rootCmd.PersistentFlags().GetInt32("gasprice")
+func getGasPrice(utilsStruct UtilsStruct) (int32, error) {
+	gasPrice, err := utilsStruct.flagSetUtils.GetRootInt32GasPrice()
 	if err != nil {
 		return 0, err
 	}
@@ -113,8 +113,8 @@ func getGasPrice() (int32, error) {
 	return gasPrice, nil
 }
 
-func getLogLevel() (string, error) {
-	logLevel, err := rootCmd.PersistentFlags().GetString("logLevel")
+func getLogLevel(utilsStruct UtilsStruct) (string, error) {
+	logLevel, err := utilsStruct.flagSetUtils.getRootStringLogLevel()
 	if err != nil {
 		return "", err
 	}
@@ -124,8 +124,8 @@ func getLogLevel() (string, error) {
 	return logLevel, nil
 }
 
-func getGasLimit() (float32, error) {
-	gasLimit, err := rootCmd.PersistentFlags().GetFloat32("gasLimit")
+func getGasLimit(utilsStruct UtilsStruct) (float32, error) {
+	gasLimit, err := utilsStruct.flagSetUtils.GetRootFloat32GasLimit()
 	if err != nil {
 		return -1, err
 	}
