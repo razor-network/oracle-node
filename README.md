@@ -193,6 +193,28 @@ Example:
 $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue
 ```
 
+### Stake and Vote 
+
+This is a quick command that'll stake your razor tokens and start voting.
+
+```
+$ ./razor stakeAndVote --address <address> --value <value> --pow <power>
+```
+
+Example:
+
+```
+$ ./razor stakeAndVote  --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 
+```
+
+If you want to report incorrect values, there is a `rogue` mode available. Just pass an extra flag `--rogue` to start voting in rogue mode and the client will report wrong medians.
+
+Example:
+
+```
+$ ./razorstakeAndVote  --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --rogue
+```
+
 ### Unstake
 
 If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
