@@ -577,6 +577,22 @@ func TestGetAmountInSRZRs(t *testing.T) {
 			want:    nil,
 			wantErr: errors.New("conversion RZR to sRZR error"),
 		},
+		{
+			name: "Test 6: When the supply is high and GetAmountInSRZRs executes successfully",
+			args: args{
+				staker: bindings.StructsStaker{
+					Stake: big.NewInt(1).Exp(big.NewInt(10), big.NewInt(9), nil),
+				},
+				amount:        big.NewInt(1).Exp(big.NewInt(10), big.NewInt(6), nil),
+				balance:       big.NewInt(1).Exp(big.NewInt(10), big.NewInt(7), nil),
+				totalSupply:   big.NewInt(1).Exp(big.NewInt(10), big.NewInt(9), nil),
+				RZR:           big.NewInt(1).Exp(big.NewInt(10), big.NewInt(7), nil),
+				decimalAmount: big.NewFloat(1).Mul(big.NewFloat(10), big.NewFloat(1e5)),
+				sRZR:          big.NewInt(1).Exp(big.NewInt(10), big.NewInt(6), nil),
+			},
+			want:    big.NewInt(1).Exp(big.NewInt(10), big.NewInt(6), nil),
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

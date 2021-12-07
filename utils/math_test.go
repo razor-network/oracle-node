@@ -837,6 +837,16 @@ func TestConvertRZRToSRZR(t *testing.T) {
 			want:    big.NewInt(0),
 			wantErr: true,
 		},
+		{
+			name: "Test 4: When values are high",
+			args: args{
+				amount:       big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e7)),
+				currentStake: big.NewInt(1).Mul(big.NewInt(400), big.NewInt(1e8)),
+				totalSupply:  big.NewInt(1).Mul(big.NewInt(4000), big.NewInt(1e8)),
+			},
+			want:    big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e8)),
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -880,6 +890,15 @@ func TestConvertSRZRToRZR(t *testing.T) {
 				totalSupply:  big.NewInt(1000),
 			},
 			want: big.NewInt(1000),
+		},
+		{
+			name: "Test 3: When values are high",
+			args: args{
+				sAmount:      big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e8)),
+				currentStake: big.NewInt(1).Mul(big.NewInt(400), big.NewInt(1e8)),
+				totalSupply:  big.NewInt(1).Mul(big.NewInt(4000), big.NewInt(1e8)),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e7)),
 		},
 	}
 	for _, tt := range tests {
