@@ -275,6 +275,18 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 	return utils.CalculateBlockTime(client)
 }
 
+func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
+	return utils.GetStakedToken(client, address)
+}
+
+func (u Utils) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return utils.ConvertSRZRToRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
@@ -353,6 +365,14 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
+	return token.TotalSupply(callOpts)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -657,6 +677,10 @@ func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAc
 
 func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
 	return claimBounty(config, client, redeemBountyInput, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
