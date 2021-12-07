@@ -45,8 +45,6 @@ jobs:
       - image: circleci/golang:1.15.8
         environment:
           IMAGE_NAME: "razornetwork/razor-go"
-          DOCKERHUB_USERNAME: "shrikantupadhyay"
-          DOCKERHUB_PASSWORD: "Shrikant@1212"
 
     steps:
       - checkout
@@ -59,7 +57,7 @@ jobs:
           name: "Build docker image"
           command: |
             printenv
-            echo "DOCKERHUB_PASSWORD" | docker login --username "DOCKERHUB_USERNAME" --password-stdin
+            echo "DOCKERHUB_PASSWORD" | docker login https://registry.hub.docker.com --username "DOCKERHUB_USERNAME" --password-stdin
             docker build -t $IMAGE_NAME .
             docker images
 # echo “$DOCKERHUB_PASSWORD” | docker login -u “$DOCKERHUB_USERNAME” —-password-stdin
