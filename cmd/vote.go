@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -20,6 +21,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var voteCmd = &cobra.Command{
@@ -29,31 +31,7 @@ var voteCmd = &cobra.Command{
 
 Example:
   ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
-	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in fetching config details: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		rogueMode, _ := cmd.Flags().GetBool("rogue")
-		client := utils.ConnectToClient(config.Provider)
-		header, err := razorUtils.GetLatestBlock(client)
-		utils.CheckError("Error in getting block: ", err)
-
-		address, _ := cmd.Flags().GetString("address")
-		account := types.Account{Address: address, Password: password}
-		for {
-			latestHeader, err := utils.GetLatestBlockWithRetry(client)
-			if err != nil {
-				log.Error("Error in fetching block: ", err)
-				continue
-			}
-			if latestHeader.Number.Cmp(header.Number) != 0 {
-				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config, rogueMode)
-			}
-
-		}
-	},
+	Run: initializeVote,
 }
 
 var (
@@ -61,6 +39,39 @@ var (
 	lastVerification uint32
 	blockConfirmed   uint32
 )
+
+func initializeVote(cmd *cobra.Command, args []string) {
+	password := utils.AssignPassword(cmd.Flags())
+	executeVote(cmd.Flags(), password)
+}
+
+func executeVote(flagSet *pflag.FlagSet, password string) {
+	config, err := GetConfigData()
+	utils.CheckError("Error in fetching config details: ", err)
+
+	rogueMode, _ := flagSet.GetBool("rogue")
+	client := utils.ConnectToClient(config.Provider)
+
+	address, _ := flagSet.GetString("address")
+	account := types.Account{Address: address, Password: password}
+	vote(client, account, config, rogueMode)
+}
+
+func vote(client *ethclient.Client, account types.Account, config types.Configurations, rogueMode bool) {
+	header, err := razorUtils.GetLatestBlock(client)
+	utils.CheckError("Error in getting block: ", err)
+	for {
+		latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			log.Error("Error in fetching block: ", err)
+			continue
+		}
+		if latestHeader.Number.Cmp(header.Number) != 0 {
+			header = latestHeader
+			handleBlock(client, account, latestHeader.Number, config, rogueMode)
+		}
+	}
+}
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
 	utilsStruct := UtilsStruct{

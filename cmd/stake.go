@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -25,15 +26,6 @@ var stakeCmd = &cobra.Command{
 Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		client := utils.ConnectToClient(config.Provider)
-		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account: "+address, err)
-
 		utilsStruct := UtilsStruct{
 			razorUtils:        razorUtils,
 			stakeManagerUtils: stakeManagerUtils,
@@ -41,35 +33,46 @@ Example:
 			tokenManagerUtils: tokenManagerUtils,
 			flagSetUtils:      flagSetUtils,
 		}
-
-		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
-		utils.CheckError("Error in getting amount: ", err)
-
-		utils.CheckAmountAndBalance(valueInWei, balance)
-
-		utils.CheckEthBalanceIsZero(client, address)
-
-		txnArgs := types.TransactionOptions{
-			Client:         client,
-			AccountAddress: address,
-			Password:       password,
-			Amount:         valueInWei,
-			ChainId:        core.ChainId,
-			Config:         config,
-		}
-
-		approveTxnHash, err := utilsStruct.approve(txnArgs)
-		utils.CheckError("Approve error: ", err)
-
-		if approveTxnHash != core.NilHash {
-			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
-		}
-
-		stakeTxnHash, err := utilsStruct.stakeCoins(txnArgs)
-		utils.CheckError("Stake error: ", err)
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
-
+		password := utils.AssignPassword(cmd.Flags())
+		utilsStruct.executeStake(cmd.Flags(), password)
 	},
+}
+
+func (utilsStruct UtilsStruct) executeStake(flagSet *pflag.FlagSet, password string) {
+	config, err := GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	address, _ := flagSet.GetString("address")
+	client := utils.ConnectToClient(config.Provider)
+	balance, err := utils.FetchBalance(client, address)
+	utils.CheckError("Error in fetching balance for account: "+address, err)
+
+	valueInWei, err := AssignAmountInWei(flagSet, utilsStruct)
+	utils.CheckError("Error in getting amount: ", err)
+
+	utils.CheckAmountAndBalance(valueInWei, balance)
+
+	utils.CheckEthBalanceIsZero(client, address)
+
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		AccountAddress: address,
+		Password:       password,
+		Amount:         valueInWei,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
+
+	approveTxnHash, err := utilsStruct.approve(txnArgs)
+	utils.CheckError("Approve error: ", err)
+
+	if approveTxnHash != core.NilHash {
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+	}
+
+	stakeTxnHash, err := utilsStruct.stakeCoins(txnArgs)
+	utils.CheckError("Stake error: ", err)
+	razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 }
 
 func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
