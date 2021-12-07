@@ -34,11 +34,3 @@ func GetConfigFilePath() (string, error) {
 	}
 	return home + "/razor.yaml", nil
 }
-
-func GetCommitDataFilePath() (string, error) {
-	home, err := GetDefaultPath()
-	if err != nil {
-		return "", err
-	}
-	return home + "/commit.txt", nil
-}
