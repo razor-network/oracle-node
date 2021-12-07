@@ -46,7 +46,16 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func executeVote(flagSet *pflag.FlagSet, password string) {
-	config, err := GetConfigData()
+	utilsStruct := UtilsStruct{
+		razorUtils:        razorUtils,
+		proposeUtils:      proposeUtils,
+		transactionUtils:  transactionUtils,
+		blockManagerUtils: blockManagerUtils,
+		voteManagerUtils:  voteManagerUtils,
+		cmdUtils:          cmdUtils,
+		flagSetUtils:      flagSetUtils,
+	}
+	config, err := GetConfigData(utilsStruct)
 	utils.CheckError("Error in fetching config details: ", err)
 
 	rogueMode, _ := flagSet.GetBool("rogue")
@@ -54,10 +63,10 @@ func executeVote(flagSet *pflag.FlagSet, password string) {
 
 	address, _ := flagSet.GetString("address")
 	account := types.Account{Address: address, Password: password}
-	vote(client, account, config, rogueMode)
+	vote(client, account, config, rogueMode, utilsStruct)
 }
 
-func vote(client *ethclient.Client, account types.Account, config types.Configurations, rogueMode bool) {
+func vote(client *ethclient.Client, account types.Account, config types.Configurations, rogueMode bool, utilsStruct UtilsStruct) {
 	header, err := razorUtils.GetLatestBlock(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
@@ -68,20 +77,12 @@ func vote(client *ethclient.Client, account types.Account, config types.Configur
 		}
 		if latestHeader.Number.Cmp(header.Number) != 0 {
 			header = latestHeader
-			handleBlock(client, account, latestHeader.Number, config, rogueMode)
+			handleBlock(client, account, latestHeader.Number, config, rogueMode, utilsStruct)
 		}
 	}
 }
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
-	utilsStruct := UtilsStruct{
-		razorUtils:        razorUtils,
-		proposeUtils:      proposeUtils,
-		transactionUtils:  transactionUtils,
-		blockManagerUtils: blockManagerUtils,
-		voteManagerUtils:  voteManagerUtils,
-		cmdUtils:          cmdUtils,
-	}
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool, utilsStruct UtilsStruct) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -386,6 +387,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 

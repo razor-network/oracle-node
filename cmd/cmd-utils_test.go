@@ -87,7 +87,7 @@ func TestGetEpochAndState(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			getBufferPercentMock = func() (int32, error) {
+			getBufferPercentMock = func(UtilsStruct) (int32, error) {
 				return tt.args.bufferPercent, tt.args.bufferPercentErr
 			}
 

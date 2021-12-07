@@ -24,7 +24,7 @@ type utilsInterface interface {
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
-	GetConfigData() (types.Configurations, error)
+	GetConfigData(UtilsStruct) (types.Configurations, error)
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
@@ -66,12 +66,21 @@ type utilsInterface interface {
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetStateName(int64) string
-	getBufferPercent() (int32, error)
+	getBufferPercent(UtilsStruct) (int32, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
 	CalculateBlockTime(*ethclient.Client) int64
+	getProvider(UtilsStruct) (string, error)
+	getMultiplier(UtilsStruct) (float32, error)
+	getWaitTime(UtilsStruct) (int32, error)
+	getGasPrice(UtilsStruct) (int32, error)
+	getLogLevel(UtilsStruct) (string, error)
+	getGasLimit(UtilsStruct) (float32, error)
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
+	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 }
 
 type tokenManagerInterface interface {
@@ -108,6 +117,8 @@ type stakeManagerInterface interface {
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
 type keystoreInterface interface {
@@ -144,6 +155,13 @@ type flagSetInterface interface {
 	GetStringPow(*pflag.FlagSet) (string, error)
 	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
+	GetRootStringProvider() (string, error)
+	GetRootFloat32GasMultiplier() (float32, error)
+	GetRootInt32Buffer() (int32, error)
+	GetRootInt32Wait() (int32, error)
+	GetRootInt32GasPrice() (int32, error)
+	getRootStringLogLevel() (string, error)
+	GetRootFloat32GasLimit() (float32, error)
 }
 
 type utilsCmdInterface interface {
@@ -163,6 +181,7 @@ type utilsCmdInterface interface {
 	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 	Create(string, UtilsStruct) (accounts.Account, error)
 	claimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
+	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
 }
 
 type cryptoInterface interface {

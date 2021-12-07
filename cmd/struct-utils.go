@@ -95,8 +95,8 @@ func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, staker
 	return utils.GetStaker(client, address, stakerId)
 }
 
-func (u Utils) GetConfigData() (types.Configurations, error) {
-	return GetConfigData()
+func (u Utils) GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
+	return GetConfigData(utilsStruct)
 }
 
 func (u Utils) ParseBool(str string) (bool, error) {
@@ -251,8 +251,8 @@ func (u Utils) GetStateName(stateNumber int64) string {
 	return utils.GetStateName(stateNumber)
 }
 
-func (u Utils) getBufferPercent() (int32, error) {
-	return getBufferPercent()
+func (u Utils) getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
+	return getBufferPercent(utilsStruct)
 }
 
 func (u Utils) IsFlagPassed(name string) bool {
@@ -271,8 +271,44 @@ func (u Utils) Sleep(duration time.Duration) {
 	utils.Sleep(duration)
 }
 
+func (u Utils) getProvider(utilsStruct UtilsStruct) (string, error) {
+	return getProvider(utilsStruct)
+}
+
+func (u Utils) getMultiplier(utilsStruct UtilsStruct) (float32, error) {
+	return getMultiplier(utilsStruct)
+}
+
+func (u Utils) getWaitTime(utilsStruct UtilsStruct) (int32, error) {
+	return getWaitTime(utilsStruct)
+}
+
+func (u Utils) getGasPrice(utilsStruct UtilsStruct) (int32, error) {
+	return getGasPrice(utilsStruct)
+}
+
+func (u Utils) getLogLevel(utilsStruct UtilsStruct) (string, error) {
+	return getLogLevel(utilsStruct)
+}
+
+func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
+	return getGasLimit(utilsStruct)
+}
+
 func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 	return utils.CalculateBlockTime(client)
+}
+
+func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
+	return utils.GetStakedToken(client, address)
+}
+
+func (u Utils) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return utils.ConvertSRZRToRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -353,6 +389,14 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
+	return token.TotalSupply(callOpts)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
@@ -595,6 +639,34 @@ func (flagSetUtils FlagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint
 	return flagSet.GetUint32("bountyId")
 }
 
+func (flagSetUtils FlagSetUtils) GetRootStringProvider() (string, error) {
+	return rootCmd.PersistentFlags().GetString("provider")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootFloat32GasMultiplier() (float32, error) {
+	return rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32Buffer() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("buffer")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32Wait() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("wait")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32GasPrice() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("gasprice")
+}
+
+func (flagSetUtils FlagSetUtils) getRootStringLogLevel() (string, error) {
+	return rootCmd.PersistentFlags().GetString("logLevel")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootFloat32GasLimit() (float32, error) {
+	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
+}
+
 func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
 	return SetCommission(client, stakerId, txnOpts, commission, utilsStruct)
 }
@@ -657,6 +729,10 @@ func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAc
 
 func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
 	return claimBounty(config, client, redeemBountyInput, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
