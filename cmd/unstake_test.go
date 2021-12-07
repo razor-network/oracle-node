@@ -310,7 +310,7 @@ func Test_executeUnstake(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetConfigDataMock = func() (types.Configurations, error) {
+			GetConfigDataMock = func(UtilsStruct) (types.Configurations, error) {
 				return tt.args.config, tt.args.configErr
 			}
 
