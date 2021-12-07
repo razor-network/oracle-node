@@ -55,8 +55,8 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            printenv
-            echo "DOCKERHUB_PASSWORD" | docker login https://registry.hub.docker.com --username "DOCKERHUB_USERNAME" --password-stdin
+
+            echo "$DOCKERHUB_PASSWORD" | docker login https://registry.hub.docker.com --username "$DOCKERHUB_USERNAME" --password-stdin
             docker build -t $IMAGE_NAME .
             docker images
 workflows:
