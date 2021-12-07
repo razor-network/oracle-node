@@ -2,7 +2,6 @@
 version: 2.1
 orbs:
   node: circleci/node@4.7.0
-  docker: circleci/docker@2.0.1
 jobs:
   test:
     docker:
@@ -60,8 +59,6 @@ jobs:
             echo "DOCKERHUB_PASSWORD" | docker login https://registry.hub.docker.com --username "DOCKERHUB_USERNAME" --password-stdin
             docker build -t $IMAGE_NAME .
             docker images
-# echo “$DOCKERHUB_PASSWORD” | docker login -u “$DOCKERHUB_USERNAME” —-password-stdin
-# docker push $IMAGE_NAME:latest
 workflows:
   tests:
     jobs:
