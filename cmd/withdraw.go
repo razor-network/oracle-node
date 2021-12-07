@@ -24,7 +24,15 @@ Example:
   ./razor withdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			cmdUtils:          cmdUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+		}
+
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -37,13 +45,6 @@ Example:
 
 		stakerId, err := utils.AssignStakerId(cmd.Flags(), client, address)
 		utils.CheckError("StakerId error: ", err)
-
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			cmdUtils:          cmdUtils,
-			transactionUtils:  transactionUtils,
-		}
 
 		txn, err := withdrawFunds(client, types.Account{
 			Address:  address,
@@ -135,6 +136,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
+	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(withdrawCmd)
 

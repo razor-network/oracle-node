@@ -41,7 +41,7 @@ Example:
 
 func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 
-	config, err := utilsStruct.razorUtils.GetConfigData()
+	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
 	if err != nil {
 		log.Error("Error in getting config")
 		return err

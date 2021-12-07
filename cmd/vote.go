@@ -30,7 +30,15 @@ var voteCmd = &cobra.Command{
 Example:
   ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			proposeUtils:      proposeUtils,
+			transactionUtils:  transactionUtils,
+			blockManagerUtils: blockManagerUtils,
+			voteManagerUtils:  voteManagerUtils,
+			cmdUtils:          cmdUtils,
+		}
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in fetching config details: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -49,7 +57,7 @@ Example:
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config, rogueMode)
+				handleBlock(client, account, latestHeader.Number, config, rogueMode, utilsStruct)
 			}
 
 		}
@@ -62,15 +70,7 @@ var (
 	blockConfirmed   uint32
 )
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
-	utilsStruct := UtilsStruct{
-		razorUtils:        razorUtils,
-		proposeUtils:      proposeUtils,
-		transactionUtils:  transactionUtils,
-		blockManagerUtils: blockManagerUtils,
-		voteManagerUtils:  voteManagerUtils,
-		cmdUtils:          cmdUtils,
-	}
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool, utilsStruct UtilsStruct) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)

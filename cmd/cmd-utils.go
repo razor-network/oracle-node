@@ -14,7 +14,7 @@ func GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStru
 	if err != nil {
 		return 0, 0, err
 	}
-	bufferPercent, err := utilsStruct.razorUtils.getBufferPercent()
+	bufferPercent, err := utilsStruct.razorUtils.getBufferPercent(utilsStruct)
 	if err != nil {
 		return 0, 0, err
 	}
