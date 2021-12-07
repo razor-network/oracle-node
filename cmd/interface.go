@@ -78,6 +78,9 @@ type utilsInterface interface {
 	getGasPrice(UtilsStruct) (int32, error)
 	getLogLevel(UtilsStruct) (string, error)
 	getGasLimit(UtilsStruct) (float32, error)
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
+	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 }
 
 type tokenManagerInterface interface {
@@ -114,6 +117,8 @@ type stakeManagerInterface interface {
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
 type keystoreInterface interface {
@@ -176,6 +181,7 @@ type utilsCmdInterface interface {
 	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 	Create(string, UtilsStruct) (accounts.Account, error)
 	claimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
+	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
 }
 
 type cryptoInterface interface {

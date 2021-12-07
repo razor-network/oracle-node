@@ -157,6 +157,8 @@ var GetAmountInWeiMock func(*big.Int) *big.Int
 
 var SleepMock func(time.Duration)
 
+var GetStakedTokenMock func(*ethclient.Client, common.Address) *bindings.StakedToken
+
 var CalculateBlockTimeMock func(*ethclient.Client) int64
 
 var getProviderMock func(UtilsStruct) (string, error)
@@ -170,6 +172,10 @@ var getGasPriceMock func(UtilsStruct) (int32, error)
 var getLogLevelMock func(UtilsStruct) (string, error)
 
 var getGasLimitMock func(UtilsStruct) (float32, error)
+
+var ConvertSRZRToRZRMock func(*big.Int, *big.Int, *big.Int) *big.Int
+
+var ConvertRZRToSRZRMock func(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -202,6 +208,10 @@ var StakerInfoMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker
 var GetMaturityMock func(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 
 var GetBountyLockMock func(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
+
+var BalanceOfMock func(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+
+var GetTotalSupplyMock func(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 
 var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 
@@ -276,6 +286,8 @@ var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configuration
 var CreateMock func(string, UtilsStruct) (accounts.Account, error)
 
 var claimBountyMock func(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
+
+var GetAmountInSRZRsMock func(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
@@ -595,6 +607,18 @@ func (u UtilsMock) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
 	return getGasLimitMock(utilsStruct)
 }
 
+func (u UtilsMock) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
+	return GetStakedTokenMock(client, address)
+}
+
+func (u UtilsMock) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return ConvertSRZRToRZRMock(sAmount, currentStake, totalSupply)
+}
+
+func (u UtilsMock) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	return ConvertRZRToSRZRMock(sAmount, currentStake, totalSupply)
+}
+
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	return AllowanceMock(client, opts, owner, spender)
 }
@@ -681,6 +705,14 @@ func (stakeManagerMock StakeManagerMock) GetMaturity(client *ethclient.Client, o
 
 func (stakeManagerMock StakeManagerMock) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	return GetBountyLockMock(client, opts, bountyId)
+}
+
+func (stakeManagerMock StakeManagerMock) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return BalanceOfMock(stakedToken, callOpts, address)
+}
+
+func (stakeManagerMock StakeManagerMock) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
+	return GetTotalSupplyMock(token, callOpts)
 }
 
 func (ks KeystoreMock) Accounts(path string) []accounts.Account {
@@ -933,6 +965,10 @@ func (utilsCmdMock UtilsCmdMock) Create(password string, utilsStruct UtilsStruct
 
 func (utilsCmdMock UtilsCmdMock) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
 	return claimBountyMock(config, client, redeemBountyInput, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	return GetAmountInSRZRsMock(client, address, staker, amount, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
