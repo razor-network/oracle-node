@@ -47,26 +47,25 @@ jobs:
 
     steps:
       - checkout
-      # - attach_workspace:
-      #   at: .
       - setup_remote_docker:
           version: 20.10.7
           docker_layer_caching: true
       - run:
           name: "Build docker image"
           command: |
-
             echo "$DOCKERHUB_PASSWORD" | docker login https://registry.hub.docker.com --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker build -t $IMAGE_NAME .
-            docker images
+            docker build -t $IMAGE_NAME:$CIRCLE_TAG .
+            docker push $IMAGE_NAME:$CIRCLE_TAG
 workflows:
   tests:
     jobs:
-      # - test
+      - test
+  publish:
+    jobs:
       - push-build:
           context: Build
-        # requires:
-        #   - test
-        # filters:
-        #   tags:
-        #     only: /^v.*/
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
