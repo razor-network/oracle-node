@@ -2,6 +2,7 @@
 version: 2.1
 orbs:
   node: circleci/node@4.7.0
+  docker: circleci/docker@2.0.1
 jobs:
   test:
     docker:
@@ -44,6 +45,9 @@ jobs:
       - image: circleci/golang:1.15.8
         environment:
           IMAGE_NAME: "razornetwork/razor-go"
+          DOCKERHUB_USERNAME: "shrikantupadhyay"
+          DOCKERHUB_PASSWORD: "Shrikant@1212"
+
     steps:
       - checkout
       # - attach_workspace:
@@ -54,16 +58,18 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            echo “$DOCKERHUB_PASSWORD” | docker login -u “$DOCKERHUB_USERNAME” —-password-stdin
+            printenv
+            echo "DOCKERHUB_PASSWORD" | docker login --username "DOCKERHUB_USERNAME" --password-stdin
             docker build -t $IMAGE_NAME .
             docker images
-
-          # docker push $IMAGE_NAME:latest
+# echo “$DOCKERHUB_PASSWORD” | docker login -u “$DOCKERHUB_USERNAME” —-password-stdin
+# docker push $IMAGE_NAME:latest
 workflows:
   tests:
     jobs:
       # - test
-      - push-build
+      - push-build:
+          context: Build
         # requires:
         #   - test
         # filters:
