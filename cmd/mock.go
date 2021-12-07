@@ -249,7 +249,7 @@ var GetBoolAutoWithdrawMock func(*pflag.FlagSet) (bool, error)
 
 var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
 
-var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
+var getIterationMock func(*ethclient.Client, types.ElectedProposer, UtilsStruct) int
 
 var isElectedProposerMock func(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
 
@@ -763,8 +763,8 @@ func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethcli
 	return getBiggestInfluenceAndIdMock(client, address, epoch, utilsStruct)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	return getIterationMock(client, address, proposer, utilsStruct)
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	return getIterationMock(client, proposer, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {

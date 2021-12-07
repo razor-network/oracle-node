@@ -410,7 +410,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.randaoHash, tt.args.randaoHashErr
 		}
 
-		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int {
+		getIterationMock = func(*ethclient.Client, types.ElectedProposer, UtilsStruct) int {
 			return tt.args.iteration
 		}
 
@@ -550,7 +550,6 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 
 func Test_getIteration(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	var proposer types.ElectedProposer
 
 	utilsStruct := UtilsStruct{
@@ -573,20 +572,20 @@ func Test_getIteration(t *testing.T) {
 			},
 			want: 0,
 		},
-		//{
-		//	name: "Test 2: When getIteration returns an invalid iteration",
-		//	args: args{
-		//		isElectedProposer: false,
-		//	},
-		//	want: -1,
-		//},
+		{
+			name: "Test 2: When getIteration returns an invalid iteration",
+			args: args{
+				isElectedProposer: false,
+			},
+			want: -1,
+		},
 	}
 	for _, tt := range tests {
 		isElectedProposerMock = func(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool {
 			return tt.args.isElectedProposer
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getIteration(client, address, proposer, utilsStruct); got != tt.want {
+			if got := getIteration(client, proposer, utilsStruct); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1057,6 +1056,25 @@ func Test_isElectedProposer(t *testing.T) {
 				},
 				influenceSnapshot:    nil,
 				influenceSnapshotErr: errors.New("error in getting influence snapshot"),
+			},
+			want: false,
+		},
+		{
+			name: "Test5: When pseudoRandomNumber and stakerId don't match",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        0,
+					Stake:            nil,
+					StakerId:         4,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       randaoHashBytes32,
+					Epoch:            333,
+				},
+				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
+				influenceSnapshotErr: nil,
 			},
 			want: false,
 		},
