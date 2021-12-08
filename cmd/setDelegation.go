@@ -33,6 +33,7 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 		err := utilsStruct.SetDelegation(cmd.Flags())
 		utils.CheckError("SetDelegation error: ", err)
@@ -95,7 +96,7 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 		if stakerInfo.Commission == 0 {
 			txnOpts.MethodName = "setCommission"
 			txnOpts.Parameters = []interface{}{commission}
-			setCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
+			setCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts, utilsStruct.packageUtils)
 			err = utilsStruct.cmdUtils.SetCommission(client, stakerId, setCommissionTxnOpts, commission, utilsStruct)
 			if err != nil {
 				return err
@@ -106,7 +107,7 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 		if stakerInfo.Commission > 0 && stakerInfo.Commission > commission {
 			txnOpts.MethodName = "decreaseCommission"
 			txnOpts.Parameters = []interface{}{commission}
-			decreaseCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
+			decreaseCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts, utilsStruct.packageUtils)
 			err = utilsStruct.cmdUtils.DecreaseCommission(client, stakerId, decreaseCommissionTxnOpts, commission, utilsStruct)
 			if err != nil {
 				return err
@@ -125,7 +126,7 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 		log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
 		txnOpts.MethodName = "setDelegationAcceptance"
 		txnOpts.Parameters = []interface{}{status}
-		setDelegationAcceptanceTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
+		setDelegationAcceptanceTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts, utilsStruct.packageUtils)
 		delegationAcceptanceTxn, err := utilsStruct.stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
 		if err != nil {
 			log.Error("Error in setting delegation acceptance")
@@ -181,6 +182,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
+	packageUtils = utils.RazorUtils{}
 
 	rootCmd.AddCommand(setDelegationCmd)
 

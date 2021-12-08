@@ -70,6 +70,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		blockManagerUtils: blockManagerUtils,
 		voteManagerUtils:  voteManagerUtils,
 		cmdUtils:          cmdUtils,
+		packageUtils:      packageUtils,
 	}
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
@@ -375,6 +376,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	packageUtils = utils.RazorUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 

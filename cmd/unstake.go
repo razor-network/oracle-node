@@ -33,6 +33,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 		transactionUtils:  transactionUtils,
 		cmdUtils:          cmdUtils,
 		flagSetUtils:      flagSetUtils,
+		packageUtils:      packageUtils,
 	}
 	utilsStruct.executeUnstake(cmd.Flags())
 }
@@ -125,7 +126,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
 	log.Info("Unstaking coins")
 	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, sAmount)
 	if err != nil {
@@ -193,6 +194,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
+	packageUtils = utils.RazorUtils{}
 
 	rootCmd.AddCommand(unstakeCmd)
 

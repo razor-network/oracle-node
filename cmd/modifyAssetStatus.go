@@ -28,6 +28,7 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
+			packageUtils:      packageUtils,
 		}
 
 		txn, err := utilsStruct.ModifyAssetStatus(cmd.Flags(), config)
@@ -92,7 +93,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
 	txn, err := utilsStruct.assetManagerUtils.SetCollectionStatus(client, txnOpts, status, assetId)
 	if err != nil {
@@ -109,6 +110,7 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	packageUtils = utils.RazorUtils{}
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

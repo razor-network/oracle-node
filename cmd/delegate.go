@@ -38,6 +38,7 @@ Example:
 			transactionUtils:  transactionUtils,
 			stakeManagerUtils: stakeManagerUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 
 		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
@@ -79,7 +80,7 @@ func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, staker
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
 	log.Info("Sending Delegate transaction...")
 	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
 	if err != nil {
@@ -94,6 +95,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
+	packageUtils = utils.RazorUtils{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (
