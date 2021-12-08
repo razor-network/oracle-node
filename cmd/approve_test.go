@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core/types"
+	"razor/utils"
 	"testing"
 )
 
@@ -138,7 +139,7 @@ func Test_approve(t *testing.T) {
 			GetOptionsMock = func() bind.CallOpts {
 				return tt.args.callOpts
 			}
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
 				return tt.args.transactOpts
 			}
 

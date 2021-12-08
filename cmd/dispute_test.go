@@ -12,6 +12,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/utils"
 	"testing"
 )
 
@@ -136,7 +137,7 @@ func TestDispute(t *testing.T) {
 				return tt.args.votes, tt.args.votesErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
 				return txnOpts
 			}
 
@@ -414,7 +415,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.disputeBiggestInfluenceTxn, tt.args.disputeBiggestInfluenceErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
 				return txnOpts
 			}
 

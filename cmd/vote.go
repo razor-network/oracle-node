@@ -38,6 +38,7 @@ Example:
 			voteManagerUtils:  voteManagerUtils,
 			cmdUtils:          cmdUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in fetching config details: ", err)
@@ -376,6 +377,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	packageUtils = utils.RazorUtils{}
 	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(voteCmd)

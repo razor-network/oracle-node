@@ -12,6 +12,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/utils"
 	"testing"
 )
 
@@ -96,7 +97,7 @@ func Test_stakeCoins(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

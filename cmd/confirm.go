@@ -11,7 +11,7 @@ var blockManagerUtils blockManagerInterface
 
 func (utilsStruct UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	log.Info("Claiming block reward...")
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(options)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(options, utilsStruct.packageUtils)
 	txn, err := utilsStruct.blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
 	if err != nil {
 		log.Error("Error in claiming block reward: ", err)
