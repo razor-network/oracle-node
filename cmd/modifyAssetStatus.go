@@ -19,9 +19,6 @@ var modifyAssetStatusCmd = &cobra.Command{
 Example:	
   ./razor modifyAssetStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --assetId 1 --status true`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in fetching config data: ", err)
-
 		utilsStruct := UtilsStruct{
 			razorUtils:        razorUtils,
 			cmdUtils:          cmdUtils,
@@ -30,6 +27,9 @@ Example:
 			transactionUtils:  transactionUtils,
 			packageUtils:      packageUtils,
 		}
+
+		config, err := GetConfigData(utilsStruct)
+		utils.CheckError("Error in fetching config data: ", err)
 
 		txn, err := utilsStruct.ModifyAssetStatus(cmd.Flags(), config)
 		utils.CheckError("Error in changing asset active status: ", err)

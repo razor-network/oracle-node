@@ -27,7 +27,7 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			packageUtils:      packageUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config data: ", err)
 		txn, err := utilsStruct.extendLock(cmd.Flags(), config)
 		utils.CheckError("Error in extending lock: ", err)

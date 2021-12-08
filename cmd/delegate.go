@@ -20,7 +20,15 @@ Example:
   ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			tokenManagerUtils: tokenManagerUtils,
+			transactionUtils:  transactionUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
+		}
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -31,15 +39,6 @@ Example:
 
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
-
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			transactionUtils:  transactionUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
-		}
 
 		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
 		utils.CheckError("Error in getting amount: ", err)

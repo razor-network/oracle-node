@@ -25,7 +25,7 @@ type utilsInterface interface {
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
-	GetConfigData() (types.Configurations, error)
+	GetConfigData(UtilsStruct) (types.Configurations, error)
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
@@ -67,12 +67,18 @@ type utilsInterface interface {
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetStateName(int64) string
-	getBufferPercent() (int32, error)
+	getBufferPercent(UtilsStruct) (int32, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
 	CalculateBlockTime(*ethclient.Client) int64
+	getProvider(UtilsStruct) (string, error)
+	getMultiplier(UtilsStruct) (float32, error)
+	getWaitTime(UtilsStruct) (int32, error)
+	getGasPrice(UtilsStruct) (int32, error)
+	getLogLevel(UtilsStruct) (string, error)
+	getGasLimit(UtilsStruct) (float32, error)
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
@@ -150,6 +156,13 @@ type flagSetInterface interface {
 	GetStringPow(*pflag.FlagSet) (string, error)
 	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
+	GetRootStringProvider() (string, error)
+	GetRootFloat32GasMultiplier() (float32, error)
+	GetRootInt32Buffer() (int32, error)
+	GetRootInt32Wait() (int32, error)
+	GetRootInt32GasPrice() (int32, error)
+	getRootStringLogLevel() (string, error)
+	GetRootFloat32GasLimit() (float32, error)
 }
 
 type utilsCmdInterface interface {

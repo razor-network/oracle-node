@@ -26,15 +26,6 @@ var stakeCmd = &cobra.Command{
 Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		client := utils.ConnectToClient(config.Provider)
-		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account: "+address, err)
-
 		utilsStruct := UtilsStruct{
 			razorUtils:        razorUtils,
 			stakeManagerUtils: stakeManagerUtils,
@@ -43,6 +34,15 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			packageUtils:      packageUtils,
 		}
+
+		config, err := GetConfigData(utilsStruct)
+		utils.CheckError("Error in getting config: ", err)
+
+		password := utils.AssignPassword(cmd.Flags())
+		address, _ := cmd.Flags().GetString("address")
+		client := utils.ConnectToClient(config.Provider)
+		balance, err := utils.FetchBalance(client, address)
+		utils.CheckError("Error in fetching balance for account: "+address, err)
 
 		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
 		utils.CheckError("Error in getting amount: ", err)

@@ -70,7 +70,7 @@ var GetStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStake
 
 var GetUpdatedStakerMock func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 
-var GetConfigDataMock func() (types.Configurations, error)
+var GetConfigDataMock func(UtilsStruct) (types.Configurations, error)
 
 var ParseBoolMock func(string) (bool, error)
 
@@ -146,7 +146,7 @@ var GetLatestBlockMock func(*ethclient.Client) (*Types.Header, error)
 
 var GetUpdatedEpochMock func(*ethclient.Client) (uint32, error)
 
-var getBufferPercentMock func() (int32, error)
+var getBufferPercentMock func(UtilsStruct) (int32, error)
 
 var GetStateNameMock func(int64) string
 
@@ -161,6 +161,18 @@ var SleepMock func(time.Duration)
 var GetStakedTokenMock func(*ethclient.Client, common.Address) *bindings.StakedToken
 
 var CalculateBlockTimeMock func(*ethclient.Client) int64
+
+var getProviderMock func(UtilsStruct) (string, error)
+
+var getMultiplierMock func(UtilsStruct) (float32, error)
+
+var getWaitTimeMock func(UtilsStruct) (int32, error)
+
+var getGasPriceMock func(UtilsStruct) (int32, error)
+
+var getLogLevelMock func(UtilsStruct) (string, error)
+
+var getGasLimitMock func(UtilsStruct) (float32, error)
 
 var ConvertSRZRToRZRMock func(*big.Int, *big.Int, *big.Int) *big.Int
 
@@ -326,6 +338,20 @@ var GetStringPowMock func(*pflag.FlagSet) (string, error)
 
 var GetUint32BountyIdMock func(*pflag.FlagSet) (uint32, error)
 
+var GetRootStringProviderMock func() (string, error)
+
+var GetRootFloat32GasMultiplierMock func() (float32, error)
+
+var GetRootInt32BufferMock func() (int32, error)
+
+var GetRootInt32WaitMock func() (int32, error)
+
+var GetRootInt32GasPriceMock func() (int32, error)
+
+var getRootStringLogLevelMock func() (string, error)
+
+var GetRootFloat32GasLimitMock func() (float32, error)
+
 var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 
 var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error)
@@ -382,8 +408,8 @@ func (u UtilsMock) GetUpdatedStaker(client *ethclient.Client, address string, st
 	return GetUpdatedStakerMock(client, address, stakerId)
 }
 
-func (u UtilsMock) GetConfigData() (types.Configurations, error) {
-	return GetConfigDataMock()
+func (u UtilsMock) GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
+	return GetConfigDataMock(utilsStruct)
 }
 
 func (u UtilsMock) ParseBool(str string) (bool, error) {
@@ -534,8 +560,8 @@ func (u UtilsMock) GetStateName(stateNumber int64) string {
 	return GetStateNameMock(stateNumber)
 }
 
-func (u UtilsMock) getBufferPercent() (int32, error) {
-	return getBufferPercentMock()
+func (u UtilsMock) getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
+	return getBufferPercentMock(utilsStruct)
 }
 
 func (u UtilsMock) IsFlagPassed(flagName string) bool {
@@ -556,6 +582,30 @@ func (u UtilsMock) Sleep(duration time.Duration) {
 
 func (u UtilsMock) CalculateBlockTime(client *ethclient.Client) int64 {
 	return CalculateBlockTimeMock(client)
+}
+
+func (u UtilsMock) getProvider(utilsStruct UtilsStruct) (string, error) {
+	return getProviderMock(utilsStruct)
+}
+
+func (u UtilsMock) getMultiplier(utilsStruct UtilsStruct) (float32, error) {
+	return getMultiplierMock(utilsStruct)
+}
+
+func (u UtilsMock) getWaitTime(utilsStruct UtilsStruct) (int32, error) {
+	return getWaitTimeMock(utilsStruct)
+}
+
+func (u UtilsMock) getGasPrice(utilsStruct UtilsStruct) (int32, error) {
+	return getGasPriceMock(utilsStruct)
+}
+
+func (u UtilsMock) getLogLevel(utilsStruct UtilsStruct) (string, error) {
+	return getLogLevelMock(utilsStruct)
+}
+
+func (u UtilsMock) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
+	return getGasLimitMock(utilsStruct)
 }
 
 func (u UtilsMock) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
@@ -824,6 +874,34 @@ func (flagSetMock FlagSetMock) GetStringPow(flagSet *pflag.FlagSet) (string, err
 
 func (flagSetMock FlagSetMock) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 	return GetUint32BountyIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetRootStringProvider() (string, error) {
+	return GetRootStringProviderMock()
+}
+
+func (flagSetMock FlagSetMock) GetRootFloat32GasMultiplier() (float32, error) {
+	return GetRootFloat32GasMultiplierMock()
+}
+
+func (flagSetMock FlagSetMock) GetRootInt32Buffer() (int32, error) {
+	return GetRootInt32BufferMock()
+}
+
+func (flagSetMock FlagSetMock) GetRootInt32Wait() (int32, error) {
+	return GetRootInt32WaitMock()
+}
+
+func (flagSetMock FlagSetMock) GetRootInt32GasPrice() (int32, error) {
+	return GetRootInt32GasPriceMock()
+}
+
+func (flagSetMock FlagSetMock) getRootStringLogLevel() (string, error) {
+	return getRootStringLogLevelMock()
+}
+
+func (flagSetMock FlagSetMock) GetRootFloat32GasLimit() (float32, error) {
+	return GetRootFloat32GasLimitMock()
 }
 
 func (utilsCmdMock UtilsCmdMock) SetCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {

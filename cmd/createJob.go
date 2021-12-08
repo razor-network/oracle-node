@@ -33,7 +33,7 @@ Note:
 			flagSetUtils:      flagSetUtils,
 			packageUtils:      packageUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.createJob(cmd.Flags(), config)
 		utils.CheckError("CreateJob error: ", err)
