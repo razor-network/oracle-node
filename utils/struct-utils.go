@@ -30,7 +30,7 @@ func (u RazorUtils) parse(reader io.Reader) (abi.ABI, error) {
 }
 
 func (u RazorUtils) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
-	return parsedData.Pack(name, args)
+	return parsedData.Pack(name, args...)
 }
 
 func (u RazorUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
