@@ -264,7 +264,7 @@ func TestGetPendingNonceAtWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			PendingNonceAtMock = func(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
+			PendingNonceAtMock = func(*ethclient.Client, context.Context, common.Address) (uint64, error) {
 				return tt.args.nonce, tt.args.nonceErr
 			}
 

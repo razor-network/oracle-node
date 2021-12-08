@@ -30,11 +30,11 @@ type RazorUtilsInterface interface {
 	getGasPrice(*ethclient.Client, Types.Configurations, RazorUtilsInterface) *big.Int
 	getGasLimit(Types.TransactionOptions, *bind.TransactOpts, RazorUtilsInterface) (uint64, error)
 	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
-	PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error)
-	HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error)
-	SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error)
-	EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error)
-	FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error)
-	BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
+	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
+	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*types.Header, error)
+	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
+	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
+	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]types.Log, error)
+	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
 	RetryAttempts(uint) retry.Option
 }
