@@ -88,7 +88,7 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 		MethodName:      "withdraw",
 		ABI:             bindings.StakeManagerABI,
 	}
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, utilsStruct.packageUtils)
 	if err != nil {
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
@@ -108,7 +108,7 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
 		utilsStruct.razorUtils.Sleep(30 * time.Second)
-		epoch, err = utilsStruct.razorUtils.GetUpdatedEpoch(client)
+		epoch, err = utilsStruct.razorUtils.GetUpdatedEpoch(client, utilsStruct.packageUtils)
 		if err != nil {
 			log.Error("Error in fetching epoch")
 			return core.NilHash, err

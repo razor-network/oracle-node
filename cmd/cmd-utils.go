@@ -10,7 +10,7 @@ import (
 )
 
 func GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, utilsStruct.packageUtils)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -18,7 +18,7 @@ func GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStru
 	if err != nil {
 		return 0, 0, err
 	}
-	state, err := utilsStruct.razorUtils.GetDelayedState(client, bufferPercent)
+	state, err := utilsStruct.razorUtils.GetDelayedState(client, bufferPercent, utilsStruct.packageUtils)
 	if err != nil {
 		return 0, 0, err
 	}

@@ -46,13 +46,13 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		rogueMode, _ := cmd.Flags().GetBool("rogue")
 		client := utils.ConnectToClient(config.Provider)
-		header, err := razorUtils.GetLatestBlock(client)
+		header, err := razorUtils.GetLatestBlock(client, utilsStruct.packageUtils)
 		utils.CheckError("Error in getting block: ", err)
 
 		address, _ := cmd.Flags().GetString("address")
 		account := types.Account{Address: address, Password: password}
 		for {
-			latestHeader, err := utils.GetLatestBlockWithRetry(client)
+			latestHeader, err := utils.GetLatestBlockWithRetry(client, utilsStruct.packageUtils)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -73,12 +73,12 @@ var (
 )
 
 func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool, utilsStruct UtilsStruct) {
-	state, err := utils.GetDelayedState(client, config.BufferPercent)
+	state, err := utils.GetDelayedState(client, config.BufferPercent, utilsStruct.packageUtils)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
 	}
-	epoch, err := utils.GetEpoch(client)
+	epoch, err := utils.GetEpoch(client, utilsStruct.packageUtils)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return
@@ -97,7 +97,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staked amount: ", err)
 		return
 	}
-	ethBalance, err := utils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
+	ethBalance, err := utils.BalanceAtWithRetry(client, common.HexToAddress(account.Address), utilsStruct.packageUtils)
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
@@ -219,7 +219,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			utils.WaitForBlockCompletion(client, revealTxn.String())
 		}
 	case 2:
-		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
+		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId, utilsStruct)
 		if err != nil {
 			log.Error("Error in fetching last proposal: ", err)
 			break
@@ -289,7 +289,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	fmt.Println()
 }
 
-func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
+func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32, utilsStruct UtilsStruct) (uint32, error) {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
@@ -298,7 +298,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			common.HexToAddress(core.BlockManagerAddress),
 		},
 	}
-	logs, err := utils.FilterLogsWithRetry(client, query)
+	logs, err := utils.FilterLogsWithRetry(client, query, utilsStruct.packageUtils)
 	if err != nil {
 		return 0, err
 	}

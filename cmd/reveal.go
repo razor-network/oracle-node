@@ -23,12 +23,12 @@ func (utilsStruct UtilsStruct) HandleRevealState(client *ethclient.Client, addre
 }
 
 func (utilsStruct UtilsStruct) Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations) (common.Hash, error) {
-	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
+	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent, utilsStruct.packageUtils); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}
 
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, utilsStruct.packageUtils)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err

@@ -75,7 +75,7 @@ Example:
 }
 
 func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
-	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client, utilsStruct.packageUtils)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}

@@ -18,7 +18,7 @@ import (
 var proposeUtils proposeUtilsInterface
 
 func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueMode bool) (common.Hash, error) {
-	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent, utilsStruct.packageUtils); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
 	}
@@ -188,7 +188,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsSt
 
 	var medians []*big.Int
 
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, utilsStruct.packageUtils)
 	if err != nil {
 		log.Error(err)
 		return nil, err

@@ -27,8 +27,8 @@ type utilsInterface interface {
 	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 	GetConfigData(UtilsStruct) (types.Configurations, error)
 	ParseBool(str string) (bool, error)
-	GetDelayedState(*ethclient.Client, int32) (int64, error)
-	GetEpoch(*ethclient.Client) (uint32, error)
+	GetDelayedState(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error)
+	GetEpoch(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
 	PrivateKeyPrompt() string
@@ -64,15 +64,15 @@ type utilsInterface interface {
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 	CheckError(msg string, err error)
-	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
-	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
+	GetLatestBlock(*ethclient.Client, utils.RazorUtilsInterface) (*Types.Header, error)
+	GetUpdatedEpoch(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error)
 	GetStateName(int64) string
 	getBufferPercent(UtilsStruct) (int32, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
-	CalculateBlockTime(*ethclient.Client) int64
+	CalculateBlockTime(*ethclient.Client, utils.RazorUtilsInterface) int64
 	getProvider(UtilsStruct) (string, error)
 	getMultiplier(UtilsStruct) (float32, error)
 	getWaitTime(UtilsStruct) (int32, error)

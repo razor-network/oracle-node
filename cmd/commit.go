@@ -23,12 +23,12 @@ func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, addre
 }
 
 func (utilsStruct UtilsStruct) Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) (common.Hash, error) {
-	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
+	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent, utilsStruct.packageUtils); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
 
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(client, utilsStruct.packageUtils)
 	if err != nil {
 		return core.NilHash, err
 	}

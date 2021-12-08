@@ -76,7 +76,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
-	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
+	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client, utilsStruct.packageUtils)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return common.Hash{0x00}, err
@@ -101,7 +101,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
+		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client, utilsStruct.packageUtils)) * time.Second)
 	}
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)

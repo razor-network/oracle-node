@@ -104,12 +104,12 @@ func (u Utils) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utils.GetDelayedState(client, buffer)
+func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32, razorUtils utils.RazorUtilsInterface) (int64, error) {
+	return utils.GetDelayedState(client, buffer, razorUtils)
 }
 
-func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
-	return utils.GetEpoch(client)
+func (u Utils) GetEpoch(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (uint32, error) {
+	return utils.GetEpoch(client, razorUtils)
 }
 
 func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
@@ -232,8 +232,8 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 	return utils.AssignStakerId(flagSet, client, address)
 }
 
-func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
-	return utils.GetLatestBlockWithRetry(client)
+func (u Utils) GetLatestBlock(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (*Types.Header, error) {
+	return utils.GetLatestBlockWithRetry(client, razorUtils)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
@@ -244,8 +244,8 @@ func (u Utils) CheckError(msg string, err error) {
 	utils.CheckError(msg, err)
 }
 
-func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
-	return utils.GetEpoch(client)
+func (u Utils) GetUpdatedEpoch(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (uint32, error) {
+	return utils.GetEpoch(client, razorUtils)
 }
 
 func (u Utils) GetStateName(stateNumber int64) string {
@@ -296,8 +296,8 @@ func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
 	return getGasLimit(utilsStruct)
 }
 
-func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
-	return utils.CalculateBlockTime(client)
+func (u Utils) CalculateBlockTime(client *ethclient.Client, razorutils utils.RazorUtilsInterface) int64 {
+	return utils.CalculateBlockTime(client, razorutils)
 }
 
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
