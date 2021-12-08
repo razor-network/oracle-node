@@ -32,8 +32,8 @@ func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, er
 	return coinContract.BalanceOf(&opts, address)
 }
 
-func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	block, err := GetLatestBlockWithRetry(client)
+func GetDelayedState(client *ethclient.Client, buffer int32, razorUtils RazorUtilsInterface) (int64, error) {
+	block, err := GetLatestBlockWithRetry(client, razorUtils)
 	if err != nil {
 		return -1, err
 	}
@@ -133,8 +133,8 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 	return GetStakerId(client, address)
 }
 
-func GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := GetLatestBlockWithRetry(client)
+func GetEpoch(client *ethclient.Client, razorUtils RazorUtilsInterface) (uint32, error) {
+	latestHeader, err := GetLatestBlockWithRetry(client, razorUtils)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -201,8 +201,8 @@ func Sleep(duration time.Duration) {
 	time.Sleep(duration)
 }
 
-func CalculateBlockTime(client *ethclient.Client) int64 {
-	latestBlock, err := GetLatestBlockWithRetry(client)
+func CalculateBlockTime(client *ethclient.Client, razorUtils RazorUtilsInterface) int64 {
+	latestBlock, err := GetLatestBlockWithRetry(client, razorUtils)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}

@@ -84,7 +84,7 @@ func Test_getGasPrice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SuggestGasPriceWithRetryMock = func(*ethclient.Client) (*big.Int, error) {
+			SuggestGasPriceWithRetryMock = func(*ethclient.Client, RazorUtilsInterface) (*big.Int, error) {
 				return tt.args.gas, tt.args.gasErr
 			}
 
@@ -206,7 +206,7 @@ func Test_getGasLimit(t *testing.T) {
 				return tt.args.inputData, tt.args.packErr
 			}
 
-			EstimateGasWithRetryMock = func(*ethclient.Client, ethereum.CallMsg) (uint64, error) {
+			EstimateGasWithRetryMock = func(*ethclient.Client, ethereum.CallMsg, RazorUtilsInterface) (uint64, error) {
 				return tt.args.gasLimit, tt.args.gasLimitErr
 			}
 
@@ -302,7 +302,7 @@ func Test_increaseGasLimitValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetLatestBlockWithRetryMock = func(client *ethclient.Client) (*Types.Header, error) {
+			GetLatestBlockWithRetryMock = func(*ethclient.Client, RazorUtilsInterface) (*Types.Header, error) {
 				return tt.args.latestBlock, tt.args.blockErr
 			}
 
@@ -440,7 +440,7 @@ func TestGetTxnOpts(t *testing.T) {
 				return tt.args.privateKey
 			}
 
-			GetPendingNonceAtWithRetryMock = func(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+			GetPendingNonceAtWithRetryMock = func(*ethclient.Client, common.Address, RazorUtilsInterface) (uint64, error) {
 				return tt.args.nonce, tt.args.nonceErr
 			}
 
