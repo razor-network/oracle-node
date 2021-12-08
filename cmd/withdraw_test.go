@@ -227,11 +227,11 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.txnOpts
 		}
 
-		GetEpochMock = func(*ethclient.Client) (uint32, error) {
+		GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
 			return tt.args.epoch, tt.args.epochErr
 		}
 
-		GetUpdatedEpochMock = func(*ethclient.Client) (uint32, error) {
+		GetUpdatedEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
 			return tt.args.updatedEpoch, tt.args.updatedEpochErr
 		}
 

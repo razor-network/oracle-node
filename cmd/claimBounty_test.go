@@ -250,7 +250,7 @@ func Test_claimBounty(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		GetEpochMock = func(*ethclient.Client) (uint32, error) {
+		GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
 			return tt.args.epoch, tt.args.epochErr
 		}
 
@@ -266,7 +266,7 @@ func Test_claimBounty(t *testing.T) {
 
 		}
 
-		CalculateBlockTimeMock = func(*ethclient.Client) int64 {
+		CalculateBlockTimeMock = func(*ethclient.Client, utils.RazorUtilsInterface) int64 {
 			return blockTime
 		}
 

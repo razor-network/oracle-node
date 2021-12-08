@@ -232,11 +232,11 @@ func TestReveal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetDelayedStateMock = func(*ethclient.Client, int32) (int64, error) {
+			GetDelayedStateMock = func(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error) {
 				return tt.args.state, tt.args.stateErr
 			}
 
-			GetEpochMock = func(*ethclient.Client) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

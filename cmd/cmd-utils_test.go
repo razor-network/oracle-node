@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
+	"razor/utils"
 	"testing"
 )
 
@@ -83,7 +84,7 @@ func TestGetEpochAndState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetEpochMock = func(*ethclient.Client) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
@@ -91,7 +92,7 @@ func TestGetEpochAndState(t *testing.T) {
 				return tt.args.bufferPercent, tt.args.bufferPercentErr
 			}
 
-			GetDelayedStateMock = func(*ethclient.Client, int32) (int64, error) {
+			GetDelayedStateMock = func(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error) {
 				return tt.args.state, tt.args.stateErr
 			}
 
