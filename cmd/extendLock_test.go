@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/utils"
 	"testing"
 )
 
@@ -132,7 +133,7 @@ func Test_extendLock(t *testing.T) {
 				return client
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
 				return txnOpts
 			}
 

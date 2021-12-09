@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"razor/accounts"
 	"razor/core/types"
-	"razor/path"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -27,25 +25,25 @@ func GetOptions() bind.CallOpts {
 	}
 }
 
-func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	defaultPath, err := path.GetDefaultPath()
+func GetTxnOpts(transactionData types.TransactionOptions, razorUtils RazorUtilsInterface) *bind.TransactOpts {
+	defaultPath, err := razorUtils.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	privateKey := accounts.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
+	privateKey := razorUtils.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
-	nonce, err := GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
+	nonce, err := razorUtils.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching pending nonce: ", err)
 
-	gasPrice := getGasPrice(transactionData.Client, transactionData.Config)
+	gasPrice := razorUtils.getGasPrice(transactionData.Client, transactionData.Config, razorUtils)
 
-	txnOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
+	txnOpts, err := razorUtils.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
 
-	gasLimit, err := getGasLimit(transactionData, txnOpts)
+	gasLimit, err := razorUtils.getGasLimit(transactionData, txnOpts, razorUtils)
 	if err != nil {
 		log.Error("Error in getting gas limit: ", err)
 	}
@@ -54,31 +52,31 @@ func GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	return txnOpts
 }
 
-func getGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+func getGasPrice(client *ethclient.Client, config types.Configurations, razorUtils RazorUtilsInterface) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
 	} else {
 		var err error
-		gas, err = SuggestGasPriceWithRetry(client)
+		gas, err = razorUtils.SuggestGasPriceWithRetry(client)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	gasPrice := MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
+	gasPrice := razorUtils.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
 	return gasPrice
 }
 
-func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts, razorUtils RazorUtilsInterface) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
-	parsed, err := abi.JSON(strings.NewReader(transactionData.ABI))
+	parsed, err := razorUtils.parse(strings.NewReader(transactionData.ABI))
 	if err != nil {
 		log.Error("Error in parsing ABI: ", err)
 		return 0, err
 	}
-	inputData, err := parsed.Pack(transactionData.MethodName, transactionData.Parameters...)
+	inputData, err := razorUtils.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
 	if err != nil {
 		log.Error("Error in calculating inputData: ", err)
 		return 0, err
@@ -91,22 +89,22 @@ func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.Transac
 		Value:    txnOpts.Value,
 		Data:     inputData,
 	}
-	gasLimit, err := EstimateGasWithRetry(transactionData.Client, msg)
+	gasLimit, err := razorUtils.EstimateGasWithRetry(transactionData.Client, msg)
 	if err != nil {
 		return 0, err
 	}
 	log.Debug("Estimated Gas: ", gasLimit)
-	return increaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
+	return razorUtils.increaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier, razorUtils)
 }
 
-func increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+func increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32, razorUtils RazorUtilsInterface) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil
 	}
 	gasLimitIncremented := float64(gasLimitMultiplier) * float64(gasLimit)
 	gasLimit = uint64(gasLimitIncremented)
 
-	latestBlock, err := GetLatestBlockWithRetry(client)
+	latestBlock, err := razorUtils.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err

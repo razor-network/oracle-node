@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -54,6 +53,7 @@ func executeVote(flagSet *pflag.FlagSet, password string) {
 		voteManagerUtils:  voteManagerUtils,
 		cmdUtils:          cmdUtils,
 		flagSetUtils:      flagSetUtils,
+		packageUtils:      packageUtils,
 	}
 	config, err := GetConfigData(utilsStruct)
 	utils.CheckError("Error in fetching config details: ", err)
@@ -70,7 +70,7 @@ func vote(client *ethclient.Client, account types.Account, config types.Configur
 	header, err := razorUtils.GetLatestBlock(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
-		latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+		latestHeader, err := utils.GetLatestBlockWithRetry(client)
 		if err != nil {
 			log.Error("Error in fetching block: ", err)
 			continue
@@ -387,6 +387,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	packageUtils = utils.RazorUtils{}
 	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(voteCmd)

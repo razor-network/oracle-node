@@ -32,6 +32,7 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 		stakeManagerUtils: stakeManagerUtils,
 		transactionUtils:  transactionUtils,
 		flagSetUtils:      flagSetUtils,
+		packageUtils:      packageUtils,
 	}
 	utilsStruct.executeClaimBounty(cmd.Flags())
 }
@@ -103,7 +104,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
 
 	for retry := 1; retry <= int(core.MaxRetries); retry++ {
 		tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
@@ -127,6 +128,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
+	packageUtils = utils.RazorUtils{}
 
 	rootCmd.AddCommand(claimBountyCmd)
 	var (
