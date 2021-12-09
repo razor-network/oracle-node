@@ -16,3 +16,8 @@ type Commitment struct {
 	Epoch          uint32
 	CommitmentHash [32]byte
 }
+
+type Rogue struct {
+	IsRogue   bool
+	RogueMode []string
+}

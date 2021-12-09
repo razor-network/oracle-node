@@ -256,7 +256,7 @@ var isElectedProposerMock func(*ethclient.Client, types.ElectedProposer, UtilsSt
 
 var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
 
-var MakeBlockMock func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
+var MakeBlockMock func(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error)
 
 var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)
 
@@ -776,8 +776,8 @@ func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte
 	return pseudoRandomNumberGeneratorMock(seed, max, blockHashes)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsStruct UtilsStruct) ([]uint32, error) {
-	return MakeBlockMock(client, address, rogueMode, utilsStruct)
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogue, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {

@@ -112,8 +112,8 @@ func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
 }
 
-func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
-	return utils.GetActiveAssetsData(client, address, epoch)
+func (u Utils) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
+	return utils.GetActiveAssetsData(client, epoch)
 }
 
 func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
@@ -164,8 +164,8 @@ func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, e
 	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
-func (u Utils) GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
-	return utils.GetNumActiveAssets(client, address)
+func (u Utils) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
+	return utils.GetNumActiveAssets(client)
 }
 
 func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
@@ -208,8 +208,8 @@ func (u Utils) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return utils.IsEqual(arr1, arr2)
 }
 
-func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
-	return utils.GetActiveAssetIds(client, address)
+func (u Utils) GetActiveAssetIds(client *ethclient.Client) ([]uint8, error) {
+	return utils.GetActiveAssetIds(client)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
@@ -220,7 +220,7 @@ func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.Str
 	return utils.GetVotes(client, stakerId)
 }
 
-func (u Utils) Contains(arr []int, val int) bool {
+func (u Utils) Contains(arr, val interface{}) bool {
 	return utils.Contains(arr, val)
 }
 
@@ -572,8 +572,8 @@ func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max ui
 	return pseudoRandomNumberGenerator(seed, max, blockHashes)
 }
 
-func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsStruct UtilsStruct) ([]uint32, error) {
-	return MakeBlock(client, address, rogueMode, utilsStruct)
+func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+	return MakeBlock(client, address, rogue, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {

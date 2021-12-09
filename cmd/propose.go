@@ -17,7 +17,7 @@ import (
 
 var proposeUtils proposeUtilsInterface
 
-func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueMode bool) (common.Hash, error) {
+func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogue types.Rogue) (common.Hash, error) {
 	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
@@ -88,7 +88,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, rogueMode, utilsStruct)
+	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, rogue, utilsStruct)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -180,8 +180,8 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsStruct UtilsStruct) ([]uint32, error) {
-	numAssets, err := utilsStruct.razorUtils.GetNumActiveAssets(client, address)
+func MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+	numAssets, err := utilsStruct.razorUtils.GetNumActiveAssets(client)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsSt
 		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
 
 		var median *big.Int
-		if rogueMode {
+		if rogue.IsRogue {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
 			median = utilsStruct.proposeUtils.influencedMedian(sortedVotes, totalInfluenceRevealed)

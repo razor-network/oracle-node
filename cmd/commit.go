@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
+	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -13,8 +14,19 @@ import (
 
 var voteManagerUtils voteManagerInterface
 
-func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
-	data, err := utilsStruct.razorUtils.GetActiveAssetsData(client, address, epoch)
+func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, rogue types.Rogue) ([]*big.Int, error) {
+	if rogue.IsRogue && utilsStruct.razorUtils.Contains(rogue.RogueMode, "commit") {
+		numActiveAssets, err := utilsStruct.razorUtils.GetNumActiveAssets(client)
+		if err != nil {
+			return nil, err
+		}
+		var rogueData []*big.Int
+		for i := 0; i < int(numActiveAssets.Int64()); i++ {
+			rogueData = append(rogueData, big.NewInt(int64(rand.Intn(10000000))))
+		}
+		return rogueData, nil
+	}
+	data, err := utilsStruct.razorUtils.GetActiveAssetsData(client, epoch)
 	if err != nil {
 		return nil, err
 	}

@@ -57,7 +57,7 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 	return proposedBlock, nil
 }
 
-func FetchPreviousValue(client *ethclient.Client, address string, epoch uint32, assetId uint8) (uint32, error) {
+func FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint8) (uint32, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions()
 	var (
