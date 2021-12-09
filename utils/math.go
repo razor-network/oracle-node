@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"math/rand"
 	"sort"
 	"strconv"
 )
@@ -159,4 +160,8 @@ func ConvertRZRToSRZR(amount *big.Int, currentStake *big.Int, totalSupply *big.I
 
 func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
 	return big.NewInt(1).Div(big.NewInt(1).Mul(sAmount, currentStake), totalSupply)
+}
+
+func GetRogueRandomValue(value int) *big.Int {
+	return big.NewInt(int64(rand.Intn(value)))
 }

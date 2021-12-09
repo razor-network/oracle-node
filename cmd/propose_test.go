@@ -724,7 +724,7 @@ func TestMakeBlock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetNumActiveAssetsMock = func(*ethclient.Client, string) (*big.Int, error) {
+			GetNumActiveAssetsMock = func(*ethclient.Client) (*big.Int, error) {
 				return tt.args.numAssets, tt.args.numAssetsErr
 			}
 

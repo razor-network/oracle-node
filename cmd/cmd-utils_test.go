@@ -134,7 +134,7 @@ func TestWaitForAppropriateState(t *testing.T) {
 		epochOrStateErr error
 		action          string
 		states          int
-		contains        bool
+		//contains        bool
 	}
 	tests := []struct {
 		name    string
@@ -145,11 +145,11 @@ func TestWaitForAppropriateState(t *testing.T) {
 		{
 			name: "Test 1: When WaitForAppropriateState function executes successfully for reveal state",
 			args: args{
-				epoch:    4,
-				state:    1,
-				action:   "reveal",
-				states:   1,
-				contains: true,
+				epoch:  4,
+				state:  1,
+				action: "reveal",
+				states: 1,
+				//contains: true,
 			},
 			want:    4,
 			wantErr: nil,
@@ -157,11 +157,11 @@ func TestWaitForAppropriateState(t *testing.T) {
 		{
 			name: "Test 2: When WaitForAppropriateState function executes successfully for commit state",
 			args: args{
-				epoch:    4,
-				state:    0,
-				action:   "commit",
-				states:   0,
-				contains: true,
+				epoch:  4,
+				state:  0,
+				action: "commit",
+				states: 0,
+				//contains: true,
 			},
 			want:    4,
 			wantErr: nil,
@@ -169,11 +169,11 @@ func TestWaitForAppropriateState(t *testing.T) {
 		{
 			name: "Test 3: When WaitForAppropriateState function executes successfully for dispute state",
 			args: args{
-				epoch:    4,
-				state:    3,
-				action:   "dispute",
-				states:   3,
-				contains: true,
+				epoch:  4,
+				state:  3,
+				action: "dispute",
+				states: 3,
+				//contains: true,
 			},
 			want:    4,
 			wantErr: nil,
@@ -184,7 +184,7 @@ func TestWaitForAppropriateState(t *testing.T) {
 				epochOrStateErr: errors.New("error in fetching epoch and state"),
 				action:          "commit",
 				states:          0,
-				contains:        true,
+				//contains:        true,
 			},
 			want:    0,
 			wantErr: errors.New("error in fetching epoch and state"),
@@ -195,10 +195,10 @@ func TestWaitForAppropriateState(t *testing.T) {
 			GetEpochAndStateMock = func(*ethclient.Client, string, UtilsStruct) (uint32, int64, error) {
 				return tt.args.epoch, tt.args.state, tt.args.epochOrStateErr
 			}
-
-			ContainsMock = func([]int, int) bool {
-				return tt.args.contains
-			}
+			//
+			//ContainsMock = func(interface{}, interface{}) bool {
+			//	return tt.args.contains
+			//}
 
 			got, err := WaitForAppropriateState(client, address, tt.args.action, utilsStruct, tt.args.states)
 			if got != tt.want {

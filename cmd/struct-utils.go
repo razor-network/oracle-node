@@ -312,6 +312,10 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
 }
 
+func (u Utils) GetRogueRandomValue(value int) *big.Int {
+	return utils.GetRogueRandomValue(value)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)

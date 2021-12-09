@@ -50,6 +50,14 @@ func TestContains(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "Test for string values not present in the array",
+			args: args{
+				arr: []string{"vote", "commit", "reveal"},
+				val: "propose",
+			},
+			want: false,
+		},
+		{
 			name: "Test for string array and int value",
 			args: args{
 				arr: []string{"vote", "commit", "reveal"},

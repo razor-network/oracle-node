@@ -9,6 +9,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -211,7 +212,7 @@ func MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, util
 		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
 
 		var median *big.Int
-		if rogue.IsRogue && utilsStruct.razorUtils.Contains(rogue.RogueMode, "propose") {
+		if rogue.IsRogue && utils.Contains(rogue.RogueMode, "propose") {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
 			median = utilsStruct.proposeUtils.influencedMedian(sortedVotes, totalInfluenceRevealed)

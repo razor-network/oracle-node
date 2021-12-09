@@ -82,6 +82,7 @@ type utilsInterface interface {
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
+	GetRogueRandomValue(int) *big.Int
 }
 
 type tokenManagerInterface interface {
