@@ -163,5 +163,8 @@ func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.
 }
 
 func GetRogueRandomValue(value int) *big.Int {
+	if value <= 0 {
+		return big.NewInt(0)
+	}
 	return big.NewInt(int64(rand.Intn(value)))
 }
