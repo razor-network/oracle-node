@@ -24,6 +24,7 @@ func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, epoch
 		for i := 0; i < int(numActiveAssets.Int64()); i++ {
 			rogueData = append(rogueData, big.NewInt(int64(rand.Intn(10000000))))
 		}
+		log.Debug("Data: ", rogueData)
 		return rogueData, nil
 	}
 	data, err := utilsStruct.razorUtils.GetActiveAssetsData(client, epoch)
