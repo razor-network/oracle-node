@@ -211,7 +211,7 @@ func MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, util
 		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
 
 		var median *big.Int
-		if rogue.IsRogue {
+		if rogue.IsRogue && utilsStruct.razorUtils.Contains(rogue.RogueMode, "propose") {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
 			median = utilsStruct.proposeUtils.influencedMedian(sortedVotes, totalInfluenceRevealed)
