@@ -24,6 +24,7 @@ func initialiseStakeAndVote(cmd *cobra.Command, args []string) {
 		cmdUtils:          cmdUtils,
 		flagSetUtils:      flagSetUtils,
 		tokenManagerUtils: tokenManagerUtils,
+		packageUtils:      packageUtils,
 	}
 	password := utils.AssignPassword(cmd.Flags())
 	utilsStruct.executeStake(cmd.Flags(), password)
