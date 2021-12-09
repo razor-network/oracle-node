@@ -23,7 +23,7 @@ import (
 
 func Test_getGasPrice(t *testing.T) {
 	var client *ethclient.Client
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		config   types.Configurations
@@ -84,7 +84,7 @@ func Test_getGasPrice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SuggestGasPriceWithRetryMock = func(*ethclient.Client, RazorUtilsInterface) (*big.Int, error) {
+			SuggestGasPriceWithRetryMock = func(*ethclient.Client, Utils) (*big.Int, error) {
 				return tt.args.gas, tt.args.gasErr
 			}
 
@@ -112,7 +112,7 @@ func Test_getGasLimit(t *testing.T) {
 	var parsedData abi.ABI
 	var inputData []byte
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		transactionData     types.TransactionOptions
@@ -206,11 +206,11 @@ func Test_getGasLimit(t *testing.T) {
 				return tt.args.inputData, tt.args.packErr
 			}
 
-			EstimateGasWithRetryMock = func(*ethclient.Client, ethereum.CallMsg, RazorUtilsInterface) (uint64, error) {
+			EstimateGasWithRetryMock = func(*ethclient.Client, ethereum.CallMsg, Utils) (uint64, error) {
 				return tt.args.gasLimit, tt.args.gasLimitErr
 			}
 
-			increaseGasLimitValueMock = func(*ethclient.Client, uint64, float32, RazorUtilsInterface) (uint64, error) {
+			increaseGasLimitValueMock = func(*ethclient.Client, uint64, float32, Utils) (uint64, error) {
 				return tt.args.increaseGasLimit, tt.args.increaseGasLimitErr
 			}
 
@@ -233,7 +233,7 @@ func Test_getGasLimit(t *testing.T) {
 
 func Test_increaseGasLimitValue(t *testing.T) {
 	var client *ethclient.Client
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		gasLimit           uint64
@@ -302,7 +302,7 @@ func Test_increaseGasLimitValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetLatestBlockWithRetryMock = func(*ethclient.Client, RazorUtilsInterface) (*Types.Header, error) {
+			GetLatestBlockWithRetryMock = func(*ethclient.Client, Utils) (*Types.Header, error) {
 				return tt.args.latestBlock, tt.args.blockErr
 			}
 
@@ -330,7 +330,7 @@ func TestGetTxnOpts(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		path        string
@@ -440,11 +440,11 @@ func TestGetTxnOpts(t *testing.T) {
 				return tt.args.privateKey
 			}
 
-			GetPendingNonceAtWithRetryMock = func(*ethclient.Client, common.Address, RazorUtilsInterface) (uint64, error) {
+			GetPendingNonceAtWithRetryMock = func(*ethclient.Client, common.Address, Utils) (uint64, error) {
 				return tt.args.nonce, tt.args.nonceErr
 			}
 
-			getGasPriceMock = func(*ethclient.Client, types.Configurations, RazorUtilsInterface) *big.Int {
+			getGasPriceMock = func(*ethclient.Client, types.Configurations, Utils) *big.Int {
 				return gasPrice
 			}
 
@@ -452,7 +452,7 @@ func TestGetTxnOpts(t *testing.T) {
 				return tt.args.txnOpts, tt.args.txnOptsErr
 			}
 
-			getGasLimitMock = func(types.TransactionOptions, *bind.TransactOpts, RazorUtilsInterface) (uint64, error) {
+			getGasLimitMock = func(types.TransactionOptions, *bind.TransactOpts, Utils) (uint64, error) {
 				return tt.args.gasLimit, tt.args.gasLimitErr
 			}
 

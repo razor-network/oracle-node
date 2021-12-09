@@ -73,7 +73,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(extendLockCmd)
 

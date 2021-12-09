@@ -42,7 +42,7 @@ type CryptoMock struct{}
 
 var GetOptionsMock func() bind.CallOpts
 
-var GetTxnOptsMock func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts
+var GetTxnOptsMock func(types.TransactionOptions, utils.Utils) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
@@ -74,9 +74,9 @@ var GetConfigDataMock func(UtilsStruct) (types.Configurations, error)
 
 var ParseBoolMock func(string) (bool, error)
 
-var GetDelayedStateMock func(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error)
+var GetDelayedStateMock func(*ethclient.Client, int32, utils.Utils) (int64, error)
 
-var GetEpochMock func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error)
+var GetEpochMock func(*ethclient.Client, utils.Utils) (uint32, error)
 
 var GetNumberOfStakersMock func(*ethclient.Client, string) (uint32, error)
 
@@ -142,9 +142,9 @@ var GetSortedProposedBlockIdsMock func(*ethclient.Client, string, uint32) ([]uin
 
 var CheckErrorMock func(string, error)
 
-var GetLatestBlockMock func(*ethclient.Client, utils.RazorUtilsInterface) (*Types.Header, error)
+var GetLatestBlockMock func(*ethclient.Client, utils.Utils) (*Types.Header, error)
 
-var GetUpdatedEpochMock func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error)
+var GetUpdatedEpochMock func(*ethclient.Client, utils.Utils) (uint32, error)
 
 var getBufferPercentMock func(UtilsStruct) (int32, error)
 
@@ -160,7 +160,7 @@ var SleepMock func(time.Duration)
 
 var GetStakedTokenMock func(*ethclient.Client, common.Address) *bindings.StakedToken
 
-var CalculateBlockTimeMock func(*ethclient.Client, utils.RazorUtilsInterface) int64
+var CalculateBlockTimeMock func(*ethclient.Client, utils.Utils) int64
 
 var getProviderMock func(UtilsStruct) (string, error)
 
@@ -360,7 +360,7 @@ func (u UtilsMock) GetOptions() bind.CallOpts {
 	return GetOptionsMock()
 }
 
-func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.RazorUtilsInterface) *bind.TransactOpts {
+func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.Utils) *bind.TransactOpts {
 	return GetTxnOptsMock(transactionData, razorUtils)
 }
 
@@ -416,11 +416,11 @@ func (u UtilsMock) ParseBool(str string) (bool, error) {
 	return ParseBoolMock(str)
 }
 
-func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32, razorUtils utils.RazorUtilsInterface) (int64, error) {
+func (u UtilsMock) GetDelayedState(client *ethclient.Client, buffer int32, razorUtils utils.Utils) (int64, error) {
 	return GetDelayedStateMock(client, buffer, razorUtils)
 }
 
-func (u UtilsMock) GetEpoch(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (uint32, error) {
+func (u UtilsMock) GetEpoch(client *ethclient.Client, razorUtils utils.Utils) (uint32, error) {
 	return GetEpochMock(client, razorUtils)
 }
 
@@ -540,7 +540,7 @@ func (u UtilsMock) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Clie
 	return AssignStakerIdMock(flagSet, client, address)
 }
 
-func (u UtilsMock) GetLatestBlock(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (*Types.Header, error) {
+func (u UtilsMock) GetLatestBlock(client *ethclient.Client, razorUtils utils.Utils) (*Types.Header, error) {
 	return GetLatestBlockMock(client, razorUtils)
 }
 
@@ -552,7 +552,7 @@ func (u UtilsMock) CheckError(msg string, err error) {
 	CheckErrorMock(msg, err)
 }
 
-func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (uint32, error) {
+func (u UtilsMock) GetUpdatedEpoch(client *ethclient.Client, razorUtils utils.Utils) (uint32, error) {
 	return GetUpdatedEpochMock(client, razorUtils)
 }
 
@@ -580,7 +580,7 @@ func (u UtilsMock) Sleep(duration time.Duration) {
 	SleepMock(duration)
 }
 
-func (u UtilsMock) CalculateBlockTime(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) int64 {
+func (u UtilsMock) CalculateBlockTime(client *ethclient.Client, razorUtils utils.Utils) int64 {
 	return CalculateBlockTimeMock(client, razorUtils)
 }
 

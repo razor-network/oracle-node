@@ -17,7 +17,7 @@ func TestBalanceAtWithRetry(t *testing.T) {
 	var client *ethclient.Client
 	var account common.Address
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 	type args struct {
 		balance    *big.Int
 		balanceErr error
@@ -71,7 +71,7 @@ func TestBalanceAtWithRetry(t *testing.T) {
 func TestEstimateGasWithRetry(t *testing.T) {
 	var client *ethclient.Client
 	var message ethereum.CallMsg
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		gasLimit    uint64
@@ -127,7 +127,7 @@ func TestFilterLogsWithRetry(t *testing.T) {
 	var client *ethclient.Client
 	var query ethereum.FilterQuery
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 	type args struct {
 		logs    []types.Log
 		logsErr error
@@ -180,7 +180,7 @@ func TestFilterLogsWithRetry(t *testing.T) {
 func TestGetLatestBlockWithRetry(t *testing.T) {
 	var client *ethclient.Client
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		latestHeader    *types.Header
@@ -234,7 +234,7 @@ func TestGetPendingNonceAtWithRetry(t *testing.T) {
 	var client *ethclient.Client
 	var accountAddress common.Address
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 	type args struct {
 		nonce    uint64
 		nonceErr error
@@ -286,7 +286,7 @@ func TestGetPendingNonceAtWithRetry(t *testing.T) {
 
 func TestSuggestGasPriceWithRetry(t *testing.T) {
 	var client *ethclient.Client
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		gasPrice    *big.Int

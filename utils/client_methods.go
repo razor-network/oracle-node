@@ -11,7 +11,7 @@ import (
 	"razor/core"
 )
 
-func GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address, razorUtils RazorUtilsInterface) (uint64, error) {
+func GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address, razorUtils Utils) (uint64, error) {
 	var (
 		nonce uint64
 		err   error
@@ -31,7 +31,7 @@ func GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.
 	return nonce, nil
 }
 
-func GetLatestBlockWithRetry(client *ethclient.Client, razorUtils RazorUtilsInterface) (*types.Header, error) {
+func GetLatestBlockWithRetry(client *ethclient.Client, razorUtils Utils) (*types.Header, error) {
 	var (
 		latestHeader *types.Header
 		err          error
@@ -51,7 +51,7 @@ func GetLatestBlockWithRetry(client *ethclient.Client, razorUtils RazorUtilsInte
 	return latestHeader, nil
 }
 
-func SuggestGasPriceWithRetry(client *ethclient.Client, razorUtils RazorUtilsInterface) (*big.Int, error) {
+func SuggestGasPriceWithRetry(client *ethclient.Client, razorUtils Utils) (*big.Int, error) {
 	var (
 		gasPrice *big.Int
 		err      error
@@ -71,7 +71,7 @@ func SuggestGasPriceWithRetry(client *ethclient.Client, razorUtils RazorUtilsInt
 	return gasPrice, nil
 }
 
-func EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg, razorUtils RazorUtilsInterface) (uint64, error) {
+func EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg, razorUtils Utils) (uint64, error) {
 	var (
 		gasLimit uint64
 		err      error
@@ -91,7 +91,7 @@ func EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg, ra
 	return gasLimit, nil
 }
 
-func FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery, razorUtils RazorUtilsInterface) ([]types.Log, error) {
+func FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery, razorUtils Utils) ([]types.Log, error) {
 	var (
 		logs []types.Log
 		err  error
@@ -111,7 +111,7 @@ func FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery, r
 	return logs, nil
 }
 
-func BalanceAtWithRetry(client *ethclient.Client, account common.Address, razorUtils RazorUtilsInterface) (*big.Int, error) {
+func BalanceAtWithRetry(client *ethclient.Client, account common.Address, razorUtils Utils) (*big.Int, error) {
 	var (
 		balance *big.Int
 		err     error

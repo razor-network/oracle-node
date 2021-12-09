@@ -391,7 +391,7 @@ func TestPropose(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		GetDelayedStateMock = func(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error) {
+		GetDelayedStateMock = func(*ethclient.Client, int32, utils.Utils) (int64, error) {
 			return tt.args.state, tt.args.stateErr
 		}
 
@@ -431,7 +431,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 			return tt.args.txnOpts
 		}
 
@@ -725,7 +725,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.numAssets, tt.args.numAssetsErr
 			}
 
-			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

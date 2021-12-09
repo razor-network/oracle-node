@@ -49,7 +49,7 @@ type UtilsStruct struct {
 	flagSetUtils      flagSetInterface
 	cryptoUtils       cryptoInterface
 	accountUtils      accounts.AccountInterface
-	packageUtils      utils.RazorUtilsInterface
+	packageUtils      utils.Utils
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -60,8 +60,8 @@ func (u Utils) GetOptions() bind.CallOpts {
 	return utils.GetOptions()
 }
 
-func (u Utils) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.RazorUtilsInterface) *bind.TransactOpts {
-	return utils.GetTxnOpts(transactionData, razorUtils)
+func (u Utils) GetTxnOpts(transactionData types.TransactionOptions, packageUtils utils.Utils) *bind.TransactOpts {
+	return utils.GetTxnOpts(transactionData, packageUtils)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -104,12 +104,12 @@ func (u Utils) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32, razorUtils utils.RazorUtilsInterface) (int64, error) {
-	return utils.GetDelayedState(client, buffer, razorUtils)
+func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32, packageUtils utils.Utils) (int64, error) {
+	return utils.GetDelayedState(client, buffer, packageUtils)
 }
 
-func (u Utils) GetEpoch(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (uint32, error) {
-	return utils.GetEpoch(client, razorUtils)
+func (u Utils) GetEpoch(client *ethclient.Client, packageUtils utils.Utils) (uint32, error) {
+	return utils.GetEpoch(client, packageUtils)
 }
 
 func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
@@ -232,8 +232,8 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 	return utils.AssignStakerId(flagSet, client, address)
 }
 
-func (u Utils) GetLatestBlock(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (*Types.Header, error) {
-	return utils.GetLatestBlockWithRetry(client, razorUtils)
+func (u Utils) GetLatestBlock(client *ethclient.Client, packageUtils utils.Utils) (*Types.Header, error) {
+	return utils.GetLatestBlockWithRetry(client, packageUtils)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
@@ -244,8 +244,8 @@ func (u Utils) CheckError(msg string, err error) {
 	utils.CheckError(msg, err)
 }
 
-func (u Utils) GetUpdatedEpoch(client *ethclient.Client, razorUtils utils.RazorUtilsInterface) (uint32, error) {
-	return utils.GetEpoch(client, razorUtils)
+func (u Utils) GetUpdatedEpoch(client *ethclient.Client, packageUtils utils.Utils) (uint32, error) {
+	return utils.GetEpoch(client, packageUtils)
 }
 
 func (u Utils) GetStateName(stateNumber int64) string {
@@ -296,8 +296,8 @@ func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
 	return getGasLimit(utilsStruct)
 }
 
-func (u Utils) CalculateBlockTime(client *ethclient.Client, razorutils utils.RazorUtilsInterface) int64 {
-	return utils.CalculateBlockTime(client, razorutils)
+func (u Utils) CalculateBlockTime(client *ethclient.Client, packageUtils utils.Utils) int64 {
+	return utils.CalculateBlockTime(client, packageUtils)
 }
 
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {

@@ -377,7 +377,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(voteCmd)

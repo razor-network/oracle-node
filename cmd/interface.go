@@ -18,7 +18,7 @@ import (
 
 type utilsInterface interface {
 	GetOptions() bind.CallOpts
-	GetTxnOpts(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts
+	GetTxnOpts(types.TransactionOptions, utils.Utils) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client
@@ -27,8 +27,8 @@ type utilsInterface interface {
 	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 	GetConfigData(UtilsStruct) (types.Configurations, error)
 	ParseBool(str string) (bool, error)
-	GetDelayedState(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error)
-	GetEpoch(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error)
+	GetDelayedState(*ethclient.Client, int32, utils.Utils) (int64, error)
+	GetEpoch(*ethclient.Client, utils.Utils) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint8Array(uintArr []uint) []uint8
 	PrivateKeyPrompt() string
@@ -64,15 +64,15 @@ type utilsInterface interface {
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint8, error)
 	CheckError(msg string, err error)
-	GetLatestBlock(*ethclient.Client, utils.RazorUtilsInterface) (*Types.Header, error)
-	GetUpdatedEpoch(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error)
+	GetLatestBlock(*ethclient.Client, utils.Utils) (*Types.Header, error)
+	GetUpdatedEpoch(*ethclient.Client, utils.Utils) (uint32, error)
 	GetStateName(int64) string
 	getBufferPercent(UtilsStruct) (int32, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
-	CalculateBlockTime(*ethclient.Client, utils.RazorUtilsInterface) int64
+	CalculateBlockTime(*ethclient.Client, utils.Utils) int64
 	getProvider(UtilsStruct) (string, error)
 	getMultiplier(UtilsStruct) (float32, error)
 	getWaitTime(UtilsStruct) (int32, error)

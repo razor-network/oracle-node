@@ -229,7 +229,7 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

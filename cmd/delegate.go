@@ -94,7 +94,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

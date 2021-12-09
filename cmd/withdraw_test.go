@@ -223,15 +223,15 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 			return tt.args.txnOpts
 		}
 
-		GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+		GetEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 			return tt.args.epoch, tt.args.epochErr
 		}
 
-		GetUpdatedEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+		GetUpdatedEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 			return tt.args.updatedEpoch, tt.args.updatedEpochErr
 		}
 

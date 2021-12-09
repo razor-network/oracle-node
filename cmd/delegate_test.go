@@ -93,11 +93,11 @@ func Test_delegate(t *testing.T) {
 				return tt.args.amount
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
-			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 

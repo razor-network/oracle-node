@@ -97,11 +97,11 @@ func Test_stakeCoins(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
-			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 				return tt.args.epoch, tt.args.getEpochErr
 			}
 

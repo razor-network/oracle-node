@@ -111,15 +111,15 @@ func TestCommit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetDelayedStateMock = func(*ethclient.Client, int32, utils.RazorUtilsInterface) (int64, error) {
+			GetDelayedStateMock = func(*ethclient.Client, int32, utils.Utils) (int64, error) {
 				return tt.args.state, tt.args.stateErr
 			}
 
-			GetEpochMock = func(*ethclient.Client, utils.RazorUtilsInterface) (uint32, error) {
+			GetEpochMock = func(*ethclient.Client, utils.Utils) (uint32, error) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
