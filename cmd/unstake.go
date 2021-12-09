@@ -194,7 +194,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(unstakeCmd)
 

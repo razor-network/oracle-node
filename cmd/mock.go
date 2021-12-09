@@ -42,7 +42,7 @@ type CryptoMock struct{}
 
 var GetOptionsMock func() bind.CallOpts
 
-var GetTxnOptsMock func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts
+var GetTxnOptsMock func(types.TransactionOptions, utils.Utils) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
@@ -360,7 +360,7 @@ func (u UtilsMock) GetOptions() bind.CallOpts {
 	return GetOptionsMock()
 }
 
-func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.RazorUtilsInterface) *bind.TransactOpts {
+func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.Utils) *bind.TransactOpts {
 	return GetTxnOptsMock(transactionData, razorUtils)
 }
 

@@ -23,7 +23,7 @@ import (
 
 func Test_getGasPrice(t *testing.T) {
 	var client *ethclient.Client
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		config   types.Configurations
@@ -112,7 +112,7 @@ func Test_getGasLimit(t *testing.T) {
 	var parsedData abi.ABI
 	var inputData []byte
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		transactionData     types.TransactionOptions
@@ -210,7 +210,7 @@ func Test_getGasLimit(t *testing.T) {
 				return tt.args.gasLimit, tt.args.gasLimitErr
 			}
 
-			increaseGasLimitValueMock = func(*ethclient.Client, uint64, float32, RazorUtilsInterface) (uint64, error) {
+			increaseGasLimitValueMock = func(*ethclient.Client, uint64, float32, Utils) (uint64, error) {
 				return tt.args.increaseGasLimit, tt.args.increaseGasLimitErr
 			}
 
@@ -233,7 +233,7 @@ func Test_getGasLimit(t *testing.T) {
 
 func Test_increaseGasLimitValue(t *testing.T) {
 	var client *ethclient.Client
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		gasLimit           uint64
@@ -330,7 +330,7 @@ func TestGetTxnOpts(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	razorUtils := RazorUtilsMock{}
+	razorUtils := PackageUtilsMock{}
 
 	type args struct {
 		path        string
@@ -444,7 +444,7 @@ func TestGetTxnOpts(t *testing.T) {
 				return tt.args.nonce, tt.args.nonceErr
 			}
 
-			getGasPriceMock = func(*ethclient.Client, types.Configurations, RazorUtilsInterface) *big.Int {
+			getGasPriceMock = func(*ethclient.Client, types.Configurations, Utils) *big.Int {
 				return gasPrice
 			}
 
@@ -452,7 +452,7 @@ func TestGetTxnOpts(t *testing.T) {
 				return tt.args.txnOpts, tt.args.txnOptsErr
 			}
 
-			getGasLimitMock = func(types.TransactionOptions, *bind.TransactOpts, RazorUtilsInterface) (uint64, error) {
+			getGasLimitMock = func(types.TransactionOptions, *bind.TransactOpts, Utils) (uint64, error) {
 				return tt.args.gasLimit, tt.args.gasLimitErr
 			}
 

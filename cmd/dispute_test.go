@@ -137,7 +137,7 @@ func TestDispute(t *testing.T) {
 				return tt.args.votes, tt.args.votesErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return txnOpts
 			}
 
@@ -415,7 +415,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.disputeBiggestInfluenceTxn, tt.args.disputeBiggestInfluenceErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return txnOpts
 			}
 

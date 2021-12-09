@@ -156,7 +156,7 @@ func TestUnstake(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return txnOpts
 			}
 

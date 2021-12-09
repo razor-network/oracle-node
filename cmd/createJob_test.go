@@ -278,7 +278,7 @@ func Test_createJob(t *testing.T) {
 				return client
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

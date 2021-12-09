@@ -137,7 +137,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(withdrawCmd)

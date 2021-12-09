@@ -270,7 +270,7 @@ func Test_claimBounty(t *testing.T) {
 			return blockTime
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 			return txnOpts
 		}
 
