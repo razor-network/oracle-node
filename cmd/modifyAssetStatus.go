@@ -110,7 +110,7 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

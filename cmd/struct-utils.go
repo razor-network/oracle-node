@@ -49,7 +49,7 @@ type UtilsStruct struct {
 	flagSetUtils      flagSetInterface
 	cryptoUtils       cryptoInterface
 	accountUtils      accounts.AccountInterface
-	packageUtils      utils.RazorUtilsInterface
+	packageUtils      utils.Utils
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
@@ -60,7 +60,7 @@ func (u Utils) GetOptions() bind.CallOpts {
 	return utils.GetOptions()
 }
 
-func (u Utils) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.RazorUtilsInterface) *bind.TransactOpts {
+func (u Utils) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.Utils) *bind.TransactOpts {
 	return utils.GetTxnOpts(transactionData, razorUtils)
 }
 
