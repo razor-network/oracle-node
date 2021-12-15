@@ -180,7 +180,6 @@ func TestWaitForAppropriateState(t *testing.T) {
 				epochOrStateErr: errors.New("error in fetching epoch and state"),
 				action:          "commit",
 				states:          0,
-				//contains:        true,
 			},
 			want:    0,
 			wantErr: errors.New("error in fetching epoch and state"),
