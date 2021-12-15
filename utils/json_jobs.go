@@ -15,24 +15,28 @@ func readJSONData(fileName string) (map[string]*types.StructsJob, error) {
 	}
 	err = json.Unmarshal(file, &data)
 	if err != nil {
+		// If file is blank, do nothing
+		if err.Error() == "unexpected end of JSON input" {
+			return map[string]*types.StructsJob{}, nil
+		}
 		return nil, err
 	}
 	return data, nil
 }
 
-func writeDataToJSON(fileName string, data map[string]*types.StructsJob) (bool, error) {
+func writeDataToJSON(fileName string, data map[string]*types.StructsJob) error {
 	jsonString, err := json.Marshal(data)
 	if err != nil {
-		return false, err
+		return err
 	}
 	err = ioutil.WriteFile(fileName, jsonString, 0600)
 	if err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
-func getJobFromJSON(fileName string, jobId string) (*types.StructsJob, error) {
+func GetJobFromJSON(fileName string, jobId string) (*types.StructsJob, error) {
 	data, err := readJSONData(fileName)
 	if err != nil {
 		return nil, err
@@ -43,10 +47,10 @@ func getJobFromJSON(fileName string, jobId string) (*types.StructsJob, error) {
 	return nil, nil
 }
 
-func deleteJobFromJSON(fileName string, jobId string) (bool, error) {
+func DeleteJobFromJSON(fileName string, jobId string) error {
 	data, err := readJSONData(fileName)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if data[jobId] != nil {
 		delete(data, jobId)
@@ -54,10 +58,10 @@ func deleteJobFromJSON(fileName string, jobId string) (bool, error) {
 	return writeDataToJSON(fileName, data)
 }
 
-func addJobToJSON(fileName string, job *types.StructsJob) (bool, error) {
+func AddJobToJSON(fileName string, job *types.StructsJob) error {
 	data, err := readJSONData(fileName)
 	if err != nil {
-		return false, err
+		log.Error(err)
 	}
 	data[strconv.Itoa(int(job.Id))] = job
 	return writeDataToJSON(fileName, data)

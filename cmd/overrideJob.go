@@ -1,51 +1,92 @@
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"razor/core/types"
+	"razor/path"
+	"razor/utils"
 )
 
 // overrideJobCmd represents the overrideJob command
 var overrideJobCmd = &cobra.Command{
 	Use:   "overrideJob",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "overrideJob can be used to override existing job",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("overrideJob called")
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			assetManagerUtils: assetManagerUtils,
+			transactionUtils:  transactionUtils,
+			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
+		}
+		err := utilsStruct.executeOverrideJob(cmd.Flags())
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info("Job added to override list successfully!")
 	},
+}
+
+func (utilsStruct UtilsStruct) executeOverrideJob(flagSet *pflag.FlagSet) error {
+
+	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
+	if err != nil {
+		return err
+	}
+
+	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
+	if err != nil {
+		return err
+	}
+
+	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
+	if err != nil {
+		return err
+	}
+
+	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
+	if err != nil {
+		return err
+	}
+
+	jobId, err := utilsStruct.flagSetUtils.GetUint8JobId(flagSet)
+	if err != nil {
+		return err
+	}
+
+	job := &types.StructsJob{
+		Id:           jobId,
+		SelectorType: selectorType,
+		Power:        power,
+		Selector:     selector,
+		Url:          url,
+	}
+	return utilsStruct.overrideJob(job)
+}
+
+func (utilsStruct UtilsStruct) overrideJob(job *types.StructsJob) error {
+	jobPath, err := path.GetJobFilePath()
+	if err != nil {
+		return err
+	}
+	return utils.AddJobToJSON(jobPath, job)
 }
 
 func init() {
 	rootCmd.AddCommand(overrideJobCmd)
+	var (
+		Job          uint8
+		URL          string
+		Selector     string
+		SelectorType uint8
+		Power        int8
+	)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// overrideJobCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// overrideJobCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	overrideJobCmd.Flags().Uint8VarP(&Job, "jobId", "j", 0, "job id to override")
+	overrideJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
+	overrideJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
+	overrideJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
+	overrideJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
 }
