@@ -96,12 +96,12 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 	}
 
 	log.Info("Claiming bounty transaction...")
-	waitFor := big.NewInt(1).Sub(bountyLock.RedeemAfter, big.NewInt(int64(epoch)))
-	if waitFor.Cmp(big.NewInt(0)) == 1 {
+	waitFor := bountyLock.RedeemAfter - epoch
+	if waitFor == 1 {
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
+		utilsStruct.razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)

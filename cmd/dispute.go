@@ -121,7 +121,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	}, utilsStruct.packageUtils)
 
 	if !razorUtils.Contains(giveSortedAssetIds, assetId) {
-		utilsStruct.cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), sortedStakers)
+		utilsStruct.cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
@@ -141,7 +141,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	return nil
 }
 
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
 	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedStakers)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {

@@ -45,7 +45,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
-	collectionId, err := utilsStruct.flagSetUtils.GetUint8CollectionId(flagSet)
+	collectionId, err := utilsStruct.flagSetUtils.GetUint16CollectionId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}

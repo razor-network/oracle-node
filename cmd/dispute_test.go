@@ -431,7 +431,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.medians, tt.args.mediansErr
 			}
 
-			GetActiveAssetIdsMock = func(*ethclient.Client, string) ([]uint8, error) {
+			GetActiveAssetIdsMock = func(*ethclient.Client, string) ([]uint16, error) {
 				return tt.args.activeAssetIds, tt.args.activeAssetIdsErr
 			}
 

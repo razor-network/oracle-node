@@ -44,7 +44,7 @@ func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Co
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobId, err := utilsStruct.flagSetUtils.GetUint8JobId(flagSet)
+	jobId, err := utilsStruct.flagSetUtils.GetUint16JobId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}

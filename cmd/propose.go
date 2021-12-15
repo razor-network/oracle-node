@@ -76,7 +76,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
 		lastBlockIndex := numOfProposedBlocks - 1
-		lastProposedBlockStruct, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
+		lastProposedBlockStruct, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, uint32(lastBlockIndex))
 		if err != nil {
 			log.Error(err)
 			return core.NilHash, err
@@ -195,7 +195,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsSt
 	}
 
 	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		sortedVotes, err := utilsStruct.proposeUtils.getSortedVotes(client, address, uint8(assetId), epoch, utilsStruct)
+		sortedVotes, err := utilsStruct.proposeUtils.getSortedVotes(client, address, uint16(assetId), epoch, utilsStruct)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -223,7 +223,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsSt
 	return mediansInUint32, nil
 }
 
-func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
+func getSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
 	numberOfStakers, err := utilsStruct.razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, err

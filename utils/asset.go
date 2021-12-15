@@ -18,10 +18,10 @@ func getAssetManagerWithOpts(client *ethclient.Client, address string) (*binding
 	return GetAssetManager(client), GetOptions()
 }
 
-func GetNumAssets(client *ethclient.Client, address string) (uint8, error) {
+func GetNumAssets(client *ethclient.Client, address string) (uint16, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client, address)
 	var (
-		numAssets uint8
+		numAssets uint16
 		err       error
 	)
 	err = retry.Do(
@@ -47,7 +47,7 @@ func GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, err
 	)
 	err = retry.Do(
 		func() error {
-			numActiveAssets, err = assetManager.GetNumActiveAssets(&callOpts)
+			numActiveAssets, err = assetManager.GetNumActiveCollections(&callOpts)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -60,7 +60,7 @@ func GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, err
 	return numActiveAssets, nil
 }
 
-func GetAssetType(client *ethclient.Client, address string, assetId uint8) (uint8, error) {
+func GetAssetType(client *ethclient.Client, address string, assetId uint16) (uint8, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client, address)
 	var (
 		activeAsset types.Asset
@@ -84,7 +84,7 @@ func GetAssetType(client *ethclient.Client, address string, assetId uint8) (uint
 	return 1, nil
 }
 
-func GetCollection(client *ethclient.Client, address string, collectionId uint8) (bindings.StructsCollection, error) {
+func GetCollection(client *ethclient.Client, address string, collectionId uint16) (bindings.StructsCollection, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client, address)
 	var (
 		asset types.Asset
@@ -105,15 +105,15 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint8)
 	return asset.Collection, nil
 }
 
-func GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
+func GetActiveAssetIds(client *ethclient.Client, address string) ([]uint16, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client, address)
 	var (
-		activeAssetIds []uint8
+		activeAssetIds []uint16
 		err            error
 	)
 	err = retry.Do(
 		func() error {
-			activeAssetIds, err = assetManager.GetActiveAssets(&callOpts)
+			activeAssetIds, err = assetManager.GetActiveCollections(&callOpts)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -135,13 +135,13 @@ func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32)
 	}
 
 	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
-		assetType, err := GetAssetType(client, address, uint8(assetIndex))
+		assetType, err := GetAssetType(client, address, uint16(assetIndex))
 		if err != nil {
 			log.Error("Error in fetching asset type: ", assetType)
 			return nil, err
 		}
 		if assetType == 2 {
-			activeCollection, err := GetActiveCollection(client, address, uint8(assetIndex))
+			activeCollection, err := GetActiveCollection(client, address, uint16(assetIndex))
 			if err != nil {
 				log.Error(err)
 				if err == errors.New("collection inactive") {
@@ -184,7 +184,7 @@ func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, c
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
-func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (bindings.StructsJob, error) {
+func GetActiveJob(client *ethclient.Client, address string, jobId uint16) (bindings.StructsJob, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions()
 	var (
@@ -206,7 +206,7 @@ func GetActiveJob(client *ethclient.Client, address string, jobId uint8) (bindin
 	return job, nil
 }
 
-func GetActiveCollection(client *ethclient.Client, address string, collectionId uint8) (bindings.StructsCollection, error) {
+func GetActiveCollection(client *ethclient.Client, address string, collectionId uint16) (bindings.StructsCollection, error) {
 	collection, err := GetCollection(client, address, collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
