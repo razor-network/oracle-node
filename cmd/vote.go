@@ -46,7 +46,7 @@ Example:
 		password := utils.AssignPassword(cmd.Flags())
 		isRogue, _ := cmd.Flags().GetBool("rogue")
 		rogueMode, _ := cmd.Flags().GetStringSlice("rogueMode")
-		rogue := types.Rogue{
+		rogueData := types.Rogue{
 			IsRogue:   isRogue,
 			RogueMode: rogueMode,
 		}
@@ -64,7 +64,7 @@ Example:
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config, rogue, utilsStruct)
+				handleBlock(client, account, latestHeader.Number, config, rogueData, utilsStruct)
 			}
 
 		}
@@ -77,7 +77,7 @@ var (
 	blockConfirmed   uint32
 )
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogue types.Rogue, utilsStruct UtilsStruct) {
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, utilsStruct UtilsStruct) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -154,7 +154,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := utilsStruct.HandleCommitState(client, epoch, rogue)
+		data, err := utilsStruct.HandleCommitState(client, epoch, rogueData)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
@@ -242,7 +242,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogue)
+		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueData)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -254,7 +254,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if lastVerification >= epoch {
 			break
 		}
-		if rogue.IsRogue {
+		if rogueData.IsRogue {
 			log.Warn("Won't dispute in rogue mode..")
 			break
 		}

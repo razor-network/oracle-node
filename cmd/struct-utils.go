@@ -576,8 +576,8 @@ func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max ui
 	return pseudoRandomNumberGenerator(seed, max, blockHashes)
 }
 
-func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
-	return MakeBlock(client, address, rogue, utilsStruct)
+func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+	return MakeBlock(client, address, rogueData, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {

@@ -14,13 +14,13 @@ import (
 
 var voteManagerUtils voteManagerInterface
 
-func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, rogue types.Rogue) ([]*big.Int, error) {
+func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, rogueData types.Rogue) ([]*big.Int, error) {
 	var (
 		data []*big.Int
 		err  error
 	)
 	//rogue mode
-	if rogue.IsRogue && utils.Contains(rogue.RogueMode, "commit") {
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
 		numActiveAssets, err := utilsStruct.razorUtils.GetNumActiveAssets(client)
 		if err != nil {
 			return nil, err

@@ -18,7 +18,7 @@ import (
 
 var proposeUtils proposeUtilsInterface
 
-func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogue types.Rogue) (common.Hash, error) {
+func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := utilsStruct.razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
@@ -89,7 +89,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, rogue, utilsStruct)
+	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, rogueData, utilsStruct)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -181,7 +181,7 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+func MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
 	numAssets, err := utilsStruct.razorUtils.GetNumActiveAssets(client)
 	if err != nil {
 		return nil, err
@@ -212,7 +212,7 @@ func MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, util
 		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
 
 		var median *big.Int
-		if rogue.IsRogue && utils.Contains(rogue.RogueMode, "propose") {
+		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
 			median = utilsStruct.proposeUtils.influencedMedian(sortedVotes, totalInfluenceRevealed)
