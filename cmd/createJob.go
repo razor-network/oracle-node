@@ -92,7 +92,6 @@ func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Co
 	}
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
-	log.Info("Creating Job...")
 	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, selectorType, name, selector, url)
 	if err != nil {
 		return core.NilHash, err
@@ -124,7 +123,7 @@ func init() {
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
-	createJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
+	createJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 0, "selector type (0 for json, 1 for XHTML)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")

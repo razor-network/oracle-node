@@ -242,7 +242,7 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
-	if job.SelectorType == 1 {
+	if job.SelectorType == 0 {
 		apiErr = retry.Do(
 			func() error {
 				response, apiErr = GetDataFromAPI(job.Url)
