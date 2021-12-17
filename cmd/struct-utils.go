@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"fmt"
 	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
@@ -61,7 +60,6 @@ func (u Utils) GetOptions() bind.CallOpts {
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	fmt.Println(12)
 	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
 		Options:      utils.Options,
 		AccountUtils: utils.AccountUtils,
@@ -69,7 +67,6 @@ func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.Transa
 		AbiUtils:     utils.AbiUtils,
 		PathUtils:    utils.PathUtils,
 	})
-	fmt.Println(13)
 	utils.Options = &utils.OptionUtilsStruct{}
 	utils.AccountUtils = &utils.AccountStruct{}
 	utils.BindUtils = &utils.BindStruct{}
