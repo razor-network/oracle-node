@@ -116,8 +116,8 @@ func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epo
 	return utils.GetActiveAssetsData(client, address, epoch)
 }
 
-func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint16 {
-	return utils.ConvertUintArrayToUint8Array(uintArr)
+func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
+	return utils.ConvertUintArrayToUint16Array(uintArr)
 }
 
 func (u Utils) PrivateKeyPrompt() string {

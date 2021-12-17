@@ -61,7 +61,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
+	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update collection", utilsStruct)
 	if err != nil {

@@ -70,7 +70,7 @@ func CalculateSumOfUint8Array(data []uint8) uint {
 	return sum
 }
 
-func ConvertUintArrayToUint8Array(uintArr []uint) []uint16 {
+func ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	var arr []uint16
 	for _, datum := range uintArr {
 		arr = append(arr, uint16(datum))

@@ -237,28 +237,28 @@ func TestConvertBigIntArrayToUint32Array(t *testing.T) {
 	}
 }
 
-func TestConvertUintArrayToUint8Array(t *testing.T) {
+func TestConvertUintArrayToUint16Array(t *testing.T) {
 	type args struct {
 		data []uint
 	}
 	tests := []struct {
 		name string
 		args args
-		want []uint8
+		want []uint16
 	}{
 		{
 			name: "Test when array has length more than 1",
 			args: args{
 				data: []uint{100, 150, 200},
 			},
-			want: []uint8{100, 150, 200},
+			want: []uint16{100, 150, 200},
 		},
 		{
 			name: "Test when array has length 1",
 			args: args{
 				data: []uint{100},
 			},
-			want: []uint8{100},
+			want: []uint16{100},
 		},
 		{
 			name: "Test when array is nil",
@@ -270,8 +270,8 @@ func TestConvertUintArrayToUint8Array(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ConvertUintArrayToUint8Array(tt.args.data); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ConvertUintArrayToUint8Array() = %v, want %v", got, tt.want)
+			if got := ConvertUintArrayToUint16Array(tt.args.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertUintArrayToUint16Array() = %v, want %v", got, tt.want)
 			}
 		})
 	}

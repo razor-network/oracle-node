@@ -30,7 +30,7 @@ type utilsInterface interface {
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
 	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
-	ConvertUintArrayToUint8Array(uintArr []uint) []uint16
+	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
