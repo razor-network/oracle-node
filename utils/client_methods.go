@@ -52,7 +52,7 @@ func GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
 	return latestHeader, nil
 }
 
-func SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
+func (optionUtils *OptionUtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
 	var (
 		gasPrice *big.Int
 		err      error

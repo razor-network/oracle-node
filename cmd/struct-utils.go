@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"fmt"
 	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
@@ -60,7 +61,21 @@ func (u Utils) GetOptions() bind.CallOpts {
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	return utils.GetTxnOpts(transactionData)
+	fmt.Println(12)
+	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
+		Options:      utils.Options,
+		AccountUtils: utils.AccountUtils,
+		BindUtils:    utils.BindUtils,
+		AbiUtils:     utils.AbiUtils,
+		PathUtils:    utils.PathUtils,
+	})
+	fmt.Println(13)
+	utils.Options = &utils.OptionUtilsStruct{}
+	utils.AccountUtils = &utils.AccountStruct{}
+	utils.BindUtils = &utils.BindStruct{}
+	utils.AbiUtils = &utils.ABIUtilsStruct{}
+	utils.PathUtils = &utils.PathStruct{}
+	return utilsInterface.GetTxnOpts(transactionData)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {

@@ -122,65 +122,65 @@ func TestConvertToNumber(t *testing.T) {
 	}
 }
 
-func TestMultiplyFloatAndBigInt(t *testing.T) {
-	type args struct {
-		bigIntVal   *big.Int
-		floatingVal float64
-	}
-	tests := []struct {
-		name string
-		args args
-		want *big.Int
-	}{
-		{
-			name: "Test 1",
-			args: args{
-				bigIntVal:   nil,
-				floatingVal: 0,
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test 2",
-			args: args{
-				bigIntVal:   big.NewInt(1),
-				floatingVal: 0,
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test 3",
-			args: args{
-				bigIntVal:   big.NewInt(0),
-				floatingVal: 999.99,
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test 4",
-			args: args{
-				bigIntVal:   big.NewInt(21),
-				floatingVal: 999.99,
-			},
-			want: big.NewInt(20999),
-		},
-		{
-			name: "Test 5",
-			args: args{
-				bigIntVal:   big.NewInt(20000),
-				floatingVal: 1.5,
-			},
-			want: big.NewInt(30000),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := MultiplyFloatAndBigInt(tt.args.bigIntVal, tt.args.floatingVal); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MultiplyFloatAndBigInt() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+//func TestMultiplyFloatAndBigInt(t *testing.T) {
+//	type args struct {
+//		bigIntVal   *big.Int
+//		floatingVal float64
+//	}
+//	tests := []struct {
+//		name string
+//		args args
+//		want *big.Int
+//	}{
+//		{
+//			name: "Test 1",
+//			args: args{
+//				bigIntVal:   nil,
+//				floatingVal: 0,
+//			},
+//			want: big.NewInt(0),
+//		},
+//		{
+//			name: "Test 2",
+//			args: args{
+//				bigIntVal:   big.NewInt(1),
+//				floatingVal: 0,
+//			},
+//			want: big.NewInt(0),
+//		},
+//		{
+//			name: "Test 3",
+//			args: args{
+//				bigIntVal:   big.NewInt(0),
+//				floatingVal: 999.99,
+//			},
+//			want: big.NewInt(0),
+//		},
+//		{
+//			name: "Test 4",
+//			args: args{
+//				bigIntVal:   big.NewInt(21),
+//				floatingVal: 999.99,
+//			},
+//			want: big.NewInt(20999),
+//		},
+//		{
+//			name: "Test 5",
+//			args: args{
+//				bigIntVal:   big.NewInt(20000),
+//				floatingVal: 1.5,
+//			},
+//			want: big.NewInt(30000),
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			if got := MultiplyFloatAndBigInt(tt.args.bigIntVal, tt.args.floatingVal); !reflect.DeepEqual(got, tt.want) {
+//				t.Errorf("MultiplyFloatAndBigInt() = %v, want %v", got, tt.want)
+//			}
+//		})
+//	}
+//}
 
 func TestCheckAmountAndBalance(t *testing.T) {
 	type args struct {
