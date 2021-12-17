@@ -1,0 +1,245 @@
+package utils
+
+import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/mock"
+	"math/big"
+	"razor/accounts"
+	"razor/core/types"
+	"razor/utils/mocks"
+	"testing"
+)
+
+func Test_getGasPrice(t *testing.T) {
+	var client *ethclient.Client
+
+	type args struct {
+		gasPrice           *big.Int
+		gasPriceErr        error
+		config             types.Configurations
+		multipliedGasPrice *big.Int
+	}
+	tests := []struct {
+		name          string
+		args          args
+		want          *big.Int
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When getGasPrice() function executes successfully",
+			args: args{
+				config: types.Configurations{
+					GasPrice:      1,
+					GasMultiplier: 2,
+				},
+				gasPrice:           big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e9)),
+				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+			},
+			want:          big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When getGasPrice() executes successfully config.GasPrice is 0",
+			args: args{
+				config: types.Configurations{
+					GasPrice:      0,
+					GasMultiplier: 2,
+				},
+				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+			},
+			want:          big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+			expectedFatal: false,
+		},
+		{
+			name: "Test 3: When there is an error in getting gasPrice from SuggestGasPriceWithRetry()",
+			args: args{
+				config: types.Configurations{
+					GasPrice:      0,
+					GasMultiplier: 2,
+				},
+				gasPrice:           big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e9)),
+				gasPriceErr:        errors.New("gas error"),
+				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+			},
+			want:          nil,
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			OptionsMock := new(mocks.OptionUtils)
+
+			OptionsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			OptionsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(tt.args.multipliedGasPrice)
+
+			fatal = false
+
+			optionsPackageStruct := OptionsPackageStruct{
+				Options: OptionsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			got := utils.GetGasPrice(client, tt.args.config)
+			if fatal != tt.expectedFatal {
+				if got.Cmp(tt.want) != 0 {
+					t.Errorf("getGasPrice() = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func Test_utils_GetTxnOpts(t *testing.T) {
+	var transactionData types.TransactionOptions
+	var gasPrice *big.Int
+
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
+
+	accountUtils := accounts.AccountUtilsInterface
+	type args struct {
+		path        string
+		pathErr     error
+		privateKey  *ecdsa.PrivateKey
+		nonce       uint64
+		nonceErr    error
+		txnOpts     *bind.TransactOpts
+		txnOptsErr  error
+		gasLimit    uint64
+		gasLimitErr error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		want          *bind.TransactOpts
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When GetTxnOptions execute successfully",
+			args: args{
+				path:       "/home/local",
+				privateKey: privateKey,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				path:       "/home/local",
+				pathErr:    errors.New("path error"),
+				privateKey: privateKey,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When the privateKey is nil",
+			args: args{
+				path:       "/home/local",
+				privateKey: nil,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting nonce",
+			args: args{
+				path:       "/home/local",
+				privateKey: privateKey,
+				nonce:      2,
+				nonceErr:   errors.New("nonce error"),
+				txnOpts:    txnOpts,
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting transactor",
+			args: args{
+				path:       "/home/local",
+				privateKey: privateKey,
+				nonce:      2,
+				txnOpts:    txnOpts,
+				txnOptsErr: errors.New("transactor error"),
+				gasLimit:   1,
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting gasLimit",
+			args: args{
+				path:        "/home/local",
+				privateKey:  privateKey,
+				nonce:       2,
+				txnOpts:     txnOpts,
+				gasLimitErr: errors.New("gasLimit error"),
+			},
+			want:          txnOpts,
+			expectedFatal: false,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pathMock := new(mocks.Path)
+			accountsMock := new(mocks.Account)
+			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
+			bindMock := new(mocks.Bind)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				Options:        optionsMock,
+				PathUtils:      pathMock,
+				AccountUtils:   accountsMock,
+				BindUtils:      bindMock,
+				UtilsInterface: utilsMock,
+			}
+
+			utils := StartRazor(optionsPackageStruct)
+
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string"), accountUtils).Return(tt.args.privateKey)
+			optionsMock.On("GetPendingNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
+			utilsMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
+			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
+			utilsMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			optionsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
+			optionsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
+
+			fatal = false
+			got := utils.GetTxnOpts(transactionData)
+			if tt.expectedFatal {
+				assert.Equal(t, tt.expectedFatal, fatal)
+			}
+			if got != tt.want {
+				t.Errorf("GetTxnOpts() function, got = %v, want = %v", got, tt.want)
+			}
+		})
+	}
+}
