@@ -184,6 +184,14 @@ func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string
 	return utils.GetWithdrawReleasePeriod(client, address)
 }
 
+func (u Utils) GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	return utils.GetMaxCommission(client)
+}
+
+func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	return utils.GetEpochLimitForUpdateCommission(client)
+}
+
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	return utils.GetCommitments(client, address)
 }
@@ -356,13 +364,7 @@ func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethcl
 	return stakeManager.SetDelegationAcceptance(opts, status)
 }
 
-//TODO: Change this function to updateCommission
-func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.UpdateCommission(opts, commission)
-}
-
-func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.UpdateCommission(opts, commission)
 }
@@ -667,18 +669,6 @@ func (flagSetUtils FlagSetUtils) getRootStringLogLevel() (string, error) {
 
 func (flagSetUtils FlagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
-}
-
-func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
-	return SetCommission(client, stakerId, txnOpts, commission, utilsStruct)
-}
-
-func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
-	return DecreaseCommission(client, stakerId, txnOpts, commission, utilsStruct)
-}
-
-func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
-	return DecreaseCommissionPrompt()
 }
 
 func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {

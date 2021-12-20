@@ -50,6 +50,8 @@ type utilsInterface interface {
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
+	GetMaxCommission(client *ethclient.Client) (uint8, error)
+	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
@@ -109,10 +111,9 @@ type stakeManagerInterface interface {
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
-	SetCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
-	DecreaseCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -166,9 +167,6 @@ type flagSetInterface interface {
 }
 
 type utilsCmdInterface interface {
-	SetCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
-	DecreaseCommission(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
-	DecreaseCommissionPrompt() bool
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, uint16, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error

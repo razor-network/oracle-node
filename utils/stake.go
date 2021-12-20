@@ -119,3 +119,45 @@ func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, 
 	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
 	return stakeManager.WithdrawReleasePeriod(&callOpts)
 }
+
+func GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	//TODO: Remove this address
+	stakeManager, callOpts := getStakeManagerWithOpts(client, "")
+	var (
+		maxCommission uint8
+		err           error
+	)
+	err = retry.Do(func() error {
+		maxCommission, err = stakeManager.MaxCommission(&callOpts)
+		if err != nil {
+			log.Error("Error in fetching max commission.... Retrying")
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	return maxCommission, nil
+}
+
+func GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	//TODO: Remove this address
+	stakeManager, callOpts := getStakeManagerWithOpts(client, "")
+	var (
+		epochLimitForUpdateCommission uint16
+		err                           error
+	)
+	err = retry.Do(func() error {
+		epochLimitForUpdateCommission, err = stakeManager.EpochLimitForUpdateCommission(&callOpts)
+		if err != nil {
+			log.Error("Error in fetching epoch limit for update commission")
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+	return epochLimitForUpdateCommission, nil
+}
