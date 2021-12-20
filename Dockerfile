@@ -24,4 +24,3 @@ RUN PATH="/usr/local/go/bin:${PATH}" \
 FROM alpine:latest
 RUN apk add --update bash 
 COPY --from=builder /usr/local/bin/razor /usr/local/bin/
-
