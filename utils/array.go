@@ -5,13 +5,19 @@ import (
 	"math/big"
 )
 
-func Contains(arr []int, val int) bool {
-	if len(arr) == 0 {
-		return false
-	}
-	for _, value := range arr {
-		if value == val {
-			return true
+func Contains(slice interface{}, val interface{}) bool {
+	switch slice := slice.(type) {
+	case []int:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
+		}
+	case []string:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
 		}
 	}
 	return false

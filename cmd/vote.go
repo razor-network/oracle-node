@@ -44,7 +44,12 @@ Example:
 		utils.CheckError("Error in fetching config details: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
-		rogueMode, _ := cmd.Flags().GetBool("rogue")
+		isRogue, _ := cmd.Flags().GetBool("rogue")
+		rogueMode, _ := cmd.Flags().GetStringSlice("rogueMode")
+		rogueData := types.Rogue{
+			IsRogue:   isRogue,
+			RogueMode: rogueMode,
+		}
 		client := utils.ConnectToClient(config.Provider)
 		header, err := razorUtils.GetLatestBlock(client)
 		utils.CheckError("Error in getting block: ", err)
@@ -59,7 +64,7 @@ Example:
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config, rogueMode, utilsStruct)
+				handleBlock(client, account, latestHeader.Number, config, rogueData, utilsStruct)
 			}
 
 		}
@@ -72,7 +77,7 @@ var (
 	blockConfirmed   uint32
 )
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool, utilsStruct UtilsStruct) {
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, utilsStruct UtilsStruct) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -149,7 +154,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := utilsStruct.HandleCommitState(client, account.Address, epoch)
+		data, err := utilsStruct.HandleCommitState(client, epoch, rogueData)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
@@ -237,7 +242,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
+		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueData)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -249,7 +254,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if lastVerification >= epoch {
 			break
 		}
-		if rogueMode {
+		if rogueData.IsRogue {
 			log.Warn("Won't dispute in rogue mode..")
 			break
 		}
@@ -377,19 +382,21 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 
 	var (
-		Address  string
-		Rogue    bool
-		Password string
+		Address   string
+		Rogue     bool
+		RogueMode []string
+		Password  string
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
+	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
 
 	addrErr := voteCmd.MarkFlagRequired("address")

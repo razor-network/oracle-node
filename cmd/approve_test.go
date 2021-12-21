@@ -139,7 +139,7 @@ func Test_approve(t *testing.T) {
 			GetOptionsMock = func() bind.CallOpts {
 				return tt.args.callOpts
 			}
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return tt.args.transactOpts
 			}
 

@@ -93,7 +93,7 @@ func Test_delegate(t *testing.T) {
 				return tt.args.amount
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
