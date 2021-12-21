@@ -62,17 +62,9 @@ func (u Utils) GetOptions() bind.CallOpts {
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
 		Options:        utils.Options,
-		AccountUtils:   utils.AccountUtils,
-		BindUtils:      utils.BindUtils,
-		AbiUtils:       utils.AbiUtils,
-		PathUtils:      utils.PathUtils,
 		UtilsInterface: utils.UtilsInterface,
 	})
-	utils.Options = &utils.OptionUtilsStruct{}
-	utils.AccountUtils = &utils.AccountStruct{}
-	utils.BindUtils = &utils.BindStruct{}
-	utils.AbiUtils = &utils.ABIUtilsStruct{}
-	utils.PathUtils = &utils.PathStruct{}
+	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }

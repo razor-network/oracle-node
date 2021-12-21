@@ -26,17 +26,17 @@ func GetOptions() bind.CallOpts {
 }
 
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	defaultPath, err := PathUtils.GetDefaultPath()
+	defaultPath, err := Options.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	privateKey := AccountUtils.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
+	privateKey := Options.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
-	nonce, err := Options.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
+	nonce, err := UtilsInterface.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching pending nonce: ", err)
 
 	gasPrice := UtilsInterface.GetGasPrice(transactionData.Client, transactionData.Config)
-	txnOpts, err := BindUtils.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
+	txnOpts, err := Options.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
@@ -57,12 +57,12 @@ func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configura
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
 	} else {
 		var err error
-		gas, err = Options.SuggestGasPriceWithRetry(client)
+		gas, err = UtilsInterface.SuggestGasPriceWithRetry(client)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	gasPrice := Options.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
+	gasPrice := UtilsInterface.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
 	return gasPrice
 }
 
@@ -70,12 +70,12 @@ func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpt
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
-	parsed, err := AbiUtils.Parse(strings.NewReader(transactionData.ABI))
+	parsed, err := Options.Parse(strings.NewReader(transactionData.ABI))
 	if err != nil {
 		log.Error("Error in parsing ABI: ", err)
 		return 0, err
 	}
-	inputData, err := AbiUtils.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
+	inputData, err := Options.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
 	if err != nil {
 		log.Error("Error in calculating inputData: ", err)
 		return 0, err
