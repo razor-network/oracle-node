@@ -120,6 +120,10 @@ var GetLockMock func(*ethclient.Client, string, uint32) (types.Locks, error)
 
 var GetWithdrawReleasePeriodMock func(*ethclient.Client, string) (uint8, error)
 
+var GetMaxCommissionMock func(*ethclient.Client) (uint8, error)
+
+var GetEpochLimitForUpdateCommissionMock func(*ethclient.Client) (uint16, error)
+
 var GetConfigFilePathMock func() (string, error)
 
 var ViperWriteConfigAsMock func(string) error
@@ -306,7 +310,7 @@ var GetStringStatusMock func(*pflag.FlagSet) (string, error)
 
 var GetUint8CommissionMock func(*pflag.FlagSet) (uint8, error)
 
-var UpdateCommissionMock func(*ethclient.Client, uint32, *bind.TransactOpts, uint8, UtilsStruct) error
+var UpdateCommissionMock func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 var RevealMock func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 
@@ -506,6 +510,14 @@ func (u UtilsMock) GetWithdrawReleasePeriod(client *ethclient.Client, address st
 	return GetWithdrawReleasePeriodMock(client, address)
 }
 
+func (u UtilsMock) GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	return GetMaxCommissionMock(client)
+}
+
+func (u UtilsMock) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	return GetEpochLimitForUpdateCommissionMock(client)
+}
+
 func (u UtilsMock) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return IsEqualMock(arr1, arr2)
 }
@@ -675,7 +687,7 @@ func (stakeManagerMock StakeManagerMock) SetDelegationAcceptance(client *ethclie
 }
 
 func (stakeManagerMock StakeManagerMock) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
-	return UpdateCommissionContractMock(client, opts, commission)
+	return UpdateCommissionMock(client, opts, commission)
 }
 
 func (stakeManagerMock StakeManagerMock) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
@@ -894,8 +906,8 @@ func (flagSetMock FlagSetMock) GetRootFloat32GasLimit() (float32, error) {
 	return GetRootFloat32GasLimitMock()
 }
 
-func (utilsCmdMock UtilsCmdMock) UpdateCommission(client *ethclient.Client, stakerId uint32, opts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
-	return UpdateCommissionMock(client, stakerId, opts, commission, utilsStruct)
+func (utilsCmdMock UtilsCmdMock) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	return UpdateCommissionMock(client, opts, commission)
 }
 
 func (utilsCmdMock UtilsCmdMock) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {

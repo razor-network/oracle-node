@@ -100,8 +100,9 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 		log.Error("Error in setting commission")
 		return err
 	}
-	log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(txn))
-	utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(txn).String())
+	txnHash := utilsStruct.transactionUtils.Hash(txn)
+	log.Infof("Transaction hash: %s", txnHash)
+	utilsStruct.razorUtils.WaitForBlockCompletion(client, txnHash.String())
 	return nil
 }
 
