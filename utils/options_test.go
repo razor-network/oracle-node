@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
@@ -13,6 +16,8 @@ import (
 	"razor/accounts"
 	"razor/core/types"
 	"razor/utils/mocks"
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -239,6 +244,251 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GetTxnOpts() function, got = %v, want = %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUtilsStruct_GetGasLimit(t *testing.T) {
+	txnOpts := &bind.TransactOpts{
+		GasPrice: big.NewInt(1),
+		Value:    big.NewInt(1000),
+	}
+	var parsedData abi.ABI
+	var inputData []byte
+	var reader = strings.NewReader("")
+
+	type args struct {
+		transactionData     types.TransactionOptions
+		parsedData          abi.ABI
+		parseErr            error
+		inputData           []byte
+		packErr             error
+		gasLimit            uint64
+		gasLimitErr         error
+		increaseGasLimit    uint64
+		increaseGasLimitErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint64
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getGasLimit executes successfully",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "stake",
+					Config:     types.Configurations{GasLimitMultiplier: 2},
+				},
+				parsedData:       parsedData,
+				inputData:        inputData,
+				gasLimit:         1,
+				increaseGasLimit: 2,
+			},
+			want:    2,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When method name is nil",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "",
+				},
+			},
+			want:    0,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in parsing data",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "stake",
+					Config:     types.Configurations{GasLimitMultiplier: 2},
+				},
+				parseErr: errors.New("parse error"),
+			},
+			want:    0,
+			wantErr: errors.New("parse error"),
+		},
+		{
+			name: "Test 4: When there is a pack error",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "stake",
+					Config:     types.Configurations{GasLimitMultiplier: 2},
+				},
+				parsedData: parsedData,
+				packErr:    errors.New("pack error"),
+			},
+			want:    0,
+			wantErr: errors.New("pack error"),
+		},
+		{
+			name: "Test 5: When there is an error in estimating gasLimit",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "stake",
+					Config:     types.Configurations{GasLimitMultiplier: 2},
+				},
+				parsedData:  parsedData,
+				inputData:   inputData,
+				gasLimitErr: errors.New("gasLimit error"),
+			},
+			want:    0,
+			wantErr: errors.New("gasLimit error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			abiMock := new(mocks.ABIUtils)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				AbiUtils:       abiMock,
+				UtilsInterface: utilsMock,
+			}
+
+			utils := StartRazor(optionsPackageStruct)
+
+			abiMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
+			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
+			utilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			utilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
+			got, err := utils.GetGasLimit(tt.args.transactionData, txnOpts)
+			if got != tt.want {
+				t.Errorf("getGasLimit() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getGasLimit function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getGasLimit function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestUtilsStruct_IncreaseGasLimitValue(t *testing.T) {
+	var client *ethclient.Client
+
+	type args struct {
+		gasLimit           uint64
+		gasLimitMultiplier float32
+		latestBlock        *Types.Header
+		blockErr           error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint64
+		wantErr error
+	}{
+		{
+			name: "Test 1: When increaseGasLimitValue() executes successfully",
+			args: args{
+				gasLimit:           1,
+				gasLimitMultiplier: 2,
+				latestBlock: &Types.Header{
+					GasLimit: 3,
+				},
+			},
+			want:    2,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When gasLimit > latestBlock.GasLimit",
+			args: args{
+				gasLimit:           1,
+				gasLimitMultiplier: 3,
+				latestBlock: &Types.Header{
+					GasLimit: 1,
+				},
+			},
+			want:    1,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When gasLimit is 0",
+			args: args{
+				gasLimit:           0,
+				gasLimitMultiplier: 2,
+			},
+			want:    0,
+			wantErr: nil,
+		},
+		{
+			name: "Test 4: When gasMultiplier is 0",
+			args: args{
+				gasLimit:           1,
+				gasLimitMultiplier: 0,
+			},
+			want:    1,
+			wantErr: nil,
+		},
+		{
+			name: "Test 5: When there is an error in getting latest header",
+			args: args{
+				gasLimit:           1,
+				gasLimitMultiplier: 2,
+				blockErr:           errors.New("block error"),
+			},
+			want:    0,
+			wantErr: errors.New("block error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.blockErr)
+
+			got, err := utils.IncreaseGasLimitValue(client, tt.args.gasLimit, tt.args.gasLimitMultiplier)
+			if got != tt.want {
+				t.Errorf("increaseGasLimitValue() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for increaseGasLimitValue function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for increaseGasLimitValue function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetOptions(t *testing.T) {
+	callOpts := bind.CallOpts{
+		Pending:     false,
+		BlockNumber: nil,
+		Context:     context.Background(),
+	}
+	tests := []struct {
+		name string
+		want bind.CallOpts
+	}{
+		{
+			name: "Test 1: When GetOptionsExecutes successfully",
+			want: callOpts,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetOptions(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetOptions() = %v, want %v", got, tt.want)
 			}
 		})
 	}
