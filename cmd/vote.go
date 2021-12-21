@@ -51,7 +51,7 @@ Example:
 		address, _ := cmd.Flags().GetString("address")
 		account := types.Account{Address: address, Password: password}
 		for {
-			latestHeader, err := utils.GetLatestBlockWithRetry(client)
+			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue

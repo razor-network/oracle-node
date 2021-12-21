@@ -61,17 +61,19 @@ func (u Utils) GetOptions() bind.CallOpts {
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
-		Options:      utils.Options,
-		AccountUtils: utils.AccountUtils,
-		BindUtils:    utils.BindUtils,
-		AbiUtils:     utils.AbiUtils,
-		PathUtils:    utils.PathUtils,
+		Options:        utils.Options,
+		AccountUtils:   utils.AccountUtils,
+		BindUtils:      utils.BindUtils,
+		AbiUtils:       utils.AbiUtils,
+		PathUtils:      utils.PathUtils,
+		UtilsInterface: utils.UtilsInterface,
 	})
 	utils.Options = &utils.OptionUtilsStruct{}
 	utils.AccountUtils = &utils.AccountStruct{}
 	utils.BindUtils = &utils.BindStruct{}
 	utils.AbiUtils = &utils.ABIUtilsStruct{}
 	utils.PathUtils = &utils.PathStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 
@@ -244,7 +246,7 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 }
 
 func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
-	return utils.GetLatestBlockWithRetry(client)
+	return utils.UtilsInterface.GetLatestBlockWithRetry(client)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
