@@ -9,12 +9,32 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/utils"
 )
 
 var voteManagerUtils voteManagerInterface
 
-func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
-	data, err := utilsStruct.razorUtils.GetActiveAssetsData(client, address, epoch)
+func (utilsStruct UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, rogueData types.Rogue) ([]*big.Int, error) {
+	var (
+		data []*big.Int
+		err  error
+	)
+	//rogue mode
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
+		numActiveAssets, err := utilsStruct.razorUtils.GetNumActiveAssets(client)
+		if err != nil {
+			return nil, err
+		}
+		for i := 0; i < int(numActiveAssets.Int64()); i++ {
+			rogueValue := utilsStruct.razorUtils.GetRogueRandomValue(10000000)
+			data = append(data, rogueValue)
+		}
+		log.Debug("Data: ", data)
+		return data, nil
+	}
+
+	//normal mode
+	data, err = utilsStruct.razorUtils.GetActiveAssetsData(client, epoch)
 	if err != nil {
 		return nil, err
 	}

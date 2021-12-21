@@ -909,3 +909,44 @@ func TestConvertSRZRToRZR(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRogueRandomValue(t *testing.T) {
+	type args struct {
+		value int
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test 1: Given a value, the function generates a random value less than or equal to that value",
+			args: args{
+				value: 10,
+			},
+			want: big.NewInt(10),
+		},
+		{
+			name: "Test 2: Test for negative value",
+			args: args{
+				value: -10,
+			},
+			want: big.NewInt(0),
+		},
+		{
+			name: "Test 3: Test for 0 value",
+			args: args{
+				value: 0,
+			},
+			want: big.NewInt(0),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetRogueRandomValue(tt.args.value)
+			if got.Cmp(tt.want) > 0 {
+				t.Errorf("GetRogueRandomValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
