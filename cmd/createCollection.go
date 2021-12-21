@@ -97,6 +97,8 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

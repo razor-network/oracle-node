@@ -193,6 +193,8 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(unstakeCmd)
 
