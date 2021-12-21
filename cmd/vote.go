@@ -138,7 +138,10 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error(err)
 		return
 	}
-
+	if staker.IsSlashed {
+		log.Error("Staker is slashed.... cannot continue to vote!")
+		os.Exit(0)
+	}
 	switch state {
 	case 0:
 		lastCommit, err := utils.GetEpochLastCommitted(client, stakerId)
