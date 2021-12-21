@@ -30,6 +30,7 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
@@ -137,6 +138,8 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(withdrawCmd)
 

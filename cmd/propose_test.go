@@ -22,12 +22,12 @@ import (
 func TestPropose(t *testing.T) {
 
 	var (
-		client    *ethclient.Client
-		account   types.Account
-		config    types.Configurations
-		stakerId  uint32
-		epoch     uint32
-		rogueMode bool
+		client   *ethclient.Client
+		account  types.Account
+		config   types.Configurations
+		stakerId uint32
+		epoch    uint32
+		rogue    types.Rogue
 	)
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -426,7 +426,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
-		MakeBlockMock = func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error) {
+		MakeBlockMock = func(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
@@ -443,7 +443,7 @@ func TestPropose(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
+			got, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogue)
 			if got != tt.want {
 				t.Errorf("Txn hash for Propose function, got = %v, want %v", got, tt.want)
 			}
@@ -598,7 +598,7 @@ func TestMakeBlock(t *testing.T) {
 	var client *ethclient.Client
 	var address string
 
-	rogueModeMedian := big.NewInt(int64(randMath.Intn(10000000)))
+	rogueMedian := big.NewInt(int64(randMath.Intn(10000000)))
 
 	utilsStruct := UtilsStruct{
 		razorUtils:   UtilsMock{},
@@ -614,7 +614,7 @@ func TestMakeBlock(t *testing.T) {
 		sortedVotesErr            error
 		totalInfluenceRevealed    *big.Int
 		totalInfluenceRevealedErr error
-		rogueMode                 bool
+		rogue                     types.Rogue
 		influencedMedian          *big.Int
 		mediansInUint32           []uint32
 	}
@@ -625,26 +625,29 @@ func TestMakeBlock(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test 1: When rogueMode is true and MakeBlock function executes successfully",
+			name: "Test 1: When rogue is true and MakeBlock function executes successfully",
 			args: args{
 				numAssets:              big.NewInt(1),
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18))},
 				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(1400), big.NewInt(1e18)),
-				rogueMode:              true,
-				mediansInUint32:        []uint32{uint32(rogueModeMedian.Int64())},
+				rogue: types.Rogue{
+					IsRogue:   true,
+					RogueMode: nil,
+				},
+				mediansInUint32: []uint32{uint32(rogueMedian.Int64())},
 			},
-			want:    []uint32{uint32(rogueModeMedian.Int64())},
+			want:    []uint32{uint32(rogueMedian.Int64())},
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When rogueMode is false and MakeBlock function executes successfully",
+			name: "Test 2: When rogue is false and MakeBlock function executes successfully",
 			args: args{
 				numAssets:              big.NewInt(1),
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
 				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-				rogueMode:              false,
+				rogue:                  types.Rogue{IsRogue: false},
 				influencedMedian:       big.NewInt(498342),
 				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64())},
 			},
@@ -658,7 +661,7 @@ func TestMakeBlock(t *testing.T) {
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
 				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-				rogueMode:              false,
+				rogue:                  types.Rogue{IsRogue: false},
 				influencedMedian:       big.NewInt(498342),
 				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64())},
 			},
@@ -672,7 +675,7 @@ func TestMakeBlock(t *testing.T) {
 				epochErr:               errors.New("epoch error"),
 				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
 				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-				rogueMode:              false,
+				rogue:                  types.Rogue{IsRogue: false},
 				influencedMedian:       big.NewInt(498342),
 				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64())},
 			},
@@ -710,7 +713,7 @@ func TestMakeBlock(t *testing.T) {
 				epoch:                  4,
 				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
 				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-				rogueMode:              false,
+				rogue:                  types.Rogue{IsRogue: false},
 				influencedMedian:       big.NewInt(498342),
 				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64())},
 			},
@@ -720,7 +723,7 @@ func TestMakeBlock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetNumActiveAssetsMock = func(*ethclient.Client, string) (*big.Int, error) {
+			GetNumActiveAssetsMock = func(*ethclient.Client) (*big.Int, error) {
 				return tt.args.numAssets, tt.args.numAssetsErr
 			}
 
@@ -744,7 +747,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.mediansInUint32
 			}
 
-			got, err := MakeBlock(client, address, tt.args.rogueMode, utilsStruct)
+			got, err := MakeBlock(client, address, tt.args.rogue, utilsStruct)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
 			}

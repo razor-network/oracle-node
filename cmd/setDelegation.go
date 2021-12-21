@@ -33,6 +33,7 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 		err := utilsStruct.SetDelegation(cmd.Flags())
 		utils.CheckError("SetDelegation error: ", err)

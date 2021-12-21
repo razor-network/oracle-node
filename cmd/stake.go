@@ -14,6 +14,7 @@ var razorUtils utilsInterface
 var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
 var stakeManagerUtils stakeManagerInterface
+var packageUtils utils.Utils
 
 //var utilsStructInterface structUtilsInterface
 
@@ -31,6 +32,7 @@ Example:
 			transactionUtils:  transactionUtils,
 			tokenManagerUtils: tokenManagerUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)

@@ -28,6 +28,7 @@ Note:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
+			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)

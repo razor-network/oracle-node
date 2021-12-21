@@ -25,6 +25,7 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
+			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
@@ -109,6 +110,8 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

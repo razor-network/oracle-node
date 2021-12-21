@@ -33,6 +33,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 		transactionUtils:  transactionUtils,
 		cmdUtils:          cmdUtils,
 		flagSetUtils:      flagSetUtils,
+		packageUtils:      packageUtils,
 	}
 	utilsStruct.executeUnstake(cmd.Flags())
 }

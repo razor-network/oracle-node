@@ -93,7 +93,7 @@ var AllZeroMock func([32]byte) bool
 
 var GetEpochLastCommittedMock func(*ethclient.Client, uint32) (uint32, error)
 
-var GetActiveAssetsDataMock func(*ethclient.Client, string, uint32) ([]*big.Int, error)
+var GetActiveAssetsDataMock func(*ethclient.Client, uint32) ([]*big.Int, error)
 
 var ConvertUintArrayToUint8ArrayMock func([]uint) []uint8
 
@@ -109,7 +109,7 @@ var GetVoteValueMock func(*ethclient.Client, uint8, uint32) (*big.Int, error)
 
 var GetInfluenceSnapshotMock func(*ethclient.Client, uint32, uint32) (*big.Int, error)
 
-var GetNumActiveAssetsMock func(*ethclient.Client, string) (*big.Int, error)
+var GetNumActiveAssetsMock func(*ethclient.Client) (*big.Int, error)
 
 var GetTotalInfluenceRevealedMock func(*ethclient.Client, uint32) (*big.Int, error)
 
@@ -125,13 +125,13 @@ var ViperWriteConfigAsMock func(string) error
 
 var IsEqualMock func(arr1 []uint32, arr2 []uint32) (bool, int)
 
-var GetActiveAssetIdsMock func(*ethclient.Client, string) ([]uint8, error)
+var GetActiveAssetIdsMock func(*ethclient.Client) ([]uint8, error)
 
 var GetBlockManagerMock func(*ethclient.Client) *bindings.BlockManager
 
 var GetVotesMock func(*ethclient.Client, uint32) (bindings.StructsVote, error)
 
-var ContainsMock func([]int, int) bool
+var ContainsMock func(interface{}, interface{}) bool
 
 var CheckEthBalanceIsZeroMock func(*ethclient.Client, string)
 
@@ -176,6 +176,8 @@ var getGasLimitMock func(UtilsStruct) (float32, error)
 var ConvertSRZRToRZRMock func(*big.Int, *big.Int, *big.Int) *big.Int
 
 var ConvertRZRToSRZRMock func(*big.Int, *big.Int, *big.Int) (*big.Int, error)
+
+var GetRogueRandomValueMock func(int) *big.Int
 
 var AllowanceMock func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 
@@ -255,7 +257,7 @@ var isElectedProposerMock func(*ethclient.Client, types.ElectedProposer, UtilsSt
 
 var pseudoRandomNumberGeneratorMock func([]byte, uint32, []byte) *big.Int
 
-var MakeBlockMock func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
+var MakeBlockMock func(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error)
 
 var getSortedVotesMock func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error)
 
@@ -455,8 +457,8 @@ func (u UtilsMock) GetEpochLastCommitted(client *ethclient.Client, stakerId uint
 	return GetEpochLastCommittedMock(client, stakerId)
 }
 
-func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
-	return GetActiveAssetsDataMock(client, address, epoch)
+func (u UtilsMock) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
+	return GetActiveAssetsDataMock(client, epoch)
 }
 
 func (u UtilsMock) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
@@ -491,8 +493,8 @@ func (u UtilsMock) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint3
 	return GetInfluenceSnapshotMock(client, stakerId, epoch)
 }
 
-func (u UtilsMock) GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
-	return GetNumActiveAssetsMock(client, address)
+func (u UtilsMock) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
+	return GetNumActiveAssetsMock(client)
 }
 
 func (u UtilsMock) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
@@ -515,8 +517,8 @@ func (u UtilsMock) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return IsEqualMock(arr1, arr2)
 }
 
-func (u UtilsMock) GetActiveAssetIds(client *ethclient.Client, address string) ([]uint8, error) {
-	return GetActiveAssetIdsMock(client, address)
+func (u UtilsMock) GetActiveAssetIds(client *ethclient.Client) ([]uint8, error) {
+	return GetActiveAssetIdsMock(client)
 }
 
 func (u UtilsMock) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
@@ -527,7 +529,7 @@ func (u UtilsMock) GetVotes(client *ethclient.Client, stakerId uint32) (bindings
 	return GetVotesMock(client, stakerId)
 }
 
-func (u UtilsMock) Contains(arr []int, val int) bool {
+func (u UtilsMock) Contains(arr, val interface{}) bool {
 	return ContainsMock(arr, val)
 }
 
@@ -617,6 +619,10 @@ func (u UtilsMock) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, tot
 
 func (u UtilsMock) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
 	return ConvertRZRToSRZRMock(sAmount, currentStake, totalSupply)
+}
+
+func (u UtilsMock) GetRogueRandomValue(value int) *big.Int {
+	return GetRogueRandomValueMock(value)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -775,8 +781,8 @@ func (proposeUtilsMock ProposeUtilsMock) pseudoRandomNumberGenerator(seed []byte
 	return pseudoRandomNumberGeneratorMock(seed, max, blockHashes)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsStruct UtilsStruct) ([]uint32, error) {
-	return MakeBlockMock(client, address, rogueMode, utilsStruct)
+func (proposeUtilsMock ProposeUtilsMock) MakeBlock(client *ethclient.Client, address string, rogue types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+	return MakeBlockMock(client, address, rogue, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {

@@ -25,6 +25,7 @@ Example:
 			stakeManagerUtils: stakeManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config data: ", err)
@@ -72,6 +73,8 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(extendLockCmd)
 
