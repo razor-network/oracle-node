@@ -18,7 +18,7 @@ var setDelegationCmd = &cobra.Command{
 	Long: `Using setDelegation, a staker can accept delegation from delegators and charge a commission from them.
 
 Example:
-  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		utilsStruct := UtilsStruct{

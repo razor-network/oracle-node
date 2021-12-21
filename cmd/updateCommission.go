@@ -14,8 +14,10 @@ import (
 // updateCommissionCmd represents the updateCommission command
 var updateCommissionCmd = &cobra.Command{
 	Use:   "updateCommission",
-	Short: "A brief description of your command",
-	Long:  ``,
+	Short: "updateCommission allows a staker to add/update the commission value",
+	Long: `Using updateCommission stakers can add or update the commission charged by them
+Example:
+  ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utilsStruct := UtilsStruct{
 			razorUtils:        razorUtils,
