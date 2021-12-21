@@ -9,8 +9,8 @@ import (
 
 func TestContains(t *testing.T) {
 	type args struct {
-		arr []int
-		val int
+		arr interface{}
+		val interface{}
 	}
 	tests := []struct {
 		name string
@@ -38,6 +38,38 @@ func TestContains(t *testing.T) {
 			args: args{
 				arr: []int{},
 				val: 4,
+			},
+			want: false,
+		},
+		{
+			name: "Test for string values",
+			args: args{
+				arr: []string{"vote", "commit", "reveal"},
+				val: "commit",
+			},
+			want: true,
+		},
+		{
+			name: "Test for string values not present in the array",
+			args: args{
+				arr: []string{"vote", "commit", "reveal"},
+				val: "propose",
+			},
+			want: false,
+		},
+		{
+			name: "Test for string array and int value",
+			args: args{
+				arr: []string{"vote", "commit", "reveal"},
+				val: 42,
+			},
+			want: false,
+		},
+		{
+			name: "Test for int array and string value",
+			args: args{
+				arr: []int{0, 1, 2},
+				val: "commit",
 			},
 			want: false,
 		},

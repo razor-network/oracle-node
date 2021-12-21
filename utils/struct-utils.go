@@ -15,56 +15,56 @@ import (
 	"razor/path"
 )
 
-type RazorUtils struct{}
+type PackageUtils struct{}
 
-func (u RazorUtils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
+func (u PackageUtils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
 	return SuggestGasPriceWithRetry(client)
 }
 
-func (u RazorUtils) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
+func (u PackageUtils) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
 	return MultiplyFloatAndBigInt(bigIntVal, floatingVal)
 }
 
-func (u RazorUtils) parse(reader io.Reader) (abi.ABI, error) {
+func (u PackageUtils) parse(reader io.Reader) (abi.ABI, error) {
 	return abi.JSON(reader)
 }
 
-func (u RazorUtils) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
+func (u PackageUtils) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
 	return parsedData.Pack(name, args...)
 }
 
-func (u RazorUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
+func (u PackageUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
 	return EstimateGasWithRetry(client, message)
 }
 
-func (u RazorUtils) increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32, razorUtils RazorUtilsInterface) (uint64, error) {
+func (u PackageUtils) increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32, razorUtils Utils) (uint64, error) {
 	return increaseGasLimitValue(client, gasLimit, gasLimitMultiplier, razorUtils)
 }
 
-func (u RazorUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
+func (u PackageUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
 	return GetLatestBlockWithRetry(client)
 }
 
-func (u RazorUtils) GetDefaultPath() (string, error) {
+func (u PackageUtils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
-func (u RazorUtils) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
+func (u PackageUtils) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
 	return accounts.GetPrivateKey(address, password, keystorePath, accountUtils)
 }
 
-func (u RazorUtils) GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+func (u PackageUtils) GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
 	return GetPendingNonceAtWithRetry(client, accountAddress)
 }
 
-func (u RazorUtils) getGasPrice(client *ethclient.Client, config Types.Configurations, razorUtils RazorUtilsInterface) *big.Int {
+func (u PackageUtils) getGasPrice(client *ethclient.Client, config Types.Configurations, razorUtils Utils) *big.Int {
 	return getGasPrice(client, config, razorUtils)
 }
 
-func (u RazorUtils) getGasLimit(transactionData Types.TransactionOptions, txnOpts *bind.TransactOpts, razorUtils RazorUtilsInterface) (uint64, error) {
+func (u PackageUtils) getGasLimit(transactionData Types.TransactionOptions, txnOpts *bind.TransactOpts, razorUtils Utils) (uint64, error) {
 	return getGasLimit(transactionData, txnOpts, razorUtils)
 }
 
-func (u RazorUtils) NewKeyedTransactorWithChainID(privateKey *ecdsa.PrivateKey, chainId *big.Int) (*bind.TransactOpts, error) {
+func (u PackageUtils) NewKeyedTransactorWithChainID(privateKey *ecdsa.PrivateKey, chainId *big.Int) (*bind.TransactOpts, error) {
 	return bind.NewKeyedTransactorWithChainID(privateKey, chainId)
 }

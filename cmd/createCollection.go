@@ -98,7 +98,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

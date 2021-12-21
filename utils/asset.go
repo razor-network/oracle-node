@@ -14,12 +14,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func getAssetManagerWithOpts(client *ethclient.Client, address string) (*bindings.AssetManager, bind.CallOpts) {
+func getAssetManagerWithOpts(client *ethclient.Client) (*bindings.AssetManager, bind.CallOpts) {
 	return GetAssetManager(client), GetOptions()
 }
 
-func GetNumAssets(client *ethclient.Client, address string) (uint16, error) {
-	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+func GetNumAssets(client *ethclient.Client) (uint16, error) {
+	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		numAssets uint16
 		err       error
@@ -39,8 +39,8 @@ func GetNumAssets(client *ethclient.Client, address string) (uint16, error) {
 	return numAssets, nil
 }
 
-func GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
-	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+func GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
+	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		numActiveAssets *big.Int
 		err             error
@@ -60,8 +60,8 @@ func GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, err
 	return numActiveAssets, nil
 }
 
-func GetAssetType(client *ethclient.Client, address string, assetId uint16) (uint8, error) {
-	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+func GetAssetType(client *ethclient.Client, assetId uint16) (uint8, error) {
+	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		activeAsset types.Asset
 		err         error
@@ -84,8 +84,8 @@ func GetAssetType(client *ethclient.Client, address string, assetId uint16) (uin
 	return 1, nil
 }
 
-func GetCollection(client *ethclient.Client, address string, collectionId uint16) (bindings.StructsCollection, error) {
-	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+func GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
+	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		asset types.Asset
 		err   error
@@ -105,8 +105,8 @@ func GetCollection(client *ethclient.Client, address string, collectionId uint16
 	return asset.Collection, nil
 }
 
-func GetActiveAssetIds(client *ethclient.Client, address string) ([]uint16, error) {
-	assetManager, callOpts := getAssetManagerWithOpts(client, address)
+func GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
+	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		activeAssetIds []uint16
 		err            error
@@ -126,22 +126,22 @@ func GetActiveAssetIds(client *ethclient.Client, address string) ([]uint16, erro
 	return activeAssetIds, nil
 }
 
-func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
+func GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
 	var data []*big.Int
 
-	numOfAssets, err := GetNumAssets(client, address)
+	numOfAssets, err := GetNumAssets(client)
 	if err != nil {
 		return data, err
 	}
 
 	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
-		assetType, err := GetAssetType(client, address, uint16(assetIndex))
+		assetType, err := GetAssetType(client, uint16(assetIndex))
 		if err != nil {
 			log.Error("Error in fetching asset type: ", assetType)
 			return nil, err
 		}
 		if assetType == 2 {
-			activeCollection, err := GetActiveCollection(client, address, uint16(assetIndex))
+			activeCollection, err := GetActiveCollection(client, uint16(assetIndex))
 			if err != nil {
 				log.Error(err)
 				if err == errors.New("collection inactive") {
@@ -150,7 +150,7 @@ func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32)
 				return nil, err
 			}
 			//Supply previous epoch to Aggregate in case if last reported value is required.
-			collectionData, aggregationError := Aggregate(client, address, epoch-1, activeCollection)
+			collectionData, aggregationError := Aggregate(client, epoch-1, activeCollection)
 			if aggregationError != nil {
 				return nil, aggregationError
 			}
@@ -160,13 +160,13 @@ func GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32)
 	return data, nil
 }
 
-func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
+func Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
 	if len(collection.JobIDs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
 	var jobs []bindings.StructsJob
 	for _, id := range collection.JobIDs {
-		job, err := GetActiveJob(client, address, id)
+		job, err := GetActiveJob(client, id)
 		if err != nil {
 			log.Errorf("Error in fetching job %d: %s", id, err)
 			continue
@@ -175,7 +175,7 @@ func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, c
 	}
 	dataToCommit, weight, err := GetDataToCommitFromJobs(jobs)
 	if err != nil || len(dataToCommit) == 0 {
-		prevCommitmentData, err := FetchPreviousValue(client, address, previousEpoch, collection.Id)
+		prevCommitmentData, err := FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -184,7 +184,7 @@ func Aggregate(client *ethclient.Client, address string, previousEpoch uint32, c
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
-func GetActiveJob(client *ethclient.Client, address string, jobId uint16) (bindings.StructsJob, error) {
+func GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions()
 	var (
@@ -206,8 +206,8 @@ func GetActiveJob(client *ethclient.Client, address string, jobId uint16) (bindi
 	return job, nil
 }
 
-func GetActiveCollection(client *ethclient.Client, address string, collectionId uint16) (bindings.StructsCollection, error) {
-	collection, err := GetCollection(client, address, collectionId)
+func GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
+	collection, err := GetCollection(client, collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}

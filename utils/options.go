@@ -25,7 +25,7 @@ func GetOptions() bind.CallOpts {
 	}
 }
 
-func GetTxnOpts(transactionData types.TransactionOptions, razorUtils RazorUtilsInterface) *bind.TransactOpts {
+func GetTxnOpts(transactionData types.TransactionOptions, razorUtils Utils) *bind.TransactOpts {
 	defaultPath, err := razorUtils.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
 	privateKey := razorUtils.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
@@ -52,7 +52,7 @@ func GetTxnOpts(transactionData types.TransactionOptions, razorUtils RazorUtilsI
 	return txnOpts
 }
 
-func getGasPrice(client *ethclient.Client, config types.Configurations, razorUtils RazorUtilsInterface) *big.Int {
+func getGasPrice(client *ethclient.Client, config types.Configurations, razorUtils Utils) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
@@ -67,7 +67,7 @@ func getGasPrice(client *ethclient.Client, config types.Configurations, razorUti
 	return gasPrice
 }
 
-func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts, razorUtils RazorUtilsInterface) (uint64, error) {
+func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts, razorUtils Utils) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
@@ -97,7 +97,7 @@ func getGasLimit(transactionData types.TransactionOptions, txnOpts *bind.Transac
 	return razorUtils.increaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier, razorUtils)
 }
 
-func increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32, razorUtils RazorUtilsInterface) (uint64, error) {
+func increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32, razorUtils Utils) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil
 	}

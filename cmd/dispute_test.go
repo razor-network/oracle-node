@@ -137,11 +137,11 @@ func TestDispute(t *testing.T) {
 				return tt.args.votes, tt.args.votesErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return txnOpts
 			}
 
-			ContainsMock = func([]int, int) bool {
+			ContainsMock = func(interface{}, interface{}) bool {
 				return tt.args.containsStatus
 			}
 
@@ -415,7 +415,7 @@ func TestHandleDispute(t *testing.T) {
 				return tt.args.disputeBiggestInfluenceTxn, tt.args.disputeBiggestInfluenceErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
 				return txnOpts
 			}
 
@@ -427,7 +427,7 @@ func TestHandleDispute(t *testing.T) {
 				return 1
 			}
 
-			MakeBlockMock = func(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error) {
+			MakeBlockMock = func(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error) {
 				return tt.args.medians, tt.args.mediansErr
 			}
 

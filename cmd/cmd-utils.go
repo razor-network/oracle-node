@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/spf13/pflag"
 	"math/big"
+	"razor/utils"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -34,7 +35,7 @@ func WaitForAppropriateState(client *ethclient.Client, accountAddress string, ac
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err
 		}
-		if !utilsStruct.razorUtils.Contains(states, int(state)) {
+		if !utils.Contains(states, int(state)) {
 			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
 			time.Sleep(5 * time.Second)
 		} else {

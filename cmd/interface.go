@@ -18,7 +18,7 @@ import (
 
 type utilsInterface interface {
 	GetOptions() bind.CallOpts
-	GetTxnOpts(types.TransactionOptions, utils.RazorUtilsInterface) *bind.TransactOpts
+	GetTxnOpts(types.TransactionOptions, utils.Utils) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client
@@ -29,7 +29,7 @@ type utilsInterface interface {
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	GetActiveAssetsData(*ethclient.Client, string, uint32) ([]*big.Int, error)
+  GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
@@ -45,7 +45,7 @@ type utilsInterface interface {
 	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
 	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	GetNumActiveAssets(*ethclient.Client, string) (*big.Int, error)
+	GetNumActiveAssets(*ethclient.Client) (*big.Int, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
@@ -58,10 +58,10 @@ type utilsInterface interface {
 	GetConfigFilePath() (string, error)
 	ViperWriteConfigAs(string) error
 	IsEqual([]uint32, []uint32) (bool, int)
-	GetActiveAssetIds(*ethclient.Client, string) ([]uint16, error)
+	GetActiveAssetIds(*ethclient.Client) ([]uint16, error)
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
-	Contains([]int, int) bool
+	Contains(interface{}, interface{}) bool
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetSortedProposedBlockIds(*ethclient.Client, string, uint32) ([]uint32, error)
@@ -84,6 +84,7 @@ type utilsInterface interface {
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
+	GetRogueRandomValue(int) *big.Int
 }
 
 type tokenManagerInterface interface {
@@ -204,7 +205,7 @@ type proposeUtilsInterface interface {
 	getIteration(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
 	isElectedProposer(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
-	MakeBlock(*ethclient.Client, string, bool, UtilsStruct) ([]uint32, error)
+	MakeBlock(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error)
 	getSortedVotes(*ethclient.Client, string, uint16, uint32, UtilsStruct) ([]*big.Int, error)
 	influencedMedian([]*big.Int, *big.Int) *big.Int
 }

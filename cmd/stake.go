@@ -14,7 +14,7 @@ var razorUtils utilsInterface
 var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
 var stakeManagerUtils stakeManagerInterface
-var packageUtils utils.RazorUtilsInterface
+var packageUtils utils.Utils
 
 //var utilsStructInterface structUtilsInterface
 
@@ -100,7 +100,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.RazorUtils{}
+	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (

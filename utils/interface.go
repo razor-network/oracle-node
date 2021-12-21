@@ -14,18 +14,18 @@ import (
 	Types "razor/core/types"
 )
 
-type RazorUtilsInterface interface {
+type Utils interface {
 	SuggestGasPriceWithRetry(*ethclient.Client) (*big.Int, error)
 	MultiplyFloatAndBigInt(*big.Int, float64) *big.Int
 	parse(io.Reader) (abi.ABI, error)
 	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
 	EstimateGasWithRetry(*ethclient.Client, ethereum.CallMsg) (uint64, error)
-	increaseGasLimitValue(*ethclient.Client, uint64, float32, RazorUtilsInterface) (uint64, error)
+	increaseGasLimitValue(*ethclient.Client, uint64, float32, Utils) (uint64, error)
 	GetLatestBlockWithRetry(*ethclient.Client) (*types.Header, error)
 	GetDefaultPath() (string, error)
 	GetPrivateKey(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey
 	GetPendingNonceAtWithRetry(*ethclient.Client, common.Address) (uint64, error)
-	getGasPrice(*ethclient.Client, Types.Configurations, RazorUtilsInterface) *big.Int
-	getGasLimit(Types.TransactionOptions, *bind.TransactOpts, RazorUtilsInterface) (uint64, error)
+	getGasPrice(*ethclient.Client, Types.Configurations, Utils) *big.Int
+	getGasLimit(Types.TransactionOptions, *bind.TransactOpts, Utils) (uint64, error)
 	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
 }
