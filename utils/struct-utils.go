@@ -18,7 +18,8 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	PathUtils = optionsPackageStruct.PathUtils
 	AccountUtils = optionsPackageStruct.AccountUtils
 	BindUtils = optionsPackageStruct.BindUtils
-	return &utils{}
+	UtilsInterface = optionsPackageStruct.UtilsInterface
+	return &UtilsStruct{}
 }
 
 func (abiUtils ABIUtilsStruct) Parse(reader io.Reader) (abi.ABI, error) {

@@ -25,7 +25,7 @@ func GetOptions() bind.CallOpts {
 	}
 }
 
-func (utils *utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	defaultPath, err := PathUtils.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
 	privateKey := AccountUtils.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
@@ -35,14 +35,14 @@ func (utils *utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	nonce, err := Options.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching pending nonce: ", err)
 
-	gasPrice := utils.GetGasPrice(transactionData.Client, transactionData.Config)
+	gasPrice := UtilsInterface.GetGasPrice(transactionData.Client, transactionData.Config)
 	txnOpts, err := BindUtils.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
 
-	gasLimit, err := utils.GetGasLimit(transactionData, txnOpts)
+	gasLimit, err := UtilsInterface.GetGasLimit(transactionData, txnOpts)
 	if err != nil {
 		log.Error("Error in getting gas limit: ", err)
 	}
@@ -51,7 +51,7 @@ func (utils *utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	return txnOpts
 }
 
-func (*utils) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
@@ -66,7 +66,7 @@ func (*utils) GetGasPrice(client *ethclient.Client, config types.Configurations)
 	return gasPrice
 }
 
-func (*utils) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
@@ -88,22 +88,22 @@ func (*utils) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bin
 		Value:    txnOpts.Value,
 		Data:     inputData,
 	}
-	gasLimit, err := EstimateGasWithRetry(transactionData.Client, msg)
+	gasLimit, err := UtilsInterface.EstimateGasWithRetry(transactionData.Client, msg)
 	if err != nil {
 		return 0, err
 	}
 	log.Debug("Estimated Gas: ", gasLimit)
-	return increaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
+	return UtilsInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
 }
 
-func increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+func (*UtilsStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil
 	}
 	gasLimitIncremented := float64(gasLimitMultiplier) * float64(gasLimit)
 	gasLimit = uint64(gasLimitIncremented)
 
-	latestBlock, err := GetLatestBlockWithRetry(client)
+	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err

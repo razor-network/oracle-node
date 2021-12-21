@@ -32,7 +32,7 @@ func GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.
 	return nonce, nil
 }
 
-func GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
+func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
 	var (
 		latestHeader *types.Header
 		err          error
@@ -72,7 +72,7 @@ func (optionUtils *OptionUtilsStruct) SuggestGasPriceWithRetry(client *ethclient
 	return gasPrice, nil
 }
 
-func EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
+func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
 	var (
 		gasLimit uint64
 		err      error

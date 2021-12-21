@@ -2,9 +2,11 @@ package utils
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
 	"math/big"
@@ -41,6 +43,9 @@ type Utils interface {
 	GetGasPrice(*ethclient.Client, types.Configurations) *big.Int
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error)
+	EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error)
+	IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error)
+	GetLatestBlockWithRetry(client *ethclient.Client) (*Types.Header, error)
 }
 
 type Path interface {
@@ -61,7 +66,7 @@ type PathStruct struct{}
 type AccountStruct struct{}
 type BindStruct struct{}
 
-type utils struct{}
+type UtilsStruct struct{}
 
 type OptionsPackageStruct struct {
 	Options        OptionUtils
