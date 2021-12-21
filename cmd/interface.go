@@ -29,7 +29,7 @@ type utilsInterface interface {
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-  GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
+	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
