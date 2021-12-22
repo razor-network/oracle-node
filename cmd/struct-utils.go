@@ -564,8 +564,8 @@ func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Clie
 	return getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
 }
 
-func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	return getIteration(client, address, proposer, utilsStruct)
+func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	return getIteration(client, proposer, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
