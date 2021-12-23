@@ -379,10 +379,14 @@ _Note: This command is restricted to "Admin Role"_
 ./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
 
+### Job details
+
+Get the list of all jobs with the details like weight, power, Id etc.
+
 Example:
 
 ```
-$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10
+$ ./razor jobList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
