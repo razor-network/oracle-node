@@ -39,7 +39,7 @@ func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) 
 	return commitments.CommitmentHash, nil
 }
 
-func GetVoteValue(client *ethclient.Client, assetId uint8, stakerId uint32) (*big.Int, error) {
+func GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		voteValue    *big.Int

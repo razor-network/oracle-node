@@ -183,13 +183,26 @@ $ ./razor stakerInfo --stakerId 2
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
+$ ./razor setDelegation --address <address> --status <true_or_false> 
 ```
 
 Example:
 
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
+```
+
+### Update Commission
+
+If you are a staker and have accepted delegation, you can define your commission rate using this command.
+
+```
+$ ./razor updateCommission --address <address> --commission <commission_percent> 
+
+```
+
+```
+$ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10 
 ```
 
 ### Delegate
