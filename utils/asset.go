@@ -40,13 +40,13 @@ func GetNumAssets(client *ethclient.Client) (uint16, error) {
 
 func GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
 	var jobs []bindings.StructsJob
-	var JobIDs []uint8
+	var JobIDs []uint16
 
 	numAssets, err := GetNumAssets(client)
 	if err != nil {
 		return nil, err
 	}
-	for i := uint8(1); i <= numAssets; i++ {
+	for i := uint16(1); i <= numAssets; i++ {
 		assetType, err := GetAssetType(client, i)
 		if err != nil {
 			return nil, err
