@@ -202,7 +202,7 @@ type blockManagerInterface interface {
 
 type proposeUtilsInterface interface {
 	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
-	getIteration(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
+	getIteration(*ethclient.Client, types.ElectedProposer, UtilsStruct) int
 	isElectedProposer(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
 	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
 	MakeBlock(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error)
