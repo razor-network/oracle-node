@@ -128,7 +128,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
-	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, sAmount)
+	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, sAmount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return txnArgs, err

@@ -163,7 +163,7 @@ func TestUnstake(t *testing.T) {
 				return tt.args.sAmount, tt.args.sAmountErr
 			}
 
-			UnstakeContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error) {
+			UnstakeContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
 				return tt.args.unstakeTxn, tt.args.unstakeErr
 			}
 

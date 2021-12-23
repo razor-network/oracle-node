@@ -19,7 +19,7 @@ import (
 func TestCheckCurrentStatus(t *testing.T) {
 
 	var client *ethclient.Client
-	var assetId uint8
+	var assetId uint16
 
 	utilsStruct := UtilsStruct{
 		razorUtils:        UtilsMock{},
@@ -63,7 +63,7 @@ func TestCheckCurrentStatus(t *testing.T) {
 				return tt.args.callOpts
 			}
 
-			GetActiveStatusMock = func(*ethclient.Client, *bind.CallOpts, uint8) (bool, error) {
+			GetActiveStatusMock = func(*ethclient.Client, *bind.CallOpts, uint16) (bool, error) {
 				return tt.args.activeStatus, tt.args.activeStatusErr
 			}
 
@@ -105,7 +105,7 @@ func TestModifyAssetStatus(t *testing.T) {
 	type args struct {
 		address             string
 		addressErr          error
-		assetId             uint8
+		assetId             uint16
 		assetIdErr          error
 		status              string
 		statusErr           error
@@ -282,7 +282,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return tt.args.address, tt.args.addressErr
 			}
 
-			GetUint8AssetIdMock = func(*pflag.FlagSet) (uint8, error) {
+			GetUint16AssetIdMock = func(*pflag.FlagSet) (uint16, error) {
 				return tt.args.assetId, tt.args.assetIdErr
 			}
 
@@ -302,7 +302,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return client
 			}
 
-			CheckCurrentStatusMock = func(*ethclient.Client, uint8, UtilsStruct) (bool, error) {
+			CheckCurrentStatusMock = func(*ethclient.Client, uint16, UtilsStruct) (bool, error) {
 				return tt.args.currentStatus, tt.args.currentStatusErr
 			}
 
@@ -314,7 +314,7 @@ func TestModifyAssetStatus(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			SetCollectionStatusMock = func(*ethclient.Client, *bind.TransactOpts, bool, uint8) (*Types.Transaction, error) {
+			SetCollectionStatusMock = func(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error) {
 				return tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr
 			}
 

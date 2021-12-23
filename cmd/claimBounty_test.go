@@ -183,7 +183,7 @@ func Test_claimBounty(t *testing.T) {
 				epoch: 70,
 				bountyLock: types.BountyLock{
 					Amount:      big.NewInt(1000),
-					RedeemAfter: big.NewInt(70),
+					RedeemAfter: 70,
 				},
 				redeemBountyTxn: &Types.Transaction{},
 				hash:            common.BigToHash(big.NewInt(1)),
@@ -197,7 +197,7 @@ func Test_claimBounty(t *testing.T) {
 				epoch: 70,
 				bountyLock: types.BountyLock{
 					Amount:      big.NewInt(1000),
-					RedeemAfter: big.NewInt(80),
+					RedeemAfter: 80,
 				},
 				redeemBountyTxn: &Types.Transaction{},
 				hash:            common.BigToHash(big.NewInt(1)),
@@ -228,7 +228,7 @@ func Test_claimBounty(t *testing.T) {
 				epoch: 70,
 				bountyLock: types.BountyLock{
 					Amount:      big.NewInt(0),
-					RedeemAfter: big.NewInt(70),
+					RedeemAfter: 70,
 				},
 			},
 			want:    core.NilHash,
@@ -240,7 +240,7 @@ func Test_claimBounty(t *testing.T) {
 				epoch: 70,
 				bountyLock: types.BountyLock{
 					Amount:      big.NewInt(1000),
-					RedeemAfter: big.NewInt(70),
+					RedeemAfter: 70,
 				},
 				redeemBountyErr: errors.New("redeemBounty error"),
 			},

@@ -35,7 +35,7 @@ func GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch u
 	return numProposedBlocks, nil
 }
 
-func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
+func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions()
 	var (
@@ -57,7 +57,7 @@ func GetProposedBlock(client *ethclient.Client, address string, epoch uint32, pr
 	return proposedBlock, nil
 }
 
-func FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint8) (uint32, error) {
+func FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (uint32, error) {
 	blockManager := GetBlockManager(client)
 	callOpts := GetOptions()
 	var (
@@ -121,10 +121,10 @@ func GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
 	return maxAltBlocks, nil
 }
 
-func GetSortedProposedBlockId(client *ethclient.Client, address string, epoch uint32, index *big.Int) (uint8, error) {
+func GetSortedProposedBlockId(client *ethclient.Client, address string, epoch uint32, index *big.Int) (uint32, error) {
 	blockManager, callOpts := getBlockManagerWithOpts(client, address)
 	var (
-		sortedProposedBlockId uint8
+		sortedProposedBlockId uint32
 		err                   error
 	)
 	err = retry.Do(
@@ -142,13 +142,13 @@ func GetSortedProposedBlockId(client *ethclient.Client, address string, epoch ui
 	return sortedProposedBlockId, nil
 }
 
-func GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
+func GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint32, error) {
 	numberOfProposedBlocks, err := GetNumberOfProposedBlocks(client, address, epoch)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
-	var sortedProposedBlockIds []uint8
+	var sortedProposedBlockIds []uint32
 	for i := 0; i < int(numberOfProposedBlocks); i++ {
 		id, err := GetSortedProposedBlockId(client, address, epoch, big.NewInt(int64(i)))
 		if err != nil {

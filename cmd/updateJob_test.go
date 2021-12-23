@@ -44,7 +44,7 @@ func Test_updateJob(t *testing.T) {
 		selectorErr          error
 		selectorType         uint8
 		selectorTypeErr      error
-		jobId                uint8
+		jobId                uint16
 		jobIdErr             error
 		power                int8
 		powerErr             error
@@ -281,7 +281,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.address, tt.args.addressErr
 			}
 
-			GetUint8JobIdMock = func(*pflag.FlagSet) (uint8, error) {
+			GetUint16JobIdMock = func(*pflag.FlagSet) (uint16, error) {
 				return tt.args.jobId, tt.args.jobIdErr
 			}
 
@@ -313,7 +313,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			UpdateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint8, uint8, int8, uint8, string, string) (*Types.Transaction, error) {
+			UpdateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error) {
 				return tt.args.updateJobTxn, tt.args.updateJobErr
 			}
 

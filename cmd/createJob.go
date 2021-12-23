@@ -123,7 +123,7 @@ func init() {
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
-	createJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
+	createJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 0, "selector type (0 for json, 1 for XHTML)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")
