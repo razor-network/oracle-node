@@ -77,14 +77,14 @@ func (utilsStruct UtilsStruct) overrideJob(job *types.StructsJob) error {
 func init() {
 	rootCmd.AddCommand(overrideJobCmd)
 	var (
-		Job          uint8
+		JobId        uint8
 		URL          string
 		Selector     string
 		SelectorType uint8
 		Power        int8
 	)
 
-	overrideJobCmd.Flags().Uint8VarP(&Job, "jobId", "j", 0, "job id to override")
+	overrideJobCmd.Flags().Uint8VarP(&JobId, "jobId", "j", 0, "job id to override")
 	overrideJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	overrideJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
 	overrideJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
