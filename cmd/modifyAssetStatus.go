@@ -39,7 +39,7 @@ Example:
 	},
 }
 
-func CheckCurrentStatus(client *ethclient.Client, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
+func CheckCurrentStatus(client *ethclient.Client, assetId uint16, utilsStruct UtilsStruct) (bool, error) {
 	callOpts := utilsStruct.razorUtils.GetOptions()
 	return utilsStruct.assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
@@ -49,7 +49,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 	if err != nil {
 		return core.NilHash, err
 	}
-	assetId, err := utilsStruct.flagSetUtils.GetUint8AssetId(flagSet)
+	assetId, err := utilsStruct.flagSetUtils.GetUint16AssetId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}

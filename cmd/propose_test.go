@@ -423,7 +423,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr
 		}
 
-		GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error) {
+		GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint32) (bindings.StructsBlock, error) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
@@ -732,7 +732,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error) {
+			getSortedVotesMock = func(*ethclient.Client, string, uint16, uint32, UtilsStruct) ([]*big.Int, error) {
 				return tt.args.sortedVotes, tt.args.sortedVotesErr
 			}
 
@@ -770,7 +770,7 @@ func Test_getSortedVotes(t *testing.T) {
 
 	var client *ethclient.Client
 	var address string
-	var assetId uint8
+	var assetId uint16
 
 	utilsStruct := UtilsStruct{
 		razorUtils: UtilsMock{},
@@ -888,7 +888,7 @@ func Test_getSortedVotes(t *testing.T) {
 				return tt.args.epochLastRevealed, tt.args.epochLastRevealedErr
 			}
 
-			GetVoteValueMock = func(*ethclient.Client, uint8, uint32) (*big.Int, error) {
+			GetVoteValueMock = func(*ethclient.Client, uint16, uint32) (*big.Int, error) {
 				return tt.args.vote, tt.args.voteErr
 			}
 

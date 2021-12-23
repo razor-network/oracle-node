@@ -18,10 +18,10 @@ func getAssetManagerWithOpts(client *ethclient.Client) (*bindings.AssetManager, 
 	return GetAssetManager(client), GetOptions()
 }
 
-func GetNumAssets(client *ethclient.Client) (uint8, error) {
+func GetNumAssets(client *ethclient.Client) (uint16, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
-		numAssets uint8
+		numAssets uint16
 		err       error
 	)
 	err = retry.Do(
@@ -47,7 +47,7 @@ func GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
 	)
 	err = retry.Do(
 		func() error {
-			numActiveAssets, err = assetManager.GetNumActiveAssets(&callOpts)
+			numActiveAssets, err = assetManager.GetNumActiveCollections(&callOpts)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -60,7 +60,7 @@ func GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
 	return numActiveAssets, nil
 }
 
-func GetAssetType(client *ethclient.Client, assetId uint8) (uint8, error) {
+func GetAssetType(client *ethclient.Client, assetId uint16) (uint8, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		activeAsset types.Asset
@@ -84,7 +84,7 @@ func GetAssetType(client *ethclient.Client, assetId uint8) (uint8, error) {
 	return 1, nil
 }
 
-func GetCollection(client *ethclient.Client, collectionId uint8) (bindings.StructsCollection, error) {
+func GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
 		asset types.Asset
@@ -105,15 +105,15 @@ func GetCollection(client *ethclient.Client, collectionId uint8) (bindings.Struc
 	return asset.Collection, nil
 }
 
-func GetActiveAssetIds(client *ethclient.Client) ([]uint8, error) {
+func GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
-		activeAssetIds []uint8
+		activeAssetIds []uint16
 		err            error
 	)
 	err = retry.Do(
 		func() error {
-			activeAssetIds, err = assetManager.GetActiveAssets(&callOpts)
+			activeAssetIds, err = assetManager.GetActiveCollections(&callOpts)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -135,13 +135,13 @@ func GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, er
 	}
 
 	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
-		assetType, err := GetAssetType(client, uint8(assetIndex))
+		assetType, err := GetAssetType(client, uint16(assetIndex))
 		if err != nil {
 			log.Error("Error in fetching asset type: ", assetType)
 			return nil, err
 		}
 		if assetType == 2 {
-			activeCollection, err := GetActiveCollection(client, uint8(assetIndex))
+			activeCollection, err := GetActiveCollection(client, uint16(assetIndex))
 			if err != nil {
 				log.Error(err)
 				if err == errors.New("collection inactive") {
@@ -184,7 +184,7 @@ func Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindin
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
-func GetActiveJob(client *ethclient.Client, jobId uint8) (bindings.StructsJob, error) {
+func GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
 	assetManager := GetAssetManager(client)
 	callOpts := GetOptions()
 	var (
@@ -206,7 +206,7 @@ func GetActiveJob(client *ethclient.Client, jobId uint8) (bindings.StructsJob, e
 	return job, nil
 }
 
-func GetActiveCollection(client *ethclient.Client, collectionId uint8) (bindings.StructsCollection, error) {
+func GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	collection, err := GetCollection(client, collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
@@ -242,7 +242,7 @@ func GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
-	if job.SelectorType == 1 {
+	if job.SelectorType == 0 {
 		apiErr = retry.Do(
 			func() error {
 				response, apiErr = GetDataFromAPI(job.Url)
