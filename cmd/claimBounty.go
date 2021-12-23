@@ -97,7 +97,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 
 	log.Info("Claiming bounty transaction...")
 	waitFor := bountyLock.RedeemAfter - epoch
-	if waitFor == 1 {
+	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
