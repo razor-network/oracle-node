@@ -411,7 +411,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.randaoHash, tt.args.randaoHashErr
 		}
 
-		getIterationMock = func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int {
+		getIterationMock = func(*ethclient.Client, types.ElectedProposer, UtilsStruct) int {
 			return tt.args.iteration
 		}
 
@@ -423,7 +423,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr
 		}
 
-		GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint8) (bindings.StructsBlock, error) {
+		GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint32) (bindings.StructsBlock, error) {
 			return tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr
 		}
 
@@ -551,7 +551,6 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 
 func Test_getIteration(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	var proposer types.ElectedProposer
 
 	utilsStruct := UtilsStruct{
@@ -574,20 +573,20 @@ func Test_getIteration(t *testing.T) {
 			},
 			want: 0,
 		},
-		//{
-		//	name: "Test 2: When getIteration returns an invalid iteration",
-		//	args: args{
-		//		isElectedProposer: false,
-		//	},
-		//	want: -1,
-		//},
+		{
+			name: "Test 2: When getIteration returns an invalid iteration",
+			args: args{
+				isElectedProposer: false,
+			},
+			want: -1,
+		},
 	}
 	for _, tt := range tests {
 		isElectedProposerMock = func(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool {
 			return tt.args.isElectedProposer
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			if got := getIteration(client, address, proposer, utilsStruct); got != tt.want {
+			if got := getIteration(client, proposer, utilsStruct); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -721,6 +720,22 @@ func TestMakeBlock(t *testing.T) {
 			want:    []uint32{498342, 498342, 498342},
 			wantErr: nil,
 		},
+		{
+			name: "Test 7: When rogue is true in propose mode and MakeBlock function executes successfully",
+			args: args{
+				numAssets:              big.NewInt(1),
+				epoch:                  4,
+				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18))},
+				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(1400), big.NewInt(1e18)),
+				rogue: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"propose"},
+				},
+				mediansInUint32: []uint32{uint32(rogueMedian.Int64())},
+			},
+			want:    []uint32{uint32(rogueMedian.Int64())},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -732,7 +747,7 @@ func TestMakeBlock(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			getSortedVotesMock = func(*ethclient.Client, string, uint8, uint32, UtilsStruct) ([]*big.Int, error) {
+			getSortedVotesMock = func(*ethclient.Client, string, uint16, uint32, UtilsStruct) ([]*big.Int, error) {
 				return tt.args.sortedVotes, tt.args.sortedVotesErr
 			}
 
@@ -770,7 +785,7 @@ func Test_getSortedVotes(t *testing.T) {
 
 	var client *ethclient.Client
 	var address string
-	var assetId uint8
+	var assetId uint16
 
 	utilsStruct := UtilsStruct{
 		razorUtils: UtilsMock{},
@@ -888,7 +903,7 @@ func Test_getSortedVotes(t *testing.T) {
 				return tt.args.epochLastRevealed, tt.args.epochLastRevealedErr
 			}
 
-			GetVoteValueMock = func(*ethclient.Client, uint8, uint32) (*big.Int, error) {
+			GetVoteValueMock = func(*ethclient.Client, uint16, uint32) (*big.Int, error) {
 				return tt.args.vote, tt.args.voteErr
 			}
 
@@ -1061,6 +1076,23 @@ func Test_isElectedProposer(t *testing.T) {
 				},
 				influenceSnapshot:    nil,
 				influenceSnapshotErr: errors.New("error in getting influence snapshot"),
+			},
+			want: false,
+		},
+		{
+			name: "Test5: When pseudoRandomNumber is not equal to proposer's stakerID",
+			args: args{
+				client:  client,
+				address: "0x000000000000000000000000000000000000dead",
+				proposer: types.ElectedProposer{
+					Iteration:        0,
+					Stake:            nil,
+					StakerId:         3,
+					BiggestInfluence: biggestInfluence,
+					NumberOfStakers:  3,
+					RandaoHash:       [32]byte{},
+					Epoch:            333,
+				},
 			},
 			want: false,
 		},

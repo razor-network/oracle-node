@@ -49,7 +49,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 	log.Debug("Biggest Influence Id: ", biggestInfluenceId)
 	log.Debugf("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
-	iteration := utilsStruct.proposeUtils.getIteration(client, account.Address, types.ElectedProposer{
+	iteration := utilsStruct.proposeUtils.getIteration(client, types.ElectedProposer{
 		Stake:            staker.Stake,
 		StakerId:         stakerId,
 		BiggestInfluence: biggestInfluence,
@@ -77,7 +77,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
 		lastBlockIndex := numOfProposedBlocks - 1
-		lastProposedBlockStruct, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, lastBlockIndex)
+		lastProposedBlockStruct, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, uint32(lastBlockIndex))
 		if err != nil {
 			log.Error(err)
 			return core.NilHash, err
@@ -141,8 +141,8 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch ui
 	return biggestInfluence, biggestInfluenceId, nil
 }
 
-func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	for i := 0; i < 10000000000; i++ {
+func getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	for i := 0; i < 10000000; i++ {
 		proposer.Iteration = i
 		isElected := utilsStruct.proposeUtils.isElectedProposer(client, proposer, utilsStruct)
 		if isElected {
@@ -196,7 +196,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue, 
 	}
 
 	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		sortedVotes, err := utilsStruct.proposeUtils.getSortedVotes(client, address, uint8(assetId), epoch, utilsStruct)
+		sortedVotes, err := utilsStruct.proposeUtils.getSortedVotes(client, address, uint16(assetId), epoch, utilsStruct)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -224,7 +224,7 @@ func MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue, 
 	return mediansInUint32, nil
 }
 
-func getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
+func getSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
 	numberOfStakers, err := utilsStruct.razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, err
