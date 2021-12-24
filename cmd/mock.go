@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -42,7 +41,7 @@ type CryptoMock struct{}
 
 var GetOptionsMock func() bind.CallOpts
 
-var GetTxnOptsMock func(types.TransactionOptions, utils.Utils) *bind.TransactOpts
+var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
@@ -254,7 +253,7 @@ var GetBoolAutoWithdrawMock func(*pflag.FlagSet) (bool, error)
 
 var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
 
-var getIterationMock func(*ethclient.Client, string, types.ElectedProposer, UtilsStruct) int
+var getIterationMock func(*ethclient.Client, types.ElectedProposer, UtilsStruct) int
 
 var isElectedProposerMock func(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
 
@@ -362,8 +361,8 @@ func (u UtilsMock) GetOptions() bind.CallOpts {
 	return GetOptionsMock()
 }
 
-func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.Utils) *bind.TransactOpts {
-	return GetTxnOptsMock(transactionData, razorUtils)
+func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+	return GetTxnOptsMock(transactionData)
 }
 
 func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -778,8 +777,8 @@ func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethcli
 	return getBiggestInfluenceAndIdMock(client, address, epoch, utilsStruct)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	return getIterationMock(client, address, proposer, utilsStruct)
+func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	return getIterationMock(client, proposer, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {

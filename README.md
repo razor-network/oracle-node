@@ -129,6 +129,18 @@ Example:
 $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
 ```
 
+If you want to vote just after stake automatically, you can just set `autoVote` flag to true in the stake command as stated below
+
+```
+$ ./razor stake --address <address> --value <value> --autoVote <bool>
+```
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 2000 --autoVote true
+```
+
 _Note: --pow flag is used to stake floating number stake_
 
  _Note: Formula for calculating pow: (value * (10 ** 18)) / (10 ** x) where x is no of decimal places and value is integer_

@@ -28,7 +28,6 @@ Note:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
-			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
@@ -80,7 +79,7 @@ func (utilsStruct UtilsStruct) createCollection(flagSet *pflag.FlagSet, config t
 		MethodName:      "createCollection",
 		Parameters:      []interface{}{jobIds, aggregation, power, name},
 		ABI:             bindings.AssetManagerABI,
-	}, utilsStruct.packageUtils)
+	})
 	txn, err := utilsStruct.assetManagerUtils.CreateCollection(client, txnOpts, jobIds, aggregation, power, name)
 	if err != nil {
 		log.Error("Error in creating collection")
@@ -98,7 +97,8 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

@@ -40,7 +40,7 @@ func MultiplyWithPower(num *big.Float, power int8) *big.Int {
 	return result
 }
 
-func MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
+func (*UtilsStruct) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
 	if bigIntVal == nil || floatingVal == 0 {
 		return big.NewInt(0)
 	}

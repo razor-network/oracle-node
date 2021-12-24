@@ -49,7 +49,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 	log.Debug("Biggest Influence Id: ", biggestInfluenceId)
 	log.Debugf("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
-	iteration := utilsStruct.proposeUtils.getIteration(client, account.Address, types.ElectedProposer{
+	iteration := utilsStruct.proposeUtils.getIteration(client, types.ElectedProposer{
 		Stake:            staker.Stake,
 		StakerId:         stakerId,
 		BiggestInfluence: biggestInfluence,
@@ -107,7 +107,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		ABI:             bindings.BlockManagerABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
-	}, utilsStruct.packageUtils)
+	})
 
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Influence Id: %d", iteration, biggestInfluenceId)
@@ -141,8 +141,8 @@ func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch ui
 	return biggestInfluence, biggestInfluenceId, nil
 }
 
-func getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	for i := 0; i < 10000000000; i++ {
+func getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	for i := 0; i < 10000000; i++ {
 		proposer.Iteration = i
 		isElected := utilsStruct.proposeUtils.isElectedProposer(client, proposer, utilsStruct)
 		if isElected {

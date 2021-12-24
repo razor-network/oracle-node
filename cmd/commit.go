@@ -66,7 +66,7 @@ func (utilsStruct UtilsStruct) Commit(client *ethclient.Client, data []*big.Int,
 		ABI:             bindings.VoteManagerABI,
 		MethodName:      "commit",
 		Parameters:      []interface{}{epoch, commitmentToSend},
-	}, utilsStruct.packageUtils)
+	})
 
 	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 

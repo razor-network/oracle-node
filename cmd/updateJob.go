@@ -28,7 +28,6 @@ Note:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
-			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
@@ -84,7 +83,7 @@ func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Co
 		MethodName:      "updateJob",
 		Parameters:      []interface{}{jobId, weight, power, selectorType, selector, url},
 		ABI:             bindings.AssetManagerABI,
-	}, utilsStruct.packageUtils)
+	})
 	txn, err := utilsStruct.assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, selectorType, selector, url)
 	if err != nil {
 		return core.NilHash, err
@@ -100,7 +99,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 
 	var (
 		JobId        uint8
