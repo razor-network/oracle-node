@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func readJSONData(fileName string) (map[string]*types.StructsJob, error) {
+func ReadJSONData(fileName string) (map[string]*types.StructsJob, error) {
 	var data = map[string]*types.StructsJob{}
 	file, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -37,19 +37,19 @@ func writeDataToJSON(fileName string, data map[string]*types.StructsJob) error {
 	return nil
 }
 
-func GetJobFromJSON(fileName string, jobId string) (*types.StructsJob, error) {
-	data, err := readJSONData(fileName)
-	if err != nil {
-		return nil, err
-	}
-	if data[jobId] != nil {
-		return data[jobId], nil
-	}
-	return nil, nil
-}
+//func GetJobFromJSON(fileName string, jobId string) (*types.StructsJob, error) {
+//	data, err := ReadJSONData(fileName)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if data[jobId] != nil {
+//		return data[jobId], nil
+//	}
+//	return nil, nil
+//}
 
 func DeleteJobFromJSON(fileName string, jobId string) error {
-	data, err := readJSONData(fileName)
+	data, err := ReadJSONData(fileName)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func DeleteJobFromJSON(fileName string, jobId string) error {
 }
 
 func AddJobToJSON(fileName string, job *types.StructsJob) error {
-	data, err := readJSONData(fileName)
+	data, err := ReadJSONData(fileName)
 	if err != nil {
 		log.Error(err)
 	}

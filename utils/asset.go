@@ -3,15 +3,16 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"regexp"
-
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"regexp"
+	"strconv"
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client) (*bindings.AssetManager, bind.CallOpts) {
@@ -218,11 +219,26 @@ func GetActiveCollection(client *ethclient.Client, collectionId uint16) (binding
 }
 
 func GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
+	jobPath, err := path.GetJobFilePath()
+	if err != nil {
+		return nil, nil, err
+	}
+	overrideJobData, err := ReadJSONData(jobPath)
+	if err != nil {
+		log.Error(err)
+	}
 	var (
 		data   []*big.Int
 		weight []uint8
 	)
 	for _, job := range jobs {
+		if overrideJobData[strconv.Itoa(int(job.Id))] != nil {
+			_job := overrideJobData[strconv.Itoa(int(job.Id))]
+			job.Url = _job.Url
+			job.Selector = _job.Selector
+			job.SelectorType = _job.SelectorType
+			job.Power = _job.Power
+		}
 		dataToAppend, err := GetDataToCommitFromJob(job)
 		if err != nil {
 			continue
