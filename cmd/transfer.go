@@ -26,7 +26,6 @@ Example:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
-			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
@@ -75,7 +74,7 @@ func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Con
 		MethodName:      "transfer",
 		Parameters:      []interface{}{common.HexToAddress(toAddress), valueInWei},
 		ABI:             bindings.RAZORABI,
-	}, utilsStruct.packageUtils)
+	})
 	log.Infof("Transferring %g tokens from %s to %s", utilsStruct.razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
 
 	txn, err := utilsStruct.tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(toAddress), valueInWei)
@@ -93,7 +92,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(transferCmd)
 	var (

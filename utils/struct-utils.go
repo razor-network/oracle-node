@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"context"
 	"crypto/ecdsa"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -11,60 +13,59 @@ import (
 	"io"
 	"math/big"
 	"razor/accounts"
-	Types "razor/core/types"
 	"razor/path"
 )
 
-type PackageUtils struct{}
-
-func (u PackageUtils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
-	return SuggestGasPriceWithRetry(client)
+func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
+	Options = optionsPackageStruct.Options
+	UtilsInterface = optionsPackageStruct.UtilsInterface
+	return &UtilsStruct{}
 }
 
-func (u PackageUtils) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
-	return MultiplyFloatAndBigInt(bigIntVal, floatingVal)
-}
-
-func (u PackageUtils) parse(reader io.Reader) (abi.ABI, error) {
+func (o OptionsStruct) Parse(reader io.Reader) (abi.ABI, error) {
 	return abi.JSON(reader)
 }
 
-func (u PackageUtils) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
+func (o OptionsStruct) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
 	return parsedData.Pack(name, args...)
 }
 
-func (u PackageUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
-	return EstimateGasWithRetry(client, message)
-}
-
-func (u PackageUtils) increaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32, razorUtils Utils) (uint64, error) {
-	return increaseGasLimitValue(client, gasLimit, gasLimitMultiplier, razorUtils)
-}
-
-func (u PackageUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
-	return GetLatestBlockWithRetry(client)
-}
-
-func (u PackageUtils) GetDefaultPath() (string, error) {
+func (o OptionsStruct) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
-func (u PackageUtils) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
+func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
 	return accounts.GetPrivateKey(address, password, keystorePath, accountUtils)
 }
 
-func (u PackageUtils) GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
-	return GetPendingNonceAtWithRetry(client, accountAddress)
+func (o OptionsStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
+	return bind.NewKeyedTransactorWithChainID(key, chainID)
 }
 
-func (u PackageUtils) getGasPrice(client *ethclient.Client, config Types.Configurations, razorUtils Utils) *big.Int {
-	return getGasPrice(client, config, razorUtils)
+func (o OptionsStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
+	return retry.Attempts(numberOfAttempts)
 }
 
-func (u PackageUtils) getGasLimit(transactionData Types.TransactionOptions, txnOpts *bind.TransactOpts, razorUtils Utils) (uint64, error) {
-	return getGasLimit(transactionData, txnOpts, razorUtils)
+func (o OptionsStruct) HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error) {
+	return client.HeaderByNumber(ctx, number)
 }
 
-func (u PackageUtils) NewKeyedTransactorWithChainID(privateKey *ecdsa.PrivateKey, chainId *big.Int) (*bind.TransactOpts, error) {
-	return bind.NewKeyedTransactorWithChainID(privateKey, chainId)
+func (o OptionsStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
+	return client.PendingNonceAt(ctx, account)
+}
+
+func (o OptionsStruct) SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error) {
+	return client.SuggestGasPrice(ctx)
+}
+
+func (o OptionsStruct) EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
+	return client.EstimateGas(ctx, msg)
+}
+
+func (o OptionsStruct) FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
+	return client.FilterLogs(ctx, q)
+}
+
+func (o OptionsStruct) BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
+	return client.BalanceAt(ctx, account, blockNumber)
 }

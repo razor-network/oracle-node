@@ -14,7 +14,6 @@ var razorUtils utilsInterface
 var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
 var stakeManagerUtils stakeManagerInterface
-var packageUtils utils.Utils
 
 //var utilsStructInterface structUtilsInterface
 
@@ -32,7 +31,6 @@ Example:
 			transactionUtils:  transactionUtils,
 			tokenManagerUtils: tokenManagerUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 			proposeUtils:      proposeUtils,
 			blockManagerUtils: blockManagerUtils,
 			voteManagerUtils:  voteManagerUtils,
@@ -103,7 +101,7 @@ func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (com
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	tx, err := utilsStruct.stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
@@ -118,7 +116,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.PackageUtils{}
 	proposeUtils = ProposeUtils{}
 	voteManagerUtils = VoteManagerUtils{}
 	blockManagerUtils = BlockManagerUtils{}

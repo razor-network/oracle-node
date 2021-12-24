@@ -22,7 +22,7 @@ func (utilsStruct UtilsStruct) approve(txnArgs types.TransactionOptions) (common
 		txnArgs.MethodName = "approve"
 		txnArgs.ABI = bindings.RAZORABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
-		txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+		txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 		txn, err := utilsStruct.tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			return common.Hash{0x00}, err
