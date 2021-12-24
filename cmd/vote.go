@@ -267,10 +267,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if lastVerification >= epoch {
 			break
 		}
-		if rogueData.IsRogue {
-			log.Warn("Won't dispute in rogue mode..")
-			break
-		}
 		lastVerification = epoch
 		err := utilsStruct.HandleDispute(client, config, account, epoch)
 		if err != nil {
