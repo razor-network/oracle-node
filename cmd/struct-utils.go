@@ -60,8 +60,14 @@ func (u Utils) GetOptions() bind.CallOpts {
 	return utils.GetOptions()
 }
 
-func (u Utils) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.Utils) *bind.TransactOpts {
-	return utils.GetTxnOpts(transactionData, razorUtils)
+func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
+		Options:        utils.Options,
+		UtilsInterface: utils.UtilsInterface,
+	})
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	return utilsInterface.GetTxnOpts(transactionData)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -241,7 +247,7 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 }
 
 func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
-	return utils.GetLatestBlockWithRetry(client)
+	return utils.UtilsInterface.GetLatestBlockWithRetry(client)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint32, error) {

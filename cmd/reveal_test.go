@@ -13,7 +13,6 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
 	"testing"
 )
 
@@ -248,7 +247,7 @@ func TestReveal(t *testing.T) {
 				return tt.args.allZeroStatus
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

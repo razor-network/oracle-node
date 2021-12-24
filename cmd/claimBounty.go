@@ -104,7 +104,7 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		utilsStruct.razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
 	for retry := 1; retry <= int(core.MaxRetries); retry++ {
 		tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
@@ -128,7 +128,8 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.PackageUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(claimBountyCmd)
 	var (

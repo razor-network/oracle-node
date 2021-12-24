@@ -13,7 +13,6 @@ import (
 	randMath "math/rand"
 	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 	"reflect"
 	"testing"
 )
@@ -120,7 +119,7 @@ func TestCommit(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

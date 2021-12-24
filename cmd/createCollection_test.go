@@ -13,7 +13,6 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 	"testing"
 )
 
@@ -232,7 +231,7 @@ func Test_createCollection(t *testing.T) {
 				return client
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 

@@ -13,7 +13,6 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 	"testing"
 	"time"
 )
@@ -270,7 +269,7 @@ func Test_claimBounty(t *testing.T) {
 			return blockTime
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 			return txnOpts
 		}
 

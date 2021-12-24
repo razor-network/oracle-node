@@ -87,7 +87,7 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 		return nil
 	}
 	log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
-	setDelegationAcceptanceTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts, utilsStruct.packageUtils)
+	setDelegationAcceptanceTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
 	delegationAcceptanceTxn, err := utilsStruct.stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
 	if err != nil {
 		log.Error("Error in setting delegation acceptance")
@@ -105,7 +105,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(setDelegationCmd)
 

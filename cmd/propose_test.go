@@ -10,7 +10,6 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
 	"reflect"
 	"testing"
 
@@ -431,7 +430,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.medians, tt.args.mediansErr
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 			return tt.args.txnOpts
 		}
 

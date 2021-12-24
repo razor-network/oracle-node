@@ -57,7 +57,7 @@ Example:
 		address, _ := cmd.Flags().GetString("address")
 		account := types.Account{Address: address, Password: password}
 		for {
-			latestHeader, err := utils.GetLatestBlockWithRetry(client)
+			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -102,7 +102,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staked amount: ", err)
 		return
 	}
-	ethBalance, err := utils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
+	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
@@ -306,7 +306,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			common.HexToAddress(core.BlockManagerAddress),
 		},
 	}
-	logs, err := utils.FilterLogsWithRetry(client, query)
+	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return 0, err
 	}
@@ -385,8 +385,9 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(voteCmd)
 
