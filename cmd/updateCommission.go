@@ -80,9 +80,10 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 		return err
 	}
 
-	if (stakerInfo.EpochCommissionLastUpdated + uint32(epochLimitForUpdateCommission)) >= epoch {
+	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
 		return errors.New("invalid epoch for update")
 	}
+
 	txnOpts := types.TransactionOptions{
 		Client:          client,
 		Password:        password,
