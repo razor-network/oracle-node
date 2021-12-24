@@ -39,7 +39,7 @@ Example:
 }
 
 func (utilsStruct *UtilsStruct) GetJobList(client *ethclient.Client) error {
-	jobs, err := utilsStruct.razorUtils.GetJobList(client)
+	jobs, err := utilsStruct.razorUtils.GetJobs(client)
 
 	if err != nil {
 		return err

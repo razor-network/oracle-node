@@ -324,7 +324,7 @@ func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
 }
 
-func (u Utils) GetJobList(client *ethclient.Client) ([]bindings.StructsJob, error) {
+func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
 	return utils.GetJobs(client)
 }
 

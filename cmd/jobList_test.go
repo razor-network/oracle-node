@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/pkg/bindings"
-	"reflect"
 	"testing"
 )
 
@@ -37,7 +36,6 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []bindings.StructsJob
 		wantErr error
 	}{
 		{
@@ -48,7 +46,7 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 				jobList:    jobListArray,
 				jobListErr: nil,
 			},
-			want:    jobListArray,
+
 			wantErr: nil,
 		},
 		{
@@ -58,7 +56,6 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 				client:     client,
 				jobListErr: errors.New("error in fetching job list"),
 			},
-			want:    nil,
 			wantErr: errors.New("error in fetching job list"),
 		},
 	}
@@ -68,22 +65,18 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 				razorUtils: tt.fields.razorUtils,
 			}
 
-			GetJobListMock = func(*ethclient.Client) ([]bindings.StructsJob, error) {
+			GetJobsMock = func(*ethclient.Client) ([]bindings.StructsJob, error) {
 				return tt.args.jobList, tt.args.jobListErr
 			}
-			got, err := utilsStruct.razorUtils.GetJobList(tt.args.client)
-
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("List of jobs , got = %v, want %v", got, tt.want)
-			}
+			err := utilsStruct.GetJobList(tt.args.client)
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for jobList function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for jobList function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for jobList function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for jobList function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
