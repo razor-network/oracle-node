@@ -25,7 +25,6 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 		err := utilsStruct.UpdateCommission(cmd.Flags())
 		utils.CheckError("SetDelegation error: ", err)

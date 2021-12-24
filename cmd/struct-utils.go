@@ -49,7 +49,6 @@ type UtilsStruct struct {
 	flagSetUtils      flagSetInterface
 	cryptoUtils       cryptoInterface
 	accountUtils      accounts.AccountInterface
-	packageUtils      utils.Utils
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {

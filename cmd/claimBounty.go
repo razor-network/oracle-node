@@ -32,7 +32,6 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 		stakeManagerUtils: stakeManagerUtils,
 		transactionUtils:  transactionUtils,
 		flagSetUtils:      flagSetUtils,
-		packageUtils:      packageUtils,
 	}
 	utilsStruct.executeClaimBounty(cmd.Flags())
 }

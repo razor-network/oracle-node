@@ -26,7 +26,6 @@ Example:
 			transactionUtils:  transactionUtils,
 			stakeManagerUtils: stakeManagerUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)

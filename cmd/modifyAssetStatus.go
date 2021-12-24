@@ -25,7 +25,6 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
-			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
