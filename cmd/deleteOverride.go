@@ -19,7 +19,6 @@ var deleteOverrideCmd = &cobra.Command{
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 		err := utilsStruct.executeDeleteOverrideJob(cmd.Flags())
 		if err != nil {

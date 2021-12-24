@@ -19,7 +19,6 @@ var overrideJobCmd = &cobra.Command{
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 		err := utilsStruct.executeOverrideJob(cmd.Flags())
 		if err != nil {
