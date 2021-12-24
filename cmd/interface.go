@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -18,7 +17,7 @@ import (
 
 type utilsInterface interface {
 	GetOptions() bind.CallOpts
-	GetTxnOpts(types.TransactionOptions, utils.Utils) *bind.TransactOpts
+	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	AssignPassword(*pflag.FlagSet) string
 	ConnectToClient(string) *ethclient.Client

@@ -30,7 +30,6 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
@@ -99,7 +98,7 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 	}
 
 	txnArgs.Parameters = []interface{}{epoch, stakerId}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
@@ -137,8 +136,9 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(withdrawCmd)
 

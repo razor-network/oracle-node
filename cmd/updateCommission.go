@@ -25,7 +25,6 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 		err := utilsStruct.UpdateCommission(cmd.Flags())
 		utils.CheckError("SetDelegation error: ", err)
@@ -96,7 +95,7 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 		Parameters:      []interface{}{commission},
 	}
 
-	updateCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts, utilsStruct.packageUtils)
+	updateCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
 	txn, err := utilsStruct.stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, commission)
 	if err != nil {
@@ -115,7 +114,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 
 	var (
 		Address    string

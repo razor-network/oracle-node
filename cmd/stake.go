@@ -14,7 +14,6 @@ var razorUtils utilsInterface
 var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
 var stakeManagerUtils stakeManagerInterface
-var packageUtils utils.Utils
 
 //var utilsStructInterface structUtilsInterface
 
@@ -32,7 +31,10 @@ Example:
 			transactionUtils:  transactionUtils,
 			tokenManagerUtils: tokenManagerUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
+			proposeUtils:      proposeUtils,
+			blockManagerUtils: blockManagerUtils,
+			voteManagerUtils:  voteManagerUtils,
+			cmdUtils:          cmdUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
@@ -71,6 +73,20 @@ Example:
 		utils.CheckError("Stake error: ", err)
 		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
+		if utils.IsFlagPassed("autoVote") {
+			isAutoVote, _ := cmd.Flags().GetBool("autoVote")
+			if isAutoVote {
+				log.Info("Staked!...Starting to vote now.")
+				account := types.Account{Address: address, Password: password}
+				isRogue, _ := cmd.Flags().GetBool("rogue")
+				rogueMode, _ := cmd.Flags().GetStringSlice("rogueMode")
+				rogueData := types.Rogue{
+					IsRogue:   isRogue,
+					RogueMode: rogueMode,
+				}
+				utilsStruct.vote(config, client, rogueData, account)
+			}
+		}
 	},
 }
 
@@ -85,7 +101,7 @@ func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (com
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	tx, err := utilsStruct.stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
@@ -100,20 +116,31 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.PackageUtils{}
+	proposeUtils = ProposeUtils{}
+	voteManagerUtils = VoteManagerUtils{}
+	blockManagerUtils = BlockManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	proposeUtils = ProposeUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount   string
-		Address  string
-		Password string
-		Power    string
+		Amount            string
+		Address           string
+		Password          string
+		Power             string
+		VoteAutomatically bool
+		Rogue             bool
+		RogueMode         []string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	stakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	stakeCmd.Flags().BoolVarP(&VoteAutomatically, "autoVote", "", false, "vote after stake automatically")
+	stakeCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
+	stakeCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

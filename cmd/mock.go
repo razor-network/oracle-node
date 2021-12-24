@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -42,7 +41,7 @@ type CryptoMock struct{}
 
 var GetOptionsMock func() bind.CallOpts
 
-var GetTxnOptsMock func(types.TransactionOptions, utils.Utils) *bind.TransactOpts
+var GetTxnOptsMock func(types.TransactionOptions) *bind.TransactOpts
 
 var WaitForBlockCompletionMock func(*ethclient.Client, string) int
 
@@ -360,8 +359,8 @@ func (u UtilsMock) GetOptions() bind.CallOpts {
 	return GetOptionsMock()
 }
 
-func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions, razorUtils utils.Utils) *bind.TransactOpts {
-	return GetTxnOptsMock(transactionData, razorUtils)
+func (u UtilsMock) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+	return GetTxnOptsMock(transactionData)
 }
 
 func (u UtilsMock) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
