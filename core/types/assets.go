@@ -26,7 +26,7 @@ type Locks struct {
 }
 
 type StructsJob struct {
-	Id           uint8  `json:"id"`
+	Id           uint16 `json:"id"`
 	SelectorType uint8  `json:"selectorType"`
 	Weight       uint8  `json:"weight"`
 	Power        int8   `json:"power"`

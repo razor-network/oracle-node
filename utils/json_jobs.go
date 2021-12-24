@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"razor/core/types"
 	"strconv"
@@ -54,6 +55,8 @@ func DeleteJobFromJSON(fileName string, jobId string) error {
 	}
 	if data[jobId] != nil {
 		delete(data, jobId)
+	} else {
+		return errors.New("No job with jobId = " + jobId + " found")
 	}
 	return writeDataToJSON(fileName, data)
 }

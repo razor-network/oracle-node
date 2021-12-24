@@ -51,7 +51,7 @@ func (utilsStruct UtilsStruct) executeOverrideJob(flagSet *pflag.FlagSet) error 
 		return err
 	}
 
-	jobId, err := utilsStruct.flagSetUtils.GetUint8JobId(flagSet)
+	jobId, err := utilsStruct.flagSetUtils.GetUint16JobId(flagSet)
 	if err != nil {
 		return err
 	}
@@ -77,14 +77,14 @@ func (utilsStruct UtilsStruct) overrideJob(job *types.StructsJob) error {
 func init() {
 	rootCmd.AddCommand(overrideJobCmd)
 	var (
-		JobId        uint8
+		JobId        uint16
 		URL          string
 		Selector     string
 		SelectorType uint8
 		Power        int8
 	)
 
-	overrideJobCmd.Flags().Uint8VarP(&JobId, "jobId", "j", 0, "job id to override")
+	overrideJobCmd.Flags().Uint16VarP(&JobId, "jobId", "j", 0, "job id to override")
 	overrideJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	overrideJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
 	overrideJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
