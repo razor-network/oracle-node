@@ -84,6 +84,7 @@ type utilsInterface interface {
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 	GetRogueRandomValue(int) *big.Int
+	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 }
 
 type tokenManagerInterface interface {
