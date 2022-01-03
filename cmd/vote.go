@@ -228,6 +228,16 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
+
+		// Reveal wrong data if rogueMode contains reveal
+		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+			var rogueCommittedData []*big.Int
+			for i := 0; i < len(_committedData); i++ {
+				rogueCommittedData = append(rogueCommittedData, utils.GetRogueRandomValue(10000000))
+			}
+			_committedData = rogueCommittedData
+		}
+
 		revealTxn, err := utilsStruct.Reveal(client, _committedData, secret, account, account.Address, config)
 		if err != nil {
 			log.Error("Reveal error: ", err)
