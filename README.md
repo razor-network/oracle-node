@@ -313,6 +313,35 @@ Example:
 $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
+### Override Job
+
+Jobs URLs are a placeholder for where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
+`overrideJob` command enables users to override the job URLs and selectors so that razor-nodes can fetch data directly from the override jobs.
+
+```
+$ ./razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
+```
+
+Example:
+
+```
+$ ./razor overrideJob --jobId 2 --url https://api.gemini.com/v1/pubticker/ethusd --selector last --power 2 --selectorType 0
+```
+
+### Delete override
+
+The overridden jobs can be deleted using `deleteOverride` command.
+
+```
+$ ./razor deleteOverride --jobId <jobId>
+```
+
+Example:
+
+```
+$ ./razor deleteOverride --jobId 2
+```
+
 ### Set Config
 
 There are a set of parameters that are configurable. These include:
