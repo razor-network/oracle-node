@@ -329,6 +329,10 @@ func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
 }
 
+func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return utils.GetCollections(client)
+}
+
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utils.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
