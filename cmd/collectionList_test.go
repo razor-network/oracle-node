@@ -70,11 +70,11 @@ func TestUtilsStruct_GetCollectionList(t *testing.T) {
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for jobList function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for jobList function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
