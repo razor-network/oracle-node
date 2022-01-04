@@ -356,6 +356,7 @@ var HexToECDSAMock func(string) (*ecdsa.PrivateKey, error)
 var WithdrawMock func(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error)
 
 var GetJobsMock func(*ethclient.Client) ([]bindings.StructsJob, error)
+var GetCollectionsMock func(*ethclient.Client) ([]bindings.StructsCollection, error)
 
 func (u UtilsMock) GetOptions() bind.CallOpts {
 	return GetOptionsMock()
@@ -635,6 +636,10 @@ func (u UtilsMock) GetRogueRandomValue(value int) *big.Int {
 
 func (u UtilsMock) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
 	return GetJobsMock(client)
+}
+
+func (u UtilsMock) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return GetCollectionsMock(client)
 }
 
 func (tokenManagerMock TokenManagerMock) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {

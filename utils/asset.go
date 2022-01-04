@@ -117,6 +117,40 @@ func GetAssetType(client *ethclient.Client, assetId uint16) (uint8, error) {
 	return 1, nil
 }
 
+func GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	var collections []bindings.StructsCollection
+	var CollectionIDs []uint16
+
+	numAssets, err := GetNumAssets(client)
+	if err != nil {
+		return nil, err
+	}
+	for i := uint16(1); i <= numAssets; i++ {
+		assetType, err := GetAssetType(client, i)
+		if err != nil {
+			return nil, err
+		}
+		if assetType == 2 {
+			CollectionIDs = append(CollectionIDs, i)
+		} else {
+			continue
+		}
+
+	}
+
+	for i := 0; i < len(CollectionIDs); i++ {
+		collectionId := CollectionIDs[i]
+		collection, err := GetCollection(client, collectionId)
+		if err != nil {
+			return nil, err
+		}
+		collections = append(collections, collection)
+	}
+
+	return collections, nil
+
+}
+
 func GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	assetManager, callOpts := getAssetManagerWithOpts(client)
 	var (
