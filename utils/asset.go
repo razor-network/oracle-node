@@ -14,7 +14,7 @@ import (
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client) (*bindings.AssetManager, bind.CallOpts) {
-	return GetAssetManager(client), GetOptions()
+	return GetAssetManager(client), UtilsInterface.GetOptions()
 }
 
 func GetNumAssets(client *ethclient.Client) (uint16, error) {
@@ -208,7 +208,7 @@ func Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindin
 	}
 	dataToCommit, weight, err := GetDataToCommitFromJobs(jobs)
 	if err != nil || len(dataToCommit) == 0 {
-		prevCommitmentData, err := FetchPreviousValue(client, previousEpoch, collection.Id)
+		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -219,7 +219,7 @@ func Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindin
 
 func GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
 	assetManager := GetAssetManager(client)
-	callOpts := GetOptions()
+	callOpts := UtilsInterface.GetOptions()
 	var (
 		job bindings.StructsJob
 		err error
