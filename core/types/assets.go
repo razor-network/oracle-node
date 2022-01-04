@@ -5,6 +5,16 @@ import (
 	"razor/pkg/bindings"
 )
 
+type Job struct {
+	Id           uint8
+	SelectorType uint8
+	Weight       uint8
+	Power        uint8
+	Name         string
+	Selector     string
+	Url          string
+}
+
 type Collection struct {
 	Active            bool
 	Id                uint8

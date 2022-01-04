@@ -3,9 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -13,6 +10,10 @@ import (
 	"razor/pkg/bindings"
 	"regexp"
 	"strconv"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func getAssetManagerWithOpts(client *ethclient.Client) (*bindings.AssetManager, bind.CallOpts) {
@@ -38,6 +39,40 @@ func GetNumAssets(client *ethclient.Client) (uint16, error) {
 		return 0, err
 	}
 	return numAssets, nil
+}
+
+func GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+	var jobs []bindings.StructsJob
+	var JobIDs []uint16
+
+	numAssets, err := GetNumAssets(client)
+	if err != nil {
+		return nil, err
+	}
+	for i := uint16(1); i <= numAssets; i++ {
+		assetType, err := GetAssetType(client, i)
+		if err != nil {
+			return nil, err
+		}
+		if assetType == 1 {
+			JobIDs = append(JobIDs, i)
+		} else {
+			continue
+		}
+
+	}
+
+	for i := 0; i < len(JobIDs); i++ {
+		jobId := JobIDs[i]
+		job, err := GetActiveJob(client, jobId)
+		if err != nil {
+			return nil, err
+		}
+		jobs = append(jobs, job)
+	}
+
+	return jobs, nil
+
 }
 
 func GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
