@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"math/big"
 	"razor/core/types"
 	"razor/path"
 	"razor/utils"
@@ -83,6 +85,71 @@ func (stakeManagerUtils StakeManagerUtilsMockery) GetBountyLock(client *ethclien
 func (stakeManagerUtils StakeManagerUtilsMockery) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.RedeemBounty(opts, bountyId)
+}
+
+func (blockManagerUtils BlockManagerUtilsMockery) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	return blockManager.ClaimBlockReward(opts)
+}
+
+func (blockManagerUtils BlockManagerUtilsMockery) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.FinalizeDispute(opts, epoch, blockIndex)
+		if err != nil {
+			log.Error("Error in finalizing dispute.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtilsMockery) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+		if err != nil {
+			log.Error("Error in disputing biggest influence proposed.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtilsMockery) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+		if err != nil {
+			log.Error("Error in proposing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (flagSetUtils FLagSetUtilsMockery) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {

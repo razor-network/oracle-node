@@ -5,7 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
@@ -17,17 +19,10 @@ import (
 )
 
 func TestClaimBlockReward(t *testing.T) {
-
 	var options types.TransactionOptions
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		blockManagerUtils: BlockManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		txnOpts             *bind.TransactOpts
@@ -79,7 +74,20 @@ func TestClaimBlockReward(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := utilsStruct.ClaimBlockReward(options)
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			blockManagerMock := new(mocks.BlockManagerInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			blockManagerUtilsMockery = blockManagerMock
+			transactionUtilsMockery = transactionUtilsMock
+
+			utilsMock.On("GetTxnOpts", options).Return(tt.args.txnOpts)
+			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.ClaimBlockReward(options)
 			if got != tt.want {
 				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)
 			}
