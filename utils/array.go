@@ -5,13 +5,19 @@ import (
 	"math/big"
 )
 
-func Contains(arr []int, val int) bool {
-	if len(arr) == 0 {
-		return false
-	}
-	for _, value := range arr {
-		if value == val {
-			return true
+func Contains(slice interface{}, val interface{}) bool {
+	switch slice := slice.(type) {
+	case []int:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
+		}
+	case []string:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
 		}
 	}
 	return false
@@ -70,10 +76,10 @@ func CalculateSumOfUint8Array(data []uint8) uint {
 	return sum
 }
 
-func ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
-	var arr []uint8
+func ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
+	var arr []uint16
 	for _, datum := range uintArr {
-		arr = append(arr, uint8(datum))
+		arr = append(arr, uint16(datum))
 	}
 	return arr
 }

@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"errors"
 	"math/big"
+	"razor/utils/mocks"
 	"reflect"
 	"testing"
 
@@ -90,6 +92,22 @@ func TestConvertToNumber(t *testing.T) {
 			want:    big.NewFloat(0),
 			wantErr: true,
 		},
+		{
+			name: "Test incorrect string",
+			args: args{
+				num: "4w",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test when variable type is out of switch case",
+			args: args{
+				num: big.NewInt(4),
+			},
+			want:    big.NewFloat(0),
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,7 +176,14 @@ func TestMultiplyFloatAndBigInt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MultiplyFloatAndBigInt(tt.args.bigIntVal, tt.args.floatingVal); !reflect.DeepEqual(got, tt.want) {
+			UtilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: UtilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			if got := utils.MultiplyFloatAndBigInt(tt.args.bigIntVal, tt.args.floatingVal); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MultiplyFloatAndBigInt() = %v, want %v", got, tt.want)
 			}
 		})
@@ -276,9 +301,10 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		args args
-		want *big.Int
+		name    string
+		args    args
+		want    *big.Int
+		wantErr error
 	}{
 		{
 			name: "Test when amount is non-zero and power is non-zero",
@@ -286,7 +312,8 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 				amount: big.NewInt(1000),
 				power:  "17",
 			},
-			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(17), nil)),
+			want:    big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(17), nil)),
+			wantErr: nil,
 		},
 		{
 			name: "Test when amount is zero and power is non-zero",
@@ -294,7 +321,8 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 				amount: big.NewInt(0),
 				power:  "15",
 			},
-			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(15), nil)),
+			want:    big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(15), nil)),
+			wantErr: nil,
 		},
 		{
 			name: "Test when amount is non-zero and power is zero",
@@ -302,7 +330,8 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 				amount: big.NewInt(1000),
 				power:  "0",
 			},
-			want: big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
+			want:    big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
+			wantErr: nil,
 		},
 		{
 			name: "Test when amount is zero and power is also zero",
@@ -310,15 +339,44 @@ func TestGetFractionalAmountInWei(t *testing.T) {
 				amount: big.NewInt(0),
 				power:  "0",
 			},
-			want: big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
+			want:    big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
+			wantErr: nil,
+		},
+		{
+			name: "Test when there is an incorrect input type for power",
+			args: args{
+				amount: big.NewInt(0),
+				power:  "A",
+			},
+			want:    nil,
+			wantErr: errors.New("SetString: error"),
+		},
+		{
+			name: "Test when there is a decimal input type for power",
+			args: args{
+				amount: big.NewInt(0),
+				power:  "11.5",
+			},
+			want:    nil,
+			wantErr: errors.New("SetString: error"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetFractionalAmountInWei(tt.args.amount, tt.args.power)
+			got, err := GetFractionalAmountInWei(tt.args.amount, tt.args.power)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetFractionalAmountInWei() = %v, want %v", got, tt.want)
+			}
+
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetFractionalAmountInWei function, got = %v, want %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetFractionalAmountInWei function, got = %v, want %v", err, tt.wantErr)
+				}
 			}
 		})
 	}
@@ -361,6 +419,13 @@ func TestGetAmountInDecimal(t *testing.T) {
 				big.NewInt(1).Mul(big.NewInt(123456789), big.NewInt(1e10)),
 			},
 			want: new(big.Float).Quo(new(big.Float).SetInt(big.NewInt(1).Mul(big.NewInt(123456789), big.NewInt(1e10))), new(big.Float).SetInt(big.NewInt(1e18))),
+		},
+		{
+			name: "Test 5",
+			args: args{
+				big.NewInt(0),
+			},
+			want: big.NewFloat(0),
 		},
 	}
 
@@ -659,6 +724,15 @@ func Test_calculateWeightedMedian(t *testing.T) {
 			},
 			want: nil,
 		},
+		{
+			name: "Test 7:  When very high total weight is being passed so sum of weights is never greater than or equal to 0.5",
+			args: args{
+				data:        []*big.Int{big.NewInt(5), big.NewInt(1), big.NewInt(3), big.NewInt(2), big.NewInt(4)},
+				weight:      []uint8{25, 15, 20, 10, 30},
+				totalWeight: 10000,
+			},
+			want: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -724,6 +798,162 @@ func Test_getFractionalWeight(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getFractionalWeight(tt.args.weights, tt.args.totalWeight); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getFractionalWeight() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertRZRToSRZR(t *testing.T) {
+	type args struct {
+		amount       *big.Int
+		currentStake *big.Int
+		totalSupply  *big.Int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When currentStake and totalSupply are equal",
+			args: args{
+				amount:       big.NewInt(500),
+				currentStake: big.NewInt(2000),
+				totalSupply:  big.NewInt(2000),
+			},
+			want:    big.NewInt(500),
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When totalSupply < currentStake ",
+			args: args{
+				amount:       big.NewInt(500),
+				currentStake: big.NewInt(4000),
+				totalSupply:  big.NewInt(2000),
+			},
+			want:    big.NewInt(250),
+			wantErr: false,
+		},
+		{
+			name: "Test 3: When currentStake is 0",
+			args: args{
+				amount:       big.NewInt(500),
+				currentStake: big.NewInt(0),
+				totalSupply:  big.NewInt(2000),
+			},
+			want:    big.NewInt(0),
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When values are high",
+			args: args{
+				amount:       big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e7)),
+				currentStake: big.NewInt(1).Mul(big.NewInt(400), big.NewInt(1e8)),
+				totalSupply:  big.NewInt(1).Mul(big.NewInt(4000), big.NewInt(1e8)),
+			},
+			want:    big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e8)),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertRZRToSRZR(tt.args.amount, tt.args.currentStake, tt.args.totalSupply)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertRZRToSRZR() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got.Cmp(tt.want) != 0 {
+				t.Errorf("ConvertRZRToSRZR() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertSRZRToRZR(t *testing.T) {
+	type args struct {
+		sAmount      *big.Int
+		currentStake *big.Int
+		totalSupply  *big.Int
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test 1: When current stake totalSupply are equal",
+			args: args{
+				sAmount:      big.NewInt(500),
+				currentStake: big.NewInt(1000),
+				totalSupply:  big.NewInt(1000),
+			},
+			want: big.NewInt(500),
+		},
+		{
+			name: "Test 2: When totalSupply < currentStake",
+			args: args{
+				sAmount:      big.NewInt(500),
+				currentStake: big.NewInt(2000),
+				totalSupply:  big.NewInt(1000),
+			},
+			want: big.NewInt(1000),
+		},
+		{
+			name: "Test 3: When values are high",
+			args: args{
+				sAmount:      big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e8)),
+				currentStake: big.NewInt(1).Mul(big.NewInt(400), big.NewInt(1e8)),
+				totalSupply:  big.NewInt(1).Mul(big.NewInt(4000), big.NewInt(1e8)),
+			},
+			want: big.NewInt(1).Mul(big.NewInt(500), big.NewInt(1e7)),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ConvertSRZRToRZR(tt.args.sAmount, tt.args.currentStake, tt.args.totalSupply); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertSRZRToRZR() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetRogueRandomValue(t *testing.T) {
+	type args struct {
+		value int
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "Test 1: Given a value, the function generates a random value less than or equal to that value",
+			args: args{
+				value: 10,
+			},
+			want: big.NewInt(10),
+		},
+		{
+			name: "Test 2: Test for negative value",
+			args: args{
+				value: -10,
+			},
+			want: big.NewInt(0),
+		},
+		{
+			name: "Test 3: Test for 0 value",
+			args: args{
+				value: 0,
+			},
+			want: big.NewInt(0),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetRogueRandomValue(tt.args.value)
+			if got.Cmp(tt.want) > 0 {
+				t.Errorf("GetRogueRandomValue() = %v, want %v", got, tt.want)
 			}
 		})
 	}

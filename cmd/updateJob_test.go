@@ -31,6 +31,7 @@ func Test_updateJob(t *testing.T) {
 		assetManagerUtils: AssetManagerMock{},
 		transactionUtils:  TransactionMock{},
 		flagSetUtils:      FlagSetMock{},
+		cmdUtils:          UtilsCmdMock{},
 	}
 
 	type args struct {
@@ -41,7 +42,9 @@ func Test_updateJob(t *testing.T) {
 		urlErr               error
 		selector             string
 		selectorErr          error
-		jobId                uint8
+		selectorType         uint8
+		selectorTypeErr      error
+		jobId                uint16
 		jobIdErr             error
 		power                int8
 		powerErr             error
@@ -62,24 +65,18 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test1:  When updateJob function executes successfully",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "last",
-				selectorErr:          nil,
-				power:                1,
-				powerErr:             nil,
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 1,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -87,24 +84,18 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test2: When there is an error in getting address from flags",
 			args: args{
-				password:             "test",
-				address:              "",
-				addressErr:           errors.New("address error"),
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "last",
-				selectorErr:          nil,
-				power:                1,
-				powerErr:             nil,
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "",
+				addressErr:   errors.New("address error"),
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 1,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("address error"),
@@ -112,23 +103,18 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test3:  When there is an error in getting jobId from flags",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobIdErr:             errors.New("jobId error"),
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "last",
-				selectorErr:          nil,
-				power:                1,
-				powerErr:             nil,
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				jobIdErr:     errors.New("jobId error"),
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 1,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("jobId error"),
@@ -136,24 +122,19 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test4:  When there is an error in getting url from flags",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "",
-				urlErr:               errors.New("url error"),
-				selector:             "last",
-				selectorErr:          nil,
-				power:                1,
-				powerErr:             nil,
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				jobId:        1,
+				url:          "",
+				urlErr:       errors.New("url error"),
+				selector:     "last",
+				selectorType: 1,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("url error"),
@@ -161,24 +142,19 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test5:  When there is an error in getting selector from flags",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "",
-				selectorErr:          errors.New("selector error"),
-				power:                1,
-				powerErr:             nil,
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "",
+				selectorErr:  errors.New("selector error"),
+				selectorType: 1,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("selector error"),
@@ -186,23 +162,18 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test6:  When there is an error in getting power from flag",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "last",
-				selectorErr:          nil,
-				powerErr:             errors.New("power error"),
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				addressErr:   nil,
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 1,
+				powerErr:     errors.New("power error"),
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("power error"),
@@ -210,23 +181,17 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test7:  When there is an error in getting weight from flag",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "last",
-				selectorErr:          nil,
-				power:                1,
-				powerErr:             nil,
-				weightErr:            errors.New("weight error"),
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 1,
+				power:        1,
+				weightErr:    errors.New("weight error"),
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("weight error"),
@@ -234,47 +199,71 @@ func Test_updateJob(t *testing.T) {
 		{
 			name: "Test8:  When updateJob transaction fails",
 			args: args{
-				password:             "test",
-				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
-				jobId:                1,
-				jobIdErr:             nil,
-				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
-				selector:             "last",
-				selectorErr:          nil,
-				power:                1,
-				powerErr:             nil,
-				weight:               10,
-				weightErr:            nil,
-				txnOpts:              txnOpts,
-				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         errors.New("updateJob error"),
-				waitIfCommitStateErr: nil,
-				hash:                 common.BigToHash(big.NewInt(1)),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 1,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				updateJobErr: errors.New("updateJob error"),
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("updateJob error"),
 		},
 		{
-			name: "Test10:  When there is an error in WaitIfConfirmState",
+			name: "Test9:  When there is an error in getting selectorType",
+			args: args{
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				jobId:           1,
+				url:             "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:        "last",
+				selectorTypeErr: errors.New("selectorType error"),
+				power:           1,
+				weight:          10,
+				txnOpts:         txnOpts,
+				updateJobTxn:    &Types.Transaction{},
+				hash:            common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("selectorType error"),
+		},
+		{
+			name: "Test10:  When selectorType is of XHTML",
+			args: args{
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				jobId:        1,
+				url:          "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:     "last",
+				selectorType: 0,
+				power:        1,
+				weight:       10,
+				txnOpts:      txnOpts,
+				updateJobTxn: &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
+			},
+			want:    common.BigToHash(big.NewInt(1)),
+			wantErr: nil,
+		},
+		{
+			name: "Test11:  When there is an error in WaitIfConfirmState",
 			args: args{
 				password:             "test",
 				address:              "0x000000000000000000000000000000000000dead",
-				addressErr:           nil,
 				jobId:                1,
-				jobIdErr:             nil,
 				url:                  "https://api.gemini.com/v1/pubticker/ethusd",
-				urlErr:               nil,
 				selector:             "last",
-				selectorErr:          nil,
+				selectorType:         1,
 				power:                1,
-				powerErr:             nil,
 				weight:               10,
-				weightErr:            nil,
 				txnOpts:              txnOpts,
 				updateJobTxn:         &Types.Transaction{},
-				updateJobErr:         nil,
 				waitIfCommitStateErr: errors.New("waitIfCommitState error"),
 				hash:                 common.BigToHash(big.NewInt(1)),
 			},
@@ -292,7 +281,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.address, tt.args.addressErr
 			}
 
-			GetUint8JobIdMock = func(*pflag.FlagSet) (uint8, error) {
+			GetUint16JobIdMock = func(*pflag.FlagSet) (uint16, error) {
 				return tt.args.jobId, tt.args.jobIdErr
 			}
 
@@ -312,6 +301,10 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.weight, tt.args.weightErr
 			}
 
+			GetUint8SelectorTypeMock = func(*pflag.FlagSet) (uint8, error) {
+				return tt.args.selectorType, tt.args.selectorTypeErr
+			}
+
 			ConnectToClientMock = func(string) *ethclient.Client {
 				return client
 			}
@@ -320,7 +313,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			UpdateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint8, uint8, int8, uint8, string, string) (*Types.Transaction, error) {
+			UpdateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error) {
 				return tt.args.updateJobTxn, tt.args.updateJobErr
 			}
 
@@ -328,7 +321,7 @@ func Test_updateJob(t *testing.T) {
 				return tt.args.hash
 			}
 
-			WaitIfCommitStateMock = func(*ethclient.Client, string, string) (uint32, error) {
+			WaitIfCommitStateMock = func(*ethclient.Client, string, string, UtilsStruct) (uint32, error) {
 				return WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr
 			}
 

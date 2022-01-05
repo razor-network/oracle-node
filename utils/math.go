@@ -2,9 +2,9 @@ package utils
 
 import (
 	"errors"
-	"github.com/spf13/pflag"
 	"math"
 	"math/big"
+	"math/rand"
 	"sort"
 	"strconv"
 )
@@ -22,7 +22,7 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 		convertedNumber, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Error("Error in converting from string to float: ", err)
-			return big.NewFloat(0), nil
+			return big.NewFloat(0), err
 		}
 		return big.NewFloat(convertedNumber), nil
 	}
@@ -40,7 +40,7 @@ func MultiplyWithPower(num *big.Float, power int8) *big.Int {
 	return result
 }
 
-func MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
+func (*UtilsStruct) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
 	if bigIntVal == nil || floatingVal == 0 {
 		return big.NewInt(0)
 	}
@@ -75,32 +75,13 @@ func GetAmountInWei(amount *big.Int) *big.Int {
 	return amountInWei
 }
 
-func GetFractionalAmountInWei(amount *big.Int, power string) *big.Int {
+func GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
 	_power, err := new(big.Int).SetString(power, 10)
 	if !err {
-		log.Fatal("SetString: error")
+		return nil, errors.New("SetString: error")
 	}
 	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1).Exp(big.NewInt(10), _power, nil))
-	return amountInWei
-}
-
-func AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
-	amount, err := flagSet.GetString("value")
-	if err != nil {
-		log.Fatal("Error in reading value", err)
-	}
-	_amount, ok := new(big.Int).SetString(amount, 10)
-	if !ok {
-		log.Fatal("SetString: error")
-	}
-	var amountInWei *big.Int
-	if IsFlagPassed("pow") {
-		power, _ := flagSet.GetString("pow")
-		amountInWei = GetFractionalAmountInWei(_amount, power)
-	} else {
-		amountInWei = GetAmountInWei(_amount)
-	}
-	return amountInWei
+	return amountInWei, nil
 }
 
 func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
@@ -168,4 +149,22 @@ func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 	}
 	dataInFloat := new(big.Float).SetInt(data)
 	return dataInFloat.Quo(dataInFloat, big.NewFloat(1e18)).SetPrec(32), nil
+}
+
+func ConvertRZRToSRZR(amount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	if currentStake.Cmp(big.NewInt(0)) == 0 {
+		return big.NewInt(0), errors.New("current stake is 0")
+	}
+	return big.NewInt(1).Div(big.NewInt(1).Mul(amount, totalSupply), currentStake), nil
+}
+
+func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return big.NewInt(1).Div(big.NewInt(1).Mul(sAmount, currentStake), totalSupply)
+}
+
+func GetRogueRandomValue(value int) *big.Int {
+	if value <= 0 {
+		return big.NewInt(0)
+	}
+	return big.NewInt(int64(rand.Intn(value)))
 }

@@ -31,6 +31,7 @@ func Test_createCollection(t *testing.T) {
 		assetManagerUtils: AssetManagerMock{},
 		transactionUtils:  TransactionMock{},
 		flagSetUtils:      FlagSetMock{},
+		cmdUtils:          UtilsCmdMock{},
 	}
 
 	type args struct {
@@ -46,7 +47,7 @@ func Test_createCollection(t *testing.T) {
 		power                      int8
 		powerErr                   error
 		txnOpts                    *bind.TransactOpts
-		jobIdUint8                 []uint8
+		jobIdUint8                 []uint16
 		waitForAppropriateStateErr error
 		createCollectionTxn        *Types.Transaction
 		createCollectionErr        error
@@ -68,7 +69,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:         1,
 				power:               0,
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -86,7 +87,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:         1,
 				power:               0,
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -104,7 +105,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:         1,
 				power:               0,
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -121,7 +122,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:         1,
 				power:               0,
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -138,7 +139,7 @@ func Test_createCollection(t *testing.T) {
 				aggregationErr:      errors.New("aggregation error"),
 				power:               0,
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -155,7 +156,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:         1,
 				powerErr:            errors.New("power error"),
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -172,7 +173,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:                1,
 				power:                      0,
 				txnOpts:                    txnOpts,
-				jobIdUint8:                 []uint8{1, 2},
+				jobIdUint8:                 []uint16{1, 2},
 				waitForAppropriateStateErr: errors.New("waitForDisputeOrConfirmState error"),
 				createCollectionTxn:        &Types.Transaction{},
 				hash:                       common.BigToHash(big.NewInt(1)),
@@ -190,7 +191,7 @@ func Test_createCollection(t *testing.T) {
 				aggregation:         1,
 				power:               0,
 				txnOpts:             txnOpts,
-				jobIdUint8:          []uint8{1, 2},
+				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				createCollectionErr: errors.New("createCollection error"),
 				hash:                common.BigToHash(big.NewInt(1)),
@@ -234,15 +235,15 @@ func Test_createCollection(t *testing.T) {
 				return tt.args.txnOpts
 			}
 
-			ConvertUintArrayToUint8ArrayMock = func([]uint) []uint8 {
+			ConvertUintArrayToUint16ArrayMock = func([]uint) []uint16 {
 				return tt.args.jobIdUint8
 			}
 
-			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, ...int) (uint32, error) {
+			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
 				return WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr
 			}
 
-			CreateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, []uint8, uint32, int8, string) (*Types.Transaction, error) {
+			CreateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, []uint16, uint32, int8, string) (*Types.Transaction, error) {
 				return tt.args.createCollectionTxn, tt.args.createCollectionErr
 			}
 

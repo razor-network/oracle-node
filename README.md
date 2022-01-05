@@ -23,7 +23,7 @@ Note that we are leveraging docker bind-mounts to mount `.razor` directory so th
 You need to set a provider before you can operate razor-go cli on docker:
 
 ```
-docker exec -it razor-go setconfig -p <provider_url>
+docker exec -it razor-go setConfig -p <provider_url>
 ```
 
 You can now execute razor-go cli commands by running:
@@ -32,12 +32,35 @@ You can now execute razor-go cli commands by running:
 docker exec -it razor-go <command>
 ```
 
+### Setting up dev environment with docker-compose
+
+You can build razor-go docker image by running:
+
+```
+docker-compose build
+```
+
+> **_NOTE:_** Add platform: linux/x86_64 for Silicon based MAC in docker-compose.yml.
+
+Run razor-go locally with:
+
+```
+docker-compose up -d
+```
+
+You can intract with razor:
+
+```
+docker exec -it razor-go ...
+```
+
 ### Prerequisites
 
 - Golang 1.15 or later must be installed.
 - Latest stable version of node is required.
 - Silicon chip based Mac users must go for node 15.3.0+
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
+- `solc` and `jq` must be installed.
 
 ### Building the source
 
@@ -89,20 +112,54 @@ $ ./razor import
 Password:
 ```
 
-\_\_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord.
+_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord._
 
 ### Stake
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 
 ```
-$ ./razor stake --address <address> --value <value> --pow <power>
+$ ./razor stake --address <address> --value <value>
 ```
 
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
+```
+
+If you want to vote just after stake automatically, you can just set `autoVote` flag to true in the stake command as stated below
+
+```
+$ ./razor stake --address <address> --value <value> --autoVote <bool>
+```
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 2000 --autoVote true
+```
+
+_Note: --pow flag is used to stake floating number stake_
+
+_Note: Formula for calculating pow: (value \* (10 ** 18)) / (10 ** x) where x is no of decimal places and value is integer_
+
+_The value of pow is : 18 - x here_
+
+If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
+```
+
+If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
 ```
 
 ### Staker Info
@@ -124,13 +181,26 @@ $ ./razor stakerInfo --stakerId 2
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
+$ ./razor setDelegation --address <address> --status <true_or_false>
 ```
 
 Example:
 
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
+```
+
+### Update Commission
+
+If you are a staker and have accepted delegation, you can define your commission rate using this command.
+
+```
+$ ./razor updateCommission --address <address> --commission <commission_percent>
+
+```
+
+```
+$ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10
 ```
 
 ### Delegate
@@ -162,11 +232,12 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
 If you want to report incorrect values, there is a `rogue` mode available. Just pass an extra flag `--rogue` to start voting in rogue mode and the client will report wrong medians.
+The rogueMode key can be used to specify in which particular voting state (commit, reveal, propose) you want to report incorrect values.
 
 Example:
 
 ```
-$ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue
+$ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue --rogueMode commit,reveal,propose
 ```
 
 ### Unstake
@@ -209,6 +280,20 @@ Example:
 
 ```
 $ ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
+```
+
+### Claim Bounty
+
+If you want to claim your bounty after disputing a rogue staker, you can run `claimBounty` command
+
+```
+$ ./razor claimBounty --address <address> --bountyId <bounty_id>
+```
+
+Example:
+
+```
+$ ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bountyId 5
 ```
 
 ### Transfer
@@ -266,19 +351,19 @@ Create new jobs using `creteJob` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor createJob --url <URL> --selector <selector_in_json_selector_format> --name <name> --address <address> --power <power> --weight <weight>
+$ ./razor createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
 ```
 
 Example:
 
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --weight 32
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --selectorType 1 --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --weight 32
 ```
 
 OR
 
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n ethusd --power 2 -s last -u https://api.gemini.com/v1/pubticker/ethusd --weight 10
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
 ```
 
 ### Create Collection
@@ -336,13 +421,27 @@ Update the existing parameters of the Job using `updateJob` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-./razor updateJob --address <address> --jobID <job_Id> -s <selector> -u <job_url> --power <power> --weight <weight>
+./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
+
+### Job details
+
+Get the list of all jobs with the details like weight, power, Id etc.
 
 Example:
 
 ```
-$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10
+$ ./razor jobList
+```
+
+### Collection details
+
+Get the list of all collections with the details like power, Id, name etc.
+
+Example:
+
+```
+$ ./razor collectionList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._

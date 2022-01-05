@@ -41,10 +41,18 @@ func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
 	return voteManager
 }
 
-func GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
+func (*UtilsStruct) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
 	blockManager, err := bindings.NewBlockManager(common.HexToAddress(core.BlockManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return blockManager
+}
+
+func GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
+	stakedTokenContract, err := bindings.NewStakedToken(tokenAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return stakedTokenContract
 }

@@ -1,17 +1,19 @@
 package utils
 
 import (
+	"bufio"
 	"context"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/spf13/pflag"
-	"math"
+	"errors"
+	"fmt"
 	"math/big"
 	"os"
 	"razor/core"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 )
 
 func ConnectToClient(provider string) *ethclient.Client {
@@ -26,15 +28,16 @@ func ConnectToClient(provider string) *ethclient.Client {
 func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
 	coinContract := GetTokenManager(client)
-	opts := GetOptions(false, accountAddress, "")
+	opts := UtilsInterface.GetOptions()
 	return coinContract.BalanceOf(&opts, address)
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	blockNumber, err := client.BlockNumber(context.Background())
+	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
 	}
+	blockNumber := uint64(block.Number.Int64())
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
@@ -54,7 +57,7 @@ func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
 }
 
 func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
-	timeout := core.StateLength * 2
+	timeout := core.BlockCompletionTimeout
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Debug("Checking if transaction is mined....")
 		transactionStatus := checkTransactionReceipt(client, hashToRead)
@@ -104,13 +107,6 @@ func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	}
 }
 
-func Retry(retry int, errMsg string, err error) {
-	log.Error(errMsg, err)
-	retryingIn := math.Pow(2, float64(retry))
-	log.Debugf("Retrying in %f seconds.....", retryingIn)
-	time.Sleep(time.Duration(retryingIn) * time.Second)
-}
-
 func GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
@@ -138,7 +134,7 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 }
 
 func GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := GetLatestBlock(client)
+	latestHeader, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -147,21 +143,73 @@ func GetEpoch(client *ethclient.Client) (uint32, error) {
 	return uint32(epoch), nil
 }
 
-func GetLatestBlock(client *ethclient.Client) (*types.Header, error) {
-	var (
-		latestHeader *types.Header
-		err          error
-	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		latestHeader, err = client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			Retry(retry, "Error in fetching latest block: ", err)
-			continue
-		}
-		break
+func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
+	if len(committedData) == 0 {
+		return errors.New("committed data is empty")
 	}
+	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return latestHeader, nil
+	fmt.Fprintln(f, epoch)
+	for _, datum := range committedData {
+		_, err := fmt.Fprintln(f, datum.String())
+		if err != nil {
+			return err
+		}
+	}
+	defer f.Close()
+	return nil
+}
+
+func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+	var (
+		committedData []*big.Int
+		epoch         uint32
+	)
+	file, err := os.Open(fileName)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lineCount := 0
+	for scanner.Scan() {
+		if lineCount > 0 {
+			data, ok := big.NewInt(0).SetString(scanner.Text(), 10)
+			if ok {
+				committedData = append(committedData, data)
+			}
+		} else {
+			value, err := strconv.Atoi(scanner.Text())
+			if err != nil {
+				return 0, nil, err
+			}
+			epoch = uint32(value)
+		}
+		lineCount++
+	}
+
+	if err := scanner.Err(); err != nil {
+		return 0, nil, err
+	}
+	return epoch, committedData, nil
+}
+
+func Sleep(duration time.Duration) {
+	time.Sleep(duration)
+}
+
+func CalculateBlockTime(client *ethclient.Client) int64 {
+	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	if err != nil {
+		log.Fatalf("Error in fetching latest Block: %s", err)
+	}
+	latestBlockNumber := latestBlock.Number
+	lastSecondBlock, err := client.HeaderByNumber(context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	if err != nil {
+		log.Fatalf("Error in fetching last second Block: %s", err)
+	}
+	return int64(latestBlock.Time - lastSecondBlock.Time)
 }

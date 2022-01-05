@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"math/big"
+	randMath "math/rand"
 	"razor/core"
 	"razor/core/types"
 	"reflect"
@@ -148,17 +149,24 @@ func TestCommit(t *testing.T) {
 }
 
 func TestHandleCommitState(t *testing.T) {
-	var client *ethclient.Client
-	var address string
-	var epoch uint32
+	var (
+		client *ethclient.Client
+		epoch  uint32
+	)
+
+	rogueValue := big.NewInt(int64(randMath.Intn(10000000)))
 
 	utilsStruct := UtilsStruct{
 		razorUtils: UtilsMock{},
 	}
 
 	type args struct {
-		data    []*big.Int
-		dataErr error
+		data               []*big.Int
+		dataErr            error
+		numActiveAssets    *big.Int
+		numActiveAssetsErr error
+		rogueValue         *big.Int
+		rogue              types.Rogue
 	}
 	tests := []struct {
 		name    string
@@ -171,6 +179,7 @@ func TestHandleCommitState(t *testing.T) {
 			args: args{
 				data:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				dataErr: nil,
+				rogue:   types.Rogue{IsRogue: false},
 			},
 			want:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 			wantErr: nil,
@@ -178,20 +187,59 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting data from getActiveAssetData",
 			args: args{
+				rogue:   types.Rogue{IsRogue: false},
 				dataErr: errors.New("data error"),
 			},
 			want:    nil,
 			wantErr: errors.New("data error"),
 		},
+		{
+			name: "Test 3: When rogue mode is activated but not for commit ",
+			args: args{
+				rogue: types.Rogue{IsRogue: true, RogueMode: []string{"propose"}},
+				data:  []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+			},
+			want:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+			wantErr: nil,
+		},
+		{
+			name: "Test 4: When rogue mode is activated for commit ",
+			args: args{
+				numActiveAssets: big.NewInt(1),
+				rogue:           types.Rogue{IsRogue: true, RogueMode: []string{"propose", "commit"}},
+				rogueValue:      rogueValue,
+				data:            []*big.Int{rogueValue},
+			},
+			want:    []*big.Int{rogueValue},
+			wantErr: nil,
+		},
+		{
+			name: "Test 5: When there is an error in fetching numActiveAssets",
+			args: args{
+				numActiveAssets:    nil,
+				numActiveAssetsErr: errors.New("Error in fetching active assets"),
+				rogue:              types.Rogue{IsRogue: true, RogueMode: []string{"propose", "commit"}},
+			},
+			want:    nil,
+			wantErr: errors.New("Error in fetching active assets"),
+		},
 	}
 	for _, tt := range tests {
 
-		GetActiveAssetsDataMock = func(*ethclient.Client, string, uint32) ([]*big.Int, error) {
+		GetActiveAssetsDataMock = func(*ethclient.Client, uint32) ([]*big.Int, error) {
 			return tt.args.data, tt.args.dataErr
 		}
 
+		GetNumActiveAssetsMock = func(*ethclient.Client) (*big.Int, error) {
+			return tt.args.numActiveAssets, tt.args.numActiveAssetsErr
+		}
+
+		GetRogueRandomValueMock = func(int) *big.Int {
+			return tt.args.rogueValue
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utilsStruct.HandleCommitState(client, address, epoch)
+			got, err := utilsStruct.HandleCommitState(client, epoch, tt.args.rogue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}

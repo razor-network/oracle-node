@@ -20,7 +20,14 @@ Example:
   ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			tokenManagerUtils: tokenManagerUtils,
+			transactionUtils:  transactionUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			flagSetUtils:      flagSetUtils,
+		}
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -32,7 +39,9 @@ Example:
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
-		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
+		utils.CheckError("Error in getting amount: ", err)
+
 		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		utils.CheckEthBalanceIsZero(client, address)
@@ -44,13 +53,6 @@ Example:
 			AccountAddress: address,
 			ChainId:        core.ChainId,
 			Config:         config,
-		}
-
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			transactionUtils:  transactionUtils,
-			stakeManagerUtils: stakeManagerUtils,
 		}
 
 		approveTxnHash, err := utilsStruct.approve(txnArgs)
@@ -78,7 +80,7 @@ func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, staker
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
-	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
+	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -90,6 +92,7 @@ func init() {
 	razorUtils = Utils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -9,6 +10,7 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strconv"
+	"time"
 
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -26,7 +28,6 @@ type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AssetManagerUtils struct{}
-type AccountUtils struct{}
 type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type ProposeUtils struct{}
@@ -45,21 +46,27 @@ type UtilsStruct struct {
 	voteManagerUtils  voteManagerInterface
 	tokenManagerUtils tokenManagerInterface
 	keystoreUtils     keystoreInterface
-	accountUtils      accountInterface
 	flagSetUtils      flagSetInterface
 	cryptoUtils       cryptoInterface
+	accountUtils      accounts.AccountInterface
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	return utils.ConnectToClient(provider)
 }
 
-func (u Utils) GetOptions(pending bool, from string, blockNumber string) bind.CallOpts {
-	return utils.GetOptions(pending, from, blockNumber)
+func (u Utils) GetOptions() bind.CallOpts {
+	return utils.UtilsInterface.GetOptions()
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	return utils.GetTxnOpts(transactionData)
+	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
+		Options:        utils.Options,
+		UtilsInterface: utils.UtilsInterface,
+	})
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	return utilsInterface.GetTxnOpts(transactionData)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
@@ -72,10 +79,6 @@ func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	return utils.FetchBalance(client, accountAddress)
-}
-
-func (u Utils) AssignAmountInWei(flagSet *pflag.FlagSet) *big.Int {
-	return utils.AssignAmountInWei(flagSet)
 }
 
 func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
@@ -98,8 +101,8 @@ func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, staker
 	return utils.GetStaker(client, address, stakerId)
 }
 
-func (u Utils) GetConfigData() (types.Configurations, error) {
-	return GetConfigData()
+func (u Utils) GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
+	return GetConfigData(utilsStruct)
 }
 
 func (u Utils) ParseBool(str string) (bool, error) {
@@ -114,20 +117,12 @@ func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
 }
 
-func (u Utils) GetActiveAssetsData(client *ethclient.Client, address string, epoch uint32) ([]*big.Int, error) {
-	return utils.GetActiveAssetsData(client, address, epoch)
+func (u Utils) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
+	return utils.GetActiveAssetsData(client, epoch)
 }
 
-func (u Utils) ConvertUintArrayToUint8Array(uintArr []uint) []uint8 {
-	return utils.ConvertUintArrayToUint8Array(uintArr)
-}
-
-func (u Utils) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, states ...int) (uint32, error) {
-	return WaitForAppropriateState(client, accountAddress, action, states...)
-}
-
-func (u Utils) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string) (uint32, error) {
-	return WaitIfCommitState(client, accountAddress, action)
+func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
+	return utils.ConvertUintArrayToUint16Array(uintArr)
 }
 
 func (u Utils) PrivateKeyPrompt() string {
@@ -146,40 +141,40 @@ func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uin
 	return utils.GetNumberOfStakers(client, address)
 }
 
-func (u Utils) GetRandaoHash(client *ethclient.Client, address string) ([32]byte, error) {
-	return utils.GetRandaoHash(client, address)
+func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
+	return utils.GetRandaoHash(client)
 }
 
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
-	return utils.GetNumberOfProposedBlocks(client, address, epoch)
+	return utils.UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
 }
 
 func (u Utils) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
-	return utils.GetMaxAltBlocks(client, address)
+	return utils.UtilsInterface.GetMaxAltBlocks(client)
 }
 
-func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint8) (bindings.StructsBlock, error) {
-	return utils.GetProposedBlock(client, address, epoch, proposedBlockId)
+func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
+	return utils.UtilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
 }
 
 func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
 	return utils.GetEpochLastRevealed(client, address, stakerId)
 }
 
-func (u Utils) GetVoteValue(client *ethclient.Client, address string, assetId uint8, stakerId uint32) (*big.Int, error) {
-	return utils.GetVoteValue(client, address, assetId, stakerId)
+func (u Utils) GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
+	return utils.GetVoteValue(client, assetId, stakerId)
 }
 
-func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, address string, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.GetInfluenceSnapshot(client, address, stakerId, epoch)
+func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
-func (u Utils) GetNumActiveAssets(client *ethclient.Client, address string) (*big.Int, error) {
-	return utils.GetNumActiveAssets(client, address)
+func (u Utils) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
+	return utils.GetNumActiveAssets(client)
 }
 
-func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, address string, epoch uint32) (*big.Int, error) {
-	return utils.GetTotalInfluenceRevealed(client, address, epoch)
+func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
+	return utils.GetTotalInfluenceRevealed(client, epoch)
 }
 
 func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
@@ -194,6 +189,14 @@ func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string
 	return utils.GetWithdrawReleasePeriod(client, address)
 }
 
+func (u Utils) GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	return utils.GetMaxCommission(client)
+}
+
+func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	return utils.GetEpochLimitForUpdateCommission(client)
+}
+
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	return utils.GetCommitments(client, address)
 }
@@ -202,8 +205,8 @@ func (u Utils) AllZero(bytesValue [32]byte) bool {
 	return utils.AllZero(bytesValue)
 }
 
-func (u Utils) GetEpochLastCommitted(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastCommitted(client, address, stakerId)
+func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, stakerId)
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -218,32 +221,120 @@ func (u Utils) IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return utils.IsEqual(arr1, arr2)
 }
 
-func (u Utils) GetActiveAssetIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
-	return utils.GetActiveAssetIds(client, address, epoch)
+func (u Utils) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
+	return utils.GetActiveAssetIds(client)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	return utils.GetBlockManager(client)
+	return utils.UtilsInterface.GetBlockManager(client)
 }
 
-func (u Utils) GetVotes(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsVote, error) {
-	return utils.GetVotes(client, address, stakerId)
+func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
+	return utils.GetVotes(client, stakerId)
 }
 
-func (u Utils) Contains(arr []int, val int) bool {
+func (u Utils) Contains(arr, val interface{}) bool {
 	return utils.Contains(arr, val)
 }
 
-func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
-	return utils.GetLatestBlock(client)
+func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	utils.CheckEthBalanceIsZero(client, address)
 }
 
-func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint8, error) {
-	return utils.GetSortedProposedBlockIds(client, address, epoch)
+func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+	return utils.AssignStakerId(flagSet, client, address)
+}
+
+func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
+	return utils.UtilsInterface.GetLatestBlockWithRetry(client)
+}
+
+func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint32, error) {
+	return utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
+}
+
+func (u Utils) CheckError(msg string, err error) {
+	utils.CheckError(msg, err)
 }
 
 func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
+}
+
+func (u Utils) GetStateName(stateNumber int64) string {
+	return utils.GetStateName(stateNumber)
+}
+
+func (u Utils) getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
+	return getBufferPercent(utilsStruct)
+}
+
+func (u Utils) IsFlagPassed(name string) bool {
+	return utils.IsFlagPassed(name)
+}
+
+func (u Utils) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
+	return utils.GetFractionalAmountInWei(amount, power)
+}
+
+func (u Utils) GetAmountInWei(amount *big.Int) *big.Int {
+	return utils.GetAmountInWei(amount)
+}
+
+func (u Utils) Sleep(duration time.Duration) {
+	utils.Sleep(duration)
+}
+
+func (u Utils) getProvider(utilsStruct UtilsStruct) (string, error) {
+	return getProvider(utilsStruct)
+}
+
+func (u Utils) getMultiplier(utilsStruct UtilsStruct) (float32, error) {
+	return getMultiplier(utilsStruct)
+}
+
+func (u Utils) getWaitTime(utilsStruct UtilsStruct) (int32, error) {
+	return getWaitTime(utilsStruct)
+}
+
+func (u Utils) getGasPrice(utilsStruct UtilsStruct) (int32, error) {
+	return getGasPrice(utilsStruct)
+}
+
+func (u Utils) getLogLevel(utilsStruct UtilsStruct) (string, error) {
+	return getLogLevel(utilsStruct)
+}
+
+func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
+	return getGasLimit(utilsStruct)
+}
+
+func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
+	return utils.CalculateBlockTime(client)
+}
+
+func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
+	return utils.GetStakedToken(client, address)
+}
+
+func (u Utils) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return utils.ConvertSRZRToRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u Utils) GetRogueRandomValue(value int) *big.Int {
+	return utils.GetRogueRandomValue(value)
+}
+
+func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+	return utils.GetJobs(client)
+}
+
+func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return utils.GetCollections(client)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -275,14 +366,14 @@ func (stakeManagerUtils StakeManagerUtils) ExtendLock(client *ethclient.Client, 
 	return stakeManager.ExtendLock(opts, stakerId)
 }
 
-func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.Delegate(opts, epoch, stakerId, amount)
+	return stakeManager.Delegate(opts, stakerId, amount)
 }
 
-func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, stakerId uint32) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.Withdraw(opts, epoch, stakerId)
+	return stakeManager.Withdraw(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
@@ -290,14 +381,19 @@ func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethcl
 	return stakeManager.SetDelegationAcceptance(opts, status)
 }
 
-func (stakeManagerUtils StakeManagerUtils) SetCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.SetCommission(opts, commission)
+	return stakeManager.UpdateCommission(opts, commission)
 }
 
-func (stakeManagerUtils StakeManagerUtils) DecreaseCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.DecreaseCommission(opts, commission)
+	return stakeManager.Unstake(opts, stakerId, sAmount)
+}
+
+func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.RedeemBounty(opts, bountyId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
@@ -311,38 +407,47 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
 }
 
+func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.BountyLocks(opts, bountyId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
+}
+
+func (stakeManagerUtils StakeManagerUtils) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
+	return token.TotalSupply(callOpts)
+}
+
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
 }
 
-func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint8) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.SetCollectionStatus(opts, assetStatus, id)
 }
 
-func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint8) (bool, error) {
+func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
 	assetMananger := utils.GetAssetManager(client)
 	return assetMananger.GetCollectionStatus(opts, id)
 }
 
-func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint8, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
 }
 
-func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint8, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
 }
 
-func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint8, aggregationMethod uint32, power int8, jobIds []uint8) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
 	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
-}
-
-func (account AccountUtils) CreateAccount(path string, password string) ethAccounts.Account {
-	return accounts.CreateAccount(path, password)
 }
 
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
@@ -391,8 +496,12 @@ func (flagSetUtils FlagSetUtils) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, 
 	return flagSet.GetUint8("weight")
 }
 
-func (flagSetUtils FlagSetUtils) GetUint8AssetId(flagSet *pflag.FlagSet) (uint8, error) {
-	return flagSet.GetUint8("assetId")
+func (flagSetUtils FlagSetUtils) GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error) {
+	return flagSet.GetUint16("assetId")
+}
+
+func (flagSetUtils FlagSetUtils) GetUint8SelectorType(flagSet *pflag.FlagSet) (uint8, error) {
+	return flagSet.GetUint8("selectorType")
 }
 
 func (flagSetUtils FlagSetUtils) GetStringStatus(flagSet *pflag.FlagSet) (string, error) {
@@ -405,12 +514,42 @@ func (flagSetUtils FlagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (flo
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
-	return voteManager.Reveal(opts, epoch, values, secret)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = voteManager.Reveal(opts, epoch, values, secret)
+		if err != nil {
+			log.Error("Error in revealing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
-	return voteManager.Commit(opts, epoch, commitment)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = voteManager.Commit(opts, epoch, commitment)
+		if err != nil {
+			log.Error("Error in committing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (flagSetUtils FlagSetUtils) GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error) {
@@ -425,35 +564,39 @@ func (flagSetUtils FlagSetUtils) GetUint32Aggregation(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint32("aggregation")
 }
 
-func (flagSetUtils FlagSetUtils) GetUint8JobId(flagSet *pflag.FlagSet) (uint8, error) {
-	return flagSet.GetUint8("jobId")
+func (flagSetUtils FlagSetUtils) GetUint16JobId(flagSet *pflag.FlagSet) (uint16, error) {
+	return flagSet.GetUint16("jobId")
 }
 
-func (flagSetUtils FlagSetUtils) GetUint8CollectionId(flagSet *pflag.FlagSet) (uint8, error) {
-	return flagSet.GetUint8("collectionId")
+func (flagSetUtils FlagSetUtils) GetUint16CollectionId(flagSet *pflag.FlagSet) (uint16, error) {
+	return flagSet.GetUint16("collectionId")
+}
+
+func (flagSetUtils FlagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("value")
 }
 
 func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
 	return getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
 }
 
-func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	return getIteration(client, address, proposer, utilsStruct)
+func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
+	return getIteration(client, proposer, utilsStruct)
 }
 
-func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, address string, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
-	return isElectedProposer(client, address, proposer, utilsStruct)
+func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
+	return isElectedProposer(client, proposer, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
 	return pseudoRandomNumberGenerator(seed, max, blockHashes)
 }
 
-func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueMode bool, utilsStruct UtilsStruct) ([]uint32, error) {
-	return MakeBlock(client, address, rogueMode, utilsStruct)
+func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
+	return MakeBlock(client, address, rogueData, utilsStruct)
 }
 
-func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint8, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
+func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
 	return getSortedVotes(client, address, assetId, epoch, utilsStruct)
 }
 
@@ -462,8 +605,23 @@ func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalI
 }
 
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
-	return blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
+		if err != nil {
+			log.Error("Error in proposing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (flagSetUtils FlagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
@@ -490,47 +648,145 @@ func (flagSetUtils FlagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
-func (cmdUtils UtilsCmd) SetCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
-	return SetCommission(client, stakerId, txnOpts, commission, utilsStruct)
+func (flagSetUtils FlagSetUtils) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("pow")
 }
 
-func (cmdUtils UtilsCmd) DecreaseCommission(client *ethclient.Client, stakerId uint32, txnOpts *bind.TransactOpts, commission uint8, utilsStruct UtilsStruct) error {
-	return DecreaseCommission(client, stakerId, txnOpts, commission, utilsStruct)
+func (flagSetUtils FlagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("autoWithdraw")
 }
 
-func (cmdUtils UtilsCmd) DecreaseCommissionPrompt() bool {
-	return DecreaseCommissionPrompt()
+func (flagSetUtils FlagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
+	return flagSet.GetUint32("bountyId")
 }
 
-func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
-	return withdraw(client, txnOpts, epoch, stakerId, utilsStruct)
+func (flagSetUtils FlagSetUtils) GetRootStringProvider() (string, error) {
+	return rootCmd.PersistentFlags().GetString("provider")
 }
 
-func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
-	return CheckCurrentStatus(client, address, assetId, utilsStruct)
+func (flagSetUtils FlagSetUtils) GetRootFloat32GasMultiplier() (float32, error) {
+	return rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32Buffer() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("buffer")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32Wait() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("wait")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootInt32GasPrice() (int32, error) {
+	return rootCmd.PersistentFlags().GetInt32("gasprice")
+}
+
+func (flagSetUtils FlagSetUtils) getRootStringLogLevel() (string, error) {
+	return rootCmd.PersistentFlags().GetString("logLevel")
+}
+
+func (flagSetUtils FlagSetUtils) GetRootFloat32GasLimit() (float32, error) {
+	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
+}
+
+func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+	return withdraw(client, txnOpts, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, assetId uint16, utilsStruct UtilsStruct) (bool, error) {
+	return CheckCurrentStatus(client, assetId, utilsStruct)
 }
 
 func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
 	return Dispute(client, config, account, epoch, blockId, assetId, utilsStruct)
 }
 
-func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
+func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
+func (cmdUtils UtilsCmd) GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
+	return GetEpochAndState(client, accountAddress, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
+	return WaitForAppropriateState(client, accountAddress, action, utilsStruct, states...)
+}
+
+func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
+	return WaitIfCommitState(client, accountAddress, action, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
+	return AssignAmountInWei(flagSet, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, unstakeInput types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+	return Unstake(config, client, unstakeInput, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+	return AutoWithdraw(txnArgs, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+	return withdrawFunds(client, account, configurations, stakerId, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAccounts.Account, error) {
+	return Create(password, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
+	return claimBounty(config, client, redeemBountyInput, utilsStruct)
+}
+
+func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
 }
 
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
-	return blockManager.FinalizeDispute(opts, epoch, blockIndex)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.FinalizeDispute(opts, epoch, blockIndex)
+		if err != nil {
+			log.Error("Error in finalizing dispute.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
-	return blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+		if err != nil {
+			log.Error("Error in disputing biggest influence proposed.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
 }
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
