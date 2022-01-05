@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -33,8 +34,10 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	log.Debug("Locally calculated data:")
 	log.Debugf("Medians: %d", medians)
 
-	for i := 0; i < len(sortedProposedBlockIds); i++ {
-		blockId := sortedProposedBlockIds[i]
+	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n
+
+	for i := 0; i < len(randomSortedProposedBlockIds); i++ {
+		blockId := sortedProposedBlockIds[randomSortedProposedBlockIds[i]]
 		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, blockId)
 		if err != nil {
 			log.Error(err)
@@ -51,7 +54,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 				ChainId:        core.ChainId,
 				Config:         config,
 			}, utilsStruct.packageUtils)
-			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
+			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(randomSortedProposedBlockIds[i]), biggestInfluenceId)
 			if err != nil {
 				log.Error(err)
 				continue
@@ -74,7 +77,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			if proposedBlock.Valid {
-				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId, utilsStruct)
+				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(randomSortedProposedBlockIds[i]), assetId, utilsStruct)
 				if err != nil {
 					log.Error("Error in disputing...", err)
 					continue
