@@ -736,10 +736,6 @@ func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAc
 	return Create(password, utilsStruct)
 }
 
-func (cmdUtils UtilsCmd) claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
-	return claimBounty(config, client, redeemBountyInput, utilsStruct)
-}
-
 func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
 	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
 }
