@@ -275,7 +275,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
-			txn, err := utilsStruct.ClaimBlockReward(types.TransactionOptions{
+			txn, err := cmdUtilsMockery.ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
@@ -395,6 +395,7 @@ func init() {
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
+	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
 
 	rootCmd.AddCommand(voteCmd)
 
