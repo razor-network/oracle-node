@@ -25,7 +25,7 @@ Example:
 			flagSetUtils: flagSetUtils,
 		}
 
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
@@ -70,6 +70,7 @@ func (utilsStruct *UtilsStruct) GetCollectionList(client *ethclient.Client) erro
 func init() {
 	razorUtils = Utils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(collectionListCmd)
 

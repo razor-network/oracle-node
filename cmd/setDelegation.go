@@ -35,7 +35,7 @@ Example:
 
 func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
+	config, err := cmdUtilsMockery.GetConfigData()
 	if err != nil {
 		log.Error("Error in getting config")
 		return err
@@ -104,6 +104,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(setDelegationCmd)
 

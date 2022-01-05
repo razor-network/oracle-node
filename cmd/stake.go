@@ -37,7 +37,7 @@ Example:
 			cmdUtils:          cmdUtils,
 		}
 
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -122,6 +122,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (

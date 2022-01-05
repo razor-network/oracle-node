@@ -26,7 +26,7 @@ Example:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 		}
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config data: ", err)
 		txn, err := utilsStruct.extendLock(cmd.Flags(), config)
 		utils.CheckError("Error in extending lock: ", err)
@@ -74,6 +74,7 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(extendLockCmd)
 

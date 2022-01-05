@@ -32,7 +32,7 @@ Note:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 		}
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.createJob(cmd.Flags(), config)
 		utils.CheckError("CreateJob error: ", err)
@@ -106,6 +106,7 @@ func init() {
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(createJobCmd)
 

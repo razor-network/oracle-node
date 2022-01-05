@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
+func (*UtilsStructMockery) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
 		GasMultiplier:      0,
@@ -16,31 +16,31 @@ func GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
 		GasLimitMultiplier: 0,
 	}
 
-	provider, err := utilsStruct.razorUtils.getProvider(utilsStruct)
+	provider, err := cmdUtilsMockery.GetProvider()
 	if err != nil {
 		return config, err
 	}
-	gasMultiplier, err := utilsStruct.razorUtils.getMultiplier(utilsStruct)
+	gasMultiplier, err := cmdUtilsMockery.GetMultiplier()
 	if err != nil {
 		return config, err
 	}
-	bufferPercent, err := utilsStruct.razorUtils.getBufferPercent(utilsStruct)
+	bufferPercent, err := cmdUtilsMockery.GetBufferPercent()
 	if err != nil {
 		return config, err
 	}
-	waitTime, err := utilsStruct.razorUtils.getWaitTime(utilsStruct)
+	waitTime, err := cmdUtilsMockery.GetWaitTime()
 	if err != nil {
 		return config, err
 	}
-	gasPrice, err := utilsStruct.razorUtils.getGasPrice(utilsStruct)
+	gasPrice, err := cmdUtilsMockery.GetGasPrice()
 	if err != nil {
 		return config, err
 	}
-	logLevel, err := utilsStruct.razorUtils.getLogLevel(utilsStruct)
+	logLevel, err := cmdUtilsMockery.GetLogLevel()
 	if err != nil {
 		return config, err
 	}
-	gasLimit, err := utilsStruct.razorUtils.getGasLimit(utilsStruct)
+	gasLimit, err := cmdUtilsMockery.GetGasLimit()
 	if err != nil {
 		return config, err
 	}
@@ -55,8 +55,8 @@ func GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
 	return config, nil
 }
 
-func getProvider(utilsStruct UtilsStruct) (string, error) {
-	provider, err := utilsStruct.flagSetUtils.GetRootStringProvider()
+func (*UtilsStructMockery) GetProvider() (string, error) {
+	provider, err := flagSetUtilsMockery.GetRootStringProvider()
 	if err != nil {
 		return "", err
 	}
@@ -69,8 +69,8 @@ func getProvider(utilsStruct UtilsStruct) (string, error) {
 	return provider, nil
 }
 
-func getMultiplier(utilsStruct UtilsStruct) (float32, error) {
-	gasMultiplier, err := utilsStruct.flagSetUtils.GetRootFloat32GasMultiplier()
+func (*UtilsStructMockery) GetMultiplier() (float32, error) {
+	gasMultiplier, err := flagSetUtilsMockery.GetRootFloat32GasMultiplier()
 	if err != nil {
 		return 1, err
 	}
@@ -80,8 +80,8 @@ func getMultiplier(utilsStruct UtilsStruct) (float32, error) {
 	return gasMultiplier, nil
 }
 
-func getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
-	bufferPercent, err := utilsStruct.flagSetUtils.GetRootInt32Buffer()
+func (*UtilsStructMockery) GetBufferPercent() (int32, error) {
+	bufferPercent, err := flagSetUtilsMockery.GetRootInt32Buffer()
 	if err != nil {
 		return 30, err
 	}
@@ -91,8 +91,8 @@ func getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
 	return bufferPercent, nil
 }
 
-func getWaitTime(utilsStruct UtilsStruct) (int32, error) {
-	waitTime, err := utilsStruct.flagSetUtils.GetRootInt32Wait()
+func (*UtilsStructMockery) GetWaitTime() (int32, error) {
+	waitTime, err := flagSetUtilsMockery.GetRootInt32Wait()
 	if err != nil {
 		return 3, err
 	}
@@ -102,8 +102,8 @@ func getWaitTime(utilsStruct UtilsStruct) (int32, error) {
 	return waitTime, nil
 }
 
-func getGasPrice(utilsStruct UtilsStruct) (int32, error) {
-	gasPrice, err := utilsStruct.flagSetUtils.GetRootInt32GasPrice()
+func (*UtilsStructMockery) GetGasPrice() (int32, error) {
+	gasPrice, err := flagSetUtilsMockery.GetRootInt32GasPrice()
 	if err != nil {
 		return 0, err
 	}
@@ -113,8 +113,8 @@ func getGasPrice(utilsStruct UtilsStruct) (int32, error) {
 	return gasPrice, nil
 }
 
-func getLogLevel(utilsStruct UtilsStruct) (string, error) {
-	logLevel, err := utilsStruct.flagSetUtils.getRootStringLogLevel()
+func (*UtilsStructMockery) GetLogLevel() (string, error) {
+	logLevel, err := flagSetUtilsMockery.GetRootStringLogLevel()
 	if err != nil {
 		return "", err
 	}
@@ -124,8 +124,8 @@ func getLogLevel(utilsStruct UtilsStruct) (string, error) {
 	return logLevel, nil
 }
 
-func getGasLimit(utilsStruct UtilsStruct) (float32, error) {
-	gasLimit, err := utilsStruct.flagSetUtils.GetRootFloat32GasLimit()
+func (*UtilsStructMockery) GetGasLimit() (float32, error) {
+	gasLimit, err := flagSetUtilsMockery.GetRootFloat32GasLimit()
 	if err != nil {
 		return -1, err
 	}

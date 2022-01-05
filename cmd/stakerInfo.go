@@ -23,7 +23,7 @@ Example:
 			flagSetUtils:      flagSetUtils,
 		}
 
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
@@ -73,6 +73,7 @@ func init() {
 	razorUtils = Utils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(stakerInfoCmd)
 

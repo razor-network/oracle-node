@@ -27,7 +27,7 @@ Example:
 			stakeManagerUtils: stakeManagerUtils,
 			flagSetUtils:      flagSetUtils,
 		}
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -93,6 +93,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

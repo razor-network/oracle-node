@@ -24,7 +24,7 @@ Example:
 			flagSetUtils: flagSetUtils,
 		}
 
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
@@ -68,6 +68,7 @@ func (utilsStruct *UtilsStruct) GetJobList(client *ethclient.Client) error {
 func init() {
 	razorUtils = Utils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(jobListCmd)
 

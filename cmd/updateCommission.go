@@ -32,7 +32,7 @@ Example:
 }
 
 func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
+	config, err := cmdUtilsMockery.GetConfigData()
 	if err != nil {
 		log.Error("Error in getting config")
 		return err
@@ -113,6 +113,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	var (
 		Address    string
