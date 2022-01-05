@@ -117,7 +117,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
-	minStakeAmount, err := utils.GetMinStakeAmount(client, account.Address)
+	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return

@@ -183,7 +183,7 @@ $ ./razor stakerInfo --stakerId 2
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false> 
+$ ./razor setDelegation --address <address> --status <true_or_false>
 ```
 
 Example:
@@ -197,12 +197,12 @@ $ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --s
 If you are a staker and have accepted delegation, you can define your commission rate using this command.
 
 ```
-$ ./razor updateCommission --address <address> --commission <commission_percent> 
+$ ./razor updateCommission --address <address> --commission <commission_percent>
 
 ```
 
 ```
-$ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10 
+$ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10
 ```
 
 ### Delegate
@@ -427,10 +427,24 @@ _Note: This command is restricted to "Admin Role"_
 ./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
 
+### Job details
+
+Get the list of all jobs with the details like weight, power, Id etc.
+
 Example:
 
 ```
-$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10
+$ ./razor jobList
+```
+
+### Collection details
+
+Get the list of all collections with the details like power, Id, name etc.
+
+Example:
+
+```
+$ ./razor collectionList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._

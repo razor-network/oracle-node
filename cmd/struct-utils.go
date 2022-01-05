@@ -56,7 +56,7 @@ func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 }
 
 func (u Utils) GetOptions() bind.CallOpts {
-	return utils.GetOptions()
+	return utils.UtilsInterface.GetOptions()
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
@@ -146,15 +146,15 @@ func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
 }
 
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, address string, epoch uint32) (uint8, error) {
-	return utils.GetNumberOfProposedBlocks(client, address, epoch)
+	return utils.UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
 }
 
 func (u Utils) GetMaxAltBlocks(client *ethclient.Client, address string) (uint8, error) {
-	return utils.GetMaxAltBlocks(client, address)
+	return utils.UtilsInterface.GetMaxAltBlocks(client)
 }
 
 func (u Utils) GetProposedBlock(client *ethclient.Client, address string, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
-	return utils.GetProposedBlock(client, address, epoch, proposedBlockId)
+	return utils.UtilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
 }
 
 func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
@@ -226,7 +226,7 @@ func (u Utils) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	return utils.GetBlockManager(client)
+	return utils.UtilsInterface.GetBlockManager(client)
 }
 
 func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
@@ -250,7 +250,7 @@ func (u Utils) GetLatestBlock(client *ethclient.Client) (*Types.Header, error) {
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, address string, epoch uint32) ([]uint32, error) {
-	return utils.GetSortedProposedBlockIds(client, address, epoch)
+	return utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
 }
 
 func (u Utils) CheckError(msg string, err error) {
@@ -327,6 +327,14 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 
 func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
+}
+
+func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+	return utils.GetJobs(client)
+}
+
+func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return utils.GetCollections(client)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
@@ -597,7 +605,7 @@ func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalI
 }
 
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -737,12 +745,12 @@ func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address stri
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
 }
 
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -762,7 +770,7 @@ func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Cli
 }
 
 func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.GetBlockManager(client)
+	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
