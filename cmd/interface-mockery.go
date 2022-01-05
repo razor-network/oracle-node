@@ -14,13 +14,13 @@ import (
 //go:generate mockery --name FlagSetInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name UtilsCmdInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name StakeManagerInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name TransactionUtilsMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name TransactionInterfaceMockery --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
 var cmdUtilsMockery UtilsCmdInterfaceMockery
 var stakeManagerUtilsMockery StakeManagerInterfaceMockery
-var transactionUtilsMockery TransactionUtilsMockery
+var transactionUtilsMockery TransactionInterfaceMockery
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -93,7 +93,7 @@ type UtilsCmdInterfaceMockery interface {
 }
 
 type TransactionInterfaceMockery interface {
-	Hash(common.Hash) Types.Transaction
+	Hash(*Types.Transaction) common.Hash
 }
 
 type UtilsMockery struct{}
