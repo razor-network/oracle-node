@@ -138,6 +138,27 @@ func (_m *FlagSetInterfaceMockery) GetInt32Wait(_a0 *pflag.FlagSet) (int32, erro
 	return r0, r1
 }
 
+// GetInt8Power provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetInt8Power(_a0 *pflag.FlagSet) (int8, error) {
+	ret := _m.Called(_a0)
+
+	var r0 int8
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int8); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(int8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRootFloat32GasLimit provides a mock function with given fields:
 func (_m *FlagSetInterfaceMockery) GetRootFloat32GasLimit() (float32, error) {
 	ret := _m.Called()
@@ -285,8 +306,71 @@ func (_m *FlagSetInterfaceMockery) GetRootStringProvider() (string, error) {
 	return r0, r1
 }
 
+// GetStringAddress provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringAddress(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringFrom provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringFrom(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStringLogLevel provides a mock function with given fields: _a0
 func (_m *FlagSetInterfaceMockery) GetStringLogLevel(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringName provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringName(_a0 *pflag.FlagSet) (string, error) {
 	ret := _m.Called(_a0)
 
 	var r0 string
@@ -327,6 +411,174 @@ func (_m *FlagSetInterfaceMockery) GetStringProvider(_a0 *pflag.FlagSet) (string
 	return r0, r1
 }
 
+// GetStringSelector provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringSelector(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringStatus provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringStatus(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringTo provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringTo(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringUrl provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringUrl(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint16AssetId provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint16AssetId(_a0 *pflag.FlagSet) (uint16, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint16CollectionId provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint16CollectionId(_a0 *pflag.FlagSet) (uint16, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint16JobId provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint16JobId(_a0 *pflag.FlagSet) (uint16, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint32Aggregation provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint32Aggregation(_a0 *pflag.FlagSet) (uint32, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUint32BountyId provides a mock function with given fields: _a0
 func (_m *FlagSetInterfaceMockery) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32, error) {
 	ret := _m.Called(_a0)
@@ -336,6 +588,113 @@ func (_m *FlagSetInterfaceMockery) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32
 		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint32StakerId provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint32StakerId(_a0 *pflag.FlagSet) (uint32, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint8Commission provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint8Commission(_a0 *pflag.FlagSet) (uint8, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint8); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint8SelectorType provides a mock function with given fields: set
+func (_m *FlagSetInterfaceMockery) GetUint8SelectorType(set *pflag.FlagSet) (uint8, error) {
+	ret := _m.Called(set)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint8); ok {
+		r0 = rf(set)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(set)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint8Weight provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUint8Weight(_a0 *pflag.FlagSet) (uint8, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint8); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUintSliceJobIds provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetUintSliceJobIds(_a0 *pflag.FlagSet) ([]uint, error) {
+	ret := _m.Called(_a0)
+
+	var r0 []uint
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) []uint); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint)
+		}
 	}
 
 	var r1 error
