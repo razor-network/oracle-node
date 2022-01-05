@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -30,7 +31,6 @@ Example:
 			cmdUtils:          cmdUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
@@ -99,11 +99,11 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 	}
 
 	txnArgs.Parameters = []interface{}{epoch, stakerId}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-			return utilsStruct.cmdUtils.Withdraw(client, txnOpts, epoch, stakerId, utilsStruct)
+			return utilsStruct.cmdUtils.Withdraw(client, txnOpts, stakerId, utilsStruct)
 		}
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
@@ -117,10 +117,10 @@ func withdrawFunds(client *ethclient.Client, account types.Account, configuratio
 	return core.NilHash, nil
 }
 
-func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
+func withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
 	log.Info("Withdrawing funds...")
 
-	txn, err := utilsStruct.stakeManagerUtils.Withdraw(client, txnOpts, epoch, stakerId)
+	txn, err := utilsStruct.stakeManagerUtils.Withdraw(client, txnOpts, stakerId)
 	if err != nil {
 		log.Error("Error in withdrawing funds")
 		return core.NilHash, err
@@ -137,8 +137,9 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(withdrawCmd)
 

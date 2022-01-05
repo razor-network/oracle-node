@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +27,6 @@ Example:
 			transactionUtils:  transactionUtils,
 			stakeManagerUtils: stakeManagerUtils,
 			flagSetUtils:      flagSetUtils,
-			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
@@ -79,9 +79,9 @@ func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, staker
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
-	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, epoch, stakerId, txnArgs.Amount)
+	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -94,7 +94,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

@@ -11,7 +11,7 @@ import (
 )
 
 func getVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts) {
-	return GetVoteManager(client), GetOptions()
+	return GetVoteManager(client), UtilsInterface.GetOptions()
 }
 
 func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
@@ -39,7 +39,7 @@ func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) 
 	return commitments.CommitmentHash, nil
 }
 
-func GetVoteValue(client *ethclient.Client, assetId uint8, stakerId uint32) (*big.Int, error) {
+func GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		voteValue    *big.Int

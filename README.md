@@ -120,14 +120,72 @@ _Before staking on Razor Network, please ensure your account has eth and RAZOR. 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 
 ```
-$ ./razor stake --address <address> --value <value> --pow <power>
+$ ./razor stake --address <address> --value <value>
 ```
 
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
 ```
+
+If you want to vote just after stake automatically, you can just set `autoVote` flag to true in the stake command as stated below
+
+```
+$ ./razor stake --address <address> --value <value> --autoVote <bool>
+```
+
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
+```
+_Note: --pow flag is used to stake floating number stake_
+
+_Note: Formula for calculating pow: (value * (10**18)) / (10**x) where x is no of decimal places and value is integer_
+
+_The value of pow is : 18 - x here_
+
+
+If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
+```
+
+If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
+
+Example:
+
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 2000 --autoVote true
+```
+
+_Note: --pow flag is used to stake floating number stake_
+
+ _Note: Formula for calculating pow: (value * (10 ** 18)) / (10 ** x) where x is no of decimal places and value is integer_
+
+ _The value of pow is : 18 - x here_
+
+
+ If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
+
+ Example:
+
+ ```
+ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
+ ```
+
+ If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
+
+ Example:
+
+ ```
+ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
+ ```
 
 ### Staker Info
 
@@ -148,13 +206,26 @@ $ ./razor stakerInfo --stakerId 2
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission>
+$ ./razor setDelegation --address <address> --status <true_or_false>
 ```
 
 Example:
 
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 100
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
+```
+
+### Update Commission
+
+If you are a staker and have accepted delegation, you can define your commission rate using this command.
+
+```
+$ ./razor updateCommission --address <address> --commission <commission_percent>
+
+```
+
+```
+$ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10
 ```
 
 ### Delegate
@@ -263,6 +334,35 @@ Example:
 
 ```
 $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
+```
+
+### Override Job
+
+Jobs URLs are a placeholder for where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
+`overrideJob` command enables users to override the job URLs and selectors so that razor-nodes can fetch data directly from the override jobs.
+
+```
+$ ./razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
+```
+
+Example:
+
+```
+$ ./razor overrideJob --jobId 2 --url https://api.gemini.com/v1/pubticker/ethusd --selector last --power 2 --selectorType 0
+```
+
+### Delete override
+
+The overridden jobs can be deleted using `deleteOverride` command.
+
+```
+$ ./razor deleteOverride --jobId <jobId>
+```
+
+Example:
+
+```
+$ ./razor deleteOverride --jobId 2
 ```
 
 ### Set Config
@@ -379,10 +479,24 @@ _Note: This command is restricted to "Admin Role"_
 ./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
 
+### Job details
+
+Get the list of all jobs with the details like weight, power, Id etc.
+
 Example:
 
 ```
-$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10
+$ ./razor jobList
+```
+
+### Collection details
+
+Get the list of all collections with the details like power, Id, name etc.
+
+Example:
+
+```
+$ ./razor collectionList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._

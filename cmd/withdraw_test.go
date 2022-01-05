@@ -12,7 +12,6 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 	"testing"
 	"time"
 )
@@ -223,7 +222,7 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr
 		}
 
-		GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 			return tt.args.txnOpts
 		}
 
@@ -235,7 +234,7 @@ func Test_withdrawFunds(t *testing.T) {
 			return tt.args.updatedEpoch, tt.args.updatedEpochErr
 		}
 
-		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, UtilsStruct) (common.Hash, error) {
+		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error) {
 			return tt.args.withdrawHash, tt.args.withdrawErr
 		}
 
@@ -273,7 +272,6 @@ func Test_withdraw(t *testing.T) {
 	}
 
 	var client *ethclient.Client
-	var epoch uint32
 	var stakerId uint32
 
 	type args struct {
@@ -310,7 +308,7 @@ func Test_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			WithdrawContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32) (*Types.Transaction, error) {
+			WithdrawContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error) {
 				return tt.args.withdrawTxn, tt.args.withdrawErr
 			}
 
@@ -318,7 +316,7 @@ func Test_withdraw(t *testing.T) {
 				return tt.args.hash
 			}
 
-			got, err := withdraw(client, txnOpts, epoch, stakerId, utilsStruct)
+			got, err := withdraw(client, txnOpts, stakerId, utilsStruct)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdraw function, got = %v, want = %v", got, tt.want)
 			}

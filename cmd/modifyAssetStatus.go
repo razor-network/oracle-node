@@ -25,7 +25,6 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
-			packageUtils:      packageUtils,
 		}
 
 		config, err := GetConfigData(utilsStruct)
@@ -39,7 +38,7 @@ Example:
 	},
 }
 
-func CheckCurrentStatus(client *ethclient.Client, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
+func CheckCurrentStatus(client *ethclient.Client, assetId uint16, utilsStruct UtilsStruct) (bool, error) {
 	callOpts := utilsStruct.razorUtils.GetOptions()
 	return utilsStruct.assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
@@ -49,7 +48,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 	if err != nil {
 		return core.NilHash, err
 	}
-	assetId, err := utilsStruct.flagSetUtils.GetUint8AssetId(flagSet)
+	assetId, err := utilsStruct.flagSetUtils.GetUint16AssetId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -93,7 +92,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Changing active status of asset: %d from %t to %t", assetId, !status, status)
 	txn, err := utilsStruct.assetManagerUtils.SetCollectionStatus(client, txnOpts, status, assetId)
 	if err != nil {
@@ -110,7 +109,8 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	packageUtils = utils.PackageUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

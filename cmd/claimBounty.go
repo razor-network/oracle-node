@@ -32,7 +32,6 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 		stakeManagerUtils: stakeManagerUtils,
 		transactionUtils:  transactionUtils,
 		flagSetUtils:      flagSetUtils,
-		packageUtils:      packageUtils,
 	}
 	utilsStruct.executeClaimBounty(cmd.Flags())
 }
@@ -96,15 +95,15 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 	}
 
 	log.Info("Claiming bounty transaction...")
-	waitFor := big.NewInt(1).Sub(bountyLock.RedeemAfter, big.NewInt(int64(epoch)))
-	if waitFor.Cmp(big.NewInt(0)) == 1 {
+	waitFor := bountyLock.RedeemAfter - epoch
+	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		utilsStruct.razorUtils.Sleep(time.Duration(waitFor.Int64()*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
+		utilsStruct.razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs, utilsStruct.packageUtils)
+	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 
 	for retry := 1; retry <= int(core.MaxRetries); retry++ {
 		tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
@@ -128,7 +127,8 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
-	packageUtils = utils.PackageUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(claimBountyCmd)
 	var (

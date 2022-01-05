@@ -36,8 +36,8 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 
 	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
 
-	for i := 0; i < len(randomSortedProposedBlockIds); i++ {
-		blockId := sortedProposedBlockIds[randomSortedProposedBlockIds[i]]
+	for _, i := range randomSortedProposedBlockIds {
+		blockId := sortedProposedBlockIds[i]
 		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, blockId)
 		if err != nil {
 			log.Error(err)
@@ -53,8 +53,8 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 				AccountAddress: account.Address,
 				ChainId:        core.ChainId,
 				Config:         config,
-			}, utilsStruct.packageUtils)
-			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(randomSortedProposedBlockIds[i]), biggestInfluenceId)
+			})
+			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
 			if err != nil {
 				log.Error(err)
 				continue
@@ -77,7 +77,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			if proposedBlock.Valid {
-				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(randomSortedProposedBlockIds[i]), assetId, utilsStruct)
+				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId, utilsStruct)
 				if err != nil {
 					log.Error("Error in disputing...", err)
 					continue
@@ -121,10 +121,10 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
-	}, utilsStruct.packageUtils)
+	})
 
 	if !razorUtils.Contains(giveSortedAssetIds, assetId) {
-		utilsStruct.cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint8(assetId), sortedStakers)
+		utilsStruct.cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
@@ -134,7 +134,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
-	}, utilsStruct.packageUtils)
+	})
 	finalizeTxn, err := utilsStruct.blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
 		return err
@@ -144,7 +144,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	return nil
 }
 
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint8, sortedStakers []uint32) {
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
 	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedStakers)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {

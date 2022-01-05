@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"math/big"
+	"razor/utils/mocks"
 	"reflect"
 	"testing"
 
@@ -175,7 +176,14 @@ func TestMultiplyFloatAndBigInt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MultiplyFloatAndBigInt(tt.args.bigIntVal, tt.args.floatingVal); !reflect.DeepEqual(got, tt.want) {
+			UtilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: UtilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			if got := utils.MultiplyFloatAndBigInt(tt.args.bigIntVal, tt.args.floatingVal); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MultiplyFloatAndBigInt() = %v, want %v", got, tt.want)
 			}
 		})

@@ -13,7 +13,6 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 	"testing"
 )
 
@@ -36,7 +35,7 @@ func Test_updateCollection(t *testing.T) {
 
 	type args struct {
 		password             string
-		collectionId         uint8
+		collectionId         uint16
 		collectionIdErr      error
 		address              string
 		addressErr           error
@@ -46,7 +45,7 @@ func Test_updateCollection(t *testing.T) {
 		powerErr             error
 		jobId                []uint
 		jobIdErr             error
-		jobIdUint8           []uint8
+		jobIdUint16          []uint16
 		txnOpts              *bind.TransactOpts
 		updateCollectionTxn  *Types.Transaction
 		updateCollectionErr  error
@@ -74,7 +73,7 @@ func Test_updateCollection(t *testing.T) {
 				powerErr:             nil,
 				jobId:                []uint{1, 2},
 				jobIdErr:             nil,
-				jobIdUint8:           []uint8{1, 2},
+				jobIdUint16:          []uint16{1, 2},
 				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
@@ -97,7 +96,7 @@ func Test_updateCollection(t *testing.T) {
 				powerErr:             nil,
 				jobId:                []uint{1, 2},
 				jobIdErr:             nil,
-				jobIdUint8:           []uint8{1, 2},
+				jobIdUint16:          []uint16{1, 2},
 				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
@@ -121,7 +120,7 @@ func Test_updateCollection(t *testing.T) {
 				powerErr:             nil,
 				jobId:                []uint{1, 2},
 				jobIdErr:             nil,
-				jobIdUint8:           []uint8{1, 2},
+				jobIdUint16:          []uint16{1, 2},
 				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
@@ -144,7 +143,7 @@ func Test_updateCollection(t *testing.T) {
 				powerErr:             nil,
 				jobId:                []uint{1, 2},
 				jobIdErr:             nil,
-				jobIdUint8:           []uint8{1, 2},
+				jobIdUint16:          []uint16{1, 2},
 				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
@@ -167,7 +166,7 @@ func Test_updateCollection(t *testing.T) {
 				powerErr:             errors.New("power error"),
 				jobId:                []uint{1, 2},
 				jobIdErr:             nil,
-				jobIdUint8:           []uint8{1, 2},
+				jobIdUint16:          []uint16{1, 2},
 				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
@@ -190,7 +189,7 @@ func Test_updateCollection(t *testing.T) {
 				powerErr:             nil,
 				jobId:                nil,
 				jobIdErr:             errors.New("job Id error"),
-				jobIdUint8:           nil,
+				jobIdUint16:          nil,
 				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
@@ -249,7 +248,7 @@ func Test_updateCollection(t *testing.T) {
 				return tt.args.password
 			}
 
-			GetUint8CollectionIdMock = func(*pflag.FlagSet) (uint8, error) {
+			GetUint16CollectionIdMock = func(*pflag.FlagSet) (uint16, error) {
 				return tt.args.collectionId, tt.args.collectionIdErr
 			}
 
@@ -273,15 +272,15 @@ func Test_updateCollection(t *testing.T) {
 				return client
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
-			ConvertUintArrayToUint8ArrayMock = func([]uint) []uint8 {
-				return tt.args.jobIdUint8
+			ConvertUintArrayToUint16ArrayMock = func([]uint) []uint16 {
+				return tt.args.jobIdUint16
 			}
 
-			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint8, uint32, int8, []uint8) (*Types.Transaction, error) {
+			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint16, uint32, int8, []uint16) (*Types.Transaction, error) {
 				return tt.args.updateCollectionTxn, tt.args.updateCollectionErr
 			}
 

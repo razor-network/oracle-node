@@ -5,18 +5,18 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"razor/utils"
-	"testing"
-	"time"
 )
 
 func TestUnstake(t *testing.T) {
@@ -156,7 +156,7 @@ func TestUnstake(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return txnOpts
 			}
 
@@ -164,7 +164,7 @@ func TestUnstake(t *testing.T) {
 				return tt.args.sAmount, tt.args.sAmountErr
 			}
 
-			UnstakeContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error) {
+			UnstakeContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
 				return tt.args.unstakeTxn, tt.args.unstakeErr
 			}
 

@@ -28,12 +28,12 @@ func ConnectToClient(provider string) *ethclient.Client {
 func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
 	coinContract := GetTokenManager(client)
-	opts := GetOptions()
+	opts := UtilsInterface.GetOptions()
 	return coinContract.BalanceOf(&opts, address)
 }
 
 func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	block, err := GetLatestBlockWithRetry(client)
+	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
 	}
@@ -134,7 +134,7 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 }
 
 func GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := GetLatestBlockWithRetry(client)
+	latestHeader, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -202,7 +202,7 @@ func Sleep(duration time.Duration) {
 }
 
 func CalculateBlockTime(client *ethclient.Client) int64 {
-	latestBlock, err := GetLatestBlockWithRetry(client)
+	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}

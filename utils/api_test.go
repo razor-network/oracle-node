@@ -191,16 +191,7 @@ func TestGetDataFromHTML(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 2: Test data from coin gecko",
-			args: args{
-				url:      "https://www.coingecko.com/en",
-				selector: `table tbody tr td a[href="/en/coins/bitcoin"]`,
-			},
-			want:    "\nBTC\n",
-			wantErr: false,
-		},
-		{
-			name: "Test 3: Test for invalid website",
+			name: "Test 2: Test for invalid website",
 			args: args{
 				url:      "http://razor-go.com/",
 				selector: `table tbody tr td a[href="/en/coins/bitcoin"]`,

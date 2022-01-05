@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"errors"
-	"github.com/spf13/pflag"
 	"math/big"
 	"razor/utils"
 	"time"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 )

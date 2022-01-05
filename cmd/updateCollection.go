@@ -28,7 +28,6 @@ Note:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
-			packageUtils:      packageUtils,
 		}
 		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
@@ -45,7 +44,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
-	collectionId, err := utilsStruct.flagSetUtils.GetUint8CollectionId(flagSet)
+	collectionId, err := utilsStruct.flagSetUtils.GetUint16CollectionId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -61,7 +60,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
+	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update collection", utilsStruct)
 	if err != nil {
@@ -78,7 +77,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 		MethodName:      "updateCollection",
 		Parameters:      []interface{}{collectionId, aggregation, power},
 		ABI:             bindings.AssetManagerABI,
-	}, utilsStruct.packageUtils)
+	})
 
 	txn, err := utilsStruct.assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
 	if err != nil {
@@ -96,7 +95,6 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
-	packageUtils = utils.PackageUtils{}
 
 	rootCmd.AddCommand(updateCollectionCmd)
 

@@ -12,7 +12,6 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
-	"razor/utils"
 	"testing"
 )
 
@@ -93,7 +92,7 @@ func Test_delegate(t *testing.T) {
 				return tt.args.amount
 			}
 
-			GetTxnOptsMock = func(types.TransactionOptions, utils.Utils) *bind.TransactOpts {
+			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
 			}
 
@@ -101,7 +100,7 @@ func Test_delegate(t *testing.T) {
 				return tt.args.epoch, tt.args.epochErr
 			}
 
-			DelegateMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint32, *big.Int) (*Types.Transaction, error) {
+			DelegateMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
 				return tt.args.delegateTxn, tt.args.delegateErr
 			}
 
