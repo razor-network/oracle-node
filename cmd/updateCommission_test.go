@@ -294,12 +294,14 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 		{
 			name: "Test 13: When the epoch is invalid for update",
 			args: args{
-				config:                        config,
-				password:                      "test",
-				address:                       "0x000000000000000000000000000000000000dea1",
-				commission:                    10,
-				stakerId:                      1,
-				stakerInfo:                    bindings.StructsStaker{},
+				config:     config,
+				password:   "test",
+				address:    "0x000000000000000000000000000000000000dea1",
+				commission: 10,
+				stakerId:   1,
+				stakerInfo: bindings.StructsStaker{
+					EpochCommissionLastUpdated: 1,
+				},
 				maxCommission:                 20,
 				epochLimitForUpdateCommission: 100,
 				epoch:                         11,
