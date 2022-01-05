@@ -9,14 +9,14 @@ import (
 
 var blockManagerUtils blockManagerInterface
 
-func (utilsStruct UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStructMockery) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	log.Info("Claiming block reward...")
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(options)
-	txn, err := utilsStruct.blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
+	txnOpts := razorUtilsMockery.GetTxnOpts(options)
+	txn, err := blockManagerUtilsMockery.ClaimBlockReward(options.Client, txnOpts)
 	if err != nil {
 		log.Error("Error in claiming block reward: ", err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn).Hex())
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn).Hex())
+	return transactionUtilsMockery.Hash(txn), nil
 }

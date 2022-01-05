@@ -6,6 +6,7 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"math/big"
 	"razor/core/types"
 	"time"
 )
@@ -15,12 +16,14 @@ import (
 //go:generate mockery --name UtilsCmdInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name StakeManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name TransactionInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name BlockManagerInterfaceMockery --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
 var cmdUtilsMockery UtilsCmdInterfaceMockery
 var stakeManagerUtilsMockery StakeManagerInterfaceMockery
 var transactionUtilsMockery TransactionInterfaceMockery
+var blockManagerUtilsMockery BlockManagerInterfaceMockery
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -40,6 +43,13 @@ type UtilsInterfaceMockery interface {
 type StakeManagerInterfaceMockery interface {
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+}
+
+type BlockManagerInterfaceMockery interface {
+	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
+	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
+	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
+	DisputeBiggestInfluenceProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 }
 
 type FlagSetInterfaceMockery interface {
@@ -88,8 +98,9 @@ type UtilsCmdInterfaceMockery interface {
 	GetGasLimit() (float32, error)
 	GetBufferPercent() (int32, error)
 	GetConfigData() (types.Configurations, error)
-	ExecuteClaimBounty(flagSet *pflag.FlagSet)
+	ExecuteClaimBounty(*pflag.FlagSet)
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
+	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
@@ -100,4 +111,5 @@ type UtilsMockery struct{}
 type FLagSetUtilsMockery struct{}
 type UtilsStructMockery struct{}
 type StakeManagerUtilsMockery struct{}
+type BlockManagerUtilsMockery struct{}
 type TransactionUtilsMockery struct{}
