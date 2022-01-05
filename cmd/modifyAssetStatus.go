@@ -27,7 +27,7 @@ Example:
 			transactionUtils:  transactionUtils,
 		}
 
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in fetching config data: ", err)
 
 		txn, err := utilsStruct.ModifyAssetStatus(cmd.Flags(), config)
@@ -111,6 +111,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

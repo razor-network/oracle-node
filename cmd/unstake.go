@@ -38,7 +38,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 }
 
 func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
+	config, err := cmdUtilsMockery.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := utilsStruct.razorUtils.AssignPassword(flagSet)

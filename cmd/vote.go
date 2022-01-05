@@ -47,7 +47,7 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
-	config, err := GetConfigData(utilsStruct)
+	config, err := cmdUtilsMockery.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
 	password := utils.AssignPassword(flagSet)
@@ -394,6 +394,7 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(voteCmd)
 

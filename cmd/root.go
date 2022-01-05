@@ -43,6 +43,7 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	razorUtils = Utils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -89,11 +90,7 @@ func initConfig() {
 }
 
 func setLogLevel() {
-	utilsStruct := UtilsStruct{
-		razorUtils:   razorUtils,
-		flagSetUtils: flagSetUtils,
-	}
-	config, err := GetConfigData(utilsStruct)
+	config, err := cmdUtilsMockery.GetConfigData()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -27,7 +27,7 @@ Example:
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.transfer(cmd.Flags(), config)
 		utils.CheckError("Transfer error: ", err)
@@ -92,6 +92,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(transferCmd)
 	var (

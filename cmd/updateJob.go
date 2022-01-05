@@ -29,7 +29,7 @@ Note:
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.updateJob(cmd.Flags(), config)
 		utils.CheckError("UpdateJob error: ", err)
@@ -99,6 +99,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	var (
 		JobId        uint8

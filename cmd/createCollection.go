@@ -29,7 +29,7 @@ Note:
 			flagSetUtils:      flagSetUtils,
 			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtilsMockery.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		txn, err := utilsStruct.createCollection(cmd.Flags(), config)
@@ -99,6 +99,7 @@ func init() {
 	cmdUtils = UtilsCmd{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

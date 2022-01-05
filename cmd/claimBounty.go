@@ -37,7 +37,7 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 }
 
 func (utilsStruct UtilsStruct) executeClaimBounty(flagSet *pflag.FlagSet) {
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
+	config, err := cmdUtilsMockery.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := utilsStruct.razorUtils.AssignPassword(flagSet)
@@ -129,6 +129,7 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(claimBountyCmd)
 	var (

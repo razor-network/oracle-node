@@ -101,9 +101,9 @@ func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, staker
 	return utils.GetStaker(client, address, stakerId)
 }
 
-func (u Utils) GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
-	return GetConfigData(utilsStruct)
-}
+//func (u Utils) GetConfigData(utilsStruct UtilsStruct) (types.Configurations, error) {
+//	return GetConfigData(utilsStruct)
+//}
 
 func (u Utils) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
@@ -265,9 +265,9 @@ func (u Utils) GetStateName(stateNumber int64) string {
 	return utils.GetStateName(stateNumber)
 }
 
-func (u Utils) getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
-	return getBufferPercent(utilsStruct)
-}
+//func (u Utils) getBufferPercent(utilsStruct UtilsStruct) (int32, error) {
+//	return getBufferPercent(utilsStruct)
+//}
 
 func (u Utils) IsFlagPassed(name string) bool {
 	return utils.IsFlagPassed(name)
@@ -285,29 +285,29 @@ func (u Utils) Sleep(duration time.Duration) {
 	utils.Sleep(duration)
 }
 
-func (u Utils) getProvider(utilsStruct UtilsStruct) (string, error) {
-	return getProvider(utilsStruct)
-}
-
-func (u Utils) getMultiplier(utilsStruct UtilsStruct) (float32, error) {
-	return getMultiplier(utilsStruct)
-}
-
-func (u Utils) getWaitTime(utilsStruct UtilsStruct) (int32, error) {
-	return getWaitTime(utilsStruct)
-}
-
-func (u Utils) getGasPrice(utilsStruct UtilsStruct) (int32, error) {
-	return getGasPrice(utilsStruct)
-}
-
-func (u Utils) getLogLevel(utilsStruct UtilsStruct) (string, error) {
-	return getLogLevel(utilsStruct)
-}
-
-func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
-	return getGasLimit(utilsStruct)
-}
+//func (u Utils) getProvider(utilsStruct UtilsStruct) (string, error) {
+//	return getProvider(utilsStruct)
+//}
+//
+//func (u Utils) getMultiplier(utilsStruct UtilsStruct) (float32, error) {
+//	return getMultiplier(utilsStruct)
+//}
+//
+//func (u Utils) getWaitTime(utilsStruct UtilsStruct) (int32, error) {
+//	return getWaitTime(utilsStruct)
+//}
+//
+//func (u Utils) getGasPrice(utilsStruct UtilsStruct) (int32, error) {
+//	return getGasPrice(utilsStruct)
+//}
+//
+//func (u Utils) getLogLevel(utilsStruct UtilsStruct) (string, error) {
+//	return getLogLevel(utilsStruct)
+//}
+//
+//func (u Utils) getGasLimit(utilsStruct UtilsStruct) (float32, error) {
+//	return getGasLimit(utilsStruct)
+//}
 
 func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 	return utils.CalculateBlockTime(client)
