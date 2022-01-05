@@ -34,7 +34,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	log.Debug("Locally calculated data:")
 	log.Debugf("Medians: %d", medians)
 
-	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n
+	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
 
 	for i := 0; i < len(randomSortedProposedBlockIds); i++ {
 		blockId := sortedProposedBlockIds[randomSortedProposedBlockIds[i]]
