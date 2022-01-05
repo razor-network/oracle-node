@@ -5,20 +5,20 @@ import (
 	"razor/core/types"
 )
 
-//go:generate mockery --name utilsInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name flagSetInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name utilsCmdInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name UtilsInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name FlagSetInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name UtilsCmdInterfaceMockery --output ./mocks/ --case=underscore
 
-var razorUtilsMockery utilsInterfaceMockery
-var flagSetUtilsMockery flagSetInterfaceMockery
-var cmdUtilsMockery utilsCmdInterfaceMockery
+var razorUtilsMockery UtilsInterfaceMockery
+var flagSetUtilsMockery FlagSetInterfaceMockery
+var cmdUtilsMockery UtilsCmdInterfaceMockery
 
-type utilsInterfaceMockery interface {
+type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
 	ViperWriteConfigAs(string) error
 }
 
-type flagSetInterfaceMockery interface {
+type FlagSetInterfaceMockery interface {
 	GetStringProvider(*pflag.FlagSet) (string, error)
 	GetFloat32GasMultiplier(*pflag.FlagSet) (float32, error)
 	GetInt32Buffer(*pflag.FlagSet) (int32, error)
@@ -33,11 +33,11 @@ type flagSetInterfaceMockery interface {
 	GetRootInt32Buffer() (int32, error)
 	GetRootInt32Wait() (int32, error)
 	GetRootInt32GasPrice() (int32, error)
-	getRootStringLogLevel() (string, error)
+	GetRootStringLogLevel() (string, error)
 	GetRootFloat32GasLimit() (float32, error)
 }
 
-type utilsCmdInterfaceMockery interface {
+type UtilsCmdInterfaceMockery interface {
 	SetConfig(flagSet *pflag.FlagSet) error
 	GetProvider() (string, error)
 	GetMultiplier() (float32, error)

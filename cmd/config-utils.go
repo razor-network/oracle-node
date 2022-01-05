@@ -114,7 +114,7 @@ func (*UtilsStructMockery) GetGasPrice() (int32, error) {
 }
 
 func (*UtilsStructMockery) GetLogLevel() (string, error) {
-	logLevel, err := flagSetUtilsMockery.getRootStringLogLevel()
+	logLevel, err := flagSetUtilsMockery.GetRootStringLogLevel()
 	if err != nil {
 		return "", err
 	}

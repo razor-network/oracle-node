@@ -70,7 +70,7 @@ func (flagSetUtils FLagSetUtilsMockery) GetRootInt32GasPrice() (int32, error) {
 	return rootCmd.PersistentFlags().GetInt32("gasprice")
 }
 
-func (flagSetUtils FLagSetUtilsMockery) getRootStringLogLevel() (string, error) {
+func (flagSetUtils FLagSetUtilsMockery) GetRootStringLogLevel() (string, error) {
 	return rootCmd.PersistentFlags().GetString("logLevel")
 }
 
