@@ -87,7 +87,6 @@ type utilsInterface interface {
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 }
-
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)

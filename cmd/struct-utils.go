@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -11,6 +10,8 @@ import (
 	"razor/utils"
 	"strconv"
 	"time"
+
+	"github.com/avast/retry-go"
 
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
