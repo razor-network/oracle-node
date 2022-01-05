@@ -10,22 +10,17 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
-	"time"
 )
 
-func Test_executeClaimBounty(t *testing.T) {
+func TestExecuteClaimBounty(t *testing.T) {
 	var client *ethclient.Client
 	var flagSet *pflag.FlagSet
-
-	utilsStruct := UtilsStruct{
-		razorUtils:   UtilsMock{},
-		cmdUtils:     UtilsCmdMock{},
-		flagSetUtils: FlagSetMock{},
-	}
 
 	type args struct {
 		config         types.Configurations
@@ -106,36 +101,26 @@ func Test_executeClaimBounty(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetConfigDataMock = func(UtilsStruct) (types.Configurations, error) {
-				return tt.args.config, tt.args.configErr
-			}
 
-			AssignPasswordMock = func(*pflag.FlagSet) string {
-				return tt.args.password
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
 
-			GetStringAddressMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.address, tt.args.addressErr
-			}
+			razorUtilsMockery = utilsMock
+			flagSetUtilsMockery = flagSetUtilsMock
+			cmdUtilsMockery = cmdUtilsMock
 
-			GetUint32BountyIdMock = func(*pflag.FlagSet) (uint32, error) {
-				return tt.args.bountyId, tt.args.bountyIdErr
-			}
-
-			ConnectToClientMock = func(string) *ethclient.Client {
-				return client
-			}
-
-			claimBountyMock = func(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error) {
-				return tt.args.claimBountyTxn, tt.args.claimBountyErr
-			}
-
-			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
-				return 1
-			}
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
+			flagSetUtilsMock.On("GetUint32BountyId", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.bountyId, tt.args.bountyIdErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
 			fatal = false
-			utilsStruct.executeClaimBounty(flagSet)
+			utils := &UtilsStructMockery{}
+			utils.ExecuteClaimBounty(flagSet)
 
 			if fatal != tt.expectedFatal {
 				t.Error("The executeClaimBounty function didn't execute as expected")
@@ -145,7 +130,7 @@ func Test_executeClaimBounty(t *testing.T) {
 	}
 }
 
-func Test_claimBounty(t *testing.T) {
+func TestClaimBounty(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
@@ -154,13 +139,6 @@ func Test_claimBounty(t *testing.T) {
 	var bountyInput types.RedeemBountyInput
 	var callOpts bind.CallOpts
 	var blockTime int64
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-		cmdUtils:          UtilsCmdMock{},
-	}
 
 	type args struct {
 		epoch           uint32
@@ -249,40 +227,26 @@ func Test_claimBounty(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		GetEpochMock = func(*ethclient.Client) (uint32, error) {
-			return tt.args.epoch, tt.args.epochErr
-		}
-
-		GetOptionsMock = func() bind.CallOpts {
-			return callOpts
-		}
-
-		GetBountyLockMock = func(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error) {
-			return tt.args.bountyLock, tt.args.bountyLockErr
-		}
-
-		SleepMock = func(time.Duration) {
-
-		}
-
-		CalculateBlockTimeMock = func(*ethclient.Client) int64 {
-			return blockTime
-		}
-
-		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-			return txnOpts
-		}
-
-		RedeemBountyMock = func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error) {
-			return tt.args.redeemBountyTxn, tt.args.redeemBountyErr
-		}
-
-		HashMock = func(*Types.Transaction) common.Hash {
-			return tt.args.hash
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := claimBounty(config, client, bountyInput, utilsStruct)
+			stakeManagerMock := new(mocks.StakeManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			trasactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			stakeManagerUtilsMockery = stakeManagerMock
+			transactionUtilsMockery = trasactionUtilsMock
+
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetOptions").Return(callOpts)
+			stakeManagerMock.On("GetBountyLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.bountyLock, tt.args.bountyLockErr)
+			utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)
+			trasactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.ClaimBounty(config, client, bountyInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for claimBounty function, got = %v, want = %v", got, tt.want)
 			}
