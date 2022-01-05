@@ -281,17 +281,17 @@ var GetEpochAndStateMock func(*ethclient.Client, string, UtilsStruct) (uint32, i
 
 var GiveSortedMock func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 
-var UnstakeMock func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
-
 var AutoWithdrawMock func(types.TransactionOptions, uint32, UtilsStruct) error
-
-var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
 var CreateMock func(string, UtilsStruct) (accounts.Account, error)
 
 var claimBountyMock func(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
 
 var GetAmountInSRZRsMock func(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
+
+var UnstakeMock func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
+
+var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 
 var GetStringProviderMock func(*pflag.FlagSet) (string, error)
 
