@@ -482,7 +482,14 @@ func TestGetOptions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetOptions(); !reflect.DeepEqual(got, tt.want) {
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+
+			utils := StartRazor(optionsPackageStruct)
+			if got := utils.GetOptions(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetOptions() = %v, want %v", got, tt.want)
 			}
 		})

@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"razor/accounts"
 	"razor/path"
+	"razor/pkg/bindings"
 )
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
@@ -68,4 +69,34 @@ func (o OptionsStruct) FilterLogs(client *ethclient.Client, ctx context.Context,
 
 func (o OptionsStruct) BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
 	return client.BalanceAt(ctx, account, blockNumber)
+}
+
+func (o OptionsStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
+	blockManager := UtilsInterface.GetBlockManager(client)
+	return blockManager.GetNumProposedBlocks(opts, epoch)
+}
+
+func (o OptionsStruct) GetProposedBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, proposedBlock uint32) (bindings.StructsBlock, error) {
+	blockManager := UtilsInterface.GetBlockManager(client)
+	return blockManager.GetProposedBlock(opts, epoch, proposedBlock)
+}
+
+func (o OptionsStruct) GetBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (bindings.StructsBlock, error) {
+	blockManager := UtilsInterface.GetBlockManager(client)
+	return blockManager.GetBlock(opts, epoch)
+}
+
+func (o OptionsStruct) MinStake(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
+	blockManager := UtilsInterface.GetBlockManager(client)
+	return blockManager.MinStake(opts)
+}
+
+func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+	blockManager := UtilsInterface.GetBlockManager(client)
+	return blockManager.MaxAltBlocks(opts)
+}
+
+func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
+	blockManager := UtilsInterface.GetBlockManager(client)
+	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
 }
