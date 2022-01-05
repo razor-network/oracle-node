@@ -16,7 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func GetOptions() bind.CallOpts {
+func (*UtilsStruct) GetOptions() bind.CallOpts {
 	block, _ := new(big.Int).SetString("", 10)
 	return bind.CallOpts{
 		Pending:     false,

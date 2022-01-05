@@ -4,8 +4,10 @@ package mocks
 
 import (
 	big "math/big"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
+
 	common "github.com/ethereum/go-ethereum/common"
 
 	coretypes "razor/core/types"
@@ -24,13 +26,13 @@ type Utils struct {
 	mock.Mock
 }
 
-// BalanceAtWithRetry provides a mock function with given fields: client, account
-func (_m *Utils) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	ret := _m.Called(client, account)
+// BalanceAtWithRetry provides a mock function with given fields: _a0, _a1
+func (_m *Utils) BalanceAtWithRetry(_a0 *ethclient.Client, _a1 common.Address) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *big.Int); ok {
-		r0 = rf(client, account)
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -39,7 +41,7 @@ func (_m *Utils) BalanceAtWithRetry(client *ethclient.Client, account common.Add
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, account)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -47,20 +49,20 @@ func (_m *Utils) BalanceAtWithRetry(client *ethclient.Client, account common.Add
 	return r0, r1
 }
 
-// EstimateGasWithRetry provides a mock function with given fields: client, message
-func (_m *Utils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
-	ret := _m.Called(client, message)
+// EstimateGasWithRetry provides a mock function with given fields: _a0, _a1
+func (_m *Utils) EstimateGasWithRetry(_a0 *ethclient.Client, _a1 ethereum.CallMsg) (uint64, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 uint64
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) uint64); ok {
-		r0 = rf(client, message)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.CallMsg) error); ok {
-		r1 = rf(client, message)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -68,13 +70,34 @@ func (_m *Utils) EstimateGasWithRetry(client *ethclient.Client, message ethereum
 	return r0, r1
 }
 
-// FilterLogsWithRetry provides a mock function with given fields: client, query
-func (_m *Utils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
-	ret := _m.Called(client, query)
+// FetchPreviousValue provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) FetchPreviousValue(_a0 *ethclient.Client, _a1 uint32, _a2 uint16) (uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint16) uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint16) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterLogsWithRetry provides a mock function with given fields: _a0, _a1
+func (_m *Utils) FilterLogsWithRetry(_a0 *ethclient.Client, _a1 ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 []types.Log
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) []types.Log); ok {
-		r0 = rf(client, query)
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Log)
@@ -83,7 +106,7 @@ func (_m *Utils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.Fi
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.FilterQuery) error); ok {
-		r1 = rf(client, query)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -91,20 +114,59 @@ func (_m *Utils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.Fi
 	return r0, r1
 }
 
-// GetGasLimit provides a mock function with given fields: transactionData, txnOpts
-func (_m *Utils) GetGasLimit(transactionData coretypes.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
-	ret := _m.Called(transactionData, txnOpts)
+// GetBlockManager provides a mock function with given fields: _a0
+func (_m *Utils) GetBlockManager(_a0 *ethclient.Client) *bindings.BlockManager {
+	ret := _m.Called(_a0)
+
+	var r0 *bindings.BlockManager
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.BlockManager); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.BlockManager)
+		}
+	}
+
+	return r0
+}
+
+// GetBlockManagerWithOpts provides a mock function with given fields: _a0
+func (_m *Utils) GetBlockManagerWithOpts(_a0 *ethclient.Client) (*bindings.BlockManager, bind.CallOpts) {
+	ret := _m.Called(_a0)
+
+	var r0 *bindings.BlockManager
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.BlockManager); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.BlockManager)
+		}
+	}
+
+	var r1 bind.CallOpts
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) bind.CallOpts); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Get(1).(bind.CallOpts)
+	}
+
+	return r0, r1
+}
+
+// GetGasLimit provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetGasLimit(_a0 coretypes.TransactionOptions, _a1 *bind.TransactOpts) (uint64, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 uint64
 	if rf, ok := ret.Get(0).(func(coretypes.TransactionOptions, *bind.TransactOpts) uint64); ok {
-		r0 = rf(transactionData, txnOpts)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(coretypes.TransactionOptions, *bind.TransactOpts) error); ok {
-		r1 = rf(transactionData, txnOpts)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -128,13 +190,13 @@ func (_m *Utils) GetGasPrice(_a0 *ethclient.Client, _a1 coretypes.Configurations
 	return r0
 }
 
-// GetLatestBlockWithRetry provides a mock function with given fields: client
-func (_m *Utils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
-	ret := _m.Called(client)
+// GetLatestBlockWithRetry provides a mock function with given fields: _a0
+func (_m *Utils) GetLatestBlockWithRetry(_a0 *ethclient.Client) (*types.Header, error) {
+	ret := _m.Called(_a0)
 
 	var r0 *types.Header
 	if rf, ok := ret.Get(0).(func(*ethclient.Client) *types.Header); ok {
-		r0 = rf(client)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Header)
@@ -143,12 +205,91 @@ func (_m *Utils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Heade
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
+}
+
+// GetMaxAltBlocks provides a mock function with given fields: _a0
+func (_m *Utils) GetMaxAltBlocks(_a0 *ethclient.Client) (uint8, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetMinStakeAmount provides a mock function with given fields: _a0
+func (_m *Utils) GetMinStakeAmount(_a0 *ethclient.Client) (*big.Int, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNumberOfProposedBlocks provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetNumberOfProposedBlocks(_a0 *ethclient.Client, _a1 uint32) (uint8, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint8); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetOptions provides a mock function with given fields:
+func (_m *Utils) GetOptions() bind.CallOpts {
+	ret := _m.Called()
+
+	var r0 bind.CallOpts
+	if rf, ok := ret.Get(0).(func() bind.CallOpts); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bind.CallOpts)
+	}
+
+	return r0
 }
 
 // GetPendingNonceAtWithRetry provides a mock function with given fields: _a0, _a1
@@ -164,6 +305,71 @@ func (_m *Utils) GetPendingNonceAtWithRetry(_a0 *ethclient.Client, _a1 common.Ad
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetProposedBlock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) GetProposedBlock(_a0 *ethclient.Client, _a1 uint32, _a2 uint32) (bindings.StructsBlock, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 bindings.StructsBlock
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) bindings.StructsBlock); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(bindings.StructsBlock)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetSortedProposedBlockId provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) GetSortedProposedBlockId(_a0 *ethclient.Client, _a1 uint32, _a2 *big.Int) (uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, *big.Int) uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, *big.Int) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetSortedProposedBlockIds provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetSortedProposedBlockIds(_a0 *ethclient.Client, _a1 uint32) ([]uint32, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 []uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) []uint32); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint32)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -188,20 +394,20 @@ func (_m *Utils) GetTxnOpts(_a0 coretypes.TransactionOptions) *bind.TransactOpts
 	return r0
 }
 
-// IncreaseGasLimitValue provides a mock function with given fields: client, gasLimit, gasLimitMultiplier
-func (_m *Utils) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
-	ret := _m.Called(client, gasLimit, gasLimitMultiplier)
+// IncreaseGasLimitValue provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) IncreaseGasLimitValue(_a0 *ethclient.Client, _a1 uint64, _a2 float32) (uint64, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 uint64
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint64, float32) uint64); ok {
-		r0 = rf(client, gasLimit, gasLimitMultiplier)
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint64, float32) error); ok {
-		r1 = rf(client, gasLimit, gasLimitMultiplier)
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}

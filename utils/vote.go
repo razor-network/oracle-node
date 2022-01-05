@@ -11,7 +11,7 @@ import (
 )
 
 func getVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts) {
-	return GetVoteManager(client), GetOptions()
+	return GetVoteManager(client), UtilsInterface.GetOptions()
 }
 
 func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
