@@ -65,6 +65,22 @@ func (_m *UtilsInterfaceMockery) CalculateBlockTime(_a0 *ethclient.Client) int64
 	return r0
 }
 
+// CheckAmountAndBalance provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) CheckAmountAndBalance(_a0 *big.Int, _a1 *big.Int) *big.Int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
 // ConnectToClient provides a mock function with given fields: _a0
 func (_m *UtilsInterfaceMockery) ConnectToClient(_a0 string) *ethclient.Client {
 	ret := _m.Called(_a0)
@@ -79,6 +95,29 @@ func (_m *UtilsInterfaceMockery) ConnectToClient(_a0 string) *ethclient.Client {
 	}
 
 	return r0
+}
+
+// FetchBalance provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) FetchBalance(_a0 *ethclient.Client, _a1 string) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetActiveAssetsData provides a mock function with given fields: _a0, _a1
@@ -102,6 +141,38 @@ func (_m *UtilsInterfaceMockery) GetActiveAssetsData(_a0 *ethclient.Client, _a1 
 	}
 
 	return r0, r1
+}
+
+// GetAmountInDecimal provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetAmountInDecimal(_a0 *big.Int) *big.Float {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Float
+	if rf, ok := ret.Get(0).(func(*big.Int) *big.Float); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Float)
+		}
+	}
+
+	return r0
+}
+
+// GetAmountInWei provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetAmountInWei(_a0 *big.Int) *big.Int {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int) *big.Int); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
 }
 
 // GetCommitments provides a mock function with given fields: _a0, _a1
@@ -203,6 +274,29 @@ func (_m *UtilsInterfaceMockery) GetEpochLastCommitted(_a0 *ethclient.Client, _a
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetFractionalAmountInWei provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetFractionalAmountInWei(_a0 *big.Int, _a1 string) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int, string) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*big.Int, string) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -320,6 +414,20 @@ func (_m *UtilsInterfaceMockery) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32, 
 	}
 
 	return r0, r1
+}
+
+// IsFlagPassed provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) IsFlagPassed(_a0 string) bool {
+	ret := _m.Called(_a0)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
 }
 
 // Sleep provides a mock function with given fields: _a0

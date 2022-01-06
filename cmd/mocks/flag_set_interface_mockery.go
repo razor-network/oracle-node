@@ -390,6 +390,27 @@ func (_m *FlagSetInterfaceMockery) GetStringName(_a0 *pflag.FlagSet) (string, er
 	return r0, r1
 }
 
+// GetStringPow provides a mock function with given fields: flagSet
+func (_m *FlagSetInterfaceMockery) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStringProvider provides a mock function with given fields: _a0
 func (_m *FlagSetInterfaceMockery) GetStringProvider(_a0 *pflag.FlagSet) (string, error) {
 	ret := _m.Called(_a0)
@@ -476,6 +497,27 @@ func (_m *FlagSetInterfaceMockery) GetStringTo(_a0 *pflag.FlagSet) (string, erro
 
 // GetStringUrl provides a mock function with given fields: _a0
 func (_m *FlagSetInterfaceMockery) GetStringUrl(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringValue provides a mock function with given fields: _a0
+func (_m *FlagSetInterfaceMockery) GetStringValue(_a0 *pflag.FlagSet) (string, error) {
 	ret := _m.Called(_a0)
 
 	var r0 string
