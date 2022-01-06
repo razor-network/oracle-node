@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"time"
 )
 
@@ -52,6 +53,9 @@ type UtilsInterfaceMockery interface {
 	GetAmountInWei(*big.Int) *big.Int
 	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
 	GetAmountInDecimal(*big.Int) *big.Float
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	AllZero([32]byte) bool
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -133,6 +137,8 @@ type UtilsCmdInterfaceMockery interface {
 	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(*pflag.FlagSet)
 	Transfer(*ethclient.Client, types.Configurations, types.TransferInput) (common.Hash, error)
+	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
+	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {

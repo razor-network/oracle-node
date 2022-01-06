@@ -23,6 +23,20 @@ type UtilsInterfaceMockery struct {
 	mock.Mock
 }
 
+// AllZero provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) AllZero(_a0 [32]byte) bool {
+	ret := _m.Called(_a0)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func([32]byte) bool); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // AssignPassword provides a mock function with given fields: _a0
 func (_m *UtilsInterfaceMockery) AssignPassword(_a0 *pflag.FlagSet) string {
 	ret := _m.Called(_a0)
@@ -161,6 +175,29 @@ func (_m *UtilsInterfaceMockery) GetAmountInWei(_a0 *big.Int) *big.Int {
 	return r0
 }
 
+// GetCommitments provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetCommitments(_a0 *ethclient.Client, _a1 string) ([32]byte, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 [32]byte
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) [32]byte); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([32]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetConfigFilePath provides a mock function with given fields:
 func (_m *UtilsInterfaceMockery) GetConfigFilePath() (string, error) {
 	ret := _m.Called()
@@ -217,6 +254,27 @@ func (_m *UtilsInterfaceMockery) GetEpoch(_a0 *ethclient.Client) (uint32, error)
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetEpochLastCommitted provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetEpochLastCommitted(_a0 *ethclient.Client, _a1 uint32) (uint32, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

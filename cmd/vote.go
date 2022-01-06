@@ -223,12 +223,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := utilsStruct.HandleRevealState(client, account.Address, staker, epoch); err != nil {
+		if err := cmdUtilsMockery.HandleRevealState(client, staker, epoch); err != nil {
 			log.Error(err)
 			break
 		}
 		log.Debug("Epoch last revealed: ", lastReveal)
-		revealTxn, err := utilsStruct.Reveal(client, _committedData, secret, account, account.Address, config)
+		revealTxn, err := cmdUtilsMockery.Reveal(client, _committedData, secret, account, account.Address, config)
 		if err != nil {
 			log.Error("Reveal error: ", err)
 			break
