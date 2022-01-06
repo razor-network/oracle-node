@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"time"
 )
 
@@ -44,6 +45,9 @@ type UtilsInterfaceMockery interface {
 	GetRogueRandomValue(int) *big.Int
 	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	AllZero([32]byte) bool
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -114,6 +118,8 @@ type UtilsCmdInterfaceMockery interface {
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
 	HandleCommitState(*ethclient.Client, uint32, types.Rogue) ([]*big.Int, error)
 	Commit(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) (common.Hash, error)
+	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
+	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
