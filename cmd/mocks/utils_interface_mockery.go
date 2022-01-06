@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	big "math/big"
+
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
@@ -65,6 +67,29 @@ func (_m *UtilsInterfaceMockery) ConnectToClient(_a0 string) *ethclient.Client {
 	return r0
 }
 
+// GetActiveAssetsData provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetActiveAssetsData(_a0 *ethclient.Client, _a1 uint32) ([]*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) []*big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetConfigFilePath provides a mock function with given fields:
 func (_m *UtilsInterfaceMockery) GetConfigFilePath() (string, error) {
 	ret := _m.Called()
@@ -79,6 +104,27 @@ func (_m *UtilsInterfaceMockery) GetConfigFilePath() (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetDelayedState provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetDelayedState(_a0 *ethclient.Client, _a1 int32) (int64, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -107,6 +153,29 @@ func (_m *UtilsInterfaceMockery) GetEpoch(_a0 *ethclient.Client) (uint32, error)
 	return r0, r1
 }
 
+// GetNumActiveAssets provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetNumActiveAssets(_a0 *ethclient.Client) (*big.Int, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetOptions provides a mock function with given fields:
 func (_m *UtilsInterfaceMockery) GetOptions() bind.CallOpts {
 	ret := _m.Called()
@@ -116,6 +185,22 @@ func (_m *UtilsInterfaceMockery) GetOptions() bind.CallOpts {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(bind.CallOpts)
+	}
+
+	return r0
+}
+
+// GetRogueRandomValue provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetRogueRandomValue(_a0 int) *big.Int {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(int) *big.Int); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
 	}
 
 	return r0
