@@ -5,6 +5,8 @@ package mocks
 import (
 	big "math/big"
 
+	accounts "github.com/ethereum/go-ethereum/accounts"
+
 	common "github.com/ethereum/go-ethereum/common"
 
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
@@ -279,6 +281,29 @@ func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, types.Rogue) error); ok {
 		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ListAccounts provides a mock function with given fields:
+func (_m *UtilsCmdInterfaceMockery) ListAccounts() ([]accounts.Account, error) {
+	ret := _m.Called()
+
+	var r0 []accounts.Account
+	if rf, ok := ret.Get(0).(func() []accounts.Account); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]accounts.Account)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}

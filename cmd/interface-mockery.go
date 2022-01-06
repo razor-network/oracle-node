@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -18,6 +19,7 @@ import (
 //go:generate mockery --name TransactionInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name BlockManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name VoteManagerInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name KeystoreInterfaceMockery --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
@@ -26,6 +28,7 @@ var stakeManagerUtilsMockery StakeManagerInterfaceMockery
 var transactionUtilsMockery TransactionInterfaceMockery
 var blockManagerUtilsMockery BlockManagerInterfaceMockery
 var voteManagerUtilsMockery VoteManagerInterfaceMockery
+var keystoreUtilsMockery KeystoreInterfaceMockery
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -44,11 +47,16 @@ type UtilsInterfaceMockery interface {
 	GetRogueRandomValue(int) *big.Int
 	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	GetDefaultPath() (string, error)
 }
 
 type StakeManagerInterfaceMockery interface {
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+}
+
+type KeystoreInterfaceMockery interface {
+	Accounts(string) []accounts.Account
 }
 
 type BlockManagerInterfaceMockery interface {
@@ -114,6 +122,7 @@ type UtilsCmdInterfaceMockery interface {
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
 	HandleCommitState(*ethclient.Client, uint32, types.Rogue) ([]*big.Int, error)
 	Commit(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) (common.Hash, error)
+	ListAccounts() ([]accounts.Account, error)
 }
 
 type TransactionInterfaceMockery interface {
@@ -127,3 +136,4 @@ type StakeManagerUtilsMockery struct{}
 type BlockManagerUtilsMockery struct{}
 type TransactionUtilsMockery struct{}
 type VoteManagerUtilsMockery struct{}
+type KeystoreUtilsMockery struct{}

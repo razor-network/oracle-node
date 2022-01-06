@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"github.com/avast/retry-go"
+	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -89,6 +91,10 @@ func (u UtilsMockery) GetDelayedState(client *ethclient.Client, buffer int32) (i
 	return utils.GetDelayedState(client, buffer)
 }
 
+func (u UtilsMockery) GetDefaultPath() (string, error) {
+	return path.GetDefaultPath()
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -101,6 +107,11 @@ func (stakeManagerUtils StakeManagerUtilsMockery) GetBountyLock(client *ethclien
 func (stakeManagerUtils StakeManagerUtilsMockery) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
 	stakeManager := utils.GetStakeManager(client)
 	return stakeManager.RedeemBounty(opts, bountyId)
+}
+
+func (KeystoreUtils KeystoreUtilsMockery) Accounts(path string) []ethAccounts.Account {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.Accounts()
 }
 
 func (blockManagerUtils BlockManagerUtilsMockery) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
