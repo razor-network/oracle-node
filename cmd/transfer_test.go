@@ -22,20 +22,13 @@ import (
 func TestTransfer(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
+	var transferInput types.TransferInput
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000))
 
 	type args struct {
-		from          string
-		fromErr       error
-		to            string
-		toErr         error
-		password      string
-		balance       *big.Int
-		balanceErr    error
 		amount        *big.Int
-		amountErr     error
 		decimalAmount *big.Float
 		txnOpts       *bind.TransactOpts
 		transferTxn   *Types.Transaction
@@ -51,13 +44,6 @@ func TestTransfer(t *testing.T) {
 		{
 			name: "When transfer function executes successfully",
 			args: args{
-				password:      "test",
-				from:          "0x000000000000000000000000000000000000dea1",
-				fromErr:       nil,
-				to:            "0x000000000000000000000000000000000000dea2",
-				toErr:         nil,
-				balance:       big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
-				balanceErr:    nil,
 				amount:        big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 				decimalAmount: big.NewFloat(1000),
 				txnOpts:       txnOpts,
@@ -71,13 +57,6 @@ func TestTransfer(t *testing.T) {
 		{
 			name: "When transfer transaction fails",
 			args: args{
-				password:      "test",
-				from:          "0x000000000000000000000000000000000000dea1",
-				fromErr:       nil,
-				to:            "0x000000000000000000000000000000000000dea2",
-				toErr:         nil,
-				balance:       big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
-				balanceErr:    nil,
 				amount:        big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 				decimalAmount: big.NewFloat(1000),
 				txnOpts:       txnOpts,
@@ -108,13 +87,7 @@ func TestTransfer(t *testing.T) {
 
 			utils := &UtilsStructMockery{}
 
-			got, err := utils.Transfer(client, config, types.TransferInput{
-				FromAddress: tt.args.from,
-				ToAddress:   tt.args.to,
-				Password:    tt.args.password,
-				ValueInWei:  tt.args.amount,
-				Balance:     tt.args.balance,
-			})
+			got, err := utils.Transfer(client, config, transferInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for transfer function, got = %v, want = %v", got, tt.want)
 			}
@@ -270,7 +243,7 @@ func TestExecuteTransfer(t *testing.T) {
 				balance:      big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
 				balanceErr:   nil,
 				amount:       big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
-				transferErr:  errors.New("tranfer error"),
+				transferErr:  errors.New("transfer error"),
 				transferHash: core.NilHash,
 			},
 			expectedFatal: true,
@@ -309,7 +282,7 @@ func TestExecuteTransfer(t *testing.T) {
 			utils.ExecuteTransfer(flagSet)
 
 			if fatal != tt.expectedFatal {
-				t.Error("The inputUnstake function didn't execute as expected")
+				t.Error("The ExecuteTransfer function didn't execute as expected")
 			}
 
 		})
