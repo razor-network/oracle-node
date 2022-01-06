@@ -135,18 +135,11 @@ If you want to vote just after stake automatically, you can just set `autoVote` 
 $ ./razor stake --address <address> --value <value> --autoVote <bool>
 ```
 
-
-Example:
-
-```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
-```
 _Note: --pow flag is used to stake floating number stake_
 
 _Note: Formula for calculating pow: (value * (10**18)) / (10**x) where x is no of decimal places and value is integer_
 
 _The value of pow is : 18 - x here_
-
 
 If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
 
@@ -158,34 +151,13 @@ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100
 
 If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
 
+If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
+
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 2000 --autoVote true
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
 ```
-
-_Note: --pow flag is used to stake floating number stake_
-
- _Note: Formula for calculating pow: (value * (10 ** 18)) / (10 ** x) where x is no of decimal places and value is integer_
-
- _The value of pow is : 18 - x here_
-
-
- If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
-
- Example:
-
- ```
- $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
- ```
-
- If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
-
- Example:
-
- ```
- $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
- ```
 
 ### Staker Info
 
@@ -223,6 +195,8 @@ If you are a staker and have accepted delegation, you can define your commission
 $ ./razor updateCommission --address <address> --commission <commission_percent>
 
 ```
+
+Example: 
 
 ```
 $ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10
@@ -477,6 +451,12 @@ _Note: This command is restricted to "Admin Role"_
 
 ```
 ./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
+```
+
+Example:
+
+```
+$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10
 ```
 
 ### Job details
