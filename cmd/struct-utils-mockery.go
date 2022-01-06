@@ -95,6 +95,42 @@ func (u UtilsMockery) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u UtilsMockery) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
+	return utils.FetchBalance(client, accountAddress)
+}
+
+func (u UtilsMockery) IsFlagPassed(name string) bool {
+	return utils.IsFlagPassed(name)
+}
+
+func (u UtilsMockery) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
+	return utils.GetFractionalAmountInWei(amount, power)
+}
+
+func (u UtilsMockery) GetAmountInWei(amount *big.Int) *big.Int {
+	return utils.GetAmountInWei(amount)
+}
+
+func (u UtilsMockery) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+	return utils.CheckAmountAndBalance(amountInWei, balance)
+}
+
+func (u UtilsMockery) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
+	return utils.GetAmountInDecimal(amountInWei)
+}
+
+func (u UtilsMockery) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, stakerId)
+}
+
+func (u UtilsMockery) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	return utils.GetCommitments(client, address)
+}
+
+func (u UtilsMockery) AllZero(bytesValue [32]byte) bool {
+	return utils.AllZero(bytesValue)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -217,6 +253,21 @@ func (voteManagerUtils VoteManagerUtilsMockery) Commit(client *ethclient.Client,
 		return nil, err
 	}
 	return txn, nil
+}
+
+func (tokenManagerUtils TokenManagerUtilsMockery) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
+	tokenManager := utils.GetTokenManager(client)
+	return tokenManager.Allowance(opts, owner, spender)
+}
+
+func (tokenManagerUtils TokenManagerUtilsMockery) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
+	tokenManager := utils.GetTokenManager(client)
+	return tokenManager.Approve(opts, spender, amount)
+}
+
+func (tokenManagerUtils TokenManagerUtilsMockery) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
+	tokenManager := utils.GetTokenManager(client)
+	return tokenManager.Transfer(opts, recipient, amount)
 }
 
 func (flagSetUtils FLagSetUtilsMockery) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
@@ -349,4 +400,12 @@ func (flagSetUtils FLagSetUtilsMockery) GetUint16JobId(flagSet *pflag.FlagSet) (
 
 func (flagSetUtils FLagSetUtilsMockery) GetUint16CollectionId(flagSet *pflag.FlagSet) (uint16, error) {
 	return flagSet.GetUint16("collectionId")
+}
+
+func (flagSetUtils FLagSetUtilsMockery) GetStringValue(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("value")
+}
+
+func (flagSetUtils FLagSetUtilsMockery) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("pow")
 }

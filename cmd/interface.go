@@ -189,8 +189,6 @@ type cryptoInterface interface {
 }
 
 type voteManagerInterface interface {
-	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
-	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 }
 
 type blockManagerInterface interface {

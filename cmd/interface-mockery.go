@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"time"
 )
 
@@ -20,6 +21,7 @@ import (
 //go:generate mockery --name BlockManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name VoteManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name KeystoreInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name TokenManagerInterfaceMockery --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
@@ -29,6 +31,7 @@ var transactionUtilsMockery TransactionInterfaceMockery
 var blockManagerUtilsMockery BlockManagerInterfaceMockery
 var voteManagerUtilsMockery VoteManagerInterfaceMockery
 var keystoreUtilsMockery KeystoreInterfaceMockery
+var tokenManagerUtilsMockery TokenManagerInterfaceMockery
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -48,6 +51,15 @@ type UtilsInterfaceMockery interface {
 	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)
+	FetchBalance(*ethclient.Client, string) (*big.Int, error)
+	IsFlagPassed(string) bool
+	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
+	GetAmountInWei(*big.Int) *big.Int
+	CheckAmountAndBalance(*big.Int, *big.Int) *big.Int
+	GetAmountInDecimal(*big.Int) *big.Float
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	AllZero([32]byte) bool
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -69,6 +81,12 @@ type BlockManagerInterfaceMockery interface {
 type VoteManagerInterfaceMockery interface {
 	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
+}
+
+type TokenManagerInterfaceMockery interface {
+	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
+	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
+	Transfer(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 }
 
 type FlagSetInterfaceMockery interface {
@@ -105,6 +123,8 @@ type FlagSetInterfaceMockery interface {
 	GetUint32Aggregation(*pflag.FlagSet) (uint32, error)
 	GetUint16JobId(*pflag.FlagSet) (uint16, error)
 	GetUint16CollectionId(*pflag.FlagSet) (uint16, error)
+	GetStringValue(*pflag.FlagSet) (string, error)
+	GetStringPow(flagSet *pflag.FlagSet) (string, error)
 }
 
 type UtilsCmdInterfaceMockery interface {
@@ -123,6 +143,11 @@ type UtilsCmdInterfaceMockery interface {
 	HandleCommitState(*ethclient.Client, uint32, types.Rogue) ([]*big.Int, error)
 	Commit(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
+	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
+	ExecuteTransfer(*pflag.FlagSet)
+	Transfer(*ethclient.Client, types.Configurations, types.TransferInput) (common.Hash, error)
+	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
+	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
@@ -137,3 +162,4 @@ type BlockManagerUtilsMockery struct{}
 type TransactionUtilsMockery struct{}
 type VoteManagerUtilsMockery struct{}
 type KeystoreUtilsMockery struct{}
+type TokenManagerUtilsMockery struct{}

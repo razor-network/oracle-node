@@ -14,3 +14,11 @@ type RedeemBountyInput struct {
 	Password string
 	BountyId uint32
 }
+
+type TransferInput struct {
+	FromAddress string
+	ToAddress   string
+	Password    string
+	ValueInWei  *big.Int
+	Balance     *big.Int
+}

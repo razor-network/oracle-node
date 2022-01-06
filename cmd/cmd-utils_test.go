@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"testing"
 )
 
@@ -273,11 +275,6 @@ func TestWaitIfCommitState(t *testing.T) {
 func TestAssignAmountInWei1(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
-	utilsStruct := UtilsStruct{
-		razorUtils:   UtilsMock{},
-		flagSetUtils: FlagSetMock{},
-	}
-
 	type args struct {
 		amount                   string
 		amountErr                error
@@ -364,27 +361,20 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetStringValueMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.amount, tt.args.amountErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
 
-			IsFlagPassedMock = func(string) bool {
-				return tt.args.isFlagPassed
-			}
+			razorUtilsMockery = utilsMock
+			flagSetUtilsMockery = flagsetUtilsMock
 
-			GetStringPowMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.power, tt.args.powerErr
-			}
+			flagsetUtilsMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
+			flagsetUtilsMock.On("GetStringPow", flagSet).Return(tt.args.power, tt.args.powerErr)
+			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
+			utilsMock.On("GetFractionalAmountInWei", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("string")).Return(tt.args.fractionalAmountInWei, tt.args.fractionalAmountInWeiErr)
+			utilsMock.On("GetAmountInWei", mock.AnythingOfType("*big.Int")).Return(tt.args.amountInWei)
 
-			GetFractionalAmountInWeiMock = func(*big.Int, string) (*big.Int, error) {
-				return tt.args.fractionalAmountInWei, tt.args.fractionalAmountInWeiErr
-			}
-
-			GetAmountInWeiMock = func(*big.Int) *big.Int {
-				return tt.args.amountInWei
-			}
-
-			got, err := AssignAmountInWei(flagSet, utilsStruct)
+			utils := &UtilsStructMockery{}
+			got, err := utils.AssignAmountInWei(flagSet)
 			if got.Cmp(tt.want) != 0 {
 				t.Errorf("AssignAmountInWei() function, got = %v, want = %v", got, tt.want)
 			}
