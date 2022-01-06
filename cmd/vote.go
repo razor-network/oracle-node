@@ -167,12 +167,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := utilsStruct.HandleCommitState(client, epoch, rogueData)
+		data, err := cmdUtilsMockery.HandleCommitState(client, epoch, rogueData)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
 		}
-		commitTxn, err := utilsStruct.Commit(client, data, secret, account, config)
+		commitTxn, err := cmdUtilsMockery.Commit(client, data, secret, account, config)
 		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
@@ -396,6 +396,8 @@ func init() {
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
+	voteManagerUtilsMockery = VoteManagerUtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
 
 	rootCmd.AddCommand(voteCmd)
 

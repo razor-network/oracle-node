@@ -73,6 +73,22 @@ func (u UtilsMockery) WaitForBlockCompletion(client *ethclient.Client, hashToRea
 	return utils.WaitForBlockCompletion(client, hashToRead)
 }
 
+func (u UtilsMockery) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
+	return utils.GetNumActiveAssets(client)
+}
+
+func (u UtilsMockery) GetRogueRandomValue(value int) *big.Int {
+	return utils.GetRogueRandomValue(value)
+}
+
+func (u UtilsMockery) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
+	return utils.GetActiveAssetsData(client, epoch)
+}
+
+func (u UtilsMockery) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utils.GetDelayedState(client, buffer)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -142,6 +158,46 @@ func (blockManagerUtils BlockManagerUtilsMockery) Propose(client *ethclient.Clie
 		txn, err = blockManager.Propose(opts, epoch, medians, iteration, biggestInfluencerId)
 		if err != nil {
 			log.Error("Error in proposing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (voteManagerUtils VoteManagerUtilsMockery) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = voteManager.Reveal(opts, epoch, values, secret)
+		if err != nil {
+			log.Error("Error in revealing... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (voteManagerUtils VoteManagerUtilsMockery) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
+	voteManager := utils.GetVoteManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = voteManager.Commit(opts, epoch, commitment)
+		if err != nil {
+			log.Error("Error in committing... Retrying")
 			return err
 		}
 		return nil

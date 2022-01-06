@@ -17,6 +17,7 @@ import (
 //go:generate mockery --name StakeManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name TransactionInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name BlockManagerInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name VoteManagerInterfaceMockery --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
@@ -24,6 +25,7 @@ var cmdUtilsMockery UtilsCmdInterfaceMockery
 var stakeManagerUtilsMockery StakeManagerInterfaceMockery
 var transactionUtilsMockery TransactionInterfaceMockery
 var blockManagerUtilsMockery BlockManagerInterfaceMockery
+var voteManagerUtilsMockery VoteManagerInterfaceMockery
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -38,6 +40,10 @@ type UtilsInterfaceMockery interface {
 	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
 	ConnectToClient(string) *ethclient.Client
 	WaitForBlockCompletion(*ethclient.Client, string) int
+	GetNumActiveAssets(*ethclient.Client) (*big.Int, error)
+	GetRogueRandomValue(int) *big.Int
+	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -50,6 +56,11 @@ type BlockManagerInterfaceMockery interface {
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 	DisputeBiggestInfluenceProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+}
+
+type VoteManagerInterfaceMockery interface {
+	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
+	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 }
 
 type FlagSetInterfaceMockery interface {
@@ -101,6 +112,8 @@ type UtilsCmdInterfaceMockery interface {
 	ExecuteClaimBounty(*pflag.FlagSet)
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
+	HandleCommitState(*ethclient.Client, uint32, types.Rogue) ([]*big.Int, error)
+	Commit(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
@@ -113,3 +126,4 @@ type UtilsStructMockery struct{}
 type StakeManagerUtilsMockery struct{}
 type BlockManagerUtilsMockery struct{}
 type TransactionUtilsMockery struct{}
+type VoteManagerUtilsMockery struct{}
