@@ -9,7 +9,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -18,13 +20,8 @@ import (
 
 func TestHandleRevealState(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	staker := bindings.StructsStaker{
 		Id: 1,
-	}
-
-	utilsStruct := UtilsStruct{
-		razorUtils: UtilsMock{},
 	}
 
 	type args struct {
@@ -68,11 +65,14 @@ func TestHandleRevealState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetEpochLastCommittedMock = func(*ethclient.Client, uint32) (uint32, error) {
-				return tt.args.epochLastCommitted, tt.args.epochLastCommittedErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			razorUtilsMockery = utilsMock
 
-			err := utilsStruct.HandleRevealState(client, address, staker, tt.args.epoch)
+			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
+
+			utils := &UtilsStructMockery{}
+
+			err := utils.HandleRevealState(client, staker, tt.args.epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleRevealState function, got = %v, want %v", err, tt.want)
@@ -97,12 +97,6 @@ func TestReveal(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:       UtilsMock{},
-		voteManagerUtils: VoteManagerMock{},
-		transactionUtils: TransactionMock{},
-	}
 
 	type args struct {
 		state          int64
@@ -231,35 +225,26 @@ func TestReveal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetDelayedStateMock = func(*ethclient.Client, int32) (int64, error) {
-				return tt.args.state, tt.args.stateErr
-			}
 
-			GetEpochMock = func(*ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			voteManagerUtilsMock := new(mocks.VoteManagerInterfaceMockery)
 
-			GetCommitmentsMock = func(*ethclient.Client, string) ([32]byte, error) {
-				return tt.args.commitments, tt.args.commitmentsErr
-			}
+			razorUtilsMockery = utilsMock
+			transactionUtilsMockery = transactionUtilsMock
+			voteManagerUtilsMockery = voteManagerUtilsMock
 
-			AllZeroMock = func([32]byte) bool {
-				return tt.args.allZeroStatus
-			}
+			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
+			utilsMock.On("GetCommitments", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.commitments, tt.args.commitmentsErr)
+			utilsMock.On("AllZero", mock.Anything).Return(tt.args.allZeroStatus)
+			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
+			utils := &UtilsStructMockery{}
 
-			RevealMock = func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error) {
-				return tt.args.revealTxn, tt.args.revealErr
-			}
-
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
-			got, err := utilsStruct.Reveal(client, committedData, secret, account, commitAccount, config)
+			got, err := utils.Reveal(client, committedData, secret, account, commitAccount, config)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}
