@@ -89,6 +89,18 @@ func (u UtilsMockery) GetDelayedState(client *ethclient.Client, buffer int32) (i
 	return utils.GetDelayedState(client, buffer)
 }
 
+func (u UtilsMockery) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastCommitted(client, stakerId)
+}
+
+func (u UtilsMockery) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+	return utils.GetCommitments(client, address)
+}
+
+func (u UtilsMockery) AllZero(bytesValue [32]byte) bool {
+	return utils.AllZero(bytesValue)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

@@ -4,6 +4,7 @@ package mocks
 
 import (
 	big "math/big"
+	bindings "razor/pkg/bindings"
 
 	common "github.com/ethereum/go-ethereum/common"
 
@@ -279,6 +280,43 @@ func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, types.Rogue) error); ok {
 		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// HandleRevealState provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) HandleRevealState(_a0 *ethclient.Client, _a1 bindings.StructsStaker, _a2 uint32) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsStaker, uint32) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Reveal provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) Reveal(_a0 *ethclient.Client, _a1 []*big.Int, _a2 []byte, _a3 types.Account, _a4 string, _a5 types.Configurations) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
 	} else {
 		r1 = ret.Error(1)
 	}
