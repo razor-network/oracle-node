@@ -34,3 +34,17 @@ func GetConfigFilePath() (string, error) {
 	}
 	return home + "/razor.yaml", nil
 }
+
+func GetJobFilePath() (string, error) {
+	home, err := GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	filePath := home + "/jobs.json"
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	return filePath, nil
+}

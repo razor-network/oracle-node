@@ -24,6 +24,7 @@ contracts=(
   "RAZOR RAZOR.go"
   "StakeManager stakeManager.go"
   "StakeStorage stakeStorage.go"
+  "StakedToken stakedToken.go"
   "VoteManager voteManager.go"
   "VoteStorage voteStorage.go"
 )

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"math/rand"
 	"sort"
 	"strconv"
 )
@@ -39,7 +40,7 @@ func MultiplyWithPower(num *big.Float, power int8) *big.Int {
 	return result
 }
 
-func MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
+func (*UtilsStruct) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
 	if bigIntVal == nil || floatingVal == 0 {
 		return big.NewInt(0)
 	}
@@ -148,4 +149,22 @@ func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 	}
 	dataInFloat := new(big.Float).SetInt(data)
 	return dataInFloat.Quo(dataInFloat, big.NewFloat(1e18)).SetPrec(32), nil
+}
+
+func ConvertRZRToSRZR(amount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	if currentStake.Cmp(big.NewInt(0)) == 0 {
+		return big.NewInt(0), errors.New("current stake is 0")
+	}
+	return big.NewInt(1).Div(big.NewInt(1).Mul(amount, totalSupply), currentStake), nil
+}
+
+func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return big.NewInt(1).Div(big.NewInt(1).Mul(sAmount, currentStake), totalSupply)
+}
+
+func GetRogueRandomValue(value int) *big.Int {
+	if value <= 0 {
+		return big.NewInt(0)
+	}
+	return big.NewInt(int64(rand.Intn(value)))
 }

@@ -11,6 +11,6 @@ var EpochLength int64 = 300
 
 var NumberOfStates int64 = 5
 var ChainId = big.NewInt(80001)
-var MaxRetries = 3
+var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30

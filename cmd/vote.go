@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"fmt"
-	"math"
+	"github.com/spf13/pflag"
 	"math/big"
 	"os"
 	"razor/accounts"
@@ -19,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/cobra"
@@ -32,31 +30,55 @@ var voteCmd = &cobra.Command{
 
 Example:
   ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
-	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in fetching config details: ", err)
+	Run: initializeVote,
+}
 
-		password := utils.AssignPassword(cmd.Flags())
-		rogueMode, _ := cmd.Flags().GetBool("rogue")
-		client := utils.ConnectToClient(config.Provider)
-		header, err := razorUtils.GetLatestBlock(client)
-		utils.CheckError("Error in getting block: ", err)
+func initializeVote(cmd *cobra.Command, args []string) {
+	utilsStruct := UtilsStruct{
+		razorUtils:        razorUtils,
+		proposeUtils:      proposeUtils,
+		transactionUtils:  transactionUtils,
+		blockManagerUtils: blockManagerUtils,
+		voteManagerUtils:  voteManagerUtils,
+		cmdUtils:          cmdUtils,
+		flagSetUtils:      flagSetUtils,
+	}
+	utilsStruct.executeVote(cmd.Flags())
+}
 
-		address, _ := cmd.Flags().GetString("address")
-		account := types.Account{Address: address, Password: password}
-		for {
-			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
-			if err != nil {
-				log.Error("Error in fetching block: ", err)
-				continue
-			}
-			if latestHeader.Number.Cmp(header.Number) != 0 {
-				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config, rogueMode)
-			}
+func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
+	config, err := GetConfigData(utilsStruct)
+	utils.CheckError("Error in fetching config details: ", err)
 
+	password := utils.AssignPassword(flagSet)
+	isRogue, _ := flagSet.GetBool("rogue")
+	rogueMode, _ := flagSet.GetStringSlice("rogueMode")
+	rogueData := types.Rogue{
+		IsRogue:   isRogue,
+		RogueMode: rogueMode,
+	}
+	client := utils.ConnectToClient(config.Provider)
+	address, _ := flagSet.GetString("address")
+	account := types.Account{Address: address, Password: password}
+	utilsStruct.vote(config, client, rogueData, account)
+
+}
+
+func (utilsStruct UtilsStruct) vote(config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) {
+	header, err := razorUtils.GetLatestBlock(client)
+	utils.CheckError("Error in getting block: ", err)
+
+	for {
+		latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+		if err != nil {
+			log.Error("Error in fetching block: ", err)
+			continue
 		}
-	},
+		if latestHeader.Number.Cmp(header.Number) != 0 {
+			header = latestHeader
+			handleBlock(client, account, latestHeader.Number, config, rogueData, utilsStruct)
+		}
+	}
 }
 
 var (
@@ -65,15 +87,7 @@ var (
 	blockConfirmed   uint32
 )
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueMode bool) {
-	utilsStruct := UtilsStruct{
-		razorUtils:        razorUtils,
-		proposeUtils:      proposeUtils,
-		transactionUtils:  transactionUtils,
-		blockManagerUtils: blockManagerUtils,
-		voteManagerUtils:  voteManagerUtils,
-		cmdUtils:          cmdUtils,
-	}
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, utilsStruct UtilsStruct) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -98,12 +112,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting staked amount: ", err)
 		return
 	}
-	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(account.Address), nil)
+	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
-	minStakeAmount, err := utils.GetMinStakeAmount(client, account.Address)
+	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return
@@ -134,10 +148,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error(err)
 		return
 	}
-
+	if staker.IsSlashed {
+		log.Error("Staker is slashed.... cannot continue to vote!")
+		os.Exit(0)
+	}
 	switch state {
 	case 0:
-		lastCommit, err := utils.GetEpochLastCommitted(client, account.Address, stakerId)
+		lastCommit, err := utils.GetEpochLastCommitted(client, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last commit: ", err)
 			break
@@ -150,7 +167,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := utilsStruct.HandleCommitState(client, account.Address, epoch)
+		data, err := utilsStruct.HandleCommitState(client, epoch, rogueData)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
@@ -162,16 +179,45 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		utils.WaitForBlockCompletion(client, commitTxn.String())
 		_committedData = data
+		log.Debug("Saving committed data for recovery")
+		fileName, err := getCommitDataFileName(account.Address, utilsStruct)
+		if err != nil {
+			log.Error("Error in getting file name to save committed data: ", err)
+			break
+		}
+		err = utils.SaveCommittedDataToFile(fileName, epoch, _committedData)
+		if err != nil {
+			log.Errorf("Error in saving data to file %s: %t", fileName, err)
+			break
+		}
+		log.Debug("Data saved!")
 	case 1:
 		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last reveal: ", err)
 			break
 		}
-		if _committedData == nil || lastReveal >= epoch {
+		if lastReveal >= epoch {
 			log.Warnf("Last reveal: %d", lastReveal)
 			log.Warnf("Cannot reveal in epoch %d", epoch)
 			break
+		}
+		if _committedData == nil {
+			fileName, err := getCommitDataFileName(account.Address, utilsStruct)
+			if err != nil {
+				log.Error("Error in getting file name to save committed data: ", err)
+				break
+			}
+			epochInFile, committedDataFromFile, err := utils.ReadCommittedDataFromFile(fileName)
+			if err != nil {
+				log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
+				break
+			}
+			if epochInFile != epoch {
+				log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
+				break
+			}
+			_committedData = committedDataFromFile
 		}
 		secret := calculateSecret(account, epoch)
 		if secret == nil {
@@ -209,7 +255,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueMode)
+		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueData)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -219,10 +265,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 	case 3:
 		if lastVerification >= epoch {
-			break
-		}
-		if rogueMode {
-			log.Warn("Won't dispute in rogue mode..")
 			break
 		}
 		lastVerification = epoch
@@ -270,21 +312,7 @@ func getLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, staker
 			common.HexToAddress(core.BlockManagerAddress),
 		},
 	}
-	var (
-		logs []types2.Log
-		err  error
-	)
-	for retry := 1; retry <= core.MaxRetries; retry++ {
-		logs, err = client.FilterLogs(context.Background(), query)
-		if err != nil {
-			log.Error("Error in fetching logs: ", err)
-			retryingIn := math.Pow(2, float64(retry))
-			log.Debugf("Retrying in %f seconds.....", retryingIn)
-			time.Sleep(time.Duration(retryingIn) * time.Second)
-			continue
-		}
-		break
-	}
+	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return 0, err
 	}
@@ -312,13 +340,21 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 	if err != nil {
 		log.Error("Error in fetching .razor directory: ", err)
 	}
-	signedData, err := accounts.Sign(hash, account, razorPath)
+	signedData, err := accounts.Sign(hash, account, razorPath, accounts.AccountUtilsInterface)
 	if err != nil {
 		log.Error("Error in signing the data: ", err)
 		return nil
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret
+}
+
+func getCommitDataFileName(address string, utilsStruct UtilsStruct) (string, error) {
+	homeDir, err := utilsStruct.razorUtils.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_data", nil
 }
 
 func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations, utilsStruct UtilsStruct) {
@@ -355,17 +391,22 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(voteCmd)
 
 	var (
-		Address  string
-		Rogue    bool
-		Password string
+		Address   string
+		Rogue     bool
+		RogueMode []string
+		Password  string
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
+	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
 
 	addrErr := voteCmd.MarkFlagRequired("address")

@@ -27,8 +27,9 @@ Note:
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		txn, err := utilsStruct.createCollection(cmd.Flags(), config)
@@ -62,8 +63,8 @@ func (utilsStruct UtilsStruct) createCollection(flagSet *pflag.FlagSet, config t
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
-	_, err = utilsStruct.razorUtils.WaitForAppropriateState(client, address, "create collection", 4)
+	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
+	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(client, address, "create collection", utilsStruct, 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
@@ -95,6 +96,9 @@ func init() {
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtils = UtilsCmd{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

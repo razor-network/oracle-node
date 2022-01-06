@@ -169,3 +169,47 @@ func TestGetDataFromJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestGetDataFromHTML(t *testing.T) {
+	type args struct {
+		url      string
+		selector string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "Test 1: Test data from coin market cap",
+			args: args{
+				url:      "https://coinmarketcap.com/all/views/all/",
+				selector: `div h1`,
+			},
+			want:    "All Cryptocurrencies",
+			wantErr: false,
+		},
+		{
+			name: "Test 2: Test for invalid website",
+			args: args{
+				url:      "http://razor-go.com/",
+				selector: `table tbody tr td a[href="/en/coins/bitcoin"]`,
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetDataFromHTML(tt.args.url, tt.args.selector)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetDataFromHTML() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetDataFromHTML() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

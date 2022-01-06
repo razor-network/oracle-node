@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
@@ -37,7 +38,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 }
 
 func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
-	config, err := utilsStruct.razorUtils.GetConfigData()
+	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
 	utils.CheckError("Error in getting config: ", err)
 
 	password := utilsStruct.razorUtils.AssignPassword(flagSet)
@@ -49,7 +50,7 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
 	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
@@ -99,13 +100,26 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		log.Error("Error in getting lock: ", err)
 		return txnArgs, err
 	}
+
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
 		err := errors.New("existing lock")
 		log.Error(err)
 		return txnArgs, err
 	}
 
-	epoch, err := utilsStruct.razorUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", 0, 1, 4)
+	staker, err := utilsStruct.razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
+	if err != nil {
+		log.Error("Error in getting staker: ", err)
+		return txnArgs, err
+	}
+
+	sAmount, err := utilsStruct.cmdUtils.GetAmountInSRZRs(client, txnArgs.AccountAddress, staker, txnArgs.Amount, utilsStruct)
+	if err != nil {
+		log.Error("Error in getting sRZR amount: ", err)
+		return txnArgs, err
+	}
+
+	epoch, err := utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err
@@ -113,7 +127,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
-	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, epoch, stakerId, txnArgs.Amount)
+	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, sAmount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return txnArgs, err
@@ -140,6 +154,38 @@ func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct
 	return nil
 }
 
+func GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
+	stakedToken := utilsStruct.razorUtils.GetStakedToken(client, staker.TokenAddress)
+	callOpts := utilsStruct.razorUtils.GetOptions()
+
+	sRZRBalance, err := utilsStruct.stakeManagerUtils.BalanceOf(stakedToken, &callOpts, common.HexToAddress(address))
+	if err != nil {
+		log.Error("Error in getting sRZRBalance: ", err)
+		return nil, err
+	}
+
+	totalSupply, err := utilsStruct.stakeManagerUtils.GetTotalSupply(stakedToken, &callOpts)
+	if err != nil {
+		log.Error("Error in getting total supply: ", err)
+		return nil, err
+	}
+
+	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
+	log.Debugf("The maximum RZRs you can unstake: %g RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
+
+	if maxUnstake.Cmp(amount) < 0 {
+		log.Error("Amount exceeds maximum unstake amount")
+		return nil, errors.New("invalid amount")
+	}
+
+	sAmount, err := utilsStruct.razorUtils.ConvertRZRToSRZR(amount, staker.Stake, totalSupply)
+	if err != nil {
+		log.Error("Error in getting sAmount: ", err)
+		return nil, err
+	}
+	return sAmount, nil
+}
+
 func init() {
 
 	razorUtils = Utils{}
@@ -147,6 +193,8 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	cmdUtils = UtilsCmd{}
 	flagSetUtils = FlagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(unstakeCmd)
 

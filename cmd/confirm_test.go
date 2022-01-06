@@ -34,8 +34,6 @@ func TestClaimBlockReward(t *testing.T) {
 		ClaimBlockRewardTxn *Types.Transaction
 		ClaimBlockRewardErr error
 		hash                common.Hash
-		header              *Types.Header
-		headerErr           error
 	}
 	tests := []struct {
 		name    string
@@ -50,11 +48,6 @@ func TestClaimBlockReward(t *testing.T) {
 				ClaimBlockRewardTxn: &Types.Transaction{},
 				ClaimBlockRewardErr: nil,
 				hash:                common.BigToHash(big.NewInt(1)),
-				header: &Types.Header{
-					Number:   big.NewInt(1000),
-					GasLimit: 2100000,
-				},
-				headerErr: nil,
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -66,11 +59,6 @@ func TestClaimBlockReward(t *testing.T) {
 				ClaimBlockRewardTxn: &Types.Transaction{},
 				ClaimBlockRewardErr: errors.New("claimBlockReward error"),
 				hash:                common.BigToHash(big.NewInt(1)),
-				header: &Types.Header{
-					Number:   big.NewInt(1000),
-					GasLimit: 2100000,
-				},
-				headerErr: nil,
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("claimBlockReward error"),

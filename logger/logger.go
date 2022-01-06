@@ -87,6 +87,9 @@ func (logger *StandardLogger) Fatal(args ...interface{}) {
 	defer sentry.Recover()
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
-	sentry.CaptureException(err)
+	sentry.WithScope(func(scope *sentry.Scope) {
+		scope.SetLevel(sentry.LevelFatal)
+		sentry.CaptureException(err)
+	})
 	logger.Fatalln(err)
 }

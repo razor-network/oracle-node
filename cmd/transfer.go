@@ -25,8 +25,9 @@ Example:
 			tokenManagerUtils: tokenManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.transfer(cmd.Flags(), config)
 		utils.CheckError("Transfer error: ", err)
@@ -55,7 +56,7 @@ func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Con
 		return core.NilHash, err
 	}
 
-	valueInWei, err := utilsStruct.razorUtils.AssignAmountInWei(flagSet)
+	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
 	if err != nil {
 		log.Error("Error in getting amount: ", err)
 		return core.NilHash, err
@@ -90,6 +91,7 @@ func init() {
 	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(transferCmd)
 	var (
