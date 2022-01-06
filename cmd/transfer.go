@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -19,71 +20,68 @@ var transferCmd = &cobra.Command{
 
 Example:
   ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-			cmdUtils:          cmdUtils,
-		}
-		config, err := cmdUtilsMockery.GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-		txn, err := utilsStruct.transfer(cmd.Flags(), config)
-		utils.CheckError("Transfer error: ", err)
-		log.Info("Transaction Hash: ", txn)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseTransfer,
 }
 
-func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+func initialiseTransfer(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteTransfer(cmd.Flags())
+}
 
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	fromAddress, err := utilsStruct.flagSetUtils.GetStringFrom(flagSet)
-	if err != nil {
-		return core.NilHash, err
+func (*UtilsStructMockery) ExecuteTransfer(flagSet *pflag.FlagSet) {
+	config, err := cmdUtilsMockery.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	fromAddress, err := flagSetUtilsMockery.GetStringFrom(flagSet)
+	utils.CheckError("Error in getting fromAddress: ", err)
+	toAddress, err := flagSetUtilsMockery.GetStringTo(flagSet)
+	utils.CheckError("Error in getting toAddress: ", err)
+
+	client := razorUtilsMockery.ConnectToClient(config.Provider)
+
+	balance, err := razorUtilsMockery.FetchBalance(client, fromAddress)
+	utils.CheckError("Error in fetching balance: ", err)
+
+	valueInWei, err := cmdUtilsMockery.AssignAmountInWei(flagSet)
+	utils.CheckError("Error in getting amount: ", err)
+
+	transferInput := types.TransferInput{
+		FromAddress: fromAddress,
+		ToAddress:   toAddress,
+		Password:    password,
+		ValueInWei:  valueInWei,
+		Balance:     balance,
 	}
-	toAddress, err := utilsStruct.flagSetUtils.GetStringTo(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+	txn, err := cmdUtilsMockery.Transfer(client, config, transferInput)
+	utils.CheckError("Transfer error: ", err)
+	log.Info("Transaction Hash: ", txn)
+	utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
+}
 
-	balance, err := utilsStruct.razorUtils.FetchBalance(client, fromAddress)
-	if err != nil {
-		log.Errorf("Error in fetching balance for account " + fromAddress)
-		return core.NilHash, err
-	}
+func (*UtilsStructMockery) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 
-	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
-	if err != nil {
-		log.Error("Error in getting amount: ", err)
-		return core.NilHash, err
-	}
+	razorUtilsMockery.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
-	utilsStruct.razorUtils.CheckAmountAndBalance(valueInWei, balance)
-
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  fromAddress,
+		Password:        transferInput.Password,
+		AccountAddress:  transferInput.FromAddress,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",
-		Parameters:      []interface{}{common.HexToAddress(toAddress), valueInWei},
+		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
 		ABI:             bindings.RAZORABI,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", utilsStruct.razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
+	log.Infof("Transferring %g tokens from %s to %s", razorUtilsMockery.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 
-	txn, err := utilsStruct.tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(toAddress), valueInWei)
+	txn, err := tokenManagerUtilsMockery.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
 	if err != nil {
 		log.Errorf("Error in transferring tokens ")
 		return core.NilHash, err
 	}
 
-	return utilsStruct.transactionUtils.Hash(txn), err
+	return transactionUtilsMockery.Hash(txn), err
 }
 
 func init() {
@@ -93,6 +91,9 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	cmdUtils = UtilsCmd{}
 	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtilsMockery = UtilsMockery{}
+	tokenManagerUtilsMockery = TokenManagerUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
 
 	rootCmd.AddCommand(transferCmd)
 	var (
