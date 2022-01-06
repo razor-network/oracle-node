@@ -3,7 +3,10 @@
 package mocks
 
 import (
+	big "math/big"
+
 	common "github.com/ethereum/go-ethereum/common"
+
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
@@ -57,6 +60,29 @@ func (_m *UtilsCmdInterfaceMockery) ClaimBounty(_a0 types.Configurations, _a1 *e
 	var r1 error
 	if rf, ok := ret.Get(1).(func(types.Configurations, *ethclient.Client, types.RedeemBountyInput) error); ok {
 		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Commit provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *UtilsCmdInterfaceMockery) Commit(_a0 *ethclient.Client, _a1 []*big.Int, _a2 []byte, _a3 types.Account, _a4 types.Configurations) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -230,6 +256,29 @@ func (_m *UtilsCmdInterfaceMockery) GetWaitTime() (int32, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// HandleCommitState provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1 uint32, _a2 types.Rogue) ([]*big.Int, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, types.Rogue) []*big.Int); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, types.Rogue) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}
