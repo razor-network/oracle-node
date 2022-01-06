@@ -46,7 +46,7 @@ Example:
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account: "+address, err)
 
-		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
+		valueInWei, err := cmdUtilsMockery.AssignAmountInWei(cmd.Flags())
 		utils.CheckError("Error in getting amount: ", err)
 
 		utils.CheckAmountAndBalance(valueInWei, balance)

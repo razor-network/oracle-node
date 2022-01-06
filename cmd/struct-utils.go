@@ -717,7 +717,7 @@ func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddr
 }
 
 func (cmdUtils UtilsCmd) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
-	return AssignAmountInWei(flagSet, utilsStruct)
+	return cmdUtilsMockery.AssignAmountInWei(flagSet)
 }
 
 func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, unstakeInput types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {

@@ -60,8 +60,8 @@ func WaitIfCommitState(client *ethclient.Client, accountAddress string, action s
 	}
 }
 
-func AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
-	amount, err := utilsStruct.flagSetUtils.GetStringValue(flagSet)
+func (*UtilsStructMockery) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
+	amount, err := flagSetUtilsMockery.GetStringValue(flagSet)
 	if err != nil {
 		log.Error("Error in reading value: ", err)
 		return nil, err
@@ -71,18 +71,18 @@ func AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.In
 		return nil, errors.New("SetString: error")
 	}
 	var amountInWei *big.Int
-	if utilsStruct.razorUtils.IsFlagPassed("pow") {
-		power, err := utilsStruct.flagSetUtils.GetStringPow(flagSet)
+	if razorUtilsMockery.IsFlagPassed("pow") {
+		power, err := flagSetUtilsMockery.GetStringPow(flagSet)
 		if err != nil {
 			log.Error("Error in getting power: ", err)
 			return nil, err
 		}
-		amountInWei, err = utilsStruct.razorUtils.GetFractionalAmountInWei(_amount, power)
+		amountInWei, err = razorUtilsMockery.GetFractionalAmountInWei(_amount, power)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		amountInWei = utilsStruct.razorUtils.GetAmountInWei(_amount)
+		amountInWei = razorUtilsMockery.GetAmountInWei(_amount)
 	}
 	return amountInWei, nil
 }
