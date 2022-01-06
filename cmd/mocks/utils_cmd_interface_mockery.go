@@ -21,6 +21,29 @@ type UtilsCmdInterfaceMockery struct {
 	mock.Mock
 }
 
+// AssignAmountInWei provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.Int, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) *big.Int); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ClaimBlockReward provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ClaimBlockReward(_a0 types.TransactionOptions) (common.Hash, error) {
 	ret := _m.Called(_a0)
@@ -92,6 +115,11 @@ func (_m *UtilsCmdInterfaceMockery) Commit(_a0 *ethclient.Client, _a1 []*big.Int
 
 // ExecuteClaimBounty provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteClaimBounty(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// ExecuteTransfer provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteTransfer(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
@@ -298,4 +326,27 @@ func (_m *UtilsCmdInterfaceMockery) SetConfig(flagSet *pflag.FlagSet) error {
 	}
 
 	return r0
+}
+
+// Transfer provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) Transfer(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.TransferInput) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.TransferInput) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.TransferInput) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

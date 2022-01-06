@@ -55,7 +55,7 @@ func (*UtilsStructMockery) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtilsMockery.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 	log.Info("Transaction Hash: ", txn)
-	utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
+	razorUtilsMockery.WaitForBlockCompletion(razorUtilsMockery.ConnectToClient(config.Provider), txn.String())
 }
 
 func (*UtilsStructMockery) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
