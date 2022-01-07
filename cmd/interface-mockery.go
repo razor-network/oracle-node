@@ -64,11 +64,32 @@ type UtilsInterfaceMockery interface {
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	GetStateName(int64) string
+	CheckEthBalanceIsZero(*ethclient.Client, string)
+	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
+	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
+	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
+	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 }
 
 type StakeManagerInterfaceMockery interface {
-	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
+	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+	ExtendLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
+	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
+
+	//Getter methods
+	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
+	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
+	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
 type KeystoreInterfaceMockery interface {
@@ -167,6 +188,10 @@ type UtilsCmdInterfaceMockery interface {
 	CreateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput) (common.Hash, error)
 	GetEpochAndState(*ethclient.Client) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
+	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int) (*big.Int, error)
+	ExecuteUnstake(*pflag.FlagSet)
+	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
+	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
 }
 
 type TransactionInterfaceMockery interface {

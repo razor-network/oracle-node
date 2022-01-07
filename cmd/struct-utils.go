@@ -721,11 +721,11 @@ func (cmdUtils UtilsCmd) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct U
 }
 
 func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.Client, unstakeInput types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
-	return Unstake(config, client, unstakeInput, utilsStruct)
+	return cmdUtilsMockery.Unstake(config, client, unstakeInput)
 }
 
 func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
-	return AutoWithdraw(txnArgs, stakerId, utilsStruct)
+	return cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId, utilsStruct)
 }
 
 func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
@@ -734,10 +734,6 @@ func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.A
 
 func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAccounts.Account, error) {
 	return Create(password, utilsStruct)
-}
-
-func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
-	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
