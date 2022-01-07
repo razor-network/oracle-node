@@ -24,7 +24,6 @@ type utilsInterface interface {
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
 	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
-	//GetConfigData(UtilsStruct) (types.Configurations, error)
 	ParseBool(str string) (bool, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
@@ -68,18 +67,11 @@ type utilsInterface interface {
 	GetLatestBlock(*ethclient.Client) (*Types.Header, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetStateName(int64) string
-	//getBufferPercent(UtilsStruct) (int32, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
 	GetAmountInWei(*big.Int) *big.Int
 	Sleep(time.Duration)
 	CalculateBlockTime(*ethclient.Client) int64
-	//getProvider(UtilsStruct) (string, error)
-	//getMultiplier(UtilsStruct) (float32, error)
-	//getWaitTime(UtilsStruct) (int32, error)
-	//getGasPrice(UtilsStruct) (int32, error)
-	//getLogLevel(UtilsStruct) (string, error)
-	//getGasLimit(UtilsStruct) (float32, error)
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
@@ -169,7 +161,6 @@ type flagSetInterface interface {
 }
 
 type utilsCmdInterface interface {
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, uint16, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
@@ -179,9 +170,7 @@ type utilsCmdInterface interface {
 	AssignAmountInWei(*pflag.FlagSet, UtilsStruct) (*big.Int, error)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
-	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 	Create(string, UtilsStruct) (accounts.Account, error)
-	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
 }
 
 type cryptoInterface interface {
