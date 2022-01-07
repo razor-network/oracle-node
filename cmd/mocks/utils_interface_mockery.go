@@ -8,6 +8,8 @@ import (
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
+	common "github.com/ethereum/go-ethereum/common"
+
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
@@ -52,6 +54,27 @@ func (_m *UtilsInterfaceMockery) AssignPassword(_a0 *pflag.FlagSet) string {
 	return r0
 }
 
+// AssignStakerId provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterfaceMockery) AssignStakerId(_a0 *pflag.FlagSet, _a1 *ethclient.Client, _a2 string) (uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet, *ethclient.Client, string) uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet, *ethclient.Client, string) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CalculateBlockTime provides a mock function with given fields: _a0
 func (_m *UtilsInterfaceMockery) CalculateBlockTime(_a0 *ethclient.Client) int64 {
 	ret := _m.Called(_a0)
@@ -82,6 +105,11 @@ func (_m *UtilsInterfaceMockery) CheckAmountAndBalance(_a0 *big.Int, _a1 *big.In
 	return r0
 }
 
+// CheckEthBalanceIsZero provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) CheckEthBalanceIsZero(_a0 *ethclient.Client, _a1 string) {
+	_m.Called(_a0, _a1)
+}
+
 // ConnectToClient provides a mock function with given fields: _a0
 func (_m *UtilsInterfaceMockery) ConnectToClient(_a0 string) *ethclient.Client {
 	ret := _m.Called(_a0)
@@ -92,6 +120,45 @@ func (_m *UtilsInterfaceMockery) ConnectToClient(_a0 string) *ethclient.Client {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ethclient.Client)
+		}
+	}
+
+	return r0
+}
+
+// ConvertRZRToSRZR provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterfaceMockery) ConvertRZRToSRZR(_a0 *big.Int, _a1 *big.Int, _a2 *big.Int) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*big.Int, *big.Int, *big.Int) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ConvertSRZRToRZR provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterfaceMockery) ConvertSRZRToRZR(_a0 *big.Int, _a1 *big.Int, _a2 *big.Int) *big.Int {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
@@ -366,6 +433,27 @@ func (_m *UtilsInterfaceMockery) GetJobs(_a0 *ethclient.Client) ([]bindings.Stru
 	return r0, r1
 }
 
+// GetLock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterfaceMockery) GetLock(_a0 *ethclient.Client, _a1 string, _a2 uint32) (types.Locks, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 types.Locks
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) types.Locks); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(types.Locks)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNumActiveAssets provides a mock function with given fields: _a0
 func (_m *UtilsInterfaceMockery) GetNumActiveAssets(_a0 *ethclient.Client) (*big.Int, error) {
 	ret := _m.Called(_a0)
@@ -417,6 +505,43 @@ func (_m *UtilsInterfaceMockery) GetRogueRandomValue(_a0 int) *big.Int {
 	}
 
 	return r0
+}
+
+// GetStakedToken provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetStakedToken(_a0 *ethclient.Client, _a1 common.Address) *bindings.StakedToken {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.StakedToken
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *bindings.StakedToken); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.StakedToken)
+		}
+	}
+
+	return r0
+}
+
+// GetStaker provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterfaceMockery) GetStaker(_a0 *ethclient.Client, _a1 string, _a2 uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 bindings.StructsStaker
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) bindings.StructsStaker); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(bindings.StructsStaker)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetStateName provides a mock function with given fields: _a0
@@ -484,6 +609,69 @@ func (_m *UtilsInterfaceMockery) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32, 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
 		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUpdatedEpoch provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetUpdatedEpoch(_a0 *ethclient.Client) (uint32, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUpdatedStaker provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterfaceMockery) GetUpdatedStaker(_a0 *ethclient.Client, _a1 string, _a2 uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 bindings.StructsStaker
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) bindings.StructsStaker); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(bindings.StructsStaker)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetWithdrawReleasePeriod provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterfaceMockery) GetWithdrawReleasePeriod(_a0 *ethclient.Client, _a1 string) (uint8, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) uint8); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

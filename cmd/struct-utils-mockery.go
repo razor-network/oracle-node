@@ -30,6 +30,10 @@ func (u UtilsMockery) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
 }
 
+func (u UtilsMockery) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
+	return utils.GetEpoch(client)
+}
+
 func (u UtilsMockery) GetOptions() bind.CallOpts {
 	return utils.UtilsInterface.GetOptions()
 }
@@ -144,8 +148,95 @@ func (u UtilsMockery) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, 
 	return utils.GetJobs(client)
 }
 
+func (u UtilsMockery) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	utils.CheckEthBalanceIsZero(client, address)
+}
+
+func (u UtilsMockery) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+	return utils.AssignStakerId(flagSet, client, address)
+}
+
+func (u UtilsMockery) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
+	return utils.GetLock(client, address, stakerId)
+}
+
+func (u UtilsMockery) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u UtilsMockery) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.GetStaker(client, address, stakerId)
+}
+
+func (u UtilsMockery) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
+	return utils.GetStakedToken(client, address)
+}
+
+func (u UtilsMockery) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
+	return utils.ConvertSRZRToRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u UtilsMockery) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
+	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u UtilsMockery) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	return utils.GetWithdrawReleasePeriod(client, address)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Stake(txnOpts, epoch, amount)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) ExtendLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.ExtendLock(opts, stakerId)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Delegate(opts, stakerId, amount)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Withdraw(opts, stakerId)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.SetDelegationAcceptance(opts, status)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.UpdateCommission(opts, commission)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Unstake(opts, stakerId, sAmount)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.RedeemBounty(opts, bountyId)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
+	stakeManager := utils.GetStakeManager(client)
+	return stakeManager.Stakers(opts, stakerId)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
+	stakeManager := utils.GetStakeManager(client)
+	index := age / 10000
+	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
 }
 
 func (stakeManagerUtils StakeManagerUtilsMockery) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
@@ -153,9 +244,12 @@ func (stakeManagerUtils StakeManagerUtilsMockery) GetBountyLock(client *ethclien
 	return stakeManager.BountyLocks(opts, bountyId)
 }
 
-func (stakeManagerUtils StakeManagerUtilsMockery) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
-	return stakeManager.RedeemBounty(opts, bountyId)
+func (stakeManagerUtils StakeManagerUtilsMockery) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
+}
+
+func (stakeManagerUtils StakeManagerUtilsMockery) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
+	return token.TotalSupply(callOpts)
 }
 
 func (KeystoreUtils KeystoreUtilsMockery) Accounts(path string) []ethAccounts.Account {
