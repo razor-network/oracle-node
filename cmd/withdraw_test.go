@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
@@ -308,6 +309,124 @@ func TestWithdraw(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for withdraw function, got = %v, want = %v", err, tt.wantErr)
 				}
+			}
+
+		})
+	}
+}
+
+func TestExecuteWithdraw(t *testing.T) {
+	var config types.Configurations
+	var flagSet *pflag.FlagSet
+	var client *ethclient.Client
+
+	type args struct {
+		config       types.Configurations
+		configErr    error
+		address      string
+		addressErr   error
+		password     string
+		stakerId     uint32
+		stakerIdErr  error
+		withdrawHash common.Hash
+		withdrawErr  error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteWithdraw executes successfully",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting config",
+			args: args{
+				config:       config,
+				configErr:    errors.New("config error"),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting address",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "",
+				addressErr:   errors.New("address error"),
+				stakerId:     1,
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error from withdraw funds",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				withdrawHash: core.NilHash,
+				withdrawErr:  errors.New("withdrawFunds error"),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting stakerId",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				stakerIdErr:  errors.New("stakerId error"),
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
+			flagSetUtilsMockery = flagSetUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
+			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			utils := &UtilsStructMockery{}
+			fatal = false
+
+			utils.ExecuteWithdraw(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The inputUnstake function didn't execute as expected")
 			}
 
 		})
