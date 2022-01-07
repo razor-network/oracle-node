@@ -64,6 +64,7 @@ type UtilsInterfaceMockery interface {
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	GetStateName(int64) string
+	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -167,6 +168,8 @@ type UtilsCmdInterfaceMockery interface {
 	CreateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput) (common.Hash, error)
 	GetEpochAndState(*ethclient.Client) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
+	ExecuteJobList()
+	GetJobList(*ethclient.Client) error
 }
 
 type TransactionInterfaceMockery interface {

@@ -4,6 +4,7 @@ package mocks
 
 import (
 	big "math/big"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -335,6 +336,29 @@ func (_m *UtilsInterfaceMockery) GetFractionalAmountInWei(_a0 *big.Int, _a1 stri
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*big.Int, string) error); ok {
 		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetJobs provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetJobs(_a0 *ethclient.Client) ([]bindings.StructsJob, error) {
+	ret := _m.Called(_a0)
+
+	var r0 []bindings.StructsJob
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) []bindings.StructsJob); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]bindings.StructsJob)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

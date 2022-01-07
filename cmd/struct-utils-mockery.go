@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"razor/core/types"
 	"razor/path"
+	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
 )
@@ -137,6 +138,10 @@ func (u UtilsMockery) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 
 func (u UtilsMockery) GetStateName(state int64) string {
 	return utils.GetStateName(state)
+}
+
+func (u UtilsMockery) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+	return utils.GetJobs(client)
 }
 
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
