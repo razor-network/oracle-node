@@ -270,6 +270,36 @@ func (tokenManagerUtils TokenManagerUtilsMockery) Transfer(client *ethclient.Cli
 	return tokenManager.Transfer(opts, recipient, amount)
 }
 
+func (assetManagerUtils AssetManagerUtilsMockery) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
+}
+
+func (assetManagerUtils AssetManagerUtilsMockery) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.SetCollectionStatus(opts, assetStatus, id)
+}
+
+func (assetManagerUtils AssetManagerUtilsMockery) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
+	assetMananger := utils.GetAssetManager(client)
+	return assetMananger.GetCollectionStatus(opts, id)
+}
+
+func (assetManagerUtils AssetManagerUtilsMockery) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
+}
+
+func (assetManagerUtils AssetManagerUtilsMockery) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
+}
+
+func (assetManagerUtils AssetManagerUtilsMockery) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
+	assetManager := utils.GetAssetManager(client)
+	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
+}
+
 func (flagSetUtils FLagSetUtilsMockery) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("provider")
 }

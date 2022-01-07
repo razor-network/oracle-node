@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -25,79 +26,78 @@ Example:
 Note: 
   This command only works for the admin.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		config, err := cmdUtilsMockery.GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-		txn, err := utilsStruct.createJob(cmd.Flags(), config)
-		utils.CheckError("CreateJob error: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseCreateJob,
 }
 
-func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
+func initialiseCreateJob(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteCreateJob(cmd.Flags())
+}
+
+func (*UtilsStructMockery) ExecuteCreateJob(flagSet *pflag.FlagSet) {
+	config, err := cmdUtilsMockery.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	name, err := flagSetUtilsMockery.GetStringName(flagSet)
+	utils.CheckError("Error in getting name: ", err)
+
+	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
+	utils.CheckError("Error in getting url: ", err)
+
+	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
+	utils.CheckError("Error in getting selector: ", err)
+
+	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	utils.CheckError("Error in getting power: ", err)
+
+	weight, err := flagSetUtilsMockery.GetUint8Weight(flagSet)
+	utils.CheckError("Error in getting weight: ", err)
+
+	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
+	utils.CheckError("Error in getting selectorType: ", err)
+
+	client := razorUtilsMockery.ConnectToClient(config.Provider)
+
+	jobInput := types.CreateJobInput{
+		Address:      address,
+		Password:     password,
+		Url:          url,
+		Name:         name,
+		Selector:     selector,
+		SelectorType: selectorType,
+		Weight:       weight,
+		Power:        power,
 	}
 
-	name, err := utilsStruct.flagSetUtils.GetStringName(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
+	txn, err := cmdUtilsMockery.CreateJob(client, config, jobInput)
+	utils.CheckError("CreateJob error: ", err)
+	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+}
 
-	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	weight, err := utilsStruct.flagSetUtils.GetUint8Weight(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+func (*UtilsStructMockery) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        jobInput.Password,
+		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
-		Parameters:      []interface{}{weight, power, selectorType, name, selector, url},
+		Parameters:      []interface{}{jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, selectorType, name, selector, url)
+	txn, err := assetManagerUtilsMockery.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Transaction Hash: ", transactionUtilsMockery.Hash(txn))
+	return transactionUtilsMockery.Hash(txn), nil
 }
 
 func init() {
@@ -107,6 +107,10 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
 	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtilsMockery = &UtilsMockery{}
+	assetManagerUtilsMockery = &AssetManagerUtilsMockery{}
+	transactionUtilsMockery = &TransactionUtilsMockery{}
+	flagSetUtilsMockery = &FLagSetUtilsMockery{}
 
 	rootCmd.AddCommand(createJobCmd)
 

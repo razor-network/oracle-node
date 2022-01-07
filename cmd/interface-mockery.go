@@ -22,6 +22,7 @@ import (
 //go:generate mockery --name VoteManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name KeystoreInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name TokenManagerInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name AssetManagerInterfaceMockery --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
@@ -32,6 +33,7 @@ var blockManagerUtilsMockery BlockManagerInterfaceMockery
 var voteManagerUtilsMockery VoteManagerInterfaceMockery
 var keystoreUtilsMockery KeystoreInterfaceMockery
 var tokenManagerUtilsMockery TokenManagerInterfaceMockery
+var assetManagerUtilsMockery AssetManagerInterfaceMockery
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -87,6 +89,15 @@ type TokenManagerInterfaceMockery interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 	Transfer(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
+}
+
+type AssetManagerInterfaceMockery interface {
+	CreateJob(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
+	SetCollectionStatus(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error)
+	GetActiveStatus(*ethclient.Client, *bind.CallOpts, uint16) (bool, error)
+	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
+	UpdateJob(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error)
+	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
 }
 
 type FlagSetInterfaceMockery interface {
@@ -148,6 +159,8 @@ type UtilsCmdInterfaceMockery interface {
 	Transfer(*ethclient.Client, types.Configurations, types.TransferInput) (common.Hash, error)
 	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
 	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
+	ExecuteCreateJob(*pflag.FlagSet)
+	CreateJob(*ethclient.Client, types.Configurations, types.CreateJobInput) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
@@ -163,3 +176,4 @@ type TransactionUtilsMockery struct{}
 type VoteManagerUtilsMockery struct{}
 type KeystoreUtilsMockery struct{}
 type TokenManagerUtilsMockery struct{}
+type AssetManagerUtilsMockery struct{}

@@ -117,8 +117,36 @@ func (_m *UtilsCmdInterfaceMockery) Commit(_a0 *ethclient.Client, _a1 []*big.Int
 	return r0, r1
 }
 
+// CreateJob provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) CreateJob(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.CreateJobInput) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.CreateJobInput) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.CreateJobInput) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ExecuteClaimBounty provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteClaimBounty(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// ExecuteCreateJob provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteCreateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
