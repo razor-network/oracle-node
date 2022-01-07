@@ -131,6 +131,14 @@ func (u UtilsMockery) AllZero(bytesValue [32]byte) bool {
 	return utils.AllZero(bytesValue)
 }
 
+func (u UtilsMockery) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
+	return utils.ConvertUintArrayToUint16Array(uintArr)
+}
+
+func (u UtilsMockery) GetStateName(state int64) string {
+	return utils.GetStateName(state)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

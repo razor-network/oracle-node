@@ -705,11 +705,11 @@ func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bind
 }
 
 func (cmdUtils UtilsCmd) GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
-	return GetEpochAndState(client, accountAddress, utilsStruct)
+	return cmdUtilsMockery.GetEpochAndState(client)
 }
 
 func (cmdUtils UtilsCmd) WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
-	return WaitForAppropriateState(client, accountAddress, action, utilsStruct, states...)
+	return cmdUtilsMockery.WaitForAppropriateState(client, action, states...)
 }
 
 func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
