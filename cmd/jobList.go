@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"os"
 	"razor/utils"
 	"strconv"
@@ -17,27 +18,31 @@ var jobListCmd = &cobra.Command{
 
 Example:
 	./razor jobList`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		utilsStruct := UtilsStruct{
-			razorUtils:   razorUtils,
-			flagSetUtils: flagSetUtils,
-		}
-
-		config, err := cmdUtilsMockery.GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		client := utils.ConnectToClient(config.Provider)
-
-		err = utilsStruct.GetJobList(client)
-
-		if err != nil {
-			log.Error("Error in getting job list: ", err)
-		}
-
-	},
+	Run: initialiseJobList,
 }
 
+func initialiseJobList(cmd *cobra.Command, args []string) {
+	UtilsStructMockery.ExecuteJobList(cmd.Flags())
+
+}
+
+func (*UtilsStructMockery) ExecuteJobList(flagSet *pflag.FlagSet) {
+	utilsStruct := UtilsStruct{
+		razorUtils:   razorUtils,
+		flagSetUtils: flagSetUtils,
+	}
+
+	config, err := cmdUtilsMockery.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := utils.ConnectToClient(config.Provider)
+
+	err = utilsStruct.GetJobList(client)
+
+	if err != nil {
+		log.Error("Error in getting job list: ", err)
+	}
+}
 func (utilsStruct *UtilsStruct) GetJobList(client *ethclient.Client) error {
 	jobs, err := utilsStruct.razorUtils.GetJobs(client)
 
