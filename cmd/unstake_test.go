@@ -17,7 +17,6 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
-	"time"
 )
 
 func TestUnstake(t *testing.T) {
@@ -151,7 +150,7 @@ func TestUnstake(t *testing.T) {
 
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("int"), mock.AnythingOfType("int"), mock.AnythingOfType("int")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("GetAmountInSRZRs", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sAmount, tt.args.sAmountErr)
 			stakeManagerUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
@@ -369,11 +368,6 @@ func TestAutoWithdraw(t *testing.T) {
 	var txnArgs types.TransactionOptions
 	var stakerId uint32
 
-	utilsStruct := UtilsStruct{
-		razorUtils: UtilsMock{},
-		cmdUtils:   UtilsCmdMock{},
-	}
-
 	type args struct {
 		withdrawFundsHash common.Hash
 		withdrawFundsErr  error
@@ -384,7 +378,7 @@ func TestAutoWithdraw(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test 1: When AutoWithdraw function exceutes successfully",
+			name: "Test 1: When AutoWithdraw function executes successfully",
 			args: args{
 				withdrawFundsHash: common.BigToHash(big.NewInt(1)),
 			},
@@ -407,18 +401,19 @@ func TestAutoWithdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			withdrawFundsMock = func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error) {
-				return tt.args.withdrawFundsHash, tt.args.withdrawFundsErr
-			}
 
-			SleepMock = func(time.Duration) {
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
 
-			}
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
 
-			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
-				return 1
-			}
-			gotErr := AutoWithdraw(txnArgs, stakerId, utilsStruct)
+			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return("tt.args.withdrawFundsHash, tt.args.withdrawFundsErr")
+			utilsMock.On("Sleep", mock.Anything).Return()
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			utils := &UtilsStructMockery{}
+			gotErr := utils.AutoWithdraw(txnArgs, stakerId)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for AutoWithdraw function, got = %v, want = %v", gotErr, tt.wantErr)
@@ -437,11 +432,6 @@ func TestGetAmountInSRZRs(t *testing.T) {
 	var address string
 	var callOpts bind.CallOpts
 	var stakedToken *bindings.StakedToken
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		stakeManagerUtils: StakeManagerMock{},
-	}
 
 	type args struct {
 		staker         bindings.StructsStaker

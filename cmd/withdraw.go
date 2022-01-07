@@ -28,7 +28,7 @@ Example:
 }
 
 func initialiseWithdraw(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteUnstake(cmd.Flags())
+	cmdUtilsMockery.ExecuteWithdraw(cmd.Flags())
 }
 
 func (*UtilsStructMockery) ExecuteWithdraw(flagSet *pflag.FlagSet) {

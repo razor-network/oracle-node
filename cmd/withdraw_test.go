@@ -9,15 +9,15 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
-	"time"
 )
 
-func Test_withdrawFunds(t *testing.T) {
-
+func TestWithdrawFunds(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
@@ -25,13 +25,6 @@ func Test_withdrawFunds(t *testing.T) {
 	var account types.Account
 	var configurations types.Configurations
 	var stakerId uint32
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		cmdUtils:          UtilsCmdMock{},
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		lock                     types.Locks
@@ -213,37 +206,27 @@ func Test_withdrawFunds(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
-		GetLockMock = func(*ethclient.Client, string, uint32) (types.Locks, error) {
-			return tt.args.lock, tt.args.lockErr
-		}
-
-		GetWithdrawReleasePeriodMock = func(*ethclient.Client, string) (uint8, error) {
-			return tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr
-		}
-
-		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-			return tt.args.txnOpts
-		}
-
-		GetEpochMock = func(*ethclient.Client) (uint32, error) {
-			return tt.args.epoch, tt.args.epochErr
-		}
-
-		GetUpdatedEpochMock = func(*ethclient.Client) (uint32, error) {
-			return tt.args.updatedEpoch, tt.args.updatedEpochErr
-		}
-
-		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error) {
-			return tt.args.withdrawHash, tt.args.withdrawErr
-		}
-
-		SleepMock = func(time.Duration) {
-
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := withdrawFunds(client, account, configurations, stakerId, utilsStruct)
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			stakeManagerUtilsMockery = stakeManagerUtilsMock
+			cmdUtilsMockery = cmdUtilsMock
+			transactionUtilsMockery = transactionUtilsMock
+
+			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
+			utilsMock.On("GetWithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetUpdatedEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.updatedEpoch, tt.args.updatedEpochErr)
+			cmdUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			utilsMock.On("Sleep", mock.Anything).Return()
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.WithdrawFunds(client, account, configurations, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdrawFunds function, got = %v, want = %v", got, tt.want)
 			}
@@ -261,15 +244,9 @@ func Test_withdrawFunds(t *testing.T) {
 	}
 }
 
-func Test_withdraw(t *testing.T) {
-
+func TestWithdraw(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	var client *ethclient.Client
 	var stakerId uint32
@@ -308,15 +285,18 @@ func Test_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			WithdrawContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error) {
-				return tt.args.withdrawTxn, tt.args.withdrawErr
-			}
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
 
-			got, err := withdraw(client, txnOpts, stakerId, utilsStruct)
+			stakeManagerUtilsMockery = stakeManagerUtilsMock
+			transactionUtilsMockery = transactionUtilsMock
+
+			stakeManagerUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawTxn, tt.args.withdrawErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.Withdraw(client, txnOpts, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdraw function, got = %v, want = %v", got, tt.want)
 			}
