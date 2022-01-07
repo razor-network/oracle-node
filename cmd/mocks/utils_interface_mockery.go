@@ -219,6 +219,27 @@ func (_m *UtilsInterfaceMockery) GetConfigFilePath() (string, error) {
 	return r0, r1
 }
 
+// GetDefaultPath provides a mock function with given fields:
+func (_m *UtilsInterfaceMockery) GetDefaultPath() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDelayedState provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterfaceMockery) GetDelayedState(_a0 *ethclient.Client, _a1 int32) (int64, error) {
 	ret := _m.Called(_a0, _a1)

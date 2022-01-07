@@ -4,6 +4,9 @@ package mocks
 
 import (
 	big "math/big"
+
+	accounts "github.com/ethereum/go-ethereum/accounts"
+
 	bindings "razor/pkg/bindings"
 
 	common "github.com/ethereum/go-ethereum/common"
@@ -355,6 +358,29 @@ func (_m *UtilsCmdInterfaceMockery) HandleRevealState(_a0 *ethclient.Client, _a1
 	}
 
 	return r0
+}
+
+// ListAccounts provides a mock function with given fields:
+func (_m *UtilsCmdInterfaceMockery) ListAccounts() ([]accounts.Account, error) {
+	ret := _m.Called()
+
+	var r0 []accounts.Account
+	if rf, ok := ret.Get(0).(func() []accounts.Account); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]accounts.Account)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Reveal provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
