@@ -7,6 +7,8 @@ import (
 
 	accounts "github.com/ethereum/go-ethereum/accounts"
 
+	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
+
 	bindings "razor/pkg/bindings"
 
 	common "github.com/ethereum/go-ethereum/common"
@@ -46,6 +48,20 @@ func (_m *UtilsCmdInterfaceMockery) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.
 	}
 
 	return r0, r1
+}
+
+// AutoWithdraw provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) AutoWithdraw(_a0 types.TransactionOptions, _a1 uint32) error {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.TransactionOptions, uint32) error); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // ClaimBlockReward provides a mock function with given fields: _a0
@@ -181,6 +197,39 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteCreateJob(_a0 *pflag.FlagSet) {
 // ExecuteTransfer provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteTransfer(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
+}
+
+// ExecuteUnstake provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteUnstake(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// ExecuteWithdraw provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteWithdraw(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// GetAmountInSRZRs provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) GetAmountInSRZRs(_a0 *ethclient.Client, _a1 string, _a2 bindings.StructsStaker, _a3 *big.Int) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, bindings.StructsStaker, *big.Int) *big.Int); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, bindings.StructsStaker, *big.Int) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetBufferPercent provides a mock function with given fields:
@@ -499,6 +548,27 @@ func (_m *UtilsCmdInterfaceMockery) Transfer(_a0 *ethclient.Client, _a1 types.Co
 	return r0, r1
 }
 
+// Unstake provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) Unstake(_a0 types.Configurations, _a1 *ethclient.Client, _a2 types.UnstakeInput) (types.TransactionOptions, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 types.TransactionOptions
+	if rf, ok := ret.Get(0).(func(types.Configurations, *ethclient.Client, types.UnstakeInput) types.TransactionOptions); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(types.TransactionOptions)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Configurations, *ethclient.Client, types.UnstakeInput) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // WaitForAppropriateState provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterfaceMockery) WaitForAppropriateState(_a0 *ethclient.Client, _a1 string, _a2 ...int) (uint32, error) {
 	_va := make([]interface{}, len(_a2))
@@ -520,6 +590,52 @@ func (_m *UtilsCmdInterfaceMockery) WaitForAppropriateState(_a0 *ethclient.Clien
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, ...int) error); ok {
 		r1 = rf(_a0, _a1, _a2...)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Withdraw provides a mock function with given fields: client, txnOpts, stakerId
+func (_m *UtilsCmdInterfaceMockery) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
+	ret := _m.Called(client, txnOpts, stakerId)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32) common.Hash); ok {
+		r0 = rf(client, txnOpts, stakerId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32) error); ok {
+		r1 = rf(client, txnOpts, stakerId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WithdrawFunds provides a mock function with given fields: client, account, configurations, stakerId
+func (_m *UtilsCmdInterfaceMockery) WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+	ret := _m.Called(client, account, configurations, stakerId)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) common.Hash); ok {
+		r0 = rf(client, account, configurations, stakerId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Account, types.Configurations, uint32) error); ok {
+		r1 = rf(client, account, configurations, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
