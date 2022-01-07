@@ -53,7 +53,7 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login https://registry.hub.docker.com --username "$DOCKERHUB_USERNAME" --password-stdin
+            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker build -t $IMAGE_NAME:$CIRCLE_TAG .
             docker push $IMAGE_NAME:$CIRCLE_TAG
 workflows:
