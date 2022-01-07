@@ -377,7 +377,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 			StakerId:   stakerId,
 		})
 	utils.CheckError("Error in Unstake: ", err)
-	err = cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId, utilsStruct)
+	err = cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId)
 	utils.CheckError("Error in AutoWithdraw: ", err)
 }
 

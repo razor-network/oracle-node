@@ -161,7 +161,6 @@ type flagSetInterface interface {
 }
 
 type utilsCmdInterface interface {
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, uint16, UtilsStruct) (bool, error)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
@@ -171,7 +170,6 @@ type utilsCmdInterface interface {
 	AssignAmountInWei(*pflag.FlagSet, UtilsStruct) (*big.Int, error)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
-	withdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
 	Create(string, UtilsStruct) (accounts.Account, error)
 }
 

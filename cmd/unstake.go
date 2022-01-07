@@ -68,15 +68,8 @@ func (*UtilsStructMockery) ExecuteUnstake(flagSet *pflag.FlagSet) {
 
 	txnOptions, err := cmdUtilsMockery.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
-	utilsStruct := UtilsStruct{
-		stakeManagerUtils: stakeManagerUtils,
-		razorUtils:        razorUtils,
-		transactionUtils:  transactionUtils,
-		cmdUtils:          cmdUtils,
-		flagSetUtils:      flagSetUtils,
-	}
 	if autoWithdraw {
-		err = cmdUtilsMockery.AutoWithdraw(txnOptions, stakerId, utilsStruct)
+		err = cmdUtilsMockery.AutoWithdraw(txnOptions, stakerId)
 		utils.CheckError("AutoWithdraw Error: ", err)
 	}
 }
@@ -136,13 +129,13 @@ func (*UtilsStructMockery) Unstake(config types.Configurations, client *ethclien
 	return txnArgs, nil
 }
 
-func (*UtilsStructMockery) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+func (*UtilsStructMockery) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
 	razorUtilsMockery.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := utilsStruct.cmdUtils.withdrawFunds(txnArgs.Client, types.Account{
+	txn, err := cmdUtilsMockery.WithdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId, utilsStruct)
+	}, txnArgs.Config, stakerId)
 	if err != nil {
 		log.Error("WithdrawFunds error ", err)
 		return err

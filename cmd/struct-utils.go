@@ -688,10 +688,6 @@ func (flagSetUtils FlagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
 }
 
-func (cmdUtils UtilsCmd) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
-	return withdraw(client, txnOpts, stakerId, utilsStruct)
-}
-
 func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, assetId uint16, utilsStruct UtilsStruct) (bool, error) {
 	return CheckCurrentStatus(client, assetId, utilsStruct)
 }
@@ -725,11 +721,7 @@ func (cmdUtils UtilsCmd) Unstake(config types.Configurations, client *ethclient.
 }
 
 func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
-	return cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId, utilsStruct)
-}
-
-func (cmdUtils UtilsCmd) withdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32, utilsStruct UtilsStruct) (common.Hash, error) {
-	return withdrawFunds(client, account, configurations, stakerId, utilsStruct)
+	return cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId)
 }
 
 func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAccounts.Account, error) {

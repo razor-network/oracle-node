@@ -30,6 +30,10 @@ func (u UtilsMockery) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return utils.GetEpoch(client)
 }
 
+func (u UtilsMockery) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
+	return utils.GetEpoch(client)
+}
+
 func (u UtilsMockery) GetOptions() bind.CallOpts {
 	return utils.UtilsInterface.GetOptions()
 }
@@ -170,6 +174,10 @@ func (u UtilsMockery) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, 
 
 func (u UtilsMockery) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
 	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
+}
+
+func (u UtilsMockery) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
+	return utils.GetWithdrawReleasePeriod(client, address)
 }
 
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {

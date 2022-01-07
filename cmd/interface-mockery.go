@@ -39,6 +39,7 @@ type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
 	ViperWriteConfigAs(string) error
 	GetEpoch(*ethclient.Client) (uint32, error)
+	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(*ethclient.Client) int64
 	Sleep(time.Duration)
@@ -72,6 +73,7 @@ type UtilsInterfaceMockery interface {
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
+	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -191,7 +193,10 @@ type UtilsCmdInterfaceMockery interface {
 	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int) (*big.Int, error)
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
-	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
+	AutoWithdraw(types.TransactionOptions, uint32) error
+	ExecuteWithdraw(*pflag.FlagSet)
+	Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
+	WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
