@@ -10,42 +10,25 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 )
 
-func Test_createCollection(t *testing.T) {
+func TestCreateCollection(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	var client *ethclient.Client
 	var WaitForDisputeOrConfirmStateStatus uint32
-	var flagSet *pflag.FlagSet
 	var config types.Configurations
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		assetManagerUtils: AssetManagerMock{},
-		transactionUtils:  TransactionMock{},
-		flagSetUtils:      FlagSetMock{},
-		cmdUtils:          UtilsCmdMock{},
-	}
+	var collectionInput types.CreateCollectionInput
 
 	type args struct {
-		password                   string
-		name                       string
-		nameErr                    error
-		address                    string
-		addressErr                 error
-		jobId                      []uint
-		jobIdErr                   error
-		aggregation                uint32
-		aggregationErr             error
-		power                      int8
-		powerErr                   error
 		txnOpts                    *bind.TransactOpts
 		jobIdUint8                 []uint16
 		waitForAppropriateStateErr error
@@ -60,14 +43,8 @@ func Test_createCollection(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test 1: When createCollection function executes successfully",
+			name: "Test 1: When CreateCollection function executes successfully",
 			args: args{
-				password:            "test",
-				name:                "ETH-Collection",
-				address:             "0x000000000000000000000000000000000000dead",
-				jobId:               []uint{1, 2},
-				aggregation:         1,
-				power:               0,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -77,101 +54,8 @@ func Test_createCollection(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When there is an error in getting name from flags",
+			name: "Test 2: When there is an error in WaitForConfirmState",
 			args: args{
-				password:            "test",
-				name:                "",
-				nameErr:             errors.New("name error"),
-				address:             "0x000000000000000000000000000000000000dead",
-				jobId:               []uint{1, 2},
-				aggregation:         1,
-				power:               0,
-				txnOpts:             txnOpts,
-				jobIdUint8:          []uint16{1, 2},
-				createCollectionTxn: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("name error"),
-		},
-		{
-			name: "Test 3: When there is an error in getting address from flags",
-			args: args{
-				password:            "test",
-				name:                "ETH-Collection",
-				address:             "",
-				addressErr:          errors.New("address error"),
-				jobId:               []uint{1, 2},
-				aggregation:         1,
-				power:               0,
-				txnOpts:             txnOpts,
-				jobIdUint8:          []uint16{1, 2},
-				createCollectionTxn: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("address error"),
-		},
-		{
-			name: "Test 4: When there is an error in getting jobId's from flags",
-			args: args{
-				password:            "test",
-				name:                "ETH-Collection",
-				address:             "0x000000000000000000000000000000000000dead",
-				jobIdErr:            errors.New("jobId error"),
-				aggregation:         1,
-				power:               0,
-				txnOpts:             txnOpts,
-				jobIdUint8:          []uint16{1, 2},
-				createCollectionTxn: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("jobId error"),
-		},
-		{
-			name: "Test 5: When there is an error in getting aggregation method from flags",
-			args: args{
-				password:            "test",
-				name:                "ETH-Collection",
-				address:             "0x000000000000000000000000000000000000dead",
-				jobId:               []uint{1, 2},
-				aggregationErr:      errors.New("aggregation error"),
-				power:               0,
-				txnOpts:             txnOpts,
-				jobIdUint8:          []uint16{1, 2},
-				createCollectionTxn: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("aggregation error"),
-		},
-		{
-			name: "Test 6: When there is an error in getting power from flags",
-			args: args{
-				password:            "test",
-				name:                "ETH-Collection",
-				address:             "0x000000000000000000000000000000000000dead",
-				jobId:               []uint{1, 2},
-				aggregation:         1,
-				powerErr:            errors.New("power error"),
-				txnOpts:             txnOpts,
-				jobIdUint8:          []uint16{1, 2},
-				createCollectionTxn: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("power error"),
-		},
-		{
-			name: "Test 7: When there is an error in WaitForConfirmState",
-			args: args{
-				password:                   "test",
-				name:                       "ETH-Collection",
-				address:                    "0x000000000000000000000000000000000000dead",
-				jobId:                      []uint{1, 2},
-				aggregation:                1,
-				power:                      0,
 				txnOpts:                    txnOpts,
 				jobIdUint8:                 []uint16{1, 2},
 				waitForAppropriateStateErr: errors.New("waitForDisputeOrConfirmState error"),
@@ -182,14 +66,8 @@ func Test_createCollection(t *testing.T) {
 			wantErr: errors.New("waitForDisputeOrConfirmState error"),
 		},
 		{
-			name: "Test 8: When CreateCollection transaction fails",
+			name: "Test 3: When CreateCollection transaction fails",
 			args: args{
-				password:            "test",
-				name:                "ETH-Collection",
-				address:             "0x000000000000000000000000000000000000dead",
-				jobId:               []uint{1, 2},
-				aggregation:         1,
-				power:               0,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -203,55 +81,24 @@ func Test_createCollection(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			AssignPasswordMock = func(*pflag.FlagSet) string {
-				return tt.args.password
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			assetManagerUtilsMock := new(mocks.AssetManagerInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
 
-			GetStringNameMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.name, tt.args.nameErr
-			}
+			razorUtilsMockery = utilsMock
+			assetManagerUtilsMockery = assetManagerUtilsMock
+			transactionUtilsMockery = transactionUtilsMock
+			cmdUtilsMockery = cmdUtilsMock
 
-			GetStringAddressMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.address, tt.args.addressErr
-			}
+			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
+			assetManagerUtilsMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			GetUintSliceJobIdsMock = func(*pflag.FlagSet) ([]uint, error) {
-				return tt.args.jobId, tt.args.jobIdErr
-			}
-
-			GetUint32AggregationMock = func(*pflag.FlagSet) (uint32, error) {
-				return tt.args.aggregation, tt.args.aggregationErr
-			}
-
-			GetInt8PowerMock = func(*pflag.FlagSet) (int8, error) {
-				return tt.args.power, tt.args.powerErr
-			}
-
-			ConnectToClientMock = func(string) *ethclient.Client {
-				return client
-			}
-
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
-
-			ConvertUintArrayToUint16ArrayMock = func([]uint) []uint16 {
-				return tt.args.jobIdUint8
-			}
-
-			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
-				return WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr
-			}
-
-			CreateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, []uint16, uint32, int8, string) (*Types.Transaction, error) {
-				return tt.args.createCollectionTxn, tt.args.createCollectionErr
-			}
-
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
-			got, err := utilsStruct.createCollection(flagSet, config)
+			utils := &UtilsStructMockery{}
+			got, err := utils.CreateCollection(client, config, collectionInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for createCollection function, got = %v, want = %v", got, tt.want)
 			}
@@ -263,6 +110,188 @@ func Test_createCollection(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for createCollection function, got = %v, want = %v", got, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestExecuteCreateCollection(t *testing.T) {
+	var client *ethclient.Client
+	var config types.Configurations
+	var flagSet *pflag.FlagSet
+
+	type args struct {
+		config               types.Configurations
+		configErr            error
+		password             string
+		name                 string
+		nameErr              error
+		address              string
+		addressErr           error
+		jobId                []uint
+		jobIdErr             error
+		aggregation          uint32
+		aggregationErr       error
+		power                int8
+		powerErr             error
+		createCollectionErr  error
+		createCollectionHash common.Hash
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteCreateCollection function executes successfully",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting name from flags",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "",
+				nameErr:              errors.New("name error"),
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting address from flags",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "",
+				addressErr:           errors.New("address error"),
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting jobId's from flags",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobIdErr:             errors.New("jobId error"),
+				aggregation:          1,
+				power:                0,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting aggregation method from flags",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregationErr:       errors.New("aggregation error"),
+				power:                0,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting power from flags",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				powerErr:             errors.New("power error"),
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 7: When there is an error from CreateCollection",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				createCollectionErr:  errors.New("createCollection error"),
+				createCollectionHash: core.NilHash,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 8: When there is an error in getting config",
+			args: args{
+				config:               config,
+				configErr:            errors.New("config error"),
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			flagSetUtilsMockery = flagsetUtilsMock
+			cmdUtilsMockery = cmdUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagsetUtilsMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
+			flagsetUtilsMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
+			flagsetUtilsMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
+			flagsetUtilsMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("CreateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+
+			utils := &UtilsStructMockery{}
+			fatal = false
+
+			utils.ExecuteCreateCollection(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteCreateCollection function didn't execute as expected")
 			}
 		})
 	}

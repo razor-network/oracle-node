@@ -71,18 +71,6 @@ func TestCreateJob(t *testing.T) {
 			assetManagerUtilsMockery = assetManagerUtilsMock
 			transactionUtilsMockery = transactionUtilsMock
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
-
-			CreateJobMock = func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error) {
-				return tt.args.createJobTxn, tt.args.createJobErr
-			}
-
-			HashMock = func(transaction *Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			assetManagerUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)

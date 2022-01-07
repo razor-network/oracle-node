@@ -12,11 +12,6 @@ import (
 
 func TestGetEpochAndState(t *testing.T) {
 	var client *ethclient.Client
-	var address string
-
-	utilsStruct := UtilsStruct{
-		razorUtils: UtilsMock{},
-	}
 
 	type args struct {
 		epoch            uint32
@@ -85,23 +80,19 @@ func TestGetEpochAndState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetEpochMock = func(*ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
 
-			getBufferPercentMock = func(UtilsStruct) (int32, error) {
-				return tt.args.bufferPercent, tt.args.bufferPercentErr
-			}
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
 
-			GetDelayedStateMock = func(*ethclient.Client, int32) (int64, error) {
-				return tt.args.state, tt.args.stateErr
-			}
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 
-			GetStateNameMock = func(int64) string {
-				return tt.args.stateName
-			}
-
-			gotEpoch, gotState, err := GetEpochAndState(client, address, utilsStruct)
+			utils := &UtilsStructMockery{}
+			gotEpoch, gotState, err := utils.GetEpochAndState(client)
 			if gotEpoch != tt.wantEpoch {
 				t.Errorf("GetEpochAndState() got epoch = %v, want %v", gotEpoch, tt.wantEpoch)
 			}
@@ -123,12 +114,6 @@ func TestGetEpochAndState(t *testing.T) {
 
 func TestWaitForAppropriateState(t *testing.T) {
 	var client *ethclient.Client
-	var address string
-
-	utilsStruct := UtilsStruct{
-		cmdUtils:   UtilsCmdMock{},
-		razorUtils: UtilsMock{},
-	}
 
 	type args struct {
 		epoch           uint32
@@ -189,11 +174,14 @@ func TestWaitForAppropriateState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetEpochAndStateMock = func(*ethclient.Client, string, UtilsStruct) (uint32, int64, error) {
-				return tt.args.epoch, tt.args.state, tt.args.epochOrStateErr
-			}
 
-			got, err := WaitForAppropriateState(client, address, tt.args.action, utilsStruct, tt.args.states)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			cmdUtilsMockery = cmdUtilsMock
+
+			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.WaitForAppropriateState(client, tt.args.action, tt.args.states)
 			if got != tt.want {
 				t.Errorf("WaitForAppropriateState() function, got = %v, want = %v", got, tt.want)
 			}
