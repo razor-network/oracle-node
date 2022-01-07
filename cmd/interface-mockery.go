@@ -62,6 +62,8 @@ type UtilsInterfaceMockery interface {
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
+	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
+	GetStateName(int64) string
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -161,6 +163,10 @@ type UtilsCmdInterfaceMockery interface {
 	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
 	ExecuteCreateJob(*pflag.FlagSet)
 	CreateJob(*ethclient.Client, types.Configurations, types.CreateJobInput) (common.Hash, error)
+	ExecuteCreateCollection(*pflag.FlagSet)
+	CreateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput) (common.Hash, error)
+	GetEpochAndState(*ethclient.Client) (uint32, int64, error)
+	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
 }
 
 type TransactionInterfaceMockery interface {

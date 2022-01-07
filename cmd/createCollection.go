@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"razor/core"
@@ -21,73 +22,75 @@ Example:
 Note: 
   This command only works for the admin.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-			cmdUtils:          cmdUtils,
-		}
-		config, err := cmdUtilsMockery.GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		txn, err := utilsStruct.createCollection(cmd.Flags(), config)
-		utils.CheckError("CreateCollection error: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseCreateCollection,
 }
 
-func (utilsStruct UtilsStruct) createCollection(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	name, err := utilsStruct.flagSetUtils.GetStringName(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	jobIdInUint, err := utilsStruct.flagSetUtils.GetUintSliceJobIds(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	aggregation, err := utilsStruct.flagSetUtils.GetUint32Aggregation(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
-	if err != nil {
-		return core.NilHash, err
+func initialiseCreateCollection(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteCreateCollection(cmd.Flags())
+}
+
+func (*UtilsStructMockery) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
+	config, err := cmdUtilsMockery.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	name, err := flagSetUtilsMockery.GetStringName(flagSet)
+	utils.CheckError("Error in getting name: ", err)
+
+	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	jobIdInUint, err := flagSetUtilsMockery.GetUintSliceJobIds(flagSet)
+	utils.CheckError("Error in getting jobId: ", err)
+
+	aggregation, err := flagSetUtilsMockery.GetUint32Aggregation(flagSet)
+	utils.CheckError("Error in getting aggregation method: ", err)
+
+	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	utils.CheckError("Error in getting power: ", err)
+
+	client := razorUtilsMockery.ConnectToClient(config.Provider)
+
+	collectionInput := types.CreateCollectionInput{
+		Address:     address,
+		Password:    password,
+		Power:       power,
+		Name:        name,
+		Aggregation: aggregation,
+		JobIds:      jobIdInUint,
 	}
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+	txn, err := cmdUtilsMockery.CreateCollection(client, config, collectionInput)
+	utils.CheckError("CreateCollection error: ", err)
+	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+}
 
-	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
-	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(client, address, "create collection", utilsStruct, 4)
+func (*UtilsStructMockery) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
+	jobIds := razorUtilsMockery.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	_, err := cmdUtilsMockery.WaitForAppropriateState(client, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        collectionInput.Password,
+		AccountAddress:  collectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createCollection",
-		Parameters:      []interface{}{jobIds, aggregation, power, name},
+		Parameters:      []interface{}{jobIds, collectionInput.Aggregation, collectionInput.Power, collectionInput.Name},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := utilsStruct.assetManagerUtils.CreateCollection(client, txnOpts, jobIds, aggregation, power, name)
+	txn, err := assetManagerUtilsMockery.CreateCollection(client, txnOpts, jobIds, collectionInput.Aggregation, collectionInput.Power, collectionInput.Name)
 	if err != nil {
 		log.Error("Error in creating collection")
 		return core.NilHash, err
 	}
 	log.Info("Creating collection...")
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
+	return transactionUtilsMockery.Hash(txn), nil
 }
 
 func init() {
@@ -100,6 +103,10 @@ func init() {
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtilsMockery = UtilsMockery{}
+	assetManagerUtilsMockery = AssetManagerUtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

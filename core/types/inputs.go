@@ -33,3 +33,12 @@ type CreateJobInput struct {
 	Weight       uint8
 	SelectorType uint8
 }
+
+type CreateCollectionInput struct {
+	Address     string
+	Name        string
+	Password    string
+	Aggregation uint32
+	Power       int8
+	JobIds      []uint
+}

@@ -10,8 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStruct UtilsStruct) (uint32, int64, error) {
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+func (*UtilsStructMockery) GetEpochAndState(client *ethclient.Client) (uint32, int64, error) {
+	epoch, err := razorUtilsMockery.GetEpoch(client)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -19,18 +19,18 @@ func GetEpochAndState(client *ethclient.Client, accountAddress string, utilsStru
 	if err != nil {
 		return 0, 0, err
 	}
-	state, err := utilsStruct.razorUtils.GetDelayedState(client, bufferPercent)
+	state, err := razorUtilsMockery.GetDelayedState(client, bufferPercent)
 	if err != nil {
 		return 0, 0, err
 	}
 	log.Debug("Epoch ", epoch)
-	log.Debug("State ", utilsStruct.razorUtils.GetStateName(state))
+	log.Debug("State ", razorUtilsMockery.GetStateName(state))
 	return epoch, state, nil
 }
 
-func WaitForAppropriateState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct, states ...int) (uint32, error) {
+func (*UtilsStructMockery) WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error) {
 	for {
-		epoch, state, err := utilsStruct.cmdUtils.GetEpochAndState(client, accountAddress, utilsStruct)
+		epoch, state, err := cmdUtilsMockery.GetEpochAndState(client)
 		if err != nil {
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err

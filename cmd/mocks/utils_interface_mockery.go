@@ -97,6 +97,22 @@ func (_m *UtilsInterfaceMockery) ConnectToClient(_a0 string) *ethclient.Client {
 	return r0
 }
 
+// ConvertUintArrayToUint16Array provides a mock function with given fields: uintArr
+func (_m *UtilsInterfaceMockery) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
+	ret := _m.Called(uintArr)
+
+	var r0 []uint16
+	if rf, ok := ret.Get(0).(func([]uint) []uint16); ok {
+		r0 = rf(uintArr)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint16)
+		}
+	}
+
+	return r0
+}
+
 // FetchBalance provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterfaceMockery) FetchBalance(_a0 *ethclient.Client, _a1 string) (*big.Int, error) {
 	ret := _m.Called(_a0, _a1)
@@ -374,6 +390,20 @@ func (_m *UtilsInterfaceMockery) GetRogueRandomValue(_a0 int) *big.Int {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
+	}
+
+	return r0
+}
+
+// GetStateName provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetStateName(_a0 int64) string {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(int64) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0
