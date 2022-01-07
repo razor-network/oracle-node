@@ -68,7 +68,7 @@ func TestHandleRevealState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetEpochLastCommittedMock = func(*ethclient.Client, string, uint32) (uint32, error) {
+			GetEpochLastCommittedMock = func(*ethclient.Client, uint32) (uint32, error) {
 				return tt.args.epochLastCommitted, tt.args.epochLastCommittedErr
 			}
 

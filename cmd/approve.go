@@ -8,7 +8,7 @@ import (
 )
 
 func (utilsStruct UtilsStruct) approve(txnArgs types.TransactionOptions) (common.Hash, error) {
-	opts := utilsStruct.razorUtils.GetOptions(false, txnArgs.AccountAddress, "")
+	opts := utilsStruct.razorUtils.GetOptions()
 	allowance, err := utilsStruct.tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		return common.Hash{0x00}, err

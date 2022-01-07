@@ -27,8 +27,9 @@ Note:
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
+			cmdUtils:          cmdUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		txn, err := utilsStruct.updateCollection(cmd.Flags(), config)
@@ -43,7 +44,7 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
-	collectionId, err := utilsStruct.flagSetUtils.GetUint8CollectionId(flagSet)
+	collectionId, err := utilsStruct.flagSetUtils.GetUint16CollectionId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -59,9 +60,9 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
-	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint8Array(jobIdInUint)
+	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	_, err = utilsStruct.razorUtils.WaitIfCommitState(client, address, "update collection")
+	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update collection", utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
@@ -93,6 +94,7 @@ func init() {
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FlagSetUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(updateCollectionCmd)
 

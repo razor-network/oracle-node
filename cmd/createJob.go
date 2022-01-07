@@ -20,7 +20,7 @@ var createJobCmd = &cobra.Command{
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The createJob command can be used to create a job that the stakers can vote upon.
 
 Example:
-  ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -p 2 -s last -u https://api.gemini.com/v1/pubticker/btcusd
+  ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -p 2 -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd
 
 Note: 
   This command only works for the admin.
@@ -32,7 +32,7 @@ Note:
 			transactionUtils:  transactionUtils,
 			flagSetUtils:      flagSetUtils,
 		}
-		config, err := GetConfigData()
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 		txn, err := utilsStruct.createJob(cmd.Flags(), config)
 		utils.CheckError("CreateJob error: ", err)
@@ -72,8 +72,12 @@ func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Co
 		return core.NilHash, err
 	}
 
+	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	selectorType := 1
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        password,
@@ -82,13 +86,13 @@ func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Co
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
-		Parameters:      []interface{}{weight, power, uint8(selectorType), name, selector, url},
+		Parameters:      []interface{}{weight, power, selectorType, name, selector, url},
 		ABI:             bindings.AssetManagerABI,
 	}
 
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, uint8(selectorType), name, selector, url)
+	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, selectorType, name, selector, url)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -106,17 +110,19 @@ func init() {
 	rootCmd.AddCommand(createJobCmd)
 
 	var (
-		URL      string
-		Selector string
-		Name     string
-		Power    int8
-		Account  string
-		Password string
-		Weight   uint8
+		URL          string
+		Selector     string
+		SelectorType uint8
+		Name         string
+		Power        int8
+		Account      string
+		Password     string
+		Weight       uint8
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
-	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath selector)")
+	createJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
+	createJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 0, "selector type (0 for json, 1 for XHTML)")
 	createJobCmd.Flags().StringVarP(&Name, "name", "n", "", "name of job")
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")

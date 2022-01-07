@@ -25,7 +25,19 @@ var stakeCmd = &cobra.Command{
 Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			transactionUtils:  transactionUtils,
+			tokenManagerUtils: tokenManagerUtils,
+			flagSetUtils:      flagSetUtils,
+			proposeUtils:      proposeUtils,
+			blockManagerUtils: blockManagerUtils,
+			voteManagerUtils:  voteManagerUtils,
+			cmdUtils:          cmdUtils,
+		}
+
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -34,7 +46,9 @@ Example:
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account: "+address, err)
 
-		valueInWei := utils.AssignAmountInWei(cmd.Flags())
+		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
+		utils.CheckError("Error in getting amount: ", err)
+
 		utils.CheckAmountAndBalance(valueInWei, balance)
 
 		utils.CheckEthBalanceIsZero(client, address)
@@ -48,13 +62,6 @@ Example:
 			Config:         config,
 		}
 
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			tokenManagerUtils: tokenManagerUtils,
-		}
-
 		approveTxnHash, err := utilsStruct.approve(txnArgs)
 		utils.CheckError("Approve error: ", err)
 
@@ -66,6 +73,20 @@ Example:
 		utils.CheckError("Stake error: ", err)
 		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
+		if utils.IsFlagPassed("autoVote") {
+			isAutoVote, _ := cmd.Flags().GetBool("autoVote")
+			if isAutoVote {
+				log.Info("Staked!...Starting to vote now.")
+				account := types.Account{Address: address, Password: password}
+				isRogue, _ := cmd.Flags().GetBool("rogue")
+				rogueMode, _ := cmd.Flags().GetStringSlice("rogueMode")
+				rogueData := types.Rogue{
+					IsRogue:   isRogue,
+					RogueMode: rogueMode,
+				}
+				utilsStruct.vote(config, client, rogueData, account)
+			}
+		}
 	},
 }
 
@@ -94,19 +115,32 @@ func init() {
 	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	flagSetUtils = FlagSetUtils{}
+	proposeUtils = ProposeUtils{}
+	voteManagerUtils = VoteManagerUtils{}
+	blockManagerUtils = BlockManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	proposeUtils = ProposeUtils{}
+	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount   string
-		Address  string
-		Password string
-		Power    string
+		Amount            string
+		Address           string
+		Password          string
+		Power             string
+		VoteAutomatically bool
+		Rogue             bool
+		RogueMode         []string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	stakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	stakeCmd.Flags().BoolVarP(&VoteAutomatically, "autoVote", "", false, "vote after stake automatically")
+	stakeCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
+	stakeCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

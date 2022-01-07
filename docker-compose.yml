@@ -1,0 +1,10 @@
+version: "3"
+services:
+  razor-go:
+    #platform: linux/x86_64 #Uncomment for silicon based MAC
+    container_name: razor-go
+    image: razornetwork/razor-go
+    build: .
+    tty: true
+    volumes:
+      - $HOME/.razor:/root/.razor

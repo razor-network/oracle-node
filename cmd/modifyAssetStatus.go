@@ -19,9 +19,6 @@ var modifyAssetStatusCmd = &cobra.Command{
 Example:	
   ./razor modifyAssetStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --assetId 1 --status true`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
-		utils.CheckError("Error in fetching config data: ", err)
-
 		utilsStruct := UtilsStruct{
 			razorUtils:        razorUtils,
 			cmdUtils:          cmdUtils,
@@ -29,6 +26,9 @@ Example:
 			assetManagerUtils: assetManagerUtils,
 			transactionUtils:  transactionUtils,
 		}
+
+		config, err := GetConfigData(utilsStruct)
+		utils.CheckError("Error in fetching config data: ", err)
 
 		txn, err := utilsStruct.ModifyAssetStatus(cmd.Flags(), config)
 		utils.CheckError("Error in changing asset active status: ", err)
@@ -38,8 +38,8 @@ Example:
 	},
 }
 
-func CheckCurrentStatus(client *ethclient.Client, address string, assetId uint8, utilsStruct UtilsStruct) (bool, error) {
-	callOpts := utilsStruct.razorUtils.GetOptions(false, address, "")
+func CheckCurrentStatus(client *ethclient.Client, assetId uint16, utilsStruct UtilsStruct) (bool, error) {
+	callOpts := utilsStruct.razorUtils.GetOptions()
 	return utilsStruct.assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
 
@@ -48,7 +48,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 	if err != nil {
 		return core.NilHash, err
 	}
-	assetId, err := utilsStruct.flagSetUtils.GetUint8AssetId(flagSet)
+	assetId, err := utilsStruct.flagSetUtils.GetUint16AssetId(flagSet)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -66,7 +66,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
-	currentStatus, err := utilsStruct.cmdUtils.CheckCurrentStatus(client, address, assetId, utilsStruct)
+	currentStatus, err := utilsStruct.cmdUtils.CheckCurrentStatus(client, assetId, utilsStruct)
 	if err != nil {
 		log.Error("Error in fetching active status")
 		return core.NilHash, err
@@ -75,7 +75,7 @@ func (utilsStruct UtilsStruct) ModifyAssetStatus(flagSet *pflag.FlagSet, config 
 		log.Errorf("Asset %d has the active status already set to %t", assetId, status)
 		return core.NilHash, nil
 	}
-	_, err = utilsStruct.razorUtils.WaitForAppropriateState(client, address, "modify asset status", 4)
+	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(client, address, "modify asset status", utilsStruct, 4)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -109,6 +109,8 @@ func init() {
 	flagSetUtils = FlagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

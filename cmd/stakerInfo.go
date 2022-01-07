@@ -17,16 +17,19 @@ var stakerInfoCmd = &cobra.Command{
 Example:
   ./razor stakerInfo --stakerId 2`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := GetConfigData()
+		utilsStruct := UtilsStruct{
+			razorUtils:        razorUtils,
+			stakeManagerUtils: stakeManagerUtils,
+			flagSetUtils:      flagSetUtils,
+		}
+
+		config, err := GetConfigData(utilsStruct)
 		utils.CheckError("Error in getting config: ", err)
 
 		client := utils.ConnectToClient(config.Provider)
 
 		stakerId, _ := cmd.Flags().GetUint32("stakerId")
-		utilsStruct := &UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-		}
+
 		err = utilsStruct.GetStakerInfo(client, stakerId)
 		if err != nil {
 			log.Error("Error in getting staker info: ", err)
@@ -35,7 +38,7 @@ Example:
 }
 
 func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
-	callOpts := razorUtils.GetOptions(false, "", "")
+	callOpts := razorUtils.GetOptions()
 	stakerInfo, err := utilsStruct.stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
 		return err
@@ -48,7 +51,7 @@ func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId
 	if err != nil {
 		return err
 	}
-	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, "", stakerId, epoch)
+	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, stakerId, epoch)
 	if err != nil {
 		return err
 	}
@@ -69,6 +72,7 @@ func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId
 func init() {
 	razorUtils = Utils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	flagSetUtils = FlagSetUtils{}
 
 	rootCmd.AddCommand(stakerInfoCmd)
 
