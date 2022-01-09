@@ -144,6 +144,10 @@ func (u UtilsMockery) GetStateName(state int64) string {
 	return utils.GetStateName(state)
 }
 
+func (u UtilsMockery) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+	return utils.GetJobs(client)
+}
+
 func (u UtilsMockery) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	utils.CheckEthBalanceIsZero(client, address)
 }

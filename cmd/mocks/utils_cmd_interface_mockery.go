@@ -194,6 +194,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteCreateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
+// ExecuteJobList provides a mock function with given fields:
+func (_m *UtilsCmdInterfaceMockery) ExecuteJobList() {
+	_m.Called()
+}
+
 // ExecuteTransfer provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteTransfer(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -342,6 +347,20 @@ func (_m *UtilsCmdInterfaceMockery) GetGasPrice() (int32, error) {
 	}
 
 	return r0, r1
+}
+
+// GetJobList provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) GetJobList(_a0 *ethclient.Client) error {
+	ret := _m.Called(_a0)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) error); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // GetLogLevel provides a mock function with given fields:

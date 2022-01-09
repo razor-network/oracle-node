@@ -65,6 +65,7 @@ type UtilsInterfaceMockery interface {
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	GetStateName(int64) string
+	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
@@ -190,6 +191,8 @@ type UtilsCmdInterfaceMockery interface {
 	CreateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput) (common.Hash, error)
 	GetEpochAndState(*ethclient.Client) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
+	ExecuteJobList()
+	GetJobList(*ethclient.Client) error
 	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int) (*big.Int, error)
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
