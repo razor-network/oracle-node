@@ -204,6 +204,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteJobList() {
 	_m.Called()
 }
 
+// ExecuteStakerinfo provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteStakerinfo(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteTransfer provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteTransfer(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -443,6 +448,20 @@ func (_m *UtilsCmdInterfaceMockery) GetProvider() (string, error) {
 	}
 
 	return r0, r1
+}
+
+// GetStakerInfo provides a mock function with given fields: client, stakerId
+func (_m *UtilsCmdInterfaceMockery) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
+	ret := _m.Called(client, stakerId)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) error); ok {
+		r0 = rf(client, stakerId)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // GetWaitTime provides a mock function with given fields:
