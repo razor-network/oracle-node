@@ -75,6 +75,7 @@ type UtilsInterfaceMockery interface {
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
+	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -200,6 +201,8 @@ type UtilsCmdInterfaceMockery interface {
 	ExecuteWithdraw(*pflag.FlagSet)
 	Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
 	WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
+	ExecuteCollectionList()
+	GetCollectionList(*ethclient.Client) error
 }
 
 type TransactionInterfaceMockery interface {
