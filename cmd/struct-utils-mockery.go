@@ -184,6 +184,10 @@ func (u UtilsMockery) GetWithdrawReleasePeriod(client *ethclient.Client, address
 	return utils.GetWithdrawReleasePeriod(client, address)
 }
 
+func (u UtilsMockery) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
