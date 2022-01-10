@@ -188,6 +188,10 @@ func (u UtilsMockery) GetInfluenceSnapshot(client *ethclient.Client, stakerId ui
 	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
+func (u UtilsMockery) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return utils.GetCollections(client)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

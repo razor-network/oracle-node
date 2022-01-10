@@ -259,6 +259,29 @@ func (_m *UtilsInterfaceMockery) GetAmountInWei(_a0 *big.Int) *big.Int {
 	return r0
 }
 
+// GetCollections provides a mock function with given fields: _a0
+func (_m *UtilsInterfaceMockery) GetCollections(_a0 *ethclient.Client) ([]bindings.StructsCollection, error) {
+	ret := _m.Called(_a0)
+
+	var r0 []bindings.StructsCollection
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) []bindings.StructsCollection); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]bindings.StructsCollection)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCommitments provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterfaceMockery) GetCommitments(_a0 *ethclient.Client, _a1 string) ([32]byte, error) {
 	ret := _m.Called(_a0, _a1)
