@@ -184,6 +184,10 @@ func (u UtilsMockery) GetWithdrawReleasePeriod(client *ethclient.Client, address
 	return utils.GetWithdrawReleasePeriod(client, address)
 }
 
+func (u UtilsMockery) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return utils.GetCollections(client)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
