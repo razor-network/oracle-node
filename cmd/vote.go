@@ -85,7 +85,7 @@ func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
 	}()
 
 	if err := utilsStruct.vote(ctx, config, client, rogueData, account); err != nil {
-		log.Error(os.Stderr, "%s\n", err)
+		log.Errorf("%s\n", err)
 		os.Exit(1)
 	}
 }
