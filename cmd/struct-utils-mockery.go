@@ -228,6 +228,22 @@ func (u UtilsMockery) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []
 	return utils.ConvertBigIntArrayToUint32Array(bigIntArray)
 }
 
+func (u UtilsMockery) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
+	return utils.GetActiveAssetIds(client)
+}
+
+func (u UtilsMockery) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
+	return utils.UtilsInterface.GetBlockManager(client)
+}
+
+func (u UtilsMockery) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
+	return utils.GetVotes(client, stakerId)
+}
+
+func (u UtilsMockery) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
+	return utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -589,4 +605,8 @@ func (flagSetUtils FLagSetUtilsMockery) GetStringValue(flagSet *pflag.FlagSet) (
 
 func (flagSetUtils FLagSetUtilsMockery) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("pow")
+}
+
+func (*UtilsStructMockery) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
+	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }

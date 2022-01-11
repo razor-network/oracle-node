@@ -86,6 +86,10 @@ type UtilsInterfaceMockery interface {
 	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
+	GetActiveAssetIds(*ethclient.Client) ([]uint16, error)
+	GetBlockManager(*ethclient.Client) *bindings.BlockManager
+	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
+	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -227,6 +231,8 @@ type UtilsCmdInterfaceMockery interface {
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
 	GetBiggestInfluenceAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
+	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
+	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 }
 
 type TransactionInterfaceMockery interface {

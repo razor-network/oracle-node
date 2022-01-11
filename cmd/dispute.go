@@ -14,7 +14,7 @@ import (
 var giveSortedAssetIds []int
 
 func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
-	sortedProposedBlockIds, err := utilsStruct.razorUtils.GetSortedProposedBlockIds(client, account.Address, epoch)
+	sortedProposedBlockIds, err := razorUtilsMockery.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 
 	for i := 0; i < len(sortedProposedBlockIds); i++ {
 		blockId := sortedProposedBlockIds[i]
-		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, blockId)
+		proposedBlock, err := razorUtilsMockery.GetProposedBlock(client, epoch, blockId)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -44,20 +44,20 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 			log.Debug("Biggest Influence in proposed block: ", proposedBlock.BiggestInfluence)
 			log.Warn("PROPOSED BIGGEST INFLUENCE DOES NOT MATCH WITH ACTUAL BIGGEST INFLUENCE")
 			log.Info("Disputing BiggestInfluenceProposed...")
-			txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+			txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 				Client:         client,
 				Password:       account.Password,
 				AccountAddress: account.Address,
 				ChainId:        core.ChainId,
 				Config:         config,
 			})
-			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
+			DisputeBiggestInfluenceProposedTxn, err := blockManagerUtilsMockery.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
 			if err != nil {
 				log.Error(err)
 				continue
 			}
-			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn))
-			status := utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			log.Info("Txn Hash: ", transactionUtilsMockery.Hash(DisputeBiggestInfluenceProposedTxn))
+			status := razorUtilsMockery.WaitForBlockCompletion(client, transactionUtilsMockery.Hash(DisputeBiggestInfluenceProposedTxn).String())
 			if status == 1 {
 				continue
 			}
@@ -66,15 +66,15 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
 
-		isEqual, j := utilsStruct.razorUtils.IsEqual(proposedBlock.Medians, medians)
+		isEqual, j := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
-			activeAssetIds, _ := utilsStruct.razorUtils.GetActiveAssetIds(client)
+			activeAssetIds, _ := razorUtilsMockery.GetActiveAssetIds(client)
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
 			if proposedBlock.Valid {
-				err := utilsStruct.cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId, utilsStruct)
+				err := cmdUtilsMockery.Dispute(client, config, account, epoch, uint8(i), assetId)
 				if err != nil {
 					log.Error("Error in disputing...", err)
 					continue
@@ -92,9 +92,9 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	return nil
 }
 
-func Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
-	blockManager := utilsStruct.razorUtils.GetBlockManager(client)
-	numOfStakers, err := utilsStruct.razorUtils.GetNumberOfStakers(client, account.Address)
+func (*UtilsStructMockery) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
+	blockManager := razorUtilsMockery.GetBlockManager(client)
+	numOfStakers, err := razorUtilsMockery.GetNumberOfStakers(client, account.Address)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	var sortedStakers []uint32
 
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := utilsStruct.razorUtils.GetVotes(client, uint32(i))
+		votes, err := razorUtilsMockery.GetVotes(client, uint32(i))
 		if err != nil {
 			return err
 		}
@@ -112,7 +112,7 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 	}
 
 	log.Debugf("Epoch: %d, StakerId's who voted: %d", epoch, sortedStakers)
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
@@ -120,24 +120,24 @@ func Dispute(client *ethclient.Client, config types.Configurations, account type
 		Config:         config,
 	})
 
-	if !razorUtils.Contains(giveSortedAssetIds, assetId) {
-		utilsStruct.cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
+	if !utils.Contains(giveSortedAssetIds, assetId) {
+		cmdUtilsMockery.GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
-	finalizeDisputeTxnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	finalizeDisputeTxnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
 	})
-	finalizeTxn, err := utilsStruct.blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockId)
+	finalizeTxn, err := blockManagerUtilsMockery.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockId)
 	if err != nil {
 		return err
 	}
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(finalizeTxn))
-	utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(finalizeTxn).String())
+	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(finalizeTxn))
+	razorUtilsMockery.WaitForBlockCompletion(client, transactionUtilsMockery.Hash(finalizeTxn).String())
 	return nil
 }
 
