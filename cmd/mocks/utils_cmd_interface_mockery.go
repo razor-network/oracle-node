@@ -179,6 +179,20 @@ func (_m *UtilsCmdInterfaceMockery) CreateJob(_a0 *ethclient.Client, _a1 types.C
 	return r0, r1
 }
 
+// Dispute provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) Dispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32, _a4 uint8, _a5 int) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ExecuteClaimBounty provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteClaimBounty(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -562,6 +576,11 @@ func (_m *UtilsCmdInterfaceMockery) GetWaitTime() (int32, error) {
 	return r0, r1
 }
 
+// GiveSorted provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) GiveSorted(_a0 *ethclient.Client, _a1 *bindings.BlockManager, _a2 *bind.TransactOpts, _a3 uint32, _a4 uint16, _a5 []uint32) {
+	_m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+}
+
 // HandleCommitState provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1 uint32, _a2 types.Rogue) ([]*big.Int, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -583,6 +602,20 @@ func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1
 	}
 
 	return r0, r1
+}
+
+// HandleDispute provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) HandleDispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // HandleRevealState provides a mock function with given fields: _a0, _a1, _a2

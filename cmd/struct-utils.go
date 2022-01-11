@@ -664,10 +664,6 @@ func (cmdUtils UtilsCmd) CheckCurrentStatus(client *ethclient.Client, assetId ui
 	return CheckCurrentStatus(client, assetId, utilsStruct)
 }
 
-func (cmdUtils UtilsCmd) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int, utilsStruct UtilsStruct) error {
-	return Dispute(client, config, account, epoch, blockId, assetId, utilsStruct)
-}
-
 func (cmdUtils UtilsCmd) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
