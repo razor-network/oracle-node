@@ -234,6 +234,8 @@ type UtilsCmdInterfaceMockery interface {
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32) error
+	ExecuteExtendLock(*pflag.FlagSet)
+	ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {

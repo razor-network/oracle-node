@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -19,62 +20,66 @@ var extendLockCmd = &cobra.Command{
 Example:
   ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		config, err := cmdUtilsMockery.GetConfigData()
-		utils.CheckError("Error in getting config data: ", err)
-		txn, err := utilsStruct.extendLock(cmd.Flags(), config)
-		utils.CheckError("Error in extending lock: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseExtendLock,
 }
 
-func (utilsStruct UtilsStruct) extendLock(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	stakerId, err := utilsStruct.flagSetUtils.GetUint32StakerId(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+func initialiseExtendLock(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteExtendLock(cmd.Flags())
+}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+func (*UtilsStructMockery) ExecuteExtendLock(flagSet *pflag.FlagSet) {
+	config, err := cmdUtilsMockery.GetConfigData()
+	utils.CheckError("Error in getting config data: ", err)
+
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting config data: ", err)
+
+	stakerId, err := flagSetUtilsMockery.GetUint32StakerId(flagSet)
+	utils.CheckError("Error in getting config data: ", err)
+
+	client := razorUtilsMockery.ConnectToClient(config.Provider)
+
+	extendLockInput := types.ExtendLockInput{
+		Address:  address,
+		Password: password,
+		StakerId: stakerId,
+	}
+	txn, err := cmdUtilsMockery.ExtendLock(client, config, extendLockInput)
+	utils.CheckError("Error in extending lock: ", err)
+	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+}
+
+func (*UtilsStructMockery) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        extendLockInput.Password,
+		AccountAddress:  extendLockInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "extendLock",
-		Parameters:      []interface{}{stakerId},
+		Parameters:      []interface{}{extendLockInput.StakerId},
 		ABI:             bindings.StakeManagerABI,
 	})
 
 	log.Info("Extending lock...")
-	txn, err := utilsStruct.stakeManagerUtils.ExtendLock(client, txnOpts, stakerId)
+	txn, err := stakeManagerUtilsMockery.ExtendLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
+	return transactionUtilsMockery.Hash(txn), nil
 }
 
 func init() {
-	razorUtils = Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
+	razorUtilsMockery = UtilsMockery{}
+	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
-	cmdUtilsMockery = &UtilsStructMockery{}
 
 	rootCmd.AddCommand(extendLockCmd)
 
