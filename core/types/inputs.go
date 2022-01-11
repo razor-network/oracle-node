@@ -43,6 +43,12 @@ type CreateCollectionInput struct {
 	JobIds      []uint
 }
 
+type ExtendLockInput struct {
+	Address  string
+	Password string
+	StakerId uint32
+}
+
 type SetDelegationInput struct {
 	Address      string
 	Password     string

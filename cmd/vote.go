@@ -255,7 +255,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueData)
+		proposeTxn, err := cmdUtilsMockery.Propose(client, account, config, stakerId, epoch, rogueData)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -268,7 +268,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		err := utilsStruct.HandleDispute(client, config, account, epoch)
+		err := cmdUtilsMockery.HandleDispute(client, config, account, epoch)
 		if err != nil {
 			log.Error(err)
 			break

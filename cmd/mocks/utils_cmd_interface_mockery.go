@@ -179,6 +179,20 @@ func (_m *UtilsCmdInterfaceMockery) CreateJob(_a0 *ethclient.Client, _a1 types.C
 	return r0, r1
 }
 
+// Dispute provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) Dispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32, _a4 uint8, _a5 int) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ExecuteClaimBounty provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteClaimBounty(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -196,6 +210,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteCreateCollection(_a0 *pflag.FlagSet) 
 
 // ExecuteCreateJob provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteCreateJob(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// ExecuteExtendLock provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteExtendLock(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
@@ -224,6 +243,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteUnstake(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
+// ExecuteUpdateCollection provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateCollection(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteUpdateJob provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -232,6 +256,29 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateJob(_a0 *pflag.FlagSet) {
 // ExecuteWithdraw provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteWithdraw(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
+}
+
+// ExtendLock provides a mock function with given fields: client, config, extendLockInput
+func (_m *UtilsCmdInterfaceMockery) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+	ret := _m.Called(client, config, extendLockInput)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) common.Hash); ok {
+		r0 = rf(client, config, extendLockInput)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) error); ok {
+		r1 = rf(client, config, extendLockInput)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetAmountInSRZRs provides a mock function with given fields: _a0, _a1, _a2, _a3
@@ -255,6 +302,36 @@ func (_m *UtilsCmdInterfaceMockery) GetAmountInSRZRs(_a0 *ethclient.Client, _a1 
 	}
 
 	return r0, r1
+}
+
+// GetBiggestInfluenceAndId provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) GetBiggestInfluenceAndId(_a0 *ethclient.Client, _a1 string, _a2 uint32) (*big.Int, uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) *big.Int); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 uint32
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) uint32); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Get(1).(uint32)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, string, uint32) error); ok {
+		r2 = rf(_a0, _a1, _a2)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // GetBufferPercent provides a mock function with given fields:
@@ -383,6 +460,20 @@ func (_m *UtilsCmdInterfaceMockery) GetGasPrice() (int32, error) {
 	return r0, r1
 }
 
+// GetIteration provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) GetIteration(_a0 *ethclient.Client, _a1 types.ElectedProposer) int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer) int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	return r0
+}
+
 // GetJobList provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) GetJobList(_a0 *ethclient.Client) error {
 	ret := _m.Called(_a0)
@@ -460,13 +551,36 @@ func (_m *UtilsCmdInterfaceMockery) GetProvider() (string, error) {
 	return r0, r1
 }
 
-// GetStakerInfo provides a mock function with given fields: client, stakerId
-func (_m *UtilsCmdInterfaceMockery) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
-	ret := _m.Called(client, stakerId)
+// GetSortedVotes provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) GetSortedVotes(_a0 *ethclient.Client, _a1 string, _a2 uint16, _a3 uint32) ([]*big.Int, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint16, uint32) []*big.Int); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint16, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStakerInfo provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) GetStakerInfo(_a0 *ethclient.Client, _a1 uint32) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) error); ok {
-		r0 = rf(client, stakerId)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -495,6 +609,11 @@ func (_m *UtilsCmdInterfaceMockery) GetWaitTime() (int32, error) {
 	return r0, r1
 }
 
+// GiveSorted provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) GiveSorted(_a0 *ethclient.Client, _a1 *bindings.BlockManager, _a2 *bind.TransactOpts, _a3 uint32, _a4 uint16, _a5 []uint32) {
+	_m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+}
+
 // HandleCommitState provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1 uint32, _a2 types.Rogue) ([]*big.Int, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -518,6 +637,20 @@ func (_m *UtilsCmdInterfaceMockery) HandleCommitState(_a0 *ethclient.Client, _a1
 	return r0, r1
 }
 
+// HandleDispute provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) HandleDispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // HandleRevealState provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterfaceMockery) HandleRevealState(_a0 *ethclient.Client, _a1 bindings.StructsStaker, _a2 uint32) error {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -527,6 +660,36 @@ func (_m *UtilsCmdInterfaceMockery) HandleRevealState(_a0 *ethclient.Client, _a1
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// InfluencedMedian provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) InfluencedMedian(_a0 []*big.Int, _a1 *big.Int) *big.Int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func([]*big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
+// IsElectedProposer provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) IsElectedProposer(_a0 *ethclient.Client, _a1 types.ElectedProposer) bool {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer) bool); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(bool)
 	}
 
 	return r0
@@ -548,6 +711,52 @@ func (_m *UtilsCmdInterfaceMockery) ListAccounts() ([]accounts.Account, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MakeBlock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) MakeBlock(_a0 *ethclient.Client, _a1 string, _a2 types.Rogue) ([]uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, types.Rogue) []uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint32)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, types.Rogue) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) Propose(_a0 *ethclient.Client, _a1 types.Account, _a2 types.Configurations, _a3 uint32, _a4 uint32, _a5 types.Rogue) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -659,6 +868,29 @@ func (_m *UtilsCmdInterfaceMockery) Unstake(_a0 types.Configurations, _a1 *ethcl
 	return r0, r1
 }
 
+// UpdateCollection provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) UpdateCollection(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.CreateCollectionInput, _a3 uint16) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateJob provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *UtilsCmdInterfaceMockery) UpdateJob(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.CreateJobInput, _a3 uint16) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)
@@ -710,20 +942,20 @@ func (_m *UtilsCmdInterfaceMockery) WaitForAppropriateState(_a0 *ethclient.Clien
 	return r0, r1
 }
 
-// WaitIfCommitState provides a mock function with given fields: client, action
-func (_m *UtilsCmdInterfaceMockery) WaitIfCommitState(client *ethclient.Client, action string) (uint32, error) {
-	ret := _m.Called(client, action)
+// WaitIfCommitState provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) WaitIfCommitState(_a0 *ethclient.Client, _a1 string) (uint32, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 uint32
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) uint32); ok {
-		r0 = rf(client, action)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
-		r1 = rf(client, action)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -162,7 +162,6 @@ type flagSetInterface interface {
 
 type utilsCmdInterface interface {
 	CheckCurrentStatus(*ethclient.Client, uint16, UtilsStruct) (bool, error)
-	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	GetEpochAndState(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
@@ -188,11 +187,4 @@ type blockManagerInterface interface {
 }
 
 type proposeUtilsInterface interface {
-	getBiggestInfluenceAndId(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
-	getIteration(*ethclient.Client, types.ElectedProposer, UtilsStruct) int
-	isElectedProposer(*ethclient.Client, types.ElectedProposer, UtilsStruct) bool
-	pseudoRandomNumberGenerator([]byte, uint32, []byte) *big.Int
-	MakeBlock(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error)
-	getSortedVotes(*ethclient.Client, string, uint16, uint32, UtilsStruct) ([]*big.Int, error)
-	influencedMedian([]*big.Int, *big.Int) *big.Int
 }
