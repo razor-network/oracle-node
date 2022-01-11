@@ -243,7 +243,7 @@ func Test_createCollection(t *testing.T) {
 				return WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr
 			}
 
-			CreateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, []uint16, uint32, int8, string) (*Types.Transaction, error) {
+			CreateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint16, int8, uint32, []uint16, string) (*Types.Transaction, error) {
 				return tt.args.createCollectionTxn, tt.args.createCollectionErr
 			}
 

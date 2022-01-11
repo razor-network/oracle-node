@@ -253,7 +253,7 @@ var GetInt8PowerMock func(*pflag.FlagSet) (int8, error)
 
 var GetBoolAutoWithdrawMock func(*pflag.FlagSet) (bool, error)
 
-var getBiggestInfluenceAndIdMock func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
+var getBiggestStakeAndIdMock func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error)
 
 var getIterationMock func(*ethclient.Client, types.ElectedProposer, UtilsStruct) int
 
@@ -272,6 +272,8 @@ var ProposeMock func(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *b
 var GetUint8WeightMock func(*pflag.FlagSet) (uint8, error)
 
 var GetUint16AssetIdMock func(*pflag.FlagSet) (uint16, error)
+
+var GetUint16ToleranceMock func(*pflag.FlagSet) (uint16, error)
 
 var GetUint8SelectorTypeMock func(set *pflag.FlagSet) (uint8, error)
 
@@ -784,8 +786,8 @@ func (flagSetMock FlagSetMock) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool
 	return GetBoolAutoWithdrawMock(flagSet)
 }
 
-func (proposeUtilsMock ProposeUtilsMock) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndIdMock(client, address, epoch, utilsStruct)
+func (proposeUtilsMock ProposeUtilsMock) getBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
+	return getBiggestStakeAndIdMock(client, address, epoch, utilsStruct)
 }
 
 func (proposeUtilsMock ProposeUtilsMock) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
@@ -818,6 +820,10 @@ func (flagSetMock FlagSetMock) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, er
 
 func (flagSetMock FlagSetMock) GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error) {
 	return GetUint16AssetIdMock(flagSet)
+}
+
+func (flagSetMock FlagSetMock) GetUint16Tolerance(flagSet *pflag.FlagSet) (uint16, error) {
+	return GetUint16ToleranceMock(flagSet)
 }
 
 func (flagSetMock FlagSetMock) GetUint8SelectorType(flagSet *pflag.FlagSet) (uint8, error) {

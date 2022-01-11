@@ -402,7 +402,7 @@ func TestPropose(t *testing.T) {
 			return tt.args.numStakers, tt.args.numStakerErr
 		}
 
-		getBiggestInfluenceAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
+		getBiggestStakeAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
 			return tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr
 		}
 
@@ -483,7 +483,7 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 		wantErr       error
 	}{
 		{
-			name: "Test 1: When getBiggestInfluenceAndId function executes successfully",
+			name: "Test 1: When getBiggestStakeAndId function executes successfully",
 			args: args{
 				numOfStakers:    5,
 				numOfStakersErr: nil,
@@ -527,20 +527,20 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 				return tt.args.influence, tt.args.influenceErr
 			}
 
-			gotInfluence, gotId, err := getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
-			if gotInfluence.Cmp(tt.wantInfluence) != 0 {
-				t.Errorf("Biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotInfluence, tt.wantInfluence)
+			gotStake, gotId, err := getBiggestStakeAndId(client, address, epoch, utilsStruct)
+			if gotStake.Cmp(tt.wantInfluence) != 0 {
+				t.Errorf("Biggest Influence from getBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantInfluence)
 			}
 			if gotId != tt.wantId {
-				t.Errorf("Staker Id of staker having biggest Influence from getBiggestInfluenceAndId function, got = %v, want %v", gotId, tt.wantId)
+				t.Errorf("Staker Id of staker having biggest Influence from getBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for getBiggestInfluenceAndId function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for getBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getBiggestInfluenceAndId function, got = %v, want %v", err, tt.wantErr)
+					t.Errorf("Error for getBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
 				}
 			}
 
@@ -1008,13 +1008,13 @@ func Test_isElectedProposer(t *testing.T) {
 				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
-					Iteration:        0,
-					Stake:            nil,
-					StakerId:         3,
-					BiggestInfluence: biggestInfluence,
-					NumberOfStakers:  3,
-					RandaoHash:       randaoHashBytes32,
-					Epoch:            333,
+					Iteration:       0,
+					Stake:           nil,
+					StakerId:        3,
+					BiggestStake:    biggestInfluence,
+					NumberOfStakers: 3,
+					RandaoHash:      randaoHashBytes32,
+					Epoch:           333,
 				},
 				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
 				influenceSnapshotErr: nil,
@@ -1027,13 +1027,13 @@ func Test_isElectedProposer(t *testing.T) {
 				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
-					Iteration:        11,
-					Stake:            nil,
-					StakerId:         2,
-					BiggestInfluence: biggestInfluence,
-					NumberOfStakers:  3,
-					RandaoHash:       randaoHashBytes32,
-					Epoch:            29,
+					Iteration:       11,
+					Stake:           nil,
+					StakerId:        2,
+					BiggestStake:    biggestInfluence,
+					NumberOfStakers: 3,
+					RandaoHash:      randaoHashBytes32,
+					Epoch:           29,
 				},
 				influenceSnapshot:    influenceSnapshotValue("529422500000000000000000"),
 				influenceSnapshotErr: nil,
@@ -1046,13 +1046,13 @@ func Test_isElectedProposer(t *testing.T) {
 				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
-					Iteration:        2,
-					Stake:            nil,
-					StakerId:         1,
-					BiggestInfluence: biggestInfluence,
-					NumberOfStakers:  3,
-					RandaoHash:       randaoHashBytes32,
-					Epoch:            333,
+					Iteration:       2,
+					Stake:           nil,
+					StakerId:        1,
+					BiggestStake:    biggestInfluence,
+					NumberOfStakers: 3,
+					RandaoHash:      randaoHashBytes32,
+					Epoch:           333,
 				},
 				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
 				influenceSnapshotErr: nil,
@@ -1065,13 +1065,13 @@ func Test_isElectedProposer(t *testing.T) {
 				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
-					Iteration:        0,
-					Stake:            nil,
-					StakerId:         3,
-					BiggestInfluence: biggestInfluence,
-					NumberOfStakers:  3,
-					RandaoHash:       randaoHashBytes32,
-					Epoch:            333,
+					Iteration:       0,
+					Stake:           nil,
+					StakerId:        3,
+					BiggestStake:    biggestInfluence,
+					NumberOfStakers: 3,
+					RandaoHash:      randaoHashBytes32,
+					Epoch:           333,
 				},
 				influenceSnapshot:    nil,
 				influenceSnapshotErr: errors.New("error in getting influence snapshot"),
@@ -1084,13 +1084,13 @@ func Test_isElectedProposer(t *testing.T) {
 				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
-					Iteration:        0,
-					Stake:            nil,
-					StakerId:         3,
-					BiggestInfluence: biggestInfluence,
-					NumberOfStakers:  3,
-					RandaoHash:       [32]byte{},
-					Epoch:            333,
+					Iteration:       0,
+					Stake:           nil,
+					StakerId:        3,
+					BiggestStake:    biggestInfluence,
+					NumberOfStakers: 3,
+					RandaoHash:      [32]byte{},
+					Epoch:           333,
 				},
 			},
 			want: false,
