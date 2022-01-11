@@ -357,7 +357,7 @@ func TestExecuteUnstake(t *testing.T) {
 			utils.ExecuteUnstake(flagSet)
 
 			if fatal != tt.expectedFatal {
-				t.Error("The inputUnstake function didn't execute as expected")
+				t.Error("The ExecuteUnstake function didn't execute as expected")
 			}
 
 		})
