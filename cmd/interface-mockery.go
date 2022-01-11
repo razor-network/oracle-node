@@ -195,8 +195,11 @@ type UtilsCmdInterfaceMockery interface {
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32) error
 	ExecuteWithdraw(*pflag.FlagSet)
-	Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
-	WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
+	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (common.Hash, error)
+	WithdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32) (common.Hash, error)
+	ExecuteUpdateJob(*pflag.FlagSet)
+	UpdateJob(*ethclient.Client, types.Configurations, types.CreateJobInput, uint16) (common.Hash, error)
+	WaitIfCommitState(client *ethclient.Client, action string) (uint32, error)
 }
 
 type TransactionInterfaceMockery interface {

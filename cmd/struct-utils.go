@@ -709,7 +709,7 @@ func (cmdUtils UtilsCmd) WaitForAppropriateState(client *ethclient.Client, accou
 }
 
 func (cmdUtils UtilsCmd) WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
-	return WaitIfCommitState(client, accountAddress, action, utilsStruct)
+	return cmdUtilsMockery.WaitIfCommitState(client, action)
 }
 
 func (cmdUtils UtilsCmd) AssignAmountInWei(flagSet *pflag.FlagSet, utilsStruct UtilsStruct) (*big.Int, error) {
