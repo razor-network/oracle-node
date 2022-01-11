@@ -1,6 +1,6 @@
 {
   "name": "razor-go",
-  "version": "v0.1.7",
+  "version": "v0.2.0",
   "description": "Official node for running stakers in Golang.",
   "main": "index.js",
   "scripts": {
