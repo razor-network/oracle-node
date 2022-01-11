@@ -219,6 +219,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteUnstake(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
+// ExecuteUpdateCollection provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateCollection(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteUpdateJob provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -455,13 +460,13 @@ func (_m *UtilsCmdInterfaceMockery) GetProvider() (string, error) {
 	return r0, r1
 }
 
-// GetStakerInfo provides a mock function with given fields: client, stakerId
-func (_m *UtilsCmdInterfaceMockery) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
-	ret := _m.Called(client, stakerId)
+// GetStakerInfo provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) GetStakerInfo(_a0 *ethclient.Client, _a1 uint32) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) error); ok {
-		r0 = rf(client, stakerId)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -631,6 +636,29 @@ func (_m *UtilsCmdInterfaceMockery) Unstake(_a0 types.Configurations, _a1 *ethcl
 	return r0, r1
 }
 
+// UpdateCollection provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) UpdateCollection(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.CreateCollectionInput, _a3 uint16) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateJob provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *UtilsCmdInterfaceMockery) UpdateJob(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.CreateJobInput, _a3 uint16) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)
@@ -682,20 +710,20 @@ func (_m *UtilsCmdInterfaceMockery) WaitForAppropriateState(_a0 *ethclient.Clien
 	return r0, r1
 }
 
-// WaitIfCommitState provides a mock function with given fields: client, action
-func (_m *UtilsCmdInterfaceMockery) WaitIfCommitState(client *ethclient.Client, action string) (uint32, error) {
-	ret := _m.Called(client, action)
+// WaitIfCommitState provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) WaitIfCommitState(_a0 *ethclient.Client, _a1 string) (uint32, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 uint32
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) uint32); ok {
-		r0 = rf(client, action)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
-		r1 = rf(client, action)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

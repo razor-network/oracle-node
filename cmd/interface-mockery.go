@@ -204,11 +204,13 @@ type UtilsCmdInterfaceMockery interface {
 	WithdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32) (common.Hash, error)
 	ExecuteUpdateJob(*pflag.FlagSet)
 	UpdateJob(*ethclient.Client, types.Configurations, types.CreateJobInput, uint16) (common.Hash, error)
-	WaitIfCommitState(client *ethclient.Client, action string) (uint32, error)
+	WaitIfCommitState(*ethclient.Client, string) (uint32, error)
 	ExecuteCollectionList()
 	GetCollectionList(*ethclient.Client) error
 	ExecuteStakerinfo(*pflag.FlagSet)
-	GetStakerInfo(client *ethclient.Client, stakerId uint32) error
+	GetStakerInfo(*ethclient.Client, uint32) error
+	ExecuteUpdateCollection(*pflag.FlagSet)
+	UpdateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
