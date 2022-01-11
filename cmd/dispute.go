@@ -13,7 +13,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
+func (*UtilsStructMockery) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
 	sortedProposedBlockIds, err := razorUtilsMockery.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
 		return err

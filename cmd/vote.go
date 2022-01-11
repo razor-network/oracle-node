@@ -268,7 +268,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		err := utilsStruct.HandleDispute(client, config, account, epoch)
+		err := cmdUtilsMockery.HandleDispute(client, config, account, epoch)
 		if err != nil {
 			log.Error(err)
 			break
