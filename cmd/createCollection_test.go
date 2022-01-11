@@ -46,6 +46,8 @@ func Test_createCollection(t *testing.T) {
 		aggregationErr             error
 		power                      int8
 		powerErr                   error
+		tolerance                  uint16
+		toleranceErr               error
 		txnOpts                    *bind.TransactOpts
 		jobIdUint8                 []uint16
 		waitForAppropriateStateErr error
@@ -68,6 +70,7 @@ func Test_createCollection(t *testing.T) {
 				jobId:               []uint{1, 2},
 				aggregation:         1,
 				power:               0,
+				tolerance:           20,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -86,6 +89,7 @@ func Test_createCollection(t *testing.T) {
 				jobId:               []uint{1, 2},
 				aggregation:         1,
 				power:               0,
+				tolerance:           20,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -104,6 +108,7 @@ func Test_createCollection(t *testing.T) {
 				jobId:               []uint{1, 2},
 				aggregation:         1,
 				power:               0,
+				tolerance:           10,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -121,6 +126,7 @@ func Test_createCollection(t *testing.T) {
 				jobIdErr:            errors.New("jobId error"),
 				aggregation:         1,
 				power:               0,
+				tolerance:           15,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -138,6 +144,7 @@ func Test_createCollection(t *testing.T) {
 				jobId:               []uint{1, 2},
 				aggregationErr:      errors.New("aggregation error"),
 				power:               0,
+				tolerance:           20,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -155,6 +162,7 @@ func Test_createCollection(t *testing.T) {
 				jobId:               []uint{1, 2},
 				aggregation:         1,
 				powerErr:            errors.New("power error"),
+				tolerance:           20,
 				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
@@ -162,6 +170,24 @@ func Test_createCollection(t *testing.T) {
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("power error"),
+		},
+		{
+			name: "Test 6: When there is an error in getting tolerance from flags",
+			args: args{
+				password:            "test",
+				name:                "ETH-Collection",
+				address:             "0x000000000000000000000000000000000000dead",
+				jobId:               []uint{1, 2},
+				aggregation:         1,
+				power:               0,
+				toleranceErr:        errors.New("tolerance error"),
+				txnOpts:             txnOpts,
+				jobIdUint8:          []uint16{1, 2},
+				createCollectionTxn: &Types.Transaction{},
+				hash:                common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("tolerance error"),
 		},
 		{
 			name: "Test 7: When there is an error in WaitForConfirmState",
@@ -225,6 +251,10 @@ func Test_createCollection(t *testing.T) {
 
 			GetInt8PowerMock = func(*pflag.FlagSet) (int8, error) {
 				return tt.args.power, tt.args.powerErr
+			}
+
+			GetUint16ToleranceMock = func(*pflag.FlagSet) (uint16, error) {
+				return tt.args.tolerance, tt.args.toleranceErr
 			}
 
 			ConnectToClientMock = func(string) *ethclient.Client {
