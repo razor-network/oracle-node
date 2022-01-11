@@ -42,3 +42,9 @@ type CreateCollectionInput struct {
 	Power       int8
 	JobIds      []uint
 }
+
+type ExtendLockInput struct {
+	Address  string
+	Password string
+	StakerId uint32
+}
