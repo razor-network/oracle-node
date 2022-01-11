@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -33,7 +34,8 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	log.Debug("Locally calculated data:")
 	log.Debugf("Medians: %d", medians)
 
-	for i := 0; i < len(sortedProposedBlockIds); i++ {
+	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
+	for _, i := range randomSortedProposedBlockIds {
 		blockId := sortedProposedBlockIds[i]
 		proposedBlock, err := utilsStruct.razorUtils.GetProposedBlock(client, account.Address, epoch, blockId)
 		if err != nil {
