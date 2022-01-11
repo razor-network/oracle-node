@@ -77,6 +77,15 @@ type UtilsInterfaceMockery interface {
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
+	GetRandaoHash(*ethclient.Client) ([32]byte, error)
+	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
+	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
+	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
+	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
+	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
+	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -211,6 +220,13 @@ type UtilsCmdInterfaceMockery interface {
 	GetStakerInfo(*ethclient.Client, uint32) error
 	ExecuteUpdateCollection(*pflag.FlagSet)
 	UpdateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) (common.Hash, error)
+	InfluencedMedian([]*big.Int, *big.Int) *big.Int
+	GetSortedVotes(*ethclient.Client, string, uint16, uint32) ([]*big.Int, error)
+	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
+	IsElectedProposer(*ethclient.Client, types.ElectedProposer) bool
+	GetIteration(*ethclient.Client, types.ElectedProposer) int
+	GetBiggestInfluenceAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
+	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {

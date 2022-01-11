@@ -346,7 +346,7 @@ func TestExecuteUnstake(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
-			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(txnArgs, tt.args.unstakeErr)
 			cmdUtilsMock.On("AutoWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoWithdrawErr)
@@ -365,6 +365,7 @@ func TestExecuteUnstake(t *testing.T) {
 }
 
 func TestAutoWithdraw(t *testing.T) {
+
 	var txnArgs types.TransactionOptions
 	var stakerId uint32
 
@@ -408,7 +409,7 @@ func TestAutoWithdraw(t *testing.T) {
 			razorUtilsMockery = utilsMock
 			cmdUtilsMockery = cmdUtilsMock
 
-			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return("tt.args.withdrawFundsHash, tt.args.withdrawFundsErr")
+			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawFundsHash, tt.args.withdrawFundsErr)
 			utilsMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
@@ -546,6 +547,9 @@ func TestGetAmountInSRZRs(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterfaceMockery)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			stakeManagerUtilsMockery = stakeManagerUtilsMock
 
 			utilsMock.On("GetStakedToken", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(stakedToken)
 			utilsMock.On("GetOptions").Return(callOpts)

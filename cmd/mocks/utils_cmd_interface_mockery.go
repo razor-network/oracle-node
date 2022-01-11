@@ -257,6 +257,36 @@ func (_m *UtilsCmdInterfaceMockery) GetAmountInSRZRs(_a0 *ethclient.Client, _a1 
 	return r0, r1
 }
 
+// GetBiggestInfluenceAndId provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) GetBiggestInfluenceAndId(_a0 *ethclient.Client, _a1 string, _a2 uint32) (*big.Int, uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) *big.Int); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 uint32
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) uint32); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Get(1).(uint32)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, string, uint32) error); ok {
+		r2 = rf(_a0, _a1, _a2)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // GetBufferPercent provides a mock function with given fields:
 func (_m *UtilsCmdInterfaceMockery) GetBufferPercent() (int32, error) {
 	ret := _m.Called()
@@ -383,6 +413,20 @@ func (_m *UtilsCmdInterfaceMockery) GetGasPrice() (int32, error) {
 	return r0, r1
 }
 
+// GetIteration provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) GetIteration(_a0 *ethclient.Client, _a1 types.ElectedProposer) int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer) int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	return r0
+}
+
 // GetJobList provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) GetJobList(_a0 *ethclient.Client) error {
 	ret := _m.Called(_a0)
@@ -453,6 +497,29 @@ func (_m *UtilsCmdInterfaceMockery) GetProvider() (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetSortedVotes provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterfaceMockery) GetSortedVotes(_a0 *ethclient.Client, _a1 string, _a2 uint16, _a3 uint32) ([]*big.Int, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint16, uint32) []*big.Int); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint16, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -532,6 +599,36 @@ func (_m *UtilsCmdInterfaceMockery) HandleRevealState(_a0 *ethclient.Client, _a1
 	return r0
 }
 
+// InfluencedMedian provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) InfluencedMedian(_a0 []*big.Int, _a1 *big.Int) *big.Int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func([]*big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
+// IsElectedProposer provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) IsElectedProposer(_a0 *ethclient.Client, _a1 types.ElectedProposer) bool {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer) bool); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // ListAccounts provides a mock function with given fields:
 func (_m *UtilsCmdInterfaceMockery) ListAccounts() ([]accounts.Account, error) {
 	ret := _m.Called()
@@ -548,6 +645,52 @@ func (_m *UtilsCmdInterfaceMockery) ListAccounts() ([]accounts.Account, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MakeBlock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) MakeBlock(_a0 *ethclient.Client, _a1 string, _a2 types.Rogue) ([]uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, types.Rogue) []uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint32)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, types.Rogue) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterfaceMockery) Propose(_a0 *ethclient.Client, _a1 types.Account, _a2 types.Configurations, _a3 uint32, _a4 uint32, _a5 types.Rogue) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
 	} else {
 		r1 = ret.Error(1)
 	}

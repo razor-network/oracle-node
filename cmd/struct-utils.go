@@ -576,34 +576,6 @@ func (flagSetUtils FlagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string,
 	return flagSet.GetString("value")
 }
 
-func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
-}
-
-func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
-	return getIteration(client, proposer, utilsStruct)
-}
-
-func (proposeUtils ProposeUtils) isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) bool {
-	return isElectedProposer(client, proposer, utilsStruct)
-}
-
-func (proposeUtils ProposeUtils) pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
-	return pseudoRandomNumberGenerator(seed, max, blockHashes)
-}
-
-func (proposeUtils ProposeUtils) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue, utilsStruct UtilsStruct) ([]uint32, error) {
-	return MakeBlock(client, address, rogueData, utilsStruct)
-}
-
-func (proposeUtils ProposeUtils) getSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32, utilsStruct UtilsStruct) ([]*big.Int, error) {
-	return getSortedVotes(client, address, assetId, epoch, utilsStruct)
-}
-
-func (proposeUtils ProposeUtils) influencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
-	return influencedMedian(sortedVotes, totalInfluenceRevealed)
-}
-
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	var (
