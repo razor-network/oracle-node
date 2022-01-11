@@ -460,7 +460,7 @@ func TestPropose(t *testing.T) {
 	}
 }
 
-func Test_getBiggestInfluenceAndId(t *testing.T) {
+func Test_getBiggestStakeAndId(t *testing.T) {
 	var client *ethclient.Client
 	var address string
 	var epoch uint32
@@ -472,49 +472,61 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 	type args struct {
 		numOfStakers    uint32
 		numOfStakersErr error
-		influence       *big.Int
-		influenceErr    error
+		stake           []*big.Int
+		stakeErr        error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		wantInfluence *big.Int
-		wantId        uint32
-		wantErr       error
+		name      string
+		args      args
+		wantStake *big.Int
+		wantId    uint32
+		wantErr   error
 	}{
 		{
 			name: "Test 1: When getBiggestStakeAndId function executes successfully",
 			args: args{
+				numOfStakers:    2,
+				numOfStakersErr: nil,
+				stake:           []*big.Int{big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))},
+				stakeErr:        nil,
+			},
+			wantStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+			wantId:    2,
+			wantErr:   nil,
+		},
+		{
+			name: "Test 2: When getBiggestStakeAndId function executes successfully with more number of stakers",
+			args: args{
 				numOfStakers:    5,
 				numOfStakersErr: nil,
-				influence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				influenceErr:    nil,
+				stake:           []*big.Int{big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(32432), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(32), big.NewInt(1e18)), big.NewInt(1e18), big.NewInt(1e10)},
+				stakeErr:        nil,
 			},
-			wantInfluence: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-			wantId:        1,
-			wantErr:       nil,
+			wantStake: big.NewInt(1).Mul(big.NewInt(32432), big.NewInt(1e18)),
+			wantId:    2,
+			wantErr:   nil,
 		},
 		{
 			name: "Test 2: When there is an error in getting numOfStakers",
 			args: args{
 				numOfStakersErr: errors.New("numOfStakers error"),
-				influence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				influenceErr:    nil,
+				stake:           []*big.Int{big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))},
+				stakeErr:        nil,
 			},
-			wantInfluence: nil,
-			wantId:        0,
-			wantErr:       errors.New("numOfStakers error"),
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("numOfStakers error"),
 		},
 		{
-			name: "Test 3: When there is an error in getting influence",
+			name: "Test 3: When there is an error in getting stake",
 			args: args{
 				numOfStakers:    5,
 				numOfStakersErr: nil,
-				influenceErr:    errors.New("influence error"),
+				stakeErr:        errors.New("stake error"),
 			},
-			wantInfluence: nil,
-			wantId:        0,
-			wantErr:       errors.New("influence error"),
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("stake error"),
 		},
 	}
 	for _, tt := range tests {
@@ -523,13 +535,16 @@ func Test_getBiggestInfluenceAndId(t *testing.T) {
 				return tt.args.numOfStakers, tt.args.numOfStakersErr
 			}
 
-			GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
-				return tt.args.influence, tt.args.influenceErr
+			GetStakeSnapshotMock = func(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+				if tt.args.stake != nil {
+					return tt.args.stake[stakerId-1], tt.args.stakeErr
+				}
+				return nil, tt.args.stakeErr
 			}
 
 			gotStake, gotId, err := getBiggestStakeAndId(client, address, epoch, utilsStruct)
-			if gotStake.Cmp(tt.wantInfluence) != 0 {
-				t.Errorf("Biggest Influence from getBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantInfluence)
+			if gotStake.Cmp(tt.wantStake) != 0 {
+				t.Errorf("Biggest Stake from getBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
 			}
 			if gotId != tt.wantId {
 				t.Errorf("Staker Id of staker having biggest Influence from getBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
@@ -971,9 +986,9 @@ func Test_influencedMedian(t *testing.T) {
 	}
 }
 
-func influenceSnapshotValue(infl string) *big.Int {
-	influence, _ := new(big.Int).SetString(infl, 10)
-	return influence
+func stakeSnapshotValue(stake string) *big.Int {
+	stakeSnapshot, _ := new(big.Int).SetString(stake, 10)
+	return stakeSnapshot
 }
 
 func Test_isElectedProposer(t *testing.T) {
@@ -987,14 +1002,14 @@ func Test_isElectedProposer(t *testing.T) {
 	randaoHashBytes32 := [32]byte{}
 	copy(randaoHashBytes32[:], randaoHash)
 
-	biggestInfluence, _ := new(big.Int).SetString("2592145500000000000000000", 10)
+	biggestStake, _ := new(big.Int).SetString("2592145500000000000000000", 10)
 
 	type args struct {
-		client               *ethclient.Client
-		address              string
-		proposer             types.ElectedProposer
-		influenceSnapshot    *big.Int
-		influenceSnapshotErr error
+		client           *ethclient.Client
+		address          string
+		proposer         types.ElectedProposer
+		stakeSnapshot    *big.Int
+		stakeSnapshotErr error
 	}
 
 	tests := []struct {
@@ -1011,13 +1026,13 @@ func Test_isElectedProposer(t *testing.T) {
 					Iteration:       0,
 					Stake:           nil,
 					StakerId:        3,
-					BiggestStake:    biggestInfluence,
+					BiggestStake:    biggestStake,
 					NumberOfStakers: 3,
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           333,
 				},
-				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
-				influenceSnapshotErr: nil,
+				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
+				stakeSnapshotErr: nil,
 			},
 			want: true,
 		},
@@ -1030,13 +1045,13 @@ func Test_isElectedProposer(t *testing.T) {
 					Iteration:       11,
 					Stake:           nil,
 					StakerId:        2,
-					BiggestStake:    biggestInfluence,
+					BiggestStake:    biggestStake,
 					NumberOfStakers: 3,
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           29,
 				},
-				influenceSnapshot:    influenceSnapshotValue("529422500000000000000000"),
-				influenceSnapshotErr: nil,
+				stakeSnapshot:    stakeSnapshotValue("529422500000000000000000"),
+				stakeSnapshotErr: nil,
 			},
 			want: false,
 		},
@@ -1049,13 +1064,13 @@ func Test_isElectedProposer(t *testing.T) {
 					Iteration:       2,
 					Stake:           nil,
 					StakerId:        1,
-					BiggestStake:    biggestInfluence,
+					BiggestStake:    biggestStake,
 					NumberOfStakers: 3,
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           333,
 				},
-				influenceSnapshot:    influenceSnapshotValue("2592145500000000000000000"),
-				influenceSnapshotErr: nil,
+				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
+				stakeSnapshotErr: nil,
 			},
 			want: true,
 		},
@@ -1068,13 +1083,13 @@ func Test_isElectedProposer(t *testing.T) {
 					Iteration:       0,
 					Stake:           nil,
 					StakerId:        3,
-					BiggestStake:    biggestInfluence,
+					BiggestStake:    biggestStake,
 					NumberOfStakers: 3,
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           333,
 				},
-				influenceSnapshot:    nil,
-				influenceSnapshotErr: errors.New("error in getting influence snapshot"),
+				stakeSnapshot:    nil,
+				stakeSnapshotErr: errors.New("error in getting influence snapshot"),
 			},
 			want: false,
 		},
@@ -1087,7 +1102,7 @@ func Test_isElectedProposer(t *testing.T) {
 					Iteration:       0,
 					Stake:           nil,
 					StakerId:        3,
-					BiggestStake:    biggestInfluence,
+					BiggestStake:    biggestStake,
 					NumberOfStakers: 3,
 					RandaoHash:      [32]byte{},
 					Epoch:           333,
@@ -1098,8 +1113,8 @@ func Test_isElectedProposer(t *testing.T) {
 	}
 	for _, tt := range tests {
 
-		GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
-			return tt.args.influenceSnapshot, tt.args.influenceSnapshotErr
+		GetStakeSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
+			return tt.args.stakeSnapshot, tt.args.stakeSnapshotErr
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
