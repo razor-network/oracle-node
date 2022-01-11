@@ -213,6 +213,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteCreateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
+// ExecuteExtendLock provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteExtendLock(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteJobList provides a mock function with given fields:
 func (_m *UtilsCmdInterfaceMockery) ExecuteJobList() {
 	_m.Called()
@@ -246,6 +251,29 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateJob(_a0 *pflag.FlagSet) {
 // ExecuteWithdraw provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteWithdraw(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
+}
+
+// ExtendLock provides a mock function with given fields: client, config, extendLockInput
+func (_m *UtilsCmdInterfaceMockery) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+	ret := _m.Called(client, config, extendLockInput)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) common.Hash); ok {
+		r0 = rf(client, config, extendLockInput)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) error); ok {
+		r1 = rf(client, config, extendLockInput)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetAmountInSRZRs provides a mock function with given fields: _a0, _a1, _a2, _a3
