@@ -204,6 +204,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteJobList() {
 	_m.Called()
 }
 
+// ExecuteSetDelegation provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteSetDelegation(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteStakerinfo provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteStakerinfo(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -585,6 +590,29 @@ func (_m *UtilsCmdInterfaceMockery) SetConfig(flagSet *pflag.FlagSet) error {
 	}
 
 	return r0
+}
+
+// SetDelegation provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) SetDelegation(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.SetDelegationInput) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.SetDelegationInput) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.SetDelegationInput) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Transfer provides a mock function with given fields: _a0, _a1, _a2

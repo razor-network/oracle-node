@@ -15,6 +15,7 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 	"time"
 )
 
@@ -190,6 +191,14 @@ func (u UtilsMockery) GetInfluenceSnapshot(client *ethclient.Client, stakerId ui
 
 func (u UtilsMockery) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
 	return utils.GetCollections(client)
+}
+
+func (u UtilsMockery) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
+}
+
+func (u UtilsMockery) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetStakerId(client, address)
 }
 
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {

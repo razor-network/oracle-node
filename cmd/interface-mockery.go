@@ -77,6 +77,8 @@ type UtilsInterfaceMockery interface {
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	ParseBool(str string) (bool, error)
+	GetStakerId(*ethclient.Client, string) (uint32, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -209,6 +211,8 @@ type UtilsCmdInterfaceMockery interface {
 	GetCollectionList(*ethclient.Client) error
 	ExecuteStakerinfo(*pflag.FlagSet)
 	GetStakerInfo(client *ethclient.Client, stakerId uint32) error
+	ExecuteSetDelegation(*pflag.FlagSet)
+	SetDelegation(*ethclient.Client, types.Configurations, types.SetDelegationInput) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {

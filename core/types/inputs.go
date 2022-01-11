@@ -42,3 +42,11 @@ type CreateCollectionInput struct {
 	Power       int8
 	JobIds      []uint
 }
+
+type SetDelegationInput struct {
+	Address      string
+	Password     string
+	Status       bool
+	StatusString string
+	StakerId     uint32
+}
