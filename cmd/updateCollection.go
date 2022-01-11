@@ -35,19 +35,19 @@ func (*UtilsStructMockery) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 
 	password := razorUtilsMockery.AssignPassword(flagSet)
 	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting: ", err)
+	utils.CheckError("Error in getting address: ", err)
 
 	collectionId, err := flagSetUtilsMockery.GetUint16CollectionId(flagSet)
-	utils.CheckError("Error in getting: ", err)
+	utils.CheckError("Error in getting collectionID: ", err)
 
 	aggregation, err := flagSetUtilsMockery.GetUint32Aggregation(flagSet)
-	utils.CheckError("Error in getting: ", err)
+	utils.CheckError("Error in getting aggregation method: ", err)
 
 	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
-	utils.CheckError("Error in getting: ", err)
+	utils.CheckError("Error in getting power: ", err)
 
 	jobIdInUint, err := flagSetUtilsMockery.GetUintSliceJobIds(flagSet)
-	utils.CheckError("Error in getting: ", err)
+	utils.CheckError("Error in getting jobIds: ", err)
 
 	client := razorUtilsMockery.ConnectToClient(config.Provider)
 
@@ -103,7 +103,7 @@ func init() {
 
 	var (
 		Account           string
-		CollectionId      uint8
+		CollectionId      uint16
 		AggregationMethod uint32
 		Password          string
 		Power             int8
@@ -111,7 +111,7 @@ func init() {
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
-	updateCollectionCmd.Flags().Uint8VarP(&CollectionId, "collectionId", "", 0, "collection id to be modified")
+	updateCollectionCmd.Flags().Uint16VarP(&CollectionId, "collectionId", "", 0, "collection id to be modified")
 	updateCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
