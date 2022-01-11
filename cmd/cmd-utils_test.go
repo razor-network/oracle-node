@@ -200,13 +200,8 @@ func TestWaitForAppropriateState(t *testing.T) {
 
 func TestWaitIfCommitState(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	var action string
 
-	utilsStruct := UtilsStruct{
-		cmdUtils:   UtilsCmdMock{},
-		razorUtils: UtilsMock{},
-	}
 	type args struct {
 		epoch           uint32
 		state           int64
@@ -238,11 +233,19 @@ func TestWaitIfCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetEpochAndStateMock = func(*ethclient.Client, string, UtilsStruct) (uint32, int64, error) {
-				return tt.args.epoch, tt.args.state, tt.args.epochOrStateErr
-			}
 
-			got, err := WaitIfCommitState(client, address, action, utilsStruct)
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
+
+			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
+			utilsMock.On("Sleep", mock.Anything).Return()
+
+			utils := &UtilsStructMockery{}
+
+			got, err := utils.WaitIfCommitState(client, action)
 			if got != tt.want {
 				t.Errorf("WaitIfCommitState() function, got = %v, want = %v", got, tt.want)
 			}

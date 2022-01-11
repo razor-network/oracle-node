@@ -44,16 +44,16 @@ func (*UtilsStructMockery) WaitForAppropriateState(client *ethclient.Client, act
 	}
 }
 
-func WaitIfCommitState(client *ethclient.Client, accountAddress string, action string, utilsStruct UtilsStruct) (uint32, error) {
+func (*UtilsStructMockery) WaitIfCommitState(client *ethclient.Client, action string) (uint32, error) {
 	for {
-		epoch, state, err := utilsStruct.cmdUtils.GetEpochAndState(client, accountAddress, utilsStruct)
+		epoch, state, err := cmdUtilsMockery.GetEpochAndState(client)
 		if err != nil {
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err
 		}
 		if state == 0 || state == -1 {
 			log.Debugf("Cannot perform %s during commit state. Retrying in 5 seconds...", action)
-			time.Sleep(5 * time.Second)
+			razorUtilsMockery.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
 		}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"razor/core"
@@ -21,88 +22,92 @@ Example:
 Note: 
   This command only works for the admin.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-			cmdUtils:          cmdUtils,
-		}
-		config, err := cmdUtilsMockery.GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-		txn, err := utilsStruct.updateJob(cmd.Flags(), config)
-		utils.CheckError("UpdateJob error: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseUpdateJob,
 }
 
-func (utilsStruct UtilsStruct) updateJob(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
+func initialiseUpdateJob(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteUpdateJob(cmd.Flags())
+}
+
+func (*UtilsStructMockery) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
+	config, err := cmdUtilsMockery.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
+	utils.CheckError("Error in getting jobId: ", err)
+
+	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	utils.CheckError("Error in getting power: ", err)
+
+	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
+	utils.CheckError("Error in getting selector: ", err)
+
+	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
+	utils.CheckError("Error in getting url: ", err)
+
+	weight, err := flagSetUtilsMockery.GetUint8Weight(flagSet)
+	utils.CheckError("Error in getting weight: ", err)
+
+	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
+	utils.CheckError("Error in getting selector type: ", err)
+
+	jobInput := types.CreateJobInput{
+		Address:      address,
+		Password:     password,
+		Power:        power,
+		Selector:     selector,
+		Url:          url,
+		Weight:       weight,
+		SelectorType: selectorType,
 	}
-	jobId, err := utilsStruct.flagSetUtils.GetUint16JobId(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	weight, err := utilsStruct.flagSetUtils.GetUint8Weight(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update job", utilsStruct)
+
+	client := razorUtilsMockery.ConnectToClient(config.Provider)
+
+	txn, err := cmdUtilsMockery.UpdateJob(client, config, jobInput, jobId)
+	utils.CheckError("UpdateJob error: ", err)
+	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+}
+
+func (*UtilsStructMockery) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
+
+	_, err := cmdUtilsMockery.WaitIfCommitState(client, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnArgs := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnArgs := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        jobInput.Password,
+		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateJob",
-		Parameters:      []interface{}{jobId, weight, power, selectorType, selector, url},
+		Parameters:      []interface{}{jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := utilsStruct.assetManagerUtils.UpdateJob(client, txnArgs, jobId, weight, power, selectorType, selector, url)
+	txn, err := assetManagerUtilsMockery.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	return transactionUtilsMockery.Hash(txn), nil
 }
 
 func init() {
 	rootCmd.AddCommand(updateJobCmd)
 
-	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
+	razorUtilsMockery = UtilsMockery{}
+	assetManagerUtilsMockery = AssetManagerUtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 
 	var (
-		JobId        uint8
+		JobId        uint16
 		URL          string
 		Selector     string
 		SelectorType uint8
@@ -112,7 +117,7 @@ func init() {
 		Password     string
 	)
 
-	updateJobCmd.Flags().Uint8VarP(&JobId, "jobId", "", 0, "job id")
+	updateJobCmd.Flags().Uint16VarP(&JobId, "jobId", "", 0, "job id")
 	updateJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	updateJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
 	updateJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
