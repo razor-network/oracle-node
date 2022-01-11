@@ -373,7 +373,7 @@ func TestHandleDispute(t *testing.T) {
 		},
 
 		{
-			name: "Test 10: When DisputeBiggestInfluenceProposed transaction fails",
+			name: "Test 10: When DisputeBiggestStakeProposed transaction fails",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestInfluence:       big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),

@@ -60,6 +60,10 @@ func (utilsStruct UtilsStruct) createCollection(flagSet *pflag.FlagSet, config t
 	if err != nil {
 		return core.NilHash, err
 	}
+	tolerance, err := utilsStruct.flagSetUtils.GetUint16Tolerance(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
@@ -77,10 +81,10 @@ func (utilsStruct UtilsStruct) createCollection(flagSet *pflag.FlagSet, config t
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createCollection",
-		Parameters:      []interface{}{jobIds, aggregation, power, name},
+		Parameters:      []interface{}{tolerance, power, aggregation, jobIds, name},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := utilsStruct.assetManagerUtils.CreateCollection(client, txnOpts, jobIds, aggregation, power, name)
+	txn, err := utilsStruct.assetManagerUtils.CreateCollection(client, txnOpts, tolerance, power, aggregation, jobIds, name)
 	if err != nil {
 		log.Error("Error in creating collection")
 		return core.NilHash, err
@@ -109,12 +113,14 @@ func init() {
 		AggregationMethod uint32
 		Password          string
 		Power             int8
+		Tolerance         uint16
 	)
 
 	createCollectionCmd.Flags().StringVarP(&Name, "name", "n", "", "name of the collection")
 	createCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
+	createCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
@@ -126,4 +132,6 @@ func init() {
 	utils.CheckError("Job Id Error: ", jobIdErr)
 	powerErr := createCollectionCmd.MarkFlagRequired("power")
 	utils.CheckError("Power Error: ", powerErr)
+	toleranceErr := createCollectionCmd.MarkFlagRequired("tolerance")
+	utils.CheckError("Tolerance Error: ", toleranceErr)
 }

@@ -109,6 +109,8 @@ var GetVoteValueMock func(*ethclient.Client, uint16, uint32) (*big.Int, error)
 
 var GetInfluenceSnapshotMock func(*ethclient.Client, uint32, uint32) (*big.Int, error)
 
+var GetStakeSnapshotMock func(*ethclient.Client, uint32, uint32) (*big.Int, error)
+
 var GetNumActiveAssetsMock func(*ethclient.Client) (*big.Int, error)
 
 var GetTotalInfluenceRevealedMock func(*ethclient.Client, uint32) (*big.Int, error)
@@ -221,9 +223,9 @@ var CreateJobMock func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8
 
 var UpdateJobMock func(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error)
 
-var UpdateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
+var UpdateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint16, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
 
-var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, []uint16, uint32, int8, string) (*Types.Transaction, error)
+var CreateCollectionMock func(*ethclient.Client, *bind.TransactOpts, uint16, int8, uint32, []uint16, string) (*Types.Transaction, error)
 
 var AccountsMock func(string) []accounts.Account
 
@@ -321,7 +323,7 @@ var ClaimBlockRewardMock func(*ethclient.Client, *bind.TransactOpts) (*Types.Tra
 
 var FinalizeDisputeMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 
-var DisputeBiggestInfluenceProposedMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+var DisputeBiggestStakeProposedMock func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 
 var GetUintSliceJobIdsMock func(*pflag.FlagSet) ([]uint, error)
 
@@ -494,6 +496,10 @@ func (u UtilsMock) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint3
 	return GetInfluenceSnapshotMock(client, stakerId, epoch)
 }
 
+func (u UtilsMock) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return GetStakeSnapshotMock(client, stakerId, epoch)
+}
+
 func (u UtilsMock) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
 	return GetNumActiveAssetsMock(client)
 }
@@ -662,16 +668,16 @@ func (assetManagerMock AssetManagerMock) CreateJob(client *ethclient.Client, opt
 	return CreateJobMock(client, opts, weight, power, selectorType, name, selector, url)
 }
 
-func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
-	return CreateCollectionMock(client, opts, jobIDs, aggregationMethod, power, name)
+func (assetManagerMock AssetManagerMock) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint16, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
+	return CreateCollectionMock(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
 }
 
 func (assetManagerMock AssetManagerMock) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
 	return UpdateJobMock(client, opts, jobId, weight, power, selectorType, selector, url)
 }
 
-func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
-	return UpdateCollectionMock(client, opts, collectionId, aggregationMethod, power, jobIds)
+func (assetManagerMock AssetManagerMock) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
+	return UpdateCollectionMock(client, opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 
 func (assetManagerMock AssetManagerMock) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
@@ -990,8 +996,8 @@ func (blockManagerMock BlockManagerMock) FinalizeDispute(client *ethclient.Clien
 	return FinalizeDisputeMock(client, opts, epoch, blockIndex)
 }
 
-func (blockManagerMock BlockManagerMock) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
-	return DisputeBiggestInfluenceProposedMock(client, opts, epoch, blockIndex, correctBiggestInfluencerId)
+func (blockManagerMock BlockManagerMock) DisputeBiggestStakeProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+	return DisputeBiggestStakeProposedMock(client, opts, epoch, blockIndex, correctBiggestInfluencerId)
 }
 
 func (c CryptoMock) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {

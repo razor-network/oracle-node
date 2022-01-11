@@ -61,6 +61,11 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 		return core.NilHash, err
 	}
 	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
+	tolerance, err := utilsStruct.flagSetUtils.GetUint16Tolerance(flagSet)
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update collection", utilsStruct)
 	if err != nil {
@@ -75,11 +80,10 @@ func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config t
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateCollection",
-		Parameters:      []interface{}{collectionId, aggregation, power},
+		Parameters:      []interface{}{collectionId, tolerance, aggregation, power, jobIds},
 		ABI:             bindings.AssetManagerABI,
 	})
-
-	txn, err := utilsStruct.assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, aggregation, power, jobIds)
+	txn, err := utilsStruct.assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, tolerance, aggregation, power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
@@ -105,6 +109,7 @@ func init() {
 		Password          string
 		Power             int8
 		JobIds            []uint
+		Tolerance         uint16
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
@@ -113,6 +118,7 @@ func init() {
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 	updateCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
+	updateCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 
 	collectionIdErr := updateCollectionCmd.MarkFlagRequired("collectionId")
 	utils.CheckError("Collection Id error: ", collectionIdErr)

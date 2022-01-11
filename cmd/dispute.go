@@ -20,11 +20,11 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	}
 	log.Debug("SortedProposedBlockIds: ", sortedProposedBlockIds)
 
-	biggestInfluence, biggestInfluenceId, err := utilsStruct.proposeUtils.getBiggestInfluenceAndId(client, account.Address, epoch, utilsStruct)
+	biggestStake, biggestStakerId, err := utilsStruct.proposeUtils.getBiggestStakeAndId(client, account.Address, epoch, utilsStruct)
 	if err != nil {
 		return err
 	}
-	log.Debug("Biggest Influence: ", biggestInfluence)
+	log.Debug("Biggest Influence: ", biggestStake)
 
 	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false}, utilsStruct)
 	if err != nil {
@@ -40,10 +40,10 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 			log.Error(err)
 			continue
 		}
-		if proposedBlock.BiggestInfluence.Cmp(biggestInfluence) != 0 && proposedBlock.Valid {
-			log.Debug("Biggest Influence in proposed block: ", proposedBlock.BiggestInfluence)
-			log.Warn("PROPOSED BIGGEST INFLUENCE DOES NOT MATCH WITH ACTUAL BIGGEST INFLUENCE")
-			log.Info("Disputing BiggestInfluenceProposed...")
+		if proposedBlock.BiggestStake.Cmp(biggestStake) != 0 && proposedBlock.Valid {
+			log.Debug("Biggest Stake in proposed block: ", proposedBlock.BiggestStake)
+			log.Warn("PROPOSED BIGGEST STAKE DOES NOT MATCH WITH ACTUAL BIGGEST STAKE")
+			log.Info("Disputing BiggestStakeProposed...")
 			txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
 				Client:         client,
 				Password:       account.Password,
@@ -51,13 +51,13 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 				ChainId:        core.ChainId,
 				Config:         config,
 			})
-			DisputeBiggestInfluenceProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
+			DisputeBiggestStakeProposedTxn, err := utilsStruct.blockManagerUtils.DisputeBiggestStakeProposed(client, txnOpts, epoch, uint8(i), biggestStakerId)
 			if err != nil {
 				log.Error(err)
 				continue
 			}
-			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn))
-			status := utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(DisputeBiggestStakeProposedTxn))
+			status := utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(DisputeBiggestStakeProposedTxn).String())
 			if status == 1 {
 				continue
 			}
