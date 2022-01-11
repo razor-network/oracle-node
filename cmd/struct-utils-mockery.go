@@ -192,6 +192,42 @@ func (u UtilsMockery) GetCollections(client *ethclient.Client) ([]bindings.Struc
 	return utils.GetCollections(client)
 }
 
+func (u UtilsMockery) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetNumberOfStakers(client, address)
+}
+
+func (u UtilsMockery) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
+	return utils.GetRandaoHash(client)
+}
+
+func (u UtilsMockery) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
+	return utils.UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
+}
+
+func (u UtilsMockery) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
+	return utils.UtilsInterface.GetMaxAltBlocks(client)
+}
+
+func (u UtilsMockery) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
+	return utils.UtilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
+}
+
+func (u UtilsMockery) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastRevealed(client, address, stakerId)
+}
+
+func (u UtilsMockery) GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
+	return utils.GetVoteValue(client, assetId, stakerId)
+}
+
+func (u UtilsMockery) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
+	return utils.GetTotalInfluenceRevealed(client, epoch)
+}
+
+func (u UtilsMockery) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
+	return utils.ConvertBigIntArrayToUint32Array(bigIntArray)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
