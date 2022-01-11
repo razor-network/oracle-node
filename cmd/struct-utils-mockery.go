@@ -144,6 +144,10 @@ func (u UtilsMockery) GetStateName(state int64) string {
 	return utils.GetStateName(state)
 }
 
+func (u UtilsMockery) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+	return utils.GetJobs(client)
+}
+
 func (u UtilsMockery) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	utils.CheckEthBalanceIsZero(client, address)
 }
@@ -178,6 +182,14 @@ func (u UtilsMockery) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, 
 
 func (u UtilsMockery) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
 	return utils.GetWithdrawReleasePeriod(client, address)
+}
+
+func (u UtilsMockery) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
+}
+
+func (u UtilsMockery) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+	return utils.GetCollections(client)
 }
 
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {

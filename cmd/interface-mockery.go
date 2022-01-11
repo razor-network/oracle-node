@@ -65,6 +65,7 @@ type UtilsInterfaceMockery interface {
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	GetStateName(int64) string
+	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
@@ -74,6 +75,8 @@ type UtilsInterfaceMockery interface {
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
+	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
+	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -190,6 +193,8 @@ type UtilsCmdInterfaceMockery interface {
 	CreateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput) (common.Hash, error)
 	GetEpochAndState(*ethclient.Client) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
+	ExecuteJobList()
+	GetJobList(*ethclient.Client) error
 	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int) (*big.Int, error)
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
@@ -200,6 +205,10 @@ type UtilsCmdInterfaceMockery interface {
 	ExecuteUpdateJob(*pflag.FlagSet)
 	UpdateJob(*ethclient.Client, types.Configurations, types.CreateJobInput, uint16) (common.Hash, error)
 	WaitIfCommitState(client *ethclient.Client, action string) (uint32, error)
+	ExecuteCollectionList()
+	GetCollectionList(*ethclient.Client) error
+	ExecuteStakerinfo(*pflag.FlagSet)
+	GetStakerInfo(client *ethclient.Client, stakerId uint32) error
 }
 
 type TransactionInterfaceMockery interface {
