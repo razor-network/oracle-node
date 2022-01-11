@@ -35,25 +35,25 @@ func (*UtilsStructMockery) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 
 	password := razorUtilsMockery.AssignPassword(flagSet)
 	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting address: ", err)
 
 	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting jobId: ", err)
 
 	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting power: ", err)
 
 	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting selector: ", err)
 
 	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting url: ", err)
 
 	weight, err := flagSetUtilsMockery.GetUint8Weight(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting weight: ", err)
 
 	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
-	utils.CheckError("Error in getting : ", err)
+	utils.CheckError("Error in getting selector type: ", err)
 
 	jobInput := types.CreateJobInput{
 		Address:      address,
@@ -107,7 +107,7 @@ func init() {
 	cmdUtilsMockery = &UtilsStructMockery{}
 
 	var (
-		JobId        uint8
+		JobId        uint16
 		URL          string
 		Selector     string
 		SelectorType uint8
@@ -117,7 +117,7 @@ func init() {
 		Password     string
 	)
 
-	updateJobCmd.Flags().Uint8VarP(&JobId, "jobId", "", 0, "job id")
+	updateJobCmd.Flags().Uint16VarP(&JobId, "jobId", "", 0, "job id")
 	updateJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	updateJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")
 	updateJobCmd.Flags().Uint8VarP(&SelectorType, "selectorType", "", 1, "selector type (1 for json, 2 for XHTML)")
