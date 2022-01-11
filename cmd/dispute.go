@@ -20,13 +20,13 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	}
 	log.Debug("SortedProposedBlockIds: ", sortedProposedBlockIds)
 
-	biggestInfluence, biggestInfluenceId, err := utilsStruct.proposeUtils.getBiggestInfluenceAndId(client, account.Address, epoch, utilsStruct)
+	biggestInfluence, biggestInfluenceId, err := cmdUtilsMockery.GetBiggestInfluenceAndId(client, account.Address, epoch)
 	if err != nil {
 		return err
 	}
 	log.Debug("Biggest Influence: ", biggestInfluence)
 
-	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false}, utilsStruct)
+	medians, err := cmdUtilsMockery.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
 	if err != nil {
 		return err
 	}
