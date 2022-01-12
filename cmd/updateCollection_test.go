@@ -280,7 +280,7 @@ func Test_updateCollection(t *testing.T) {
 				return tt.args.jobIdUint16
 			}
 
-			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint16, uint32, int8, []uint16) (*Types.Transaction, error) {
+			UpdateCollectionMock = func(*ethclient.Client, *bind.TransactOpts, uint16, uint16, uint32, int8, []uint16) (*Types.Transaction, error) {
 				return tt.args.updateCollectionTxn, tt.args.updateCollectionErr
 			}
 

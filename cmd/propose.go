@@ -35,7 +35,7 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestInfluence, biggestInfluenceId, err := utilsStruct.proposeUtils.getBiggestInfluenceAndId(client, account.Address, epoch, utilsStruct)
+	biggestStake, biggestStakerId, err := utilsStruct.proposeUtils.getBiggestStakeAndId(client, account.Address, epoch, utilsStruct)
 	if err != nil {
 		log.Error("Error in calculating biggest staker: ", err)
 		return core.NilHash, err
@@ -46,16 +46,16 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		log.Error("Error in fetching random hash: ", err)
 		return core.NilHash, err
 	}
-	log.Debug("Biggest Influence Id: ", biggestInfluenceId)
-	log.Debugf("Biggest influence: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestInfluence, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
+	log.Debug("Biggest Staker Id: ", biggestStakerId)
+	log.Debugf("Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStake, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
 	iteration := utilsStruct.proposeUtils.getIteration(client, types.ElectedProposer{
-		Stake:            staker.Stake,
-		StakerId:         stakerId,
-		BiggestInfluence: biggestInfluence,
-		NumberOfStakers:  numStakers,
-		RandaoHash:       randaoHash,
-		Epoch:            epoch,
+		Stake:           staker.Stake,
+		StakerId:        stakerId,
+		BiggestStake:    biggestStake,
+		NumberOfStakers: numStakers,
+		RandaoHash:      randaoHash,
+		Epoch:           epoch,
 	}, utilsStruct)
 
 	log.Debug("Iteration: ", iteration)
@@ -106,13 +106,13 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 		ContractAddress: core.BlockManagerAddress,
 		ABI:             bindings.BlockManagerABI,
 		MethodName:      "propose",
-		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId},
+		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})
 
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
-	log.Debugf("Iteration: %d Biggest Influence Id: %d", iteration, biggestInfluenceId)
+	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
-	txn, err := utilsStruct.blockManagerUtils.Propose(client, txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestInfluenceId)
+	txn, err := utilsStruct.blockManagerUtils.Propose(client, txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -121,24 +121,24 @@ func (utilsStruct UtilsStruct) Propose(client *ethclient.Client, account types.A
 	return utilsStruct.transactionUtils.Hash(txn), nil
 }
 
-func getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
+func getBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
 	numberOfStakers, err := utilsStruct.razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, 0, err
 	}
-	var biggestInfluenceId uint32
-	biggestInfluence := big.NewInt(0)
+	var biggestStakerId uint32
+	biggestStake := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, uint32(i), epoch)
+		stake, err := utilsStruct.razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
 		if err != nil {
 			return nil, 0, err
 		}
-		if influence.Cmp(biggestInfluence) > 0 {
-			biggestInfluence = influence
-			biggestInfluenceId = uint32(i)
+		if stake.Cmp(biggestStake) > 0 {
+			biggestStake = stake
+			biggestStakerId = uint32(i)
 		}
 	}
-	return biggestInfluence, biggestInfluenceId, nil
+	return biggestStake, biggestStakerId, nil
 }
 
 func getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
@@ -165,14 +165,14 @@ func isElectedProposer(client *ethclient.Client, proposer types.ElectedProposer,
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
-	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, proposer.StakerId, proposer.Epoch)
+	stake, err := utilsStruct.razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return false
 	}
-	biggestInfluence := big.NewInt(1).Mul(randomHashNumber, proposer.BiggestInfluence)
-	stakerInfluence := big.NewInt(1).Mul(influence, big.NewInt(int64(math.Exp2(32))))
-	return biggestInfluence.Cmp(stakerInfluence) <= 0
+	biggestStake := big.NewInt(1).Mul(randomHashNumber, proposer.BiggestStake)
+	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
+	return biggestStake.Cmp(currentStakerStake) <= 0
 }
 
 func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
