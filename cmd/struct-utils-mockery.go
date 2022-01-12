@@ -263,6 +263,14 @@ func (u UtilsMockery) PasswordPrompt() string {
 	return utils.PasswordPrompt()
 }
 
+func (u UtilsMockery) GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	return utils.GetMaxCommission(client)
+}
+
+func (u UtilsMockery) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	return utils.GetEpochLimitForUpdateCommission(client)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

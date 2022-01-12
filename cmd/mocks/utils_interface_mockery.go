@@ -486,6 +486,27 @@ func (_m *UtilsInterfaceMockery) GetEpochLastRevealed(_a0 *ethclient.Client, _a1
 	return r0, r1
 }
 
+// GetEpochLimitForUpdateCommission provides a mock function with given fields: client
+func (_m *UtilsInterfaceMockery) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	ret := _m.Called(client)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint16); ok {
+		r0 = rf(client)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetFractionalAmountInWei provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterfaceMockery) GetFractionalAmountInWei(_a0 *big.Int, _a1 string) (*big.Int, error) {
 	ret := _m.Called(_a0, _a1)
@@ -590,6 +611,27 @@ func (_m *UtilsInterfaceMockery) GetMaxAltBlocks(_a0 *ethclient.Client) (uint8, 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetMaxCommission provides a mock function with given fields: client
+func (_m *UtilsInterfaceMockery) GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	ret := _m.Called(client)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(client)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
 	} else {
 		r1 = ret.Error(1)
 	}

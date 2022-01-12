@@ -97,6 +97,8 @@ type UtilsInterfaceMockery interface {
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
+	GetMaxCommission(client *ethclient.Client) (uint8, error)
+	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -256,6 +258,8 @@ type UtilsCmdInterfaceMockery interface {
 	Create(string) (accounts.Account, error)
 	ExecuteImport()
 	ImportAccount() (accounts.Account, error)
+	ExecuteUpdateCommission(*pflag.FlagSet)
+	UpdateCommission(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error
 }
 
 type TransactionInterfaceMockery interface {
