@@ -600,6 +600,27 @@ func (_m *FlagSetInterfaceMockery) GetUint16JobId(_a0 *pflag.FlagSet) (uint16, e
 	return r0, r1
 }
 
+// GetUint16Tolerance provides a mock function with given fields: set
+func (_m *FlagSetInterfaceMockery) GetUint16Tolerance(set *pflag.FlagSet) (uint16, error) {
+	ret := _m.Called(set)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
+		r0 = rf(set)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(set)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUint32Aggregation provides a mock function with given fields: _a0
 func (_m *FlagSetInterfaceMockery) GetUint32Aggregation(_a0 *pflag.FlagSet) (uint32, error) {
 	ret := _m.Called(_a0)

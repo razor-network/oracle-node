@@ -162,8 +162,10 @@ func TestUpdateCommission(t *testing.T) {
 		{
 			name: "Test 9: When the epoch is invalid for update",
 			args: args{
-				commission:                    10,
-				stakerInfo:                    bindings.StructsStaker{},
+				commission: 10,
+				stakerInfo: bindings.StructsStaker{
+					EpochCommissionLastUpdated: 1,
+				},
 				maxCommission:                 20,
 				epochLimitForUpdateCommission: 100,
 				epoch:                         11,

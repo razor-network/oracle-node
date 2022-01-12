@@ -51,6 +51,9 @@ func (*UtilsStructMockery) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 	client := razorUtilsMockery.ConnectToClient(config.Provider)
 
+	tolerance, err := flagSetUtilsMockery.GetUint16Tolerance(flagSet)
+	utils.CheckError("Error in getting tolerance: ", err)
+
 	collectionInput := types.CreateCollectionInput{
 		Address:     address,
 		Password:    password,
@@ -58,6 +61,7 @@ func (*UtilsStructMockery) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 		Name:        name,
 		Aggregation: aggregation,
 		JobIds:      jobIdInUint,
+		Tolerance:   tolerance,
 	}
 
 	txn, err := cmdUtilsMockery.CreateCollection(client, config, collectionInput)
@@ -80,10 +84,10 @@ func (*UtilsStructMockery) CreateCollection(client *ethclient.Client, config typ
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createCollection",
-		Parameters:      []interface{}{jobIds, collectionInput.Aggregation, collectionInput.Power, collectionInput.Name},
+		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := assetManagerUtilsMockery.CreateCollection(client, txnOpts, jobIds, collectionInput.Aggregation, collectionInput.Power, collectionInput.Name)
+	txn, err := assetManagerUtilsMockery.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	if err != nil {
 		log.Error("Error in creating collection")
 		return core.NilHash, err
@@ -117,12 +121,14 @@ func init() {
 		AggregationMethod uint32
 		Password          string
 		Power             int8
+		Tolerance         uint16
 	)
 
 	createCollectionCmd.Flags().StringVarP(&Name, "name", "n", "", "name of the collection")
 	createCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
+	createCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
@@ -134,4 +140,6 @@ func init() {
 	utils.CheckError("Job Id Error: ", jobIdErr)
 	powerErr := createCollectionCmd.MarkFlagRequired("power")
 	utils.CheckError("Power Error: ", powerErr)
+	toleranceErr := createCollectionCmd.MarkFlagRequired("tolerance")
+	utils.CheckError("Tolerance Error: ", toleranceErr)
 }

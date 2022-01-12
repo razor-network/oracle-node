@@ -96,7 +96,7 @@ func TestUpdateCollection(t *testing.T) {
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(jobIdUint16)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("WaitIfCommitState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
-			assetManagerUtilsMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
+			assetManagerUtilsMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStructMockery{}
@@ -136,6 +136,8 @@ func TestExecuteUpdateCollection(t *testing.T) {
 		aggregationErr      error
 		power               int8
 		powerErr            error
+		tolerance           uint16
+		toleranceErr        error
 		jobId               []uint
 		jobIdErr            error
 		updateCollectionTxn common.Hash
@@ -156,6 +158,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregation:         1,
 				power:               0,
+				tolerance:           15,
 				jobId:               []uint{1, 2},
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
@@ -170,6 +173,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregation:         1,
 				power:               0,
+				tolerance:           15,
 				jobId:               []uint{1, 2},
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
@@ -185,6 +189,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				addressErr:          errors.New("address error"),
 				aggregation:         1,
 				power:               0,
+				tolerance:           15,
 				jobId:               []uint{1, 2},
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
@@ -199,6 +204,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregationErr:      errors.New("aggregation error"),
 				power:               0,
+				tolerance:           15,
 				jobId:               []uint{1, 2},
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
@@ -213,6 +219,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregation:         1,
 				powerErr:            errors.New("power error"),
+				tolerance:           15,
 				jobId:               []uint{1, 2},
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
@@ -226,6 +233,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				collectionId:        3,
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregation:         1,
+				tolerance:           15,
 				jobIdErr:            errors.New("job Id error"),
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
@@ -240,6 +248,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregation:         1,
 				power:               0,
+				tolerance:           15,
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 				updateCollectionErr: errors.New("updateCollection error"),
 			},
@@ -255,6 +264,21 @@ func TestExecuteUpdateCollection(t *testing.T) {
 				address:             "0x000000000000000000000000000000000000dead",
 				aggregation:         1,
 				power:               0,
+				tolerance:           15,
+				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 9: When there is an error in getting tolerance",
+			args: args{
+				config:              config,
+				password:            "test",
+				collectionId:        3,
+				address:             "0x000000000000000000000000000000000000dead",
+				aggregation:         1,
+				power:               0,
+				toleranceErr:        errors.New("tolerance error"),
 				updateCollectionTxn: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -286,6 +310,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("UpdateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			flagsetUtilsMock.On("GetUint16Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 
 			utils := &UtilsStructMockery{}
 			fatal = false

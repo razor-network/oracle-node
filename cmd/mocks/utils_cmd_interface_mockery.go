@@ -417,8 +417,8 @@ func (_m *UtilsCmdInterfaceMockery) GetAmountInSRZRs(_a0 *ethclient.Client, _a1 
 	return r0, r1
 }
 
-// GetBiggestInfluenceAndId provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsCmdInterfaceMockery) GetBiggestInfluenceAndId(_a0 *ethclient.Client, _a1 string, _a2 uint32) (*big.Int, uint32, error) {
+// GetBiggestStakeAndId provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) GetBiggestStakeAndId(_a0 *ethclient.Client, _a1 string, _a2 uint32) (*big.Int, uint32, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *big.Int

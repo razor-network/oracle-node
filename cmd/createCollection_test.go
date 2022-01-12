@@ -94,7 +94,7 @@ func TestCreateCollection(t *testing.T) {
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
-			assetManagerUtilsMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
+			assetManagerUtilsMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStructMockery{}
@@ -134,6 +134,8 @@ func TestExecuteCreateCollection(t *testing.T) {
 		aggregationErr       error
 		power                int8
 		powerErr             error
+		tolerance            uint16
+		toleranceErr         error
 		createCollectionErr  error
 		createCollectionHash common.Hash
 	}
@@ -152,6 +154,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregation:          1,
 				power:                0,
+				tolerance:            20,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
@@ -167,6 +170,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregation:          1,
 				power:                0,
+				tolerance:            20,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -182,6 +186,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregation:          1,
 				power:                0,
+				tolerance:            20,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -196,6 +201,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobIdErr:             errors.New("jobId error"),
 				aggregation:          1,
 				power:                0,
+				tolerance:            20,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -210,6 +216,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregationErr:       errors.New("aggregation error"),
 				power:                0,
+				tolerance:            20,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -224,6 +231,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregation:          1,
 				powerErr:             errors.New("power error"),
+				tolerance:            20,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -238,6 +246,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregation:          1,
 				power:                0,
+				tolerance:            20,
 				createCollectionErr:  errors.New("createCollection error"),
 				createCollectionHash: core.NilHash,
 			},
@@ -254,6 +263,22 @@ func TestExecuteCreateCollection(t *testing.T) {
 				jobId:                []uint{1, 2},
 				aggregation:          1,
 				power:                0,
+				tolerance:            20,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 9: When there is an error in getting tolerance",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				toleranceErr:         errors.New("tolerance error"),
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -282,6 +307,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 			flagsetUtilsMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
 			flagsetUtilsMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
 			flagsetUtilsMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
+			flagsetUtilsMock.On("GetUint16Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)

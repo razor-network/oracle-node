@@ -41,6 +41,7 @@ type utilsInterface interface {
 	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
 	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	GetNumActiveAssets(*ethclient.Client) (*big.Int, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
@@ -77,7 +78,6 @@ type utilsInterface interface {
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 }
-
 type tokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
@@ -92,9 +92,9 @@ type assetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 	SetCollectionStatus(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error)
 	GetActiveStatus(*ethclient.Client, *bind.CallOpts, uint16) (bool, error)
-	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
+	CreateCollection(*ethclient.Client, *bind.TransactOpts, uint16, int8, uint32, []uint16, string) (*Types.Transaction, error)
 	UpdateJob(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error)
-	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
+	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
 }
 
 type stakeManagerInterface interface {
@@ -131,6 +131,7 @@ type flagSetInterface interface {
 	GetUint8Commission(*pflag.FlagSet) (uint8, error)
 	GetUintSliceJobIds(*pflag.FlagSet) ([]uint, error)
 	GetUint32Aggregation(*pflag.FlagSet) (uint32, error)
+	GetUint16Tolerance(set *pflag.FlagSet) (uint16, error)
 	GetUint16JobId(*pflag.FlagSet) (uint16, error)
 	GetUint16CollectionId(*pflag.FlagSet) (uint16, error)
 	GetStringProvider(*pflag.FlagSet) (string, error)
@@ -170,7 +171,7 @@ type blockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
-	DisputeBiggestInfluenceProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 }
 
 type proposeUtilsInterface interface {

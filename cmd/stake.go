@@ -1,11 +1,13 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
+	"context"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/spf13/cobra"
 )
@@ -84,7 +86,10 @@ Example:
 					IsRogue:   isRogue,
 					RogueMode: rogueMode,
 				}
-				utilsStruct.vote(config, client, rogueData, account)
+				err := utilsStruct.vote(context.Background(), config, client, rogueData, account)
+				if err != nil {
+					log.Fatal("Error in auto vote: ", err)
+				}
 			}
 		}
 	},

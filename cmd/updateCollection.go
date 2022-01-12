@@ -51,12 +51,16 @@ func (*UtilsStructMockery) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 
 	client := razorUtilsMockery.ConnectToClient(config.Provider)
 
+	tolerance, err := flagSetUtilsMockery.GetUint16Tolerance(flagSet)
+	utils.CheckError("Error in getting tolerance: ", err)
+
 	collectionInput := types.CreateCollectionInput{
 		Address:     address,
 		Password:    password,
 		Aggregation: aggregation,
 		Power:       power,
 		JobIds:      jobIdInUint,
+		Tolerance:   tolerance,
 	}
 	txn, err := cmdUtilsMockery.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
@@ -78,11 +82,10 @@ func (*UtilsStructMockery) UpdateCollection(client *ethclient.Client, config typ
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateCollection",
-		Parameters:      []interface{}{collectionId, collectionInput.Aggregation, collectionInput.Power},
+		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
 		ABI:             bindings.AssetManagerABI,
 	})
-
-	txn, err := assetManagerUtilsMockery.UpdateCollection(client, txnOpts, collectionId, collectionInput.Aggregation, collectionInput.Power, jobIds)
+	txn, err := assetManagerUtilsMockery.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
@@ -108,6 +111,7 @@ func init() {
 		Password          string
 		Power             int8
 		JobIds            []uint
+		Tolerance         uint16
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
@@ -116,6 +120,7 @@ func init() {
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 	updateCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
+	updateCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 
 	collectionIdErr := updateCollectionCmd.MarkFlagRequired("collectionId")
 	utils.CheckError("Collection Id error: ", collectionIdErr)

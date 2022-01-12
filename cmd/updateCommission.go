@@ -79,9 +79,10 @@ func (*UtilsStructMockery) UpdateCommission(config types.Configurations, client 
 		return err
 	}
 
-	if (stakerInfo.EpochCommissionLastUpdated + uint32(epochLimitForUpdateCommission)) >= epoch {
+	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
 		return errors.New("invalid epoch for update")
 	}
+
 	txnOpts := types.TransactionOptions{
 		Client:          client,
 		Password:        updateCommissionInput.Password,

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -20,11 +21,11 @@ func (*UtilsStructMockery) HandleDispute(client *ethclient.Client, config types.
 	}
 	log.Debug("SortedProposedBlockIds: ", sortedProposedBlockIds)
 
-	biggestInfluence, biggestInfluenceId, err := cmdUtilsMockery.GetBiggestInfluenceAndId(client, account.Address, epoch)
+	biggestStake, biggestStakerId, err := cmdUtilsMockery.GetBiggestStakeAndId(client, account.Address, epoch)
 	if err != nil {
 		return err
 	}
-	log.Debug("Biggest Influence: ", biggestInfluence)
+	log.Debug("Biggest Stake: ", biggestStake)
 
 	medians, err := cmdUtilsMockery.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
 	if err != nil {
@@ -33,17 +34,18 @@ func (*UtilsStructMockery) HandleDispute(client *ethclient.Client, config types.
 	log.Debug("Locally calculated data:")
 	log.Debugf("Medians: %d", medians)
 
-	for i := 0; i < len(sortedProposedBlockIds); i++ {
+	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
+	for _, i := range randomSortedProposedBlockIds {
 		blockId := sortedProposedBlockIds[i]
 		proposedBlock, err := razorUtilsMockery.GetProposedBlock(client, epoch, blockId)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
-		if proposedBlock.BiggestInfluence.Cmp(biggestInfluence) != 0 && proposedBlock.Valid {
-			log.Debug("Biggest Influence in proposed block: ", proposedBlock.BiggestInfluence)
-			log.Warn("PROPOSED BIGGEST INFLUENCE DOES NOT MATCH WITH ACTUAL BIGGEST INFLUENCE")
-			log.Info("Disputing BiggestInfluenceProposed...")
+		if proposedBlock.BiggestStake.Cmp(biggestStake) != 0 && proposedBlock.Valid {
+			log.Debug("Biggest Stake in proposed block: ", proposedBlock.BiggestStake)
+			log.Warn("PROPOSED BIGGEST STAKE DOES NOT MATCH WITH ACTUAL BIGGEST STAKE")
+			log.Info("Disputing BiggestStakeProposed...")
 			txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
 				Client:         client,
 				Password:       account.Password,
@@ -51,13 +53,13 @@ func (*UtilsStructMockery) HandleDispute(client *ethclient.Client, config types.
 				ChainId:        core.ChainId,
 				Config:         config,
 			})
-			DisputeBiggestInfluenceProposedTxn, err := blockManagerUtilsMockery.DisputeBiggestInfluenceProposed(client, txnOpts, epoch, uint8(i), biggestInfluenceId)
+			DisputeBiggestStakeProposedTxn, err := blockManagerUtilsMockery.DisputeBiggestStakeProposed(client, txnOpts, epoch, uint8(i), biggestStakerId)
 			if err != nil {
 				log.Error(err)
 				continue
 			}
-			log.Info("Txn Hash: ", transactionUtilsMockery.Hash(DisputeBiggestInfluenceProposedTxn))
-			status := razorUtilsMockery.WaitForBlockCompletion(client, transactionUtilsMockery.Hash(DisputeBiggestInfluenceProposedTxn).String())
+			log.Info("Txn Hash: ", transactionUtilsMockery.Hash(DisputeBiggestStakeProposedTxn))
+			status := razorUtilsMockery.WaitForBlockCompletion(client, transactionUtilsMockery.Hash(DisputeBiggestStakeProposedTxn).String())
 			if status == 1 {
 				continue
 			}

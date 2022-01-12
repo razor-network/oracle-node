@@ -42,8 +42,8 @@ func (_m *BlockManagerInterfaceMockery) ClaimBlockReward(_a0 *ethclient.Client, 
 	return r0, r1
 }
 
-// DisputeBiggestInfluenceProposed provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
-func (_m *BlockManagerInterfaceMockery) DisputeBiggestInfluenceProposed(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint8, _a4 uint32) (*types.Transaction, error) {
+// DisputeBiggestStakeProposed provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *BlockManagerInterfaceMockery) DisputeBiggestStakeProposed(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint8, _a4 uint32) (*types.Transaction, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
 
 	var r0 *types.Transaction

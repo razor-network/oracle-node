@@ -49,7 +49,7 @@ Run razor-go locally with:
 docker-compose up -d
 ```
 
-You can intract with razor:
+You can interact with razor:
 
 ```
 docker exec -it razor-go ...
@@ -135,34 +135,29 @@ If you want to vote just after stake automatically, you can just set `autoVote` 
 $ ./razor stake --address <address> --value <value> --autoVote <bool>
 ```
 
+_Note: --pow flag is used to stake floating number stake_
+
+_Note: Formula for calculating pow: (value * (10**18)) / (10**x) where x is no of decimal places and value is integer_
+
+_The value of pow is : 18 - x here_
+
+If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
+
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 2000 --autoVote true
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
 ```
 
-_Note: --pow flag is used to stake floating number stake_
+If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
 
- _Note: Formula for calculating pow: (value * (10 ** 18)) / (10 ** x) where x is no of decimal places and value is integer_
+If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
 
- _The value of pow is : 18 - x here_
+Example:
 
-
- If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
-
- Example:
-
- ```
- $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
- ```
-
- If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
-
- Example:
-
- ```
- $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
- ```
+```
+$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
+```
 
 ### Staker Info
 
@@ -200,6 +195,8 @@ If you are a staker and have accepted delegation, you can define your commission
 $ ./razor updateCommission --address <address> --commission <commission_percent>
 
 ```
+
+Example: 
 
 ```
 $ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10
@@ -313,6 +310,35 @@ Example:
 $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
+### Override Job
+
+Jobs URLs are a placeholder for where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
+`overrideJob` command enables users to override the job URLs and selectors so that razor-nodes can fetch data directly from the override jobs.
+
+```
+$ ./razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
+```
+
+Example:
+
+```
+$ ./razor overrideJob --jobId 2 --url https://api.gemini.com/v1/pubticker/ethusd --selector last --power 2 --selectorType 0
+```
+
+### Delete override
+
+The overridden jobs can be deleted using `deleteOverride` command.
+
+```
+$ ./razor deleteOverride --jobId <jobId>
+```
+
+Example:
+
+```
+$ ./razor deleteOverride --jobId 2
+```
+
 ### Set Config
 
 There are a set of parameters that are configurable. These include:
@@ -376,13 +402,13 @@ Create new collections using `creteCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power>
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
 
 ```
-$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
+$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2 --tolerance 200
 ```
 
 ### Modify Asset Status
@@ -408,13 +434,13 @@ Update the collection using `updateCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor updateCollection --collectionId <collection_id> --address <address> --aggregation <aggregation_method> --power <power>
+$ ./razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
 
 ```
-$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4
+$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --jobIds 1,3 --aggregation 2 --power 4 --tolerance 5
 ```
 
 ### Update Job
@@ -425,6 +451,12 @@ _Note: This command is restricted to "Admin Role"_
 
 ```
 ./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
+```
+
+Example:
+
+```
+$ ./razor updateJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobId 1 -s last -u https://api.gemini.com/v1/pubticker/btcusd --power 2 --weight 10
 ```
 
 ### Job details

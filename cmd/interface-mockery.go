@@ -99,6 +99,7 @@ type UtilsInterfaceMockery interface {
 	PasswordPrompt() string
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
+	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -128,7 +129,7 @@ type BlockManagerInterfaceMockery interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
-	DisputeBiggestInfluenceProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 }
 
 type VoteManagerInterfaceMockery interface {
@@ -146,9 +147,9 @@ type AssetManagerInterfaceMockery interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 	SetCollectionStatus(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error)
 	GetActiveStatus(*ethclient.Client, *bind.CallOpts, uint16) (bool, error)
-	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error)
+	CreateCollection(*ethclient.Client, *bind.TransactOpts, uint16, int8, uint32, []uint16, string) (*Types.Transaction, error)
 	UpdateJob(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error)
-	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
+	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
 }
 
 type FlagSetInterfaceMockery interface {
@@ -187,6 +188,7 @@ type FlagSetInterfaceMockery interface {
 	GetUint16CollectionId(*pflag.FlagSet) (uint16, error)
 	GetStringValue(*pflag.FlagSet) (string, error)
 	GetStringPow(flagSet *pflag.FlagSet) (string, error)
+	GetUint16Tolerance(set *pflag.FlagSet) (uint16, error)
 }
 
 type UtilsCmdInterfaceMockery interface {
@@ -241,7 +243,6 @@ type UtilsCmdInterfaceMockery interface {
 	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
 	IsElectedProposer(*ethclient.Client, types.ElectedProposer) bool
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
-	GetBiggestInfluenceAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
@@ -260,6 +261,7 @@ type UtilsCmdInterfaceMockery interface {
 	ImportAccount() (accounts.Account, error)
 	ExecuteUpdateCommission(*pflag.FlagSet)
 	UpdateCommission(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error
+	GetBiggestStakeAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
 }
 
 type TransactionInterfaceMockery interface {
