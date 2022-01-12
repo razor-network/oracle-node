@@ -36,14 +36,10 @@ Example:
 }
 
 func initializeVote(cmd *cobra.Command, args []string) {
-	utilsStruct := UtilsStruct{
-		razorUtils:       razorUtils,
-		transactionUtils: transactionUtils,
-	}
-	utilsStruct.executeVote(cmd.Flags())
+	executeVote(cmd.Flags())
 }
 
-func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
+func executeVote(flagSet *pflag.FlagSet) {
 	config, err := cmdUtilsMockery.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
@@ -79,13 +75,13 @@ func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
 		os.Exit(2)
 	}()
 
-	if err := utilsStruct.vote(ctx, config, client, rogueData, account); err != nil {
+	if err := vote(ctx, config, client, rogueData, account); err != nil {
 		log.Errorf("%s\n", err)
 		os.Exit(1)
 	}
 }
 
-func (utilsStruct UtilsStruct) vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
+func vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
 
 	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
@@ -101,7 +97,7 @@ func (utilsStruct UtilsStruct) vote(ctx context.Context, config types.Configurat
 			}
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				handleBlock(client, account, latestHeader.Number, config, rogueData, utilsStruct)
+				handleBlock(client, account, latestHeader.Number, config, rogueData)
 			}
 		}
 	}
@@ -113,7 +109,7 @@ var (
 	blockConfirmed   uint32
 )
 
-func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, utilsStruct UtilsStruct) {
+func handleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
 	state, err := utils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -163,7 +159,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Error("Stopped voting as total stake is already withdrawn.")
 		} else {
 			log.Debug("Auto starting Unstake followed by Withdraw")
-			AutoUnstakeAndWithdraw(client, account, stakedAmount, config, utilsStruct)
+			AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
 		os.Exit(0)
@@ -206,7 +202,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		utils.WaitForBlockCompletion(client, commitTxn.String())
 		_committedData = data
 		log.Debug("Saving committed data for recovery")
-		fileName, err := getCommitDataFileName(account.Address, utilsStruct)
+		fileName, err := getCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
 			break
@@ -229,7 +225,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		if _committedData == nil {
-			fileName, err := getCommitDataFileName(account.Address, utilsStruct)
+			fileName, err := getCommitDataFileName(account.Address)
 			if err != nil {
 				log.Error("Error in getting file name to save committed data: ", err)
 				break
@@ -385,7 +381,7 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 	return secret
 }
 
-func getCommitDataFileName(address string, utilsStruct UtilsStruct) (string, error) {
+func getCommitDataFileName(address string) (string, error) {
 	homeDir, err := path.GetDefaultPath()
 	if err != nil {
 		return "", err
@@ -393,7 +389,7 @@ func getCommitDataFileName(address string, utilsStruct UtilsStruct) (string, err
 	return homeDir + "/" + address + "_data", nil
 }
 
-func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations, utilsStruct UtilsStruct) {
+func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: account.Address,
@@ -420,7 +416,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 func init() {
 
 	razorUtilsMockery = UtilsMockery{}
-	transactionUtils = TransactionUtils{}
+	//transactionUtils = TransactionUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
