@@ -49,7 +49,7 @@ Run razor-go locally with:
 docker-compose up -d
 ```
 
-You can intract with razor:
+You can interact with razor:
 
 ```
 docker exec -it razor-go ...
@@ -402,13 +402,13 @@ Create new collections using `creteCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power>
+$ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
 
 ```
-$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
+$ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2 --tolerance 200
 ```
 
 ### Modify Asset Status
@@ -434,13 +434,13 @@ Update the collection using `updateCollection` command.
 _Note: This command is restricted to "Admin Role"_
 
 ```
-$ ./razor updateCollection --collectionId <collection_id> --address <address> --aggregation <aggregation_method> --power <power>
+$ ./razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
 
 ```
-$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --aggregation 2 --power 4
+$ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 3 --jobIds 1,3 --aggregation 2 --power 4 --tolerance 5
 ```
 
 ### Update Job

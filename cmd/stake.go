@@ -86,7 +86,10 @@ Example:
 					IsRogue:   isRogue,
 					RogueMode: rogueMode,
 				}
-				utilsStruct.vote(context.Background(), config, client, rogueData, account)
+				err := utilsStruct.vote(context.Background(), config, client, rogueData, account)
+				if err != nil {
+					log.Fatal("Error in auto vote: ", err)
+				}
 			}
 		}
 	},

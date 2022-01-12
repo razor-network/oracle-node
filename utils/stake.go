@@ -11,12 +11,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func getStakeManagerWithOpts(client *ethclient.Client, address string) (*bindings.StakeManager, bind.CallOpts) {
+func getStakeManagerWithOpts(client *ethclient.Client) (*bindings.StakeManager, bind.CallOpts) {
 	return GetStakeManager(client), UtilsInterface.GetOptions()
 }
 
 func GetStakerId(client *ethclient.Client, address string) (uint32, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	var (
 		stakerId  uint32
 		stakerErr error
@@ -45,8 +45,9 @@ func GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.I
 	return stake.Stake, nil
 }
 
+//TODO: Remove address
 func GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	var (
 		staker    bindings.StructsStaker
 		stakerErr error
@@ -67,8 +68,9 @@ func GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindi
 	return staker, nil
 }
 
+//TODO: Remove address
 func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	var (
 		numStakers uint32
 		stakerErr  error
@@ -90,7 +92,7 @@ func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error
 }
 
 func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	staker, err := GetStaker(client, address, stakerId)
 	if err != nil {
 		return types.Locks{}, err
@@ -116,13 +118,12 @@ func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.L
 }
 
 func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client, address)
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	return stakeManager.WithdrawReleasePeriod(&callOpts)
 }
 
 func GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	//TODO: Remove this address
-	stakeManager, callOpts := getStakeManagerWithOpts(client, "")
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	var (
 		maxCommission uint8
 		err           error
@@ -142,8 +143,7 @@ func GetMaxCommission(client *ethclient.Client) (uint8, error) {
 }
 
 func GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	//TODO: Remove this address
-	stakeManager, callOpts := getStakeManagerWithOpts(client, "")
+	stakeManager, callOpts := getStakeManagerWithOpts(client)
 	var (
 		epochLimitForUpdateCommission uint16
 		err                           error
