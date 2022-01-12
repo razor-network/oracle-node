@@ -27,6 +27,29 @@ type UtilsCmdInterfaceMockery struct {
 	mock.Mock
 }
 
+// Approve provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) Approve(_a0 types.TransactionOptions) (common.Hash, error) {
+	ret := _m.Called(_a0)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(types.TransactionOptions) common.Hash); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.TransactionOptions) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // AssignAmountInWei provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.Int, error) {
 	ret := _m.Called(_a0)

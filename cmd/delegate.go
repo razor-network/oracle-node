@@ -55,7 +55,7 @@ Example:
 			Config:         config,
 		}
 
-		approveTxnHash, err := utilsStruct.approve(txnArgs)
+		approveTxnHash, err := cmdUtilsMockery.Approve(txnArgs)
 		utils.CheckError("Approve error: ", err)
 
 		if approveTxnHash != core.NilHash {
