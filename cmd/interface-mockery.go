@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,6 +24,7 @@ import (
 //go:generate mockery --name KeystoreInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name TokenManagerInterfaceMockery --output ./mocks/ --case=underscore
 //go:generate mockery --name AssetManagerInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name CryptoInterface --output ./mocks/ --case=underscore
 
 var razorUtilsMockery UtilsInterfaceMockery
 var flagSetUtilsMockery FlagSetInterfaceMockery
@@ -34,6 +36,7 @@ var voteManagerUtilsMockery VoteManagerInterfaceMockery
 var keystoreUtilsMockery KeystoreInterfaceMockery
 var tokenManagerUtilsMockery TokenManagerInterfaceMockery
 var assetManagerUtilsMockery AssetManagerInterfaceMockery
+var cryptoUtils CryptoInterface
 
 type UtilsInterfaceMockery interface {
 	GetConfigFilePath() (string, error)
@@ -92,6 +95,8 @@ type UtilsInterfaceMockery interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
+	PrivateKeyPrompt() string
+	PasswordPrompt() string
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -114,6 +119,7 @@ type StakeManagerInterfaceMockery interface {
 
 type KeystoreInterfaceMockery interface {
 	Accounts(string) []accounts.Account
+	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
 }
 
 type BlockManagerInterfaceMockery interface {
@@ -248,10 +254,16 @@ type UtilsCmdInterfaceMockery interface {
 	Delegate(types.TransactionOptions, uint32) (common.Hash, error)
 	ExecuteCreate(*pflag.FlagSet)
 	Create(string) (accounts.Account, error)
+	ExecuteImport()
+	ImportAccount() (accounts.Account, error)
 }
 
 type TransactionInterfaceMockery interface {
 	Hash(*Types.Transaction) common.Hash
+}
+
+type CryptoInterface interface {
+	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }
 
 type UtilsMockery struct{}
@@ -264,3 +276,4 @@ type VoteManagerUtilsMockery struct{}
 type KeystoreUtilsMockery struct{}
 type TokenManagerUtilsMockery struct{}
 type AssetManagerUtilsMockery struct{}
+type CryptoUtils struct{}

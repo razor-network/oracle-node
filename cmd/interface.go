@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -117,11 +115,6 @@ type stakeManagerInterface interface {
 	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
-type keystoreInterface interface {
-	Accounts(string) []accounts.Account
-	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
-}
-
 type flagSetInterface interface {
 	GetStringFrom(*pflag.FlagSet) (string, error)
 	GetStringTo(*pflag.FlagSet) (string, error)
@@ -168,10 +161,6 @@ type utilsCmdInterface interface {
 	AssignAmountInWei(*pflag.FlagSet, UtilsStruct) (*big.Int, error)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
-}
-
-type cryptoInterface interface {
-	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }
 
 type voteManagerInterface interface {

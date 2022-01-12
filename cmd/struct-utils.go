@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
 	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
@@ -12,12 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -28,13 +24,11 @@ type TokenManagerUtils struct{}
 type TransactionUtils struct{}
 type StakeManagerUtils struct{}
 type AssetManagerUtils struct{}
-type KeystoreUtils struct{}
 type FlagSetUtils struct{}
 type ProposeUtils struct{}
 type UtilsCmd struct{}
 type VoteManagerUtils struct{}
 type BlockManagerUtils struct{}
-type CryptoUtils struct{}
 type UtilsStruct struct {
 	razorUtils        utilsInterface
 	cmdUtils          utilsCmdInterface
@@ -45,9 +39,7 @@ type UtilsStruct struct {
 	assetManagerUtils assetManagerInterface
 	voteManagerUtils  voteManagerInterface
 	tokenManagerUtils tokenManagerInterface
-	keystoreUtils     keystoreInterface
 	flagSetUtils      flagSetInterface
-	cryptoUtils       cryptoInterface
 	accountUtils      accounts.AccountInterface
 }
 
@@ -450,16 +442,6 @@ func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Cl
 	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
 }
 
-func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
-	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
-	return ks.Accounts()
-}
-
-func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
-	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
-	return ks.ImportECDSA(priv, passphrase)
-}
-
 func (flagSetUtils FlagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("from")
 }
@@ -731,8 +713,4 @@ func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(clien
 		return nil, err
 	}
 	return txn, nil
-}
-
-func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
-	return crypto.HexToECDSA(hexKey)
 }
