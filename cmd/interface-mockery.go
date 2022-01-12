@@ -77,6 +77,8 @@ type UtilsInterfaceMockery interface {
 	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	ParseBool(str string) (bool, error)
+	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
 	GetRandaoHash(*ethclient.Client) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
@@ -90,7 +92,6 @@ type UtilsInterfaceMockery interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
-	ParseBool(str string) (bool, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -222,6 +223,8 @@ type UtilsCmdInterfaceMockery interface {
 	ExecuteCollectionList()
 	GetCollectionList(*ethclient.Client) error
 	ExecuteStakerinfo(*pflag.FlagSet)
+	ExecuteSetDelegation(*pflag.FlagSet)
+	SetDelegation(*ethclient.Client, types.Configurations, types.SetDelegationInput) (common.Hash, error)
 	GetStakerInfo(*ethclient.Client, uint32) error
 	ExecuteUpdateCollection(*pflag.FlagSet)
 	UpdateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) (common.Hash, error)

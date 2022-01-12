@@ -249,6 +249,10 @@ func (u UtilsMockery) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
+func (u UtilsMockery) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
+	return utils.GetStakerId(client, address)
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

@@ -55,3 +55,11 @@ type ModifyAssetInput struct {
 	AssetId  uint16
 	Status   bool
 }
+
+type SetDelegationInput struct {
+	Address      string
+	Password     string
+	Status       bool
+	StatusString string
+	StakerId     uint32
+}
