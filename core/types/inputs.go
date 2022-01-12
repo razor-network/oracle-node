@@ -48,3 +48,10 @@ type ExtendLockInput struct {
 	Password string
 	StakerId uint32
 }
+
+type ModifyAssetInput struct {
+	Address  string
+	Password string
+	AssetId  uint16
+	Status   bool
+}
