@@ -99,8 +99,6 @@ func (*UtilsStructMockery) CreateJob(client *ethclient.Client, config types.Conf
 
 func init() {
 
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 	razorUtilsMockery = &UtilsMockery{}
 	assetManagerUtilsMockery = &AssetManagerUtilsMockery{}

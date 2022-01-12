@@ -8,8 +8,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
@@ -19,12 +20,6 @@ func Test_stakeCoins(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		transactionUtils:  TransactionMock{},
-		stakeManagerUtils: StakeManagerMock{},
-	}
 
 	txnArgs := types.TransactionOptions{
 		Amount: big.NewInt(10000),
@@ -96,23 +91,23 @@ func Test_stakeCoins(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
 
-			GetEpochMock = func(client *ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.getEpochErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
 
-			StakeMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
-				return tt.args.stakeTxn, tt.args.stakeErr
-			}
+			razorUtilsMockery = utilsMock
+			stakeManagerUtilsMockery = stakeManagerUtilsMock
+			transactionUtilsMockery = transactionUtilsMock
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.getEpochErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			stakeManagerUtilsMock.On("Stake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
-			got, err := utilsStruct.stakeCoins(txnArgs)
+			utils := &UtilsStructMockery{}
+
+			got, err := utils.StakeCoins(txnArgs)
 			if got != tt.want {
 				t.Errorf("Txn hash for stake function, got = %v, want %v", got, tt.want)
 			}

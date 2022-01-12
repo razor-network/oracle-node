@@ -111,7 +111,6 @@ func TestExecuteExtendLock(t *testing.T) {
 		addressErr   error
 		stakerId     uint32
 		stakerIdErr  error
-		txnOpts      *bind.TransactOpts
 		resetLockTxn common.Hash
 		resetLockErr error
 	}

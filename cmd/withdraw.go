@@ -129,9 +129,9 @@ func (*UtilsStructMockery) Withdraw(client *ethclient.Client, txnOpts *bind.Tran
 
 func init() {
 
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
+	razorUtilsMockery = UtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
+	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}

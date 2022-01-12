@@ -185,21 +185,20 @@ func TestExecuteUnstake(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		config              types.Configurations
-		configErr           error
-		password            string
-		address             string
-		addressErr          error
-		autoWithdraw        bool
-		autoWithdrawErr     error
-		value               *big.Int
-		valueErr            error
-		stakerId            uint32
-		stakerIdErr         error
-		lock                types.Locks
-		lockErr             error
-		unstakeErr          error
-		autoWithdrawFuncErr error
+		config          types.Configurations
+		configErr       error
+		password        string
+		address         string
+		addressErr      error
+		autoWithdraw    bool
+		autoWithdrawErr error
+		value           *big.Int
+		valueErr        error
+		stakerId        uint32
+		stakerIdErr     error
+		lock            types.Locks
+		lockErr         error
+		unstakeErr      error
 	}
 	tests := []struct {
 		name          string

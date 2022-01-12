@@ -266,6 +266,7 @@ type UtilsCmdInterfaceMockery interface {
 	OverrideJob(*types.StructsJob) error
 	ExecuteDeleteOverrideJob(*pflag.FlagSet)
 	DeleteOverrideJob(uint16) error
+	StakeCoins(types.TransactionOptions) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
