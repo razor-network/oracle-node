@@ -7,6 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/mock"
+	"razor/accounts/mocks"
 	"razor/core/types"
 	"reflect"
 	"testing"
@@ -16,7 +18,6 @@ func TestCreateAccount(t *testing.T) {
 	var path string
 	var password string
 
-	AccountUtilsInterface := AccountUtilsMock{}
 	type args struct {
 		account    accounts.Account
 		accountErr error
@@ -55,12 +56,14 @@ func TestCreateAccount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			NewAccountMock = func(string, string) (accounts.Account, error) {
-				return tt.args.account, tt.args.accountErr
-			}
+			accountsMock := new(mocks.AccountInterface)
+			AccountUtilsInterface = accountsMock
 
+			accountsMock.On("NewAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
+
+			accountUtils := AccountUtils{}
 			fatal = false
-			got := CreateAccount(path, password, AccountUtilsInterface)
+			got := accountUtils.CreateAccount(path, password)
 			if tt.expectedFatal {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
@@ -71,13 +74,11 @@ func TestCreateAccount(t *testing.T) {
 	}
 }
 
-func Test_getPrivateKeyFromKeystore(t *testing.T) {
+func TestGetPrivateKeyFromKeystore(t *testing.T) {
 	var password string
 	var keystorePath string
 	var privateKey *ecdsa.PrivateKey
 	var jsonBytes []byte
-
-	AccountUtilsInterface := AccountUtilsMock{}
 
 	type args struct {
 		jsonBytes    []byte
@@ -133,16 +134,15 @@ func Test_getPrivateKeyFromKeystore(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ReadFileMock = func(string) ([]byte, error) {
-				return tt.args.jsonBytes, tt.args.jsonBytesErr
-			}
+			accountsMock := new(mocks.AccountInterface)
+			AccountUtilsInterface = accountsMock
 
-			DecryptKeyMock = func([]byte, string) (*keystore.Key, error) {
-				return tt.args.key, tt.args.keyErr
-			}
+			accountsMock.On("ReadFile", mock.AnythingOfType("string")).Return(tt.args.jsonBytes, tt.args.jsonBytesErr)
+			accountsMock.On("DecryptKey", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.key, tt.args.keyErr)
 
+			accountUtils := &AccountUtils{}
 			fatal = false
-			got := getPrivateKeyFromKeystore(keystorePath, password, AccountUtilsInterface)
+			got := accountUtils.GetPrivateKeyFromKeystore(keystorePath, password)
 			if tt.expectedFatal {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
@@ -157,8 +157,6 @@ func TestGetPrivateKey(t *testing.T) {
 	var password string
 	var keystorePath string
 	var privateKey *ecdsa.PrivateKey
-
-	AccountUtilsInterface := AccountUtilsMock{}
 
 	accountsList := []accounts.Account{
 		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
@@ -200,15 +198,14 @@ func TestGetPrivateKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			AccountsMock = func(string) []accounts.Account {
-				return tt.args.accounts
-			}
+			accountsMock := new(mocks.AccountInterface)
+			AccountUtilsInterface = accountsMock
 
-			getPrivateKeyFromKeystoreMock = func(string, string, AccountInterface) *ecdsa.PrivateKey {
-				return tt.args.privateKey
-			}
+			accountsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
+			accountsMock.On("GetPrivateKeyFromKeystore", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey)
 
-			got := GetPrivateKey(tt.args.address, password, keystorePath, AccountUtilsInterface)
+			accountUtils := &AccountUtils{}
+			got := accountUtils.GetPrivateKey(tt.args.address, password, keystorePath)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetPrivateKey() got = %v, want %v", got, tt.want)
 			}
@@ -216,14 +213,12 @@ func TestGetPrivateKey(t *testing.T) {
 	}
 }
 
-func TestSign(t *testing.T) {
+func TestSignAccounts(t *testing.T) {
 	var hash []byte
 	var account types.Account
 	var defaultPath string
 	var privateKey *ecdsa.PrivateKey
 	var signature []byte
-
-	AccountUtilsInterface := AccountUtilsMock{}
 
 	type args struct {
 		privateKey   *ecdsa.PrivateKey
@@ -258,15 +253,15 @@ func TestSign(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetPrivateKeyMock = func(string, string, string, AccountInterface) *ecdsa.PrivateKey {
-				return tt.args.privateKey
-			}
+			accountsMock := new(mocks.AccountInterface)
+			AccountUtilsInterface = accountsMock
 
-			SignMock = func([]byte, *ecdsa.PrivateKey) ([]byte, error) {
-				return tt.args.signature, tt.args.signatureErr
-			}
+			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey)
+			accountsMock.On("Sign", mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.signatureErr)
 
-			got, err := Sign(hash, account, defaultPath, AccountUtilsInterface)
+			accountUtils := &AccountUtils{}
+
+			got, err := accountUtils.SignAccount(hash, account, defaultPath)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Sign() got = %v, want %v", got, tt.want)
@@ -274,11 +269,11 @@ func TestSign(t *testing.T) {
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for Sign function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for SignAccounts function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for Sign function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for SignAccounts function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

@@ -688,10 +688,6 @@ func (cmdUtils UtilsCmd) AutoWithdraw(txnArgs types.TransactionOptions, stakerId
 	return cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId)
 }
 
-func (cmdUtils UtilsCmd) Create(password string, utilsStruct UtilsStruct) (ethAccounts.Account, error) {
-	return Create(password, utilsStruct)
-}
-
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)

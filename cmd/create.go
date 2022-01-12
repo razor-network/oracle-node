@@ -21,36 +21,31 @@ Example:
 }
 
 func initialiseCreate(cmd *cobra.Command, args []string) {
-	utilsStruct := UtilsStruct{
-		razorUtils:   razorUtils,
-		accountUtils: razorAccounts.AccountUtilsInterface,
-		cmdUtils:     cmdUtils,
-	}
-	utilsStruct.executeCreate(cmd.Flags())
+	cmdUtilsMockery.ExecuteCreate(cmd.Flags())
 }
 
-func (utilsStruct UtilsStruct) executeCreate(flagSet *pflag.FlagSet) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	account, err := utilsStruct.cmdUtils.Create(password, utilsStruct)
+func (*UtilsStructMockery) ExecuteCreate(flagSet *pflag.FlagSet) {
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	account, err := cmdUtilsMockery.Create(password)
 	utils.CheckError("Create error: ", err)
 	log.Info("Account address: ", account.Address)
 	log.Info("Keystore Path: ", account.URL)
 }
 
-func Create(password string, utilsStruct UtilsStruct) (accounts.Account, error) {
-	path, err := utilsStruct.razorUtils.GetDefaultPath()
+func (*UtilsStructMockery) Create(password string) (accounts.Account, error) {
+	path, err := razorUtilsMockery.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account := utilsStruct.accountUtils.CreateAccount(path, password, utilsStruct.accountUtils)
+	account := razorAccounts.AccountUtilsInterface.CreateAccount(path, password)
 	return account, nil
 }
 
 func init() {
-	razorUtils = Utils{}
+	razorUtilsMockery = UtilsMockery{}
+	cmdUtilsMockery = &UtilsStructMockery{}
 	razorAccounts.AccountUtilsInterface = razorAccounts.AccountUtils{}
-	cmdUtils = UtilsCmd{}
 
 	rootCmd.AddCommand(createCmd)
 

@@ -168,7 +168,6 @@ type utilsCmdInterface interface {
 	AssignAmountInWei(*pflag.FlagSet, UtilsStruct) (*big.Int, error)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32, UtilsStruct) error
-	Create(string, UtilsStruct) (accounts.Account, error)
 }
 
 type cryptoInterface interface {

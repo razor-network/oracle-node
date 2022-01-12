@@ -340,7 +340,7 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 	if err != nil {
 		log.Error("Error in fetching .razor directory: ", err)
 	}
-	signedData, err := accounts.Sign(hash, account, razorPath, accounts.AccountUtilsInterface)
+	signedData, err := accounts.AccountUtilsInterface.SignAccount(hash, account, razorPath)
 	if err != nil {
 		log.Error("Error in signing the data: ", err)
 		return nil
@@ -398,6 +398,7 @@ func init() {
 	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
 	voteManagerUtilsMockery = VoteManagerUtilsMockery{}
 	transactionUtilsMockery = TransactionUtilsMockery{}
+	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(voteCmd)
 

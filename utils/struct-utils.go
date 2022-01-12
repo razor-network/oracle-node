@@ -36,7 +36,7 @@ func (o OptionsStruct) GetDefaultPath() (string, error) {
 }
 
 func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
-	return accounts.GetPrivateKey(address, password, keystorePath, accountUtils)
+	return accounts.AccountUtilsInterface.GetPrivateKey(address, password, keystorePath)
 }
 
 func (o OptionsStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {

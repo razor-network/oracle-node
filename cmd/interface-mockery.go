@@ -246,6 +246,8 @@ type UtilsCmdInterfaceMockery interface {
 	Approve(types.TransactionOptions) (common.Hash, error)
 	ExecuteDelegate(*pflag.FlagSet)
 	Delegate(types.TransactionOptions, uint32) (common.Hash, error)
+	ExecuteCreate(*pflag.FlagSet)
+	Create(string) (accounts.Account, error)
 }
 
 type TransactionInterfaceMockery interface {
