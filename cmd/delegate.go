@@ -35,7 +35,7 @@ func (*UtilsStructMockery) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	stakerId, _ := flagSetUtilsMockery.GetUint32StakerId(flagSet)
+	stakerId, err := flagSetUtilsMockery.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
 
 	client := razorUtilsMockery.ConnectToClient(config.Provider)
