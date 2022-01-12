@@ -115,12 +115,12 @@ func init() {
 
 	var (
 		Address string
-		AssetId uint8
+		AssetId uint16
 		Status  string
 	)
 
 	modifyAssetStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	modifyAssetStatusCmd.Flags().Uint8VarP(&AssetId, "assetId", "", 0, "assetId of the asset")
+	modifyAssetStatusCmd.Flags().Uint16VarP(&AssetId, "assetId", "", 0, "assetId of the asset")
 	modifyAssetStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the asset")
 
 	addressErr := modifyAssetStatusCmd.MarkFlagRequired("address")
