@@ -243,6 +243,7 @@ type UtilsCmdInterfaceMockery interface {
 	CheckCurrentStatus(*ethclient.Client, uint16) (bool, error)
 	ExecuteModifyAssetStatus(*pflag.FlagSet)
 	ModifyAssetStatus(*ethclient.Client, types.Configurations, types.ModifyAssetInput) (common.Hash, error)
+	Approve(types.TransactionOptions) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
