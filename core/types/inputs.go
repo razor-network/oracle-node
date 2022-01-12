@@ -48,3 +48,11 @@ type ExtendLockInput struct {
 	Password string
 	StakerId uint32
 }
+
+type SetDelegationInput struct {
+	Address      string
+	Password     string
+	Status       bool
+	StatusString string
+	StakerId     uint32
+}
