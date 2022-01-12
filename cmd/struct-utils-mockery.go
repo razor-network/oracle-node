@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -253,6 +255,14 @@ func (u UtilsMockery) GetStakerId(client *ethclient.Client, address string) (uin
 	return utils.GetStakerId(client, address)
 }
 
+func (u UtilsMockery) PrivateKeyPrompt() string {
+	return utils.PrivateKeyPrompt()
+}
+
+func (u UtilsMockery) PasswordPrompt() string {
+	return utils.PasswordPrompt()
+}
+
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -319,11 +329,6 @@ func (stakeManagerUtils StakeManagerUtilsMockery) BalanceOf(stakedToken *binding
 
 func (stakeManagerUtils StakeManagerUtilsMockery) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
 	return token.TotalSupply(callOpts)
-}
-
-func (KeystoreUtils KeystoreUtilsMockery) Accounts(path string) []ethAccounts.Account {
-	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
-	return ks.Accounts()
 }
 
 func (blockManagerUtils BlockManagerUtilsMockery) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
@@ -614,6 +619,20 @@ func (flagSetUtils FLagSetUtilsMockery) GetStringValue(flagSet *pflag.FlagSet) (
 
 func (flagSetUtils FLagSetUtilsMockery) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("pow")
+}
+
+func (KeystoreUtils KeystoreUtilsMockery) Accounts(path string) []ethAccounts.Account {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.Accounts()
+}
+
+func (keystoreUtils KeystoreUtilsMockery) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (ethAccounts.Account, error) {
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+	return ks.ImportECDSA(priv, passphrase)
+}
+
+func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	return crypto.HexToECDSA(hexKey)
 }
 
 func (*UtilsStructMockery) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {

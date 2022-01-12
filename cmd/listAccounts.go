@@ -6,8 +6,6 @@ import (
 	"razor/utils"
 )
 
-var keystoreUtils keystoreInterface
-
 var listAccountsCmd = &cobra.Command{
 	Use:   "listAccounts",
 	Short: "listAccounts command can be used to list all accessible accounts",

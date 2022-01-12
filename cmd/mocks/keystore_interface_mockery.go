@@ -5,6 +5,8 @@ package mocks
 import (
 	accounts "github.com/ethereum/go-ethereum/accounts"
 
+	ecdsa "crypto/ecdsa"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -27,4 +29,25 @@ func (_m *KeystoreInterfaceMockery) Accounts(_a0 string) []accounts.Account {
 	}
 
 	return r0
+}
+
+// ImportECDSA provides a mock function with given fields: _a0, _a1, _a2
+func (_m *KeystoreInterfaceMockery) ImportECDSA(_a0 string, _a1 *ecdsa.PrivateKey, _a2 string) (accounts.Account, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 accounts.Account
+	if rf, ok := ret.Get(0).(func(string, *ecdsa.PrivateKey, string) accounts.Account); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(accounts.Account)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, *ecdsa.PrivateKey, string) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
