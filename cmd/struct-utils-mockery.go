@@ -15,6 +15,7 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 	"time"
 )
 
@@ -242,6 +243,10 @@ func (u UtilsMockery) GetVotes(client *ethclient.Client, stakerId uint32) (bindi
 
 func (u UtilsMockery) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
 	return utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
+}
+
+func (u UtilsMockery) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
 }
 
 func (transactionUtils TransactionUtilsMockery) Hash(txn *Types.Transaction) common.Hash {

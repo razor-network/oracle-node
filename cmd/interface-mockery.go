@@ -90,6 +90,7 @@ type UtilsInterfaceMockery interface {
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
 	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
+	ParseBool(str string) (bool, error)
 }
 
 type StakeManagerInterfaceMockery interface {
@@ -235,7 +236,10 @@ type UtilsCmdInterfaceMockery interface {
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32) error
 	ExecuteExtendLock(*pflag.FlagSet)
-	ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
+	ExtendLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)
+	CheckCurrentStatus(*ethclient.Client, uint16) (bool, error)
+	ExecuteModifyAssetStatus(*pflag.FlagSet)
+	ModifyAssetStatus(*ethclient.Client, types.Configurations, types.ModifyAssetInput) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
