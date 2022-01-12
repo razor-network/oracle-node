@@ -9,22 +9,17 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core/types"
 	"testing"
 )
 
-func Test_approve(t *testing.T) {
+func TestApprove(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		tokenManagerUtils: TokenManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		txnArgs         types.TransactionOptions
@@ -135,26 +130,24 @@ func Test_approve(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetOptionsMock = func() bind.CallOpts {
-				return tt.args.callOpts
-			}
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.transactOpts
-			}
 
-			AllowanceMock = func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error) {
-				return tt.args.allowanceAmount, tt.args.allowanceError
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			tokenManagerUtilsMock := new(mocks.TokenManagerInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
 
-			ApproveMock = func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error) {
-				return tt.args.approveTxn, tt.args.approveError
-			}
+			razorUtilsMockery = utilsMock
+			tokenManagerUtilsMockery = tokenManagerUtilsMock
+			transactionUtilsMockery = transactionUtilsMock
 
-			HashMock = func(transaction *Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			utilsMock.On("GetOptions").Return(tt.args.callOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			tokenManagerUtilsMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
+			tokenManagerUtilsMock.On("Approve", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveError)
 
-			got, err := utilsStruct.approve(tt.args.txnArgs)
+			utils := &UtilsStructMockery{}
+
+			got, err := utils.Approve(tt.args.txnArgs)
 			if got != tt.want {
 				t.Errorf("Txn hash for approve function, got = %v, want = %v", got, tt.want)
 			}
