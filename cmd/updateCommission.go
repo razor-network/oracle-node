@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -18,63 +19,62 @@ var updateCommissionCmd = &cobra.Command{
 	Long: `Using updateCommission stakers can add or update the commission charged by them
 Example:
   ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --commission 10`,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			cmdUtils:          cmdUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		err := utilsStruct.UpdateCommission(cmd.Flags())
-		utils.CheckError("SetDelegation error: ", err)
-	},
+	Run: initialiseUpdateCommission,
 }
 
-func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
+func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteUpdateCommission(cmd.Flags())
+}
+
+func (*UtilsStructMockery) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	config, err := cmdUtilsMockery.GetConfigData()
-	if err != nil {
-		log.Error("Error in getting config")
-		return err
-	}
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return err
-	}
-	commission, err := utilsStruct.flagSetUtils.GetUint8Commission(flagSet)
-	if err != nil {
-		return err
+	utils.CheckError("Error in getting config", err)
+
+	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	password := razorUtilsMockery.AssignPassword(flagSet)
+	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address", err)
+
+	commission, err := flagSetUtilsMockery.GetUint8Commission(flagSet)
+	utils.CheckError("Error in getting commission", err)
+
+	stakerId, err := razorUtilsMockery.GetStakerId(client, address)
+	utils.CheckError("Error in getting stakerId", err)
+
+	updateCommissionInput := types.UpdateCommissionInput{
+		Address:    address,
+		Password:   password,
+		StakerId:   stakerId,
+		Commission: commission,
 	}
 
-	stakerId, err := utilsStruct.razorUtils.GetStakerId(client, address)
-	if err != nil {
-		log.Error("Error in fetching staker id")
-		return err
-	}
+	err = cmdUtilsMockery.UpdateCommission(config, client, updateCommissionInput)
+	utils.CheckError("SetDelegation error: ", err)
+}
 
-	stakerInfo, err := utilsStruct.razorUtils.GetStaker(client, address, stakerId)
+func (*UtilsStructMockery) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
+
+	stakerInfo, err := razorUtilsMockery.GetStaker(client, updateCommissionInput.Address, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
 	}
 
-	maxCommission, err := utilsStruct.razorUtils.GetMaxCommission(client)
+	maxCommission, err := razorUtilsMockery.GetMaxCommission(client)
 	if err != nil {
 		return err
 	}
 
-	if commission == 0 || commission > maxCommission {
+	if updateCommissionInput.Commission == 0 || updateCommissionInput.Commission > maxCommission {
 		return errors.New("commission out of range")
 	}
 
-	epochLimitForUpdateCommission, err := utilsStruct.razorUtils.GetEpochLimitForUpdateCommission(client)
+	epochLimitForUpdateCommission, err := razorUtilsMockery.GetEpochLimitForUpdateCommission(client)
 	if err != nil {
 		return err
 	}
 
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := razorUtilsMockery.GetEpoch(client)
 	if err != nil {
 		return err
 	}
@@ -84,35 +84,34 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 	}
 	txnOpts := types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        updateCommissionInput.Password,
+		AccountAddress:  updateCommissionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerABI,
 		MethodName:      "updateCommission",
-		Parameters:      []interface{}{commission},
+		Parameters:      []interface{}{updateCommissionInput.Commission},
 	}
 
-	updateCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
-	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
-	txn, err := utilsStruct.stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, commission)
+	updateCommissionTxnOpts := razorUtilsMockery.GetTxnOpts(txnOpts)
+	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
+	txn, err := stakeManagerUtilsMockery.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
 	if err != nil {
 		log.Error("Error in setting commission")
 		return err
 	}
-	txnHash := utilsStruct.transactionUtils.Hash(txn)
+	txnHash := transactionUtilsMockery.Hash(txn)
 	log.Infof("Transaction hash: %s", txnHash)
-	utilsStruct.razorUtils.WaitForBlockCompletion(client, txnHash.String())
+	razorUtilsMockery.WaitForBlockCompletion(client, txnHash.String())
 	return nil
 }
 
 func init() {
-	razorUtils = Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
+	razorUtilsMockery = UtilsMockery{}
+	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 
 	var (

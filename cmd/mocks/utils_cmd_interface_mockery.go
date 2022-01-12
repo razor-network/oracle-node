@@ -356,6 +356,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateCollection(_a0 *pflag.FlagSet) 
 	_m.Called(_a0)
 }
 
+// ExecuteUpdateCommission provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateCommission(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteUpdateJob provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteUpdateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -1041,6 +1046,20 @@ func (_m *UtilsCmdInterfaceMockery) UpdateCollection(_a0 *ethclient.Client, _a1 
 	}
 
 	return r0, r1
+}
+
+// UpdateCommission provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) UpdateCommission(_a0 types.Configurations, _a1 *ethclient.Client, _a2 types.UpdateCommissionInput) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // UpdateJob provides a mock function with given fields: _a0, _a1, _a2, _a3
