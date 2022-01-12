@@ -82,7 +82,7 @@ func init() {
 		SelectorType uint8
 		Power        int8
 	)
-	//TODO: Take an extra input in terms of Tolerance
+
 	overrideJobCmd.Flags().Uint16VarP(&JobId, "jobId", "j", 0, "job id to override")
 	overrideJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
 	overrideJobCmd.Flags().StringVarP(&Selector, "selector", "s", "", "selector (jsonPath/XHTML selector)")

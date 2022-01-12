@@ -104,7 +104,7 @@ func init() {
 
 	var (
 		Account           string
-		CollectionId      uint8
+		CollectionId      uint16
 		AggregationMethod uint32
 		Password          string
 		Power             int8
@@ -113,7 +113,7 @@ func init() {
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
-	updateCollectionCmd.Flags().Uint8VarP(&CollectionId, "collectionId", "", 0, "collection id to be modified")
+	updateCollectionCmd.Flags().Uint16VarP(&CollectionId, "collectionId", "", 0, "collection id to be modified")
 	updateCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")

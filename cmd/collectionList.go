@@ -46,7 +46,7 @@ func (utilsStruct *UtilsStruct) GetCollectionList(client *ethclient.Client) erro
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Active", "Collection Id", "Asset Index", "Power", "Aggregation Method", "Job IDs", "Name"})
+	table.SetHeader([]string{"Active", "Collection Id", "Asset Index", "Power", "Aggregation Method", "Job IDs", "Name", "Tolerance"})
 	for i := 0; i < len(collections); i++ {
 		jobIDs, _ := json.Marshal(collections[i].JobIDs)
 
@@ -58,6 +58,7 @@ func (utilsStruct *UtilsStruct) GetCollectionList(client *ethclient.Client) erro
 			strconv.Itoa(int(collections[i].AggregationMethod)),
 			strings.Trim(string(jobIDs), "[]"),
 			collections[i].Name,
+			strconv.Itoa(int(collections[i].Tolerance)),
 		})
 
 	}

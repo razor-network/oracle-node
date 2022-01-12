@@ -25,7 +25,7 @@ func (utilsStruct UtilsStruct) HandleDispute(client *ethclient.Client, config ty
 	if err != nil {
 		return err
 	}
-	log.Debug("Biggest Influence: ", biggestStake)
+	log.Debug("Biggest Stake: ", biggestStake)
 
 	medians, err := utilsStruct.proposeUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false}, utilsStruct)
 	if err != nil {
