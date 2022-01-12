@@ -177,6 +177,27 @@ func (_m *UtilsCmdInterfaceMockery) Commit(_a0 *ethclient.Client, _a1 []*big.Int
 	return r0, r1
 }
 
+// Create provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) Create(_a0 string) (accounts.Account, error) {
+	ret := _m.Called(_a0)
+
+	var r0 accounts.Account
+	if rf, ok := ret.Get(0).(func(string) accounts.Account); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(accounts.Account)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateCollection provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterfaceMockery) CreateCollection(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.CreateCollectionInput) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -268,6 +289,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteClaimBounty(_a0 *pflag.FlagSet) {
 // ExecuteCollectionList provides a mock function with given fields:
 func (_m *UtilsCmdInterfaceMockery) ExecuteCollectionList() {
 	_m.Called()
+}
+
+// ExecuteCreate provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteCreate(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
 }
 
 // ExecuteCreateCollection provides a mock function with given fields: _a0

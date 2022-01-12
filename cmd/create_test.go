@@ -6,16 +6,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	razorAccounts "razor/accounts"
+
+	//"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
+	Mocks "razor/accounts/mocks"
+	//razorAccounts "razor/accounts"
+	"razor/cmd/mocks"
 	"testing"
 )
 
 func TestCreate(t *testing.T) {
 	var password string
-
-	utilsStruct := UtilsStruct{
-		razorUtils:   UtilsMock{},
-		accountUtils: razorAccounts.AccountUtilsMock{},
-	}
 
 	type args struct {
 		path    string
@@ -60,18 +61,20 @@ func TestCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetDefaultPathMock = func() (string, error) {
-				return tt.args.path, tt.args.pathErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			accountUtilsMock := new(Mocks.AccountInterface)
 
-			razorAccounts.CreateAccountMock = func(string, string, razorAccounts.AccountInterface) accounts.Account {
-				return accounts.Account{
-					Address: tt.args.account.Address,
-					URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-				}
-			}
+			razorUtilsMockery = utilsMock
+			razorAccounts.AccountUtilsInterface = accountUtilsMock
 
-			got, err := Create(password, utilsStruct)
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			accountUtilsMock.On("CreateAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(accounts.Account{
+				Address: tt.args.account.Address,
+				URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+			})
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.Create(password)
 
 			if got.Address != tt.want.Address {
 				t.Errorf("New address created, got = %v, want %v", got, tt.want.Address)
@@ -90,18 +93,13 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func Test_executeCreate(t *testing.T) {
+func TestExecuteCreate(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
 		password   string
 		account    accounts.Account
 		accountErr error
-	}
-
-	utilsStruct := UtilsStruct{
-		razorUtils: UtilsMock{},
-		cmdUtils:   UtilsCmdMock{},
 	}
 
 	tests := []struct {
@@ -139,17 +137,19 @@ func Test_executeCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			AssignPasswordMock = func(*pflag.FlagSet) string {
-				return tt.args.password
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
 
-			CreateMock = func(string, UtilsStruct) (accounts.Account, error) {
-				return tt.args.account, tt.args.accountErr
-			}
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
 
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			cmdUtilsMock.On("Create", mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
+
+			utils := &UtilsStructMockery{}
 			fatal = false
 
-			utilsStruct.executeCreate(flagSet)
+			utils.ExecuteCreate(flagSet)
 
 			if fatal != tt.expectedFatal {
 				t.Error("The executeCreate function didn't execute as expected")
