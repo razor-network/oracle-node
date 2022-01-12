@@ -63,3 +63,10 @@ type SetDelegationInput struct {
 	StatusString string
 	StakerId     uint32
 }
+
+type UpdateCommissionInput struct {
+	Address    string
+	Password   string
+	Commission uint8
+	StakerId   uint32
+}
