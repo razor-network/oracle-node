@@ -223,6 +223,29 @@ func (_m *UtilsCmdInterfaceMockery) CreateJob(_a0 *ethclient.Client, _a1 types.C
 	return r0, r1
 }
 
+// Delegate provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) Delegate(_a0 types.TransactionOptions, _a1 uint32) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(types.TransactionOptions, uint32) common.Hash); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.TransactionOptions, uint32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Dispute provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
 func (_m *UtilsCmdInterfaceMockery) Dispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32, _a4 uint8, _a5 int) error {
 	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
@@ -254,6 +277,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteCreateCollection(_a0 *pflag.FlagSet) 
 
 // ExecuteCreateJob provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteCreateJob(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// ExecuteDelegate provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteDelegate(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 

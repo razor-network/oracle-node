@@ -244,6 +244,8 @@ type UtilsCmdInterfaceMockery interface {
 	ExecuteModifyAssetStatus(*pflag.FlagSet)
 	ModifyAssetStatus(*ethclient.Client, types.Configurations, types.ModifyAssetInput) (common.Hash, error)
 	Approve(types.TransactionOptions) (common.Hash, error)
+	ExecuteDelegate(*pflag.FlagSet)
+	Delegate(types.TransactionOptions, uint32) (common.Hash, error)
 }
 
 type TransactionInterfaceMockery interface {
