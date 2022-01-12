@@ -64,6 +64,27 @@ func (_m *UtilsCmdInterfaceMockery) AutoWithdraw(_a0 types.TransactionOptions, _
 	return r0
 }
 
+// CheckCurrentStatus provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterfaceMockery) CheckCurrentStatus(_a0 *ethclient.Client, _a1 uint16) (bool, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) bool); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ClaimBlockReward provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ClaimBlockReward(_a0 types.TransactionOptions) (common.Hash, error) {
 	ret := _m.Called(_a0)
@@ -223,6 +244,11 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteJobList() {
 	_m.Called()
 }
 
+// ExecuteModifyAssetStatus provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterfaceMockery) ExecuteModifyAssetStatus(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteSetDelegation provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterfaceMockery) ExecuteSetDelegation(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -258,13 +284,13 @@ func (_m *UtilsCmdInterfaceMockery) ExecuteWithdraw(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExtendLock provides a mock function with given fields: client, config, extendLockInput
-func (_m *UtilsCmdInterfaceMockery) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
-	ret := _m.Called(client, config, extendLockInput)
+// ExtendLock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) ExtendLock(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ExtendLockInput) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 common.Hash
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) common.Hash); ok {
-		r0 = rf(client, config, extendLockInput)
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
@@ -273,7 +299,7 @@ func (_m *UtilsCmdInterfaceMockery) ExtendLock(client *ethclient.Client, config 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) error); ok {
-		r1 = rf(client, config, extendLockInput)
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -733,6 +759,29 @@ func (_m *UtilsCmdInterfaceMockery) MakeBlock(_a0 *ethclient.Client, _a1 string,
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, types.Rogue) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ModifyAssetStatus provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterfaceMockery) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ModifyAssetInput) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ModifyAssetInput) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ModifyAssetInput) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)

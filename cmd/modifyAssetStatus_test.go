@@ -10,7 +10,9 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
@@ -20,11 +22,6 @@ func TestCheckCurrentStatus(t *testing.T) {
 
 	var client *ethclient.Client
 	var assetId uint16
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		assetManagerUtils: AssetManagerMock{},
-	}
 
 	type args struct {
 		callOpts        bind.CallOpts
@@ -59,15 +56,18 @@ func TestCheckCurrentStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetOptionsMock = func() bind.CallOpts {
-				return tt.args.callOpts
-			}
 
-			GetActiveStatusMock = func(*ethclient.Client, *bind.CallOpts, uint16) (bool, error) {
-				return tt.args.activeStatus, tt.args.activeStatusErr
-			}
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			assetManageUtilsMock := new(mocks.AssetManagerInterfaceMockery)
 
-			got, err := CheckCurrentStatus(client, assetId, utilsStruct)
+			razorUtilsMockery = utilsMock
+			assetManagerUtilsMockery = assetManageUtilsMock
+
+			utilsMock.On("GetOptions").Return(tt.args.callOpts)
+			assetManageUtilsMock.On("GetActiveStatus", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint16")).Return(tt.args.activeStatus, tt.args.activeStatusErr)
+
+			utils := &UtilsStructMockery{}
+			got, err := utils.CheckCurrentStatus(client, assetId)
 			if got != tt.want {
 				t.Errorf("Status from CheckCurrentStatus function, got = %v, want %v", got, tt.want)
 			}
@@ -90,28 +90,11 @@ func TestModifyAssetStatus(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
-	var flagSet *pflag.FlagSet
 	var config types.Configurations
 	var client *ethclient.Client
 
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		assetManagerUtils: AssetManagerMock{},
-		cmdUtils:          UtilsCmdMock{},
-		transactionUtils:  TransactionMock{},
-		flagSetUtils:      FlagSetMock{},
-	}
-
 	type args struct {
-		address             string
-		addressErr          error
-		assetId             uint16
-		assetIdErr          error
-		status              string
-		statusErr           error
-		parseStatus         bool
-		parseStatusErr      error
-		password            string
+		status              bool
 		currentStatus       bool
 		currentStatusErr    error
 		epoch               uint32
@@ -130,11 +113,7 @@ func TestModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 1: When ModifyAssetStatus executes successfully",
 			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetId:             1,
-				status:              "true",
-				parseStatus:         true,
-				password:            "test",
+				status:              true,
 				currentStatus:       false,
 				txnOpts:             txnOpts,
 				SetCollectionStatus: &Types.Transaction{},
@@ -144,78 +123,9 @@ func TestModifyAssetStatus(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When there is an error in getting address",
+			name: "Test 2: When there is an error in getting current status",
 			args: args{
-				address:             "",
-				addressErr:          errors.New("address error"),
-				assetId:             1,
-				status:              "true",
-				parseStatus:         true,
-				password:            "test",
-				currentStatus:       false,
-				txnOpts:             txnOpts,
-				SetCollectionStatus: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("address error"),
-		},
-		{
-			name: "Test 3: When there is an error in getting assetId",
-			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetIdErr:          errors.New("assetId error"),
-				status:              "true",
-				parseStatus:         true,
-				password:            "test",
-				currentStatus:       false,
-				txnOpts:             txnOpts,
-				SetCollectionStatus: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("assetId error"),
-		},
-		{
-			name: "Test 4: When there is an error in getting status string",
-			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetId:             1,
-				statusErr:           errors.New("status error"),
-				parseStatus:         true,
-				password:            "test",
-				currentStatus:       false,
-				txnOpts:             txnOpts,
-				SetCollectionStatus: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("status error"),
-		},
-		{
-			name: "Test 5: When there is an error in parsing status to bool",
-			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetId:             1,
-				status:              "true",
-				parseStatusErr:      errors.New("parsing status error"),
-				password:            "test",
-				currentStatus:       false,
-				txnOpts:             txnOpts,
-				SetCollectionStatus: &Types.Transaction{},
-				hash:                common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("parsing status error"),
-		},
-		{
-			name: "Test 6: When there is an error in getting current status",
-			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetId:             1,
-				status:              "true",
-				parseStatus:         true,
-				password:            "test",
+				status:              true,
 				currentStatusErr:    errors.New("current status error"),
 				txnOpts:             txnOpts,
 				SetCollectionStatus: &Types.Transaction{},
@@ -225,13 +135,9 @@ func TestModifyAssetStatus(t *testing.T) {
 			wantErr: errors.New("current status error"),
 		},
 		{
-			name: "Test 7: When currentStatus == status",
+			name: "Test 3: When currentStatus == status",
 			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetId:             1,
-				status:              "true",
-				parseStatus:         true,
-				password:            "test",
+				status:              true,
 				currentStatus:       true,
 				txnOpts:             txnOpts,
 				SetCollectionStatus: &Types.Transaction{},
@@ -241,13 +147,9 @@ func TestModifyAssetStatus(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 8: When SetAssetStatus transaction fails",
+			name: "Test 4: When SetAssetStatus transaction fails",
 			args: args{
-				address:           "0x000000000000000000000000000000000000dea1",
-				assetId:           1,
-				status:            "true",
-				parseStatus:       true,
-				password:          "test",
+				status:            true,
 				currentStatus:     false,
 				txnOpts:           txnOpts,
 				SetAssetStatusErr: errors.New("SetAssetStatus error"),
@@ -257,72 +159,44 @@ func TestModifyAssetStatus(t *testing.T) {
 			wantErr: errors.New("SetAssetStatus error"),
 		},
 		{
-			name: "Test 9: When WaitForDisputeOrConfirmState fails",
+			name: "Test 5: When WaitForAppropriateState fails",
 			args: args{
-				address:             "0x000000000000000000000000000000000000dea1",
-				assetId:             1,
-				status:              "true",
-				parseStatus:         true,
-				password:            "test",
+				status:              true,
 				currentStatus:       false,
 				txnOpts:             txnOpts,
-				epochErr:            errors.New("WaitForDisputeOrConfirmState error"),
+				epochErr:            errors.New("WaitForAppropriateState error"),
 				SetCollectionStatus: &Types.Transaction{},
 				SetAssetStatusErr:   nil,
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
-			wantErr: errors.New("WaitForDisputeOrConfirmState error"),
+			wantErr: errors.New("WaitForAppropriateState error"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetStringAddressMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.address, tt.args.addressErr
-			}
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			assetManagerUtilsMock := new(mocks.AssetManagerInterfaceMockery)
 
-			GetUint16AssetIdMock = func(*pflag.FlagSet) (uint16, error) {
-				return tt.args.assetId, tt.args.assetIdErr
-			}
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
+			transactionUtilsMockery = transactionUtilsMock
+			assetManagerUtilsMockery = assetManagerUtilsMock
 
-			GetStringStatusMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.status, tt.args.statusErr
-			}
+			cmdUtilsMock.On("CheckCurrentStatus", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.currentStatus, tt.args.currentStatusErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			assetManagerUtilsMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			ParseBoolMock = func(string2 string) (bool, error) {
-				return tt.args.parseStatus, tt.args.parseStatusErr
-			}
+			utils := &UtilsStructMockery{}
 
-			PasswordPromptMock = func() string {
-				return tt.args.password
-			}
-
-			ConnectToClientMock = func(string) *ethclient.Client {
-				return client
-			}
-
-			CheckCurrentStatusMock = func(*ethclient.Client, uint16, UtilsStruct) (bool, error) {
-				return tt.args.currentStatus, tt.args.currentStatusErr
-			}
-
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
-
-			WaitForAppropriateStateMock = func(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
-
-			SetCollectionStatusMock = func(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error) {
-				return tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr
-			}
-
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
-			got, err := utilsStruct.ModifyAssetStatus(flagSet, config)
+			got, err := utils.ModifyAssetStatus(client, config, types.ModifyAssetInput{
+				Status: tt.args.status,
+			})
 			if got != tt.want {
 				t.Errorf("Txn hash for modifyAssetStatus function, got = %v, want %v", got, tt.want)
 			}
@@ -335,6 +209,166 @@ func TestModifyAssetStatus(t *testing.T) {
 					t.Errorf("Error for modifyAssetStatus function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestExecuteModifyAssetStatus(t *testing.T) {
+
+	var flagSet *pflag.FlagSet
+	var config types.Configurations
+	var client *ethclient.Client
+
+	type args struct {
+		config                types.Configurations
+		configErr             error
+		address               string
+		addressErr            error
+		assetId               uint16
+		assetIdErr            error
+		status                string
+		statusErr             error
+		parseStatus           bool
+		parseStatusErr        error
+		password              string
+		ModifyAssetStatusHash common.Hash
+		ModifyAssetStatusErr  error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ModifyAssetStatus executes successfully",
+			args: args{
+				config:                config,
+				address:               "0x000000000000000000000000000000000000dea1",
+				assetId:               1,
+				status:                "true",
+				parseStatus:           true,
+				password:              "test",
+				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting address",
+			args: args{
+				config:                config,
+				address:               "",
+				addressErr:            errors.New("address error"),
+				assetId:               1,
+				status:                "true",
+				parseStatus:           true,
+				password:              "test",
+				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting assetId",
+			args: args{
+				config:                config,
+				address:               "0x000000000000000000000000000000000000dea1",
+				assetIdErr:            errors.New("assetId error"),
+				status:                "true",
+				parseStatus:           true,
+				password:              "test",
+				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting status string",
+			args: args{
+				config:                config,
+				address:               "0x000000000000000000000000000000000000dea1",
+				assetId:               1,
+				statusErr:             errors.New("status error"),
+				parseStatus:           true,
+				password:              "test",
+				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in parsing status to bool",
+			args: args{
+				config:                config,
+				address:               "0x000000000000000000000000000000000000dea1",
+				assetId:               1,
+				status:                "true",
+				parseStatusErr:        errors.New("parsing status error"),
+				password:              "test",
+				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error from ModifyAssetStatus",
+			args: args{
+				config:                config,
+				address:               "0x000000000000000000000000000000000000dea1",
+				assetId:               1,
+				status:                "true",
+				parseStatus:           true,
+				password:              "test",
+				ModifyAssetStatusHash: core.NilHash,
+				ModifyAssetStatusErr:  errors.New("ModifyAssetStatus error"),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 7: When there ia n error in getting config",
+			args: args{
+				config:                config,
+				configErr:             errors.New("config error"),
+				address:               "0x000000000000000000000000000000000000dea1",
+				assetId:               1,
+				status:                "true",
+				parseStatus:           true,
+				password:              "test",
+				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+
+			razorUtilsMockery = utilsMock
+			cmdUtilsMockery = cmdUtilsMock
+			flagSetUtilsMockery = flagsetUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagsetUtilsMock.On("GetUint16AssetId", flagSet).Return(tt.args.assetId, tt.args.assetIdErr)
+			flagsetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("ModifyAssetStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyAssetStatusHash, tt.args.ModifyAssetStatusErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			utils := &UtilsStructMockery{}
+			fatal = false
+
+			utils.ExecuteModifyAssetStatus(flagSet)
+
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteModifyAssetStatus function didn't execute as expected")
+			}
+
 		})
 	}
 }

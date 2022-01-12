@@ -161,7 +161,6 @@ type flagSetInterface interface {
 }
 
 type utilsCmdInterface interface {
-	CheckCurrentStatus(*ethclient.Client, uint16, UtilsStruct) (bool, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	GetEpochAndState(*ethclient.Client, string, UtilsStruct) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, string, UtilsStruct, ...int) (uint32, error)
