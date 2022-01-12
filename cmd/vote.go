@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"github.com/spf13/pflag"
 	"math/big"
 	"os"
+	"os/signal"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -60,23 +62,52 @@ func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
 	client := utils.ConnectToClient(config.Provider)
 	address, _ := flagSet.GetString("address")
 	account := types.Account{Address: address, Password: password}
-	utilsStruct.vote(config, client, rogueData, account)
 
+	// listen for CTRL+C
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt)
+
+	defer func() {
+		signal.Stop(signalChan)
+		cancel()
+	}()
+
+	go func() {
+		select {
+		case <-signalChan:
+			log.Warn("If you don't unstake and withdraw your coins, you may get inactivity penalty!")
+		case <-ctx.Done():
+		}
+		<-signalChan // second signal, hard exit
+		os.Exit(2)
+	}()
+
+	if err := utilsStruct.vote(ctx, config, client, rogueData, account); err != nil {
+		log.Errorf("%s\n", err)
+		os.Exit(1)
+	}
 }
 
-func (utilsStruct UtilsStruct) vote(config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) {
+func (utilsStruct UtilsStruct) vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
+
 	header, err := razorUtils.GetLatestBlock(client)
 	utils.CheckError("Error in getting block: ", err)
-
 	for {
-		latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
-		if err != nil {
-			log.Error("Error in fetching block: ", err)
-			continue
-		}
-		if latestHeader.Number.Cmp(header.Number) != 0 {
-			header = latestHeader
-			handleBlock(client, account, latestHeader.Number, config, rogueData, utilsStruct)
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+			if err != nil {
+				log.Error("Error in fetching block: ", err)
+				continue
+			}
+			if latestHeader.Number.Cmp(header.Number) != 0 {
+				header = latestHeader
+				handleBlock(client, account, latestHeader.Number, config, rogueData, utilsStruct)
+			}
 		}
 	}
 }
