@@ -12,8 +12,6 @@ import (
 	"razor/utils"
 )
 
-var voteManagerUtils voteManagerInterface
-
 func (*UtilsStructMockery) HandleCommitState(client *ethclient.Client, epoch uint32, rogueData types.Rogue) ([]*big.Int, error) {
 	var (
 		data []*big.Int

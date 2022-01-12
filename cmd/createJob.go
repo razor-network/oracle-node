@@ -12,9 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var assetManagerUtils assetManagerInterface
-var flagSetUtils flagSetInterface
-
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
 	Short: "createJob can be used to create a job",
@@ -103,9 +100,7 @@ func (*UtilsStructMockery) CreateJob(client *ethclient.Client, config types.Conf
 func init() {
 
 	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 	razorUtilsMockery = &UtilsMockery{}
 	assetManagerUtilsMockery = &AssetManagerUtilsMockery{}

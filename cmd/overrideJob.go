@@ -13,47 +13,28 @@ var overrideJobCmd = &cobra.Command{
 	Use:   "overrideJob",
 	Short: "overrideJob can be used to override existing job",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		err := utilsStruct.executeOverrideJob(cmd.Flags())
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Info("Job added to override list successfully!")
-	},
+	Run:   initialiseOverrideJob,
 }
 
-func (utilsStruct UtilsStruct) executeOverrideJob(flagSet *pflag.FlagSet) error {
+func initialiseOverrideJob(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteOverrideJob(cmd.Flags())
+}
 
-	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
-	if err != nil {
-		return err
-	}
+func (*UtilsStructMockery) ExecuteOverrideJob(flagSet *pflag.FlagSet) {
+	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
+	utils.CheckError("Error in getting url: ", err)
 
-	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
-	if err != nil {
-		return err
-	}
+	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
+	utils.CheckError("Error in getting selector: ", err)
 
-	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
-	if err != nil {
-		return err
-	}
+	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	utils.CheckError("Error in getting power: ", err)
 
-	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
-	if err != nil {
-		return err
-	}
+	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
+	utils.CheckError("Error in getting selector type: ", err)
 
-	jobId, err := utilsStruct.flagSetUtils.GetUint16JobId(flagSet)
-	if err != nil {
-		return err
-	}
+	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
+	utils.CheckError("Error in getting jobId: ", err)
 
 	job := &types.StructsJob{
 		Id:           jobId,
@@ -62,10 +43,12 @@ func (utilsStruct UtilsStruct) executeOverrideJob(flagSet *pflag.FlagSet) error 
 		Selector:     selector,
 		Url:          url,
 	}
-	return utilsStruct.overrideJob(job)
+	err = cmdUtilsMockery.OverrideJob(job)
+	utils.CheckError("OverrideJob error: ", err)
+	log.Info("Job added to override list successfully!")
 }
 
-func (utilsStruct UtilsStruct) overrideJob(job *types.StructsJob) error {
+func (*UtilsStructMockery) OverrideJob(job *types.StructsJob) error {
 	jobPath, err := path.GetJobFilePath()
 	if err != nil {
 		return err
@@ -74,6 +57,10 @@ func (utilsStruct UtilsStruct) overrideJob(job *types.StructsJob) error {
 }
 
 func init() {
+
+	cmdUtilsMockery = &UtilsStructMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
+
 	rootCmd.AddCommand(overrideJobCmd)
 	var (
 		JobId        uint16

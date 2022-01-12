@@ -16,8 +16,6 @@ import (
 	"modernc.org/sortutil"
 )
 
-var proposeUtils proposeUtilsInterface
-
 func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := razorUtilsMockery.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")

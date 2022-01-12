@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -13,11 +14,8 @@ import (
 )
 
 var razorUtils utilsInterface
-var tokenManagerUtils tokenManagerInterface
 var transactionUtils transactionInterface
 var stakeManagerUtils stakeManagerInterface
-
-//var utilsStructInterface structUtilsInterface
 
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
@@ -31,12 +29,6 @@ Example:
 			razorUtils:        razorUtils,
 			stakeManagerUtils: stakeManagerUtils,
 			transactionUtils:  transactionUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			flagSetUtils:      flagSetUtils,
-			proposeUtils:      proposeUtils,
-			blockManagerUtils: blockManagerUtils,
-			voteManagerUtils:  voteManagerUtils,
-			cmdUtils:          cmdUtils,
 		}
 
 		config, err := cmdUtilsMockery.GetConfigData()
@@ -68,12 +60,12 @@ Example:
 		utils.CheckError("Approve error: ", err)
 
 		if approveTxnHash != core.NilHash {
-			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+			utils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
 
 		stakeTxnHash, err := utilsStruct.stakeCoins(txnArgs)
 		utils.CheckError("Stake error: ", err)
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+		utils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
 		if utils.IsFlagPassed("autoVote") {
 			isAutoVote, _ := cmd.Flags().GetBool("autoVote")
@@ -116,18 +108,19 @@ func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (com
 }
 
 func init() {
-	razorUtils = Utils{}
-	tokenManagerUtils = TokenManagerUtils{}
-	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FlagSetUtils{}
-	proposeUtils = ProposeUtils{}
-	voteManagerUtils = VoteManagerUtils{}
-	blockManagerUtils = BlockManagerUtils{}
+	tokenManagerUtilsMockery = TokenManagerUtilsMockery{}
+	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
+	razorUtilsMockery = UtilsMockery{}
 	transactionUtils = TransactionUtils{}
-	proposeUtils = ProposeUtils{}
-	cmdUtils = UtilsCmd{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
+	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
+	voteManagerUtilsMockery = VoteManagerUtilsMockery{}
+	transactionUtilsMockery = TransactionUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (

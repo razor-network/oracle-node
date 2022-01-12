@@ -42,7 +42,8 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	razorUtils = Utils{}
-	flagSetUtils = FlagSetUtils{}
+	razorUtilsMockery = UtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 
 	if err := rootCmd.Execute(); err != nil {

@@ -100,10 +100,7 @@ func (*UtilsStructMockery) CreateCollection(client *ethclient.Client, config typ
 func init() {
 
 	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}

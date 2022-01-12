@@ -86,10 +86,7 @@ func (*UtilsStructMockery) Transfer(client *ethclient.Client, config types.Confi
 
 func init() {
 	razorUtils = Utils{}
-	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 	razorUtilsMockery = UtilsMockery{}
 	tokenManagerUtilsMockery = TokenManagerUtilsMockery{}

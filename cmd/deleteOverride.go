@@ -13,30 +13,23 @@ var deleteOverrideCmd = &cobra.Command{
 	Use:   "deleteOverride",
 	Short: "delete override job",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		err := utilsStruct.executeDeleteOverrideJob(cmd.Flags())
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Info("Job removed from override list successfully!")
-	},
+	Run:   initialiseDeleteOverrideJob,
 }
 
-func (utilsStruct UtilsStruct) executeDeleteOverrideJob(flagSet *pflag.FlagSet) error {
-	jobId, err := utilsStruct.flagSetUtils.GetUint16JobId(flagSet)
-	if err != nil {
-		return err
-	}
-	return utilsStruct.deleteOverrideJob(jobId)
+func initialiseDeleteOverrideJob(cmd *cobra.Command, args []string) {
+	cmdUtilsMockery.ExecuteDeleteOverrideJob(cmd.Flags())
 }
 
-func (utilsStruct UtilsStruct) deleteOverrideJob(jobId uint16) error {
+func (*UtilsStructMockery) ExecuteDeleteOverrideJob(flagSet *pflag.FlagSet) {
+	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
+	utils.CheckError("Error in getting jobId: ", err)
+
+	err = cmdUtilsMockery.DeleteOverrideJob(jobId)
+	utils.CheckError("DeleteOverrideJob error: ", err)
+	log.Info("Job removed from override list successfully!")
+}
+
+func (*UtilsStructMockery) DeleteOverrideJob(jobId uint16) error {
 	jobPath, err := path.GetJobFilePath()
 	if err != nil {
 		return err

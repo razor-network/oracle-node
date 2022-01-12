@@ -37,13 +37,8 @@ Example:
 
 func initializeVote(cmd *cobra.Command, args []string) {
 	utilsStruct := UtilsStruct{
-		razorUtils:        razorUtils,
-		proposeUtils:      proposeUtils,
-		transactionUtils:  transactionUtils,
-		blockManagerUtils: blockManagerUtils,
-		voteManagerUtils:  voteManagerUtils,
-		cmdUtils:          cmdUtils,
-		flagSetUtils:      flagSetUtils,
+		razorUtils:       razorUtils,
+		transactionUtils: transactionUtils,
 	}
 	utilsStruct.executeVote(cmd.Flags())
 }
@@ -92,7 +87,7 @@ func (utilsStruct UtilsStruct) executeVote(flagSet *pflag.FlagSet) {
 
 func (utilsStruct UtilsStruct) vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
 
-	header, err := razorUtils.GetLatestBlock(client)
+	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
@@ -391,7 +386,7 @@ func calculateSecret(account types.Account, epoch uint32) []byte {
 }
 
 func getCommitDataFileName(address string, utilsStruct UtilsStruct) (string, error) {
-	homeDir, err := utilsStruct.razorUtils.GetDefaultPath()
+	homeDir, err := path.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
@@ -424,21 +419,15 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 
 func init() {
 
-	razorUtils = Utils{}
-	proposeUtils = ProposeUtils{}
-	voteManagerUtils = VoteManagerUtils{}
+	razorUtilsMockery = UtilsMockery{}
 	transactionUtils = TransactionUtils{}
-	blockManagerUtils = BlockManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	proposeUtils = ProposeUtils{}
-	cmdUtils = UtilsCmd{}
-	flagSetUtils = FlagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
 	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
 	voteManagerUtilsMockery = VoteManagerUtilsMockery{}
 	transactionUtilsMockery = TransactionUtilsMockery{}
+	flagSetUtilsMockery = FLagSetUtilsMockery{}
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(voteCmd)

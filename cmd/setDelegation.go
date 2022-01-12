@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cmdUtils utilsCmdInterface
-
 var setDelegationCmd = &cobra.Command{
 	Use:   "setDelegation",
 	Short: "setDelegation allows a staker to start accepting/rejecting delegation requests",
