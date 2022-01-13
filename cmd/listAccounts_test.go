@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func Test_listAccounts(t *testing.T) {
+func TestListAccounts(t *testing.T) {
 
 	accountsList := []accounts.Account{
 		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),

@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestUtilsStruct_GetJobList(t *testing.T) {
+func TestGetJobList(t *testing.T) {
 	var client *ethclient.Client
 	type fields struct {
 		razorUtils Utils
@@ -86,7 +86,7 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 	}
 }
 
-func TestUtilsStruct_ExecuteJobList(t *testing.T) {
+func TestExecuteJobList(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
 

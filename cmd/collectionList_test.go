@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestUtilsStruct_GetCollectionList(t *testing.T) {
+func TestGetCollectionList(t *testing.T) {
 	var client *ethclient.Client
 	type fields struct {
 		razorUtils Utils
@@ -83,7 +83,7 @@ func TestUtilsStruct_GetCollectionList(t *testing.T) {
 	}
 }
 
-func TestUtilsStruct_ExecuteCollectionList(t *testing.T) {
+func TestExecuteCollectionList(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
 

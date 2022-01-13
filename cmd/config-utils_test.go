@@ -152,7 +152,7 @@ func TestGetConfigData(t *testing.T) {
 	}
 }
 
-func Test_getBufferPercent(t *testing.T) {
+func TestGetBufferPercent(t *testing.T) {
 	type args struct {
 		bufferPercent    int32
 		bufferPercentErr error
@@ -212,7 +212,7 @@ func Test_getBufferPercent(t *testing.T) {
 	}
 }
 
-func Test_getGasLimit(t *testing.T) {
+func TestGetGasLimit(t *testing.T) {
 	type args struct {
 		gasLimit    float32
 		gasLimitErr error
@@ -273,7 +273,7 @@ func Test_getGasLimit(t *testing.T) {
 	}
 }
 
-func Test_getGasPrice(t *testing.T) {
+func TestGetGasPrice(t *testing.T) {
 	type args struct {
 		gasPrice    int32
 		gasPriceErr error
@@ -334,7 +334,7 @@ func Test_getGasPrice(t *testing.T) {
 	}
 }
 
-func Test_getLogLevel(t *testing.T) {
+func TestGetLogLevel(t *testing.T) {
 	type args struct {
 		logLevel    string
 		logLevelErr error
@@ -395,7 +395,7 @@ func Test_getLogLevel(t *testing.T) {
 	}
 }
 
-func Test_getMultiplier(t *testing.T) {
+func TestGetMultiplier(t *testing.T) {
 	type args struct {
 		gasMultiplier    float32
 		gasMultiplierErr error
@@ -456,7 +456,7 @@ func Test_getMultiplier(t *testing.T) {
 	}
 }
 
-func Test_getProvider(t *testing.T) {
+func TestGetProvider(t *testing.T) {
 	type args struct {
 		provider    string
 		providerErr error
@@ -525,7 +525,7 @@ func Test_getProvider(t *testing.T) {
 	}
 }
 
-func Test_getWaitTime(t *testing.T) {
+func TestGetWaitTime(t *testing.T) {
 	type args struct {
 		waitTime    int32
 		waitTimeErr error
