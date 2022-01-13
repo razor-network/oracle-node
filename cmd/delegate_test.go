@@ -31,8 +31,6 @@ func Test_delegate(t *testing.T) {
 	type args struct {
 		amount      *big.Float
 		txnOpts     *bind.TransactOpts
-		epoch       uint32
-		epochErr    error
 		delegateTxn *Types.Transaction
 		delegateErr error
 		hash        common.Hash
@@ -48,8 +46,6 @@ func Test_delegate(t *testing.T) {
 			args: args{
 				amount:      big.NewFloat(1000),
 				txnOpts:     txnOpts,
-				epoch:       1,
-				epochErr:    nil,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: nil,
 				hash:        common.BigToHash(big.NewInt(1)),
@@ -62,28 +58,12 @@ func Test_delegate(t *testing.T) {
 			args: args{
 				amount:      big.NewFloat(1000),
 				txnOpts:     txnOpts,
-				epoch:       1,
-				epochErr:    nil,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: errors.New("delegate error"),
 				hash:        common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("delegate error"),
-		},
-		{
-			name: "Test 3: When GetEpoch fails",
-			args: args{
-				amount:      big.NewFloat(1000),
-				txnOpts:     txnOpts,
-				epoch:       1,
-				epochErr:    errors.New("GetEpoch error"),
-				delegateTxn: &Types.Transaction{},
-				delegateErr: nil,
-				hash:        common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("GetEpoch error"),
 		},
 	}
 	for _, tt := range tests {
@@ -94,10 +74,6 @@ func Test_delegate(t *testing.T) {
 
 			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
 				return tt.args.txnOpts
-			}
-
-			GetEpochMock = func(client *ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
 			}
 
 			DelegateMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
