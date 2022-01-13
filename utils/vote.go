@@ -102,6 +102,27 @@ func GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint3
 	return influenceSnapshot, nil
 }
 
+func GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	voteManager, callOpts := getVoteManagerWithOpts(client)
+	var (
+		stakeSnapshot *big.Int
+		snapshotErr   error
+	)
+	snapshotErr = retry.Do(
+		func() error {
+			stakeSnapshot, snapshotErr = voteManager.GetStakeSnapshot(&callOpts, epoch, stakerId)
+			if snapshotErr != nil {
+				log.Error("Error in fetching stake snapshot....Retrying")
+				return snapshotErr
+			}
+			return nil
+		})
+	if snapshotErr != nil {
+		return nil, snapshotErr
+	}
+	return stakeSnapshot, nil
+}
+
 func GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"github.com/avast/retry-go"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -11,6 +10,8 @@ import (
 	"razor/utils"
 	"strconv"
 	"time"
+
+	"github.com/avast/retry-go"
 
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -167,6 +168,10 @@ func (u Utils) GetVoteValue(client *ethclient.Client, assetId uint16, stakerId u
 
 func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
+}
+
+func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
+	return utils.GetStakeSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
@@ -440,14 +445,14 @@ func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, o
 	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
 }
 
-func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, jobIDs []uint16, aggregationMethod uint32, power int8, name string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint16, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
-	return assetManager.CreateCollection(opts, jobIDs, aggregationMethod, power, name)
+	return assetManager.CreateCollection(opts, tolerance, power, aggregationMethod, jobIDs, name)
 }
 
-func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
 	assetManager := utils.GetAssetManager(client)
-	return assetManager.UpdateCollection(opts, collectionId, aggregationMethod, power, jobIds)
+	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
@@ -564,6 +569,10 @@ func (flagSetUtils FlagSetUtils) GetUint32Aggregation(flagSet *pflag.FlagSet) (u
 	return flagSet.GetUint32("aggregation")
 }
 
+func (flagSetUtils FlagSetUtils) GetUint16Tolerance(flagSet *pflag.FlagSet) (uint16, error) {
+	return flagSet.GetUint16("tolerance")
+}
+
 func (flagSetUtils FlagSetUtils) GetUint16JobId(flagSet *pflag.FlagSet) (uint16, error) {
 	return flagSet.GetUint16("jobId")
 }
@@ -576,8 +585,8 @@ func (flagSetUtils FlagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string,
 	return flagSet.GetString("value")
 }
 
-func (proposeUtils ProposeUtils) getBiggestInfluenceAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
-	return getBiggestInfluenceAndId(client, address, epoch, utilsStruct)
+func (proposeUtils ProposeUtils) getBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32, utilsStruct UtilsStruct) (*big.Int, uint32, error) {
+	return getBiggestStakeAndId(client, address, epoch, utilsStruct)
 }
 
 func (proposeUtils ProposeUtils) getIteration(client *ethclient.Client, proposer types.ElectedProposer, utilsStruct UtilsStruct) int {
@@ -769,14 +778,14 @@ func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Cli
 	return txn, nil
 }
 
-func (blockManagerUtils BlockManagerUtils) DisputeBiggestInfluenceProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestInfluencerId uint32) (*Types.Transaction, error) {
+func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestStakerId uint32) (*Types.Transaction, error) {
 	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
 	)
 	err = retry.Do(func() error {
-		txn, err = blockManager.DisputeBiggestInfluenceProposed(opts, epoch, blockIndex, correctBiggestInfluencerId)
+		txn, err = blockManager.DisputeBiggestStakeProposed(opts, epoch, blockIndex, correctBiggestStakerId)
 		if err != nil {
 			log.Error("Error in disputing biggest influence proposed.. Retrying")
 			return err
