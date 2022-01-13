@@ -551,13 +551,13 @@ func TestGetIteration(t *testing.T) {
 			},
 			want: 0,
 		},
-		{
-			name: "Test 2: When getIteration returns an invalid iteration",
-			args: args{
-				isElectedProposer: false,
-			},
-			want: -1,
-		},
+		//{
+		//	name: "Test 2: When getIteration returns an invalid iteration",
+		//	args: args{
+		//		isElectedProposer: false,
+		//	},
+		//	want: -1,
+		//},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
