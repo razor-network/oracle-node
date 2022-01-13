@@ -203,6 +203,8 @@ func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
 	return utils.GetRandaoHash(client)
 }
 
+//TODO: Check direct usage from utils package without implementing it here
+
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
 	return utils.UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
 }

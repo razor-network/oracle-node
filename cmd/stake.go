@@ -13,10 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//var razorUtils utilsInterface
-//var transactionUtils transactionInterface
-//var stakeManagerUtils stakeManagerInterface
-
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some razors",

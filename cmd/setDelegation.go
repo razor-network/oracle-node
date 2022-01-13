@@ -44,7 +44,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
+	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("StakerId error: ", err)
 
 	delegationInput := types.SetDelegationInput{
@@ -57,14 +57,15 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
-	razorUtils.WaitForBlockCompletion(client, txn.String())
+	if txn != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, txn.String())
+	}
 }
 
 func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
-
 	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.Address, delegationInput.StakerId)
 	if err != nil {
-		return core.NilHash, nil
+		return core.NilHash, err
 	}
 
 	txnOpts := types.TransactionOptions{
@@ -108,13 +109,12 @@ func init() {
 		Status   string
 		Address  string
 		Password string
-		StakerId uint32
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
-	setDelegationCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
+
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 }

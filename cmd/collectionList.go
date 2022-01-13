@@ -23,7 +23,6 @@ Example:
 
 func initialiseCollectionList(*cobra.Command, []string) {
 	cmdUtils.ExecuteCollectionList()
-
 }
 
 func (*UtilsStruct) ExecuteCollectionList() {

@@ -213,7 +213,7 @@ func TestGetPrivateKey(t *testing.T) {
 	}
 }
 
-func TestSignAccounts(t *testing.T) {
+func TestSignData(t *testing.T) {
 	var hash []byte
 	var account types.Account
 	var defaultPath string
@@ -261,7 +261,7 @@ func TestSignAccounts(t *testing.T) {
 
 			accountUtils := &AccountUtils{}
 
-			got, err := accountUtils.SignAccount(hash, account, defaultPath)
+			got, err := accountUtils.SignData(hash, account, defaultPath)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Sign() got = %v, want %v", got, tt.want)

@@ -33,12 +33,12 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting config data: ", err)
-
-	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
-	utils.CheckError("Error in getting config data: ", err)
+	utils.CheckError("Error in getting address: ", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
+
+	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
+	utils.CheckError("Error in getting stakerId: ", err)
 
 	extendLockInput := types.ExtendLockInput{
 		Address:  address,

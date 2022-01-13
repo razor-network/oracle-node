@@ -171,8 +171,8 @@ func (_m *AccountInterface) Sign(_a0 []byte, _a1 *ecdsa.PrivateKey) ([]byte, err
 	return r0, r1
 }
 
-// SignAccount provides a mock function with given fields: _a0, _a1, _a2
-func (_m *AccountInterface) SignAccount(_a0 []byte, _a1 types.Account, _a2 string) ([]byte, error) {
+// SignData provides a mock function with given fields: _a0, _a1, _a2
+func (_m *AccountInterface) SignData(_a0 []byte, _a1 types.Account, _a2 string) ([]byte, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 []byte

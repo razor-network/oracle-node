@@ -22,7 +22,6 @@ import (
 func TestSetDelegation(t *testing.T) {
 
 	var client *ethclient.Client
-	var delegationInput types.SetDelegationInput
 	var config = types.Configurations{
 		Provider:      "127.0.0.1",
 		GasMultiplier: 1,
@@ -34,6 +33,7 @@ func TestSetDelegation(t *testing.T) {
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {
+		status                     bool
 		txnOpts                    *bind.TransactOpts
 		staker                     bindings.StructsStaker
 		stakerErr                  error
@@ -77,6 +77,34 @@ func TestSetDelegation(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("SetDelegationAcceptance error"),
 		},
+		{
+			name: "Test 3: When there is an error in getting staker",
+			args: args{
+				txnOpts:                    txnOpts,
+				stakerErr:                  errors.New("staker error"),
+				SetDelegationAcceptanceTxn: &Types.Transaction{},
+				SetDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("staker error"),
+		},
+		{
+			name: "Test 4: When stakerInfo.AcceptDelegation == delegationInput.Status",
+			args: args{
+				status:  true,
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				SetDelegationAcceptanceTxn: &Types.Transaction{},
+				SetDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -95,17 +123,19 @@ func TestSetDelegation(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.SetDelegation(client, config, delegationInput)
+			got, err := utils.SetDelegation(client, config, types.SetDelegationInput{
+				Status: tt.args.status,
+			})
 			if got != tt.want {
 				t.Errorf("Txn hash for setDelegation function, got = %v, want = %v", got, tt.want)
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for setDelegation function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for setDelegation function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for setDelegation function, got = %v, want = %v", got, tt.wantErr)
+					t.Errorf("Error for setDelegation function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
@@ -304,7 +334,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 

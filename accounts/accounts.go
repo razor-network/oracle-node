@@ -40,7 +40,7 @@ func (AccountUtils) GetPrivateKey(address string, password string, keystorePath 
 	return nil
 }
 
-func (AccountUtils) SignAccount(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
+func (AccountUtils) SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
 	privateKey := AccountUtilsInterface.GetPrivateKey(account.Address, account.Password, defaultPath)
 	return AccountUtilsInterface.Sign(hash, privateKey)
 }

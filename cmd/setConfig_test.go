@@ -221,6 +221,22 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("gasLimitMultiplier error"),
 		},
+		{
+			name: "Test 13: When default nil values are passed",
+			args: args{
+				provider:              "",
+				gasmultiplier:         -1,
+				buffer:                0,
+				waitTime:              -1,
+				gasPrice:              -1,
+				logLevel:              "",
+				path:                  "/home/config",
+				configErr:             nil,
+				gasLimitMultiplier:    -1,
+				gasLimitMultiplierErr: nil,
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -22,7 +22,6 @@ Example:
 
 func initialiseJobList(*cobra.Command, []string) {
 	cmdUtils.ExecuteJobList()
-
 }
 
 func (*UtilsStruct) ExecuteJobList() {

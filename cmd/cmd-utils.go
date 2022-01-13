@@ -38,7 +38,7 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 		}
 		if !utils.Contains(states, int(state)) {
 			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
-			time.Sleep(5 * time.Second)
+			razorUtils.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
 		}

@@ -197,7 +197,7 @@ func TestExecuteExtendLock(t *testing.T) {
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
-			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			cmdUtilsMock.On("ExtendLock", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
