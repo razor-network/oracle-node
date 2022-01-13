@@ -4,16 +4,13 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/mock"
+	"razor/cmd/mocks"
 	"reflect"
 	"testing"
 )
 
-func Test_listAccounts(t *testing.T) {
-
-	utilsStruct := UtilsStruct{
-		razorUtils:    UtilsMock{},
-		keystoreUtils: KeystoreMock{},
-	}
+func TestListAccounts(t *testing.T) {
 
 	accountsList := []accounts.Account{
 		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
@@ -59,15 +56,17 @@ func Test_listAccounts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetDefaultPathMock = func() (string, error) {
-				return tt.args.path, tt.args.pathErr
-			}
 
-			AccountsMock = func(string) []accounts.Account {
-				return tt.args.accounts
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			keystoreUtilsMock := new(mocks.KeystoreInterface)
 
-			got, err := utilsStruct.listAccounts()
+			razorUtils = utilsMock
+			keystoreUtils = keystoreUtilsMock
+
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			keystoreUtilsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
+			utils := &UtilsStruct{}
+			got, err := utils.ListAccounts()
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("List of accounts , got = %v, want %v", got, tt.want)

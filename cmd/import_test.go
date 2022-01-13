@@ -7,21 +7,17 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/mock"
+	"razor/cmd/mocks"
 	"testing"
 )
 
-func Test_importAccount(t *testing.T) {
+func TestImportAccount(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 
 	account := accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
 		URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-	}
-
-	utilsStruct := UtilsStruct{
-		razorUtils:    UtilsMock{},
-		keystoreUtils: KeystoreMock{},
-		cryptoUtils:   CryptoMock{},
 	}
 
 	type args struct {
@@ -109,27 +105,23 @@ func Test_importAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			PrivateKeyPromptMock = func() string {
-				return tt.args.privateKey
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			keystoreUtilsMock := new(mocks.KeystoreInterface)
+			cryptoUtilsMock := new(mocks.CryptoInterface)
 
-			PasswordPromptMock = func() string {
-				return tt.args.password
-			}
+			razorUtils = utilsMock
+			keystoreUtils = keystoreUtilsMock
+			cryptoUtils = cryptoUtilsMock
 
-			GetDefaultPathMock = func() (string, error) {
-				return tt.args.path, tt.args.pathErr
-			}
+			utilsMock.On("PrivateKeyPrompt").Return(tt.args.privateKey)
+			utilsMock.On("PasswordPrompt").Return(tt.args.password)
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			cryptoUtilsMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
+			keystoreUtilsMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
 
-			HexToECDSAMock = func(string) (*ecdsa.PrivateKey, error) {
-				return tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr
-			}
+			utils := &UtilsStruct{}
 
-			ImportECDSAMock = func(string, *ecdsa.PrivateKey, string) (accounts.Account, error) {
-				return tt.args.importAccount, tt.args.importAccountErr
-			}
-
-			got, err := utilsStruct.importAccount()
+			got, err := utils.ImportAccount()
 			if got.Address != tt.want.Address {
 				t.Errorf("New address imported, got = %v, want %v", got, tt.want.Address)
 			}
@@ -142,6 +134,56 @@ func Test_importAccount(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for importAccount function, got = %v, want %v", got, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestExecuteImport(t *testing.T) {
+
+	type args struct {
+		account    accounts.Account
+		accountErr error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteImport execites successfully",
+			args: args{
+				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+				},
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in ImportAccount",
+			args: args{
+				account:    accounts.Account{},
+				accountErr: errors.New("account error"),
+			},
+			expectedFatal: true,
+		},
+	}
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			cmdUtilMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilMock
+
+			cmdUtilMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
+
+			utils := &UtilsStruct{}
+			utils.ExecuteImport()
+			if fatal != tt.expectedFatal {
+				t.Error("The executeImport function didn't execute as expected")
 			}
 		})
 	}

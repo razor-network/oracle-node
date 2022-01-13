@@ -9,7 +9,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
@@ -25,13 +27,6 @@ func TestDispute(t *testing.T) {
 	var account types.Account
 	var blockId uint8
 	var assetId int
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		cmdUtils:          UtilsCmdMock{},
-		blockManagerUtils: BlockManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		epoch              uint32
@@ -124,43 +119,28 @@ func TestDispute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetBlockManagerMock = func(*ethclient.Client) *bindings.BlockManager {
-				return blockManager
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			GetNumberOfStakersMock = func(*ethclient.Client, string) (uint32, error) {
-				return tt.args.numOfStakers, tt.args.numOfStakersErr
-			}
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			blockManagerUtils = blockManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
-			GetVotesMock = func(*ethclient.Client, uint32) (bindings.StructsVote, error) {
-				return tt.args.votes, tt.args.votesErr
-			}
+			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
+			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
+			utilsMock.On("GetVotes", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.votes, tt.args.votesErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return txnOpts
-			}
+			utils := &UtilsStruct{}
 
-			ContainsMock = func(interface{}, interface{}) bool {
-				return tt.args.containsStatus
-			}
-
-			GiveSortedMock = func(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
-
-			}
-
-			FinalizeDisputeMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error) {
-				return tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr
-			}
-
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
-			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
-				return 1
-			}
-
-			err := Dispute(client, config, account, tt.args.epoch, blockId, assetId, utilsStruct)
+			err := utils.Dispute(client, config, account, tt.args.epoch, blockId, assetId)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for Dispute function, got = %v, want = %v", err, tt.want)
@@ -182,14 +162,6 @@ func TestHandleDispute(t *testing.T) {
 	var config types.Configurations
 	var account types.Account
 	var epoch uint32
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		proposeUtils:      ProposeUtilsMock{},
-		cmdUtils:          UtilsCmdMock{},
-		blockManagerUtils: BlockManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		sortedProposedBlockIds    []uint32
@@ -398,51 +370,29 @@ func TestHandleDispute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetSortedProposedBlockIdsMock = func(*ethclient.Client, string, uint32) ([]uint32, error) {
-				return tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			GetProposedBlockMock = func(*ethclient.Client, string, uint32, uint32) (bindings.StructsBlock, error) {
-				return tt.args.proposedBlock, tt.args.proposedBlockErr
-			}
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			blockManagerUtils = blockManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
-			getBiggestStakeAndIdMock = func(*ethclient.Client, string, uint32, UtilsStruct) (*big.Int, uint32, error) {
-				return tt.args.biggestStake, tt.args.biggestStakeId, tt.args.biggestStakeErr
-			}
+			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
+			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
+			cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakeId, tt.args.biggestStakeErr)
+			blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeBiggestStakeTxn, tt.args.disputeBiggestStakeErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.Hash)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.medians, tt.args.mediansErr)
+			utilsMock.On("GetActiveAssetIds", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
+			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 
-			DisputeBiggestStakeProposedMock = func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error) {
-				return tt.args.disputeBiggestStakeTxn, tt.args.disputeBiggestStakeErr
-			}
-
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return txnOpts
-			}
-
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.Hash
-			}
-
-			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
-				return 1
-			}
-
-			MakeBlockMock = func(*ethclient.Client, string, types.Rogue, UtilsStruct) ([]uint32, error) {
-				return tt.args.medians, tt.args.mediansErr
-			}
-
-			GetActiveAssetIdsMock = func(*ethclient.Client) ([]uint16, error) {
-				return tt.args.activeAssetIds, tt.args.activeAssetIdsErr
-			}
-
-			IsEqualMock = func([]uint32, []uint32) (bool, int) {
-				return tt.args.isEqual, tt.args.iteration
-			}
-
-			DisputeMock = func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int, UtilsStruct) error {
-				return tt.args.disputeErr
-			}
-
-			err := utilsStruct.HandleDispute(client, config, account, epoch)
+			utils := &UtilsStruct{}
+			err := utils.HandleDispute(client, config, account, epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)

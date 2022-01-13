@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"os"
 	"razor/utils"
 	"strconv"
@@ -16,42 +17,43 @@ var stakerInfoCmd = &cobra.Command{
 
 Example:
   ./razor stakerInfo --stakerId 2`,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-
-		client := utils.ConnectToClient(config.Provider)
-
-		stakerId, _ := cmd.Flags().GetUint32("stakerId")
-
-		err = utilsStruct.GetStakerInfo(client, stakerId)
-		if err != nil {
-			log.Error("Error in getting staker info: ", err)
-		}
-	},
+	Run: initialiseStakerInfo,
 }
 
-func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
+func initialiseStakerInfo(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteStakerinfo(cmd.Flags())
+}
+
+func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
+
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
+	utils.CheckError("Error in getting stakerId: ", err)
+
+	err = cmdUtils.GetStakerInfo(client, stakerId)
+	utils.CheckError("Error in getting staker info: ", err)
+
+}
+
+func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
 	callOpts := razorUtils.GetOptions()
-	stakerInfo, err := utilsStruct.stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
+	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
 		return err
 	}
-	maturity, err := utilsStruct.stakeManagerUtils.GetMaturity(client, &callOpts, stakerInfo.Age)
+	maturity, err := stakeManagerUtils.GetMaturity(client, &callOpts, stakerInfo.Age)
 	if err != nil {
 		return err
 	}
-	epoch, err := utilsStruct.razorUtils.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		return err
 	}
-	influence, err := utilsStruct.razorUtils.GetInfluenceSnapshot(client, stakerId, epoch)
+	influence, err := razorUtils.GetInfluenceSnapshot(client, stakerId, epoch)
 	if err != nil {
 		return err
 	}
@@ -70,9 +72,10 @@ func (utilsStruct *UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId
 }
 
 func init() {
-	razorUtils = Utils{}
+	razorUtils = &Utils{}
 	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FlagSetUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(stakerInfoCmd)
 

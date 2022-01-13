@@ -1,14 +1,13 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/common"
-
-	"github.com/spf13/cobra"
 )
 
 // delegateCmd represents the delegate command
@@ -20,58 +19,60 @@ var delegateCmd = &cobra.Command{
 Example:
   ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			transactionUtils:  transactionUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		stakerId, _ := cmd.Flags().GetUint32("stakerId")
-
-		client := utils.ConnectToClient(config.Provider)
-
-		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account "+address+": ", err)
-
-		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
-		utils.CheckError("Error in getting amount: ", err)
-
-		utils.CheckAmountAndBalance(valueInWei, balance)
-
-		utils.CheckEthBalanceIsZero(client, address)
-
-		txnArgs := types.TransactionOptions{
-			Client:         client,
-			Password:       password,
-			Amount:         valueInWei,
-			AccountAddress: address,
-			ChainId:        core.ChainId,
-			Config:         config,
-		}
-
-		approveTxnHash, err := utilsStruct.approve(txnArgs)
-		utils.CheckError("Approve error: ", err)
-
-		if approveTxnHash != core.NilHash {
-			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
-		}
-
-		delegateTxnHash, err := utilsStruct.delegate(txnArgs, stakerId)
-		utils.CheckError("Delegate error: ", err)
-		utils.WaitForBlockCompletion(client, delegateTxnHash.String())
-	},
+	Run: initialiseDelegate,
 }
 
-func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
-	log.Infof("Delegating %g razors to Staker %d", utilsStruct.razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
-	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
+func initialiseDelegate(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteDelegate(cmd.Flags())
+}
+
+func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
+	utils.CheckError("Error in getting stakerId: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	balance, err := razorUtils.FetchBalance(client, address)
+	utils.CheckError("Error in fetching balance for account "+address+": ", err)
+
+	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
+	utils.CheckError("Error in getting amount: ", err)
+
+	razorUtils.CheckAmountAndBalance(valueInWei, balance)
+
+	razorUtils.CheckEthBalanceIsZero(client, address)
+
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		Password:       password,
+		Amount:         valueInWei,
+		AccountAddress: address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
+
+	approveTxnHash, err := cmdUtils.Approve(txnArgs)
+	utils.CheckError("Approve error: ", err)
+
+	if approveTxnHash != core.NilHash {
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+	}
+
+	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
+	utils.CheckError("Delegate error: ", err)
+	razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+}
+
+func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
+	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -79,21 +80,22 @@ func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, staker
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
-	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
+	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
-	log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 	razorUtils = Utils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FlagSetUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -19,59 +20,64 @@ var extendLockCmd = &cobra.Command{
 Example:
   ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config data: ", err)
-		txn, err := utilsStruct.extendLock(cmd.Flags(), config)
-		utils.CheckError("Error in extending lock: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseExtendLock,
 }
 
-func (utilsStruct UtilsStruct) extendLock(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	stakerId, err := utilsStruct.flagSetUtils.GetUint32StakerId(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+func initialiseExtendLock(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteExtendLock(cmd.Flags())
+}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config data: ", err)
+
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
+	utils.CheckError("Error in getting stakerId: ", err)
+
+	extendLockInput := types.ExtendLockInput{
+		Address:  address,
+		Password: password,
+		StakerId: stakerId,
+	}
+	txn, err := cmdUtils.ExtendLock(client, config, extendLockInput)
+	utils.CheckError("Error in extending lock: ", err)
+	razorUtils.WaitForBlockCompletion(client, txn.String())
+}
+
+func (*UtilsStruct) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        extendLockInput.Password,
+		AccountAddress:  extendLockInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "extendLock",
-		Parameters:      []interface{}{stakerId},
+		Parameters:      []interface{}{extendLockInput.StakerId},
 		ABI:             bindings.StakeManagerABI,
 	})
 
 	log.Info("Extending lock...")
-	txn, err := utilsStruct.stakeManagerUtils.ExtendLock(client, txnOpts, stakerId)
+	txn, err := stakeManagerUtils.ExtendLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 	razorUtils = Utils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 

@@ -3,17 +3,20 @@ package cmd
 import (
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
+	"razor/cmd/mocks"
+	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
 )
 
-func TestUtilsStruct_GetJobList(t *testing.T) {
+func TestGetJobList(t *testing.T) {
 	var client *ethclient.Client
 	type fields struct {
-		razorUtils UtilsMock
+		razorUtils Utils
 	}
 	testUtils := fields{
-		razorUtils: UtilsMock{},
+		razorUtils: Utils{},
 	}
 
 	jobListArray := []bindings.StructsJob{
@@ -61,14 +64,14 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsStruct := &UtilsStruct{
-				razorUtils: tt.fields.razorUtils,
-			}
 
-			GetJobsMock = func(*ethclient.Client) ([]bindings.StructsJob, error) {
-				return tt.args.jobList, tt.args.jobListErr
-			}
-			err := utilsStruct.GetJobList(tt.args.client)
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
+
+			utilsMock.On("GetJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobList, tt.args.jobListErr)
+			utils := &UtilsStruct{}
+
+			err := utils.GetJobList(tt.args.client)
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
@@ -79,6 +82,77 @@ func TestUtilsStruct_GetJobList(t *testing.T) {
 					t.Errorf("Error for jobList function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestExecuteJobList(t *testing.T) {
+	var config types.Configurations
+	var client *ethclient.Client
+
+	type args struct {
+		config     types.Configurations
+		configErr  error
+		jobListErr error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1:  When ExecuteJobList function executes successfully",
+			args: args{
+				config:     config,
+				configErr:  nil,
+				jobListErr: nil,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2:  When there is an error in getting config",
+			args: args{
+				config:     config,
+				configErr:  errors.New("config error"),
+				jobListErr: nil,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3:  When there is an error in getting GetJobList function",
+			args: args{
+				config:     config,
+				configErr:  nil,
+				jobListErr: errors.New("jobList error"),
+			},
+			expectedFatal: true,
+		},
+	}
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("GetJobList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobListErr)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteJobList()
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteJobList function didn't execute as expected")
+			}
+
 		})
 	}
 }

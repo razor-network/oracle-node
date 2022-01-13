@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"razor/core"
@@ -21,84 +22,85 @@ Example:
 Note: 
   This command only works for the admin.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-			cmdUtils:          cmdUtils,
-		}
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-
-		txn, err := utilsStruct.updateCollection(cmd.Flags(), config)
-		utils.CheckError("Update Collection error: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseUpdateCollection,
 }
 
-func (utilsStruct UtilsStruct) updateCollection(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	collectionId, err := utilsStruct.flagSetUtils.GetUint16CollectionId(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	aggregation, err := utilsStruct.flagSetUtils.GetUint32Aggregation(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	jobIdInUint, err := utilsStruct.flagSetUtils.GetUintSliceJobIds(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-	jobIds := utilsStruct.razorUtils.ConvertUintArrayToUint16Array(jobIdInUint)
-	tolerance, err := utilsStruct.flagSetUtils.GetUint16Tolerance(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
+func initialiseUpdateCollection(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteUpdateCollection(cmd.Flags())
+}
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-	_, err = utilsStruct.cmdUtils.WaitIfCommitState(client, address, "update collection", utilsStruct)
+func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
+	utils.CheckError("Error in getting collectionID: ", err)
+
+	aggregation, err := flagSetUtils.GetUint32Aggregation(flagSet)
+	utils.CheckError("Error in getting aggregation method: ", err)
+
+	power, err := flagSetUtils.GetInt8Power(flagSet)
+	utils.CheckError("Error in getting power: ", err)
+
+	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
+	utils.CheckError("Error in getting jobIds: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	tolerance, err := flagSetUtils.GetUint16Tolerance(flagSet)
+	utils.CheckError("Error in getting tolerance: ", err)
+
+	collectionInput := types.CreateCollectionInput{
+		Address:     address,
+		Password:    password,
+		Aggregation: aggregation,
+		Power:       power,
+		JobIds:      jobIdInUint,
+		Tolerance:   tolerance,
+	}
+	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
+	utils.CheckError("Update Collection error: ", err)
+	razorUtils.WaitForBlockCompletion(client, txn.String())
+}
+
+func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
+	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	_, err := cmdUtils.WaitIfCommitState(client, "update collection")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        collectionInput.Password,
+		AccountAddress:  collectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateCollection",
-		Parameters:      []interface{}{collectionId, tolerance, aggregation, power, jobIds},
+		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := utilsStruct.assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, tolerance, aggregation, power, jobIds)
+	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
 	}
 	log.Info("Updating collection...")
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 	razorUtils = Utils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(updateCollectionCmd)
 

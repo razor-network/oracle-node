@@ -10,7 +10,10 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
+	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
@@ -19,7 +22,6 @@ import (
 func TestSetDelegation(t *testing.T) {
 
 	var client *ethclient.Client
-	var flagSet *pflag.FlagSet
 	var config = types.Configurations{
 		Provider:      "127.0.0.1",
 		GasMultiplier: 1,
@@ -30,12 +32,125 @@ func TestSetDelegation(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-		flagSetUtils:      FlagSetMock{},
-		cmdUtils:          UtilsCmdMock{},
+	type args struct {
+		status                     bool
+		txnOpts                    *bind.TransactOpts
+		staker                     bindings.StructsStaker
+		stakerErr                  error
+		SetDelegationAcceptanceTxn *Types.Transaction
+		SetDelegationAcceptanceErr error
+		hash                       common.Hash
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    common.Hash
+		wantErr error
+	}{
+		{
+			name: "Test 1: When SetDelegation function executes successfully",
+			args: args{
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				SetDelegationAcceptanceTxn: &Types.Transaction{},
+				SetDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+			},
+			want:    common.BigToHash(big.NewInt(1)),
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When setDelegationAcceptance transaction fails",
+			args: args{
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				SetDelegationAcceptanceTxn: &Types.Transaction{},
+				SetDelegationAcceptanceErr: errors.New("SetDelegationAcceptance error"),
+				hash:                       common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("SetDelegationAcceptance error"),
+		},
+		{
+			name: "Test 3: When there is an error in getting staker",
+			args: args{
+				txnOpts:                    txnOpts,
+				stakerErr:                  errors.New("staker error"),
+				SetDelegationAcceptanceTxn: &Types.Transaction{},
+				SetDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("staker error"),
+		},
+		{
+			name: "Test 4: When stakerInfo.AcceptDelegation == delegationInput.Status",
+			args: args{
+				status:  true,
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				SetDelegationAcceptanceTxn: &Types.Transaction{},
+				SetDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.SetDelegationAcceptanceTxn, tt.args.SetDelegationAcceptanceErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+
+			utils := &UtilsStruct{}
+			got, err := utils.SetDelegation(client, config, types.SetDelegationInput{
+				Status: tt.args.status,
+			})
+			if got != tt.want {
+				t.Errorf("Txn hash for setDelegation function, got = %v, want = %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for setDelegation function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for setDelegation function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestExecuteSetDelegation(t *testing.T) {
+
+	var client *ethclient.Client
+	var flagSet *pflag.FlagSet
+	var config = types.Configurations{
+		Provider:      "127.0.0.1",
+		GasMultiplier: 1,
+		BufferPercent: 20,
+		WaitTime:      1,
 	}
 
 	type args struct {
@@ -50,160 +165,17 @@ func TestSetDelegation(t *testing.T) {
 		parseStatusErr               error
 		stakerId                     uint32
 		stakerIdErr                  error
-		staker                       bindings.StructsStaker
-		stakerErr                    error
-		SetDelegationAcceptanceTxn   *Types.Transaction
-		SetDelegationAcceptanceErr   error
-		hash                         common.Hash
+		setDelegationHash            common.Hash
+		setDelegationErr             error
 		WaitForBlockCompletionStatus int
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr error
+		name          string
+		args          args
+		expectedFatal bool
 	}{
 		{
 			name: "Test 1: When SetDelegation function executes successfully",
-			args: args{
-				config:         config,
-				configErr:      nil,
-				password:       "test",
-				address:        "0x000000000000000000000000000000000000dea1",
-				addressErr:     nil,
-				status:         "true",
-				statusErr:      nil,
-				parseStatus:    true,
-				parseStatusErr: nil,
-				stakerId:       1,
-				stakerIdErr:    nil,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
-				WaitForBlockCompletionStatus: 1,
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in getting config",
-			args: args{
-				config:         config,
-				configErr:      errors.New("config error"),
-				password:       "test",
-				address:        "0x000000000000000000000000000000000000dea1",
-				addressErr:     nil,
-				status:         "true",
-				statusErr:      nil,
-				parseStatus:    true,
-				parseStatusErr: nil,
-				stakerId:       1,
-				stakerIdErr:    nil,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
-				WaitForBlockCompletionStatus: 1,
-			},
-			wantErr: errors.New("config error"),
-		},
-		{
-			name: "Test 3: When there is an error in getting address",
-			args: args{
-				config:         config,
-				configErr:      nil,
-				password:       "test",
-				addressErr:     errors.New("address error"),
-				status:         "true",
-				statusErr:      nil,
-				parseStatus:    true,
-				parseStatusErr: nil,
-				stakerId:       1,
-				stakerIdErr:    nil,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
-				WaitForBlockCompletionStatus: 1,
-			},
-			wantErr: errors.New("address error"),
-		},
-		{
-			name: "Test 4: When there is an error in getting status",
-			args: args{
-				config:         config,
-				configErr:      nil,
-				password:       "test",
-				address:        "0x000000000000000000000000000000000000dea1",
-				addressErr:     nil,
-				statusErr:      errors.New("status error"),
-				parseStatus:    true,
-				parseStatusErr: nil,
-				stakerId:       1,
-				stakerIdErr:    nil,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
-				WaitForBlockCompletionStatus: 1,
-			},
-			wantErr: errors.New("status error"),
-		},
-		{
-			name: "Test 5: When there is getting stakerId",
-			args: args{
-				config:         config,
-				configErr:      nil,
-				password:       "test",
-				address:        "0x000000000000000000000000000000000000dea1",
-				addressErr:     nil,
-				status:         "true",
-				statusErr:      nil,
-				parseStatus:    true,
-				parseStatusErr: nil,
-				stakerIdErr:    errors.New("stakerId error"),
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
-				WaitForBlockCompletionStatus: 1,
-			},
-			wantErr: errors.New("stakerId error"),
-		},
-		{
-			name: "Test 7: When there is an error in parsing string status to bool",
-			args: args{
-				config:         config,
-				configErr:      nil,
-				password:       "test",
-				address:        "0x000000000000000000000000000000000000dea1",
-				addressErr:     nil,
-				status:         "t",
-				statusErr:      nil,
-				parseStatusErr: errors.New("error in parsing status to bool"),
-				stakerId:       1,
-				stakerIdErr:    nil,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
-				WaitForBlockCompletionStatus: 1,
-			},
-			wantErr: errors.New("error in parsing status to bool"),
-		},
-		{
-			name: "Test 8: When there is an error in getting staker",
 			args: args{
 				config:                       config,
 				configErr:                    nil,
@@ -216,97 +188,162 @@ func TestSetDelegation(t *testing.T) {
 				parseStatusErr:               nil,
 				stakerId:                     1,
 				stakerIdErr:                  nil,
-				stakerErr:                    errors.New("staker error"),
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   nil,
+				setDelegationHash:            common.BigToHash(big.NewInt(1)),
+				setDelegationErr:             nil,
 				WaitForBlockCompletionStatus: 1,
 			},
-			wantErr: errors.New("staker error"),
+			expectedFatal: false,
 		},
 		{
-			name: "Test 10: When SetDelegationAcceptance transaction fails",
+			name: "Test 2: When there is an error in getting config",
 			args: args{
-				config:         config,
-				configErr:      nil,
-				password:       "test",
-				address:        "0x000000000000000000000000000000000000dea1",
-				addressErr:     nil,
-				status:         "true",
-				statusErr:      nil,
-				parseStatus:    true,
-				parseStatusErr: nil,
-				stakerId:       1,
-				stakerIdErr:    nil,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				stakerErr:                    nil,
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				SetDelegationAcceptanceErr:   errors.New("SetDelegationAcceptance error"),
+				config:                       config,
+				configErr:                    errors.New("config error"),
+				password:                     "test",
+				address:                      "0x000000000000000000000000000000000000dea1",
+				addressErr:                   nil,
+				status:                       "true",
+				statusErr:                    nil,
+				parseStatus:                  true,
+				parseStatusErr:               nil,
+				stakerId:                     1,
+				stakerIdErr:                  nil,
+				setDelegationHash:            common.BigToHash(big.NewInt(1)),
+				setDelegationErr:             nil,
 				WaitForBlockCompletionStatus: 1,
 			},
-			wantErr: errors.New("SetDelegationAcceptance error"),
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting address",
+			args: args{
+				config:                       config,
+				configErr:                    nil,
+				password:                     "test",
+				addressErr:                   errors.New("address error"),
+				status:                       "true",
+				statusErr:                    nil,
+				parseStatus:                  true,
+				parseStatusErr:               nil,
+				stakerId:                     1,
+				stakerIdErr:                  nil,
+				setDelegationHash:            common.BigToHash(big.NewInt(1)),
+				setDelegationErr:             nil,
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting status",
+			args: args{
+				config:                       config,
+				configErr:                    nil,
+				password:                     "test",
+				address:                      "0x000000000000000000000000000000000000dea1",
+				addressErr:                   nil,
+				statusErr:                    errors.New("status error"),
+				parseStatus:                  true,
+				parseStatusErr:               nil,
+				stakerId:                     1,
+				stakerIdErr:                  nil,
+				setDelegationHash:            common.BigToHash(big.NewInt(1)),
+				setDelegationErr:             nil,
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is getting stakerId",
+			args: args{
+				config:                       config,
+				configErr:                    nil,
+				password:                     "test",
+				address:                      "0x000000000000000000000000000000000000dea1",
+				addressErr:                   nil,
+				status:                       "true",
+				statusErr:                    nil,
+				parseStatus:                  true,
+				parseStatusErr:               nil,
+				stakerIdErr:                  errors.New("stakerId error"),
+				setDelegationHash:            common.BigToHash(big.NewInt(1)),
+				setDelegationErr:             nil,
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 7: When there is an error in parsing string status to bool",
+			args: args{
+				config:                       config,
+				configErr:                    nil,
+				password:                     "test",
+				address:                      "0x000000000000000000000000000000000000dea1",
+				addressErr:                   nil,
+				status:                       "t",
+				statusErr:                    nil,
+				parseStatusErr:               errors.New("error in parsing status to bool"),
+				stakerId:                     1,
+				stakerIdErr:                  nil,
+				setDelegationHash:            common.BigToHash(big.NewInt(1)),
+				setDelegationErr:             nil,
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 8: When there is an error from SetDelegation function",
+			args: args{
+				config:                       config,
+				configErr:                    nil,
+				password:                     "test",
+				address:                      "0x000000000000000000000000000000000000dea1",
+				addressErr:                   nil,
+				status:                       "t",
+				statusErr:                    nil,
+				parseStatusErr:               errors.New("error in parsing status to bool"),
+				stakerId:                     1,
+				stakerIdErr:                  nil,
+				setDelegationHash:            core.NilHash,
+				setDelegationErr:             errors.New("setDelegation error"),
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: true,
 		},
 	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetConfigDataMock = func(UtilsStruct) (types.Configurations, error) {
-				return tt.args.config, tt.args.configErr
-			}
 
-			AssignPasswordMock = func(set *pflag.FlagSet) string {
-				return tt.args.password
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 
-			GetStringAddressMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.address, tt.args.addressErr
-			}
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
 
-			GetStringStatusMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.status, tt.args.statusErr
-			}
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
+			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
-			ParseBoolMock = func(string) (bool, error) {
-				return tt.args.parseStatus, tt.args.parseStatusErr
-			}
+			utils := &UtilsStruct{}
+			fatal = false
 
-			ConnectToClientMock = func(string2 string) *ethclient.Client {
-				return client
-			}
-
-			GetStakerIdMock = func(*ethclient.Client, string) (uint32, error) {
-				return tt.args.stakerId, tt.args.stakerIdErr
-			}
-
-			GetStakerMock = func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error) {
-				return tt.args.staker, tt.args.stakerErr
-			}
-
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return txnOpts
-			}
-
-			SetDelegationAcceptanceMock = func(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error) {
-				return tt.args.SetDelegationAcceptanceTxn, tt.args.SetDelegationAcceptanceErr
-			}
-
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
-			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
-				return tt.args.WaitForBlockCompletionStatus
-			}
-
-			gotErr := utilsStruct.SetDelegation(flagSet)
-			if gotErr == nil || tt.wantErr == nil {
-				if gotErr != tt.wantErr {
-					t.Errorf("Error for SetDelegation function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
-			} else {
-				if gotErr.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for SetDelegation function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
+			utils.ExecuteSetDelegation(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteSetDelegation function didn't execute as expected")
 			}
 		})
 	}

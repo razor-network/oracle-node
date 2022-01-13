@@ -9,21 +9,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 )
 
-func Test_delegate(t *testing.T) {
+func TestDelegate(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		transactionUtils:  TransactionMock{},
-		stakeManagerUtils: StakeManagerMock{},
-	}
 
 	var txnArgs types.TransactionOptions
 	var stakerId uint32 = 1
@@ -88,27 +85,24 @@ func Test_delegate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetAmountInDecimalMock = func(*big.Int) *big.Float {
-				return tt.args.amount
-			}
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			GetEpochMock = func(client *ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
+			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			stakeManagerUtilsMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			DelegateMock = func(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error) {
-				return tt.args.delegateTxn, tt.args.delegateErr
-			}
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			utils := &UtilsStruct{}
 
-			got, err := utilsStruct.delegate(txnArgs, stakerId)
+			got, err := utils.Delegate(txnArgs, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for delegate function, got = %v, want %v", got, tt.want)
 			}
@@ -121,6 +115,195 @@ func Test_delegate(t *testing.T) {
 					t.Errorf("Error for delegate function, got = %v, want %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestExecuteDelegate(t *testing.T) {
+	var config types.Configurations
+	var client *ethclient.Client
+	var flagSet *pflag.FlagSet
+	type args struct {
+		config       types.Configurations
+		configErr    error
+		address      string
+		addressErr   error
+		password     string
+		stakerId     uint32
+		stakerIdErr  error
+		balance      *big.Int
+		balanceErr   error
+		amount       *big.Int
+		amountErr    error
+		approveTxn   common.Hash
+		approveErr   error
+		delegateHash common.Hash
+		delegateErr  error
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteDelegate() executes successfully",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting config",
+			args: args{
+				config:       config,
+				configErr:    errors.New("config error"),
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting address",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				approveErr:   errors.New("address error"),
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting stakerId",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				stakerIdErr:  errors.New("stakerId error"),
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting balance",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				balanceErr:   errors.New("balance error"),
+				amount:       big.NewInt(2000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting amount",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				amountErr:    errors.New("amount error"),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 7: When there is an error from approve",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				approveTxn:   core.NilHash,
+				amountErr:    errors.New("approve error"),
+				delegateHash: common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 8: When there is an error from delegate",
+			args: args{
+				config:       config,
+				address:      "0x000000000000000000000000000000000000dead",
+				password:     "test",
+				stakerId:     2,
+				balance:      big.NewInt(10000),
+				amount:       big.NewInt(2000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				delegateHash: core.NilHash,
+				delegateErr:  errors.New("delegate error"),
+			},
+			expectedFatal: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
+			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
+			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
+			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
+			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
+			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
+			cmdUtilsMock.On("Delegate", mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.delegateHash, tt.args.delegateErr)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteDelegate(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteDelegate function didn't execute as expected")
+			}
+
 		})
 	}
 }
