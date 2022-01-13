@@ -94,7 +94,7 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		return core.NilHash, nil
 	}
 
-	txnArgs.Parameters = []interface{}{epoch, stakerId}
+	txnArgs.Parameters = []interface{}{stakerId}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
