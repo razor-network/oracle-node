@@ -105,12 +105,12 @@ func TestImportAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			keystoreUtilsMock := new(mocks.KeystoreInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			keystoreUtilsMock := new(mocks.KeystoreInterface)
 			cryptoUtilsMock := new(mocks.CryptoInterface)
 
-			razorUtilsMockery = utilsMock
-			keystoreUtilsMockery = keystoreUtilsMock
+			razorUtils = utilsMock
+			keystoreUtils = keystoreUtilsMock
 			cryptoUtils = cryptoUtilsMock
 
 			utilsMock.On("PrivateKeyPrompt").Return(tt.args.privateKey)
@@ -119,7 +119,7 @@ func TestImportAccount(t *testing.T) {
 			cryptoUtilsMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
 			keystoreUtilsMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.ImportAccount()
 			if got.Address != tt.want.Address {
@@ -175,12 +175,12 @@ func TestExecuteImport(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			cmdUtilMock := new(mocks.UtilsCmdInterfaceMockery)
-			cmdUtilsMockery = cmdUtilMock
+			cmdUtilMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilMock
 
 			cmdUtilMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			utils.ExecuteImport()
 			if fatal != tt.expectedFatal {
 				t.Error("The executeImport function didn't execute as expected")

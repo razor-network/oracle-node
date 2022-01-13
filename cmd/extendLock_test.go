@@ -65,19 +65,19 @@ func TestExtendLock(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("ExtendLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.ExtendLock(client, config, extendLockInput)
 			if got != tt.want {
@@ -186,13 +186,13 @@ func TestExecuteExtendLock(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			flagSetUtils = flagSetUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
@@ -202,7 +202,7 @@ func TestExecuteExtendLock(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			cmdUtilsMock.On("ExtendLock", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteExtendLock(flagSet)

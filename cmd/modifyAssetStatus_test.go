@@ -57,16 +57,16 @@ func TestCheckCurrentStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			assetManageUtilsMock := new(mocks.AssetManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			assetManageUtilsMock := new(mocks.AssetManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			assetManagerUtilsMockery = assetManageUtilsMock
+			razorUtils = utilsMock
+			assetManagerUtils = assetManageUtilsMock
 
 			utilsMock.On("GetOptions").Return(tt.args.callOpts)
 			assetManageUtilsMock.On("GetActiveStatus", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint16")).Return(tt.args.activeStatus, tt.args.activeStatusErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.CheckCurrentStatus(client, assetId)
 			if got != tt.want {
 				t.Errorf("Status from CheckCurrentStatus function, got = %v, want %v", got, tt.want)
@@ -176,15 +176,15 @@ func TestModifyAssetStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
-			assetManagerUtilsMock := new(mocks.AssetManagerInterfaceMockery)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsMock := new(mocks.UtilsInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
-			assetManagerUtilsMockery = assetManagerUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			transactionUtils = transactionUtilsMock
+			assetManagerUtils = assetManagerUtilsMock
 
 			cmdUtilsMock.On("CheckCurrentStatus", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.currentStatus, tt.args.currentStatusErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
@@ -192,7 +192,7 @@ func TestModifyAssetStatus(t *testing.T) {
 			assetManagerUtilsMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.ModifyAssetStatus(client, config, types.ModifyAssetInput{
 				Status: tt.args.status,
@@ -342,13 +342,13 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagsetUtilsMock := new(mocks.FlagSetInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			flagSetUtilsMockery = flagsetUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagsetUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
@@ -360,7 +360,7 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			cmdUtilsMock.On("ModifyAssetStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyAssetStatusHash, tt.args.ModifyAssetStatusErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteModifyAssetStatus(flagSet)

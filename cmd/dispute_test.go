@@ -119,15 +119,15 @@ func TestDispute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			blockManagerUtilsMock := new(mocks.BlockManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			blockManagerUtilsMockery = blockManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			blockManagerUtils = blockManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
@@ -138,7 +138,7 @@ func TestDispute(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			err := utils.Dispute(client, config, account, tt.args.epoch, blockId, assetId)
 			if err == nil || tt.want == nil {
@@ -370,15 +370,15 @@ func TestHandleDispute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			blockManagerUtilsMock := new(mocks.BlockManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			blockManagerUtilsMockery = blockManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			blockManagerUtils = blockManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
 			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
@@ -391,7 +391,7 @@ func TestHandleDispute(t *testing.T) {
 			utilsMock.On("GetActiveAssetIds", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			err := utils.HandleDispute(client, config, account, epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {

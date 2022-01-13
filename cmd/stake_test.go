@@ -92,20 +92,20 @@ func Test_stakeCoins(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.getEpochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			stakeManagerUtilsMock.On("Stake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.StakeCoins(txnArgs)
 			if got != tt.want {

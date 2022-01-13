@@ -13,10 +13,10 @@ import (
 func TestUtilsStruct_GetCollectionList(t *testing.T) {
 	var client *ethclient.Client
 	type fields struct {
-		razorUtilsMockery UtilsMockery
+		razorUtils Utils
 	}
 	testUtils := fields{
-		razorUtilsMockery: UtilsMockery{},
+		razorUtils: Utils{},
 	}
 
 	collectionListArray := []bindings.StructsCollection{
@@ -62,11 +62,11 @@ func TestUtilsStruct_GetCollectionList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			razorUtilsMockery = utilsMock
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 
 			utilsMock.On("GetCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			err := utils.GetCollectionList(tt.args.client)
 
@@ -83,7 +83,7 @@ func TestUtilsStruct_GetCollectionList(t *testing.T) {
 	}
 }
 
-func TestUtilsStructMockery_ExecuteCollectionList(t *testing.T) {
+func TestUtilsStruct_ExecuteCollectionList(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
 
@@ -132,17 +132,17 @@ func TestUtilsStructMockery_ExecuteCollectionList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("GetCollectionList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionListErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteCollectionList()

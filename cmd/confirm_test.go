@@ -61,19 +61,19 @@ func TestClaimBlockReward(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			blockManagerMock := new(mocks.BlockManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			blockManagerMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			blockManagerUtilsMockery = blockManagerMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			blockManagerUtils = blockManagerMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetTxnOpts", options).Return(tt.args.txnOpts)
 			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.ClaimBlockReward(options)
 			if got != tt.want {
 				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)

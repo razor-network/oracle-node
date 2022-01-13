@@ -178,13 +178,13 @@ func TestUpdateCommission(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
@@ -195,7 +195,7 @@ func TestUpdateCommission(t *testing.T) {
 			utilsMock.On("GetEpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
 			stakeManagerUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionTxn, tt.args.UpdateCommissionErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			gotErr := utils.UpdateCommission(config, client, types.UpdateCommissionInput{
 				Commission: tt.args.commission,
 			})
@@ -325,13 +325,13 @@ func TestExecuteUpdateCommission(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			flagSetUtilsMockery = flagsetUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			flagSetUtils = flagsetUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
@@ -341,7 +341,7 @@ func TestExecuteUpdateCommission(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteUpdateCommission(flagSet)

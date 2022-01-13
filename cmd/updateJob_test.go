@@ -78,22 +78,22 @@ func TestUpdateJob(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			assetManagerUtilsMock := new(mocks.AssetManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			assetManagerUtilsMockery = assetManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			assetManagerUtils = assetManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("WaitIfCommitState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
 			assetManagerUtilsMock.On("UpdateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateJobTxn, tt.args.updateJobErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.UpdateJob(client, config, jobInput, jobId)
 			if got != tt.want {
@@ -338,13 +338,13 @@ func TestExecuteUpdateJob(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			flagSetUtilsMockery = flagsetUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			flagSetUtils = flagsetUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -359,7 +359,7 @@ func TestExecuteUpdateJob(t *testing.T) {
 			cmdUtilsMock.On("UpdateJob", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything, mock.Anything).Return(tt.args.updateJobTxn, tt.args.updateJobErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteUpdateJob(flagSet)

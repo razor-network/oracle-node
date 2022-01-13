@@ -386,15 +386,15 @@ func TestPropose(t *testing.T) {
 	}
 	for _, tt := range tests {
 
-		utilsMock := new(mocks.UtilsInterfaceMockery)
-		cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-		blockManagerUtilsMock := new(mocks.BlockManagerInterfaceMockery)
-		transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+		utilsMock := new(mocks.UtilsInterface)
+		cmdUtilsMock := new(mocks.UtilsCmdInterface)
+		blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+		transactionUtilsMock := new(mocks.TransactionInterface)
 
-		razorUtilsMockery = utilsMock
-		cmdUtilsMockery = cmdUtilsMock
-		blockManagerUtilsMockery = blockManagerUtilsMock
-		transactionUtilsMockery = transactionUtilsMock
+		razorUtils = utilsMock
+		cmdUtils = cmdUtilsMock
+		blockManagerUtils = blockManagerUtilsMock
+		transactionUtils = transactionUtilsMock
 
 		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
@@ -410,7 +410,7 @@ func TestPropose(t *testing.T) {
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-		utils := &UtilsStructMockery{}
+		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := utils.Propose(client, account, config, stakerId, epoch, rogue)
 			if got != tt.want {
@@ -497,8 +497,8 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			razorUtilsMockery = utilsMock
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			if tt.args.stake != nil {
@@ -509,7 +509,7 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			}
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, address, epoch)
 			if gotStake.Cmp(tt.wantStake) != 0 {
@@ -561,11 +561,11 @@ func TestGetIteration(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			cmdUtilsMockery = cmdUtilsMock
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			if got := utils.GetIteration(client, proposer); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
@@ -716,11 +716,11 @@ func TestMakeBlock(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetNumActiveAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -729,7 +729,7 @@ func TestMakeBlock(t *testing.T) {
 			cmdUtilsMock.On("InfluencedMedian", mock.Anything, mock.Anything).Return(tt.args.influencedMedian)
 			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.MakeBlock(client, address, tt.args.rogue)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -860,15 +860,15 @@ func TestGetSortedVotes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			razorUtilsMockery = utilsMock
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numberOfStakers, tt.args.numberOfStakersErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
 			utilsMock.On("GetVoteValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16"), mock.AnythingOfType("uint32")).Return(tt.args.vote, tt.args.voteErr)
 			utilsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influence, tt.args.influenceErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetSortedVotes(client, address, assetId, tt.args.epoch)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -924,7 +924,7 @@ func TestInfluencedMedian(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			if got := utils.InfluencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
 			}
@@ -1055,12 +1055,12 @@ func TestIsElectedProposer(t *testing.T) {
 	}
 	for _, tt := range tests {
 
-		utilsMock := new(mocks.UtilsInterfaceMockery)
-		razorUtilsMockery = utilsMock
+		utilsMock := new(mocks.UtilsInterface)
+		razorUtils = utilsMock
 
 		utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
 
-		utils := &UtilsStructMockery{}
+		utils := &UtilsStruct{}
 
 		t.Run(tt.name, func(t *testing.T) {
 			if got := utils.IsElectedProposer(tt.args.client, tt.args.proposer); got != tt.want {

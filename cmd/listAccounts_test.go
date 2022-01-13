@@ -57,15 +57,15 @@ func Test_listAccounts(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			keystoreUtilsMock := new(mocks.KeystoreInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			keystoreUtilsMock := new(mocks.KeystoreInterface)
 
-			razorUtilsMockery = utilsMock
-			keystoreUtilsMockery = keystoreUtilsMock
+			razorUtils = utilsMock
+			keystoreUtils = keystoreUtilsMock
 
 			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			keystoreUtilsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.ListAccounts()
 
 			if !reflect.DeepEqual(got, tt.want) {

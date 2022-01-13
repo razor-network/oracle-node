@@ -61,10 +61,10 @@ func TestCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
 			accountUtilsMock := new(Mocks.AccountInterface)
 
-			razorUtilsMockery = utilsMock
+			razorUtils = utilsMock
 			razorAccounts.AccountUtilsInterface = accountUtilsMock
 
 			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
@@ -73,7 +73,7 @@ func TestCreate(t *testing.T) {
 				URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 			})
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.Create(password)
 
 			if got.Address != tt.want.Address {
@@ -137,16 +137,16 @@ func TestExecuteCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			cmdUtilsMock.On("Create", mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteCreate(flagSet)

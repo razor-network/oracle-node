@@ -225,13 +225,13 @@ func TestSetConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
 			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
@@ -243,7 +243,7 @@ func TestSetConfig(t *testing.T) {
 			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			utilsMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			gotErr := utils.SetConfig(flagSet)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {

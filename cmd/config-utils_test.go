@@ -121,8 +121,8 @@ func TestGetConfigData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			cmdUtilsMockery = cmdUtilsMock
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetProvider").Return(tt.args.provider, tt.args.providerErr)
 			cmdUtilsMock.On("GetMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
@@ -132,7 +132,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetConfigData()
 			if !reflect.DeepEqual(got, tt.want) {
@@ -190,11 +190,11 @@ func Test_getBufferPercent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootInt32Buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.GetBufferPercent()
 			if got != tt.want {
 				t.Errorf("getBufferPercent() got = %v, want %v", got, tt.want)
@@ -250,11 +250,11 @@ func Test_getGasLimit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootFloat32GasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetGasLimit()
 			if got != tt.want {
@@ -311,11 +311,11 @@ func Test_getGasPrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootInt32GasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetGasPrice()
 			if got != tt.want {
@@ -372,11 +372,11 @@ func Test_getLogLevel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootStringLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetLogLevel()
 			if got != tt.want {
@@ -433,11 +433,11 @@ func Test_getMultiplier(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootFloat32GasMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetMultiplier()
 			if got != tt.want {
@@ -502,11 +502,11 @@ func Test_getProvider(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootStringProvider").Return(tt.args.provider, tt.args.providerErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetProvider()
 			if got != tt.want {
@@ -563,11 +563,11 @@ func Test_getWaitTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			flagSetUtilsMockery = flagSetUtilsMock
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootInt32Wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.GetWaitTime()
 			if got != tt.want {
 				t.Errorf("getWaitTime() got = %v, want %v", got, tt.want)

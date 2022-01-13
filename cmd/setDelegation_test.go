@@ -81,20 +81,20 @@ func TestSetDelegation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.SetDelegationAcceptanceTxn, tt.args.SetDelegationAcceptanceErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.SetDelegation(client, config, delegationInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for setDelegation function, got = %v, want = %v", got, tt.want)
@@ -288,15 +288,15 @@ func TestExecuteSetDelegation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -308,7 +308,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteSetDelegation(flagSet)

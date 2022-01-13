@@ -20,13 +20,13 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	stake, _ := new(big.Int).SetString("10000000000000000000000", 10)
 
 	type fields struct {
-		razorUtilsMockery        UtilsMockery
-		stakeManagerUtilsMockery StakeManagerUtilsMockery
+		razorUtils        Utils
+		stakeManagerUtils StakeManagerUtils
 	}
 
 	testUtils := fields{
-		razorUtilsMockery:        UtilsMockery{},
-		stakeManagerUtilsMockery: StakeManagerUtilsMockery{},
+		razorUtils:        Utils{},
+		stakeManagerUtils: StakeManagerUtils{},
 	}
 
 	type args struct {
@@ -212,18 +212,18 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerMock := new(mocks.StakeManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerMock := new(mocks.StakeManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerMock
 
 			utilsMock.On("GetOptions").Return(callOpts)
 			stakeManagerMock.On("StakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
 			stakeManagerMock.On("GetMaturity", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.maturity, tt.args.maturityErr)
 			utilsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influence, tt.args.influenceErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			err := utils.GetStakerInfo(tt.args.client, tt.args.stakerId)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
@@ -238,7 +238,7 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	}
 }
 
-func TestUtilsStructMockery_ExecuteStakerinfo(t *testing.T) {
+func TestUtilsStruct_ExecuteStakerinfo(t *testing.T) {
 	var config types.Configurations
 	var flagSet *pflag.FlagSet
 	var client *ethclient.Client
@@ -306,20 +306,20 @@ func TestUtilsStructMockery_ExecuteStakerinfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("GetStakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfoErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteStakerinfo(flagSet)

@@ -86,9 +86,9 @@ func TestDelegate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
@@ -96,11 +96,11 @@ func TestDelegate(t *testing.T) {
 			stakeManagerUtilsMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.Delegate(txnArgs, stakerId)
 			if got != tt.want {
@@ -273,15 +273,15 @@ func TestExecuteDelegate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
@@ -296,7 +296,7 @@ func TestExecuteDelegate(t *testing.T) {
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("Delegate", mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.delegateHash, tt.args.delegateErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteDelegate(flagSet)

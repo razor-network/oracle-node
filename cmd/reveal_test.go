@@ -65,12 +65,12 @@ func TestHandleRevealState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			razorUtilsMockery = utilsMock
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			err := utils.HandleRevealState(client, staker, tt.args.epoch)
 			if err == nil || tt.want == nil {
@@ -226,13 +226,13 @@ func TestReveal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
-			voteManagerUtilsMock := new(mocks.VoteManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			transactionUtilsMockery = transactionUtilsMock
-			voteManagerUtilsMockery = voteManagerUtilsMock
+			razorUtils = utilsMock
+			transactionUtils = transactionUtilsMock
+			voteManagerUtils = voteManagerUtilsMock
 
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -242,7 +242,7 @@ func TestReveal(t *testing.T) {
 			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.Reveal(client, committedData, secret, account, commitAccount, config)
 			if got != tt.want {

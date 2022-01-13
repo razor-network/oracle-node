@@ -63,19 +63,19 @@ func TestCreateJob(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			assetManagerUtilsMock := new(mocks.AssetManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			assetManagerUtilsMockery = assetManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			assetManagerUtils = assetManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			assetManagerUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.CreateJob(client, config, jobInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for createJob function, got = %v, want = %v", got, tt.want)
@@ -310,13 +310,13 @@ func TestExecuteCreateJob(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			flagSetUtilsMockery = flagsetUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			flagSetUtils = flagsetUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -331,7 +331,7 @@ func TestExecuteCreateJob(t *testing.T) {
 			cmdUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createJobHash, tt.args.createJobErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteCreateJob(flagSet)

@@ -80,18 +80,18 @@ func TestGetEpochAndState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			gotEpoch, gotState, err := utils.GetEpochAndState(client)
 			if gotEpoch != tt.wantEpoch {
 				t.Errorf("GetEpochAndState() got epoch = %v, want %v", gotEpoch, tt.wantEpoch)
@@ -175,12 +175,12 @@ func TestWaitForAppropriateState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			cmdUtilsMockery = cmdUtilsMock
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.WaitForAppropriateState(client, tt.args.action, tt.args.states)
 			if got != tt.want {
 				t.Errorf("WaitForAppropriateState() function, got = %v, want = %v", got, tt.want)
@@ -234,16 +234,16 @@ func TestWaitIfCommitState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			utilsMock.On("Sleep", mock.Anything).Return()
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.WaitIfCommitState(client, action)
 			if got != tt.want {
@@ -352,11 +352,11 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			flagsetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			flagsetUtilsMock := new(mocks.FlagSetInterface)
 
-			razorUtilsMockery = utilsMock
-			flagSetUtilsMockery = flagsetUtilsMock
+			razorUtils = utilsMock
+			flagSetUtils = flagsetUtilsMock
 
 			flagsetUtilsMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			flagsetUtilsMock.On("GetStringPow", flagSet).Return(tt.args.power, tt.args.powerErr)
@@ -364,7 +364,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 			utilsMock.On("GetFractionalAmountInWei", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("string")).Return(tt.args.fractionalAmountInWei, tt.args.fractionalAmountInWeiErr)
 			utilsMock.On("GetAmountInWei", mock.AnythingOfType("*big.Int")).Return(tt.args.amountInWei)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.AssignAmountInWei(flagSet)
 			if got.Cmp(tt.want) != 0 {
 				t.Errorf("AssignAmountInWei() function, got = %v, want = %v", got, tt.want)

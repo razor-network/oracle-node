@@ -138,15 +138,15 @@ func TestUnstake(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			cmdUtils = cmdUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
@@ -157,7 +157,7 @@ func TestUnstake(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			_, gotErr := utils.Unstake(config, client,
 				types.UnstakeInput{
 					Address:    address,
@@ -326,17 +326,17 @@ func TestExecuteUnstake(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			cmdUtils = cmdUtilsMock
+			transactionUtils = transactionUtilsMock
+			flagSetUtils = flagSetUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -350,7 +350,7 @@ func TestExecuteUnstake(t *testing.T) {
 			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(txnArgs, tt.args.unstakeErr)
 			cmdUtilsMock.On("AutoWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoWithdrawErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			fatal = false
 
 			utils.ExecuteUnstake(flagSet)
@@ -402,17 +402,17 @@ func TestAutoWithdraw(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawFundsHash, tt.args.withdrawFundsErr)
 			utilsMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			gotErr := utils.AutoWithdraw(txnArgs, stakerId)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
@@ -544,11 +544,11 @@ func TestGetAmountInSRZRs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
 
 			utilsMock.On("GetStakedToken", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(stakedToken)
 			utilsMock.On("GetOptions").Return(callOpts)
@@ -558,7 +558,7 @@ func TestGetAmountInSRZRs(t *testing.T) {
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.decimalAmount)
 			utilsMock.On("ConvertRZRToSRZR", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.sRZR, tt.args.sRZRErr)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.GetAmountInSRZRs(client, address, tt.args.staker, tt.args.amount)
 			if got.Cmp(tt.want) != 0 {

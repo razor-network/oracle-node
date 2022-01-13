@@ -107,13 +107,13 @@ func TestCommit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
-			voteManagerUtilsMock := new(mocks.VoteManagerInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 
-			razorUtilsMockery = utilsMock
-			transactionUtilsMockery = transactionUtilsMock
-			voteManagerUtilsMockery = voteManagerUtilsMock
+			razorUtils = utilsMock
+			transactionUtils = transactionUtilsMock
+			voteManagerUtils = voteManagerUtilsMock
 
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -121,7 +121,7 @@ func TestCommit(t *testing.T) {
 			voteManagerUtilsMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.Commit(client, data, secret, account, config)
 			if got != tt.want {
@@ -214,14 +214,14 @@ func TestHandleCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			razorUtilsMockery = utilsMock
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 
 			utilsMock.On("GetActiveAssetsData", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.data, tt.args.dataErr)
 			utilsMock.On("GetNumActiveAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(tt.args.rogueValue)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.HandleCommitState(client, epoch, tt.args.rogue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)

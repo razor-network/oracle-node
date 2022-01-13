@@ -102,13 +102,13 @@ func TestExecuteClaimBounty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			flagSetUtilsMock := new(mocks.FlagSetInterfaceMockery)
-			cmdUtilsMock := new(mocks.UtilsCmdInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtilsMockery = utilsMock
-			flagSetUtilsMockery = flagSetUtilsMock
-			cmdUtilsMockery = cmdUtilsMock
+			razorUtils = utilsMock
+			flagSetUtils = flagSetUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
@@ -119,7 +119,7 @@ func TestExecuteClaimBounty(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
 			fatal = false
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			utils.ExecuteClaimBounty(flagSet)
 
 			if fatal != tt.expectedFatal {
@@ -228,13 +228,13 @@ func TestClaimBounty(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stakeManagerMock := new(mocks.StakeManagerInterfaceMockery)
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			trasactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			stakeManagerMock := new(mocks.StakeManagerInterface)
+			utilsMock := new(mocks.UtilsInterface)
+			trasactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			stakeManagerUtilsMockery = stakeManagerMock
-			transactionUtilsMockery = trasactionUtilsMock
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerMock
+			transactionUtils = trasactionUtilsMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetOptions").Return(callOpts)
@@ -245,7 +245,7 @@ func TestClaimBounty(t *testing.T) {
 			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)
 			trasactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 			got, err := utils.ClaimBounty(config, client, bountyInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for claimBounty function, got = %v, want = %v", got, tt.want)
