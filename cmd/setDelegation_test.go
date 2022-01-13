@@ -304,7 +304,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
