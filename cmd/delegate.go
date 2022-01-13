@@ -71,14 +71,10 @@ Example:
 
 func (utilsStruct UtilsStruct) delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", utilsStruct.razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
-	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
-	if err != nil {
-		return common.Hash{0x00}, err
-	}
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
+	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	delegationTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
 	txn, err := utilsStruct.stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
