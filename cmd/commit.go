@@ -12,19 +12,19 @@ import (
 	"razor/utils"
 )
 
-func (*UtilsStructMockery) HandleCommitState(client *ethclient.Client, epoch uint32, rogueData types.Rogue) ([]*big.Int, error) {
+func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, rogueData types.Rogue) ([]*big.Int, error) {
 	var (
 		data []*big.Int
 		err  error
 	)
 	//rogue mode
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-		numActiveAssets, err := razorUtilsMockery.GetNumActiveAssets(client)
+		numActiveAssets, err := razorUtils.GetNumActiveAssets(client)
 		if err != nil {
 			return nil, err
 		}
 		for i := 0; i < int(numActiveAssets.Int64()); i++ {
-			rogueValue := razorUtilsMockery.GetRogueRandomValue(10000000)
+			rogueValue := razorUtils.GetRogueRandomValue(10000000)
 			data = append(data, rogueValue)
 		}
 		log.Debug("Data: ", data)
@@ -32,7 +32,7 @@ func (*UtilsStructMockery) HandleCommitState(client *ethclient.Client, epoch uin
 	}
 
 	//normal mode
-	data, err = razorUtilsMockery.GetActiveAssetsData(client, epoch)
+	data, err = razorUtils.GetActiveAssetsData(client, epoch)
 	if err != nil {
 		return nil, err
 	}
@@ -40,13 +40,13 @@ func (*UtilsStructMockery) HandleCommitState(client *ethclient.Client, epoch uin
 	return data, nil
 }
 
-func (*UtilsStructMockery) Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) (common.Hash, error) {
-	if state, err := razorUtilsMockery.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
+func (*UtilsStruct) Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) (common.Hash, error) {
+	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
 
-	epoch, err := razorUtilsMockery.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -54,7 +54,7 @@ func (*UtilsStructMockery) Commit(client *ethclient.Client, data []*big.Int, sec
 	commitment := solsha3.SoliditySHA3([]string{"uint32", "uint256[]", "bytes32"}, []interface{}{epoch, data, "0x" + hex.EncodeToString(secret)})
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
@@ -69,10 +69,10 @@ func (*UtilsStructMockery) Commit(client *ethclient.Client, data []*big.Int, sec
 	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
 
 	log.Info("Commitment sent...")
-	txn, err := voteManagerUtilsMockery.Commit(client, txnOpts, epoch, commitmentToSend)
+	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }

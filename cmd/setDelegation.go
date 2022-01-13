@@ -24,27 +24,27 @@ Example:
 }
 
 func initialiseSetDelegation(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteSetDelegation(cmd.Flags())
+	cmdUtils.ExecuteSetDelegation(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
+func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 
-	config, err := cmdUtilsMockery.GetConfigData()
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	statusString, err := flagSetUtilsMockery.GetStringStatus(flagSet)
+	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
-	status, err := razorUtilsMockery.ParseBool(statusString)
+	status, err := razorUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status to boolean: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	stakerId, err := flagSetUtilsMockery.GetUint32StakerId(flagSet)
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in fetching stakerId: ", err)
 
 	delegationInput := types.SetDelegationInput{
@@ -55,14 +55,14 @@ func (*UtilsStructMockery) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 		StakerId:     stakerId,
 	}
 
-	txn, err := cmdUtilsMockery.SetDelegation(client, config, delegationInput)
+	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
+func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
 
-	stakerInfo, err := razorUtilsMockery.GetStaker(client, delegationInput.Address, delegationInput.StakerId)
+	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.Address, delegationInput.StakerId)
 	if err != nil {
 		return core.NilHash, nil
 	}
@@ -84,23 +84,23 @@ func (*UtilsStructMockery) SetDelegation(client *ethclient.Client, config types.
 		return core.NilHash, nil
 	}
 	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
-	setDelegationAcceptanceTxnOpts := razorUtilsMockery.GetTxnOpts(txnOpts)
-	delegationAcceptanceTxn, err := stakeManagerUtilsMockery.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
+	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+	delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
 	if err != nil {
 		log.Error("Error in setting delegation acceptance")
 		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtilsMockery.Hash(delegationAcceptanceTxn))
-	return transactionUtilsMockery.Hash(delegationAcceptanceTxn), nil
+	log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
+	return transactionUtils.Hash(delegationAcceptanceTxn), nil
 }
 
 func init() {
 
-	razorUtilsMockery = &UtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = &Utils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(setDelegationCmd)
 

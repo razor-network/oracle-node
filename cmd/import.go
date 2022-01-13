@@ -18,23 +18,23 @@ Example:
 }
 
 func initialiseImport(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteImport()
+	cmdUtils.ExecuteImport()
 }
 
-func (*UtilsStructMockery) ExecuteImport() {
-	account, err := cmdUtilsMockery.ImportAccount()
+func (*UtilsStruct) ExecuteImport() {
+	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)
 	log.Info("Account Address: ", account.Address)
 	log.Info("Keystore Path: ", account.URL)
 }
 
-func (*UtilsStructMockery) ImportAccount() (accounts.Account, error) {
-	privateKey := razorUtilsMockery.PrivateKeyPrompt()
+func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
+	privateKey := razorUtils.PrivateKeyPrompt()
 	// Remove 0x from the private key
 	privateKey = strings.TrimPrefix(privateKey, "0x")
 	log.Info("Enter password to protect keystore file")
-	password := razorUtilsMockery.PasswordPrompt()
-	path, err := razorUtilsMockery.GetDefaultPath()
+	password := razorUtils.PasswordPrompt()
+	path, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
@@ -44,7 +44,7 @@ func (*UtilsStructMockery) ImportAccount() (accounts.Account, error) {
 		log.Error("Error in parsing private key")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account, err := keystoreUtilsMockery.ImportECDSA(path, priv, password)
+	account, err := keystoreUtils.ImportECDSA(path, priv, password)
 	if err != nil {
 		log.Error("Error in importing account")
 		return accounts.Account{Address: common.Address{0x00}}, err
@@ -54,8 +54,8 @@ func (*UtilsStructMockery) ImportAccount() (accounts.Account, error) {
 }
 
 func init() {
-	razorUtilsMockery = UtilsMockery{}
-	keystoreUtilsMockery = KeystoreUtilsMockery{}
+	razorUtils = Utils{}
+	keystoreUtils = KeystoreUtils{}
 	cryptoUtils = CryptoUtils{}
 
 	rootCmd.AddCommand(importCmd)

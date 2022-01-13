@@ -17,19 +17,19 @@ var deleteOverrideCmd = &cobra.Command{
 }
 
 func initialiseDeleteOverrideJob(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteDeleteOverrideJob(cmd.Flags())
+	cmdUtils.ExecuteDeleteOverrideJob(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteDeleteOverrideJob(flagSet *pflag.FlagSet) {
-	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
+func (*UtilsStruct) ExecuteDeleteOverrideJob(flagSet *pflag.FlagSet) {
+	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
 
-	err = cmdUtilsMockery.DeleteOverrideJob(jobId)
+	err = cmdUtils.DeleteOverrideJob(jobId)
 	utils.CheckError("DeleteOverrideJob error: ", err)
 	log.Info("Job removed from override list successfully!")
 }
 
-func (*UtilsStructMockery) DeleteOverrideJob(jobId uint16) error {
+func (*UtilsStruct) DeleteOverrideJob(jobId uint16) error {
 	jobPath, err := path.GetJobFilePath()
 	if err != nil {
 		return err

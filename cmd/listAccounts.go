@@ -14,7 +14,7 @@ Example:
   ./razor listAccounts`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		allAccounts, err := cmdUtilsMockery.ListAccounts()
+		allAccounts, err := cmdUtils.ListAccounts()
 		utils.CheckError("ListAccounts error: ", err)
 		log.Info("The available accounts are: ")
 		for _, account := range allAccounts {
@@ -23,18 +23,18 @@ Example:
 	},
 }
 
-func (*UtilsStructMockery) ListAccounts() ([]accounts.Account, error) {
-	path, err := razorUtilsMockery.GetDefaultPath()
+func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
+	path, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return nil, err
 	}
 
-	return keystoreUtilsMockery.Accounts(path), nil
+	return keystoreUtils.Accounts(path), nil
 }
 
 func init() {
-	razorUtilsMockery = &UtilsMockery{}
-	keystoreUtilsMockery = KeystoreUtilsMockery{}
+	razorUtils = &Utils{}
+	keystoreUtils = KeystoreUtils{}
 	rootCmd.AddCommand(listAccountsCmd)
 }

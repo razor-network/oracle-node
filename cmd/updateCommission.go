@@ -23,22 +23,22 @@ Example:
 }
 
 func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteUpdateCommission(cmd.Flags())
+	cmdUtils.ExecuteUpdateCommission(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	client := razorUtils.ConnectToClient(config.Provider)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address", err)
 
-	commission, err := flagSetUtilsMockery.GetUint8Commission(flagSet)
+	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
 
-	stakerId, err := razorUtilsMockery.GetStakerId(client, address)
+	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId", err)
 
 	updateCommissionInput := types.UpdateCommissionInput{
@@ -48,19 +48,19 @@ func (*UtilsStructMockery) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 		Commission: commission,
 	}
 
-	err = cmdUtilsMockery.UpdateCommission(config, client, updateCommissionInput)
+	err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
 	utils.CheckError("SetDelegation error: ", err)
 }
 
-func (*UtilsStructMockery) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
+func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
 
-	stakerInfo, err := razorUtilsMockery.GetStaker(client, updateCommissionInput.Address, updateCommissionInput.StakerId)
+	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.Address, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
 	}
 
-	maxCommission, err := razorUtilsMockery.GetMaxCommission(client)
+	maxCommission, err := razorUtils.GetMaxCommission(client)
 	if err != nil {
 		return err
 	}
@@ -69,12 +69,12 @@ func (*UtilsStructMockery) UpdateCommission(config types.Configurations, client 
 		return errors.New("commission out of range")
 	}
 
-	epochLimitForUpdateCommission, err := razorUtilsMockery.GetEpochLimitForUpdateCommission(client)
+	epochLimitForUpdateCommission, err := razorUtils.GetEpochLimitForUpdateCommission(client)
 	if err != nil {
 		return err
 	}
 
-	epoch, err := razorUtilsMockery.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		return err
 	}
@@ -95,25 +95,25 @@ func (*UtilsStructMockery) UpdateCommission(config types.Configurations, client 
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 	}
 
-	updateCommissionTxnOpts := razorUtilsMockery.GetTxnOpts(txnOpts)
+	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
-	txn, err := stakeManagerUtilsMockery.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
+	txn, err := stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
 	if err != nil {
 		log.Error("Error in setting commission")
 		return err
 	}
-	txnHash := transactionUtilsMockery.Hash(txn)
+	txnHash := transactionUtils.Hash(txn)
 	log.Infof("Transaction hash: %s", txnHash)
-	razorUtilsMockery.WaitForBlockCompletion(client, txnHash.String())
+	razorUtils.WaitForBlockCompletion(client, txnHash.String())
 	return nil
 }
 
 func init() {
-	razorUtilsMockery = UtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	var (
 		Address    string

@@ -24,24 +24,24 @@ Example:
 }
 
 func initialiseTransfer(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteTransfer(cmd.Flags())
+	cmdUtils.ExecuteTransfer(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteTransfer(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	fromAddress, err := flagSetUtilsMockery.GetStringFrom(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
-	toAddress, err := flagSetUtilsMockery.GetStringTo(flagSet)
+	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	balance, err := razorUtilsMockery.FetchBalance(client, fromAddress)
+	balance, err := razorUtils.FetchBalance(client, fromAddress)
 	utils.CheckError("Error in fetching balance: ", err)
 
-	valueInWei, err := cmdUtilsMockery.AssignAmountInWei(flagSet)
+	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
 	transferInput := types.TransferInput{
@@ -52,17 +52,17 @@ func (*UtilsStructMockery) ExecuteTransfer(flagSet *pflag.FlagSet) {
 		Balance:     balance,
 	}
 
-	txn, err := cmdUtilsMockery.Transfer(client, config, transferInput)
+	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 	log.Info("Transaction Hash: ", txn)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
+func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 
-	razorUtilsMockery.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
+	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        transferInput.Password,
 		AccountAddress:  transferInput.FromAddress,
@@ -73,24 +73,24 @@ func (*UtilsStructMockery) Transfer(client *ethclient.Client, config types.Confi
 		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
 		ABI:             bindings.RAZORABI,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", razorUtilsMockery.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
+	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 
-	txn, err := tokenManagerUtilsMockery.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
+	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
 	if err != nil {
 		log.Errorf("Error in transferring tokens ")
 		return core.NilHash, err
 	}
 
-	return transactionUtilsMockery.Hash(txn), err
+	return transactionUtils.Hash(txn), err
 }
 
 func init() {
 
-	cmdUtilsMockery = &UtilsStructMockery{}
-	razorUtilsMockery = UtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	tokenManagerUtilsMockery = TokenManagerUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	cmdUtils = &UtilsStruct{}
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	tokenManagerUtils = TokenManagerUtils{}
+	flagSetUtils = FLagSetUtils{}
 
 	rootCmd.AddCommand(transferCmd)
 	var (

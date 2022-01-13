@@ -16,30 +16,30 @@ import (
 	"modernc.org/sortutil"
 )
 
-func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
-	if state, err := razorUtilsMockery.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
+	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
 	}
-	staker, err := razorUtilsMockery.GetStaker(client, account.Address, stakerId)
+	staker, err := razorUtils.GetStaker(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching staker: ", err)
 		return core.NilHash, err
 	}
-	numStakers, err := razorUtilsMockery.GetNumberOfStakers(client, account.Address)
+	numStakers, err := razorUtils.GetNumberOfStakers(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching number of stakers: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestStake, biggestStakerId, err := cmdUtilsMockery.GetBiggestStakeAndId(client, account.Address, epoch)
+	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
 	if err != nil {
 		log.Error("Error in calculating biggest staker: ", err)
 		return core.NilHash, err
 	}
 
-	randaoHash, err := razorUtilsMockery.GetRandaoHash(client)
+	randaoHash, err := razorUtils.GetRandaoHash(client)
 	if err != nil {
 		log.Error("Error in fetching random hash: ", err)
 		return core.NilHash, err
@@ -47,7 +47,7 @@ func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Accou
 	log.Debug("Biggest Staker Id: ", biggestStakerId)
 	log.Debugf("Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStake, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
-	iteration := cmdUtilsMockery.GetIteration(client, types.ElectedProposer{
+	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
 		StakerId:        stakerId,
 		BiggestStake:    biggestStake,
@@ -61,12 +61,12 @@ func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Accou
 	if iteration == -1 {
 		return core.NilHash, nil
 	}
-	numOfProposedBlocks, err := razorUtilsMockery.GetNumberOfProposedBlocks(client, epoch)
+	numOfProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, epoch)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	maxAltBlocks, err := razorUtilsMockery.GetMaxAltBlocks(client)
+	maxAltBlocks, err := razorUtils.GetMaxAltBlocks(client)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -75,7 +75,7 @@ func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Accou
 		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
 		lastBlockIndex := numOfProposedBlocks - 1
-		lastProposedBlockStruct, err := razorUtilsMockery.GetProposedBlock(client, epoch, uint32(lastBlockIndex))
+		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, uint32(lastBlockIndex))
 		if err != nil {
 			log.Error(err)
 			return core.NilHash, err
@@ -87,7 +87,7 @@ func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Accou
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := cmdUtilsMockery.MakeBlock(client, account.Address, rogueData)
+	medians, err := cmdUtils.MakeBlock(client, account.Address, rogueData)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -95,7 +95,7 @@ func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Accou
 
 	log.Debugf("Medians: %d", medians)
 
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
@@ -110,24 +110,24 @@ func (*UtilsStructMockery) Propose(client *ethclient.Client, account types.Accou
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
-	txn, err := blockManagerUtilsMockery.Propose(client, txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestStakerId)
+	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
-func (*UtilsStructMockery) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
-	numberOfStakers, err := razorUtilsMockery.GetNumberOfStakers(client, address)
+func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, 0, err
 	}
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 	for i := 1; i <= int(numberOfStakers); i++ {
-		stake, err := razorUtilsMockery.GetStakeSnapshot(client, uint32(i), epoch)
+		stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -139,10 +139,10 @@ func (*UtilsStructMockery) GetBiggestStakeAndId(client *ethclient.Client, addres
 	return biggestStake, biggestStakerId, nil
 }
 
-func (*UtilsStructMockery) GetIteration(client *ethclient.Client, proposer types.ElectedProposer) int {
+func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer) int {
 	for i := 0; i < 10000000; i++ {
 		proposer.Iteration = i
-		isElected := cmdUtilsMockery.IsElectedProposer(client, proposer)
+		isElected := cmdUtils.IsElectedProposer(client, proposer)
 		if isElected {
 			return i
 		}
@@ -150,7 +150,7 @@ func (*UtilsStructMockery) GetIteration(client *ethclient.Client, proposer types
 	return -1
 }
 
-func (*UtilsStructMockery) IsElectedProposer(client *ethclient.Client, proposer types.ElectedProposer) bool {
+func (*UtilsStruct) IsElectedProposer(client *ethclient.Client, proposer types.ElectedProposer) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
@@ -163,7 +163,7 @@ func (*UtilsStructMockery) IsElectedProposer(client *ethclient.Client, proposer 
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 
-	stake, err := razorUtilsMockery.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
+	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return false
@@ -179,28 +179,28 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func (*UtilsStructMockery) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue) ([]uint32, error) {
-	numAssets, err := razorUtilsMockery.GetNumActiveAssets(client)
+func (*UtilsStruct) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue) ([]uint32, error) {
+	numAssets, err := razorUtils.GetNumActiveAssets(client)
 	if err != nil {
 		return nil, err
 	}
 
 	var medians []*big.Int
 
-	epoch, err := razorUtilsMockery.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
 	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
-		sortedVotes, err := cmdUtilsMockery.GetSortedVotes(client, address, uint16(assetId), epoch)
+		sortedVotes, err := cmdUtils.GetSortedVotes(client, address, uint16(assetId), epoch)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
 
-		totalInfluenceRevealed, err := razorUtilsMockery.GetTotalInfluenceRevealed(client, epoch)
+		totalInfluenceRevealed, err := razorUtils.GetTotalInfluenceRevealed(client, epoch)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -213,32 +213,32 @@ func (*UtilsStructMockery) MakeBlock(client *ethclient.Client, address string, r
 		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
 			median = big.NewInt(int64(rand.Intn(10000000)))
 		} else {
-			median = cmdUtilsMockery.InfluencedMedian(sortedVotes, totalInfluenceRevealed)
+			median = cmdUtils.InfluencedMedian(sortedVotes, totalInfluenceRevealed)
 		}
 		log.Debugf("Median: %s", median)
 		medians = append(medians, median)
 	}
-	mediansInUint32 := razorUtilsMockery.ConvertBigIntArrayToUint32Array(medians)
+	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(medians)
 	return mediansInUint32, nil
 }
 
-func (*UtilsStructMockery) GetSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32) ([]*big.Int, error) {
-	numberOfStakers, err := razorUtilsMockery.GetNumberOfStakers(client, address)
+func (*UtilsStruct) GetSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32) ([]*big.Int, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
 	if err != nil {
 		return nil, err
 	}
 	var weightedVoteValues []*big.Int
 	for i := 1; i <= int(numberOfStakers); i++ {
-		epochLastRevealed, err := razorUtilsMockery.GetEpochLastRevealed(client, address, uint32(i))
+		epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, address, uint32(i))
 		if err != nil {
 			return nil, err
 		}
 		if epoch == epochLastRevealed {
-			vote, err := razorUtilsMockery.GetVoteValue(client, assetId, uint32(i))
+			vote, err := razorUtils.GetVoteValue(client, assetId, uint32(i))
 			if err != nil {
 				return nil, err
 			}
-			influence, err := razorUtilsMockery.GetInfluenceSnapshot(client, uint32(i), epoch)
+			influence, err := razorUtils.GetInfluenceSnapshot(client, uint32(i), epoch)
 			if err != nil {
 				return nil, err
 			}
@@ -254,7 +254,7 @@ func (*UtilsStructMockery) GetSortedVotes(client *ethclient.Client, address stri
 	return weightedVoteValues, nil
 }
 
-func (*UtilsStructMockery) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
+func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
 	accProd := big.NewInt(0)
 
 	for _, vote := range sortedVotes {

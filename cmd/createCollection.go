@@ -26,32 +26,32 @@ Note:
 }
 
 func initialiseCreateCollection(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteCreateCollection(cmd.Flags())
+	cmdUtils.ExecuteCreateCollection(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	name, err := flagSetUtilsMockery.GetStringName(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
 
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	jobIdInUint, err := flagSetUtilsMockery.GetUintSliceJobIds(flagSet)
+	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
 
-	aggregation, err := flagSetUtilsMockery.GetUint32Aggregation(flagSet)
+	aggregation, err := flagSetUtils.GetUint32Aggregation(flagSet)
 	utils.CheckError("Error in getting aggregation method: ", err)
 
-	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	tolerance, err := flagSetUtilsMockery.GetUint16Tolerance(flagSet)
+	tolerance, err := flagSetUtils.GetUint16Tolerance(flagSet)
 	utils.CheckError("Error in getting tolerance: ", err)
 
 	collectionInput := types.CreateCollectionInput{
@@ -64,19 +64,19 @@ func (*UtilsStructMockery) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 		Tolerance:   tolerance,
 	}
 
-	txn, err := cmdUtilsMockery.CreateCollection(client, config, collectionInput)
+	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
-	jobIds := razorUtilsMockery.ConvertUintArrayToUint16Array(collectionInput.JobIds)
-	_, err := cmdUtilsMockery.WaitForAppropriateState(client, "create collection", 4)
+func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
+	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        collectionInput.Password,
 		AccountAddress:  collectionInput.Address,
@@ -87,25 +87,25 @@ func (*UtilsStructMockery) CreateCollection(client *ethclient.Client, config typ
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := assetManagerUtilsMockery.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
+	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	if err != nil {
 		log.Error("Error in creating collection")
 		return core.NilHash, err
 	}
 	log.Info("Creating collection...")
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
-	cmdUtilsMockery = &UtilsStructMockery{}
-	razorUtilsMockery = UtilsMockery{}
-	assetManagerUtilsMockery = AssetManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	cmdUtils = &UtilsStruct{}
+	razorUtils = Utils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
 
 	rootCmd.AddCommand(createCollectionCmd)
 

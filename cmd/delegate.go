@@ -23,31 +23,31 @@ Example:
 }
 
 func initialiseDelegate(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteDelegate(cmd.Flags())
+	cmdUtils.ExecuteDelegate(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteDelegate(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	stakerId, err := flagSetUtilsMockery.GetUint32StakerId(flagSet)
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	balance, err := razorUtilsMockery.FetchBalance(client, address)
+	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching balance for account "+address+": ", err)
 
-	valueInWei, err := cmdUtilsMockery.AssignAmountInWei(flagSet)
+	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
-	razorUtilsMockery.CheckAmountAndBalance(valueInWei, balance)
+	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
-	razorUtilsMockery.CheckEthBalanceIsZero(client, address)
+	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	txnArgs := types.TransactionOptions{
 		Client:         client,
@@ -58,21 +58,21 @@ func (*UtilsStructMockery) ExecuteDelegate(flagSet *pflag.FlagSet) {
 		Config:         config,
 	}
 
-	approveTxnHash, err := cmdUtilsMockery.Approve(txnArgs)
+	approveTxnHash, err := cmdUtils.Approve(txnArgs)
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		razorUtilsMockery.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 	}
 
-	delegateTxnHash, err := cmdUtilsMockery.Delegate(txnArgs, stakerId)
+	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, delegateTxnHash.String())
+	razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
 }
 
-func (*UtilsStructMockery) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
-	log.Infof("Delegating %g razors to Staker %d", razorUtilsMockery.GetAmountInDecimal(txnArgs.Amount), stakerId)
-	epoch, err := razorUtilsMockery.GetEpoch(txnArgs.Client)
+func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
+	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -80,22 +80,22 @@ func (*UtilsStructMockery) Delegate(txnArgs types.TransactionOptions, stakerId u
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
-	delegationTxnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
+	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
-	txn, err := stakeManagerUtilsMockery.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
+	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
-	razorUtilsMockery = UtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(delegateCmd)
 	var (

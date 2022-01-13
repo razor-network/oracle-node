@@ -10,8 +10,8 @@ import (
 	"razor/pkg/bindings"
 )
 
-func (*UtilsStructMockery) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
-	epochLastCommitted, err := razorUtilsMockery.GetEpochLastCommitted(client, staker.Id)
+func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
+	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
 		return err
 	}
@@ -22,23 +22,23 @@ func (*UtilsStructMockery) HandleRevealState(client *ethclient.Client, staker bi
 	return nil
 }
 
-func (*UtilsStructMockery) Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations) (common.Hash, error) {
-	if state, err := razorUtilsMockery.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
+func (*UtilsStruct) Reveal(client *ethclient.Client, committedData []*big.Int, secret []byte, account types.Account, commitAccount string, config types.Configurations) (common.Hash, error) {
+	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}
 
-	epoch, err := razorUtilsMockery.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	commitments, err := razorUtilsMockery.GetCommitments(client, account.Address)
+	commitments, err := razorUtils.GetCommitments(client, account.Address)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	if razorUtilsMockery.AllZero(commitments) {
+	if razorUtils.AllZero(commitments) {
 		log.Error("Did not commit")
 		return core.NilHash, nil
 	}
@@ -46,7 +46,7 @@ func (*UtilsStructMockery) Reveal(client *ethclient.Client, committedData []*big
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
 
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
@@ -65,11 +65,11 @@ func (*UtilsStructMockery) Reveal(client *ethclient.Client, committedData []*big
 		commitAccount,
 	)
 	log.Info("Revealing votes...")
-	txn, err := voteManagerUtilsMockery.Reveal(client, txnOpts, epoch, committedData, secretBytes32)
+	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, committedData, secretBytes32)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }

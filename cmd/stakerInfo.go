@@ -21,39 +21,39 @@ Example:
 }
 
 func initialiseStakerInfo(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteStakerinfo(cmd.Flags())
+	cmdUtils.ExecuteStakerinfo(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
+func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 
-	config, err := cmdUtilsMockery.GetConfigData()
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	stakerId, err := flagSetUtilsMockery.GetUint32StakerId(flagSet)
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
 
-	err = cmdUtilsMockery.GetStakerInfo(client, stakerId)
+	err = cmdUtils.GetStakerInfo(client, stakerId)
 	utils.CheckError("Error in getting staker info: ", err)
 
 }
 
-func (*UtilsStructMockery) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
-	callOpts := razorUtilsMockery.GetOptions()
-	stakerInfo, err := stakeManagerUtilsMockery.StakerInfo(client, &callOpts, stakerId)
+func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
+	callOpts := razorUtils.GetOptions()
+	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
 		return err
 	}
-	maturity, err := stakeManagerUtilsMockery.GetMaturity(client, &callOpts, stakerInfo.Age)
+	maturity, err := stakeManagerUtils.GetMaturity(client, &callOpts, stakerInfo.Age)
 	if err != nil {
 		return err
 	}
-	epoch, err := razorUtilsMockery.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		return err
 	}
-	influence, err := razorUtilsMockery.GetInfluenceSnapshot(client, stakerId, epoch)
+	influence, err := razorUtils.GetInfluenceSnapshot(client, stakerId, epoch)
 	if err != nil {
 		return err
 	}
@@ -72,10 +72,10 @@ func (*UtilsStructMockery) GetStakerInfo(client *ethclient.Client, stakerId uint
 }
 
 func init() {
-	razorUtilsMockery = &UtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = &Utils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(stakerInfoCmd)
 

@@ -24,34 +24,34 @@ Example:
 }
 
 func initialiseExtendLock(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteExtendLock(cmd.Flags())
+	cmdUtils.ExecuteExtendLock(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteExtendLock(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config data: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting config data: ", err)
 
-	stakerId, err := flagSetUtilsMockery.GetUint32StakerId(flagSet)
+	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting config data: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
 	extendLockInput := types.ExtendLockInput{
 		Address:  address,
 		Password: password,
 		StakerId: stakerId,
 	}
-	txn, err := cmdUtilsMockery.ExtendLock(client, config, extendLockInput)
+	txn, err := cmdUtils.ExtendLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+func (*UtilsStruct) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        extendLockInput.Password,
 		AccountAddress:  extendLockInput.Address,
@@ -64,20 +64,20 @@ func (*UtilsStructMockery) ExtendLock(client *ethclient.Client, config types.Con
 	})
 
 	log.Info("Extending lock...")
-	txn, err := stakeManagerUtilsMockery.ExtendLock(client, txnOpts, extendLockInput.StakerId)
+	txn, err := stakeManagerUtils.ExtendLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
-	razorUtilsMockery = UtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 

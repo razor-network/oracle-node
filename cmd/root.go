@@ -41,9 +41,9 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	razorUtilsMockery = UtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -90,7 +90,7 @@ func initConfig() {
 }
 
 func setLogLevel() {
-	config, err := cmdUtilsMockery.GetConfigData()
+	config, err := cmdUtils.GetConfigData()
 	if err != nil {
 		log.Fatal(err)
 	}

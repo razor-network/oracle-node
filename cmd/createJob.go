@@ -27,36 +27,36 @@ Note:
 }
 
 func initialiseCreateJob(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteCreateJob(cmd.Flags())
+	cmdUtils.ExecuteCreateJob(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteCreateJob(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	name, err := flagSetUtilsMockery.GetStringName(flagSet)
+	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
 
-	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
+	url, err := flagSetUtils.GetStringUrl(flagSet)
 	utils.CheckError("Error in getting url: ", err)
 
-	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
+	selector, err := flagSetUtils.GetStringSelector(flagSet)
 	utils.CheckError("Error in getting selector: ", err)
 
-	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
-	weight, err := flagSetUtilsMockery.GetUint8Weight(flagSet)
+	weight, err := flagSetUtils.GetUint8Weight(flagSet)
 	utils.CheckError("Error in getting weight: ", err)
 
-	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
+	selectorType, err := flagSetUtils.GetUint8SelectorType(flagSet)
 	utils.CheckError("Error in getting selectorType: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
 	jobInput := types.CreateJobInput{
 		Address:      address,
@@ -69,12 +69,12 @@ func (*UtilsStructMockery) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 		Power:        power,
 	}
 
-	txn, err := cmdUtilsMockery.CreateJob(client, config, jobInput)
+	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
+func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        jobInput.Password,
@@ -87,23 +87,23 @@ func (*UtilsStructMockery) CreateJob(client *ethclient.Client, config types.Conf
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := assetManagerUtilsMockery.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 
-	cmdUtilsMockery = &UtilsStructMockery{}
-	razorUtilsMockery = &UtilsMockery{}
-	assetManagerUtilsMockery = &AssetManagerUtilsMockery{}
-	transactionUtilsMockery = &TransactionUtilsMockery{}
-	flagSetUtilsMockery = &FLagSetUtilsMockery{}
+	cmdUtils = &UtilsStruct{}
+	razorUtils = &Utils{}
+	assetManagerUtils = &AssetManagerUtils{}
+	transactionUtils = &TransactionUtils{}
+	flagSetUtils = &FLagSetUtils{}
 
 	rootCmd.AddCommand(createJobCmd)
 

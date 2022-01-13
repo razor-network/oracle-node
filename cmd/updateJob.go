@@ -26,33 +26,33 @@ Note:
 }
 
 func initialiseUpdateJob(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteUpdateJob(cmd.Flags())
+	cmdUtils.ExecuteUpdateJob(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
+	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
 
-	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
-	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
+	selector, err := flagSetUtils.GetStringSelector(flagSet)
 	utils.CheckError("Error in getting selector: ", err)
 
-	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
+	url, err := flagSetUtils.GetStringUrl(flagSet)
 	utils.CheckError("Error in getting url: ", err)
 
-	weight, err := flagSetUtilsMockery.GetUint8Weight(flagSet)
+	weight, err := flagSetUtils.GetUint8Weight(flagSet)
 	utils.CheckError("Error in getting weight: ", err)
 
-	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
+	selectorType, err := flagSetUtils.GetUint8SelectorType(flagSet)
 	utils.CheckError("Error in getting selector type: ", err)
 
 	jobInput := types.CreateJobInput{
@@ -65,21 +65,21 @@ func (*UtilsStructMockery) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 		SelectorType: selectorType,
 	}
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	txn, err := cmdUtilsMockery.UpdateJob(client, config, jobInput, jobId)
+	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
+func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
 
-	_, err := cmdUtilsMockery.WaitIfCommitState(client, "update job")
+	_, err := cmdUtils.WaitIfCommitState(client, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnArgs := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        jobInput.Password,
 		AccountAddress:  jobInput.Address,
@@ -90,21 +90,21 @@ func (*UtilsStructMockery) UpdateJob(client *ethclient.Client, config types.Conf
 		Parameters:      []interface{}{jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := assetManagerUtilsMockery.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
+	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	return transactionUtilsMockery.Hash(txn), nil
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 	rootCmd.AddCommand(updateJobCmd)
 
-	razorUtilsMockery = UtilsMockery{}
-	assetManagerUtilsMockery = AssetManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	var (
 		JobId        uint16

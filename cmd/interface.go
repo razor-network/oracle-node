@@ -14,31 +14,31 @@ import (
 	"time"
 )
 
-//go:generate mockery --name UtilsInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name FlagSetInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name UtilsCmdInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name StakeManagerInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name TransactionInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name BlockManagerInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name VoteManagerInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name KeystoreInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name TokenManagerInterfaceMockery --output ./mocks/ --case=underscore
-//go:generate mockery --name AssetManagerInterfaceMockery --output ./mocks/ --case=underscore
+//go:generate mockery --name UtilsInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name FlagSetInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name UtilsCmdInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name StakeManagerInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name TransactionInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name BlockManagerInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name VoteManagerInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name KeystoreInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name TokenManagerInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name AssetManagerInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name CryptoInterface --output ./mocks/ --case=underscore
 
-var razorUtilsMockery UtilsInterfaceMockery
-var flagSetUtilsMockery FlagSetInterfaceMockery
-var cmdUtilsMockery UtilsCmdInterfaceMockery
-var stakeManagerUtilsMockery StakeManagerInterfaceMockery
-var transactionUtilsMockery TransactionInterfaceMockery
-var blockManagerUtilsMockery BlockManagerInterfaceMockery
-var voteManagerUtilsMockery VoteManagerInterfaceMockery
-var keystoreUtilsMockery KeystoreInterfaceMockery
-var tokenManagerUtilsMockery TokenManagerInterfaceMockery
-var assetManagerUtilsMockery AssetManagerInterfaceMockery
+var razorUtils UtilsInterface
+var flagSetUtils FlagSetInterface
+var cmdUtils UtilsCmdInterface
+var stakeManagerUtils StakeManagerInterface
+var transactionUtils TransactionInterface
+var blockManagerUtils BlockManagerInterface
+var voteManagerUtils VoteManagerInterface
+var keystoreUtils KeystoreInterface
+var tokenManagerUtils TokenManagerInterface
+var assetManagerUtils AssetManagerInterface
 var cryptoUtils CryptoInterface
 
-type UtilsInterfaceMockery interface {
+type UtilsInterface interface {
 	GetConfigFilePath() (string, error)
 	ViperWriteConfigAs(string) error
 	GetEpoch(*ethclient.Client) (uint32, error)
@@ -102,7 +102,7 @@ type UtilsInterfaceMockery interface {
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 }
 
-type StakeManagerInterfaceMockery interface {
+type StakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	ExtendLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
@@ -120,30 +120,30 @@ type StakeManagerInterfaceMockery interface {
 	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
-type KeystoreInterfaceMockery interface {
+type KeystoreInterface interface {
 	Accounts(string) []accounts.Account
 	ImportECDSA(string, *ecdsa.PrivateKey, string) (accounts.Account, error)
 }
 
-type BlockManagerInterfaceMockery interface {
+type BlockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 }
 
-type VoteManagerInterfaceMockery interface {
+type VoteManagerInterface interface {
 	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
 	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
 }
 
-type TokenManagerInterfaceMockery interface {
+type TokenManagerInterface interface {
 	Allowance(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (*big.Int, error)
 	Approve(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 	Transfer(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) (*Types.Transaction, error)
 }
 
-type AssetManagerInterfaceMockery interface {
+type AssetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 	SetCollectionStatus(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error)
 	GetActiveStatus(*ethclient.Client, *bind.CallOpts, uint16) (bool, error)
@@ -152,7 +152,7 @@ type AssetManagerInterfaceMockery interface {
 	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
 }
 
-type FlagSetInterfaceMockery interface {
+type FlagSetInterface interface {
 	GetStringProvider(*pflag.FlagSet) (string, error)
 	GetFloat32GasMultiplier(*pflag.FlagSet) (float32, error)
 	GetInt32Buffer(*pflag.FlagSet) (int32, error)
@@ -191,7 +191,7 @@ type FlagSetInterfaceMockery interface {
 	GetUint16Tolerance(set *pflag.FlagSet) (uint16, error)
 }
 
-type UtilsCmdInterfaceMockery interface {
+type UtilsCmdInterface interface {
 	SetConfig(flagSet *pflag.FlagSet) error
 	GetProvider() (string, error)
 	GetMultiplier() (float32, error)
@@ -269,7 +269,7 @@ type UtilsCmdInterfaceMockery interface {
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 }
 
-type TransactionInterfaceMockery interface {
+type TransactionInterface interface {
 	Hash(*Types.Transaction) common.Hash
 }
 
@@ -277,14 +277,14 @@ type CryptoInterface interface {
 	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }
 
-type UtilsMockery struct{}
-type FLagSetUtilsMockery struct{}
-type UtilsStructMockery struct{}
-type StakeManagerUtilsMockery struct{}
-type BlockManagerUtilsMockery struct{}
-type TransactionUtilsMockery struct{}
-type VoteManagerUtilsMockery struct{}
-type KeystoreUtilsMockery struct{}
-type TokenManagerUtilsMockery struct{}
-type AssetManagerUtilsMockery struct{}
+type Utils struct{}
+type FLagSetUtils struct{}
+type UtilsStruct struct{}
+type StakeManagerUtils struct{}
+type BlockManagerUtils struct{}
+type TransactionUtils struct{}
+type VoteManagerUtils struct{}
+type KeystoreUtils struct{}
+type TokenManagerUtils struct{}
+type AssetManagerUtils struct{}
 type CryptoUtils struct{}

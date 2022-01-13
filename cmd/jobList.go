@@ -21,22 +21,22 @@ Example:
 }
 
 func initialiseJobList(*cobra.Command, []string) {
-	cmdUtilsMockery.ExecuteJobList()
+	cmdUtils.ExecuteJobList()
 
 }
 
-func (*UtilsStructMockery) ExecuteJobList() {
+func (*UtilsStruct) ExecuteJobList() {
 
-	config, err := cmdUtilsMockery.GetConfigData()
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	err = cmdUtilsMockery.GetJobList(client)
+	err = cmdUtils.GetJobList(client)
 	utils.CheckError("Error in getting job list: ", err)
 }
-func (*UtilsStructMockery) GetJobList(client *ethclient.Client) error {
-	jobs, err := razorUtilsMockery.GetJobs(client)
+func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
+	jobs, err := razorUtils.GetJobs(client)
 
 	if err != nil {
 		return err
@@ -63,9 +63,9 @@ func (*UtilsStructMockery) GetJobList(client *ethclient.Client) error {
 }
 
 func init() {
-	razorUtilsMockery = UtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(jobListCmd)
 

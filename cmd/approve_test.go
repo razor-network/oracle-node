@@ -131,13 +131,13 @@ func TestApprove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterfaceMockery)
-			tokenManagerUtilsMock := new(mocks.TokenManagerInterfaceMockery)
-			transactionUtilsMock := new(mocks.TransactionInterfaceMockery)
+			utilsMock := new(mocks.UtilsInterface)
+			tokenManagerUtilsMock := new(mocks.TokenManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			razorUtilsMockery = utilsMock
-			tokenManagerUtilsMockery = tokenManagerUtilsMock
-			transactionUtilsMockery = transactionUtilsMock
+			razorUtils = utilsMock
+			tokenManagerUtils = tokenManagerUtilsMock
+			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetOptions").Return(tt.args.callOpts)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
@@ -145,7 +145,7 @@ func TestApprove(t *testing.T) {
 			tokenManagerUtilsMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
 			tokenManagerUtilsMock.On("Approve", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveError)
 
-			utils := &UtilsStructMockery{}
+			utils := &UtilsStruct{}
 
 			got, err := utils.Approve(tt.args.txnArgs)
 			if got != tt.want {

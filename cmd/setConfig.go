@@ -17,41 +17,37 @@ Example:
   ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug --gasLimit 5
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		//utilsStruct := UtilsStruct{
-		//	razorUtils:   razorUtils,
-		//	flagSetUtils: flagSetUtils,
-		//}
-		err := cmdUtilsMockery.SetConfig(cmd.Flags())
+		err := cmdUtils.SetConfig(cmd.Flags())
 		utils.CheckError("SetConfig error: ", err)
 	},
 }
 
-func (*UtilsStructMockery) SetConfig(flagSet *pflag.FlagSet) error {
-	provider, err := flagSetUtilsMockery.GetStringProvider(flagSet)
+func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
+	provider, err := flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err
 	}
-	gasMultiplier, err := flagSetUtilsMockery.GetFloat32GasMultiplier(flagSet)
+	gasMultiplier, err := flagSetUtils.GetFloat32GasMultiplier(flagSet)
 	if err != nil {
 		return err
 	}
-	bufferPercent, err := flagSetUtilsMockery.GetInt32Buffer(flagSet)
+	bufferPercent, err := flagSetUtils.GetInt32Buffer(flagSet)
 	if err != nil {
 		return err
 	}
-	waitTime, err := flagSetUtilsMockery.GetInt32Wait(flagSet)
+	waitTime, err := flagSetUtils.GetInt32Wait(flagSet)
 	if err != nil {
 		return err
 	}
-	gasPrice, err := flagSetUtilsMockery.GetInt32GasPrice(flagSet)
+	gasPrice, err := flagSetUtils.GetInt32GasPrice(flagSet)
 	if err != nil {
 		return err
 	}
-	logLevel, err := flagSetUtilsMockery.GetStringLogLevel(flagSet)
+	logLevel, err := flagSetUtils.GetStringLogLevel(flagSet)
 	if err != nil {
 		return err
 	}
-	gasLimit, err := flagSetUtilsMockery.GetFloat32GasLimit(flagSet)
+	gasLimit, err := flagSetUtils.GetFloat32GasLimit(flagSet)
 	if err != nil {
 		return err
 	}
@@ -86,12 +82,12 @@ func (*UtilsStructMockery) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasLimit", 2)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
-	path, pathErr := razorUtilsMockery.GetConfigFilePath()
+	path, pathErr := razorUtils.GetConfigFilePath()
 	if pathErr != nil {
 		log.Error("Error in fetching config file path")
 		return pathErr
 	}
-	configErr := razorUtilsMockery.ViperWriteConfigAs(path)
+	configErr := razorUtils.ViperWriteConfigAs(path)
 	if configErr != nil {
 		log.Error("Error in writing config")
 		return configErr
@@ -101,9 +97,9 @@ func (*UtilsStructMockery) SetConfig(flagSet *pflag.FlagSet) error {
 
 func init() {
 
-	razorUtilsMockery = UtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(setConfig)
 

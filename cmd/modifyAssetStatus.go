@@ -22,28 +22,28 @@ Example:
 }
 
 func initialiseModifyAssetStatus(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteModifyAssetStatus(cmd.Flags())
+	cmdUtils.ExecuteModifyAssetStatus(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config data: ", err)
 
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	assetId, err := flagSetUtilsMockery.GetUint16AssetId(flagSet)
+	assetId, err := flagSetUtils.GetUint16AssetId(flagSet)
 	utils.CheckError("Error in getting assetId: ", err)
 
-	statusString, err := flagSetUtilsMockery.GetStringStatus(flagSet)
+	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
-	status, err := razorUtilsMockery.ParseBool(statusString)
+	status, err := razorUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
 	modifyAssetInput := types.ModifyAssetInput{
 		Address:  address,
@@ -52,20 +52,20 @@ func (*UtilsStructMockery) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
 		AssetId:  assetId,
 	}
 
-	txn, err := cmdUtilsMockery.ModifyAssetStatus(client, config, modifyAssetInput)
+	txn, err := cmdUtils.ModifyAssetStatus(client, config, modifyAssetInput)
 	utils.CheckError("Error in changing asset active status: ", err)
 	if txn != core.NilHash {
-		razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
 }
 
-func (*UtilsStructMockery) CheckCurrentStatus(client *ethclient.Client, assetId uint16) (bool, error) {
-	callOpts := razorUtilsMockery.GetOptions()
-	return assetManagerUtilsMockery.GetActiveStatus(client, &callOpts, assetId)
+func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, assetId uint16) (bool, error) {
+	callOpts := razorUtils.GetOptions()
+	return assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
 }
 
-func (*UtilsStructMockery) ModifyAssetStatus(client *ethclient.Client, config types.Configurations, modifyAssetInput types.ModifyAssetInput) (common.Hash, error) {
-	currentStatus, err := cmdUtilsMockery.CheckCurrentStatus(client, modifyAssetInput.AssetId)
+func (*UtilsStruct) ModifyAssetStatus(client *ethclient.Client, config types.Configurations, modifyAssetInput types.ModifyAssetInput) (common.Hash, error) {
+	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyAssetInput.AssetId)
 	if err != nil {
 		log.Error("Error in fetching active status")
 		return core.NilHash, err
@@ -74,7 +74,7 @@ func (*UtilsStructMockery) ModifyAssetStatus(client *ethclient.Client, config ty
 		log.Errorf("Asset %d has the active status already set to %t", modifyAssetInput.AssetId, modifyAssetInput.Status)
 		return core.NilHash, nil
 	}
-	_, err = cmdUtilsMockery.WaitForAppropriateState(client, "modify asset status", 4)
+	_, err = cmdUtils.WaitForAppropriateState(client, "modify asset status", 4)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -91,23 +91,23 @@ func (*UtilsStructMockery) ModifyAssetStatus(client *ethclient.Client, config ty
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Changing active status of asset: %d from %t to %t", modifyAssetInput.AssetId, !modifyAssetInput.Status, modifyAssetInput.Status)
-	txn, err := assetManagerUtilsMockery.SetCollectionStatus(client, txnOpts, modifyAssetInput.Status, modifyAssetInput.AssetId)
+	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyAssetInput.Status, modifyAssetInput.AssetId)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn).String())
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn).String())
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 
-	razorUtilsMockery = UtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	assetManagerUtilsMockery = AssetManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
+	razorUtils = Utils{}
+	cmdUtils = &UtilsStruct{}
+	flagSetUtils = FLagSetUtils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 

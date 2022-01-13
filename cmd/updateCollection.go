@@ -26,32 +26,32 @@ Note:
 }
 
 func initialiseUpdateCollection(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteUpdateCollection(cmd.Flags())
+	cmdUtils.ExecuteUpdateCollection(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	collectionId, err := flagSetUtilsMockery.GetUint16CollectionId(flagSet)
+	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionID: ", err)
 
-	aggregation, err := flagSetUtilsMockery.GetUint32Aggregation(flagSet)
+	aggregation, err := flagSetUtils.GetUint32Aggregation(flagSet)
 	utils.CheckError("Error in getting aggregation method: ", err)
 
-	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
-	jobIdInUint, err := flagSetUtilsMockery.GetUintSliceJobIds(flagSet)
+	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
 	utils.CheckError("Error in getting jobIds: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	tolerance, err := flagSetUtilsMockery.GetUint16Tolerance(flagSet)
+	tolerance, err := flagSetUtils.GetUint16Tolerance(flagSet)
 	utils.CheckError("Error in getting tolerance: ", err)
 
 	collectionInput := types.CreateCollectionInput{
@@ -62,19 +62,19 @@ func (*UtilsStructMockery) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 		JobIds:      jobIdInUint,
 		Tolerance:   tolerance,
 	}
-	txn, err := cmdUtilsMockery.UpdateCollection(client, config, collectionInput, collectionId)
+	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
-	razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStructMockery) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
-	jobIds := razorUtilsMockery.ConvertUintArrayToUint16Array(collectionInput.JobIds)
-	_, err := cmdUtilsMockery.WaitIfCommitState(client, "update collection")
+func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
+	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	_, err := cmdUtils.WaitIfCommitState(client, "update collection")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtilsMockery.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        collectionInput.Password,
 		AccountAddress:  collectionInput.Address,
@@ -85,22 +85,22 @@ func (*UtilsStructMockery) UpdateCollection(client *ethclient.Client, config typ
 		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
 		ABI:             bindings.AssetManagerABI,
 	})
-	txn, err := assetManagerUtilsMockery.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
+	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
 	}
 	log.Info("Updating collection...")
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-	return transactionUtilsMockery.Hash(txn), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
-	razorUtilsMockery = UtilsMockery{}
-	assetManagerUtilsMockery = AssetManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	razorUtils = Utils{}
+	assetManagerUtils = AssetManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(updateCollectionCmd)
 

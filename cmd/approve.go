@@ -7,9 +7,9 @@ import (
 	"razor/pkg/bindings"
 )
 
-func (*UtilsStructMockery) Approve(txnArgs types.TransactionOptions) (common.Hash, error) {
-	opts := razorUtilsMockery.GetOptions()
-	allowance, err := tokenManagerUtilsMockery.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, error) {
+	opts := razorUtils.GetOptions()
+	allowance, err := tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -22,12 +22,12 @@ func (*UtilsStructMockery) Approve(txnArgs types.TransactionOptions) (common.Has
 		txnArgs.MethodName = "approve"
 		txnArgs.ABI = bindings.RAZORABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
-		txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
-		txn, err := tokenManagerUtilsMockery.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
+		txnOpts := razorUtils.GetTxnOpts(txnArgs)
+		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			return common.Hash{0x00}, err
 		}
-		log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
-		return transactionUtilsMockery.Hash(txn), nil
+		log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+		return transactionUtils.Hash(txn), nil
 	}
 }

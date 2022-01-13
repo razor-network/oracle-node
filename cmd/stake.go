@@ -25,7 +25,7 @@ var stakeCmd = &cobra.Command{
 Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := cmdUtilsMockery.GetConfigData()
+		config, err := cmdUtils.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -34,7 +34,7 @@ Example:
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account: "+address, err)
 
-		valueInWei, err := cmdUtilsMockery.AssignAmountInWei(cmd.Flags())
+		valueInWei, err := cmdUtils.AssignAmountInWei(cmd.Flags())
 		utils.CheckError("Error in getting amount: ", err)
 
 		utils.CheckAmountAndBalance(valueInWei, balance)
@@ -50,14 +50,14 @@ Example:
 			Config:         config,
 		}
 
-		approveTxnHash, err := cmdUtilsMockery.Approve(txnArgs)
+		approveTxnHash, err := cmdUtils.Approve(txnArgs)
 		utils.CheckError("Approve error: ", err)
 
 		if approveTxnHash != core.NilHash {
 			utils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
 
-		stakeTxnHash, err := cmdUtilsMockery.StakeCoins(txnArgs)
+		stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 		utils.CheckError("Stake error: ", err)
 		utils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
@@ -81,8 +81,8 @@ Example:
 	},
 }
 
-func (*UtilsStructMockery) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
-	epoch, err := razorUtilsMockery.GetEpoch(txnArgs.Client)
+func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -92,28 +92,26 @@ func (*UtilsStructMockery) StakeCoins(txnArgs types.TransactionOptions) (common.
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
-	tx, err := stakeManagerUtilsMockery.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(tx).Hex())
-	return transactionUtilsMockery.Hash(tx), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
+	return transactionUtils.Hash(tx), nil
 }
 
 func init() {
-	//stakeManagerUtils = StakeManagerUtils{}
-	tokenManagerUtilsMockery = TokenManagerUtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	razorUtilsMockery = UtilsMockery{}
-	//transactionUtils = TransactionUtils{}
+	tokenManagerUtils = TokenManagerUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
+	razorUtils = Utils{}
+	cmdUtils = &UtilsStruct{}
+	blockManagerUtils = BlockManagerUtils{}
+	voteManagerUtils = VoteManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
-	cmdUtilsMockery = &UtilsStructMockery{}
-	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
-	voteManagerUtilsMockery = VoteManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(stakeCmd)

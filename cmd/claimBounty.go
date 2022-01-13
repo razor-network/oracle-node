@@ -26,21 +26,21 @@ Example:
 }
 
 func initialiseClaimBounty(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteClaimBounty(cmd.Flags())
+	cmdUtils.ExecuteClaimBounty(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	bountyId, err := flagSetUtilsMockery.GetUint32BountyId(flagSet)
+	bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 	utils.CheckError("Error in getting bountyId: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
 	redeemBountyInput := types.RedeemBountyInput{
 		Address:  address,
@@ -48,15 +48,15 @@ func (*UtilsStructMockery) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		BountyId: bountyId,
 	}
 
-	txn, err := cmdUtilsMockery.ClaimBounty(config, client, redeemBountyInput)
+	txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
 	utils.CheckError("ClaimBounty error: ", err)
 
 	if txn != core.NilHash {
-		razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
 }
 
-func (*UtilsStructMockery) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
+func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		AccountAddress:  redeemBountyInput.Address,
@@ -68,14 +68,14 @@ func (*UtilsStructMockery) ClaimBounty(config types.Configurations, client *ethc
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
-	epoch, err := razorUtilsMockery.GetEpoch(txnArgs.Client)
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return common.Hash{0x00}, err
 	}
 
-	callOpts := razorUtilsMockery.GetOptions()
-	bountyLock, err := stakeManagerUtilsMockery.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
+	callOpts := razorUtils.GetOptions()
+	bountyLock, err := stakeManagerUtils.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
 	if err != nil {
 		log.Error("Error in getting bounty lock: ", err)
 		return core.NilHash, err
@@ -93,33 +93,33 @@ func (*UtilsStructMockery) ClaimBounty(config types.Configurations, client *ethc
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		razorUtilsMockery.Sleep(time.Duration(int64(waitFor)*core.EpochLength*razorUtilsMockery.CalculateBlockTime(client)) * time.Second)
+		razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
-	txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
 	for retry := 1; retry <= int(core.MaxRetries); retry++ {
-		tx, err := stakeManagerUtilsMockery.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
+		tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
 		if err == nil {
-			log.Info("Txn Hash: ", transactionUtilsMockery.Hash(tx).Hex())
-			return transactionUtilsMockery.Hash(tx), nil
+			log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
+			return transactionUtils.Hash(tx), nil
 		}
 		log.Error("Error while claiming bounty: ", err)
 		if retry != int(core.MaxRetries) {
 			log.Info("Retrying again...")
 			log.Info("Waiting for 1 more epoch...")
-			razorUtilsMockery.Sleep(time.Duration(core.EpochLength) * time.Second)
+			razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
 		}
 	}
 	return core.NilHash, err
 }
 
 func init() {
-	razorUtilsMockery = &UtilsMockery{}
-	cmdUtilsMockery = &UtilsStructMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	razorUtils = &Utils{}
+	cmdUtils = &UtilsStruct{}
+	stakeManagerUtils = StakeManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 

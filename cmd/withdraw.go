@@ -26,38 +26,38 @@ Example:
 }
 
 func initialiseWithdraw(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteWithdraw(cmd.Flags())
+	cmdUtils.ExecuteWithdraw(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteWithdraw(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+func (*UtilsStruct) ExecuteWithdraw(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtilsMockery.AssignPassword(flagSet)
-	address, err := flagSetUtilsMockery.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	client := razorUtilsMockery.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	razorUtilsMockery.CheckEthBalanceIsZero(client, address)
+	razorUtils.CheckEthBalanceIsZero(client, address)
 
-	stakerId, err := razorUtilsMockery.AssignStakerId(flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
 
-	txn, err := cmdUtilsMockery.WithdrawFunds(client, types.Account{
+	txn, err := cmdUtils.WithdrawFunds(client, types.Account{
 		Address:  address,
 		Password: password,
 	}, config, stakerId)
 
 	utils.CheckError("Withdraw error: ", err)
 	if txn != core.NilHash {
-		razorUtilsMockery.WaitForBlockCompletion(client, txn.String())
+		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
 }
 
-func (*UtilsStructMockery) WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 
-	lock, err := razorUtilsMockery.GetLock(client, account.Address, stakerId)
+	lock, err := razorUtils.GetLock(client, account.Address, stakerId)
 	if err != nil {
 		log.Error("Error in fetching lock")
 		return core.NilHash, err
@@ -68,7 +68,7 @@ func (*UtilsStructMockery) WithdrawFunds(client *ethclient.Client, account types
 		return core.NilHash, nil
 	}
 
-	withdrawReleasePeriod, err := razorUtilsMockery.GetWithdrawReleasePeriod(client, account.Address)
+	withdrawReleasePeriod, err := razorUtils.GetWithdrawReleasePeriod(client, account.Address)
 	if err != nil {
 		log.Error("Error in fetching withdraw release period")
 		return core.NilHash, err
@@ -84,7 +84,7 @@ func (*UtilsStructMockery) WithdrawFunds(client *ethclient.Client, account types
 		MethodName:      "withdraw",
 		ABI:             bindings.StakeManagerABI,
 	}
-	epoch, err := razorUtilsMockery.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
@@ -95,16 +95,16 @@ func (*UtilsStructMockery) WithdrawFunds(client *ethclient.Client, account types
 	}
 
 	txnArgs.Parameters = []interface{}{epoch, stakerId}
-	txnOpts := razorUtilsMockery.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
 		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-			return cmdUtilsMockery.Withdraw(client, txnOpts, stakerId)
+			return cmdUtils.Withdraw(client, txnOpts, stakerId)
 		}
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
-		razorUtilsMockery.Sleep(30 * time.Second)
-		epoch, err = razorUtilsMockery.GetUpdatedEpoch(client)
+		razorUtils.Sleep(30 * time.Second)
+		epoch, err = razorUtils.GetUpdatedEpoch(client)
 		if err != nil {
 			log.Error("Error in fetching epoch")
 			return core.NilHash, err
@@ -113,28 +113,28 @@ func (*UtilsStructMockery) WithdrawFunds(client *ethclient.Client, account types
 	return core.NilHash, nil
 }
 
-func (*UtilsStructMockery) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
 	log.Info("Withdrawing funds...")
 
-	txn, err := stakeManagerUtilsMockery.Withdraw(client, txnOpts, stakerId)
+	txn, err := stakeManagerUtils.Withdraw(client, txnOpts, stakerId)
 	if err != nil {
 		log.Error("Error in withdrawing funds")
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtilsMockery.Hash(txn))
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 
-	return transactionUtilsMockery.Hash(txn), nil
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 
-	razorUtilsMockery = UtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	stakeManagerUtilsMockery = StakeManagerUtilsMockery{}
+	razorUtils = Utils{}
+	transactionUtils = TransactionUtils{}
+	stakeManagerUtils = StakeManagerUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
-	cmdUtilsMockery = &UtilsStructMockery{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(withdrawCmd)
 

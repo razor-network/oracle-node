@@ -17,23 +17,23 @@ var overrideJobCmd = &cobra.Command{
 }
 
 func initialiseOverrideJob(cmd *cobra.Command, args []string) {
-	cmdUtilsMockery.ExecuteOverrideJob(cmd.Flags())
+	cmdUtils.ExecuteOverrideJob(cmd.Flags())
 }
 
-func (*UtilsStructMockery) ExecuteOverrideJob(flagSet *pflag.FlagSet) {
-	url, err := flagSetUtilsMockery.GetStringUrl(flagSet)
+func (*UtilsStruct) ExecuteOverrideJob(flagSet *pflag.FlagSet) {
+	url, err := flagSetUtils.GetStringUrl(flagSet)
 	utils.CheckError("Error in getting url: ", err)
 
-	selector, err := flagSetUtilsMockery.GetStringSelector(flagSet)
+	selector, err := flagSetUtils.GetStringSelector(flagSet)
 	utils.CheckError("Error in getting selector: ", err)
 
-	power, err := flagSetUtilsMockery.GetInt8Power(flagSet)
+	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
-	selectorType, err := flagSetUtilsMockery.GetUint8SelectorType(flagSet)
+	selectorType, err := flagSetUtils.GetUint8SelectorType(flagSet)
 	utils.CheckError("Error in getting selector type: ", err)
 
-	jobId, err := flagSetUtilsMockery.GetUint16JobId(flagSet)
+	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
 
 	job := &types.StructsJob{
@@ -43,12 +43,12 @@ func (*UtilsStructMockery) ExecuteOverrideJob(flagSet *pflag.FlagSet) {
 		Selector:     selector,
 		Url:          url,
 	}
-	err = cmdUtilsMockery.OverrideJob(job)
+	err = cmdUtils.OverrideJob(job)
 	utils.CheckError("OverrideJob error: ", err)
 	log.Info("Job added to override list successfully!")
 }
 
-func (*UtilsStructMockery) OverrideJob(job *types.StructsJob) error {
+func (*UtilsStruct) OverrideJob(job *types.StructsJob) error {
 	jobPath, err := path.GetJobFilePath()
 	if err != nil {
 		return err
@@ -58,8 +58,8 @@ func (*UtilsStructMockery) OverrideJob(job *types.StructsJob) error {
 
 func init() {
 
-	cmdUtilsMockery = &UtilsStructMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	cmdUtils = &UtilsStruct{}
+	flagSetUtils = FLagSetUtils{}
 
 	rootCmd.AddCommand(overrideJobCmd)
 	var (

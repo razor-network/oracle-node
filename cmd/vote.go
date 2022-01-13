@@ -40,7 +40,7 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func executeVote(flagSet *pflag.FlagSet) {
-	config, err := cmdUtilsMockery.GetConfigData()
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
 	password := utils.AssignPassword(flagSet)
@@ -189,12 +189,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		data, err := cmdUtilsMockery.HandleCommitState(client, epoch, rogueData)
+		data, err := cmdUtils.HandleCommitState(client, epoch, rogueData)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
 		}
-		commitTxn, err := cmdUtilsMockery.Commit(client, data, secret, account, config)
+		commitTxn, err := cmdUtils.Commit(client, data, secret, account, config)
 		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
@@ -245,7 +245,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := cmdUtilsMockery.HandleRevealState(client, staker, epoch); err != nil {
+		if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
 			log.Error(err)
 			break
 		}
@@ -260,7 +260,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			_committedData = rogueCommittedData
 		}
 
-		revealTxn, err := cmdUtilsMockery.Reveal(client, _committedData, secret, account, account.Address, config)
+		revealTxn, err := cmdUtils.Reveal(client, _committedData, secret, account, account.Address, config)
 		if err != nil {
 			log.Error("Reveal error: ", err)
 			break
@@ -287,7 +287,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
-		proposeTxn, err := cmdUtilsMockery.Propose(client, account, config, stakerId, epoch, rogueData)
+		proposeTxn, err := cmdUtils.Propose(client, account, config, stakerId, epoch, rogueData)
 		if err != nil {
 			log.Error("Propose error: ", err)
 			break
@@ -300,14 +300,14 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		lastVerification = epoch
-		err := cmdUtilsMockery.HandleDispute(client, config, account, epoch)
+		err := cmdUtils.HandleDispute(client, config, account, epoch)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
-			txn, err := cmdUtilsMockery.ClaimBlockReward(types.TransactionOptions{
+			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
@@ -401,7 +401,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 	stakerId, err := utils.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
 
-	_, err = cmdUtilsMockery.Unstake(config, client,
+	_, err = cmdUtils.Unstake(config, client,
 		types.UnstakeInput{
 			Address:    account.Address,
 			Password:   account.Password,
@@ -409,20 +409,20 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 			StakerId:   stakerId,
 		})
 	utils.CheckError("Error in Unstake: ", err)
-	err = cmdUtilsMockery.AutoWithdraw(txnArgs, stakerId)
+	err = cmdUtils.AutoWithdraw(txnArgs, stakerId)
 	utils.CheckError("Error in AutoWithdraw: ", err)
 }
 
 func init() {
 
-	razorUtilsMockery = UtilsMockery{}
+	razorUtils = Utils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
-	cmdUtilsMockery = &UtilsStructMockery{}
-	blockManagerUtilsMockery = BlockManagerUtilsMockery{}
-	voteManagerUtilsMockery = VoteManagerUtilsMockery{}
-	transactionUtilsMockery = TransactionUtilsMockery{}
-	flagSetUtilsMockery = FLagSetUtilsMockery{}
+	cmdUtils = &UtilsStruct{}
+	blockManagerUtils = BlockManagerUtils{}
+	voteManagerUtils = VoteManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(voteCmd)
