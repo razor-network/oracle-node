@@ -416,7 +416,6 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 func init() {
 
 	razorUtilsMockery = UtilsMockery{}
-	//transactionUtils = TransactionUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtilsMockery = &UtilsStructMockery{}
