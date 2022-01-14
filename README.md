@@ -72,7 +72,8 @@ docker exec -it razor-go ...
 3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary.
 4. If you want to build the binary without wanting to set the configurations use `npm run build-noargs`
 5. While building the binary, supply the provider RPC url and the gas multiplier.
-6. The binary will be generated at `build/bin`.
+6. To bypass the intractive mode of providing password, create file in `.razor` directory with providing password in it.
+7. The binary will be generated at `build/bin`.
 
 ## Commands
 
@@ -84,8 +85,29 @@ Go to the `build/bin` directory where the razor binary is generated.
 
 Create an account using the `create` command. You'll be asked to enter a password that'll be used to encrypt the keystore file.
 
+razor cli
+
 ```
 $ ./razor create
+
+```
+
+Docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest razor create
+```
+
+Docker providing password file
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    -v /path/of/password-file:/root/.razor/password-file \
+    razornetwork/razor-go:latest \
+   razor create --password /root/.razor/password-file
 ```
 
 Example:
@@ -118,8 +140,19 @@ _Before staking on Razor Network, please ensure your account has eth and RAZOR. 
 
 If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
 
+razor cli
+
 ```
 $ ./razor stake --address <address> --value <value>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor stake --address <address> --value <value>
 ```
 
 Example:
@@ -130,8 +163,19 @@ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100
 
 If you want to vote just after stake automatically, you can just set `autoVote` flag to true in the stake command as stated below
 
+razor cli
+
 ```
 $ ./razor stake --address <address> --value <value> --autoVote <bool>
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor stake --address <address> --value <value> --autoVote <bool>
 ```
 
 _Note: --pow flag is used to stake floating number stake_
