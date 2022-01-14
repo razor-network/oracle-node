@@ -3,6 +3,7 @@ package utils
 import (
 	math2 "github.com/ethereum/go-ethereum/common/math"
 	"math/big"
+	"strings"
 )
 
 func Contains(slice interface{}, val interface{}) bool {
@@ -82,4 +83,13 @@ func ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 		arr = append(arr, uint16(datum))
 	}
 	return arr
+}
+
+func ContainsStringFromArray(source string, subStringArray []string) bool {
+	for i := 0; i < len(subStringArray); i++ {
+		if strings.Contains(source, subStringArray[i]) {
+			return true
+		}
+	}
+	return false
 }
