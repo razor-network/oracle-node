@@ -206,8 +206,19 @@ $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 567
 
 If you want to know the details of a staker, you can use stakerInfo command.
 
+razor cli
+
 ```
 $ ./razor stakerInfo --stakerId <staker_id_of_the_staker>
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor stakerInfo --stakerId <staker_id_of_the_staker>
 ```
 
 Example:
@@ -220,8 +231,19 @@ $ ./razor stakerInfo --stakerId 2
 
 If you are a staker you can accept delegation from delegators and charge a commission from them.
 
+razor cli
+
 ```
 $ ./razor setDelegation --address <address> --status <true_or_false>
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor setDelegation --address <address> --status <true_or_false>
 ```
 
 Example:
@@ -234,9 +256,20 @@ $ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --s
 
 If you are a staker and have accepted delegation, you can define your commission rate using this command.
 
+razor cli
+
 ```
 $ ./razor updateCommission --address <address> --commission <commission_percent>
 
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor updateCommission --address <address> --commission <commission_percent>
 ```
 
 Example:
@@ -249,8 +282,19 @@ $ ./razor updateCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
 
 If you want to become a delegator use the `delegate` command. The staker whose `staker_id` is provided, their stake is increased.
 
+razor cli
+
 ```
 $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
 ```
 
 Example:
@@ -263,8 +307,19 @@ $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 
 
 You can start voting once you've staked some razors
 
+razor cli
+
 ```
 $ ./razor vote --address <address>
+```
+
+docker
+
+```
+docker run -it  -d --name razor-go \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor vote --address <address>
 ```
 
 Example:
@@ -286,8 +341,19 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue --ro
 
 If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
 
+razor cli
+
 ```
 $ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
 ```
 
 Example:
@@ -300,8 +366,19 @@ $ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerI
 
 Once `unstake` has been called, you can withdraw your funds using the `withdraw` command
 
+razor cli
+
 ```
 $ ./razor withdraw --address <address> --stakerId <staker_id>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor withdraw --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -314,8 +391,19 @@ $ ./razor withdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --staker
 
 If the withdrawal period is over, then extendLock can be called to extend the lock period.
 
+razor cli
+
 ```
 $ ./razor extendLock --address <address> --stakerId <staker_id>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor extendLock --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -328,8 +416,19 @@ $ ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stak
 
 If you want to claim your bounty after disputing a rogue staker, you can run `claimBounty` command
 
+razor cli
+
 ```
 $ ./razor claimBounty --address <address> --bountyId <bounty_id>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor claimBounty --address <address> --bountyId <bounty_id>
 ```
 
 Example:
@@ -342,8 +441,19 @@ $ ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bou
 
 Transfers razor to other accounts.
 
+razor cli
+
 ```
 $ ./razor transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
 ```
 
 Example:
@@ -357,8 +467,19 @@ $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e -
 Jobs URLs are a placeholder for where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
 `overrideJob` command enables users to override the job URLs and selectors so that razor-nodes can fetch data directly from the override jobs.
 
+razor cli
+
 ```
 $ ./razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
 ```
 
 Example:
@@ -371,8 +492,19 @@ $ ./razor overrideJob --jobId 2 --url https://api.gemini.com/v1/pubticker/ethusd
 
 The overridden jobs can be deleted using `deleteOverride` command.
 
+razor cli
+
 ```
 $ ./razor deleteOverride --jobId <jobId>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor deleteOverride --jobId <jobId>
 ```
 
 Example:
@@ -395,8 +527,19 @@ There are a set of parameters that are configurable. These include:
 
 The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setConfig` command.
 
+razor cli
+
 ```
 $ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
 ```
 
 Example:
@@ -421,8 +564,19 @@ Create new jobs using `creteJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 
+razor cli
+
 ```
 $ ./razor createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
 ```
 
 Example:
@@ -443,8 +597,19 @@ Create new collections using `creteCollection` command.
 
 _Note: This command is restricted to "Admin Role"_
 
+razor cli
+
 ```
 $ ./razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
@@ -459,8 +624,19 @@ Modify the active status of an asset using the `modifyAssetStatus` command.
 
 _Note: This command is restricted to "Admin Role"_
 
+razor cli
+
 ```
 $ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
 ```
 
 Example:
@@ -475,8 +651,19 @@ Update the collection using `updateCollection` command.
 
 _Note: This command is restricted to "Admin Role"_
 
+razor cli
+
 ```
 $ ./razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
@@ -491,8 +678,19 @@ Update the existing parameters of the Job using `updateJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 
+razor cli
+
 ```
 ./razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
 
 Example:
@@ -507,8 +705,19 @@ Get the list of all jobs with the details like weight, power, Id etc.
 
 Example:
 
+razor cli
+
 ```
 $ ./razor jobList
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor jobList
 ```
 
 ### Collection details
@@ -517,8 +726,19 @@ Get the list of all collections with the details like power, Id, name etc.
 
 Example:
 
+razor cli
+
 ```
 $ ./razor collectionList
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    razor collectionList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
