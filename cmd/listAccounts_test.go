@@ -114,7 +114,7 @@ func TestExecuteListAccounts(t *testing.T) {
 			expectedFatal: false,
 		},
 		{
-			name: "Test 1: When ExecuteListAccounts does not execute successfully",
+			name: "Test 2: When ExecuteListAccounts does not execute successfully",
 			args: args{
 				allAccountsErr: errors.New("allAccounts error"),
 			},
