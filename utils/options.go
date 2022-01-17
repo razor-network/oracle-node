@@ -50,6 +50,7 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 			CheckError("Error in fetching block: ", err)
 
 			txnOpts.GasLimit = latestBlock.GasLimit
+			log.Debug("Error occurred due to RPC issue, sending block gas limit...")
 			log.Debug("Gas Limit: ", txnOpts.GasLimit)
 			return txnOpts
 		}
