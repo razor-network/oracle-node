@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
+	github.com/aherve/gopool v1.0.0 // indirect
 	github.com/antchfx/htmlquery v1.2.4 // indirect
 	github.com/antchfx/xmlquery v1.3.8 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible

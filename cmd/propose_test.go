@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"math/big"
 	randMath "math/rand"
 	"razor/core"
@@ -17,6 +18,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+
+	"github.com/aherve/gopool"
 )
 
 func TestPropose(t *testing.T) {
@@ -974,6 +977,152 @@ func Test_influencedMedian(t *testing.T) {
 func influenceSnapshotValue(infl string) *big.Int {
 	influence, _ := new(big.Int).SetString(infl, 10)
 	return influence
+}
+
+func BenchmarkIsElectedProposer(b *testing.B) {
+	var client *ethclient.Client
+
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
+
+	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	randaoHashBytes32 := [32]byte{}
+	copy(randaoHashBytes32[:], randaoHash)
+
+	biggestInfluence, _ := new(big.Int).SetString("1000000000000000000000000", 10)
+
+	type args struct {
+		client               *ethclient.Client
+		address              string
+		proposer             types.ElectedProposer
+		influenceSnapshot    *big.Int
+		influenceSnapshotErr error
+	}
+
+	bench_args := args{
+		client:  client,
+		address: "0x000000000000000000000000000000000000dead",
+		proposer: types.ElectedProposer{
+			Stake:            nil,
+			StakerId:         25,
+			BiggestInfluence: biggestInfluence,
+			NumberOfStakers:  100,
+			RandaoHash:       randaoHashBytes32,
+			Epoch:            1,
+		},
+
+		influenceSnapshot:    influenceSnapshotValue("1000000000000000000"),
+		influenceSnapshotErr: nil,
+	}
+
+	GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
+		return bench_args.influenceSnapshot, bench_args.influenceSnapshotErr
+	}
+
+	log.Info("Ratio of influence to biggestInfluence", new(big.Int).Div(biggestInfluence, bench_args.influenceSnapshot))
+
+	for n := 0; n < b.N; n++ {
+		for i := 0; i < 10000000; i++ {
+			bench_args.proposer.Iteration = i
+			// log.Info(bench_args.proposer.Iteration)
+			isElected := isElectedProposer(bench_args.client, bench_args.proposer, utilsStruct)
+			if isElected {
+				// log.Printf("%v is done", i)
+				// return
+				break
+			}
+		}
+		return
+	}
+}
+
+func BenchmarkIsElectedProposerConcurrent(b *testing.B) {
+	var client *ethclient.Client
+
+	utilsStruct := UtilsStruct{
+		razorUtils: UtilsMock{},
+	}
+
+	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	randaoHashBytes32 := [32]byte{}
+	copy(randaoHashBytes32[:], randaoHash)
+
+	biggestInfluence, _ := new(big.Int).SetString("1000000000000000000000000", 10)
+
+	type args struct {
+		client               *ethclient.Client
+		address              string
+		proposer             types.ElectedProposer
+		influenceSnapshot    *big.Int
+		influenceSnapshotErr error
+	}
+
+	bench_args := args{
+		client:  client,
+		address: "0x000000000000000000000000000000000000dead",
+		proposer: types.ElectedProposer{
+			Stake:            nil,
+			StakerId:         25,
+			BiggestInfluence: biggestInfluence,
+			NumberOfStakers:  50,
+			RandaoHash:       randaoHashBytes32,
+			Epoch:            1,
+		},
+		influenceSnapshot:    influenceSnapshotValue("1000000000000000000"),
+		influenceSnapshotErr: nil,
+	}
+
+	GetInfluenceSnapshotMock = func(*ethclient.Client, uint32, uint32) (*big.Int, error) {
+		return bench_args.influenceSnapshot, bench_args.influenceSnapshotErr
+	}
+
+	// log.Info("Ratio of influence to biggestInfluence", new(big.Int).Div(biggestInfluence, bench_args.influenceSnapshot))
+
+	for n := 0; n < b.N; n++ {
+		pool := gopool.NewPool(4)
+		c1 := make(chan int)
+
+		// a, b, c, d
+		// 1, 2, 3, 4
+		// 1, 2, 5, 4
+		// return 5
+
+		// 5000
+
+		// 250k X 4
+
+		// 240k
+		// 260k
+
+	loop:
+		for i := 0; i < 10000000; i++ {
+
+			select {
+			case <-c1:
+				fmt.Println("received")
+				break loop
+			default:
+				// log.Info("Start i", i)
+				pool.Add(1)
+				go func(i int, pool *gopool.GoPool) {
+					defer pool.Done()
+					// log.Printf("working hard on %v", i)
+					bench_args.proposer.Iteration = i
+					isElected := isElectedProposer(bench_args.client, bench_args.proposer, utilsStruct)
+					if isElected {
+						log.Printf("%v is done", i)
+						c1 <- i
+						// return
+					}
+				}(i, pool)
+			}
+			// log.Info(bench_args.proposer.Iteration)
+		}
+		pool.Wait()
+		log.Println("All Done !")
+		return
+	}
 }
 
 func Test_isElectedProposer(t *testing.T) {
