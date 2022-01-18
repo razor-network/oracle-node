@@ -280,7 +280,6 @@ type CryptoInterface interface {
 }
 
 type Utils struct{}
-
 type FLagSetUtils struct{}
 type UtilsStruct struct{}
 type StakeManagerUtils struct{}

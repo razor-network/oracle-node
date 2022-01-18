@@ -9,6 +9,69 @@ import (
 	"testing"
 )
 
+func TestOverrideJob(t *testing.T) {
+	var job types.StructsJob
+	type args struct {
+		jobPath         string
+		jobPathErr      error
+		addJobToJSONErr error
+	}
+	var tests = []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "Test 1: When OverrideJob function executes successfully",
+			args: args{
+				jobPath: "/home/local/jobs.json",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When OverrideJob fails due to path error",
+			args: args{
+				jobPath:    "/home/local/jobs.json",
+				jobPathErr: errors.New("jobPath error"),
+			},
+			wantErr: errors.New("jobPath error"),
+		},
+		{
+			name: "Test 3: When there is an error in addJobToJSON function",
+			args: args{
+				jobPath:         "/home/local/jobs.json",
+				addJobToJSONErr: errors.New("addJobToJSON error"),
+			},
+			wantErr: errors.New("addJobToJSON error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+
+			razorUtils = utilsMock
+
+			utilsMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
+			utilsMock.On("AddJobToJSON", mock.AnythingOfType("string"), mock.Anything).Return(tt.args.addJobToJSONErr)
+
+			utils := &UtilsStruct{}
+
+			err := utils.OverrideJob(&job)
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+
+		})
+	}
+}
+
 func TestExecuteOverrideJob(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
@@ -143,69 +206,6 @@ func TestExecuteOverrideJob(t *testing.T) {
 			utils.ExecuteOverrideJob(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteOverrideJob function didn't execute as expected")
-			}
-
-		})
-	}
-}
-
-func TestOverrideJob(t *testing.T) {
-	var job types.StructsJob
-	type args struct {
-		jobPath         string
-		jobPathErr      error
-		addJobToJSONErr error
-	}
-	var tests = []struct {
-		name    string
-		args    args
-		wantErr error
-	}{
-		{
-			name: "Test 1: When OverrideJob function executes successfully",
-			args: args{
-				jobPath: "/home/local/jobs.json",
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When OverrideJob fails due to path error",
-			args: args{
-				jobPath:    "/home/local/jobs.json",
-				jobPathErr: errors.New("jobPath error"),
-			},
-			wantErr: errors.New("jobPath error"),
-		},
-		{
-			name: "Test 3: When there is an error in addJobToJSON function",
-			args: args{
-				jobPath:         "/home/local/jobs.json",
-				addJobToJSONErr: errors.New("addJobToJSON error"),
-			},
-			wantErr: errors.New("addJobToJSON error"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-
-			razorUtils = utilsMock
-
-			utilsMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
-			utilsMock.On("AddJobToJSON", mock.AnythingOfType("string"), mock.Anything).Return(tt.args.addJobToJSONErr)
-
-			utils := &UtilsStruct{}
-
-			err := utils.OverrideJob(&job)
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
-				}
 			}
 
 		})
