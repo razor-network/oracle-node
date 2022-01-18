@@ -23,13 +23,13 @@ Note that we are leveraging docker bind-mounts to mount `.razor` directory so th
 You need to set a provider before you can operate razor-go cli on docker:
 
 ```
-docker exec -it razor-go setConfig -p <provider_url>
+docker exec -it razor-go razor setConfig -p <provider_url>
 ```
 
 You can now execute razor-go cli commands by running:
 
 ```
-docker exec -it razor-go <command>
+docker exec -it razor-go razor <command>
 ```
 
 ### Setting up dev environment with docker-compose
@@ -52,7 +52,7 @@ docker-compose up -d
 You can interact with razor:
 
 ```
-docker exec -it razor-go ...
+docker exec -it razor-go razor ...
 ```
 
 ### Prerequisites
