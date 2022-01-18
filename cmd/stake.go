@@ -68,7 +68,7 @@ Example:
 					IsRogue:   isRogue,
 					RogueMode: rogueMode,
 				}
-				err := vote(context.Background(), config, client, rogueData, account)
+				err := cmdUtils.Vote(context.Background(), config, client, rogueData, account)
 				if err != nil {
 					log.Fatal("Error in auto vote: ", err)
 				}
