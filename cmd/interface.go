@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -87,7 +89,7 @@ type UtilsInterface interface {
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
-	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
 	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
@@ -97,9 +99,16 @@ type UtilsInterface interface {
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
-	GetMaxCommission(client *ethclient.Client) (uint8, error)
-	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
+	GetMaxCommission(*ethclient.Client) (uint8, error)
+	GetEpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetStake(*ethclient.Client, string, uint32) (*big.Int, error)
+	ConvertWeiToEth(*big.Int) (*big.Float, error)
+	WaitTillNextNSecs(int32)
+	SaveCommittedDataToFile(string, uint32, []*big.Int) error
+	ReadCommittedDataFromFile(string) (uint32, []*big.Int, error)
+	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
+	Exit(int)
 }
 
 type StakeManagerInterface interface {
@@ -187,8 +196,10 @@ type FlagSetInterface interface {
 	GetUint16JobId(*pflag.FlagSet) (uint16, error)
 	GetUint16CollectionId(*pflag.FlagSet) (uint16, error)
 	GetStringValue(*pflag.FlagSet) (string, error)
-	GetStringPow(flagSet *pflag.FlagSet) (string, error)
-	GetUint16Tolerance(set *pflag.FlagSet) (uint16, error)
+	GetStringPow(*pflag.FlagSet) (string, error)
+	GetUint16Tolerance(*pflag.FlagSet) (uint16, error)
+	GetBoolRogue(*pflag.FlagSet) (bool, error)
+	GetStringSliceRogueMode(*pflag.FlagSet) ([]string, error)
 }
 
 type UtilsCmdInterface interface {
@@ -267,6 +278,14 @@ type UtilsCmdInterface interface {
 	ExecuteDeleteOverrideJob(*pflag.FlagSet)
 	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
+	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
+	GetCommitDataFileName(string) (string, error)
+	CalculateSecret(types.Account, uint32) []byte
+	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
+	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)
+	ExecuteVote(*pflag.FlagSet)
+	Vote(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error
+	HandleExit()
 }
 
 type TransactionInterface interface {

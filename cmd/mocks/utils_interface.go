@@ -4,9 +4,12 @@ package mocks
 
 import (
 	big "math/big"
-	bindings "razor/pkg/bindings"
+
+	abi "github.com/ethereum/go-ethereum/accounts/abi"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
+
+	bindings "razor/pkg/bindings"
 
 	common "github.com/ethereum/go-ethereum/common"
 
@@ -195,6 +198,34 @@ func (_m *UtilsInterface) ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	}
 
 	return r0
+}
+
+// ConvertWeiToEth provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ConvertWeiToEth(_a0 *big.Int) (*big.Float, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Float
+	if rf, ok := ret.Get(0).(func(*big.Int) *big.Float); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Float)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*big.Int) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Exit provides a mock function with given fields: _a0
+func (_m *UtilsInterface) Exit(_a0 int) {
+	_m.Called(_a0)
 }
 
 // FetchBalance provides a mock function with given fields: _a0, _a1
@@ -465,20 +496,20 @@ func (_m *UtilsInterface) GetEpochLastCommitted(_a0 *ethclient.Client, _a1 uint3
 	return r0, r1
 }
 
-// GetEpochLastRevealed provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsInterface) GetEpochLastRevealed(_a0 *ethclient.Client, _a1 string, _a2 uint32) (uint32, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetEpochLastRevealed provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterface) GetEpochLastRevealed(_a0 *ethclient.Client, _a1 uint32) (uint32, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) uint32); ok {
-		r0 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -486,20 +517,20 @@ func (_m *UtilsInterface) GetEpochLastRevealed(_a0 *ethclient.Client, _a1 string
 	return r0, r1
 }
 
-// GetEpochLimitForUpdateCommission provides a mock function with given fields: client
-func (_m *UtilsInterface) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	ret := _m.Called(client)
+// GetEpochLimitForUpdateCommission provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetEpochLimitForUpdateCommission(_a0 *ethclient.Client) (uint16, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
 	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint16); ok {
-		r0 = rf(client)
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -618,20 +649,20 @@ func (_m *UtilsInterface) GetMaxAltBlocks(_a0 *ethclient.Client) (uint8, error) 
 	return r0, r1
 }
 
-// GetMaxCommission provides a mock function with given fields: client
-func (_m *UtilsInterface) GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	ret := _m.Called(client)
+// GetMaxCommission provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetMaxCommission(_a0 *ethclient.Client) (uint8, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint8
 	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
-		r0 = rf(client)
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -794,6 +825,29 @@ func (_m *UtilsInterface) GetSortedProposedBlockIds(_a0 *ethclient.Client, _a1 u
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
 		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStake provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterface) GetStake(_a0 *ethclient.Client, _a1 string, _a2 uint32) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) *big.Int); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1147,9 +1201,76 @@ func (_m *UtilsInterface) PrivateKeyPrompt() string {
 	return r0
 }
 
+// ReadCommittedDataFromFile provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ReadCommittedDataFromFile(_a0 string) (uint32, []*big.Int, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(string) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 []*big.Int
+	if rf, ok := ret.Get(1).(func(string) []*big.Int); ok {
+		r1 = rf(_a0)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*big.Int)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string) error); ok {
+		r2 = rf(_a0)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// SaveCommittedDataToFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterface) SaveCommittedDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, uint32, []*big.Int) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Sleep provides a mock function with given fields: _a0
 func (_m *UtilsInterface) Sleep(_a0 time.Duration) {
 	_m.Called(_a0)
+}
+
+// Unpack provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterface) Unpack(_a0 abi.ABI, _a1 string, _a2 []byte) ([]interface{}, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []interface{}
+	if rf, ok := ret.Get(0).(func(abi.ABI, string, []byte) []interface{}); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(abi.ABI, string, []byte) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // ViperWriteConfigAs provides a mock function with given fields: _a0
@@ -1178,4 +1299,9 @@ func (_m *UtilsInterface) WaitForBlockCompletion(_a0 *ethclient.Client, _a1 stri
 	}
 
 	return r0
+}
+
+// WaitTillNextNSecs provides a mock function with given fields: _a0
+func (_m *UtilsInterface) WaitTillNextNSecs(_a0 int32) {
+	_m.Called(_a0)
 }

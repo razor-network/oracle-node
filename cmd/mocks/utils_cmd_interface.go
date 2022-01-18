@@ -13,6 +13,8 @@ import (
 
 	common "github.com/ethereum/go-ethereum/common"
 
+	context "context"
+
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
@@ -73,6 +75,11 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.Int, er
 	return r0, r1
 }
 
+// AutoUnstakeAndWithdraw provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *UtilsCmdInterface) AutoUnstakeAndWithdraw(_a0 *ethclient.Client, _a1 types.Account, _a2 *big.Int, _a3 types.Configurations) {
+	_m.Called(_a0, _a1, _a2, _a3)
+}
+
 // AutoWithdraw provides a mock function with given fields: _a0, _a1
 func (_m *UtilsCmdInterface) AutoWithdraw(_a0 types.TransactionOptions, _a1 uint32) error {
 	ret := _m.Called(_a0, _a1)
@@ -82,6 +89,22 @@ func (_m *UtilsCmdInterface) AutoWithdraw(_a0 types.TransactionOptions, _a1 uint
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// CalculateSecret provides a mock function with given fields: _a0, _a1
+func (_m *UtilsCmdInterface) CalculateSecret(_a0 types.Account, _a1 uint32) []byte {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(types.Account, uint32) []byte); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
 	}
 
 	return r0
@@ -390,6 +413,11 @@ func (_m *UtilsCmdInterface) ExecuteUpdateJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
+// ExecuteVote provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteVote(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteWithdraw provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) ExecuteWithdraw(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -504,6 +532,27 @@ func (_m *UtilsCmdInterface) GetCollectionList(_a0 *ethclient.Client) error {
 	}
 
 	return r0
+}
+
+// GetCommitDataFileName provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) GetCommitDataFileName(_a0 string) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetConfigData provides a mock function with given fields:
@@ -623,6 +672,27 @@ func (_m *UtilsCmdInterface) GetJobList(_a0 *ethclient.Client) error {
 	}
 
 	return r0
+}
+
+// GetLastProposedEpoch provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterface) GetLastProposedEpoch(_a0 *ethclient.Client, _a1 *big.Int, _a2 uint32) (uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, uint32) uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetLogLevel provides a mock function with given fields:
@@ -751,6 +821,11 @@ func (_m *UtilsCmdInterface) GiveSorted(_a0 *ethclient.Client, _a1 *bindings.Blo
 	_m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
 }
 
+// HandleBlock provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *UtilsCmdInterface) HandleBlock(_a0 *ethclient.Client, _a1 types.Account, _a2 *big.Int, _a3 types.Configurations, _a4 types.Rogue) {
+	_m.Called(_a0, _a1, _a2, _a3, _a4)
+}
+
 // HandleCommitState provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterface) HandleCommitState(_a0 *ethclient.Client, _a1 uint32, _a2 types.Rogue) ([]*big.Int, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -786,6 +861,11 @@ func (_m *UtilsCmdInterface) HandleDispute(_a0 *ethclient.Client, _a1 types.Conf
 	}
 
 	return r0
+}
+
+// HandleExit provides a mock function with given fields:
+func (_m *UtilsCmdInterface) HandleExit() {
+	_m.Called()
 }
 
 // HandleRevealState provides a mock function with given fields: _a0, _a1, _a2
@@ -1144,6 +1224,20 @@ func (_m *UtilsCmdInterface) UpdateJob(_a0 *ethclient.Client, _a1 types.Configur
 	}
 
 	return r0, r1
+}
+
+// Vote provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *UtilsCmdInterface) Vote(_a0 context.Context, _a1 types.Configurations, _a2 *ethclient.Client, _a3 types.Rogue, _a4 types.Account) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // WaitForAppropriateState provides a mock function with given fields: _a0, _a1, _a2
