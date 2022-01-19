@@ -233,6 +233,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot reveal in epoch %d", epoch)
 			break
 		}
+		if err := utilsStruct.HandleRevealState(client, account.Address, staker, epoch); err != nil {
+			log.Error(err)
+			break
+		}
+		log.Debug("Epoch last revealed: ", lastReveal)
 		if _committedData == nil {
 			fileName, err := getCommitDataFileName(account.Address, utilsStruct)
 			if err != nil {
@@ -254,11 +259,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := utilsStruct.HandleRevealState(client, account.Address, staker, epoch); err != nil {
-			log.Error(err)
-			break
-		}
-		log.Debug("Epoch last revealed: ", lastReveal)
 
 		// Reveal wrong data if rogueMode contains reveal
 		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
