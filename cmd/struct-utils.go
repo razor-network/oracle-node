@@ -285,6 +285,10 @@ func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
 	return utils.DeleteJobFromJSON(s, jobId)
 }
 
+func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
+	return utils.AddJobToJSON(s, job)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

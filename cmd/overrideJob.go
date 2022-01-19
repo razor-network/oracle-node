@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"razor/core/types"
-	"razor/path"
 	"razor/utils"
 )
 
@@ -49,15 +48,16 @@ func (*UtilsStruct) ExecuteOverrideJob(flagSet *pflag.FlagSet) {
 }
 
 func (*UtilsStruct) OverrideJob(job *types.StructsJob) error {
-	jobPath, err := path.GetJobFilePath()
+	jobPath, err := razorUtils.GetJobFilePath()
 	if err != nil {
 		return err
 	}
-	return utils.AddJobToJSON(jobPath, job)
+	return razorUtils.AddJobToJSON(jobPath, job)
 }
 
 func init() {
 
+	razorUtils = Utils{}
 	cmdUtils = &UtilsStruct{}
 	flagSetUtils = FLagSetUtils{}
 
