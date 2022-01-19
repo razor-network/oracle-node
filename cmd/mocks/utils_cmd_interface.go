@@ -345,6 +345,11 @@ func (_m *UtilsCmdInterface) ExecuteJobList() {
 	_m.Called()
 }
 
+// ExecuteListAccounts provides a mock function with given fields:
+func (_m *UtilsCmdInterface) ExecuteListAccounts() {
+	_m.Called()
+}
+
 // ExecuteModifyAssetStatus provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) ExecuteModifyAssetStatus(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)

@@ -85,3 +85,63 @@ func TestListAccounts(t *testing.T) {
 		})
 	}
 }
+
+func TestExecuteListAccounts(t *testing.T) {
+
+	accountList := []accounts.Account{
+		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+			URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+		},
+		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea2"),
+			URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+		},
+	}
+	type args struct {
+		allAccounts    []accounts.Account
+		allAccountsErr error
+	}
+
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteListAccounts executes successfully",
+			args: args{
+				allAccounts: accountList,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When ExecuteListAccounts does not execute successfully",
+			args: args{
+				allAccountsErr: errors.New("allAccounts error"),
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("ListAccounts").Return(tt.args.allAccounts, tt.args.allAccountsErr)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteListAccounts()
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteListAccounts function didn't execute as expected")
+			}
+
+		})
+	}
+}
