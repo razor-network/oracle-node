@@ -103,6 +103,10 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetJobFilePath() (string, error) {
+	return path.GetJobFilePath()
+}
+
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	return utils.FetchBalance(client, accountAddress)
 }
@@ -275,6 +279,10 @@ func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint1
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	return utils.GetStakeSnapshot(client, stakerId, epoch)
+}
+
+func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
+	return utils.AddJobToJSON(s, job)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
