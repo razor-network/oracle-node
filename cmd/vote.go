@@ -204,7 +204,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		commitTxn, err := utilsStruct.Commit(client, data, secret, account, config)
-		if err != nil {
+		if err != nil || commitTxn == core.NilHash {
 			log.Error("Error in committing data: ", err)
 			break
 		}
@@ -270,13 +270,12 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 
 		revealTxn, err := utilsStruct.Reveal(client, _committedData, secret, account, account.Address, config)
-		if err != nil {
+		if err != nil || revealTxn == core.NilHash {
 			log.Error("Reveal error: ", err)
 			break
 		}
-		if revealTxn != core.NilHash {
-			utils.WaitForBlockCompletion(client, revealTxn.String())
-		}
+		utils.WaitForBlockCompletion(client, revealTxn.String())
+
 	case 2:
 		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
 		if err != nil {
@@ -297,13 +296,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueData)
-		if err != nil {
+		if err != nil || proposeTxn == core.NilHash {
 			log.Error("Propose error: ", err)
 			break
 		}
-		if proposeTxn != core.NilHash {
-			utils.WaitForBlockCompletion(client, proposeTxn.String())
-		}
+		utils.WaitForBlockCompletion(client, proposeTxn.String())
 	case 3:
 		if lastVerification >= epoch {
 			break
@@ -327,7 +324,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				ABI:             jobManager.BlockManagerABI,
 			})
 
-			if err != nil {
+			if err != nil || txn == core.NilHash {
 				log.Error("ClaimBlockReward error: ", err)
 				break
 			}
