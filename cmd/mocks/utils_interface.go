@@ -197,6 +197,20 @@ func (_m *UtilsInterface) ConvertUintArrayToUint16Array(uintArr []uint) []uint16
 	return r0
 }
 
+// DeleteJobFromJSON provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterface) DeleteJobFromJSON(_a0 string, _a1 string) error {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, string) error); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FetchBalance provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterface) FetchBalance(_a0 *ethclient.Client, _a1 string) (*big.Int, error) {
 	ret := _m.Called(_a0, _a1)
@@ -546,6 +560,27 @@ func (_m *UtilsInterface) GetInfluenceSnapshot(_a0 *ethclient.Client, _a1 uint32
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
 		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetJobFilePath provides a mock function with given fields:
+func (_m *UtilsInterface) GetJobFilePath() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -57,6 +57,7 @@ type UtilsInterface interface {
 	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)
+	GetJobFilePath() (string, error)
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
@@ -100,6 +101,7 @@ type UtilsInterface interface {
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	DeleteJobFromJSON(string, string) error
 }
 
 type StakeManagerInterface interface {
