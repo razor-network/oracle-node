@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -12,13 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var razorUtils utilsInterface
-var tokenManagerUtils tokenManagerInterface
-var transactionUtils transactionInterface
-var stakeManagerUtils stakeManagerInterface
-
-//var utilsStructInterface structUtilsInterface
-
 var stakeCmd = &cobra.Command{
 	Use:   "stake",
 	Short: "Stake some razors",
@@ -27,19 +21,7 @@ var stakeCmd = &cobra.Command{
 Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			transactionUtils:  transactionUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			flagSetUtils:      flagSetUtils,
-			proposeUtils:      proposeUtils,
-			blockManagerUtils: blockManagerUtils,
-			voteManagerUtils:  voteManagerUtils,
-			cmdUtils:          cmdUtils,
-		}
-
-		config, err := GetConfigData(utilsStruct)
+		config, err := cmdUtils.GetConfigData()
 		utils.CheckError("Error in getting config: ", err)
 
 		password := utils.AssignPassword(cmd.Flags())
@@ -48,7 +30,7 @@ Example:
 		balance, err := utils.FetchBalance(client, address)
 		utils.CheckError("Error in fetching balance for account: "+address, err)
 
-		valueInWei, err := AssignAmountInWei(cmd.Flags(), utilsStruct)
+		valueInWei, err := cmdUtils.AssignAmountInWei(cmd.Flags())
 		utils.CheckError("Error in getting amount: ", err)
 
 		utils.CheckAmountAndBalance(valueInWei, balance)
@@ -64,16 +46,16 @@ Example:
 			Config:         config,
 		}
 
-		approveTxnHash, err := utilsStruct.approve(txnArgs)
+		approveTxnHash, err := cmdUtils.Approve(txnArgs)
 		utils.CheckError("Approve error: ", err)
 
 		if approveTxnHash != core.NilHash {
-			razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+			utils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 		}
 
-		stakeTxnHash, err := utilsStruct.stakeCoins(txnArgs)
+		stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 		utils.CheckError("Stake error: ", err)
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+		utils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
 		if utils.IsFlagPassed("autoVote") {
 			isAutoVote, _ := cmd.Flags().GetBool("autoVote")
@@ -86,7 +68,7 @@ Example:
 					IsRogue:   isRogue,
 					RogueMode: rogueMode,
 				}
-				err := utilsStruct.vote(context.Background(), config, client, rogueData, account)
+				err := vote(context.Background(), config, client, rogueData, account)
 				if err != nil {
 					log.Fatal("Error in auto vote: ", err)
 				}
@@ -95,8 +77,8 @@ Example:
 	},
 }
 
-func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
-	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
+func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
@@ -106,27 +88,27 @@ func (utilsStruct UtilsStruct) stakeCoins(txnArgs types.TransactionOptions) (com
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
-	tx, err := utilsStruct.stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
-	log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(tx).Hex())
-	return utilsStruct.transactionUtils.Hash(tx), nil
+	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
+	return transactionUtils.Hash(tx), nil
 }
 
 func init() {
-	razorUtils = Utils{}
 	tokenManagerUtils = TokenManagerUtils{}
-	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FlagSetUtils{}
-	proposeUtils = ProposeUtils{}
-	voteManagerUtils = VoteManagerUtils{}
+	razorUtils = Utils{}
+	cmdUtils = &UtilsStruct{}
 	blockManagerUtils = BlockManagerUtils{}
+	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	proposeUtils = ProposeUtils{}
-	cmdUtils = UtilsCmd{}
+	flagSetUtils = FLagSetUtils{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (

@@ -6,8 +6,6 @@ import (
 	"razor/utils"
 )
 
-var keystoreUtils keystoreInterface
-
 var listAccountsCmd = &cobra.Command{
 	Use:   "listAccounts",
 	Short: "listAccounts command can be used to list all accessible accounts",
@@ -15,11 +13,8 @@ var listAccountsCmd = &cobra.Command{
 Example:
   ./razor listAccounts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:    razorUtils,
-			keystoreUtils: keystoreUtils,
-		}
-		allAccounts, err := utilsStruct.listAccounts()
+
+		allAccounts, err := cmdUtils.ListAccounts()
 		utils.CheckError("ListAccounts error: ", err)
 		log.Info("The available accounts are: ")
 		for _, account := range allAccounts {
@@ -28,18 +23,18 @@ Example:
 	},
 }
 
-func (utilsStruct UtilsStruct) listAccounts() ([]accounts.Account, error) {
-	path, err := utilsStruct.razorUtils.GetDefaultPath()
+func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
+	path, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return nil, err
 	}
 
-	return utilsStruct.keystoreUtils.Accounts(path), nil
+	return keystoreUtils.Accounts(path), nil
 }
 
 func init() {
-	razorUtils = Utils{}
+	razorUtils = &Utils{}
 	keystoreUtils = KeystoreUtils{}
 	rootCmd.AddCommand(listAccountsCmd)
 }

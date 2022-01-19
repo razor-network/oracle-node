@@ -26,28 +26,21 @@ Example:
 }
 
 func initialiseClaimBounty(cmd *cobra.Command, args []string) {
-	utilsStruct := UtilsStruct{
-		razorUtils:        razorUtils,
-		cmdUtils:          cmdUtils,
-		stakeManagerUtils: stakeManagerUtils,
-		transactionUtils:  transactionUtils,
-		flagSetUtils:      flagSetUtils,
-	}
-	utilsStruct.executeClaimBounty(cmd.Flags())
+	cmdUtils.ExecuteClaimBounty(cmd.Flags())
 }
 
-func (utilsStruct UtilsStruct) executeClaimBounty(flagSet *pflag.FlagSet) {
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
+func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	bountyId, err := utilsStruct.flagSetUtils.GetUint32BountyId(flagSet)
+	bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 	utils.CheckError("Error in getting bountyId: ", err)
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
 	redeemBountyInput := types.RedeemBountyInput{
 		Address:  address,
@@ -55,15 +48,15 @@ func (utilsStruct UtilsStruct) executeClaimBounty(flagSet *pflag.FlagSet) {
 		BountyId: bountyId,
 	}
 
-	txn, err := utilsStruct.cmdUtils.claimBounty(config, client, redeemBountyInput, utilsStruct)
+	txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
 	utils.CheckError("ClaimBounty error: ", err)
 
 	if txn != core.NilHash {
-		utilsStruct.razorUtils.WaitForBlockCompletion(client, txn.String())
+		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
 }
 
-func claimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput, utilsStruct UtilsStruct) (common.Hash, error) {
+func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		AccountAddress:  redeemBountyInput.Address,
@@ -75,14 +68,14 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
-	epoch, err := utilsStruct.razorUtils.GetEpoch(txnArgs.Client)
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return common.Hash{0x00}, err
 	}
 
-	callOpts := utilsStruct.razorUtils.GetOptions()
-	bountyLock, err := utilsStruct.stakeManagerUtils.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
+	callOpts := razorUtils.GetOptions()
+	bountyLock, err := stakeManagerUtils.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
 	if err != nil {
 		log.Error("Error in getting bounty lock: ", err)
 		return core.NilHash, err
@@ -100,33 +93,33 @@ func claimBounty(config types.Configurations, client *ethclient.Client, redeemBo
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		utilsStruct.razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*utilsStruct.razorUtils.CalculateBlockTime(client)) * time.Second)
+		razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
 	for retry := 1; retry <= int(core.MaxRetries); retry++ {
-		tx, err := utilsStruct.stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
+		tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
 		if err == nil {
-			log.Info("Txn Hash: ", utilsStruct.transactionUtils.Hash(tx).Hex())
-			return utilsStruct.transactionUtils.Hash(tx), nil
+			log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
+			return transactionUtils.Hash(tx), nil
 		}
 		log.Error("Error while claiming bounty: ", err)
 		if retry != int(core.MaxRetries) {
 			log.Info("Retrying again...")
 			log.Info("Waiting for 1 more epoch...")
-			utilsStruct.razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+			razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
 		}
 	}
 	return core.NilHash, err
 }
 
 func init() {
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
+	razorUtils = &Utils{}
+	cmdUtils = &UtilsStruct{}
 	stakeManagerUtils = StakeManagerUtils{}
-	cmdUtils = UtilsCmd{}
-	flagSetUtils = FlagSetUtils{}
+	transactionUtils = TransactionUtils{}
+	flagSetUtils = FLagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 

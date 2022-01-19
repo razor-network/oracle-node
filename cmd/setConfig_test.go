@@ -3,17 +3,14 @@ package cmd
 import (
 	"errors"
 	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
+	"razor/cmd/mocks"
 	"testing"
 )
 
 func TestSetConfig(t *testing.T) {
 
 	var flagSet *pflag.FlagSet
-
-	utilsStruct := UtilsStruct{
-		razorUtils:   UtilsMock{},
-		flagSetUtils: FlagSetMock{},
-	}
 
 	type args struct {
 		provider              string
@@ -224,46 +221,46 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("gasLimitMultiplier error"),
 		},
+		{
+			name: "Test 13: When default nil values are passed",
+			args: args{
+				provider:              "",
+				gasmultiplier:         -1,
+				buffer:                0,
+				waitTime:              -1,
+				gasPrice:              -1,
+				logLevel:              "",
+				path:                  "/home/config",
+				configErr:             nil,
+				gasLimitMultiplier:    -1,
+				gasLimitMultiplierErr: nil,
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
-		GetStringProviderMock = func(set *pflag.FlagSet) (string, error) {
-			return tt.args.provider, tt.args.providerErr
-		}
-
-		GetFloat32GasMultiplierMock = func(set *pflag.FlagSet) (float32, error) {
-			return tt.args.gasmultiplier, tt.args.gasmultiplierErr
-		}
-
-		GetInt32BufferMock = func(set *pflag.FlagSet) (int32, error) {
-			return tt.args.buffer, tt.args.bufferErr
-		}
-
-		GetInt32WaitMock = func(set *pflag.FlagSet) (int32, error) {
-			return tt.args.waitTime, tt.args.waitTimeErr
-		}
-
-		GetInt32GasPriceMock = func(set *pflag.FlagSet) (int32, error) {
-			return tt.args.gasPrice, tt.args.gasPriceErr
-		}
-
-		GetStringLogLevelMock = func(set *pflag.FlagSet) (string, error) {
-			return tt.args.logLevel, tt.args.logLevelErr
-		}
-
-		GetFloat32GasLimitMock = func(set *pflag.FlagSet) (float32, error) {
-			return tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr
-		}
-
-		GetConfigFilePathMock = func() (string, error) {
-			return tt.args.path, tt.args.pathErr
-		}
-
-		ViperWriteConfigAsMock = func(string) error {
-			return tt.args.configErr
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			gotErr := utilsStruct.SetConfig(flagSet)
+
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
+
+			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
+			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
+			flagSetUtilsMock.On("GetInt32Buffer", flagSet).Return(tt.args.buffer, tt.args.bufferErr)
+			flagSetUtilsMock.On("GetInt32Wait", flagSet).Return(tt.args.waitTime, tt.args.waitTimeErr)
+			flagSetUtilsMock.On("GetInt32GasPrice", flagSet).Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
+			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
+			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
+			utilsMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
+
+			utils := &UtilsStruct{}
+			gotErr := utils.SetConfig(flagSet)
 			if gotErr == nil || tt.wantErr == nil {
 				if gotErr != tt.wantErr {
 					t.Errorf("Error for SetConfig function, got = %v, want = %v", gotErr, tt.wantErr)

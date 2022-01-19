@@ -5,7 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
@@ -13,21 +15,13 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func TestClaimBlockReward(t *testing.T) {
-
 	var options types.TransactionOptions
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		blockManagerUtils: BlockManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		txnOpts             *bind.TransactOpts
@@ -67,19 +61,20 @@ func TestClaimBlockReward(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			blockManagerMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			ClaimBlockRewardMock = func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error) {
-				return tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr
-			}
+			razorUtils = utilsMock
+			blockManagerUtils = blockManagerMock
+			transactionUtils = transactionUtilsMock
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			utilsMock.On("GetTxnOpts", options).Return(tt.args.txnOpts)
+			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			got, err := utilsStruct.ClaimBlockReward(options)
+			utils := &UtilsStruct{}
+			got, err := utils.ClaimBlockReward(options)
 			if got != tt.want {
 				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)
 			}
