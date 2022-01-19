@@ -269,6 +269,7 @@ type UtilsCmdInterface interface {
 	ExecuteDeleteOverrideJob(*pflag.FlagSet)
 	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
+	ExecuteListAccounts()
 }
 
 type TransactionInterface interface {
