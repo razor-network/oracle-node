@@ -152,7 +152,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor stake --address <address> --value <value>
+    stake --address <address> --value <value>
 ```
 
 Example:
@@ -175,7 +175,7 @@ docker
 docker run -it --rm \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor stake --address <address> --value <value> --autoVote <bool>
+    stake --address <address> --value <value> --autoVote <bool>
 ```
 
 _Note: --pow flag is used to stake floating number stake_
@@ -218,7 +218,7 @@ docker
 docker run -it --rm \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor stakerInfo --stakerId <staker_id_of_the_staker>
+    stakerInfo --stakerId <staker_id_of_the_staker>
 ```
 
 Example:
@@ -243,7 +243,7 @@ docker
 docker run -it --rm \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor setDelegation --address <address> --status <true_or_false>
+    setDelegation --address <address> --status <true_or_false>
 ```
 
 Example:
@@ -269,7 +269,7 @@ docker
 docker run -it --rm \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor updateCommission --address <address> --commission <commission_percent>
+    updateCommission --address <address> --commission <commission_percent>
 ```
 
 Example:
@@ -294,7 +294,7 @@ docker
 docker run -it --rm \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
+    delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
 ```
 
 Example:
@@ -319,7 +319,7 @@ docker
 docker run -it  -d --name razor-go \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor vote --address <address>
+    vote --address <address>
 ```
 
 Example:
@@ -353,7 +353,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
+    unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
 ```
 
 Example:
@@ -378,7 +378,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor withdraw --address <address> --stakerId <staker_id>
+    withdraw --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -403,7 +403,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor extendLock --address <address> --stakerId <staker_id>
+    extendLock --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -428,7 +428,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor claimBounty --address <address> --bountyId <bounty_id>
+    claimBounty --address <address> --bountyId <bounty_id>
 ```
 
 Example:
@@ -453,7 +453,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
+    transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
 ```
 
 Example:
@@ -479,7 +479,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
+    overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
 ```
 
 Example:
@@ -504,7 +504,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor deleteOverride --jobId <jobId>
+    deleteOverride --jobId <jobId>
 ```
 
 Example:
@@ -539,7 +539,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+    setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
 ```
 
 Example:
@@ -576,7 +576,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
+    createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
 ```
 
 Example:
@@ -609,7 +609,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
+    createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
@@ -636,7 +636,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+    modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
 ```
 
 Example:
@@ -663,7 +663,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
+    updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
@@ -690,7 +690,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
+    updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
 
 Example:
@@ -717,7 +717,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor jobList
+    jobList
 ```
 
 ### Collection details
@@ -738,7 +738,7 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    razor collectionList
+    collectionList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
