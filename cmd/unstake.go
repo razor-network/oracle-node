@@ -119,12 +119,13 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 
-	epoch, err := utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 0, 1, 4)
+	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err
 	}
-	txnArgs.Parameters = []interface{}{epoch, stakerId, txnArgs.Amount}
+
+	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
 	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, sAmount)
