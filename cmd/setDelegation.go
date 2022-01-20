@@ -34,7 +34,6 @@ Example:
 }
 
 func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
-
 	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
 	if err != nil {
 		log.Error("Error in getting config")
@@ -54,7 +53,10 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 		log.Error("Error in parsing status to boolean")
 		return err
 	}
-
+	commission, err := utilsStruct.flagSetUtils.GetUint8Commission(flagSet)
+	if err != nil {
+		return err
+	}
 	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
 
 	stakerId, err := utilsStruct.razorUtils.GetStakerId(client, address)
@@ -67,6 +69,18 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
+	}
+	if commission != 0 {
+		err = executeUpdateCommission(client, types.UpdateCommissionInput{
+			StakerId:   stakerId,
+			Address:    address,
+			Password:   password,
+			Commission: commission,
+			Config:     config,
+		}, utilsStruct)
+		if err != nil {
+			return err
+		}
 	}
 
 	txnOpts := types.TransactionOptions{
@@ -108,14 +122,16 @@ func init() {
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		Status   string
-		Address  string
-		Password string
+		Status     string
+		Address    string
+		Password   string
+		Commission uint8
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	setDelegationCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
