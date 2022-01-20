@@ -214,7 +214,7 @@ func GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, er
 			activeCollection, err := GetActiveCollection(client, uint16(assetIndex))
 			if err != nil {
 				log.Error(err)
-				if err == errors.New("collection inactive") {
+				if err.Error() == errors.New("collection inactive").Error() {
 					continue
 				}
 				return nil, err
