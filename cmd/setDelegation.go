@@ -71,7 +71,7 @@ func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
 		return err
 	}
 	if commission != 0 {
-		err = executeUpdateCommission(client, types.UpdateCommissionInput{
+		err = utilsStruct.cmdUtils.ExecuteUpdateCommission(client, types.UpdateCommissionInput{
 			StakerId:   stakerId,
 			Address:    address,
 			Password:   password,

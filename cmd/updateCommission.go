@@ -55,7 +55,7 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 		return err
 	}
 
-	return executeUpdateCommission(client, types.UpdateCommissionInput{
+	return utilsStruct.cmdUtils.ExecuteUpdateCommission(client, types.UpdateCommissionInput{
 		Commission: commission,
 		Config:     config,
 		Address:    address,
@@ -64,7 +64,7 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 	}, utilsStruct)
 }
 
-func executeUpdateCommission(client *ethclient.Client, input types.UpdateCommissionInput, utilsStruct UtilsStruct) error {
+func ExecuteUpdateCommission(client *ethclient.Client, input types.UpdateCommissionInput, utilsStruct UtilsStruct) error {
 	stakerInfo, err := utilsStruct.razorUtils.GetStaker(client, input.Address, input.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")

@@ -184,6 +184,7 @@ type utilsCmdInterface interface {
 	Create(string, UtilsStruct) (accounts.Account, error)
 	claimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput, UtilsStruct) (common.Hash, error)
 	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
+	ExecuteUpdateCommission(client *ethclient.Client, input types.UpdateCommissionInput, utilsStruct UtilsStruct) error
 }
 
 type cryptoInterface interface {

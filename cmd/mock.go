@@ -293,6 +293,8 @@ var claimBountyMock func(types.Configurations, *ethclient.Client, types.RedeemBo
 
 var GetAmountInSRZRsMock func(*ethclient.Client, string, bindings.StructsStaker, *big.Int, UtilsStruct) (*big.Int, error)
 
+var ExecuteUpdateCommissionMock func(*ethclient.Client, types.UpdateCommissionInput, UtilsStruct) error
+
 var UnstakeMock func(types.Configurations, *ethclient.Client, types.UnstakeInput, UtilsStruct) (types.TransactionOptions, error)
 
 var withdrawFundsMock func(*ethclient.Client, types.Account, types.Configurations, uint32, UtilsStruct) (common.Hash, error)
@@ -992,6 +994,10 @@ func (utilsCmdMock UtilsCmdMock) claimBounty(config types.Configurations, client
 
 func (utilsCmdMock UtilsCmdMock) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
 	return GetAmountInSRZRsMock(client, address, staker, amount, utilsStruct)
+}
+
+func (utilsCmdMock UtilsCmdMock) ExecuteUpdateCommission(client *ethclient.Client, input types.UpdateCommissionInput, utilsStruct UtilsStruct) error {
+	return ExecuteUpdateCommissionMock(client, input, utilsStruct)
 }
 
 func (blockManagerMock BlockManagerMock) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
