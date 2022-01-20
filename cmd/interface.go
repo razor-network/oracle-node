@@ -101,6 +101,7 @@ type UtilsInterface interface {
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 }
 
