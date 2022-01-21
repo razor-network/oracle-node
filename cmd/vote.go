@@ -204,11 +204,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		commitTxn, err := utilsStruct.Commit(client, data, secret, account, config)
-		if err != nil || commitTxn == core.NilHash {
+		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
 		}
-		utils.WaitForBlockCompletion(client, commitTxn.String())
+		if commitTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, commitTxn.String())
+		}
 		_committedData = data
 		log.Debug("Saving committed data for recovery")
 		fileName, err := getCommitDataFileName(account.Address, utilsStruct)
@@ -270,12 +272,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 
 		revealTxn, err := utilsStruct.Reveal(client, _committedData, secret, account, account.Address, config)
-		if err != nil || revealTxn == core.NilHash {
+		if err != nil {
 			log.Error("Reveal error: ", err)
 			break
 		}
-		utils.WaitForBlockCompletion(client, revealTxn.String())
-
+		if revealTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, revealTxn.String())
+		}
 	case 2:
 		lastProposal, err := getLastProposedEpoch(client, blockNumber, stakerId)
 		if err != nil {
@@ -296,11 +299,13 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			break
 		}
 		proposeTxn, err := utilsStruct.Propose(client, account, config, stakerId, epoch, rogueData)
-		if err != nil || proposeTxn == core.NilHash {
+		if err != nil {
 			log.Error("Propose error: ", err)
 			break
 		}
-		utils.WaitForBlockCompletion(client, proposeTxn.String())
+		if proposeTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, proposeTxn.String())
+		}
 	case 3:
 		if lastVerification >= epoch {
 			break
@@ -324,12 +329,15 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				ABI:             jobManager.BlockManagerABI,
 			})
 
-			if err != nil || txn == core.NilHash {
+			if err != nil {
 				log.Error("ClaimBlockReward error: ", err)
 				break
 			}
-			utils.WaitForBlockCompletion(client, txn.Hex())
-			blockConfirmed = epoch
+			if txn != core.NilHash {
+				utils.WaitForBlockCompletion(client, txn.Hex())
+				blockConfirmed = epoch
+			}
+
 		}
 	case -1:
 		if config.WaitTime > 5 {
