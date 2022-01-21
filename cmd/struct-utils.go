@@ -105,6 +105,10 @@ func (u Utils) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
 }
 
+func (u Utils) GetJobFilePath() (string, error) {
+	return path.GetJobFilePath()
+}
+
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	return utils.FetchBalance(client, accountAddress)
 }
@@ -305,6 +309,14 @@ func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, err
 
 func (u Utils) Exit(code int) {
 	os.Exit(code)
+}
+
+func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
+	return utils.DeleteJobFromJSON(s, jobId)
+}
+
+func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
+	return utils.AddJobToJSON(s, job)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {

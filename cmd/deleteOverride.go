@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"razor/path"
 	"razor/utils"
 	"strconv"
 )
@@ -30,14 +29,19 @@ func (*UtilsStruct) ExecuteDeleteOverrideJob(flagSet *pflag.FlagSet) {
 }
 
 func (*UtilsStruct) DeleteOverrideJob(jobId uint16) error {
-	jobPath, err := path.GetJobFilePath()
+	jobPath, err := razorUtils.GetJobFilePath()
 	if err != nil {
 		return err
 	}
-	return utils.DeleteJobFromJSON(jobPath, strconv.Itoa(int(jobId)))
+	return razorUtils.DeleteJobFromJSON(jobPath, strconv.Itoa(int(jobId)))
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	cmdUtils = &UtilsStruct{}
+	flagSetUtils = FLagSetUtils{}
+
 	rootCmd.AddCommand(deleteOverrideCmd)
 	var JobId uint16
 

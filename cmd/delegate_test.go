@@ -5,17 +5,18 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/cmd/mocks"
+	"razor/core"
+	"razor/core/types"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/cmd/mocks"
-	"razor/core"
-	"razor/core/types"
-	"testing"
 )
 
 func TestDelegate(t *testing.T) {
@@ -28,8 +29,6 @@ func TestDelegate(t *testing.T) {
 	type args struct {
 		amount      *big.Float
 		txnOpts     *bind.TransactOpts
-		epoch       uint32
-		epochErr    error
 		delegateTxn *Types.Transaction
 		delegateErr error
 		hash        common.Hash
@@ -45,8 +44,6 @@ func TestDelegate(t *testing.T) {
 			args: args{
 				amount:      big.NewFloat(1000),
 				txnOpts:     txnOpts,
-				epoch:       1,
-				epochErr:    nil,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: nil,
 				hash:        common.BigToHash(big.NewInt(1)),
@@ -59,28 +56,12 @@ func TestDelegate(t *testing.T) {
 			args: args{
 				amount:      big.NewFloat(1000),
 				txnOpts:     txnOpts,
-				epoch:       1,
-				epochErr:    nil,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: errors.New("delegate error"),
 				hash:        common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("delegate error"),
-		},
-		{
-			name: "Test 3: When GetEpoch fails",
-			args: args{
-				amount:      big.NewFloat(1000),
-				txnOpts:     txnOpts,
-				epoch:       1,
-				epochErr:    errors.New("GetEpoch error"),
-				delegateTxn: &Types.Transaction{},
-				delegateErr: nil,
-				hash:        common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("GetEpoch error"),
 		},
 	}
 	for _, tt := range tests {
@@ -92,7 +73,6 @@ func TestDelegate(t *testing.T) {
 
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			stakeManagerUtilsMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

@@ -308,3 +308,55 @@ func TestConvertUintArrayToUint16Array(t *testing.T) {
 		})
 	}
 }
+
+func TestContainsStringFromArray(t *testing.T) {
+	type args struct {
+		source         string
+		subStringArray []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When one string in array is substring of source string",
+			args: args{
+				source:         "This is a substring check",
+				subStringArray: []string{"apple", "go", "check"},
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When substring array is nil",
+			args: args{
+				source:         "This is a substring check",
+				subStringArray: nil,
+			},
+			want: false,
+		},
+		{
+			name: "Test 3: When source string is nil string",
+			args: args{
+				source:         "",
+				subStringArray: []string{"apple", "go", "check"},
+			},
+			want: false,
+		},
+		{
+			name: "Test 4: When source string and substring array is nil",
+			args: args{
+				source:         "",
+				subStringArray: nil,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsStringFromArray(tt.args.source, tt.args.subStringArray); got != tt.want {
+				t.Errorf("ContainsStringFromArray() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

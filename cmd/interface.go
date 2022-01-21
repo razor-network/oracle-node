@@ -59,6 +59,7 @@ type UtilsInterface interface {
 	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)
+	GetJobFilePath() (string, error)
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
 	IsFlagPassed(string) bool
 	GetFractionalAmountInWei(*big.Int, string) (*big.Int, error)
@@ -109,6 +110,8 @@ type UtilsInterface interface {
 	ReadCommittedDataFromFile(string) (uint32, []*big.Int, error)
 	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
 	Exit(int)
+	DeleteJobFromJSON(string, string) error
+	AddJobToJSON(string, *types.StructsJob) error
 }
 
 type StakeManagerInterface interface {
@@ -286,6 +289,7 @@ type UtilsCmdInterface interface {
 	ExecuteVote(*pflag.FlagSet)
 	Vote(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error
 	HandleExit()
+	ExecuteListAccounts()
 }
 
 type TransactionInterface interface {
