@@ -14,3 +14,11 @@ type RedeemBountyInput struct {
 	Password string
 	BountyId uint32
 }
+
+type UpdateCommissionInput struct {
+	StakerId   uint32
+	Address    string
+	Password   string
+	Commission uint8
+	Config     Configurations
+}

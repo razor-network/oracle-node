@@ -52,10 +52,13 @@ func TestSetDelegation(t *testing.T) {
 		stakerIdErr                  error
 		staker                       bindings.StructsStaker
 		stakerErr                    error
+		commission                   uint8
+		commissionErr                error
 		SetDelegationAcceptanceTxn   *Types.Transaction
 		SetDelegationAcceptanceErr   error
 		hash                         common.Hash
 		WaitForBlockCompletionStatus int
+		executeUpdateCommissionErr   error
 	}
 	tests := []struct {
 		name    string
@@ -247,6 +250,61 @@ func TestSetDelegation(t *testing.T) {
 			},
 			wantErr: errors.New("SetDelegationAcceptance error"),
 		},
+		{
+			name: "Test 11: When there is an error in fetching commission",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				status:      "true",
+				parseStatus: true,
+				stakerId:    1,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: false,
+				},
+				commissionErr:                errors.New("error in fetching commission"),
+				SetDelegationAcceptanceTxn:   &Types.Transaction{},
+				WaitForBlockCompletionStatus: 1,
+			},
+			wantErr: errors.New("error in fetching commission"),
+		},
+		{
+			name: "Test 12: When commission is non zero",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				status:      "true",
+				parseStatus: true,
+				stakerId:    1,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: false,
+				},
+				commission:                   12,
+				SetDelegationAcceptanceTxn:   &Types.Transaction{},
+				WaitForBlockCompletionStatus: 1,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 13: When executeUpdateCommission throws an error",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				status:      "true",
+				parseStatus: true,
+				stakerId:    1,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: false,
+				},
+				commission:                   12,
+				executeUpdateCommissionErr:   errors.New("error in updating commission"),
+				SetDelegationAcceptanceTxn:   &Types.Transaction{},
+				WaitForBlockCompletionStatus: 1,
+			},
+			wantErr: errors.New("error in updating commission"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -264,6 +322,10 @@ func TestSetDelegation(t *testing.T) {
 
 			GetStringStatusMock = func(*pflag.FlagSet) (string, error) {
 				return tt.args.status, tt.args.statusErr
+			}
+
+			GetUint8CommissionMock = func(*pflag.FlagSet) (uint8, error) {
+				return tt.args.commission, tt.args.commissionErr
 			}
 
 			ParseBoolMock = func(string) (bool, error) {
@@ -292,6 +354,10 @@ func TestSetDelegation(t *testing.T) {
 
 			HashMock = func(*Types.Transaction) common.Hash {
 				return tt.args.hash
+			}
+
+			ExecuteUpdateCommissionMock = func(*ethclient.Client, types.UpdateCommissionInput, UtilsStruct) error {
+				return tt.args.executeUpdateCommissionErr
 			}
 
 			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {

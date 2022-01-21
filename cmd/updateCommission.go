@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -54,7 +55,17 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 		return err
 	}
 
-	stakerInfo, err := utilsStruct.razorUtils.GetStaker(client, address, stakerId)
+	return utilsStruct.cmdUtils.ExecuteUpdateCommission(client, types.UpdateCommissionInput{
+		Commission: commission,
+		Config:     config,
+		Address:    address,
+		Password:   password,
+		StakerId:   stakerId,
+	}, utilsStruct)
+}
+
+func ExecuteUpdateCommission(client *ethclient.Client, input types.UpdateCommissionInput, utilsStruct UtilsStruct) error {
+	stakerInfo, err := utilsStruct.razorUtils.GetStaker(client, input.Address, input.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
@@ -65,7 +76,7 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 		return err
 	}
 
-	if commission == 0 || commission > maxCommission {
+	if input.Commission == 0 || input.Commission > maxCommission {
 		return errors.New("commission out of range")
 	}
 
@@ -82,22 +93,20 @@ func (utilsStruct UtilsStruct) UpdateCommission(flagSet *pflag.FlagSet) error {
 	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
 		return errors.New("invalid epoch for update")
 	}
-
 	txnOpts := types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        input.Password,
+		AccountAddress:  input.Address,
 		ChainId:         core.ChainId,
-		Config:          config,
+		Config:          input.Config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerABI,
 		MethodName:      "updateCommission",
-		Parameters:      []interface{}{commission},
+		Parameters:      []interface{}{input.Commission},
 	}
-
 	updateCommissionTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
-	log.Infof("Setting the commission value of Staker %d to %d%%", stakerId, commission)
-	txn, err := utilsStruct.stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, commission)
+	log.Infof("Setting the commission value of Staker %d to %d%%", input.StakerId, input.Commission)
+	txn, err := utilsStruct.stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, input.Commission)
 	if err != nil {
 		log.Error("Error in setting commission")
 		return err

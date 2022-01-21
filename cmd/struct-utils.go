@@ -753,6 +753,10 @@ func (cmdUtils UtilsCmd) GetAmountInSRZRs(client *ethclient.Client, address stri
 	return GetAmountInSRZRs(client, address, staker, amount, utilsStruct)
 }
 
+func (cmdUtils UtilsCmd) ExecuteUpdateCommission(client *ethclient.Client, input types.UpdateCommissionInput, utilsStruct UtilsStruct) error {
+	return ExecuteUpdateCommission(client, input, utilsStruct)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utils.UtilsInterface.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
