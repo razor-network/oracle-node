@@ -127,6 +127,8 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	proposeUtils = ProposeUtils{}
 	cmdUtils = UtilsCmd{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
 
 	rootCmd.AddCommand(stakeCmd)
 	var (
