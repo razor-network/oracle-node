@@ -4,16 +4,13 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/mock"
+	"razor/cmd/mocks"
 	"reflect"
 	"testing"
 )
 
-func Test_listAccounts(t *testing.T) {
-
-	utilsStruct := UtilsStruct{
-		razorUtils:    UtilsMock{},
-		keystoreUtils: KeystoreMock{},
-	}
+func TestListAccounts(t *testing.T) {
 
 	accountsList := []accounts.Account{
 		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
@@ -59,15 +56,17 @@ func Test_listAccounts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetDefaultPathMock = func() (string, error) {
-				return tt.args.path, tt.args.pathErr
-			}
 
-			AccountsMock = func(string) []accounts.Account {
-				return tt.args.accounts
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			keystoreUtilsMock := new(mocks.KeystoreInterface)
 
-			got, err := utilsStruct.listAccounts()
+			razorUtils = utilsMock
+			keystoreUtils = keystoreUtilsMock
+
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			keystoreUtilsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
+			utils := &UtilsStruct{}
+			got, err := utils.ListAccounts()
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("List of accounts , got = %v, want %v", got, tt.want)
@@ -81,6 +80,66 @@ func Test_listAccounts(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for listAccounts function, got = %v, want = %v", got, tt.wantErr)
 				}
+			}
+
+		})
+	}
+}
+
+func TestExecuteListAccounts(t *testing.T) {
+
+	accountList := []accounts.Account{
+		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+			URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+		},
+		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea2"),
+			URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+		},
+	}
+	type args struct {
+		allAccounts    []accounts.Account
+		allAccountsErr error
+	}
+
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteListAccounts executes successfully",
+			args: args{
+				allAccounts: accountList,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When ExecuteListAccounts does not execute successfully",
+			args: args{
+				allAccountsErr: errors.New("allAccounts error"),
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("ListAccounts").Return(tt.args.allAccounts, tt.args.allAccountsErr)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteListAccounts()
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteListAccounts function didn't execute as expected")
 			}
 
 		})

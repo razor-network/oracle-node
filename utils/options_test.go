@@ -113,15 +113,17 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 
 	accountUtils := accounts.AccountUtilsInterface
 	type args struct {
-		path        string
-		pathErr     error
-		privateKey  *ecdsa.PrivateKey
-		nonce       uint64
-		nonceErr    error
-		txnOpts     *bind.TransactOpts
-		txnOptsErr  error
-		gasLimit    uint64
-		gasLimitErr error
+		path            string
+		pathErr         error
+		privateKey      *ecdsa.PrivateKey
+		nonce           uint64
+		nonceErr        error
+		txnOpts         *bind.TransactOpts
+		txnOptsErr      error
+		gasLimit        uint64
+		gasLimitErr     error
+		latestHeader    *Types.Header
+		latestHeaderErr error
 	}
 	tests := []struct {
 		name          string
@@ -204,6 +206,37 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			want:          txnOpts,
 			expectedFatal: false,
 		},
+		{
+			name: "Test 6: When there is an rpc error in getting gasLimit",
+			args: args{
+				path:        "/home/local",
+				privateKey:  privateKey,
+				nonce:       2,
+				txnOpts:     txnOpts,
+				gasLimitErr: errors.New("504 gateway error"),
+				latestHeader: &Types.Header{
+					GasLimit: 500,
+				},
+			},
+			want:          txnOpts,
+			expectedFatal: false,
+		},
+		{
+			name: "Test 7: When there is an rpc error in getting gasLimit and than error in getting latest header",
+			args: args{
+				path:        "/home/local",
+				privateKey:  privateKey,
+				nonce:       2,
+				txnOpts:     txnOpts,
+				gasLimitErr: errors.New("504 gateway error"),
+				latestHeader: &Types.Header{
+					GasLimit: 0,
+				},
+				latestHeaderErr: errors.New("latest header error"),
+			},
+			want:          txnOpts,
+			expectedFatal: true,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -230,6 +263,7 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			utilsMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			utilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
+			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
 			fatal = false
 			got := utils.GetTxnOpts(transactionData)
