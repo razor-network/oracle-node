@@ -111,7 +111,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		return txnArgs, err
 	}
 
-	_, err = cmdUtils.WaitForAppropriateState(txnArgs.Client, "unstake", 0, 1, 4)
+	_, err = cmdUtils.WaitForAppropriateState(txnArgs.Client, "unstake", 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err
