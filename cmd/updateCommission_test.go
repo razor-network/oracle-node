@@ -327,17 +327,17 @@ func TestExecuteUpdateCommission(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock
-			flagSetUtils = flagsetUtilsMock
+			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagsetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
+			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)

@@ -352,25 +352,6 @@ func TestExecuteSetDelegation(t *testing.T) {
 			},
 			expectedFatal: false,
 		},
-		{
-			name: "Test 13: When executeUpdateCommission throws an error",
-			args: args{
-				config:      config,
-				password:    "test",
-				address:     "0x000000000000000000000000000000000000dea1",
-				status:      "true",
-				parseStatus: true,
-				stakerId:    1,
-				staker: bindings.StructsStaker{
-					AcceptDelegation: false,
-				},
-				commission:                   12,
-				executeUpdateCommissionErr:   errors.New("error in updating commission"),
-				SetDelegationAcceptanceTxn:   &Types.Transaction{},
-				WaitForBlockCompletionStatus: 1,
-			},
-			expectedFatal: true,
-		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -395,6 +376,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
+			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)

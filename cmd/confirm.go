@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (utilsStruct UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(options.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
