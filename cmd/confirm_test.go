@@ -85,8 +85,9 @@ func TestClaimBlockReward(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting stakerId",
 			args: args{
-				epoch:       5,
-				stakerIdErr: errors.New("stakerId error"),
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				epoch:                  5,
+				stakerIdErr:            errors.New("stakerId error"),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("stakerId error"),
@@ -123,6 +124,14 @@ func TestClaimBlockReward(t *testing.T) {
 				ClaimBlockRewardTxn:    &Types.Transaction{},
 				ClaimBlockRewardErr:    nil,
 				hash:                   common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When sortedProposedBlockIds is nil",
+			args: args{
+				sortedProposedBlockIds: nil,
 			},
 			want:    core.NilHash,
 			wantErr: nil,
