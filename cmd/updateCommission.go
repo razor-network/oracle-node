@@ -88,6 +88,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		Password:        updateCommissionInput.Password,
 		AccountAddress:  updateCommissionInput.Address,
 		ChainId:         core.ChainId,
+		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerABI,
 		MethodName:      "updateCommission",
