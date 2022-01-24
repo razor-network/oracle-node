@@ -20,6 +20,11 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 		return core.NilHash, err
 	}
 
+	if sortedProposedBlockIds == nil {
+		log.Debug("No blocks proposed in this epoch")
+		return core.NilHash, nil
+	}
+
 	stakerID, err := razorUtils.GetStakerId(options.Client, options.AccountAddress)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
