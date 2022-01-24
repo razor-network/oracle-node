@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -119,7 +120,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 
-	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 0, 1, 4)
+	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err
