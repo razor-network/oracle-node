@@ -56,10 +56,26 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker build -t $IMAGE_NAME:$CIRCLE_TAG .
             docker push $IMAGE_NAME:$CIRCLE_TAG
+  arm-build:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    # machine: true
+    # resource_class: shrikant-ns/local-large
+    environment:
+      IMAGE_NAME: "razornetwork/razor-go"
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: docker build .
 workflows:
-  tests:
+  # tests:
+  #   jobs:
+  #     - test
+  arm-build:
     jobs:
-      - test
+      - arm-build
   publish:
     jobs:
       - push-build:
