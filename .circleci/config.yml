@@ -39,24 +39,7 @@ jobs:
           root: .
           paths:
             - .
-  push-build:
-    docker:
-      - image: circleci/golang:1.15.8
-        environment:
-          IMAGE_NAME: "razornetwork/razor-go"
-
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.7
-          docker_layer_caching: true
-      - run:
-          name: "Build docker image"
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker build -t $IMAGE_NAME:$CIRCLE_TAG .
-            docker push $IMAGE_NAME:$CIRCLE_TAG
-  arm-build:
+  push-docker-build:
     docker:
       - image: cimg/go:1.17.6
         environment:
@@ -82,30 +65,18 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-
-            docker buildx build --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME .
-            docker images
-
+            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:$CIRCLE_TAG .
 workflows:
-  # tests:
-  #   jobs:
-  #     - test
-  arm-build:
+  tests:
     jobs:
-      - arm-build
-  # publish:
-  #   jobs:
-  #     - arm-build:
-  #         context: Build
-  #         filters:
-  #           branches:
-  #             ignore: /.*/
-  #           tags:
-  #             only: /^v.*/
-  #     - push-build:
-  #         context: Build
-  #         filters:
-  #           branches:
-  #             ignore: /.*/
-  #           tags:
-  #             only: /^v.*/
+      - test
+  publish:
+    jobs:
+      - push-docker-build:
+          context: Build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
