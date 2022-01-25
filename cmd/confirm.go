@@ -27,7 +27,7 @@ func (utilsStruct UtilsStruct) ClaimBlockReward(options types.TransactionOptions
 		return core.NilHash, nil
 	}
 
-	stakerID, err := razorUtils.GetStakerId(options.Client, options.AccountAddress)
+	stakerID, err := utilsStruct.razorUtils.GetStakerId(options.Client, options.AccountAddress)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
 		return core.NilHash, err
