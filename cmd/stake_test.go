@@ -8,6 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
@@ -119,6 +121,242 @@ func Test_stakeCoins(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for stake function, got = %v, want %v", err, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestExecuteStake(t *testing.T) {
+	var flagSet *pflag.FlagSet
+	var client *ethclient.Client
+	var config types.Configurations
+
+	type args struct {
+		config       types.Configurations
+		configErr    error
+		password     string
+		address      string
+		addressErr   error
+		balance      *big.Int
+		balanceErr   error
+		amount       *big.Int
+		amountErr    error
+		approveTxn   common.Hash
+		approveErr   error
+		stakeTxn     common.Hash
+		stakeErr     error
+		isFlagPassed bool
+		autoVote     bool
+		autoVoteErr  error
+		isRogue      bool
+		isRogueErr   error
+		rogueMode    []string
+		rogueModeErr error
+		voteErr      error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteStake() executes successfully",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: false,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When autoVote flag is passed and ExecuteStake() executes successfully",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: true,
+				autoVote:     true,
+				isRogue:      true,
+				rogueMode:    []string{"propose"},
+				voteErr:      nil,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 3: When there is an error in getting config",
+			args: args{
+				config:       config,
+				configErr:    errors.New("config error"),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: false,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting address",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "",
+				addressErr:   errors.New("address error"),
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: false,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting amount",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       nil,
+				amountErr:    errors.New("amount error"),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: false,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error from Approve",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   core.NilHash,
+				approveErr:   errors.New("approve error"),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: false,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 7: When there is an error from StakeCoins()",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     core.NilHash,
+				stakeErr:     errors.New("stake error"),
+				isFlagPassed: false,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 8: When there is an error in getting autoVote status",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: true,
+				autoVoteErr:  errors.New("autoVote error"),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 9: When there is an error in getting rogue status",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: true,
+				autoVote:     true,
+				isRogueErr:   errors.New("rogue error"),
+				rogueMode:    []string{"propose"},
+				voteErr:      nil,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 10: When there is an error in getting rogue modes",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      big.NewInt(10000),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: true,
+				autoVote:     true,
+				isRogue:      true,
+				rogueMode:    nil,
+				rogueModeErr: errors.New("rogueModes error"),
+				voteErr:      nil,
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			razorUtils = utilsMock
+			flagSetUtils = flagSetUtilsMock
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
+			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
+			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
+			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
+			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
+			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
+			flagSetUtilsMock.On("GetBoolAutoVote", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.autoVote, tt.args.autoVoteErr)
+			flagSetUtilsMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.isRogue, tt.args.isRogueErr)
+			flagSetUtilsMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
+			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteStake(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteStake function didn't execute as expected")
 			}
 		})
 	}
