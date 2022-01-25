@@ -84,7 +84,7 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            docker buildx build --platform linux/arm64/v8 --tag $IMAGE_NAME:$CIRCLE_TAG .
+            docker buildx build --platform linux/arm64/v8 --tag $IMAGE_NAME .
     #            docker buildx build --push --platform linux/arm64/v8 --tag $IMAGE_NAME:$CIRCLE_TAG .
     # echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
 workflows:
