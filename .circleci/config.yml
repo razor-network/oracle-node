@@ -82,8 +82,9 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+
             docker buildx build --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME .
+
 workflows:
   # tests:
   #   jobs:
