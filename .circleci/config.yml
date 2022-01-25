@@ -61,8 +61,6 @@ jobs:
       - image: cimg/go:1.17.6
         environment:
           IMAGE_NAME: "razornetwork/razor-go"
-          # DOCKER_BUILDKIT: 1
-          # BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
 
     steps:
       - checkout
@@ -84,9 +82,8 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            docker buildx build --platform linux/arm64/v8 --tag $IMAGE_NAME .
-    #            docker buildx build --push --platform linux/arm64/v8 --tag $IMAGE_NAME:$CIRCLE_TAG .
-    # echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            docker buildx build --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME .
 workflows:
   # tests:
   #   jobs:
@@ -94,12 +91,19 @@ workflows:
   arm-build:
     jobs:
       - arm-build
-  publish:
-    jobs:
-      - push-build:
-          context: Build
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+  # publish:
+  #   jobs:
+  #     - arm-build:
+  #         context: Build
+  #         filters:
+  #           branches:
+  #             ignore: /.*/
+  #           tags:
+  #             only: /^v.*/
+  #     - push-build:
+  #         context: Build
+  #         filters:
+  #           branches:
+  #             ignore: /.*/
+  #           tags:
+  #             only: /^v.*/
