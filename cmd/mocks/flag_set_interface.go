@@ -12,8 +12,50 @@ type FlagSetInterface struct {
 	mock.Mock
 }
 
+// GetBoolAutoVote provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetBoolAutoVote(_a0 *pflag.FlagSet) (bool, error) {
+	ret := _m.Called(_a0)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) bool); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetBoolAutoWithdraw provides a mock function with given fields: _a0
 func (_m *FlagSetInterface) GetBoolAutoWithdraw(_a0 *pflag.FlagSet) (bool, error) {
+	ret := _m.Called(_a0)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) bool); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetBoolRogue provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetBoolRogue(_a0 *pflag.FlagSet) (bool, error) {
 	ret := _m.Called(_a0)
 
 	var r0 bool
@@ -390,20 +432,20 @@ func (_m *FlagSetInterface) GetStringName(_a0 *pflag.FlagSet) (string, error) {
 	return r0, r1
 }
 
-// GetStringPow provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
-	ret := _m.Called(flagSet)
+// GetStringPow provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetStringPow(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
 
 	var r0 string
 	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
-		r0 = rf(flagSet)
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -441,6 +483,29 @@ func (_m *FlagSetInterface) GetStringSelector(_a0 *pflag.FlagSet) (string, error
 		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringSliceRogueMode provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetStringSliceRogueMode(_a0 *pflag.FlagSet) ([]string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) []string); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
 	}
 
 	var r1 error
@@ -600,20 +665,20 @@ func (_m *FlagSetInterface) GetUint16JobId(_a0 *pflag.FlagSet) (uint16, error) {
 	return r0, r1
 }
 
-// GetUint16Tolerance provides a mock function with given fields: set
-func (_m *FlagSetInterface) GetUint16Tolerance(set *pflag.FlagSet) (uint16, error) {
-	ret := _m.Called(set)
+// GetUint16Tolerance provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetUint16Tolerance(_a0 *pflag.FlagSet) (uint16, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
 	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
-		r0 = rf(set)
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(set)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

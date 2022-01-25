@@ -13,6 +13,8 @@ import (
 
 	common "github.com/ethereum/go-ethereum/common"
 
+	context "context"
+
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
@@ -362,6 +364,11 @@ func (_m *UtilsCmdInterface) ExecuteOverrideJob(_a0 *pflag.FlagSet) {
 
 // ExecuteSetDelegation provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) ExecuteSetDelegation(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
+// ExecuteStake provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteStake(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
@@ -1149,6 +1156,20 @@ func (_m *UtilsCmdInterface) UpdateJob(_a0 *ethclient.Client, _a1 types.Configur
 	}
 
 	return r0, r1
+}
+
+// Vote provides a mock function with given fields: ctx, config, client, rogueData, account
+func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
+	ret := _m.Called(ctx, config, client, rogueData, account)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error); ok {
+		r0 = rf(ctx, config, client, rogueData, account)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // WaitForAppropriateState provides a mock function with given fields: _a0, _a1, _a2

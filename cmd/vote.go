@@ -75,13 +75,13 @@ func executeVote(flagSet *pflag.FlagSet) {
 		os.Exit(2)
 	}()
 
-	if err := vote(ctx, config, client, rogueData, account); err != nil {
+	if err := cmdUtils.Vote(ctx, config, client, rogueData, account); err != nil {
 		log.Errorf("%s\n", err)
 		os.Exit(1)
 	}
 }
 
-func vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
+func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
 
 	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)

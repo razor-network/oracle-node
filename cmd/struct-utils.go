@@ -651,6 +651,18 @@ func (flagSetUtils FLagSetUtils) GetUint16Tolerance(flagSet *pflag.FlagSet) (uin
 	return flagSet.GetUint16("tolerance")
 }
 
+func (flagSetUtils FLagSetUtils) GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("autoVote")
+}
+
+func (flagSetUtils FLagSetUtils) GetBoolRogue(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("rogue")
+}
+
+func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error) {
+	return flagSet.GetStringSlice("rogueMode")
+}
+
 func (KeystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.Accounts()
