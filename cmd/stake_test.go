@@ -18,7 +18,7 @@ import (
 	"testing"
 )
 
-func Test_stakeCoins(t *testing.T) {
+func TestStakeCoins(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
@@ -315,6 +315,21 @@ func TestExecuteStake(t *testing.T) {
 				rogueMode:    nil,
 				rogueModeErr: errors.New("rogueModes error"),
 				voteErr:      nil,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 11: When there is an error in getting balance",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(2000),
+				balance:      nil,
+				balanceErr:   errors.New("balance error"),
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				isFlagPassed: false,
 			},
 			expectedFatal: true,
 		},
