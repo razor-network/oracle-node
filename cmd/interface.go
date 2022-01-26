@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -190,8 +191,11 @@ type FlagSetInterface interface {
 	GetUint16JobId(*pflag.FlagSet) (uint16, error)
 	GetUint16CollectionId(*pflag.FlagSet) (uint16, error)
 	GetStringValue(*pflag.FlagSet) (string, error)
-	GetStringPow(flagSet *pflag.FlagSet) (string, error)
-	GetUint16Tolerance(set *pflag.FlagSet) (uint16, error)
+	GetStringPow(*pflag.FlagSet) (string, error)
+	GetUint16Tolerance(*pflag.FlagSet) (uint16, error)
+	GetBoolAutoVote(*pflag.FlagSet) (bool, error)
+	GetBoolRogue(*pflag.FlagSet) (bool, error)
+	GetStringSliceRogueMode(*pflag.FlagSet) ([]string, error)
 }
 
 type UtilsCmdInterface interface {
@@ -271,6 +275,8 @@ type UtilsCmdInterface interface {
 	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	ExecuteListAccounts()
+	ExecuteStake(*pflag.FlagSet)
+	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error
 }
 
 type TransactionInterface interface {

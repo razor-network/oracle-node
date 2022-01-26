@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/spf13/pflag"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -20,63 +21,74 @@ var stakeCmd = &cobra.Command{
 
 Example:
   ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
-	Run: func(cmd *cobra.Command, args []string) {
-		config, err := cmdUtils.GetConfigData()
-		utils.CheckError("Error in getting config: ", err)
-
-		password := utils.AssignPassword(cmd.Flags())
-		address, _ := cmd.Flags().GetString("address")
-		client := utils.ConnectToClient(config.Provider)
-		balance, err := utils.FetchBalance(client, address)
-		utils.CheckError("Error in fetching balance for account: "+address, err)
-
-		valueInWei, err := cmdUtils.AssignAmountInWei(cmd.Flags())
-		utils.CheckError("Error in getting amount: ", err)
-
-		utils.CheckAmountAndBalance(valueInWei, balance)
-
-		utils.CheckEthBalanceIsZero(client, address)
-
-		txnArgs := types.TransactionOptions{
-			Client:         client,
-			AccountAddress: address,
-			Password:       password,
-			Amount:         valueInWei,
-			ChainId:        core.ChainId,
-			Config:         config,
-		}
-
-		approveTxnHash, err := cmdUtils.Approve(txnArgs)
-		utils.CheckError("Approve error: ", err)
-
-		if approveTxnHash != core.NilHash {
-			utils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
-		}
-
-		stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
-		utils.CheckError("Stake error: ", err)
-		utils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
-
-		if utils.IsFlagPassed("autoVote") {
-			isAutoVote, _ := cmd.Flags().GetBool("autoVote")
-			if isAutoVote {
-				log.Info("Staked!...Starting to vote now.")
-				account := types.Account{Address: address, Password: password}
-				isRogue, _ := cmd.Flags().GetBool("rogue")
-				rogueMode, _ := cmd.Flags().GetStringSlice("rogueMode")
-				rogueData := types.Rogue{
-					IsRogue:   isRogue,
-					RogueMode: rogueMode,
-				}
-				err := vote(context.Background(), config, client, rogueData, account)
-				if err != nil {
-					log.Fatal("Error in auto vote: ", err)
-				}
-			}
-		}
-	},
+	Run: initialiseStake,
 }
 
+func initialiseStake(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteStake(cmd.Flags())
+}
+
+func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+	balance, err := razorUtils.FetchBalance(client, address)
+	utils.CheckError("Error in fetching balance for account: "+address, err)
+
+	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
+	utils.CheckError("Error in getting amount: ", err)
+
+	razorUtils.CheckAmountAndBalance(valueInWei, balance)
+
+	razorUtils.CheckEthBalanceIsZero(client, address)
+
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		AccountAddress: address,
+		Password:       password,
+		Amount:         valueInWei,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
+
+	approveTxnHash, err := cmdUtils.Approve(txnArgs)
+	utils.CheckError("Approve error: ", err)
+
+	if approveTxnHash != core.NilHash {
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+	}
+
+	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
+	utils.CheckError("Stake error: ", err)
+	razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+
+	if razorUtils.IsFlagPassed("autoVote") {
+		isAutoVote, err := flagSetUtils.GetBoolAutoVote(flagSet)
+		utils.CheckError("Error in getting autoVote status: ", err)
+
+		if isAutoVote {
+			log.Info("Staked!...Starting to vote now.")
+			account := types.Account{Address: address, Password: password}
+			isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
+			utils.CheckError("Error in getting rogue status: ", err)
+
+			rogueMode, err := flagSetUtils.GetStringSliceRogueMode(flagSet)
+			utils.CheckError("Error in getting rogue modes: ", err)
+
+			rogueData := types.Rogue{
+				IsRogue:   isRogue,
+				RogueMode: rogueMode,
+			}
+			err = cmdUtils.Vote(context.Background(), config, client, rogueData, account)
+			utils.CheckError("Error in auto vote: ", err)
+		}
+	}
+}
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
