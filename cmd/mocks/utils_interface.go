@@ -732,20 +732,20 @@ func (_m *UtilsInterface) GetNumberOfProposedBlocks(_a0 *ethclient.Client, _a1 u
 	return r0, r1
 }
 
-// GetNumberOfStakers provides a mock function with given fields: _a0, _a1
-func (_m *UtilsInterface) GetNumberOfStakers(_a0 *ethclient.Client, _a1 string) (uint32, error) {
-	ret := _m.Called(_a0, _a1)
+// GetNumberOfStakers provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetNumberOfStakers(_a0 *ethclient.Client) (uint32, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) uint32); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -850,6 +850,29 @@ func (_m *UtilsInterface) GetSortedProposedBlockIds(_a0 *ethclient.Client, _a1 u
 	return r0, r1
 }
 
+// GetStake provides a mock function with given fields: client, stakerId
+func (_m *UtilsInterface) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
+	ret := _m.Called(client, stakerId)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) *big.Int); ok {
+		r0 = rf(client, stakerId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, stakerId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStakeSnapshot provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsInterface) GetStakeSnapshot(_a0 *ethclient.Client, _a1 uint32, _a2 uint32) (*big.Int, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -889,20 +912,20 @@ func (_m *UtilsInterface) GetStakedToken(_a0 *ethclient.Client, _a1 common.Addre
 	return r0
 }
 
-// GetStaker provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsInterface) GetStaker(_a0 *ethclient.Client, _a1 string, _a2 uint32) (bindings.StructsStaker, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetStaker provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterface) GetStaker(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 bindings.StructsStaker
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) bindings.StructsStaker); ok {
-		r0 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bindings.StructsStaker); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsStaker)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1047,20 +1070,20 @@ func (_m *UtilsInterface) GetUpdatedEpoch(_a0 *ethclient.Client) (uint32, error)
 	return r0, r1
 }
 
-// GetUpdatedStaker provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsInterface) GetUpdatedStaker(_a0 *ethclient.Client, _a1 string, _a2 uint32) (bindings.StructsStaker, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetUpdatedStaker provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterface) GetUpdatedStaker(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 bindings.StructsStaker
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) bindings.StructsStaker); ok {
-		r0 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bindings.StructsStaker); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsStaker)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1112,20 +1135,20 @@ func (_m *UtilsInterface) GetVotes(_a0 *ethclient.Client, _a1 uint32) (bindings.
 	return r0, r1
 }
 
-// GetWithdrawReleasePeriod provides a mock function with given fields: _a0, _a1
-func (_m *UtilsInterface) GetWithdrawReleasePeriod(_a0 *ethclient.Client, _a1 string) (uint8, error) {
-	ret := _m.Called(_a0, _a1)
+// GetWithdrawReleasePeriod provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetWithdrawReleasePeriod(_a0 *ethclient.Client) (uint8, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) uint8); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

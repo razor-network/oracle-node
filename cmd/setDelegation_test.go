@@ -117,7 +117,7 @@ func TestSetDelegation(t *testing.T) {
 			stakeManagerUtils = stakeManagerUtilsMock
 			transactionUtils = transactionUtilsMock
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.SetDelegationAcceptanceTxn, tt.args.SetDelegationAcceptanceErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)

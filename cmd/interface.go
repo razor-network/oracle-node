@@ -74,17 +74,17 @@ type UtilsInterface interface {
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
-	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
-	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
+	GetUpdatedStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
-	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
+	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	ParseBool(str string) (bool, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
-	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
+	GetNumberOfStakers(*ethclient.Client) (uint32, error)
 	GetRandaoHash(*ethclient.Client) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
@@ -104,6 +104,7 @@ type UtilsInterface interface {
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
+	GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error)
 }
 
 type StakeManagerInterface interface {

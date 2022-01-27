@@ -16,7 +16,7 @@ func getVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bi
 
 func GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client)
-	stakerId, err := GetStakerId(client, address)
+	stakerId, err := UtilsInterface.GetStakerId(client, address)
 	if err != nil {
 		return [32]byte{}, err
 	}

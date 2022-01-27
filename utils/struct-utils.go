@@ -13,6 +13,7 @@ import (
 	"io"
 	"math/big"
 	"razor/accounts"
+	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
 )
@@ -99,4 +100,39 @@ func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpt
 func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
+}
+
+func (o OptionsStruct) GetStakerId(client *ethclient.Client, opts *bind.CallOpts, address common.Address) (uint32, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.GetStakerId(opts, address)
+}
+
+func (o OptionsStruct) GetNumStakers(client *ethclient.Client, opts *bind.CallOpts) (uint32, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.GetNumStakers(opts)
+}
+
+func (o OptionsStruct) Locks(client *ethclient.Client, opts *bind.CallOpts, address common.Address, address1 common.Address) (coretypes.Locks, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.Locks(opts, address, address1)
+}
+
+func (o OptionsStruct) WithdrawReleasePeriod(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.WithdrawReleasePeriod(opts)
+}
+
+func (o OptionsStruct) MaxCommission(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.MaxCommission(opts)
+}
+
+func (o OptionsStruct) EpochLimitForUpdateCommission(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.EpochLimitForUpdateCommission(opts)
+}
+
+func (o OptionsStruct) GetStaker(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsStaker, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.GetStaker(opts, stakerId)
 }

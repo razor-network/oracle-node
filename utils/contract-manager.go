@@ -17,7 +17,7 @@ func GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 	return coinContract
 }
 
-func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
+func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	stakeManagerContract, err := bindings.NewStakeManager(common.HexToAddress(core.StakeManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)

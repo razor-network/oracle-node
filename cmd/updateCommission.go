@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 
 func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
 
-	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.Address, updateCommissionInput.StakerId)
+	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err

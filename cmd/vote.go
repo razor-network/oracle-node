@@ -120,7 +120,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting epoch: ", err)
 		return
 	}
-	stakerId, err := utils.GetStakerId(client, account.Address)
+	stakerId, err := razorUtils.GetStakerId(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting staker id: ", err)
 		return
@@ -129,7 +129,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Staker doesn't exist")
 		return
 	}
-	stakedAmount, err := utils.GetStake(client, account.Address, stakerId)
+	stakedAmount, err := razorUtils.GetStake(client, stakerId)
 	if err != nil {
 		log.Error("Error in getting staked amount: ", err)
 		return
@@ -165,7 +165,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		os.Exit(0)
 	}
 
-	staker, err := utils.GetStaker(client, account.Address, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)
 		return
@@ -398,7 +398,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 		ChainId:        core.ChainId,
 		Config:         config,
 	}
-	stakerId, err := utils.GetStakerId(client, account.Address)
+	stakerId, err := razorUtils.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
 
 	_, err = cmdUtils.Unstake(config, client,

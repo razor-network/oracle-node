@@ -42,6 +42,13 @@ type OptionUtils interface {
 	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+	GetStakerId(*ethclient.Client, *bind.CallOpts, common.Address) (uint32, error)
+	GetStaker(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsStaker, error)
+	GetNumStakers(*ethclient.Client, *bind.CallOpts) (uint32, error)
+	Locks(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (types.Locks, error)
+	WithdrawReleasePeriod(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	MaxCommission(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	EpochLimitForUpdateCommission(*ethclient.Client, *bind.CallOpts) (uint16, error)
 }
 
 type Utils interface {
@@ -66,6 +73,16 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
+	GetStakeManager(*ethclient.Client) *bindings.StakeManager
+	GetStakeManagerWithOpts(*ethclient.Client) (*bindings.StakeManager, bind.CallOpts)
+	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
+	GetStake(*ethclient.Client, uint32) (*big.Int, error)
+	GetStakerId(*ethclient.Client, string) (uint32, error)
+	GetNumberOfStakers(*ethclient.Client) (uint32, error)
+	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
+	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
+	GetMaxCommission(*ethclient.Client) (uint8, error)
+	GetEpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
 }
 
 type OptionsStruct struct{}
