@@ -4,14 +4,14 @@ import (
 	"os"
 )
 
-func GetDefaultPath() (string, error) {
-	home, err := os.UserHomeDir()
+func (PathUtils) GetDefaultPath() (string, error) {
+	home, err := PathUtilsInterface.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 	defaultPath := home + "/.razor"
-	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
-		mkdirErr := os.Mkdir(defaultPath, 0700)
+	if _, err := PathUtilsInterface.Stat(defaultPath); PathUtilsInterface.IsNotExist(err) {
+		mkdirErr := PathUtilsInterface.Mkdir(defaultPath, 0700)
 		if mkdirErr != nil {
 			return "", mkdirErr
 		}
@@ -20,7 +20,7 @@ func GetDefaultPath() (string, error) {
 }
 
 func GetLogFilePath() (string, error) {
-	home, err := GetDefaultPath()
+	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +28,7 @@ func GetLogFilePath() (string, error) {
 }
 
 func GetConfigFilePath() (string, error) {
-	home, err := GetDefaultPath()
+	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
@@ -36,12 +36,12 @@ func GetConfigFilePath() (string, error) {
 }
 
 func GetJobFilePath() (string, error) {
-	home, err := GetDefaultPath()
+	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
 	filePath := home + "/jobs.json"
-	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	f, err := PathUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return "", err
 	}
