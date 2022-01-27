@@ -6,8 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-var StateLength uint64 = 60
-var EpochLength int64 = 300
+var StateLength uint64 = 180
+var EpochLength int64 = 900
 
 var NumberOfStates int64 = 5
 var ChainId = big.NewInt(80001)
