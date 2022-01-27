@@ -201,6 +201,7 @@ type FlagSetInterface interface {
 	GetStringValue(*pflag.FlagSet) (string, error)
 	GetStringPow(*pflag.FlagSet) (string, error)
 	GetUint16Tolerance(*pflag.FlagSet) (uint16, error)
+	GetBoolAutoVote(*pflag.FlagSet) (bool, error)
 	GetBoolRogue(*pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(*pflag.FlagSet) ([]string, error)
 }
@@ -290,6 +291,7 @@ type UtilsCmdInterface interface {
 	Vote(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error
 	HandleExit()
 	ExecuteListAccounts()
+	ExecuteStake(*pflag.FlagSet)
 }
 
 type TransactionInterface interface {

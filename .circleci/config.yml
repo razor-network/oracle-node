@@ -39,9 +39,9 @@ jobs:
           root: .
           paths:
             - .
-  push-build:
+  push-docker-build:
     docker:
-      - image: circleci/golang:1.15.8
+      - image: cimg/go:1.17.6
         environment:
           IMAGE_NAME: "razornetwork/razor-go"
 
@@ -51,18 +51,29 @@ jobs:
           version: 20.10.7
           docker_layer_caching: true
       - run:
+          name: Install Docker Buildx
+          command: |
+            mkdir -vp ~/.docker/cli-plugins/
+            curl --silent -L "https://github.com/docker/buildx/releases/download/v0.5.1/buildx-v0.5.1.linux-amd64" > ~/.docker/cli-plugins/docker-buildx
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx version
+            sudo apt-get update && sudo apt-get install -y binfmt-support qemu-user-static
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            docker run --privileged --rm tonistiigi/binfmt --install arm64
+            docker context create buildcontext
+            docker buildx create buildcontext --use
+      - run:
           name: "Build docker image"
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-            docker build -t $IMAGE_NAME:$CIRCLE_TAG .
-            docker push $IMAGE_NAME:$CIRCLE_TAG
+            docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:$CIRCLE_TAG .
 workflows:
   tests:
     jobs:
       - test
   publish:
     jobs:
-      - push-build:
+      - push-docker-build:
           context: Build
           filters:
             branches:

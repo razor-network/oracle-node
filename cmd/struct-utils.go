@@ -681,6 +681,10 @@ func (flagSetUtils FLagSetUtils) GetUint16Tolerance(flagSet *pflag.FlagSet) (uin
 	return flagSet.GetUint16("tolerance")
 }
 
+func (flagSetUtils FLagSetUtils) GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("autoVote")
+}
+
 func (flagSetUtils FLagSetUtils) GetBoolRogue(flagSet *pflag.FlagSet) (bool, error) {
 	return flagSet.GetBool("rogue")
 }

@@ -426,7 +426,7 @@ func TestExecuteWithdraw(t *testing.T) {
 
 			utils.ExecuteWithdraw(flagSet)
 			if fatal != tt.expectedFatal {
-				t.Error("The inputUnstake function didn't execute as expected")
+				t.Error("The ExecuteWithdraw function didn't execute as expected")
 			}
 
 		})

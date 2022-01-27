@@ -388,6 +388,11 @@ func (_m *UtilsCmdInterface) ExecuteSetDelegation(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
+// ExecuteStake provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteStake(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // ExecuteStakerinfo provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) ExecuteStakerinfo(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
