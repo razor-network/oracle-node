@@ -23,8 +23,8 @@ func TestAggregate(t *testing.T) {
 		Url: "https://api.gemini.com/v1/pubticker/ethusd",
 	}
 
-	collection := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollectionMean",
+	collection := bindings.StructsCollection{Active: true, Id: 4, AssetIndex: 1, Power: 2,
+		AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollectionMean",
 	}
 
 	type args struct {
@@ -200,7 +200,7 @@ func TestGetActiveAssetsData(t *testing.T) {
 	var epoch uint32
 
 	collection := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollectionMean",
+		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
 	}
 
 	type args struct {
@@ -317,11 +317,11 @@ func TestGetActiveCollection(t *testing.T) {
 	var collectionId uint16
 
 	collectionEth := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollectionMean",
+		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
 	}
 
 	collectionEthInactive := bindings.StructsCollection{Active: false, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollectionMean",
+		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
 	}
 
 	type args struct {
@@ -457,7 +457,7 @@ func TestGetAssetType(t *testing.T) {
 	}
 
 	collection := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollectionMean",
+		AggregationMethod: 2, JobIDs: []uint16{1, 3, 4}, Name: "ethCollectionMean",
 	}
 
 	assetJob := types.Asset{
