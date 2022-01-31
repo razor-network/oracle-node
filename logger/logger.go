@@ -22,7 +22,7 @@ var standardLogger = &StandardLogger{logrus.New()}
 
 func init() {
 
-	logFilePath, err := path.GetLogFilePath()
+	logFilePath, err := path.PathUtilsInterface.GetLogFilePath()
 	if err != nil {
 		standardLogger.Fatal("Error in fetching log file path: ", err)
 	}

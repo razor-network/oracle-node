@@ -19,7 +19,7 @@ func (PathUtils) GetDefaultPath() (string, error) {
 	return defaultPath, nil
 }
 
-func GetLogFilePath() (string, error) {
+func (PathUtils) GetLogFilePath() (string, error) {
 	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func GetLogFilePath() (string, error) {
 	return home + "/razor.log", err
 }
 
-func GetConfigFilePath() (string, error) {
+func (PathUtils) GetConfigFilePath() (string, error) {
 	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
@@ -35,7 +35,7 @@ func GetConfigFilePath() (string, error) {
 	return home + "/razor.yaml", nil
 }
 
-func GetJobFilePath() (string, error) {
+func (PathUtils) GetJobFilePath() (string, error) {
 	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err

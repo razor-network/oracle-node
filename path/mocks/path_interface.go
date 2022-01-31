@@ -14,8 +14,71 @@ type PathInterface struct {
 	mock.Mock
 }
 
+// GetConfigFilePath provides a mock function with given fields:
+func (_m *PathInterface) GetConfigFilePath() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDefaultPath provides a mock function with given fields:
 func (_m *PathInterface) GetDefaultPath() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetJobFilePath provides a mock function with given fields:
+func (_m *PathInterface) GetJobFilePath() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLogFilePath provides a mock function with given fields:
+func (_m *PathInterface) GetLogFilePath() (string, error) {
 	ret := _m.Called()
 
 	var r0 string
@@ -63,13 +126,13 @@ func (_m *PathInterface) Mkdir(_a0 string, _a1 fs.FileMode) error {
 	return r0
 }
 
-// OpenFile provides a mock function with given fields: name, flag, perm
-func (_m *PathInterface) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
-	ret := _m.Called(name, flag, perm)
+// OpenFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *PathInterface) OpenFile(_a0 string, _a1 int, _a2 fs.FileMode) (*os.File, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *os.File
 	if rf, ok := ret.Get(0).(func(string, int, fs.FileMode) *os.File); ok {
-		r0 = rf(name, flag, perm)
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*os.File)
@@ -78,7 +141,7 @@ func (_m *PathInterface) OpenFile(name string, flag int, perm fs.FileMode) (*os.
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string, int, fs.FileMode) error); ok {
-		r1 = rf(name, flag, perm)
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}

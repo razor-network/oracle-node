@@ -15,7 +15,10 @@ type PathInterface interface {
 	IsNotExist(error) bool
 	Mkdir(string, fs.FileMode) error
 	GetDefaultPath() (string, error)
-	OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error)
+	OpenFile(string, int, fs.FileMode) (*os.File, error)
+	GetLogFilePath() (string, error)
+	GetConfigFilePath() (string, error)
+	GetJobFilePath() (string, error)
 }
 
 type PathUtils struct{}
