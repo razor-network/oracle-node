@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"razor/accounts"
 	coretypes "razor/core/types"
@@ -137,4 +138,8 @@ func (o OptionsStruct) ReadJSONData(s string) (map[string]*coretypes.StructsJob,
 
 func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return ConvertToNumber(num)
+}
+
+func (o OptionsStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
+	return ioutil.ReadAll(body)
 }
