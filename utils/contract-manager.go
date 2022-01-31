@@ -33,7 +33,7 @@ func GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
 	return assetManager
 }
 
-func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
+func (*UtilsStruct) GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
 	voteManager, err := bindings.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)

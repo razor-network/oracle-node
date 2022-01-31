@@ -13,6 +13,7 @@ import (
 	"io"
 	"math/big"
 	"razor/accounts"
+	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
 )
@@ -99,4 +100,49 @@ func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpt
 func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
+}
+
+func (o OptionsStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (coretypes.Commitment, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.Commitments(opts, stakerId)
+}
+
+func (o OptionsStruct) GetVoteValue(client *ethclient.Client, opts *bind.CallOpts, assetIndex uint16, stakerId uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetVoteValue(opts, assetIndex, stakerId)
+}
+
+func (o OptionsStruct) GetVote(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsVote, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetVote(opts, stakerId)
+}
+
+func (o OptionsStruct) GetInfluenceSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetInfluenceSnapshot(opts, epoch, stakerId)
+}
+
+func (o OptionsStruct) GetStakeSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetStakeSnapshot(opts, epoch, stakerId)
+}
+
+func (o OptionsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetTotalInfluenceRevealed(opts, epoch)
+}
+
+func (o OptionsStruct) GetRandaoHash(client *ethclient.Client, opts *bind.CallOpts) ([32]byte, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetRandaoHash(opts)
+}
+
+func (o OptionsStruct) GetEpochLastCommitted(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetEpochLastCommitted(opts, stakerId)
+}
+
+func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetEpochLastRevealed(opts, stakerId)
 }

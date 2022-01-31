@@ -132,11 +132,11 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 }
 
 func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastCommitted(client, stakerId)
+	return utils.UtilsInterface.GetEpochLastCommitted(client, stakerId)
 }
 
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
-	return utils.GetCommitments(client, address)
+	return utils.UtilsInterface.GetCommitments(client, address)
 }
 
 func (u Utils) AllZero(bytesValue [32]byte) bool {
@@ -192,7 +192,7 @@ func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string
 }
 
 func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
+	return utils.UtilsInterface.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
@@ -204,7 +204,7 @@ func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uin
 }
 
 func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
-	return utils.GetRandaoHash(client)
+	return utils.UtilsInterface.GetRandaoHash(client)
 }
 
 //TODO: Check direct usage from utils package without implementing it here
@@ -221,16 +221,16 @@ func (u Utils) GetProposedBlock(client *ethclient.Client, epoch uint32, proposed
 	return utils.UtilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
 }
 
-func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastRevealed(client, address, stakerId)
+func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utils.UtilsInterface.GetEpochLastRevealed(client, stakerId)
 }
 
 func (u Utils) GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
-	return utils.GetVoteValue(client, assetId, stakerId)
+	return utils.UtilsInterface.GetVoteValue(client, assetId, stakerId)
 }
 
 func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
-	return utils.GetTotalInfluenceRevealed(client, epoch)
+	return utils.UtilsInterface.GetTotalInfluenceRevealed(client, epoch)
 }
 
 func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
@@ -246,7 +246,7 @@ func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager 
 }
 
 func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
-	return utils.GetVotes(client, stakerId)
+	return utils.UtilsInterface.GetVotes(client, stakerId)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
@@ -278,7 +278,7 @@ func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint1
 }
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.GetStakeSnapshot(client, stakerId, epoch)
+	return utils.UtilsInterface.GetStakeSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
@@ -423,7 +423,7 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.GetVoteManager(client)
+	voteManager := utils.UtilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -443,7 +443,7 @@ func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *
 }
 
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.GetVoteManager(client)
+	voteManager := utils.UtilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error

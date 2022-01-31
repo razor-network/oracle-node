@@ -176,7 +176,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 	}
 	switch state {
 	case 0:
-		lastCommit, err := utils.GetEpochLastCommitted(client, stakerId)
+		lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last commit: ", err)
 			break
@@ -214,7 +214,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		}
 		log.Debug("Data saved!")
 	case 1:
-		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
+		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last reveal: ", err)
 			break
@@ -278,7 +278,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot propose in epoch %d because last proposed epoch is %d", epoch, lastProposal)
 			break
 		}
-		lastReveal, err := utils.GetEpochLastRevealed(client, account.Address, stakerId)
+		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
 		if err != nil {
 			log.Error("Error in fetching last reveal: ", err)
 			break

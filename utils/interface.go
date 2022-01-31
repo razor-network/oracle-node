@@ -42,6 +42,15 @@ type OptionUtils interface {
 	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+	Commitments(*ethclient.Client, *bind.CallOpts, uint32) (types.Commitment, error)
+	GetVoteValue(*ethclient.Client, *bind.CallOpts, uint16, uint32) (*big.Int, error)
+	GetVote(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, *bind.CallOpts, uint32) (*big.Int, error)
+	GetRandaoHash(*ethclient.Client, *bind.CallOpts) ([32]byte, error)
+	GetEpochLastCommitted(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
 }
 
 type Utils interface {
@@ -66,6 +75,17 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
+	GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
+	GetCommitments(client *ethclient.Client, address string) ([32]byte, error)
+	GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error)
+	GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
+	GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error)
+	GetRandaoHash(client *ethclient.Client) ([32]byte, error)
+	GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error)
+	GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error)
+	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
 }
 
 type OptionsStruct struct{}

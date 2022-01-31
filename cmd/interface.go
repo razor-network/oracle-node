@@ -89,7 +89,7 @@ type UtilsInterface interface {
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
-	GetEpochLastRevealed(*ethclient.Client, string, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
 	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
