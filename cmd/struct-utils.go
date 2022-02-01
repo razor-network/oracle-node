@@ -178,7 +178,7 @@ func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, staker
 }
 
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
-	return utils.GetStakedToken(client, address)
+	return utils.UtilsInterface.GetStakedToken(client, address)
 }
 
 func (u Utils) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
@@ -324,58 +324,58 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 }
 
 func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) ExtendLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.ExtendLock(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.Delegate(opts, stakerId, amount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.Withdraw(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.SetDelegationAcceptance(opts, status)
 }
 
 func (stakeManagerUtils StakeManagerUtils) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.UpdateCommission(opts, commission)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.Unstake(opts, stakerId, sAmount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.RedeemBounty(opts, bountyId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.Stakers(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	index := age / 10000
 	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
 }
 
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
-	stakeManager := utils.GetStakeManager(client)
+	stakeManager := utils.UtilsInterface.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
 }
 
@@ -453,7 +453,7 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.GetVoteManager(client)
+	voteManager := utils.UtilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -473,7 +473,7 @@ func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *
 }
 
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.GetVoteManager(client)
+	voteManager := utils.UtilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -493,17 +493,17 @@ func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	tokenManager := utils.GetTokenManager(client)
+	tokenManager := utils.UtilsInterface.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
-	tokenManager := utils.GetTokenManager(client)
+	tokenManager := utils.UtilsInterface.GetTokenManager(client)
 	return tokenManager.Approve(opts, spender, amount)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
-	tokenManager := utils.GetTokenManager(client)
+	tokenManager := utils.UtilsInterface.GetTokenManager(client)
 	return tokenManager.Transfer(opts, recipient, amount)
 }
 
