@@ -25,7 +25,7 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 	return stakeManagerContract
 }
 
-func GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
+func (*UtilsStruct) GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
 	assetManager, err := bindings.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)

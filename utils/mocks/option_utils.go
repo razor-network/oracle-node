@@ -83,6 +83,29 @@ func (_m *OptionUtils) Commitments(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a
 	return r0, r1
 }
 
+// ConvertToNumber provides a mock function with given fields: _a0
+func (_m *OptionUtils) ConvertToNumber(_a0 interface{}) (*big.Float, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Float
+	if rf, ok := ret.Get(0).(func(interface{}) *big.Float); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Float)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // EstimateGas provides a mock function with given fields: _a0, _a1, _a2
 func (_m *OptionUtils) EstimateGas(_a0 *ethclient.Client, _a1 context.Context, _a2 ethereum.CallMsg) (uint64, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -119,6 +142,50 @@ func (_m *OptionUtils) FilterLogs(_a0 *ethclient.Client, _a1 context.Context, _a
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.FilterQuery) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetActiveCollections provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) GetActiveCollections(_a0 *ethclient.Client, _a1 *bind.CallOpts) ([]uint16, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 []uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) []uint16); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint16)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAsset provides a mock function with given fields: _a0, _a1, _a2
+func (_m *OptionUtils) GetAsset(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint16) (types.Asset, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 types.Asset
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint16) types.Asset); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(types.Asset)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint16) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
@@ -227,6 +294,71 @@ func (_m *OptionUtils) GetInfluenceSnapshot(_a0 *ethclient.Client, _a1 *bind.Cal
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32, uint32) error); ok {
 		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetJobFilePath provides a mock function with given fields:
+func (_m *OptionUtils) GetJobFilePath() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNumActiveCollections provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) GetNumActiveCollections(_a0 *ethclient.Client, _a1 *bind.CallOpts) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNumAssets provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) GetNumAssets(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint16, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) uint16); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -428,6 +560,27 @@ func (_m *OptionUtils) HeaderByNumber(_a0 *ethclient.Client, _a1 context.Context
 	return r0, r1
 }
 
+// Jobs provides a mock function with given fields: _a0, _a1, _a2
+func (_m *OptionUtils) Jobs(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint16) (bindings.StructsJob, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 bindings.StructsJob
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint16) bindings.StructsJob); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(bindings.StructsJob)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint16) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // MaxAltBlocks provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) MaxAltBlocks(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
 	ret := _m.Called(_a0, _a1)
@@ -556,6 +709,52 @@ func (_m *OptionUtils) PendingNonceAt(_a0 *ethclient.Client, _a1 context.Context
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, common.Address) error); ok {
 		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ReadAll provides a mock function with given fields: _a0
+func (_m *OptionUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
+	ret := _m.Called(_a0)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(io.ReadCloser) []byte); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(io.ReadCloser) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ReadJSONData provides a mock function with given fields: _a0
+func (_m *OptionUtils) ReadJSONData(_a0 string) (map[string]*types.StructsJob, error) {
+	ret := _m.Called(_a0)
+
+	var r0 map[string]*types.StructsJob
+	if rf, ok := ret.Get(0).(func(string) map[string]*types.StructsJob); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]*types.StructsJob)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

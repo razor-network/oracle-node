@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"razor/accounts"
 	coretypes "razor/core/types"
@@ -34,6 +35,10 @@ func (o OptionsStruct) Pack(parsedData abi.ABI, name string, args ...interface{}
 
 func (o OptionsStruct) GetDefaultPath() (string, error) {
 	return path.GetDefaultPath()
+}
+
+func (o OptionsStruct) GetJobFilePath() (string, error) {
+	return path.GetJobFilePath()
 }
 
 func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
@@ -100,6 +105,43 @@ func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpt
 func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
+}
+
+func (o OptionsStruct) GetNumAssets(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
+	assetManager := UtilsInterface.GetAssetManager(client)
+	return assetManager.GetNumAssets(opts)
+}
+
+func (o OptionsStruct) GetNumActiveCollections(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
+	assetManager := UtilsInterface.GetAssetManager(client)
+	return assetManager.GetNumActiveCollections(opts)
+}
+
+func (o OptionsStruct) GetAsset(client *ethclient.Client, opts *bind.CallOpts, id uint16) (coretypes.Asset, error) {
+	assetManager := UtilsInterface.GetAssetManager(client)
+	return assetManager.GetAsset(opts, id)
+}
+
+func (o OptionsStruct) GetActiveCollections(client *ethclient.Client, opts *bind.CallOpts) ([]uint16, error) {
+	assetManager := UtilsInterface.GetAssetManager(client)
+	return assetManager.GetActiveCollections(opts)
+}
+
+func (o OptionsStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bindings.StructsJob, error) {
+	assetManager := UtilsInterface.GetAssetManager(client)
+	return assetManager.Jobs(opts, id)
+}
+
+func (o OptionsStruct) ReadJSONData(s string) (map[string]*coretypes.StructsJob, error) {
+	return ReadJSONData(s)
+}
+
+func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
+	return ConvertToNumber(num)
+}
+
+func (o OptionsStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
+	return ioutil.ReadAll(body)
 }
 
 func (o OptionsStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (coretypes.Commitment, error) {
