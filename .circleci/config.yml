@@ -30,7 +30,7 @@ jobs:
       - run:
           name: "Generate Coverage"
           command: |
-            go-acc ./... --ignore razor/*/mocks --ignore pkg
+            go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
