@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,6 +14,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"math/big"
+	"os"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -279,6 +281,34 @@ func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint1
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	return utils.UtilsInterface.GetStakeSnapshot(client, stakerId, epoch)
+}
+
+func (u Utils) GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
+	return utils.GetStake(client, address, stakerId)
+}
+
+func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
+	return utils.ConvertWeiToEth(data)
+}
+
+func (u Utils) WaitTillNextNSecs(seconds int32) {
+	utils.WaitTillNextNSecs(seconds)
+}
+
+func (u Utils) SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
+	return utils.SaveCommittedDataToFile(fileName, epoch, committedData)
+}
+
+func (u Utils) ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+	return utils.ReadCommittedDataFromFile(fileName)
+}
+
+func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
+	return abi.Unpack(name, data)
+}
+
+func (u Utils) Exit(code int) {
+	os.Exit(code)
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {

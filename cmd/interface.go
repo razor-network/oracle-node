@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -99,9 +100,16 @@ type UtilsInterface interface {
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
-	GetMaxCommission(client *ethclient.Client) (uint8, error)
-	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
+	GetMaxCommission(*ethclient.Client) (uint8, error)
+	GetEpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetStake(*ethclient.Client, string, uint32) (*big.Int, error)
+	ConvertWeiToEth(*big.Int) (*big.Float, error)
+	WaitTillNextNSecs(int32)
+	SaveCommittedDataToFile(string, uint32, []*big.Int) error
+	ReadCommittedDataFromFile(string) (uint32, []*big.Int, error)
+	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
+	Exit(int)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 }
@@ -274,9 +282,16 @@ type UtilsCmdInterface interface {
 	ExecuteDeleteOverrideJob(*pflag.FlagSet)
 	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
+	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
+	GetCommitDataFileName(string) (string, error)
+	CalculateSecret(types.Account, uint32) []byte
+	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
+	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)
+	ExecuteVote(*pflag.FlagSet)
+	Vote(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error
+	HandleExit()
 	ExecuteListAccounts()
 	ExecuteStake(*pflag.FlagSet)
-	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error
 }
 
 type TransactionInterface interface {
