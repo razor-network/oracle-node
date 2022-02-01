@@ -928,6 +928,22 @@ func (_m *Utils) GetStakeManagerWithOpts(_a0 *ethclient.Client) (*bindings.Stake
 	return r0, r1
 }
 
+// GetStakedToken provides a mock function with given fields: client, tokenAddress
+func (_m *Utils) GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
+	ret := _m.Called(client, tokenAddress)
+
+	var r0 *bindings.StakedToken
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *bindings.StakedToken); ok {
+		r0 = rf(client, tokenAddress)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.StakedToken)
+		}
+	}
+
+	return r0
+}
+
 // GetStaker provides a mock function with given fields: _a0, _a1
 func (_m *Utils) GetStaker(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsStaker, error) {
 	ret := _m.Called(_a0, _a1)
@@ -970,6 +986,22 @@ func (_m *Utils) GetStakerId(_a0 *ethclient.Client, _a1 string) (uint32, error) 
 	return r0, r1
 }
 
+// GetTokenManager provides a mock function with given fields: client
+func (_m *Utils) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
+	ret := _m.Called(client)
+
+	var r0 *bindings.RAZOR
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.RAZOR); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.RAZOR)
+		}
+	}
+
+	return r0
+}
+
 // GetTxnOpts provides a mock function with given fields: _a0
 func (_m *Utils) GetTxnOpts(_a0 coretypes.TransactionOptions) *bind.TransactOpts {
 	ret := _m.Called(_a0)
@@ -980,6 +1012,22 @@ func (_m *Utils) GetTxnOpts(_a0 coretypes.TransactionOptions) *bind.TransactOpts
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bind.TransactOpts)
+		}
+	}
+
+	return r0
+}
+
+// GetVoteManager provides a mock function with given fields: client
+func (_m *Utils) GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
+	ret := _m.Called(client)
+
+	var r0 *bindings.VoteManager
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.VoteManager); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.VoteManager)
 		}
 	}
 

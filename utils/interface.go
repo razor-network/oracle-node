@@ -58,6 +58,12 @@ type OptionUtils interface {
 	ReadJSONData(string) (map[string]*types.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
+	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
+	NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
 }
 
 type Utils interface {
@@ -110,6 +116,9 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
+	GetTokenManager(client *ethclient.Client) *bindings.RAZOR
+	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
+	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
 }
 
 type OptionsStruct struct{}
