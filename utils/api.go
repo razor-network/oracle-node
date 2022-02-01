@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"razor/core"
 	"time"
@@ -12,7 +11,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func GetDataFromAPI(url string) ([]byte, error) {
+func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 	client := http.Client{
 		Timeout: 60 * time.Second,
 	}
@@ -27,19 +26,19 @@ func GetDataFromAPI(url string) ([]byte, error) {
 			if response.StatusCode != 200 {
 				return errors.New("unable to reach API")
 			}
-			body, err = ioutil.ReadAll(response.Body)
+			body, err = Options.ReadAll(response.Body)
 			if err != nil {
 				return err
 			}
 			return nil
-		}, retry.Attempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
 	return body, nil
 }
 
-func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
+func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
 	if selector[0] == '[' {
 		selector = "$" + selector
 	} else {
@@ -48,7 +47,7 @@ func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interf
 	return jsonpath.Get(selector, jsonObject)
 }
 
-func GetDataFromHTML(url string, selector string) (string, error) {
+func (*UtilsStruct) GetDataFromHTML(url string, selector string) (string, error) {
 	c := colly.NewCollector()
 	var priceData string
 	c.OnHTML(selector, func(e *colly.HTMLElement) {
