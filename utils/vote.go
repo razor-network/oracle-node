@@ -186,7 +186,7 @@ func GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, e
 	return epochLastCommitted, nil
 }
 
-func GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
+func GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	voteManager, callOpts := getVoteManagerWithOpts(client)
 	var (
 		epochLastRevealed uint32

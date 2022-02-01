@@ -229,7 +229,7 @@ func (*UtilsStruct) GetSortedVotes(client *ethclient.Client, address string, ass
 	}
 	var weightedVoteValues []*big.Int
 	for i := 1; i <= int(numberOfStakers); i++ {
-		epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, address, uint32(i))
+		epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, uint32(i))
 		if err != nil {
 			return nil, err
 		}
