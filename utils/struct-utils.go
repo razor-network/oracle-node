@@ -34,11 +34,11 @@ func (o OptionsStruct) Pack(parsedData abi.ABI, name string, args ...interface{}
 }
 
 func (o OptionsStruct) GetDefaultPath() (string, error) {
-	return path.GetDefaultPath()
+	return path.PathUtilsInterface.GetDefaultPath()
 }
 
 func (o OptionsStruct) GetJobFilePath() (string, error) {
-	return path.GetJobFilePath()
+	return path.PathUtilsInterface.GetJobFilePath()
 }
 
 func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
