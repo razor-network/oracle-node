@@ -15,12 +15,12 @@ import (
 )
 
 var stakeCmd = &cobra.Command{
-	Use:   "stake",
+	Use:   "addStake",
 	Short: "Stake some razors",
-	Long: `Stake allows user to stake razors in the razor network
+	Long: `addStake allows user to stake razors in the razor network
 
 Example:
-  ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
+  ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
 	Run: initialiseStake,
 }
 
