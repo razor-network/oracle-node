@@ -50,6 +50,7 @@ type OptionUtils interface {
 	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
 	ReadJSONData(string) (map[string]*types.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
+	ReadAll(io.ReadCloser) ([]byte, error)
 }
 
 type Utils interface {

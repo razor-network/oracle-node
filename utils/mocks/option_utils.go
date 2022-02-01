@@ -517,6 +517,29 @@ func (_m *OptionUtils) PendingNonceAt(_a0 *ethclient.Client, _a1 context.Context
 	return r0, r1
 }
 
+// ReadAll provides a mock function with given fields: _a0
+func (_m *OptionUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
+	ret := _m.Called(_a0)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(io.ReadCloser) []byte); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(io.ReadCloser) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ReadJSONData provides a mock function with given fields: _a0
 func (_m *OptionUtils) ReadJSONData(_a0 string) (map[string]*coretypes.StructsJob, error) {
 	ret := _m.Called(_a0)
