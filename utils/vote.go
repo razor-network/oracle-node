@@ -17,7 +17,7 @@ func (*UtilsStruct) GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.
 
 func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	callOpts := UtilsInterface.GetOptions()
-	stakerId, err := GetStakerId(client, address)
+	stakerId, err := UtilsInterface.GetStakerId(client, address)
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -33,7 +33,7 @@ func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([3
 				return commitmentErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if commitmentErr != nil {
 		return [32]byte{}, err
 	}
@@ -54,7 +54,7 @@ func (*UtilsStruct) GetVoteValue(client *ethclient.Client, assetId uint16, stake
 				return voteValueErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if voteValueErr != nil {
 		return nil, voteValueErr
 	}
@@ -75,7 +75,7 @@ func (*UtilsStruct) GetVotes(client *ethclient.Client, stakerId uint32) (binding
 				return votesErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if votesErr != nil {
 		return bindings.StructsVote{}, votesErr
 	}
@@ -96,7 +96,7 @@ func (*UtilsStruct) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint
 				return influenceErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if influenceErr != nil {
 		return nil, influenceErr
 	}
@@ -117,7 +117,7 @@ func (*UtilsStruct) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, 
 				return snapshotErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if snapshotErr != nil {
 		return nil, snapshotErr
 	}
@@ -138,7 +138,7 @@ func (*UtilsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch ui
 				return influenceErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if influenceErr != nil {
 		return nil, influenceErr
 	}
@@ -159,7 +159,7 @@ func (*UtilsStruct) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
 				return randaoErr
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if randaoErr != nil {
 		return [32]byte{}, randaoErr
 	}
@@ -180,7 +180,7 @@ func (*UtilsStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uin
 				return err
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -201,7 +201,7 @@ func (*UtilsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint
 				return err
 			}
 			return nil
-		},Options.RetryAttempts(core.MaxRetries))
+		}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}

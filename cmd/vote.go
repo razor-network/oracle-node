@@ -120,7 +120,7 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		log.Error("Error in getting epoch: ", err)
 		return
 	}
-	stakerId, err := utils.GetStakerId(client, account.Address)
+	stakerId, err := utils.UtilsInterface.GetStakerId(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting staker id: ", err)
 		return
@@ -398,7 +398,7 @@ func AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amo
 		ChainId:        core.ChainId,
 		Config:         config,
 	}
-	stakerId, err := utils.GetStakerId(client, account.Address)
+	stakerId, err := utils.UtilsInterface.GetStakerId(client, account.Address)
 	utils.CheckError("Error in getting staker id: ", err)
 
 	_, err = cmdUtils.Unstake(config, client,

@@ -113,6 +113,7 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
+	GetStakerId(*ethclient.Client, string) (uint32, error)
 }
 
 type OptionsStruct struct{}

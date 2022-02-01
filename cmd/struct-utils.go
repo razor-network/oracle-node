@@ -258,7 +258,7 @@ func (u Utils) ParseBool(str string) (bool, error) {
 }
 
 func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetStakerId(client, address)
+	return utils.UtilsInterface.GetStakerId(client, address)
 }
 
 func (u Utils) PrivateKeyPrompt() string {
