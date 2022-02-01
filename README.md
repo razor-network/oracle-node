@@ -161,23 +161,6 @@ Example:
 $ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
 ```
 
-If you want to vote just after stake automatically, you can just set `autoVote` flag to true in the stake command as stated below
-
-razor cli
-
-```
-$ ./razor stake --address <address> --value <value> --autoVote <bool>
-```
-
-docker
-
-```
-docker run -it --rm \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    stake --address <address> --value <value> --autoVote <bool>
-```
-
 _Note: --pow flag is used to stake floating number stake_
 
 _Note: Formula for calculating pow: (value \* (10**18)) / (10**x) where x is no of decimal places and value is integer_
@@ -776,7 +759,7 @@ We would really appreciate your contribution. To see our [contribution guideline
 
 6. Import account
 
-   ```jsx
+   ```
    docker-compose run razor-go /usr/local/bin/razor import
    ```
 
