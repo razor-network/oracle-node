@@ -20,7 +20,6 @@ import (
 	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
-	//"bou.ke/monkey"
 )
 
 func TestExecuteVote(t *testing.T) {
@@ -166,21 +165,19 @@ func TestHandleBlock(t *testing.T) {
 	randomNum := utils.GetRogueRandomValue(10000000)
 
 	type args struct {
-		config        types.Configurations
-		rogueData     types.Rogue
-		state         int64
-		stateName     string
-		stateErr      error
-		epoch         uint32
-		epochErr      error
-		stakerId      uint32
-		stakerIdErr   error
-		stake         *big.Int
-		stakeErr      error
-		ethBalance    *big.Int
-		ethBalanceErr error
-		//actualStake           *big.Float
-		//actualStakeErr        error
+		config                types.Configurations
+		rogueData             types.Rogue
+		state                 int64
+		stateName             string
+		stateErr              error
+		epoch                 uint32
+		epochErr              error
+		stakerId              uint32
+		stakerIdErr           error
+		stake                 *big.Int
+		stakeErr              error
+		ethBalance            *big.Int
+		ethBalanceErr         error
 		actualBalance         *big.Float
 		actualBalanceErr      error
 		minStake              *big.Int
@@ -1411,10 +1408,18 @@ func TestCalculateSecret(t *testing.T) {
 			want: solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString([]byte{234, 211})}),
 		},
 		{
-			name: "Test 2: When there is an error in getting path and signedData",
+			name: "Test 2: When there is an error in getting path",
 			args: args{
-				pathErr:     errors.New("path error"),
-				signDataErr: errors.New("signData error"),
+				pathErr:    errors.New("path error"),
+				signedData: []byte{234, 211},
+			},
+			want: solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString([]byte{234, 211})}),
+		},
+		{
+			name: "Test 3: When there is an error in getting signed data",
+			args: args{
+				path:        "/home/razor",
+				signDataErr: errors.New("sign data error"),
 			},
 			want: nil,
 		},
