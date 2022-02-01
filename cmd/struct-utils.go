@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -13,6 +14,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"math/big"
+	"os"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -84,7 +86,7 @@ func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead strin
 }
 
 func (u Utils) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
-	return utils.GetNumActiveAssets(client)
+	return utils.UtilsInterface.GetNumActiveAssets(client)
 }
 
 func (u Utils) GetRogueRandomValue(value int) *big.Int {
@@ -92,7 +94,7 @@ func (u Utils) GetRogueRandomValue(value int) *big.Int {
 }
 
 func (u Utils) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
-	return utils.GetActiveAssetsData(client, epoch)
+	return utils.UtilsInterface.GetActiveAssetsData(client, epoch)
 }
 
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -152,7 +154,7 @@ func (u Utils) GetStateName(state int64) string {
 }
 
 func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
-	return utils.GetJobs(client)
+	return utils.UtilsInterface.GetJobs(client)
 }
 
 func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
@@ -196,7 +198,7 @@ func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, e
 }
 
 func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
-	return utils.GetCollections(client)
+	return utils.UtilsInterface.GetCollections(client)
 }
 
 func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
@@ -221,8 +223,8 @@ func (u Utils) GetProposedBlock(client *ethclient.Client, epoch uint32, proposed
 	return utils.UtilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
 }
 
-func (u Utils) GetEpochLastRevealed(client *ethclient.Client, address string, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastRevealed(client, address, stakerId)
+func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utils.GetEpochLastRevealed(client, stakerId)
 }
 
 func (u Utils) GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
@@ -238,7 +240,7 @@ func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 
 }
 
 func (u Utils) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
-	return utils.GetActiveAssetIds(client)
+	return utils.UtilsInterface.GetActiveAssetIds(client)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
@@ -279,6 +281,34 @@ func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint1
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	return utils.GetStakeSnapshot(client, stakerId, epoch)
+}
+
+func (u Utils) GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
+	return utils.GetStake(client, address, stakerId)
+}
+
+func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
+	return utils.ConvertWeiToEth(data)
+}
+
+func (u Utils) WaitTillNextNSecs(seconds int32) {
+	utils.WaitTillNextNSecs(seconds)
+}
+
+func (u Utils) SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
+	return utils.SaveCommittedDataToFile(fileName, epoch, committedData)
+}
+
+func (u Utils) ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+	return utils.ReadCommittedDataFromFile(fileName)
+}
+
+func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
+	return abi.Unpack(name, data)
+}
+
+func (u Utils) Exit(code int) {
+	os.Exit(code)
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
@@ -478,32 +508,32 @@ func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, op
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetAssetManager(client)
 	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetAssetManager(client)
 	return assetManager.SetCollectionStatus(opts, assetStatus, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
-	assetMananger := utils.GetAssetManager(client)
+	assetMananger := utils.UtilsInterface.GetAssetManager(client)
 	return assetMananger.GetCollectionStatus(opts, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetAssetManager(client)
 	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint16, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetAssetManager(client)
 	return assetManager.CreateCollection(opts, tolerance, power, aggregationMethod, jobIDs, name)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
-	assetManager := utils.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetAssetManager(client)
 	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 
