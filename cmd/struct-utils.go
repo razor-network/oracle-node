@@ -312,11 +312,11 @@ func (u Utils) Exit(code int) {
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
-	return utils.DeleteJobFromJSON(s, jobId)
+	return utils.UtilsInterface.DeleteJobFromJSON(s, jobId)
 }
 
 func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
-	return utils.AddJobToJSON(s, job)
+	return utils.UtilsInterface.AddJobToJSON(s, job)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
