@@ -28,8 +28,8 @@ type OptionUtils interface {
 	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
 	GetDefaultPath() (string, error)
 	GetJobFilePath() (string, error)
-	GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey
-	NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error)
+	GetPrivateKey(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey
+	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
 	RetryAttempts(uint) retry.Option
 	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
 	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
@@ -60,6 +60,12 @@ type OptionUtils interface {
 	ReadJSONData(string) (map[string]*types.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
+	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
+	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
 }
 
 type Utils interface {
@@ -84,17 +90,17 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
-	GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
-	GetCommitments(client *ethclient.Client, address string) ([32]byte, error)
-	GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error)
-	GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error)
-	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
-	GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
-	GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error)
-	GetRandaoHash(client *ethclient.Client) ([32]byte, error)
-	GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
+	GetVoteManagerWithOpts(*ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
+	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
+	GetRandaoHash(*ethclient.Client) ([32]byte, error)
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
+	GetVoteManager(*ethclient.Client) *bindings.VoteManager
 	GetAssetManager(*ethclient.Client) *bindings.AssetManager
 	GetAssetManagerWithOpts(*ethclient.Client) (*bindings.AssetManager, bind.CallOpts)
 	GetNumAssets(*ethclient.Client) (uint16, error)
@@ -114,6 +120,9 @@ type Utils interface {
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
+	GetTokenManager(*ethclient.Client) *bindings.RAZOR
+	GetStakeManager(*ethclient.Client) *bindings.StakeManager
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 }
 
 type OptionsStruct struct{}

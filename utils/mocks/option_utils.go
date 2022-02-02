@@ -387,13 +387,13 @@ func (_m *OptionUtils) GetNumProposedBlocks(_a0 *ethclient.Client, _a1 *bind.Cal
 	return r0, r1
 }
 
-// GetPrivateKey provides a mock function with given fields: address, password, keystorePath, accountUtils
-func (_m *OptionUtils) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
-	ret := _m.Called(address, password, keystorePath, accountUtils)
+// GetPrivateKey provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *OptionUtils) GetPrivateKey(_a0 string, _a1 string, _a2 string, _a3 accounts.AccountInterface) *ecdsa.PrivateKey {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
 
 	var r0 *ecdsa.PrivateKey
 	if rf, ok := ret.Get(0).(func(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey); ok {
-		r0 = rf(address, password, keystorePath, accountUtils)
+		r0 = rf(_a0, _a1, _a2, _a3)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ecdsa.PrivateKey)
@@ -625,13 +625,59 @@ func (_m *OptionUtils) MinStake(_a0 *ethclient.Client, _a1 *bind.CallOpts) (*big
 	return r0, r1
 }
 
-// NewKeyedTransactorWithChainID provides a mock function with given fields: key, chainID
-func (_m *OptionUtils) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
-	ret := _m.Called(key, chainID)
+// NewAssetManager provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewAssetManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.AssetManager, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.AssetManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.AssetManager); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.AssetManager)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NewBlockManager provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.BlockManager, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.BlockManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.BlockManager); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.BlockManager)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NewKeyedTransactorWithChainID provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewKeyedTransactorWithChainID(_a0 *ecdsa.PrivateKey, _a1 *big.Int) (*bind.TransactOpts, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *bind.TransactOpts
 	if rf, ok := ret.Get(0).(func(*ecdsa.PrivateKey, *big.Int) *bind.TransactOpts); ok {
-		r0 = rf(key, chainID)
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bind.TransactOpts)
@@ -640,7 +686,99 @@ func (_m *OptionUtils) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chai
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ecdsa.PrivateKey, *big.Int) error); ok {
-		r1 = rf(key, chainID)
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NewRAZOR provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*bindings.RAZOR, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.RAZOR
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.RAZOR); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.RAZOR)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NewStakeManager provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.StakeManager, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.StakeManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.StakeManager); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.StakeManager)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NewStakedToken provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Client) (*bindings.StakedToken, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.StakedToken
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.StakedToken); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.StakedToken)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NewVoteManager provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) NewVoteManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.VoteManager, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *bindings.VoteManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.VoteManager); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.VoteManager)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

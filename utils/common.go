@@ -27,7 +27,7 @@ func ConnectToClient(provider string) *ethclient.Client {
 
 func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
-	coinContract := GetTokenManager(client)
+	coinContract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
 	return coinContract.BalanceOf(&opts, address)
 }

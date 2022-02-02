@@ -188,3 +188,27 @@ func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetEpochLastRevealed(opts, stakerId)
 }
+
+func (o OptionsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
+	return bindings.NewAssetManager(address, client)
+}
+
+func (o OptionsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
+	return bindings.NewRAZOR(address, client)
+}
+
+func (o OptionsStruct) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
+	return bindings.NewStakeManager(address, client)
+}
+
+func (o OptionsStruct) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
+	return bindings.NewVoteManager(address, client)
+}
+
+func (o OptionsStruct) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
+	return bindings.NewBlockManager(address, client)
+}
+
+func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
+	return bindings.NewStakedToken(address, client)
+}
