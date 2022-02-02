@@ -3,16 +3,17 @@ package cmd
 import (
 	"context"
 	"crypto/ecdsa"
+	"math/big"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"math/big"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"time"
 )
 
 //go:generate mockery --name UtilsInterface --output ./mocks/ --case=underscore

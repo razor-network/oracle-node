@@ -1,17 +1,18 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var withdrawCmd = &cobra.Command{

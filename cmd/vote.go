@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/spf13/pflag"
 	"math/big"
 	"os"
 	"os/signal"
@@ -16,6 +15,8 @@ import (
 	"razor/utils"
 	"strings"
 	"time"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -199,7 +200,9 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Error("Error in committing data: ", err)
 			break
 		}
-		utils.WaitForBlockCompletion(client, commitTxn.String())
+		if commitTxn != core.NilHash {
+			utils.WaitForBlockCompletion(client, commitTxn.String())
+		}
 		_committedData = data
 		log.Debug("Saving committed data for recovery")
 		fileName, err := getCommitDataFileName(account.Address)
@@ -224,6 +227,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 			log.Warnf("Cannot reveal in epoch %d", epoch)
 			break
 		}
+		if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+			log.Error(err)
+			break
+		}
+		log.Debug("Epoch last revealed: ", lastReveal)
 		if _committedData == nil {
 			fileName, err := getCommitDataFileName(account.Address)
 			if err != nil {
@@ -245,11 +253,6 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 		if secret == nil {
 			break
 		}
-		if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
-			log.Error(err)
-			break
-		}
-		log.Debug("Epoch last revealed: ", lastReveal)
 
 		// Reveal wrong data if rogueMode contains reveal
 		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
@@ -322,8 +325,11 @@ func handleBlock(client *ethclient.Client, account types.Account, blockNumber *b
 				log.Error("ClaimBlockReward error: ", err)
 				break
 			}
-			utils.WaitForBlockCompletion(client, txn.Hex())
-			blockConfirmed = epoch
+			if txn != core.NilHash {
+				utils.WaitForBlockCompletion(client, txn.Hex())
+				blockConfirmed = epoch
+			}
+
 		}
 	case -1:
 		if config.WaitTime > 5 {
