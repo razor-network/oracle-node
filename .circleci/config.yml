@@ -17,7 +17,7 @@ jobs:
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+            docker run --rm -v $(pwd):/test --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
       - persist_to_workspace:
           root: .
           paths:
