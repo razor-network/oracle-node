@@ -25,8 +25,8 @@ jobs:
       - run:
           name: "Install Dependencies"
           command: |
-            go get github.com/mattn/goveralls
-            go get -u github.com/ory/go-acc
+            go install github.com/mattn/goveralls@v0.0.11
+            go install github.com/ory/go-acc@v0.2.7
       - run:
           name: "Generate Coverage"
           command: |
