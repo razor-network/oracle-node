@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -11,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"math/big"
 	"razor/accounts"
@@ -132,10 +134,6 @@ func (o OptionsStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id ui
 	return assetManager.Jobs(opts, id)
 }
 
-func (o OptionsStruct) ReadJSONData(s string) (map[string]*coretypes.StructsJob, error) {
-	return ReadJSONData(s)
-}
-
 func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return ConvertToNumber(num)
 }
@@ -166,4 +164,20 @@ func (o OptionsStruct) NewBlockManager(address common.Address, client *ethclient
 
 func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
 	return bindings.NewStakedToken(address, client)
+}
+
+func (o OptionsStruct) ReadFile(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filename)
+}
+
+func (o OptionsStruct) Unmarshal(data []byte, v interface{}) error {
+	return json.Unmarshal(data, v)
+}
+
+func (o OptionsStruct) Marshal(v interface{}) ([]byte, error) {
+	return json.Marshal(v)
+}
+
+func (o OptionsStruct) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+	return ioutil.WriteFile(filename, data, perm)
 }
