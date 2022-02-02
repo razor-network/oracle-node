@@ -8,29 +8,12 @@ jobs:
       - image: golang:1.17
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.7
       - run:
-          name: Install go-ethereum and abigen
+          name: "Executing test cases"
           command: |
-            go get -d github.com/ethereum/go-ethereum@v1.10.8
-            go install github.com/ethereum/go-ethereum/cmd/abigen@v1.10.8
-      # - node/install:
-      #     install-yarn: false
-      # - run: node --version
-      # - node/install-packages:
-      #     override-ci-command: npm install
-      # - run: npm run setup
-      - run:
-          name: Install Project Dependencies
-          command: go mod download
-      - run:
-          name: "Install Dependencies"
-          command: |
-            go install github.com/mattn/goveralls@v0.0.11
-            go install github.com/ory/go-acc@v0.2.7
-      - run:
-          name: "Generate Coverage"
-          command: |
-            go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg
+            ./test.sh
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
