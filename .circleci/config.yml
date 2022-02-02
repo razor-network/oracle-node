@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Install go-ethereum and abigen
           command: |
-            go get -u github.com/ethereum/go-ethereum@vv1.10.8
+            go get -d github.com/ethereum/go-ethereum
             go install github.com/ethereum/go-ethereum/cmd/abigen
       - node/install:
           install-yarn: false
