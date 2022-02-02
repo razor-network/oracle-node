@@ -14,7 +14,7 @@ jobs:
       - run:
           name: "Building docker image"
           command: |
-            docker build --file Dockerfile.testing -t razor-test .
+            docker build --file Dockerfile.test -t razor-test .
       - run:
           name: "Executing test cases"
           command: |
