@@ -452,6 +452,10 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 	return txn, nil
 }
 
+func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, collectionId uint16, sortedStakers []uint32) (*Types.Transaction, error) {
+	return blockManager.GiveSorted(opts, epoch, collectionId, sortedStakers)
+}
+
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utils.GetVoteManager(client)
 	var (
@@ -705,8 +709,4 @@ func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateK
 
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(hexKey)
-}
-
-func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
-	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }

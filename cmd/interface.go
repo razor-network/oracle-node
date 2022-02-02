@@ -142,6 +142,7 @@ type BlockManagerInterface interface {
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
 	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
 	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+	GiveSorted(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) (*Types.Transaction, error)
 }
 
 type VoteManagerInterface interface {
@@ -259,7 +260,6 @@ type UtilsCmdInterface interface {
 	IsElectedProposer(*ethclient.Client, types.ElectedProposer) bool
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
-	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32) error
 	ExecuteExtendLock(*pflag.FlagSet)

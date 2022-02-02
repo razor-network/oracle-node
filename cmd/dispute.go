@@ -123,7 +123,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	})
 
 	if !utils.Contains(giveSortedAssetIds, assetId) {
-		cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
+		GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
@@ -144,7 +144,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 }
 
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
-	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedStakers)
+	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, assetId, sortedStakers)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {
 			log.Error("Error in calling GiveSorted: ", err)
@@ -156,7 +156,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 		}
 	}
 	log.Info("Calling GiveSorted...")
-	log.Info("Txn Hash: ", txn.Hash())
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	giveSortedAssetIds = append(giveSortedAssetIds, int(assetId))
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
 }

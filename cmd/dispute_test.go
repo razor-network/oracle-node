@@ -405,3 +405,59 @@ func TestHandleDispute(t *testing.T) {
 		})
 	}
 }
+
+func TestGiveSorted(t *testing.T) {
+	var client *ethclient.Client
+	var blockManager *bindings.BlockManager
+	var txnOpts *bind.TransactOpts
+	var epoch uint32
+	var assetId uint16
+	var sortedStakers []uint32
+
+	type args struct {
+		giveSorted    *Types.Transaction
+		giveSortedErr error
+		hash          common.Hash
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Test 1: When Give Sorted executes successfully",
+			args: args{
+				giveSorted: &Types.Transaction{},
+				hash:       common.BigToHash(big.NewInt(1)),
+			},
+		},
+		{
+			name: "Test 2: When there is an error from GiveSorted",
+			args: args{
+				giveSortedErr: errors.New("giveSorted error"),
+			},
+		},
+		{
+			name: "Test 3: When the error from GiveSorted is gas limit reached error",
+			args: args{
+				giveSortedErr: errors.New("gas limit reached"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			blockManagerUtils = blockManagerUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+		})
+	}
+}
