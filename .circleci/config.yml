@@ -5,7 +5,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
     steps:
       - checkout
       - run:
