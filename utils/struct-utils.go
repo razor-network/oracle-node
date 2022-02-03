@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"razor/accounts"
 	coretypes "razor/core/types"
@@ -137,4 +138,32 @@ func (o OptionsStruct) ReadJSONData(s string) (map[string]*coretypes.StructsJob,
 
 func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return ConvertToNumber(num)
+}
+
+func (o OptionsStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
+	return ioutil.ReadAll(body)
+}
+
+func (o OptionsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
+	return bindings.NewAssetManager(address, client)
+}
+
+func (o OptionsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
+	return bindings.NewRAZOR(address, client)
+}
+
+func (o OptionsStruct) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
+	return bindings.NewStakeManager(address, client)
+}
+
+func (o OptionsStruct) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
+	return bindings.NewVoteManager(address, client)
+}
+
+func (o OptionsStruct) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
+	return bindings.NewBlockManager(address, client)
+}
+
+func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
+	return bindings.NewStakedToken(address, client)
 }

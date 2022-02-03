@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"razor/core"
 	"time"
@@ -27,7 +26,7 @@ func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 			if response.StatusCode != 200 {
 				return errors.New("unable to reach API")
 			}
-			body, err = ioutil.ReadAll(response.Body)
+			body, err = Options.ReadAll(response.Body)
 			if err != nil {
 				return err
 			}

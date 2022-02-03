@@ -864,7 +864,7 @@ func TestGetSortedVotes(t *testing.T) {
 			razorUtils = utilsMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numberOfStakers, tt.args.numberOfStakersErr)
-			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
+			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
 			utilsMock.On("GetVoteValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16"), mock.AnythingOfType("uint32")).Return(tt.args.vote, tt.args.voteErr)
 			utilsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influence, tt.args.influenceErr)
 

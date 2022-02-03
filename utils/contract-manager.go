@@ -9,16 +9,16 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
-	coinContract, err := bindings.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
+func (*UtilsStruct) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
+	coinContract, err := Options.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return coinContract
 }
 
-func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
-	stakeManagerContract, err := bindings.NewStakeManager(common.HexToAddress(core.StakeManagerAddress), client)
+func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
+	stakeManagerContract, err := Options.NewStakeManager(common.HexToAddress(core.StakeManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,15 +26,15 @@ func GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
 }
 
 func (*UtilsStruct) GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
-	assetManager, err := bindings.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
+	assetManager, err := Options.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return assetManager
 }
 
-func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
-	voteManager, err := bindings.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
+func (*UtilsStruct) GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
+	voteManager, err := Options.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,15 +42,15 @@ func GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
 }
 
 func (*UtilsStruct) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	blockManager, err := bindings.NewBlockManager(common.HexToAddress(core.BlockManagerAddress), client)
+	blockManager, err := Options.NewBlockManager(common.HexToAddress(core.BlockManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return blockManager
 }
 
-func GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
-	stakedTokenContract, err := bindings.NewStakedToken(tokenAddress, client)
+func (*UtilsStruct) GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
+	stakedTokenContract, err := Options.NewStakedToken(tokenAddress, client)
 	if err != nil {
 		log.Fatal(err)
 	}
