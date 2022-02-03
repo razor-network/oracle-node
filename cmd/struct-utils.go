@@ -9,6 +9,7 @@ import (
 	"razor/utils"
 	"strconv"
 	"time"
+	"os"
 
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
