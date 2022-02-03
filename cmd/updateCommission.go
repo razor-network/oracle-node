@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -41,19 +42,16 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId", err)
 
-	updateCommissionInput := types.UpdateCommissionInput{
+	err = cmdUtils.UpdateCommission(config, client, types.UpdateCommissionInput{
+		Commission: commission,
 		Address:    address,
 		Password:   password,
 		StakerId:   stakerId,
-		Commission: commission,
-	}
-
-	err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
+	})
 	utils.CheckError("SetDelegation error: ", err)
 }
 
 func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
-
 	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
@@ -82,7 +80,6 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
 		return errors.New("invalid epoch for update")
 	}
-
 	txnOpts := types.TransactionOptions{
 		Client:          client,
 		Password:        updateCommissionInput.Password,
@@ -94,7 +91,6 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		MethodName:      "updateCommission",
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 	}
-
 	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
 	txn, err := stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
