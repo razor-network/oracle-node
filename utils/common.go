@@ -37,13 +37,13 @@ func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	blockNumber := uint64(block.Number.Int64())
+	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
+	if blockTime%(core.StateLength) > upperLimit || blockTime%(core.StateLength) < lowerLimit {
 		return -1, nil
 	}
-	state := blockNumber / core.StateLength
+	state := blockTime / core.StateLength
 	return int64(state) % core.NumberOfStates, nil
 }
 
@@ -139,7 +139,7 @@ func GetEpoch(client *ethclient.Client) (uint32, error) {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := latestHeader.Number.Int64() / core.EpochLength
+	epoch := int64(latestHeader.Time) / core.EpochLength
 	return uint32(epoch), nil
 }
 
