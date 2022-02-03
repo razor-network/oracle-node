@@ -63,6 +63,7 @@ type SetDelegationInput struct {
 	Status       bool
 	StatusString string
 	StakerId     uint32
+	Commission   uint8
 }
 
 type UpdateCommissionInput struct {
