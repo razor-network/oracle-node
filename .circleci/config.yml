@@ -1,40 +1,26 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-orbs:
-  node: circleci/node@4.7.0
 jobs:
   test:
     docker:
-      - image: golang:1.17
+      - image: cimg/go:1.17.6
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 20.10.7
+          docker_layer_caching: true
       - run:
-          name: Install go-ethereum and abigen
+          name: "Building docker image"
           command: |
-            go get -d -u github.com/ethereum/go-ethereum
-            go install github.com/ethereum/go-ethereum/cmd/abigen
-      - node/install:
-          install-yarn: false
-      - run: node --version
-      - node/install-packages:
-          override-ci-command: npm install
-      - run: npm run setup
+            docker build --file Dockerfile.test -t razor-test .
       - run:
-          name: Install Project Dependencies
-          command: go mod download
-      - run:
-          name: "Install Dependencies"
+          name: "Executing test cases"
           command: |
-            go get github.com/mattn/goveralls
-            go get -u github.com/ory/go-acc
-      - run:
-          name: "Generate Coverage"
-          command: |
-            go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg
+            docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --output /test/coverage.txt
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+            docker run --rm -v $(pwd):/test --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=/test/coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
       - persist_to_workspace:
           root: .
           paths:
