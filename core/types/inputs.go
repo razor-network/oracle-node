@@ -15,10 +15,60 @@ type RedeemBountyInput struct {
 	BountyId uint32
 }
 
+type TransferInput struct {
+	FromAddress string
+	ToAddress   string
+	Password    string
+	ValueInWei  *big.Int
+	Balance     *big.Int
+}
+
+type CreateJobInput struct {
+	Address      string
+	Password     string
+	Name         string
+	Url          string
+	Selector     string
+	Power        int8
+	Weight       uint8
+	SelectorType uint8
+}
+
+type CreateCollectionInput struct {
+	Address     string
+	Name        string
+	Password    string
+	Aggregation uint32
+	Power       int8
+	JobIds      []uint
+	Tolerance   uint16
+}
+
+type ExtendLockInput struct {
+	Address  string
+	Password string
+	StakerId uint32
+}
+
+type ModifyAssetInput struct {
+	Address  string
+	Password string
+	AssetId  uint16
+	Status   bool
+}
+
+type SetDelegationInput struct {
+	Address      string
+	Password     string
+	Status       bool
+	StatusString string
+	StakerId     uint32
+	Commission   uint8
+}
+
 type UpdateCommissionInput struct {
-	StakerId   uint32
 	Address    string
 	Password   string
 	Commission uint8
-	Config     Configurations
+	StakerId   uint32
 }

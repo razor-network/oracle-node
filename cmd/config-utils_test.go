@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"razor/cmd/mocks"
 	"razor/core/types"
 	"reflect"
 	"testing"
@@ -26,10 +27,6 @@ func TestGetConfigData(t *testing.T) {
 		GasLimitMultiplier: 3,
 	}
 
-	utilsStruct := UtilsStruct{
-		razorUtils:   UtilsMock{},
-		flagSetUtils: FlagSetMock{},
-	}
 	type args struct {
 		provider         string
 		providerErr      error
@@ -124,35 +121,20 @@ func TestGetConfigData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			getProviderMock = func(UtilsStruct) (string, error) {
-				return tt.args.provider, tt.args.providerErr
-			}
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilsMock
 
-			getMultiplierMock = func(UtilsStruct) (float32, error) {
-				return tt.args.gasMultiplier, tt.args.gasMultiplierErr
-			}
+			cmdUtilsMock.On("GetProvider").Return(tt.args.provider, tt.args.providerErr)
+			cmdUtilsMock.On("GetMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
+			cmdUtilsMock.On("GetWaitTime").Return(tt.args.waitTime, tt.args.waitTimeErr)
+			cmdUtilsMock.On("GetGasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			cmdUtilsMock.On("GetLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
+			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
-			getWaitTimeMock = func(UtilsStruct) (int32, error) {
-				return tt.args.waitTime, tt.args.waitTimeErr
-			}
+			utils := &UtilsStruct{}
 
-			getGasPriceMock = func(UtilsStruct) (int32, error) {
-				return tt.args.gasPrice, tt.args.gasPriceErr
-			}
-
-			getLogLevelMock = func(UtilsStruct) (string, error) {
-				return tt.args.logLevel, tt.args.logLevelErr
-			}
-
-			getGasLimitMock = func(UtilsStruct) (float32, error) {
-				return tt.args.gasLimit, tt.args.gasLimitErr
-			}
-
-			getBufferPercentMock = func(UtilsStruct) (int32, error) {
-				return tt.args.bufferPercent, tt.args.bufferPercentErr
-			}
-
-			got, err := GetConfigData(utilsStruct)
+			got, err := utils.GetConfigData()
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetConfigData() got = %v, want %v", got, tt.want)
 			}
@@ -170,11 +152,7 @@ func TestGetConfigData(t *testing.T) {
 	}
 }
 
-func Test_getBufferPercent(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
-
+func TestGetBufferPercent(t *testing.T) {
 	type args struct {
 		bufferPercent    int32
 		bufferPercentErr error
@@ -212,11 +190,12 @@ func Test_getBufferPercent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetRootInt32BufferMock = func() (int32, error) {
-				return tt.args.bufferPercent, tt.args.bufferPercentErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getBufferPercent(utilsStruct)
+			flagSetUtilsMock.On("GetRootInt32Buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			utils := &UtilsStruct{}
+			got, err := utils.GetBufferPercent()
 			if got != tt.want {
 				t.Errorf("getBufferPercent() got = %v, want %v", got, tt.want)
 			}
@@ -233,10 +212,7 @@ func Test_getBufferPercent(t *testing.T) {
 	}
 }
 
-func Test_getGasLimit(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
+func TestGetGasLimit(t *testing.T) {
 	type args struct {
 		gasLimit    float32
 		gasLimitErr error
@@ -274,11 +250,13 @@ func Test_getGasLimit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetRootFloat32GasLimitMock = func() (float32, error) {
-				return tt.args.gasLimit, tt.args.gasLimitErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getGasLimit(utilsStruct)
+			flagSetUtilsMock.On("GetRootFloat32GasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetGasLimit()
 			if got != tt.want {
 				t.Errorf("getGasLimit() got = %v, want %v", got, tt.want)
 			}
@@ -295,10 +273,7 @@ func Test_getGasLimit(t *testing.T) {
 	}
 }
 
-func Test_getGasPrice(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
+func TestGetGasPrice(t *testing.T) {
 	type args struct {
 		gasPrice    int32
 		gasPriceErr error
@@ -336,11 +311,13 @@ func Test_getGasPrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetRootInt32GasPriceMock = func() (int32, error) {
-				return tt.args.gasPrice, tt.args.gasPriceErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getGasPrice(utilsStruct)
+			flagSetUtilsMock.On("GetRootInt32GasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetGasPrice()
 			if got != tt.want {
 				t.Errorf("getGasPrice() got = %v, want %v", got, tt.want)
 			}
@@ -357,11 +334,7 @@ func Test_getGasPrice(t *testing.T) {
 	}
 }
 
-func Test_getLogLevel(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
-
+func TestGetLogLevel(t *testing.T) {
 	type args struct {
 		logLevel    string
 		logLevelErr error
@@ -399,11 +372,13 @@ func Test_getLogLevel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			getRootStringLogLevelMock = func() (string, error) {
-				return tt.args.logLevel, tt.args.logLevelErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getLogLevel(utilsStruct)
+			flagSetUtilsMock.On("GetRootStringLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetLogLevel()
 			if got != tt.want {
 				t.Errorf("getLogLevel() got = %v, want %v", got, tt.want)
 			}
@@ -420,10 +395,7 @@ func Test_getLogLevel(t *testing.T) {
 	}
 }
 
-func Test_getMultiplier(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
+func TestGetMultiplier(t *testing.T) {
 	type args struct {
 		gasMultiplier    float32
 		gasMultiplierErr error
@@ -461,11 +433,13 @@ func Test_getMultiplier(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetRootFloat32GasMultiplierMock = func() (float32, error) {
-				return tt.args.gasMultiplier, tt.args.gasMultiplierErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getMultiplier(utilsStruct)
+			flagSetUtilsMock.On("GetRootFloat32GasMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetMultiplier()
 			if got != tt.want {
 				t.Errorf("getMultiplier() got = %v, want %v", got, tt.want)
 			}
@@ -482,10 +456,7 @@ func Test_getMultiplier(t *testing.T) {
 	}
 }
 
-func Test_getProvider(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
+func TestGetProvider(t *testing.T) {
 	type args struct {
 		provider    string
 		providerErr error
@@ -531,11 +502,13 @@ func Test_getProvider(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetRootStringProviderMock = func() (string, error) {
-				return tt.args.provider, tt.args.providerErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getProvider(utilsStruct)
+			flagSetUtilsMock.On("GetRootStringProvider").Return(tt.args.provider, tt.args.providerErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetProvider()
 			if got != tt.want {
 				t.Errorf("getProvider() got = %v, want %v", got, tt.want)
 			}
@@ -552,11 +525,7 @@ func Test_getProvider(t *testing.T) {
 	}
 }
 
-func Test_getWaitTime(t *testing.T) {
-	utilsStruct := UtilsStruct{
-		flagSetUtils: FlagSetMock{},
-	}
-
+func TestGetWaitTime(t *testing.T) {
 	type args struct {
 		waitTime    int32
 		waitTimeErr error
@@ -594,11 +563,12 @@ func Test_getWaitTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetRootInt32WaitMock = func() (int32, error) {
-				return tt.args.waitTime, tt.args.waitTimeErr
-			}
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
 
-			got, err := getWaitTime(utilsStruct)
+			flagSetUtilsMock.On("GetRootInt32Wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
+			utils := &UtilsStruct{}
+			got, err := utils.GetWaitTime()
 			if got != tt.want {
 				t.Errorf("getWaitTime() got = %v, want %v", got, tt.want)
 			}

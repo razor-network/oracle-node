@@ -28,38 +28,31 @@ Example:
 }
 
 func initialiseUnstake(cmd *cobra.Command, args []string) {
-	utilsStruct := UtilsStruct{
-		stakeManagerUtils: stakeManagerUtils,
-		razorUtils:        razorUtils,
-		transactionUtils:  transactionUtils,
-		cmdUtils:          cmdUtils,
-		flagSetUtils:      flagSetUtils,
-	}
-	utilsStruct.executeUnstake(cmd.Flags())
+	cmdUtils.ExecuteUnstake(cmd.Flags())
 }
 
-func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
+func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	autoWithdraw, err := utilsStruct.flagSetUtils.GetBoolAutoWithdraw(flagSet)
+	autoWithdraw, err := flagSetUtils.GetBoolAutoWithdraw(flagSet)
 	utils.CheckError("Error in getting autoWithdraw status: ", err)
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+	client := razorUtils.ConnectToClient(config.Provider)
 
-	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
+	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
-	utilsStruct.razorUtils.CheckEthBalanceIsZero(client, address)
+	razorUtils.CheckEthBalanceIsZero(client, address)
 
-	stakerId, err := utilsStruct.razorUtils.AssignStakerId(flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
 
-	lock, err := utilsStruct.razorUtils.GetLock(client, address, stakerId)
+	lock, err := razorUtils.GetLock(client, address, stakerId)
 	utils.CheckError("Error in getting lock: ", err)
 
 	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
@@ -74,16 +67,15 @@ func (utilsStruct UtilsStruct) executeUnstake(flagSet *pflag.FlagSet) {
 		StakerId:   stakerId,
 	}
 
-	txnOptions, err := utilsStruct.cmdUtils.Unstake(config, client, unstakeInput, utilsStruct)
+	txnOptions, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
-
 	if autoWithdraw {
-		err = utilsStruct.cmdUtils.AutoWithdraw(txnOptions, stakerId, utilsStruct)
+		err = cmdUtils.AutoWithdraw(txnOptions, stakerId)
 		utils.CheckError("AutoWithdraw Error: ", err)
 	}
 }
 
-func Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput, utilsStruct UtilsStruct) (types.TransactionOptions, error) {
+func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (types.TransactionOptions, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        input.Password,
@@ -96,7 +88,7 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		ABI:             bindings.StakeManagerABI,
 	}
 	stakerId := input.StakerId
-	lock, err := utilsStruct.razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+	lock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
 	if err != nil {
 		log.Error("Error in getting lock: ", err)
 		return txnArgs, err
@@ -108,79 +100,78 @@ func Unstake(config types.Configurations, client *ethclient.Client, input types.
 		return txnArgs, err
 	}
 
-	staker, err := utilsStruct.razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
+	staker, err := razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
 	if err != nil {
 		log.Error("Error in getting staker: ", err)
 		return txnArgs, err
 	}
 
-	sAmount, err := utilsStruct.cmdUtils.GetAmountInSRZRs(client, txnArgs.AccountAddress, staker, txnArgs.Amount, utilsStruct)
+	sAmount, err := cmdUtils.GetAmountInSRZRs(client, txnArgs.AccountAddress, staker, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in getting sRZR amount: ", err)
 		return txnArgs, err
 	}
 
-	_, err = utilsStruct.cmdUtils.WaitForAppropriateState(txnArgs.Client, txnArgs.AccountAddress, "unstake", utilsStruct, 4)
+	_, err = cmdUtils.WaitForAppropriateState(txnArgs.Client, "unstake", 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err
 	}
-
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
-	txn, err := utilsStruct.stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, sAmount)
+	txn, err := stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, sAmount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return txnArgs, err
 	}
-	log.Info("Transaction hash: ", utilsStruct.transactionUtils.Hash(txn))
-	utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, utilsStruct.transactionUtils.Hash(txn).String())
+	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
+	razorUtils.WaitForBlockCompletion(txnArgs.Client, transactionUtils.Hash(txn).String())
 	return txnArgs, nil
 }
 
-func AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32, utilsStruct UtilsStruct) error {
+func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
-	utilsStruct.razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := utilsStruct.cmdUtils.withdrawFunds(txnArgs.Client, types.Account{
+	razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+	txn, err := cmdUtils.WithdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId, utilsStruct)
+	}, txnArgs.Config, stakerId)
 	if err != nil {
 		log.Error("WithdrawFunds error ", err)
 		return err
 	}
 	if txn != core.NilHash {
-		utilsStruct.razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
 	}
 	return nil
 }
 
-func GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int, utilsStruct UtilsStruct) (*big.Int, error) {
-	stakedToken := utilsStruct.razorUtils.GetStakedToken(client, staker.TokenAddress)
-	callOpts := utilsStruct.razorUtils.GetOptions()
+func (*UtilsStruct) GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.StructsStaker, amount *big.Int) (*big.Int, error) {
+	stakedToken := razorUtils.GetStakedToken(client, staker.TokenAddress)
+	callOpts := razorUtils.GetOptions()
 
-	sRZRBalance, err := utilsStruct.stakeManagerUtils.BalanceOf(stakedToken, &callOpts, common.HexToAddress(address))
+	sRZRBalance, err := stakeManagerUtils.BalanceOf(stakedToken, &callOpts, common.HexToAddress(address))
 	if err != nil {
 		log.Error("Error in getting sRZRBalance: ", err)
 		return nil, err
 	}
 
-	totalSupply, err := utilsStruct.stakeManagerUtils.GetTotalSupply(stakedToken, &callOpts)
+	totalSupply, err := stakeManagerUtils.GetTotalSupply(stakedToken, &callOpts)
 	if err != nil {
 		log.Error("Error in getting total supply: ", err)
 		return nil, err
 	}
 
-	maxUnstake := utilsStruct.razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
-	log.Debugf("The maximum RZRs you can unstake: %g RZRs", utilsStruct.razorUtils.GetAmountInDecimal(maxUnstake))
+	maxUnstake := razorUtils.ConvertSRZRToRZR(sRZRBalance, staker.Stake, totalSupply)
+	log.Debugf("The maximum RZRs you can unstake: %g RZRs", razorUtils.GetAmountInDecimal(maxUnstake))
 
 	if maxUnstake.Cmp(amount) < 0 {
 		log.Error("Amount exceeds maximum unstake amount")
 		return nil, errors.New("invalid amount")
 	}
 
-	sAmount, err := utilsStruct.razorUtils.ConvertRZRToSRZR(amount, staker.Stake, totalSupply)
+	sAmount, err := razorUtils.ConvertRZRToSRZR(amount, staker.Stake, totalSupply)
 	if err != nil {
 		log.Error("Error in getting sAmount: ", err)
 		return nil, err
@@ -190,11 +181,11 @@ func GetAmountInSRZRs(client *ethclient.Client, address string, staker bindings.
 
 func init() {
 
+	cmdUtils = &UtilsStruct{}
 	razorUtils = Utils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
-	cmdUtils = UtilsCmd{}
-	flagSetUtils = FlagSetUtils{}
+	flagSetUtils = FLagSetUtils{}
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 

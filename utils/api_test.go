@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"github.com/avast/retry-go"
+	"github.com/stretchr/testify/mock"
+	"razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -61,7 +64,18 @@ func TestGetDataFromAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetDataFromAPI(tt.args.url)
+			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				Options:        optionsMock,
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetDataFromAPI(tt.args.url)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -158,7 +172,16 @@ func TestGetDataFromJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetDataFromJSON(tt.args.jsonObject, tt.args.selector)
+			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				Options:        optionsMock,
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			got, err := utils.GetDataFromJSON(tt.args.jsonObject, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromJSON() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -202,7 +225,16 @@ func TestGetDataFromHTML(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetDataFromHTML(tt.args.url, tt.args.selector)
+			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				Options:        optionsMock,
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			got, err := utils.GetDataFromHTML(tt.args.url, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return

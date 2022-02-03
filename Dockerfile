@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine AS go
+FROM golang:1.17-alpine AS go
 FROM ethereum/client-go:alltools-v1.10.7 AS ethereum
 
 FROM node:16.2.0-alpine AS builder
@@ -24,3 +24,4 @@ RUN PATH="/usr/local/go/bin:${PATH}" \
 FROM alpine:latest
 RUN apk add --update bash 
 COPY --from=builder /usr/local/bin/razor /usr/local/bin/
+ENTRYPOINT [ "razor" ]

@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"razor/path"
 	"razor/utils"
 	"strconv"
 )
@@ -13,38 +12,36 @@ var deleteOverrideCmd = &cobra.Command{
 	Use:   "deleteOverride",
 	Short: "delete override job",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		err := utilsStruct.executeDeleteOverrideJob(cmd.Flags())
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Info("Job removed from override list successfully!")
-	},
+	Run:   initialiseDeleteOverrideJob,
 }
 
-func (utilsStruct UtilsStruct) executeDeleteOverrideJob(flagSet *pflag.FlagSet) error {
-	jobId, err := utilsStruct.flagSetUtils.GetUint16JobId(flagSet)
+func initialiseDeleteOverrideJob(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteDeleteOverrideJob(cmd.Flags())
+}
+
+func (*UtilsStruct) ExecuteDeleteOverrideJob(flagSet *pflag.FlagSet) {
+	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
+	utils.CheckError("Error in getting jobId: ", err)
+
+	err = cmdUtils.DeleteOverrideJob(jobId)
+	utils.CheckError("DeleteOverrideJob error: ", err)
+	log.Info("Job removed from override list successfully!")
+}
+
+func (*UtilsStruct) DeleteOverrideJob(jobId uint16) error {
+	jobPath, err := razorUtils.GetJobFilePath()
 	if err != nil {
 		return err
 	}
-	return utilsStruct.deleteOverrideJob(jobId)
-}
-
-func (utilsStruct UtilsStruct) deleteOverrideJob(jobId uint16) error {
-	jobPath, err := path.GetJobFilePath()
-	if err != nil {
-		return err
-	}
-	return utils.DeleteJobFromJSON(jobPath, strconv.Itoa(int(jobId)))
+	return razorUtils.DeleteJobFromJSON(jobPath, strconv.Itoa(int(jobId)))
 }
 
 func init() {
+
+	razorUtils = Utils{}
+	cmdUtils = &UtilsStruct{}
+	flagSetUtils = FLagSetUtils{}
+
 	rootCmd.AddCommand(deleteOverrideCmd)
 	var JobId uint16
 

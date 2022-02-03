@@ -27,6 +27,7 @@ type OptionUtils interface {
 	Parse(io.Reader) (abi.ABI, error)
 	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
 	GetDefaultPath() (string, error)
+	GetJobFilePath() (string, error)
 	GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey
 	NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error)
 	RetryAttempts(uint) retry.Option
@@ -42,6 +43,13 @@ type OptionUtils interface {
 	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+	GetNumAssets(*ethclient.Client, *bind.CallOpts) (uint16, error)
+	GetNumActiveCollections(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
+	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
+	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
+	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
+	ReadJSONData(string) (map[string]*types.StructsJob, error)
+	ConvertToNumber(interface{}) (*big.Float, error)
 }
 
 type Utils interface {
@@ -66,6 +74,24 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
+	GetAssetManager(*ethclient.Client) *bindings.AssetManager
+	GetAssetManagerWithOpts(*ethclient.Client) (*bindings.AssetManager, bind.CallOpts)
+	GetNumAssets(*ethclient.Client) (uint16, error)
+	GetActiveJob(*ethclient.Client, uint16) (bindings.StructsJob, error)
+	GetAssetType(*ethclient.Client, uint16) (uint8, error)
+	GetCollection(*ethclient.Client, uint16) (bindings.StructsCollection, error)
+	GetActiveCollection(*ethclient.Client, uint16) (bindings.StructsCollection, error)
+	Aggregate(*ethclient.Client, uint32, bindings.StructsCollection) (*big.Int, error)
+	GetDataToCommitFromJobs([]bindings.StructsJob) ([]*big.Int, []uint8, error)
+	GetDataToCommitFromJob(bindings.StructsJob) (*big.Int, error)
+	GetNumActiveAssets(*ethclient.Client) (*big.Int, error)
+	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
+	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
+	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
+	GetActiveAssetIds(*ethclient.Client) ([]uint16, error)
+	GetDataFromAPI(string) ([]byte, error)
+	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
+	GetDataFromHTML(string, string) (string, error)
 }
 
 type OptionsStruct struct{}

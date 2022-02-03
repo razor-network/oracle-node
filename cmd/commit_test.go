@@ -8,9 +8,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"math/big"
 	randMath "math/rand"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"reflect"
@@ -26,12 +28,6 @@ func TestCommit(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		razorUtils:       UtilsMock{},
-		voteManagerUtils: VoteManagerMock{},
-		transactionUtils: TransactionMock{},
-	}
 
 	type args struct {
 		state     int64
@@ -111,27 +107,23 @@ func TestCommit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetDelayedStateMock = func(*ethclient.Client, int32) (int64, error) {
-				return tt.args.state, tt.args.stateErr
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 
-			GetEpochMock = func(*ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
+			razorUtils = utilsMock
+			transactionUtils = transactionUtilsMock
+			voteManagerUtils = voteManagerUtilsMock
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
+			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
+			voteManagerUtilsMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			CommitMock = func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error) {
-				return tt.args.commitTxn, tt.args.commitErr
-			}
+			utils := &UtilsStruct{}
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-
-			got, err := utilsStruct.Commit(client, data, secret, account, config)
+			got, err := utils.Commit(client, data, secret, account, config)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -155,10 +147,6 @@ func TestHandleCommitState(t *testing.T) {
 	)
 
 	rogueValue := big.NewInt(int64(randMath.Intn(10000000)))
-
-	utilsStruct := UtilsStruct{
-		razorUtils: UtilsMock{},
-	}
 
 	type args struct {
 		data               []*big.Int
@@ -225,21 +213,16 @@ func TestHandleCommitState(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
-		GetActiveAssetsDataMock = func(*ethclient.Client, uint32) ([]*big.Int, error) {
-			return tt.args.data, tt.args.dataErr
-		}
-
-		GetNumActiveAssetsMock = func(*ethclient.Client) (*big.Int, error) {
-			return tt.args.numActiveAssets, tt.args.numActiveAssetsErr
-		}
-
-		GetRogueRandomValueMock = func(int) *big.Int {
-			return tt.args.rogueValue
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utilsStruct.HandleCommitState(client, epoch, tt.args.rogue)
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
+
+			utilsMock.On("GetActiveAssetsData", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.data, tt.args.dataErr)
+			utilsMock.On("GetNumActiveAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
+			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(tt.args.rogueValue)
+
+			utils := &UtilsStruct{}
+			got, err := utils.HandleCommitState(client, epoch, tt.args.rogue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}

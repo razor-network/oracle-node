@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -19,79 +20,77 @@ var transferCmd = &cobra.Command{
 
 Example:
   ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c`,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			tokenManagerUtils: tokenManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-			cmdUtils:          cmdUtils,
-		}
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-		txn, err := utilsStruct.transfer(cmd.Flags(), config)
-		utils.CheckError("Transfer error: ", err)
-		log.Info("Transaction Hash: ", txn)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseTransfer,
 }
 
-func (utilsStruct UtilsStruct) transfer(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
+func initialiseTransfer(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteTransfer(cmd.Flags())
+}
 
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	fromAddress, err := utilsStruct.flagSetUtils.GetStringFrom(flagSet)
-	if err != nil {
-		return core.NilHash, err
+func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	password := razorUtils.AssignPassword(flagSet)
+	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
+	utils.CheckError("Error in getting fromAddress: ", err)
+	toAddress, err := flagSetUtils.GetStringTo(flagSet)
+	utils.CheckError("Error in getting toAddress: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	balance, err := razorUtils.FetchBalance(client, fromAddress)
+	utils.CheckError("Error in fetching balance: ", err)
+
+	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
+	utils.CheckError("Error in getting amount: ", err)
+
+	transferInput := types.TransferInput{
+		FromAddress: fromAddress,
+		ToAddress:   toAddress,
+		Password:    password,
+		ValueInWei:  valueInWei,
+		Balance:     balance,
 	}
-	toAddress, err := utilsStruct.flagSetUtils.GetStringTo(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+	txn, err := cmdUtils.Transfer(client, config, transferInput)
+	utils.CheckError("Transfer error: ", err)
+	log.Info("Transaction Hash: ", txn)
+	razorUtils.WaitForBlockCompletion(client, txn.String())
+}
 
-	balance, err := utilsStruct.razorUtils.FetchBalance(client, fromAddress)
-	if err != nil {
-		log.Errorf("Error in fetching balance for account " + fromAddress)
-		return core.NilHash, err
-	}
+func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 
-	valueInWei, err := utilsStruct.cmdUtils.AssignAmountInWei(flagSet, utilsStruct)
-	if err != nil {
-		log.Error("Error in getting amount: ", err)
-		return core.NilHash, err
-	}
+	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
-	utilsStruct.razorUtils.CheckAmountAndBalance(valueInWei, balance)
-
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  fromAddress,
+		Password:        transferInput.Password,
+		AccountAddress:  transferInput.FromAddress,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",
-		Parameters:      []interface{}{common.HexToAddress(toAddress), valueInWei},
+		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
 		ABI:             bindings.RAZORABI,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", utilsStruct.razorUtils.GetAmountInDecimal(valueInWei), fromAddress, toAddress)
+	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 
-	txn, err := utilsStruct.tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(toAddress), valueInWei)
+	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
 	if err != nil {
 		log.Errorf("Error in transferring tokens ")
 		return core.NilHash, err
 	}
 
-	return utilsStruct.transactionUtils.Hash(txn), err
+	return transactionUtils.Hash(txn), err
 }
 
 func init() {
+
+	cmdUtils = &UtilsStruct{}
 	razorUtils = Utils{}
-	tokenManagerUtils = TokenManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
+	tokenManagerUtils = TokenManagerUtils{}
+	flagSetUtils = FLagSetUtils{}
 
 	rootCmd.AddCommand(transferCmd)
 	var (

@@ -17,29 +17,25 @@ var jobListCmd = &cobra.Command{
 
 Example:
 	./razor jobList`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		utilsStruct := UtilsStruct{
-			razorUtils:   razorUtils,
-			flagSetUtils: flagSetUtils,
-		}
-
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-
-		client := utils.ConnectToClient(config.Provider)
-
-		err = utilsStruct.GetJobList(client)
-
-		if err != nil {
-			log.Error("Error in getting job list: ", err)
-		}
-
-	},
+	Run: initialiseJobList,
 }
 
-func (utilsStruct *UtilsStruct) GetJobList(client *ethclient.Client) error {
-	jobs, err := utilsStruct.razorUtils.GetJobs(client)
+func initialiseJobList(*cobra.Command, []string) {
+	cmdUtils.ExecuteJobList()
+}
+
+func (*UtilsStruct) ExecuteJobList() {
+
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	err = cmdUtils.GetJobList(client)
+	utils.CheckError("Error in getting job list: ", err)
+}
+func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
+	jobs, err := razorUtils.GetJobs(client)
 
 	if err != nil {
 		return err
@@ -67,7 +63,8 @@ func (utilsStruct *UtilsStruct) GetJobList(client *ethclient.Client) error {
 
 func init() {
 	razorUtils = Utils{}
-	flagSetUtils = FlagSetUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(jobListCmd)
 

@@ -5,20 +5,22 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/cmd/mocks"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"math/big"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"testing"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestUtilsStruct_UpdateCommission(t *testing.T) {
+func TestUpdateCommission(t *testing.T) {
 	var client *ethclient.Client
-	var flagSet *pflag.FlagSet
 	var config = types.Configurations{
 		Provider:      "127.0.0.1",
 		GasMultiplier: 1,
@@ -26,12 +28,200 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 		WaitTime:      1,
 	}
 
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-		flagSetUtils:      FlagSetMock{},
-		cmdUtils:          UtilsCmdMock{},
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
+
+	type args struct {
+		commission                       uint8
+		stakerInfo                       bindings.StructsStaker
+		stakerInfoErr                    error
+		maxCommission                    uint8
+		maxCommissionErr                 error
+		epochLimitForUpdateCommission    uint16
+		epochLimitForUpdateCommissionErr error
+		epoch                            uint32
+		epochErr                         error
+		UpdateCommissionTxn              *Types.Transaction
+		UpdateCommissionErr              error
+		hash                             common.Hash
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "Test 1: When update commission executes successfully",
+			args: args{
+				commission:                    10,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in fetching staker info",
+			args: args{
+				commission:                    10,
+				stakerInfo:                    bindings.StructsStaker{},
+				stakerInfoErr:                 errors.New("error in fetching stakerInfo"),
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("error in fetching stakerInfo"),
+		},
+		{
+			name: "Test 3: When there is an error in fetching max commission",
+			args: args{
+				commission:                    10,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 0,
+				maxCommissionErr:              errors.New("error in fetching max commission"),
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("error in fetching max commission"),
+		},
+		{
+			name: "Test 4: When there is an error in fetching epochLimitForUpdateCommission",
+			args: args{
+				commission:                       10,
+				stakerInfo:                       bindings.StructsStaker{},
+				maxCommission:                    20,
+				maxCommissionErr:                 nil,
+				epochLimitForUpdateCommission:    0,
+				epochLimitForUpdateCommissionErr: errors.New("error in fetching epochLimitForUpdateCommission"),
+				epoch:                            11,
+				UpdateCommissionTxn:              &Types.Transaction{},
+				UpdateCommissionErr:              nil,
+			},
+			wantErr: errors.New("error in fetching epochLimitForUpdateCommission"),
+		},
+		{
+			name: "Test 5: When there is an error in fetching epoch",
+			args: args{
+				commission:                    10,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         0,
+				epochErr:                      errors.New("error in fetching epoch"),
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("error in fetching epoch"),
+		},
+		{
+			name: "Test 6: When update commission fails",
+			args: args{
+				commission:                    10,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           errors.New("error in updating commission"),
+			},
+			wantErr: errors.New("error in updating commission"),
+		},
+		{
+			name: "Test 7: When commission is 0",
+			args: args{
+				commission:                    0,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("commission out of range"),
+		},
+		{
+			name: "Test 8: When commission is greater than max commission",
+			args: args{
+				commission:                    30,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("commission out of range"),
+		},
+		{
+			name: "Test 9: When the epoch is invalid for update",
+			args: args{
+				commission: 10,
+				stakerInfo: bindings.StructsStaker{
+					EpochCommissionLastUpdated: 1,
+				},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 100,
+				epoch:                         11,
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("invalid epoch for update"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("GetMaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
+			utilsMock.On("GetEpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
+			stakeManagerUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionTxn, tt.args.UpdateCommissionErr)
+
+			utils := &UtilsStruct{}
+			gotErr := utils.UpdateCommission(config, client, types.UpdateCommissionInput{
+				Commission: tt.args.commission,
+			})
+			if gotErr == nil || tt.wantErr == nil {
+				if gotErr != tt.wantErr {
+					t.Errorf("Error for UpdateCommission function, got = %v, want = %v", gotErr, tt.wantErr)
+				}
+			} else {
+				if gotErr.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for UpdateCommission function, got = %v, want = %v", gotErr, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestExecuteUpdateCommission(t *testing.T) {
+
+	var client *ethclient.Client
+	var flagSet *pflag.FlagSet
+	var config = types.Configurations{
+		Provider:      "127.0.0.1",
+		GasMultiplier: 1,
+		BufferPercent: 20,
+		WaitTime:      1,
 	}
 
 	type args struct {
@@ -48,21 +238,20 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    args
-		wantErr error
+		name          string
+		args          args
+		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When update commission executes successfully",
+			name: "Test 1: When ExecuteUpdateCommission() executes successfully",
 			args: args{
-				config:              config,
-				password:            "test",
-				address:             "0x000000000000000000000000000000000000dea1",
-				commission:          10,
-				stakerId:            1,
-				UpdateCommissionErr: nil,
+				config:     config,
+				password:   "test",
+				address:    "0x000000000000000000000000000000000000dea1",
+				commission: 10,
+				stakerId:   1,
 			},
-			wantErr: nil,
+			expectedFatal: false,
 		},
 		{
 			name: "Test 2: When there is an error in fetching config",
@@ -75,7 +264,7 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 				stakerId:            1,
 				UpdateCommissionErr: nil,
 			},
-			wantErr: errors.New("error in getting config"),
+			expectedFatal: true,
 		},
 		{
 			name: "Test 3: When there is an error in fetching address",
@@ -88,7 +277,7 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 				stakerId:            1,
 				UpdateCommissionErr: nil,
 			},
-			wantErr: errors.New("error in fetching address"),
+			expectedFatal: true,
 		},
 		{
 			name: "Test 4: When there is an error in fetching commission",
@@ -101,7 +290,7 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 				stakerId:            1,
 				UpdateCommissionErr: nil,
 			},
-			wantErr: errors.New("error in fetching commission"),
+			expectedFatal: true,
 		},
 		{
 			name: "Test 5: When there is an error in fetching stakerId",
@@ -114,323 +303,51 @@ func TestUtilsStruct_UpdateCommission(t *testing.T) {
 				stakerIdErr:         errors.New("error in fetching the stakerId"),
 				UpdateCommissionErr: nil,
 			},
-			wantErr: errors.New("error in fetching the stakerId"),
+			expectedFatal: true,
 		},
 		{
-			name: "Test 6: When there is an error in executing update commission",
+			name: "Test 6: When there is an error from updateCommission",
 			args: args{
 				config:              config,
 				password:            "test",
 				address:             "0x000000000000000000000000000000000000dea1",
 				commission:          10,
-				stakerId:            0,
-				UpdateCommissionErr: errors.New("error in ExecuteUpdateCommission"),
+				stakerId:            1,
+				UpdateCommissionErr: errors.New("error in updating commission"),
 			},
-			wantErr: errors.New("error in ExecuteUpdateCommission"),
+			expectedFatal: true,
 		},
 	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetConfigDataMock = func(UtilsStruct) (types.Configurations, error) {
-				return tt.args.config, tt.args.configErr
-			}
-			AssignPasswordMock = func(set *pflag.FlagSet) string {
-				return tt.args.password
-			}
-			GetStringAddressMock = func(*pflag.FlagSet) (string, error) {
-				return tt.args.address, tt.args.addressErr
-			}
-			GetUint8CommissionMock = func(*pflag.FlagSet) (uint8, error) {
-				return tt.args.commission, tt.args.commissionErr
-			}
-			GetStakerIdMock = func(*ethclient.Client, string) (uint32, error) {
-				return tt.args.stakerId, tt.args.stakerIdErr
-			}
-			ConnectToClientMock = func(string2 string) *ethclient.Client {
-				return client
-			}
-			ExecuteUpdateCommissionMock = func(*ethclient.Client, types.UpdateCommissionInput, UtilsStruct) error {
-				return tt.args.UpdateCommissionErr
-			}
-			gotErr := utilsStruct.UpdateCommission(flagSet)
-			if gotErr == nil || tt.wantErr == nil {
-				if gotErr != tt.wantErr {
-					t.Errorf("Error for UpdateCommission function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
-			} else {
-				if gotErr.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for UpdateCommission function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
-			}
-		})
-	}
-}
 
-func Test_executeUpdateCommission(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-	var client *ethclient.Client
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-	var config = types.Configurations{
-		Provider:      "127.0.0.1",
-		GasMultiplier: 1,
-		BufferPercent: 20,
-		WaitTime:      1,
-	}
+			razorUtils = utilsMock
+			flagSetUtils = flagsetUtilsMock
+			cmdUtils = cmdUtilsMock
 
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-		flagSetUtils:      FlagSetMock{},
-		cmdUtils:          UtilsCmdMock{},
-	}
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			flagsetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
 
-	type args struct {
-		client                           *ethclient.Client
-		input                            types.UpdateCommissionInput
-		stakerInfo                       bindings.StructsStaker
-		stakerInfoErr                    error
-		maxCommission                    uint8
-		maxCommissionErr                 error
-		epochLimitForUpdateCommission    uint16
-		epochLimitForUpdateCommissionErr error
-		epoch                            uint32
-		epochErr                         error
-		UpdateCommissionTxn              *Types.Transaction
-		UpdateCommissionErr              error
-		WaitForBlockCompletionStatus     int
-		hash                             common.Hash
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr error
-	}{
-		{
-			name: "Test 1: When update commission executes successfully",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				client:                        client,
-				stakerInfo:                    bindings.StructsStaker{},
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 10,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in fetching staker info",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				stakerInfo:                    bindings.StructsStaker{},
-				stakerInfoErr:                 errors.New("error in fetching stakerInfo"),
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 10,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("error in fetching stakerInfo"),
-		},
-		{
-			name: "Test 3: When there is an error in fetching max commission",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				stakerInfo:                    bindings.StructsStaker{},
-				maxCommission:                 0,
-				maxCommissionErr:              errors.New("error in fetching max commission"),
-				epochLimitForUpdateCommission: 10,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("error in fetching max commission"),
-		},
-		{
-			name: "Test 4: When there is an error in fetching epochLimitForUpdateCommission",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				stakerInfo:                       bindings.StructsStaker{},
-				maxCommission:                    20,
-				maxCommissionErr:                 nil,
-				epochLimitForUpdateCommission:    0,
-				epochLimitForUpdateCommissionErr: errors.New("error in fetching epochLimitForUpdateCommission"),
-				epoch:                            11,
-				UpdateCommissionTxn:              &Types.Transaction{},
-				UpdateCommissionErr:              nil,
-				WaitForBlockCompletionStatus:     1,
-			},
-			wantErr: errors.New("error in fetching epochLimitForUpdateCommission"),
-		},
-		{
-			name: "Test 5: When there is an error in fetching epoch",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				stakerInfo:                    bindings.StructsStaker{},
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 10,
-				epoch:                         0,
-				epochErr:                      errors.New("error in fetching epoch"),
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("error in fetching epoch"),
-		},
-		{
-			name: "Test 6: When update commission fails",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				stakerInfo:                    bindings.StructsStaker{},
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 10,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           errors.New("error in updating commission"),
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("error in updating commission"),
-		},
-		{
-			name: "Test 7: When commission is 0",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 0,
-					Config:     config,
-				},
-				stakerInfo:                    bindings.StructsStaker{},
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 10,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("commission out of range"),
-		},
-		{
-			name: "Test 8: When commission is greater than max commission",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 30,
-					Config:     config,
-				},
-				stakerInfo:                    bindings.StructsStaker{},
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 10,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("commission out of range"),
-		},
-		{
-			name: "Test 9: When the epoch is invalid for update",
-			args: args{
-				input: types.UpdateCommissionInput{
-					StakerId:   1,
-					Address:    "0x000000000000000000000000000000000000dea1",
-					Password:   "test",
-					Commission: 10,
-					Config:     config,
-				},
-				stakerInfo: bindings.StructsStaker{
-					EpochCommissionLastUpdated: 1,
-				},
-				maxCommission:                 20,
-				epochLimitForUpdateCommission: 100,
-				epoch:                         11,
-				UpdateCommissionTxn:           &Types.Transaction{},
-				UpdateCommissionErr:           nil,
-				WaitForBlockCompletionStatus:  1,
-			},
-			wantErr: errors.New("invalid epoch for update"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return txnOpts
-			}
-			GetStakerMock = func(*ethclient.Client, string, uint32) (bindings.StructsStaker, error) {
-				return tt.args.stakerInfo, tt.args.stakerInfoErr
-			}
-			GetMaxCommissionMock = func(*ethclient.Client) (uint8, error) {
-				return tt.args.maxCommission, tt.args.maxCommissionErr
-			}
-			GetEpochLimitForUpdateCommissionMock = func(*ethclient.Client) (uint16, error) {
-				return tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr
-			}
-			GetEpochMock = func(*ethclient.Client) (uint32, error) {
-				return tt.args.epoch, tt.args.epochErr
-			}
-			UpdateCommissionMock = func(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error) {
-				return tt.args.UpdateCommissionTxn, tt.args.UpdateCommissionErr
-			}
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
-			WaitForBlockCompletionMock = func(*ethclient.Client, string) int {
-				return tt.args.WaitForBlockCompletionStatus
-			}
-			gotErr := ExecuteUpdateCommission(tt.args.client, tt.args.input, utilsStruct)
-			if gotErr == nil || tt.wantErr == nil {
-				if gotErr != tt.wantErr {
-					t.Errorf("Error for UpdateCommission function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
-			} else {
-				if gotErr.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for UpdateCommission function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteUpdateCommission(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteUpdateCommission function didn't execute as expected")
 			}
 		})
 	}

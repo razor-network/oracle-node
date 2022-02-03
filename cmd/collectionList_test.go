@@ -3,17 +3,20 @@ package cmd
 import (
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
+	"razor/cmd/mocks"
+	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
 )
 
-func TestUtilsStruct_GetCollectionList(t *testing.T) {
+func TestGetCollectionList(t *testing.T) {
 	var client *ethclient.Client
 	type fields struct {
-		razorUtils UtilsMock
+		razorUtils Utils
 	}
 	testUtils := fields{
-		razorUtils: UtilsMock{},
+		razorUtils: Utils{},
 	}
 
 	collectionListArray := []bindings.StructsCollection{
@@ -59,14 +62,13 @@ func TestUtilsStruct_GetCollectionList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsStruct := &UtilsStruct{
-				razorUtils: tt.fields.razorUtils,
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 
-			GetCollectionsMock = func(*ethclient.Client) ([]bindings.StructsCollection, error) {
-				return tt.args.collectionList, tt.args.collectionListErr
-			}
-			err := utilsStruct.GetCollectionList(tt.args.client)
+			utilsMock.On("GetCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
+			utils := &UtilsStruct{}
+
+			err := utils.GetCollectionList(tt.args.client)
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
@@ -77,6 +79,77 @@ func TestUtilsStruct_GetCollectionList(t *testing.T) {
 					t.Errorf("Error for collectionList function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestExecuteCollectionList(t *testing.T) {
+	var config types.Configurations
+	var client *ethclient.Client
+
+	type args struct {
+		config            types.Configurations
+		configErr         error
+		collectionListErr error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1:  When ExecuteCollectionList function executes successfully",
+			args: args{
+				config:            config,
+				configErr:         nil,
+				collectionListErr: nil,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2:  When there is an error in getting config",
+			args: args{
+				config:            config,
+				configErr:         errors.New("config error"),
+				collectionListErr: nil,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3:  When there is an error in getting GetCollectionList function",
+			args: args{
+				config:            config,
+				configErr:         nil,
+				collectionListErr: errors.New("collectionList error"),
+			},
+			expectedFatal: true,
+		},
+	}
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("GetCollectionList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionListErr)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteCollectionList()
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteCollectionList function didn't execute as expected")
+			}
+
 		})
 	}
 }
