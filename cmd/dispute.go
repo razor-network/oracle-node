@@ -158,5 +158,5 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	log.Info("Calling GiveSorted...")
 	log.Info("Txn Hash: ", txn.Hash())
 	giveSortedAssetIds = append(giveSortedAssetIds, int(assetId))
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+	utils.UtilsInterface.WaitForBlockCompletion(client, txn.Hash().String())
 }

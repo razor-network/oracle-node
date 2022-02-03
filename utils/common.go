@@ -16,8 +16,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func ConnectToClient(provider string) *ethclient.Client {
-	client, err := ethclient.Dial(provider)
+func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
+	client, err := Options.Dial(provider)
 	if err != nil {
 		log.Fatal("Error in connecting...", err)
 	}
@@ -25,14 +25,14 @@ func ConnectToClient(provider string) *ethclient.Client {
 	return client
 }
 
-func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
+func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
 	coinContract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
 	return coinContract.BalanceOf(&opts, address)
 }
 
-func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
@@ -47,20 +47,20 @@ func GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	return int64(state) % core.NumberOfStates, nil
 }
 
-func checkTransactionReceipt(client *ethclient.Client, _txHash string) int {
+func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
-	tx, err := client.TransactionReceipt(context.Background(), txHash)
+	tx, err := Options.TransactionReceipt(client, context.Background(), txHash)
 	if err != nil {
 		return -1
 	}
 	return int(tx.Status)
 }
 
-func WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	timeout := core.BlockCompletionTimeout
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Debug("Checking if transaction is mined....")
-		transactionStatus := checkTransactionReceipt(client, hashToRead)
+		transactionStatus := UtilsInterface.CheckTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
 			log.Error("Transaction mining unsuccessful")
 			return 0
@@ -97,8 +97,8 @@ func IsFlagPassed(name string) bool {
 	return found
 }
 
-func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	ethBalance, err := client.BalanceAt(context.Background(), common.HexToAddress(address), nil)
+func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
+	ethBalance, err := Options.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
 	if err != nil {
 		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
 	}
@@ -107,7 +107,7 @@ func CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	}
 }
 
-func GetStateName(stateNumber int64) string {
+func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
 	case 0:
@@ -126,14 +126,14 @@ func GetStateName(stateNumber int64) string {
 	return stateName
 }
 
-func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
 	if IsFlagPassed("stakerId") {
 		return flagSet.GetUint32("stakerId")
 	}
 	return GetStakerId(client, address)
 }
 
-func GetEpoch(client *ethclient.Client) (uint32, error) {
+func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 	latestHeader, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
@@ -143,11 +143,11 @@ func GetEpoch(client *ethclient.Client) (uint32, error) {
 	return uint32(epoch), nil
 }
 
-func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
+func (*UtilsStruct) SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
 	if len(committedData) == 0 {
 		return errors.New("committed data is empty")
 	}
-	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
+	f, err := Options.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big
 	return nil
 }
 
-func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+func (*UtilsStruct) ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	var (
 		committedData []*big.Int
 		epoch         uint32
@@ -201,13 +201,13 @@ func Sleep(duration time.Duration) {
 	time.Sleep(duration)
 }
 
-func CalculateBlockTime(client *ethclient.Client) int64 {
+func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
 	latestBlockNumber := latestBlock.Number
-	lastSecondBlock, err := client.HeaderByNumber(context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	lastSecondBlock, err := Options.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
 	if err != nil {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}

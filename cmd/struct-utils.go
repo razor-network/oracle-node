@@ -32,11 +32,11 @@ func (u Utils) ViperWriteConfigAs(path string) error {
 }
 
 func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
-	return utils.GetEpoch(client)
+	return utils.UtilsInterface.GetEpoch(client)
 }
 
 func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
-	return utils.GetEpoch(client)
+	return utils.UtilsInterface.GetEpoch(client)
 }
 
 func (u Utils) GetOptions() bind.CallOpts {
@@ -44,7 +44,7 @@ func (u Utils) GetOptions() bind.CallOpts {
 }
 
 func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
-	return utils.CalculateBlockTime(client)
+	return utils.UtilsInterface.CalculateBlockTime(client)
 }
 
 func (u Utils) Sleep(duration time.Duration) {
@@ -78,11 +78,11 @@ func (u Utils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
-	return utils.ConnectToClient(provider)
+	return utils.UtilsInterface.ConnectToClient(provider)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
-	return utils.WaitForBlockCompletion(client, hashToRead)
+	return utils.UtilsInterface.WaitForBlockCompletion(client, hashToRead)
 }
 
 func (u Utils) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
@@ -98,7 +98,7 @@ func (u Utils) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*b
 }
 
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utils.GetDelayedState(client, buffer)
+	return utils.UtilsInterface.GetDelayedState(client, buffer)
 }
 
 func (u Utils) GetDefaultPath() (string, error) {
@@ -110,7 +110,7 @@ func (u Utils) GetJobFilePath() (string, error) {
 }
 
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	return utils.FetchBalance(client, accountAddress)
+	return utils.UtilsInterface.FetchBalance(client, accountAddress)
 }
 
 func (u Utils) IsFlagPassed(name string) bool {
@@ -150,7 +150,7 @@ func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 }
 
 func (u Utils) GetStateName(state int64) string {
-	return utils.GetStateName(state)
+	return utils.UtilsInterface.GetStateName(state)
 }
 
 func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
@@ -158,11 +158,11 @@ func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) 
 }
 
 func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	utils.CheckEthBalanceIsZero(client, address)
+	utils.UtilsInterface.CheckEthBalanceIsZero(client, address)
 }
 
 func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
-	return utils.AssignStakerId(flagSet, client, address)
+	return utils.UtilsInterface.AssignStakerId(flagSet, client, address)
 }
 
 func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
@@ -296,11 +296,11 @@ func (u Utils) WaitTillNextNSecs(seconds int32) {
 }
 
 func (u Utils) SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
-	return utils.SaveCommittedDataToFile(fileName, epoch, committedData)
+	return utils.UtilsInterface.SaveCommittedDataToFile(fileName, epoch, committedData)
 }
 
 func (u Utils) ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
-	return utils.ReadCommittedDataFromFile(fileName)
+	return utils.UtilsInterface.ReadCommittedDataFromFile(fileName)
 }
 
 func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {

@@ -11,8 +11,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"razor/accounts"
 	coretypes "razor/core/types"
 	"razor/path"
@@ -166,4 +168,20 @@ func (o OptionsStruct) NewBlockManager(address common.Address, client *ethclient
 
 func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
 	return bindings.NewStakedToken(address, client)
+}
+
+func (o OptionsStruct) Dial(rawurl string) (*ethclient.Client, error) {
+	return ethclient.Dial(rawurl)
+}
+
+func (o OptionsStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	return client.TransactionReceipt(ctx, txHash)
+}
+
+func (o OptionsStruct) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
+	return os.OpenFile(name, flag, perm)
+}
+
+func (o OptionsStruct) Open(name string) (*os.File, error) {
+	return os.Open(name)
 }

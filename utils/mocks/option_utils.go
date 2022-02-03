@@ -25,9 +25,13 @@ import (
 
 	ethereum "github.com/ethereum/go-ethereum"
 
+	fs "io/fs"
+
 	io "io"
 
 	mock "github.com/stretchr/testify/mock"
+
+	os "os"
 
 	retry "github.com/avast/retry-go"
 
@@ -77,6 +81,29 @@ func (_m *OptionUtils) ConvertToNumber(_a0 interface{}) (*big.Float, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Dial provides a mock function with given fields: _a0
+func (_m *OptionUtils) Dial(_a0 string) (*ethclient.Client, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *ethclient.Client
+	if rf, ok := ret.Get(0).(func(string) *ethclient.Client); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ethclient.Client)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
@@ -587,6 +614,52 @@ func (_m *OptionUtils) NewVoteManager(address common.Address, client *ethclient.
 	return r0, r1
 }
 
+// Open provides a mock function with given fields: _a0
+func (_m *OptionUtils) Open(_a0 string) (*os.File, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *os.File
+	if rf, ok := ret.Get(0).(func(string) *os.File); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*os.File)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// OpenFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *OptionUtils) OpenFile(_a0 string, _a1 int, _a2 fs.FileMode) (*os.File, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *os.File
+	if rf, ok := ret.Get(0).(func(string, int, fs.FileMode) *os.File); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*os.File)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, int, fs.FileMode) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Pack provides a mock function with given fields: _a0, _a1, _a2
 func (_m *OptionUtils) Pack(_a0 abi.ABI, _a1 string, _a2 ...interface{}) ([]byte, error) {
 	var _ca []interface{}
@@ -754,6 +827,29 @@ func (_m *OptionUtils) SuggestGasPrice(_a0 *ethclient.Client, _a1 context.Contex
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context) error); ok {
 		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TransactionReceipt provides a mock function with given fields: _a0, _a1, _a2
+func (_m *OptionUtils) TransactionReceipt(_a0 *ethclient.Client, _a1 context.Context, _a2 common.Hash) (*types.Receipt, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *types.Receipt
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, common.Hash) *types.Receipt); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Receipt)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, common.Hash) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}

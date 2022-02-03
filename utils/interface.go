@@ -10,8 +10,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"io"
+	"io/fs"
 	"math/big"
+	"os"
 	"razor/accounts"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -57,6 +60,10 @@ type OptionUtils interface {
 	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
 	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
 	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
+	Dial(string) (*ethclient.Client, error)
+	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
+	OpenFile(string, int, fs.FileMode) (*os.File, error)
+	Open(string) (*os.File, error)
 }
 
 type Utils interface {
@@ -103,6 +110,18 @@ type Utils interface {
 	GetStakeManager(client *ethclient.Client) *bindings.StakeManager
 	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
 	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
+	ConnectToClient(provider string) *ethclient.Client
+	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
+	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
+	CheckTransactionReceipt(client *ethclient.Client, _txHash string) int
+	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int
+	CheckEthBalanceIsZero(client *ethclient.Client, address string)
+	GetStateName(stateNumber int64) string
+	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
+	GetEpoch(client *ethclient.Client) (uint32, error)
+	SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error
+	ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error)
+	CalculateBlockTime(client *ethclient.Client) int64
 }
 
 type OptionsStruct struct{}
