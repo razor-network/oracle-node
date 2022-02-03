@@ -234,7 +234,7 @@ If you are a staker you can accept delegation from delegators and charge a commi
 razor cli
 
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false>
+$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
 ```
 
 docker
@@ -249,7 +249,7 @@ docker run -it --rm \
 Example:
 
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true -c 20
 ```
 
 ### Update Commission

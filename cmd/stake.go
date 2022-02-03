@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"context"
-	"github.com/spf13/pflag"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/spf13/pflag"
 
 	"github.com/ethereum/go-ethereum/common"
 
