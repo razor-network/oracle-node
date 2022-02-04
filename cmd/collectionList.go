@@ -18,28 +18,25 @@ var collectionListCmd = &cobra.Command{
 	Long: `Provides the list of all collections with their name, power, ID etc.
 Example:
 	./razor collectionList `,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		utilsStruct := UtilsStruct{
-			razorUtils:   razorUtils,
-			flagSetUtils: flagSetUtils,
-		}
-
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-
-		client := utils.ConnectToClient(config.Provider)
-
-		err = utilsStruct.GetCollectionList(client)
-
-		if err != nil {
-			log.Error("Error in getting collection list: ", err)
-		}
-	},
+	Run: initialiseCollectionList,
 }
 
-func (utilsStruct *UtilsStruct) GetCollectionList(client *ethclient.Client) error {
-	collections, err := utilsStruct.razorUtils.GetCollections(client)
+func initialiseCollectionList(*cobra.Command, []string) {
+	cmdUtils.ExecuteCollectionList()
+}
+
+func (*UtilsStruct) ExecuteCollectionList() {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	err = cmdUtils.GetCollectionList(client)
+	utils.CheckError("Error in getting collection list: ", err)
+}
+
+func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
+	collections, err := razorUtils.GetCollections(client)
 
 	if err != nil {
 		return err
@@ -70,7 +67,8 @@ func (utilsStruct *UtilsStruct) GetCollectionList(client *ethclient.Client) erro
 
 func init() {
 	razorUtils = Utils{}
-	flagSetUtils = FlagSetUtils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(collectionListCmd)
 

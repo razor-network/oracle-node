@@ -5,35 +5,38 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func TestClaimBlockReward(t *testing.T) {
-
 	var options types.TransactionOptions
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		blockManagerUtils: BlockManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
-
 	type args struct {
-		txnOpts             *bind.TransactOpts
-		ClaimBlockRewardTxn *Types.Transaction
-		ClaimBlockRewardErr error
-		hash                common.Hash
+		epoch                     uint32
+		epochErr                  error
+		stakerId                  uint32
+		stakerIdErr               error
+		sortedProposedBlockIds    []uint32
+		sortedProposedBlockIdsErr error
+		selectedBlock             bindings.StructsBlock
+		selectedBlockErr          error
+		txnOpts                   *bind.TransactOpts
+		ClaimBlockRewardTxn       *Types.Transaction
+		ClaimBlockRewardErr       error
+		hash                      common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -42,44 +45,119 @@ func TestClaimBlockReward(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Test1: When ClaimBlockReward function executes successfully",
+			name: "Test 1: When ClaimBlockReward function executes successfully",
 			args: args{
-				txnOpts:             txnOpts,
-				ClaimBlockRewardTxn: &Types.Transaction{},
-				ClaimBlockRewardErr: nil,
-				hash:                common.BigToHash(big.NewInt(1)),
+				epoch:                  5,
+				stakerId:               2,
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
+				txnOpts:                txnOpts,
+				ClaimBlockRewardTxn:    &Types.Transaction{},
+				ClaimBlockRewardErr:    nil,
+				hash:                   common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
 		},
 		{
-			name: "Test2: When ClaimBlockReward transaction fails",
+			name: "Test 2: When ClaimBlockReward transaction fails",
 			args: args{
-				txnOpts:             txnOpts,
-				ClaimBlockRewardTxn: &Types.Transaction{},
-				ClaimBlockRewardErr: errors.New("claimBlockReward error"),
-				hash:                common.BigToHash(big.NewInt(1)),
+				epoch:                  5,
+				stakerId:               2,
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
+				txnOpts:                txnOpts,
+				ClaimBlockRewardTxn:    &Types.Transaction{},
+				ClaimBlockRewardErr:    errors.New("claimBlockReward error"),
+				hash:                   common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("claimBlockReward error"),
+		},
+		{
+			name: "Test 3: When there is an error in getting epoch",
+			args: args{
+				epochErr: errors.New("epoch error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("epoch error"),
+		},
+		{
+			name: "Test 4: When there is an error in getting stakerId",
+			args: args{
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				epoch:                  5,
+				stakerIdErr:            errors.New("stakerId error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("stakerId error"),
+		},
+		{
+			name: "Test 5: When there is an error in getting sortedProposedBlockIds",
+			args: args{
+				epoch:                     5,
+				stakerId:                  2,
+				sortedProposedBlockIdsErr: errors.New("sortedProposedBlockIds error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("sortedProposedBlockIds error"),
+		},
+		{
+			name: "Test 6: When there is an error in getting proposedBlock",
+			args: args{
+				epoch:                  5,
+				stakerId:               2,
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				selectedBlockErr:       errors.New("block error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("block error"),
+		},
+		{
+			name: "Test 7: When stakerId != proposerId and ClaimBlockReward function executes successfully",
+			args: args{
+				epoch:                  5,
+				stakerId:               3,
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
+				txnOpts:                txnOpts,
+				ClaimBlockRewardTxn:    &Types.Transaction{},
+				ClaimBlockRewardErr:    nil,
+				hash:                   common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When sortedProposedBlockIds is nil",
+			args: args{
+				sortedProposedBlockIds: nil,
+			},
+			want:    core.NilHash,
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-				return tt.args.txnOpts
-			}
+			utilsMock := new(mocks.UtilsInterface)
+			blockManagerMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			ClaimBlockRewardMock = func(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error) {
-				return tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr
-			}
+			razorUtils = utilsMock
+			blockManagerUtils = blockManagerMock
+			transactionUtils = transactionUtilsMock
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.selectedBlock, tt.args.selectedBlockErr)
+			utilsMock.On("GetTxnOpts", options).Return(tt.args.txnOpts)
+			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			got, err := utilsStruct.ClaimBlockReward(options)
+			utils := &UtilsStruct{}
+			got, err := utils.ClaimBlockReward(options)
 			if got != tt.want {
 				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)
 			}

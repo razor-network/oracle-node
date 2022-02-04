@@ -1,16 +1,17 @@
 package cmd
 
 import (
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+
 	"github.com/spf13/cobra"
 )
-
-var cmdUtils utilsCmdInterface
 
 var setDelegationCmd = &cobra.Command{
 	Use:   "setDelegation",
@@ -18,104 +19,119 @@ var setDelegationCmd = &cobra.Command{
 	Long: `Using setDelegation, a staker can accept delegation from delegators and charge a commission from them.
 
 Example:
-  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true 
+  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			stakeManagerUtils: stakeManagerUtils,
-			cmdUtils:          cmdUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		err := utilsStruct.SetDelegation(cmd.Flags())
-		utils.CheckError("SetDelegation error: ", err)
-	},
+	Run: initialiseSetDelegation,
 }
 
-func (utilsStruct UtilsStruct) SetDelegation(flagSet *pflag.FlagSet) error {
+func initialiseSetDelegation(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteSetDelegation(cmd.Flags())
+}
 
-	config, err := utilsStruct.razorUtils.GetConfigData(utilsStruct)
-	if err != nil {
-		log.Error("Error in getting config")
-		return err
-	}
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return err
-	}
-	statusString, err := utilsStruct.flagSetUtils.GetStringStatus(flagSet)
-	if err != nil {
-		return err
-	}
-	status, err := utilsStruct.razorUtils.ParseBool(statusString)
-	if err != nil {
-		log.Error("Error in parsing status to boolean")
-		return err
+func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
+
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	statusString, err := flagSetUtils.GetStringStatus(flagSet)
+	utils.CheckError("Error in getting status: ", err)
+
+	status, err := razorUtils.ParseBool(statusString)
+	utils.CheckError("Error in parsing status to boolean: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	stakerId, err := razorUtils.GetStakerId(client, address)
+	utils.CheckError("StakerId error: ", err)
+
+	commission, err := flagSetUtils.GetUint8Commission(flagSet)
+	utils.CheckError("Error in fetching commission: ", err)
+
+	delegationInput := types.SetDelegationInput{
+		Address:      address,
+		Password:     password,
+		Status:       status,
+		StatusString: statusString,
+		StakerId:     stakerId,
+		Commission:   commission,
 	}
 
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
-
-	stakerId, err := utilsStruct.razorUtils.GetStakerId(client, address)
-	if err != nil {
-		log.Error("Error in fetching staker id")
-		return err
+	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
+	utils.CheckError("SetDelegation error: ", err)
+	if txn != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
+}
 
-	stakerInfo, err := utilsStruct.razorUtils.GetStaker(client, address, stakerId)
+func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
+	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.Address, delegationInput.StakerId)
 	if err != nil {
-		log.Error("Error in fetching staker info")
-		return err
+		return core.NilHash, err
+	}
+	if delegationInput.Commission != 0 {
+		err = cmdUtils.UpdateCommission(config, client, types.UpdateCommissionInput{
+			StakerId:   delegationInput.StakerId,
+			Address:    delegationInput.Address,
+			Password:   delegationInput.Password,
+			Commission: delegationInput.Commission,
+		})
+		if err != nil {
+			return core.NilHash, err
+		}
 	}
 
 	txnOpts := types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        delegationInput.Password,
+		AccountAddress:  delegationInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerABI,
 		MethodName:      "setDelegationAcceptance",
-		Parameters:      []interface{}{status},
+		Parameters:      []interface{}{delegationInput.Status},
 	}
 
-	if stakerInfo.AcceptDelegation == status {
-		log.Infof("Delegation status already set to %t", status)
-		return nil
+	if stakerInfo.AcceptDelegation == delegationInput.Status {
+		log.Infof("Delegation status already set to %t", delegationInput.Status)
+		return core.NilHash, nil
 	}
-	log.Infof("Setting delegation acceptance of Staker %d to %t", stakerId, status)
-	setDelegationAcceptanceTxnOpts := utilsStruct.razorUtils.GetTxnOpts(txnOpts)
-	delegationAcceptanceTxn, err := utilsStruct.stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, status)
+	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
+	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+	delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
 	if err != nil {
 		log.Error("Error in setting delegation acceptance")
-		return err
+		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", utilsStruct.transactionUtils.Hash(delegationAcceptanceTxn))
-	utilsStruct.razorUtils.WaitForBlockCompletion(client, utilsStruct.transactionUtils.Hash(delegationAcceptanceTxn).String())
-	return nil
+	log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
+	return transactionUtils.Hash(delegationAcceptanceTxn), nil
 }
 
 func init() {
 
-	razorUtils = Utils{}
+	razorUtils = &Utils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
-	cmdUtils = UtilsCmd{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		Status   string
-		Address  string
-		Password string
+		Status     string
+		Address    string
+		Password   string
+		Commission uint8
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	setDelegationCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

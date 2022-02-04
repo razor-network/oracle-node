@@ -9,15 +9,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
-	"time"
 )
 
-func Test_withdrawFunds(t *testing.T) {
-
+func TestWithdrawFunds(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
@@ -25,13 +26,6 @@ func Test_withdrawFunds(t *testing.T) {
 	var account types.Account
 	var configurations types.Configurations
 	var stakerId uint32
-
-	utilsStruct := UtilsStruct{
-		razorUtils:        UtilsMock{},
-		cmdUtils:          UtilsCmdMock{},
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	type args struct {
 		lock                     types.Locks
@@ -213,37 +207,27 @@ func Test_withdrawFunds(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
-		GetLockMock = func(*ethclient.Client, string, uint32) (types.Locks, error) {
-			return tt.args.lock, tt.args.lockErr
-		}
-
-		GetWithdrawReleasePeriodMock = func(*ethclient.Client, string) (uint8, error) {
-			return tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr
-		}
-
-		GetTxnOptsMock = func(types.TransactionOptions) *bind.TransactOpts {
-			return tt.args.txnOpts
-		}
-
-		GetEpochMock = func(*ethclient.Client) (uint32, error) {
-			return tt.args.epoch, tt.args.epochErr
-		}
-
-		GetUpdatedEpochMock = func(*ethclient.Client) (uint32, error) {
-			return tt.args.updatedEpoch, tt.args.updatedEpochErr
-		}
-
-		WithdrawMock = func(*ethclient.Client, *bind.TransactOpts, uint32, UtilsStruct) (common.Hash, error) {
-			return tt.args.withdrawHash, tt.args.withdrawErr
-		}
-
-		SleepMock = func(time.Duration) {
-
-		}
-
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := withdrawFunds(client, account, configurations, stakerId, utilsStruct)
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			cmdUtils = cmdUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
+			utilsMock.On("GetWithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetUpdatedEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.updatedEpoch, tt.args.updatedEpochErr)
+			cmdUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			utilsMock.On("Sleep", mock.Anything).Return()
+
+			utils := &UtilsStruct{}
+			got, err := utils.WithdrawFunds(client, account, configurations, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdrawFunds function, got = %v, want = %v", got, tt.want)
 			}
@@ -261,15 +245,9 @@ func Test_withdrawFunds(t *testing.T) {
 	}
 }
 
-func Test_withdraw(t *testing.T) {
-
+func TestWithdraw(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
-	utilsStruct := UtilsStruct{
-		stakeManagerUtils: StakeManagerMock{},
-		transactionUtils:  TransactionMock{},
-	}
 
 	var client *ethclient.Client
 	var stakerId uint32
@@ -308,15 +286,18 @@ func Test_withdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			WithdrawContractMock = func(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error) {
-				return tt.args.withdrawTxn, tt.args.withdrawErr
-			}
 
-			HashMock = func(*Types.Transaction) common.Hash {
-				return tt.args.hash
-			}
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			got, err := withdraw(client, txnOpts, stakerId, utilsStruct)
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			stakeManagerUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawTxn, tt.args.withdrawErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+
+			utils := &UtilsStruct{}
+			got, err := utils.Withdraw(client, txnOpts, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdraw function, got = %v, want = %v", got, tt.want)
 			}
@@ -328,6 +309,124 @@ func Test_withdraw(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for withdraw function, got = %v, want = %v", err, tt.wantErr)
 				}
+			}
+
+		})
+	}
+}
+
+func TestExecuteWithdraw(t *testing.T) {
+	var config types.Configurations
+	var flagSet *pflag.FlagSet
+	var client *ethclient.Client
+
+	type args struct {
+		config       types.Configurations
+		configErr    error
+		address      string
+		addressErr   error
+		password     string
+		stakerId     uint32
+		stakerIdErr  error
+		withdrawHash common.Hash
+		withdrawErr  error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When ExecuteWithdraw executes successfully",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting config",
+			args: args{
+				config:       config,
+				configErr:    errors.New("config error"),
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting address",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "",
+				addressErr:   errors.New("address error"),
+				stakerId:     1,
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 4: When there is an error from withdraw funds",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				withdrawHash: core.NilHash,
+				withdrawErr:  errors.New("withdrawFunds error"),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting stakerId",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				stakerId:     1,
+				stakerIdErr:  errors.New("stakerId error"),
+				withdrawHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			flagSetUtils = flagSetUtilsMock
+
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
+			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			utils := &UtilsStruct{}
+			fatal = false
+
+			utils.ExecuteWithdraw(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The ExecuteWithdraw function didn't execute as expected")
 			}
 
 		})

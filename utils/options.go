@@ -44,6 +44,16 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 
 	gasLimit, err := UtilsInterface.GetGasLimit(transactionData, txnOpts)
 	if err != nil {
+		errString := err.Error()
+		if ContainsStringFromArray(errString, []string{"500", "501", "502", "503", "504"}) || errString == errors.New("intrinsic gas too low").Error() {
+			latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(transactionData.Client)
+			CheckError("Error in fetching block: ", err)
+
+			txnOpts.GasLimit = latestBlock.GasLimit
+			log.Debug("Error occurred due to RPC issue, sending block gas limit...")
+			log.Debug("Gas Limit: ", txnOpts.GasLimit)
+			return txnOpts
+		}
 		log.Error("Error in getting gas limit: ", err)
 	}
 	log.Debug("Gas after increment: ", gasLimit)

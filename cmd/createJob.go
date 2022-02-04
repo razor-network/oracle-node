@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
@@ -10,9 +11,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-var assetManagerUtils assetManagerInterface
-var flagSetUtils flagSetInterface
 
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
@@ -25,87 +23,87 @@ Example:
 Note: 
   This command only works for the admin.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		utilsStruct := UtilsStruct{
-			razorUtils:        razorUtils,
-			assetManagerUtils: assetManagerUtils,
-			transactionUtils:  transactionUtils,
-			flagSetUtils:      flagSetUtils,
-		}
-		config, err := GetConfigData(utilsStruct)
-		utils.CheckError("Error in getting config: ", err)
-		txn, err := utilsStruct.createJob(cmd.Flags(), config)
-		utils.CheckError("CreateJob error: ", err)
-		utils.WaitForBlockCompletion(utils.ConnectToClient(config.Provider), txn.String())
-	},
+	Run: initialiseCreateJob,
 }
 
-func (utilsStruct UtilsStruct) createJob(flagSet *pflag.FlagSet, config types.Configurations) (common.Hash, error) {
-	password := utilsStruct.razorUtils.AssignPassword(flagSet)
-	address, err := utilsStruct.flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		return core.NilHash, err
+func initialiseCreateJob(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteCreateJob(cmd.Flags())
+}
+
+func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	password := razorUtils.AssignPassword(flagSet)
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	name, err := flagSetUtils.GetStringName(flagSet)
+	utils.CheckError("Error in getting name: ", err)
+
+	url, err := flagSetUtils.GetStringUrl(flagSet)
+	utils.CheckError("Error in getting url: ", err)
+
+	selector, err := flagSetUtils.GetStringSelector(flagSet)
+	utils.CheckError("Error in getting selector: ", err)
+
+	power, err := flagSetUtils.GetInt8Power(flagSet)
+	utils.CheckError("Error in getting power: ", err)
+
+	weight, err := flagSetUtils.GetUint8Weight(flagSet)
+	utils.CheckError("Error in getting weight: ", err)
+
+	selectorType, err := flagSetUtils.GetUint8SelectorType(flagSet)
+	utils.CheckError("Error in getting selectorType: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	jobInput := types.CreateJobInput{
+		Address:      address,
+		Password:     password,
+		Url:          url,
+		Name:         name,
+		Selector:     selector,
+		SelectorType: selectorType,
+		Weight:       weight,
+		Power:        power,
 	}
 
-	name, err := utilsStruct.flagSetUtils.GetStringName(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
+	txn, err := cmdUtils.CreateJob(client, config, jobInput)
+	utils.CheckError("CreateJob error: ", err)
+	razorUtils.WaitForBlockCompletion(client, txn.String())
+}
 
-	url, err := utilsStruct.flagSetUtils.GetStringUrl(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	selector, err := utilsStruct.flagSetUtils.GetStringSelector(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	power, err := utilsStruct.flagSetUtils.GetInt8Power(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	weight, err := utilsStruct.flagSetUtils.GetUint8Weight(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	selectorType, err := utilsStruct.flagSetUtils.GetUint8SelectorType(flagSet)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	client := utilsStruct.razorUtils.ConnectToClient(config.Provider)
+func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        password,
-		AccountAddress:  address,
+		Password:        jobInput.Password,
+		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
-		Parameters:      []interface{}{weight, power, selectorType, name, selector, url},
+		Parameters:      []interface{}{jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.AssetManagerABI,
 	}
 
-	txnOpts := utilsStruct.razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := utilsStruct.assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, weight, power, selectorType, name, selector, url)
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", utilsStruct.transactionUtils.Hash(txn))
-	return utilsStruct.transactionUtils.Hash(txn), nil
+	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
+	return transactionUtils.Hash(txn), nil
 }
 
 func init() {
 
-	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FlagSetUtils{}
+	cmdUtils = &UtilsStruct{}
+	razorUtils = &Utils{}
+	assetManagerUtils = &AssetManagerUtils{}
+	transactionUtils = &TransactionUtils{}
+	flagSetUtils = &FLagSetUtils{}
 
 	rootCmd.AddCommand(createJobCmd)
 
