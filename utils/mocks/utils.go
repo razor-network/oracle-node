@@ -555,6 +555,27 @@ func (_m *Utils) GetEpochLastRevealed(_a0 *ethclient.Client, _a1 uint32) (uint32
 	return r0, r1
 }
 
+// GetEpochLimitForUpdateCommission provides a mock function with given fields: _a0
+func (_m *Utils) GetEpochLimitForUpdateCommission(_a0 *ethclient.Client) (uint16, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint16); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetGasLimit provides a mock function with given fields: _a0, _a1
 func (_m *Utils) GetGasLimit(_a0 coretypes.TransactionOptions, _a1 *bind.TransactOpts) (uint64, error) {
 	ret := _m.Called(_a0, _a1)
@@ -661,8 +682,50 @@ func (_m *Utils) GetLatestBlockWithRetry(_a0 *ethclient.Client) (*types.Header, 
 	return r0, r1
 }
 
+// GetLock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) GetLock(_a0 *ethclient.Client, _a1 string, _a2 uint32) (coretypes.Locks, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 coretypes.Locks
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) coretypes.Locks); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(coretypes.Locks)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetMaxAltBlocks provides a mock function with given fields: _a0
 func (_m *Utils) GetMaxAltBlocks(_a0 *ethclient.Client) (uint8, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetMaxCommission provides a mock function with given fields: _a0
+func (_m *Utils) GetMaxCommission(_a0 *ethclient.Client) (uint8, error) {
 	ret := _m.Called(_a0)
 
 	var r0 uint8
@@ -763,6 +826,27 @@ func (_m *Utils) GetNumberOfProposedBlocks(_a0 *ethclient.Client, _a1 uint32) (u
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
 		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNumberOfStakers provides a mock function with given fields: _a0
+func (_m *Utils) GetNumberOfStakers(_a0 *ethclient.Client) (uint32, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -893,6 +977,29 @@ func (_m *Utils) GetSortedProposedBlockIds(_a0 *ethclient.Client, _a1 uint32) ([
 	return r0, r1
 }
 
+// GetStake provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetStake(_a0 *ethclient.Client, _a1 uint32) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStakeManager provides a mock function with given fields: _a0
 func (_m *Utils) GetStakeManager(_a0 *ethclient.Client) *bindings.StakeManager {
 	ret := _m.Called(_a0)
@@ -907,6 +1014,29 @@ func (_m *Utils) GetStakeManager(_a0 *ethclient.Client) *bindings.StakeManager {
 	}
 
 	return r0
+}
+
+// GetStakeManagerWithOpts provides a mock function with given fields: _a0
+func (_m *Utils) GetStakeManagerWithOpts(_a0 *ethclient.Client) (*bindings.StakeManager, bind.CallOpts) {
+	ret := _m.Called(_a0)
+
+	var r0 *bindings.StakeManager
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.StakeManager); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.StakeManager)
+		}
+	}
+
+	var r1 bind.CallOpts
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) bind.CallOpts); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Get(1).(bind.CallOpts)
+	}
+
+	return r0, r1
 }
 
 // GetStakeSnapshot provides a mock function with given fields: _a0, _a1, _a2
@@ -946,6 +1076,27 @@ func (_m *Utils) GetStakedToken(_a0 *ethclient.Client, _a1 common.Address) *bind
 	}
 
 	return r0
+}
+
+// GetStaker provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetStaker(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 bindings.StructsStaker
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bindings.StructsStaker); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(bindings.StructsStaker)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetStakerId provides a mock function with given fields: _a0, _a1
@@ -1100,6 +1251,27 @@ func (_m *Utils) GetVotes(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsVo
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
 		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetWithdrawReleasePeriod provides a mock function with given fields: _a0
+func (_m *Utils) GetWithdrawReleasePeriod(_a0 *ethclient.Client) (uint8, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

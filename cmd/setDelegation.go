@@ -68,7 +68,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 }
 
 func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
-	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.Address, delegationInput.StakerId)
+	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}

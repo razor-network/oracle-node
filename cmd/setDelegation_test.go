@@ -41,8 +41,8 @@ func TestSetDelegation(t *testing.T) {
 		setDelegationAcceptanceTxn *Types.Transaction
 		setDelegationAcceptanceErr error
 		hash                       common.Hash
-		updateCommissionErr        error
 		commission                 uint8
+		UpdateCommissionErr        error
 	}
 	tests := []struct {
 		name    string
@@ -109,20 +109,38 @@ func TestSetDelegation(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 4: When commission is not zero and UpdateCommission doesn't execute successfully",
+			name: "Test 5: When commission is non zero and UpdateCommission executes successfully",
 			args: args{
-				status:  true,
 				txnOpts: txnOpts,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: true,
 				},
+				stakerErr:                  nil,
 				commission:                 10,
 				setDelegationAcceptanceTxn: &Types.Transaction{},
-				hash:                       core.NilHash,
-				updateCommissionErr:        errors.New("error in executing update commission"),
+				setDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+				UpdateCommissionErr:        nil,
+			},
+			want:    common.BigToHash(big.NewInt(1)),
+			wantErr: nil,
+		},
+		{
+			name: "Test 6: When commission is non zero and UpdateCommission does not executes successfully",
+			args: args{
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				commission:                 10,
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+				UpdateCommissionErr:        errors.New("error in updating commission"),
 			},
 			want:    core.NilHash,
-			wantErr: errors.New("error in executing update commission"),
+			wantErr: errors.New("error in updating commission"),
 		},
 	}
 	for _, tt := range tests {
@@ -138,8 +156,8 @@ func TestSetDelegation(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 			cmdUtils = cmdUtilsMock
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCommissionErr)
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.setDelegationAcceptanceTxn, tt.args.setDelegationAcceptanceErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)

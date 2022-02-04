@@ -21,12 +21,12 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 		log.Error("Not propose state")
 		return core.NilHash, err
 	}
-	staker, err := razorUtils.GetStaker(client, account.Address, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error("Error in fetching staker: ", err)
 		return core.NilHash, err
 	}
-	numStakers, err := razorUtils.GetNumberOfStakers(client, account.Address)
+	numStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		log.Error("Error in fetching number of stakers: ", err)
 		return core.NilHash, err
@@ -120,7 +120,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 }
 
 func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
-	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -223,7 +223,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, address string, rogueDat
 }
 
 func (*UtilsStruct) GetSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32) ([]*big.Int, error) {
-	numberOfStakers, err := razorUtils.GetNumberOfStakers(client, address)
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		return nil, err
 	}

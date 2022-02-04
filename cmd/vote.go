@@ -137,7 +137,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Staker doesn't exist")
 		return
 	}
-	stakedAmount, err := razorUtils.GetStake(client, account.Address, stakerId)
+
+	stakedAmount, err := razorUtils.GetStake(client, stakerId)
 	if err != nil {
 		log.Error("Error in getting staked amount: ", err)
 		return
@@ -175,7 +176,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		razorUtils.Exit(0)
 	}
 
-	staker, err := razorUtils.GetStaker(client, account.Address, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)
 		return
