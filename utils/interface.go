@@ -28,8 +28,8 @@ type OptionUtils interface {
 	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
 	GetDefaultPath() (string, error)
 	GetJobFilePath() (string, error)
-	GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey
-	NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error)
+	GetPrivateKey(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey
+	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
 	RetryAttempts(uint) retry.Option
 	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
 	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
@@ -43,6 +43,15 @@ type OptionUtils interface {
 	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+	Commitments(*ethclient.Client, *bind.CallOpts, uint32) (types.Commitment, error)
+	GetVoteValue(*ethclient.Client, *bind.CallOpts, uint16, uint32) (*big.Int, error)
+	GetVote(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, *bind.CallOpts, uint32) (*big.Int, error)
+	GetRandaoHash(*ethclient.Client, *bind.CallOpts) ([32]byte, error)
+	GetEpochLastCommitted(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
 	GetNumAssets(*ethclient.Client, *bind.CallOpts) (uint16, error)
 	GetNumActiveCollections(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
@@ -52,11 +61,11 @@ type OptionUtils interface {
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
-	NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error)
-	NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error)
-	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
-	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
-	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
+	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
 }
 
 type Utils interface {
@@ -81,6 +90,17 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
+	GetVoteManagerWithOpts(*ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
+	GetCommitments(*ethclient.Client, string) ([32]byte, error)
+	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
+	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
+	GetRandaoHash(*ethclient.Client) ([32]byte, error)
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
+	GetVoteManager(*ethclient.Client) *bindings.VoteManager
 	GetAssetManager(*ethclient.Client) *bindings.AssetManager
 	GetAssetManagerWithOpts(*ethclient.Client) (*bindings.AssetManager, bind.CallOpts)
 	GetNumAssets(*ethclient.Client) (uint16, error)
@@ -99,10 +119,10 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
-	GetTokenManager(client *ethclient.Client) *bindings.RAZOR
-	GetStakeManager(client *ethclient.Client) *bindings.StakeManager
-	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
-	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
+	GetStakerId(*ethclient.Client, string) (uint32, error)
+	GetTokenManager(*ethclient.Client) *bindings.RAZOR
+	GetStakeManager(*ethclient.Client) *bindings.StakeManager
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 }
 
 type OptionsStruct struct{}
