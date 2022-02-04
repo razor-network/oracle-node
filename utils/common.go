@@ -27,7 +27,7 @@ func ConnectToClient(provider string) *ethclient.Client {
 
 func FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
-	coinContract := GetTokenManager(client)
+	coinContract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
 	return coinContract.BalanceOf(&opts, address)
 }
@@ -130,7 +130,7 @@ func AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address st
 	if IsFlagPassed("stakerId") {
 		return flagSet.GetUint32("stakerId")
 	}
-	return GetStakerId(client, address)
+	return UtilsInterface.GetStakerId(client, address)
 }
 
 func GetEpoch(client *ethclient.Client) (uint32, error) {
