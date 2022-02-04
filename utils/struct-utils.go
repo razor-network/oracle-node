@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"github.com/avast/retry-go"
@@ -19,6 +20,7 @@ import (
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"strconv"
 )
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
@@ -184,4 +186,12 @@ func (o OptionsStruct) OpenFile(name string, flag int, perm fs.FileMode) (*os.Fi
 
 func (o OptionsStruct) Open(name string) (*os.File, error) {
 	return os.Open(name)
+}
+
+func (o OptionsStruct) Atoi(s string) (int, error) {
+	return strconv.Atoi(s)
+}
+
+func (o OptionsStruct) NewScanner(r *os.File) *bufio.Scanner {
+	return bufio.NewScanner(r)
 }

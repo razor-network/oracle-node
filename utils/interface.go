@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"github.com/avast/retry-go"
@@ -64,6 +65,8 @@ type OptionUtils interface {
 	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
 	OpenFile(string, int, fs.FileMode) (*os.File, error)
 	Open(string) (*os.File, error)
+	Atoi(string) (int, error)
+	NewScanner(*os.File) *bufio.Scanner
 }
 
 type Utils interface {

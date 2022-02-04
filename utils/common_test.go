@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"errors"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -8,7 +9,6 @@ import (
 	"math/big"
 	"os"
 	"razor/utils/mocks"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -129,13 +129,14 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 			},
 			expectedFatal: true,
 		},
-		//{
-		//	name: "Test 3: When there is an error in fetching ethBalance",
-		//	args: args{
-		//		ethBalanceErr: errors.New("error in fetching ethBalance"),
-		//	},
-		//	expectedFatal: true,
-		//},
+		{
+			name: "Test 3: When there is an error in fetching ethBalance",
+			args: args{
+				ethBalance:    big.NewInt(1),
+				ethBalanceErr: errors.New("error in fetching ethBalance"),
+			},
+			expectedFatal: true,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -187,7 +188,7 @@ func TestCheckTransactionReceipt(t *testing.T) {
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2: When there is error in getting tranactionReceipt",
+			name: "Test 2: When there is error in getting transactionReceipt",
 			args: args{
 				txErr: errors.New("error in fetching transactionReceipt"),
 			},
@@ -282,6 +283,7 @@ func TestConnectToClient(t *testing.T) {
 //
 //	type args struct {
 //		coinContract *bindings.RAZOR
+//		balance      *big.Int
 //	}
 //	tests := []struct {
 //		name          string
@@ -292,8 +294,9 @@ func TestConnectToClient(t *testing.T) {
 //			name: "When FetchBalance() executes successfully",
 //			args: args{
 //				coinContract: &bindings.RAZOR{},
+//				balance:      big.NewInt(0),
 //			},
-//			expectedFatal: true,
+//			expectedFatal: false,
 //		},
 //	}
 //
@@ -319,40 +322,59 @@ func TestConnectToClient(t *testing.T) {
 //
 //			utils.FetchBalance(client, accountAddress)
 //			if fatal != tt.expectedFatal {
-//				t.Error("The ConnectToClient function didn't execute as expected")
+//				t.Error("The FetchBalance function didn't execute as expected")
 //			}
 //		})
 //	}
 //}
 
-func TestGetDelayedState(t *testing.T) {
-
-	type args struct {
-		client *ethclient.Client
-		buffer int32
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int64
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ut := &UtilsStruct{}
-			got, err := ut.GetDelayedState(tt.args.client, tt.args.buffer)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GetDelayedState() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+//func TestGetDelayedState(t *testing.T) {
+//	var client *ethclient.Client
+//	var buffer int32
+//
+//	type args struct {
+//		block    *types.Header
+//		blockErr error
+//	}
+//	tests := []struct {
+//		name    string
+//		args    args
+//		want    int64
+//		wantErr bool
+//	}{
+//		{
+//			name: "Test 1",
+//			args: args{
+//				block: &types.Header{},
+//			},
+//			want:    0,
+//			wantErr: false,
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//
+//			utilsMock := new(mocks.Utils)
+//
+//			optionsPackageStruct := OptionsPackageStruct{
+//				UtilsInterface: utilsMock,
+//			}
+//
+//			utils := StartRazor(optionsPackageStruct)
+//
+//			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
+//
+//			got, err := utils.GetDelayedState(client, buffer)
+//			if (err != nil) != tt.wantErr {
+//				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
+//				return
+//			}
+//			if got != tt.want {
+//				t.Errorf("GetDelayedState() got = %v, want %v", got, tt.want)
+//			}
+//		})
+//	}
+//}
 
 //func TestGetEpoch(t *testing.T) {
 //	var client *ethclient.Client
@@ -462,31 +484,60 @@ func TestGetStateName(t *testing.T) {
 }
 
 func TestReadCommittedDataFromFile(t *testing.T) {
+	var fileName string
+
 	type args struct {
-		fileName string
+		file     *os.File
+		fileErr  error
+		scanner  *bufio.Scanner
+		value    int
+		valueErr error
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    uint32
-		want1   []*big.Int
-		wantErr bool
+		name          string
+		args          args
+		expectedFatal bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Test 1",
+			args: args{
+				file:    &os.File{},
+				scanner: &bufio.Scanner{},
+				value:   0,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2",
+			args: args{
+				fileErr: errors.New("error in getting file"),
+			},
+			expectedFatal: false,
+		},
 	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ut := &UtilsStruct{}
-			got, got1, err := ut.ReadCommittedDataFromFile(tt.args.fileName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadCommittedDataFromFile() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			optionsMock := new(mocks.OptionUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				Options: optionsMock,
 			}
-			if got != tt.want {
-				t.Errorf("ReadCommittedDataFromFile() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("ReadCommittedDataFromFile() got1 = %v, want %v", got1, tt.want1)
+			utils := StartRazor(optionsPackageStruct)
+
+			optionsMock.On("Open", mock.AnythingOfType("string")).Return(tt.args.file, tt.args.fileErr)
+			optionsMock.On("NewScanner", mock.Anything).Return(tt.args.scanner)
+			optionsMock.On("Atoi", mock.AnythingOfType("string")).Return(tt.args.value, tt.args.valueErr)
+
+			fatal = false
+
+			utils.ReadCommittedDataFromFile(fileName)
+			if fatal != tt.expectedFatal {
+				t.Error("The ReadCommittedDataFromFile function didn't execute as expected")
 			}
 		})
 	}
@@ -669,3 +720,42 @@ func TestSleep(t *testing.T) {
 		})
 	}
 }
+
+//func TestAssignStakerId(t *testing.T) {
+//
+//	type args struct {
+//		flagSet *pflag.FlagSet
+//		client  *ethclient.Client
+//		address string
+//	}
+//	tests := []struct {
+//		name    string
+//		args    args
+//		want    uint32
+//		wantErr bool
+//	}{
+//		{
+//			name: "Test 1",
+//			args: args{
+//				flagSet: &pflag.FlagSet{},
+//				client:  &ethclient.Client{},
+//				address: "",
+//			},
+//			want:    0,
+//			wantErr: false,
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			ut := &UtilsStruct{}
+//			got, err := ut.AssignStakerId(tt.args.flagSet, tt.args.client, tt.args.address)
+//			if (err != nil) != tt.wantErr {
+//				t.Errorf("AssignStakerId() error = %v, wantErr %v", err, tt.wantErr)
+//				return
+//			}
+//			if got != tt.want {
+//				t.Errorf("AssignStakerId() got = %v, want %v", got, tt.want)
+//			}
+//		})
+//	}
+//}

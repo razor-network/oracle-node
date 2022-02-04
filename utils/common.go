@@ -1,14 +1,12 @@
 package utils
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"math/big"
 	"os"
 	"razor/core"
-	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -167,13 +165,13 @@ func (*UtilsStruct) ReadCommittedDataFromFile(fileName string) (uint32, []*big.I
 		committedData []*big.Int
 		epoch         uint32
 	)
-	file, err := os.Open(fileName)
+	file, err := Options.Open(fileName)
 	if err != nil {
 		return 0, nil, err
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	scanner := Options.NewScanner(file)
 	lineCount := 0
 	for scanner.Scan() {
 		if lineCount > 0 {
@@ -182,7 +180,7 @@ func (*UtilsStruct) ReadCommittedDataFromFile(fileName string) (uint32, []*big.I
 				committedData = append(committedData, data)
 			}
 		} else {
-			value, err := strconv.Atoi(scanner.Text())
+			value, err := Options.Atoi(scanner.Text())
 			if err != nil {
 				return 0, nil, err
 			}
