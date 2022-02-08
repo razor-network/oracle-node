@@ -1039,12 +1039,6 @@ func TestIsElectedProposer(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
-		utilsMock := new(mocks.UtilsInterface)
-		razorUtils = utilsMock
-
-		//utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
-
 		utils := &UtilsStruct{}
 
 		t.Run(tt.name, func(t *testing.T) {
