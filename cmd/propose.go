@@ -140,9 +140,15 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 }
 
 func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer) int {
+	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
+	if err != nil {
+		log.Error("Error in fetching influence of staker: ", err)
+		return -1
+	}
+	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
 	for i := 0; i < 10000000; i++ {
 		proposer.Iteration = i
-		isElected := cmdUtils.IsElectedProposer(client, proposer)
+		isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
 		if isElected {
 			return i
 		}
@@ -150,7 +156,7 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	return -1
 }
 
-func (*UtilsStruct) IsElectedProposer(client *ethclient.Client, proposer types.ElectedProposer) bool {
+func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
@@ -162,14 +168,7 @@ func (*UtilsStruct) IsElectedProposer(client *ethclient.Client, proposer types.E
 	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
-
-	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
-	if err != nil {
-		log.Error("Error in fetching influence of staker: ", err)
-		return false
-	}
 	biggestStake := big.NewInt(1).Mul(randomHashNumber, proposer.BiggestStake)
-	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
 	return biggestStake.Cmp(currentStakerStake) <= 0
 }
 

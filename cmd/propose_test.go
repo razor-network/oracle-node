@@ -532,11 +532,18 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 	}
 }
 
+func stakeSnapshotValue(stake string) *big.Int {
+	stakeSnapshot, _ := new(big.Int).SetString(stake, 10)
+	return stakeSnapshot
+}
+
 func TestGetIteration(t *testing.T) {
 	var client *ethclient.Client
 	var proposer types.ElectedProposer
 
 	type args struct {
+		stakeSnapshot     *big.Int
+		stakeSnapshotErr  error
 		isElectedProposer bool
 	}
 	tests := []struct {
@@ -547,13 +554,22 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 1: When getIteration returns a valid iteration",
 			args: args{
+				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
 				isElectedProposer: true,
 			},
 			want: 0,
 		},
+		{
+			name: "Test 2: When there is an error in getting stakeSnapshotValue",
+			args: args{
+				stakeSnapshotErr: errors.New("error in getting stakeSnapshotValue"),
+			},
+			want: -1,
+		},
 		//{
-		//	name: "Test 2: When getIteration returns an invalid iteration",
+		//	name: "Test 3: When getIteration returns an invalid iteration",
 		//	args: args{
+		//		stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
 		//		isElectedProposer: false,
 		//	},
 		//	want: -1,
@@ -562,8 +578,11 @@ func TestGetIteration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
+			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
 			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
 			utils := &UtilsStruct{}
 
@@ -932,26 +951,18 @@ func TestInfluencedMedian(t *testing.T) {
 	}
 }
 
-func stakeSnapshotValue(stake string) *big.Int {
-	stakeSnapshot, _ := new(big.Int).SetString(stake, 10)
-	return stakeSnapshot
-}
-
 func TestIsElectedProposer(t *testing.T) {
-	var client *ethclient.Client
 
 	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
 	randaoHashBytes32 := [32]byte{}
 	copy(randaoHashBytes32[:], randaoHash)
 
-	biggestStake, _ := new(big.Int).SetString("2592145500000000000000000", 10)
+	biggestStake, _ := new(big.Int).SetString("2", 10)
 
 	type args struct {
-		client           *ethclient.Client
-		address          string
-		proposer         types.ElectedProposer
-		stakeSnapshot    *big.Int
-		stakeSnapshotErr error
+		address      string
+		proposer     types.ElectedProposer
+		currentStake *big.Int
 	}
 
 	tests := []struct {
@@ -962,7 +973,6 @@ func TestIsElectedProposer(t *testing.T) {
 		{
 			name: "Test1: When staker is 3 and isElectedProposer returns true",
 			args: args{
-				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
 					Iteration:       0,
@@ -973,15 +983,13 @@ func TestIsElectedProposer(t *testing.T) {
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           333,
 				},
-				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
-				stakeSnapshotErr: nil,
+				currentStake: big.NewInt(10000000000),
 			},
 			want: true,
 		},
 		{
 			name: "Test2: When staker is 2 and isElectedProposer returns false",
 			args: args{
-				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
 					Iteration:       11,
@@ -992,15 +1000,13 @@ func TestIsElectedProposer(t *testing.T) {
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           29,
 				},
-				stakeSnapshot:    stakeSnapshotValue("529422500000000000000000"),
-				stakeSnapshotErr: nil,
+				currentStake: big.NewInt(1000000),
 			},
 			want: false,
 		},
 		{
-			name: "When staker is 1 and isElectedProposer returns true",
+			name: "Test3: When staker is 1 and isElectedProposer returns true",
 			args: args{
-				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
 					Iteration:       2,
@@ -1011,34 +1017,13 @@ func TestIsElectedProposer(t *testing.T) {
 					RandaoHash:      randaoHashBytes32,
 					Epoch:           333,
 				},
-				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
-				stakeSnapshotErr: nil,
+				currentStake: big.NewInt(10000000000),
 			},
 			want: true,
 		},
 		{
-			name: "Test4: When there is an error getting influence snapshot",
+			name: "Test4: When pseudoRandomNumber is not equal to proposer's stakerID",
 			args: args{
-				client:  client,
-				address: "0x000000000000000000000000000000000000dead",
-				proposer: types.ElectedProposer{
-					Iteration:       0,
-					Stake:           nil,
-					StakerId:        3,
-					BiggestStake:    biggestStake,
-					NumberOfStakers: 3,
-					RandaoHash:      randaoHashBytes32,
-					Epoch:           333,
-				},
-				stakeSnapshot:    nil,
-				stakeSnapshotErr: errors.New("error in getting influence snapshot"),
-			},
-			want: false,
-		},
-		{
-			name: "Test5: When pseudoRandomNumber is not equal to proposer's stakerID",
-			args: args{
-				client:  client,
 				address: "0x000000000000000000000000000000000000dead",
 				proposer: types.ElectedProposer{
 					Iteration:       0,
@@ -1054,17 +1039,11 @@ func TestIsElectedProposer(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-
-		utilsMock := new(mocks.UtilsInterface)
-		razorUtils = utilsMock
-
-		utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
-
 		utils := &UtilsStruct{}
 
 		t.Run(tt.name, func(t *testing.T) {
-			if got := utils.IsElectedProposer(tt.args.client, tt.args.proposer); got != tt.want {
-				t.Errorf("isElectedProposer() = %v, want %v", got, tt.want)
+			if got := utils.IsElectedProposer(tt.args.proposer, tt.args.currentStake); got != tt.want {
+				t.Errorf("IsElectedProposer() = %v, want %v", got, tt.want)
 			}
 		})
 	}
