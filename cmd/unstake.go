@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -99,7 +100,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		return txnArgs, err
 	}
 
-	staker, err := razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error("Error in getting staker: ", err)
 		return txnArgs, err

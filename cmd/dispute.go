@@ -96,7 +96,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockId uint8, assetId int) error {
 	blockManager := razorUtils.GetBlockManager(client)
-	numOfStakers, err := razorUtils.GetNumberOfStakers(client, account.Address)
+	numOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		return err
 	}

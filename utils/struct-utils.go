@@ -107,6 +107,41 @@ func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bi
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
 }
 
+func (o OptionsStruct) GetStakerId(client *ethclient.Client, opts *bind.CallOpts, address common.Address) (uint32, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.GetStakerId(opts, address)
+}
+
+func (o OptionsStruct) GetNumStakers(client *ethclient.Client, opts *bind.CallOpts) (uint32, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.GetNumStakers(opts)
+}
+
+func (o OptionsStruct) Locks(client *ethclient.Client, opts *bind.CallOpts, address common.Address, address1 common.Address) (coretypes.Locks, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.Locks(opts, address, address1)
+}
+
+func (o OptionsStruct) WithdrawReleasePeriod(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.WithdrawReleasePeriod(opts)
+}
+
+func (o OptionsStruct) MaxCommission(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.MaxCommission(opts)
+}
+
+func (o OptionsStruct) EpochLimitForUpdateCommission(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.EpochLimitForUpdateCommission(opts)
+}
+
+func (o OptionsStruct) GetStaker(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsStaker, error) {
+	stakeManager := UtilsInterface.GetStakeManager(client)
+	return stakeManager.GetStaker(opts, stakerId)
+}
+
 func (o OptionsStruct) GetNumAssets(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
 	assetManager := UtilsInterface.GetAssetManager(client)
 	return assetManager.GetNumAssets(opts)
@@ -142,4 +177,73 @@ func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 
 func (o OptionsStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
 	return ioutil.ReadAll(body)
+}
+
+func (o OptionsStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (coretypes.Commitment, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.Commitments(opts, stakerId)
+}
+
+func (o OptionsStruct) GetVoteValue(client *ethclient.Client, opts *bind.CallOpts, assetIndex uint16, stakerId uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetVoteValue(opts, assetIndex, stakerId)
+}
+
+func (o OptionsStruct) GetVote(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsVote, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetVote(opts, stakerId)
+}
+
+func (o OptionsStruct) GetInfluenceSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetInfluenceSnapshot(opts, epoch, stakerId)
+}
+
+func (o OptionsStruct) GetStakeSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetStakeSnapshot(opts, epoch, stakerId)
+}
+
+func (o OptionsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (*big.Int, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetTotalInfluenceRevealed(opts, epoch)
+}
+
+func (o OptionsStruct) GetRandaoHash(client *ethclient.Client, opts *bind.CallOpts) ([32]byte, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetRandaoHash(opts)
+}
+
+func (o OptionsStruct) GetEpochLastCommitted(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetEpochLastCommitted(opts, stakerId)
+}
+
+func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
+	voteManager := UtilsInterface.GetVoteManager(client)
+	return voteManager.GetEpochLastRevealed(opts, stakerId)
+}
+
+func (o OptionsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
+	return bindings.NewAssetManager(address, client)
+}
+
+func (o OptionsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
+	return bindings.NewRAZOR(address, client)
+}
+
+func (o OptionsStruct) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
+	return bindings.NewStakeManager(address, client)
+}
+
+func (o OptionsStruct) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
+	return bindings.NewVoteManager(address, client)
+}
+
+func (o OptionsStruct) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
+	return bindings.NewBlockManager(address, client)
+}
+
+func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
+	return bindings.NewStakedToken(address, client)
 }

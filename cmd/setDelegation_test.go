@@ -5,18 +5,19 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestSetDelegation(t *testing.T) {
@@ -37,9 +38,11 @@ func TestSetDelegation(t *testing.T) {
 		txnOpts                    *bind.TransactOpts
 		staker                     bindings.StructsStaker
 		stakerErr                  error
-		SetDelegationAcceptanceTxn *Types.Transaction
-		SetDelegationAcceptanceErr error
+		setDelegationAcceptanceTxn *Types.Transaction
+		setDelegationAcceptanceErr error
 		hash                       common.Hash
+		commission                 uint8
+		UpdateCommissionErr        error
 	}
 	tests := []struct {
 		name    string
@@ -55,8 +58,8 @@ func TestSetDelegation(t *testing.T) {
 					AcceptDelegation: true,
 				},
 				stakerErr:                  nil,
-				SetDelegationAcceptanceTxn: &Types.Transaction{},
-				SetDelegationAcceptanceErr: nil,
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: nil,
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
@@ -70,8 +73,8 @@ func TestSetDelegation(t *testing.T) {
 					AcceptDelegation: true,
 				},
 				stakerErr:                  nil,
-				SetDelegationAcceptanceTxn: &Types.Transaction{},
-				SetDelegationAcceptanceErr: errors.New("SetDelegationAcceptance error"),
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: errors.New("SetDelegationAcceptance error"),
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -82,8 +85,8 @@ func TestSetDelegation(t *testing.T) {
 			args: args{
 				txnOpts:                    txnOpts,
 				stakerErr:                  errors.New("staker error"),
-				SetDelegationAcceptanceTxn: &Types.Transaction{},
-				SetDelegationAcceptanceErr: nil,
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: nil,
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
@@ -98,12 +101,46 @@ func TestSetDelegation(t *testing.T) {
 					AcceptDelegation: true,
 				},
 				stakerErr:                  nil,
-				SetDelegationAcceptanceTxn: &Types.Transaction{},
-				SetDelegationAcceptanceErr: nil,
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: nil,
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: nil,
+		},
+		{
+			name: "Test 5: When commission is non zero and UpdateCommission executes successfully",
+			args: args{
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				commission:                 10,
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+				UpdateCommissionErr:        nil,
+			},
+			want:    common.BigToHash(big.NewInt(1)),
+			wantErr: nil,
+		},
+		{
+			name: "Test 6: When commission is non zero and UpdateCommission does not executes successfully",
+			args: args{
+				txnOpts: txnOpts,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				stakerErr:                  nil,
+				commission:                 10,
+				setDelegationAcceptanceTxn: &Types.Transaction{},
+				setDelegationAcceptanceErr: nil,
+				hash:                       common.BigToHash(big.NewInt(1)),
+				UpdateCommissionErr:        errors.New("error in updating commission"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("error in updating commission"),
 		},
 	}
 	for _, tt := range tests {
@@ -112,19 +149,23 @@ func TestSetDelegation(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			transactionUtils = transactionUtilsMock
+			cmdUtils = cmdUtilsMock
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.SetDelegationAcceptanceTxn, tt.args.SetDelegationAcceptanceErr)
+			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.setDelegationAcceptanceTxn, tt.args.setDelegationAcceptanceErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 			got, err := utils.SetDelegation(client, config, types.SetDelegationInput{
-				Status: tt.args.status,
+				Status:     tt.args.status,
+				Commission: tt.args.commission,
 			})
 			if got != tt.want {
 				t.Errorf("Txn hash for setDelegation function, got = %v, want = %v", got, tt.want)
@@ -165,6 +206,11 @@ func TestExecuteSetDelegation(t *testing.T) {
 		parseStatusErr               error
 		stakerId                     uint32
 		stakerIdErr                  error
+		staker                       bindings.StructsStaker
+		commission                   uint8
+		commissionErr                error
+		SetDelegationAcceptanceTxn   *Types.Transaction
+		SetDelegationAcceptanceErr   error
 		setDelegationHash            common.Hash
 		setDelegationErr             error
 		WaitForBlockCompletionStatus int
@@ -309,6 +355,42 @@ func TestExecuteSetDelegation(t *testing.T) {
 			},
 			expectedFatal: true,
 		},
+		{
+			name: "Test 11: When there is an error in fetching commission",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				status:      "true",
+				parseStatus: true,
+				stakerId:    1,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: false,
+				},
+				commissionErr:                errors.New("error in fetching commission"),
+				SetDelegationAcceptanceTxn:   &Types.Transaction{},
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 12: When commission is non zero",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				status:      "true",
+				parseStatus: true,
+				stakerId:    1,
+				staker: bindings.StructsStaker{
+					AcceptDelegation: false,
+				},
+				commission:                   12,
+				SetDelegationAcceptanceTxn:   &Types.Transaction{},
+				WaitForBlockCompletionStatus: 1,
+			},
+			expectedFatal: false,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -332,6 +414,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
+			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
 			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)

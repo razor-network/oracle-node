@@ -23,13 +23,13 @@ Note that we are leveraging docker bind-mounts to mount `.razor` directory so th
 You need to set a provider before you can operate razor-go cli on docker:
 
 ```
-docker exec -it razor-go setConfig -p <provider_url>
+docker exec -it razor-go razor setConfig -p <provider_url>
 ```
 
 You can now execute razor-go cli commands by running:
 
 ```
-docker exec -it razor-go <command>
+docker exec -it razor-go razor <command>
 ```
 
 ### Setting up dev environment with docker-compose
@@ -51,7 +51,7 @@ docker-compose up -d
 You can interact with razor:
 
 ```
-docker exec -it razor-go ...
+docker exec -it razor-go razor ...
 ```
 
 ### Prerequisites
@@ -138,12 +138,12 @@ _Before staking on Razor Network, please ensure your account has eth and RAZOR. 
 
 ### Stake
 
-If you have a minimum of 1000 razors in your account, you can stake those using the stake command.
+If you have a minimum of 1000 razors in your account, you can stake those using the addStake command.
 
 razor cli
 
 ```
-$ ./razor stake --address <address> --value <value>
+$ ./razor addStake --address <address> --value <value>
 ```
 
 docker
@@ -152,30 +152,13 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    stake --address <address> --value <value>
+    addStake --address <address> --value <value>
 ```
 
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
-```
-
-If you want to vote just after stake automatically, you can just set `autoVote` flag to true in the stake command as stated below
-
-razor cli
-
-```
-$ ./razor stake --address <address> --value <value> --autoVote <bool>
-```
-
-docker
-
-```
-docker run -it --rm \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    stake --address <address> --value <value> --autoVote <bool>
+$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
 ```
 
 _Note: --pow flag is used to stake floating number stake_
@@ -189,7 +172,7 @@ If you have a 1000.25 razors in your account, you can stake those using the stak
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
+$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
 ```
 
 If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
@@ -199,7 +182,7 @@ If you have a 5678.1001 razors in your account, you can stake those using the st
 Example:
 
 ```
-$ ./razor stake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
+$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
 ```
 
 ### Staker Info
@@ -234,7 +217,7 @@ If you are a staker you can accept delegation from delegators and charge a commi
 razor cli
 
 ```
-$ ./razor setDelegation --address <address> --status <true_or_false>
+$ ./razor setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
 ```
 
 docker
@@ -249,7 +232,7 @@ docker run -it --rm \
 Example:
 
 ```
-$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
+$ ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true -c 20
 ```
 
 ### Update Commission
@@ -776,7 +759,7 @@ We would really appreciate your contribution. To see our [contribution guideline
 
 6. Import account
 
-   ```jsx
+   ```
    docker-compose run razor-go /usr/local/bin/razor import
    ```
 
@@ -785,14 +768,14 @@ We would really appreciate your contribution. To see our [contribution guideline
 
    ```bash
    #Provide password through CLI
-   docker-compose run razor-go /usr/local/bin/razor stake --address <address> --value 50000
+   docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000
 
    #Provide password throudh File
 
      #Create file and put password string
        vi ~/.razor/pass
      #Start Staking
-       docker-compose run razor-go /usr/local/bin/razor stake --address <address> --value 50000 --password /root/.razor/pass
+       docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000 --password /root/.razor/pass
 
    ```
 

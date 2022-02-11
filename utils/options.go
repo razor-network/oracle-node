@@ -66,11 +66,19 @@ func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configura
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
 	} else {
-		var err error
-		gas, err = UtilsInterface.SuggestGasPriceWithRetry(client)
-		if err != nil {
-			log.Fatal(err)
-		}
+		gas = big.NewInt(0)
+	}
+	var err error
+	suggestedGasPrice, err := UtilsInterface.SuggestGasPriceWithRetry(client)
+	if err != nil {
+		log.Error(err)
+		return UtilsInterface.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
+	}
+	log.Debugf("Suggested gas price: %d", suggestedGasPrice)
+	log.Debugf("Gas Price set in config: %d", gas)
+	if suggestedGasPrice.Cmp(gas) > 0 {
+		log.Debugf("Going with suggested gas price!")
+		gas = suggestedGasPrice
 	}
 	gasPrice := UtilsInterface.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
 	return gasPrice

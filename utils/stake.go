@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/avast/retry-go"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 
@@ -11,89 +12,96 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func getStakeManagerWithOpts(client *ethclient.Client) (*bindings.StakeManager, bind.CallOpts) {
-	return GetStakeManager(client), UtilsInterface.GetOptions()
+func (*UtilsStruct) GetStakeManagerWithOpts(client *ethclient.Client) (*bindings.StakeManager, bind.CallOpts) {
+	return UtilsInterface.GetStakeManager(client), UtilsInterface.GetOptions()
 }
 
-func GetStakerId(client *ethclient.Client, address string) (uint32, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
+func (*UtilsStruct) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
+	callOpts := UtilsInterface.GetOptions()
 	var (
 		stakerId  uint32
 		stakerErr error
 	)
 	stakerErr = retry.Do(
 		func() error {
-			stakerId, stakerErr = stakeManager.GetStakerId(&callOpts, common.HexToAddress(address))
+			stakerId, stakerErr = Options.GetStakerId(client, &callOpts, common.HexToAddress(address))
 			if stakerErr != nil {
 				log.Error("Error in fetching staker id.... Retrying")
 				return stakerErr
 			}
 			return nil
-		},
-	)
+		}, Options.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return 0, stakerErr
 	}
 	return stakerId, nil
 }
 
-func GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
-	stake, err := GetStaker(client, address, stakerId)
-	if err != nil {
-		return nil, err
-	}
-	return stake.Stake, nil
-}
-
-//TODO: Remove address
-func GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
+func (*UtilsStruct) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
 	var (
 		staker    bindings.StructsStaker
 		stakerErr error
 	)
 	stakerErr = retry.Do(
 		func() error {
-			staker, stakerErr = stakeManager.GetStaker(&callOpts, stakerId)
+			staker, stakerErr = UtilsInterface.GetStaker(client, stakerId)
+			if stakerErr != nil {
+				log.Error("Error in fetching staker ... Retrying")
+				return stakerErr
+			}
+			return nil
+		}, Options.RetryAttempts(core.MaxRetries))
+	if stakerErr != nil {
+		return nil, stakerErr
+	}
+	return staker.Stake, nil
+}
+
+func (*UtilsStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
+	callOpts := UtilsInterface.GetOptions()
+	var (
+		staker    bindings.StructsStaker
+		stakerErr error
+	)
+	stakerErr = retry.Do(
+		func() error {
+			staker, stakerErr = Options.GetStaker(client, &callOpts, stakerId)
 			if stakerErr != nil {
 				log.Error("Error in fetching staker id.... Retrying")
 				return stakerErr
 			}
 			return nil
-		},
-	)
+		}, Options.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return bindings.StructsStaker{}, stakerErr
 	}
 	return staker, nil
 }
 
-//TODO: Remove address
-func GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
+func (*UtilsStruct) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
+	callOpts := UtilsInterface.GetOptions()
 	var (
 		numStakers uint32
 		stakerErr  error
 	)
 	stakerErr = retry.Do(
 		func() error {
-			numStakers, stakerErr = stakeManager.GetNumStakers(&callOpts)
+			numStakers, stakerErr = Options.GetNumStakers(client, &callOpts)
 			if stakerErr != nil {
 				log.Error("Error in fetching number of stakers.... Retrying")
 				return stakerErr
 			}
 			return nil
-		},
-	)
+		}, Options.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return 0, stakerErr
 	}
 	return numStakers, nil
 }
 
-func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
-	staker, err := GetStaker(client, address, stakerId)
+func (*UtilsStruct) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
+	callOpts := UtilsInterface.GetOptions()
+	staker, err := UtilsInterface.GetStaker(client, stakerId)
 	if err != nil {
 		return types.Locks{}, err
 	}
@@ -103,59 +111,74 @@ func GetLock(client *ethclient.Client, address string, stakerId uint32) (types.L
 	)
 	lockErr = retry.Do(
 		func() error {
-			locks, lockErr = stakeManager.Locks(&callOpts, common.HexToAddress(address), staker.TokenAddress)
+			locks, lockErr = Options.Locks(client, &callOpts, common.HexToAddress(address), staker.TokenAddress)
 			if lockErr != nil {
 				log.Error("Error in fetching locks.... Retrying")
 				return lockErr
 			}
 			return nil
-		},
-	)
+		}, Options.RetryAttempts(core.MaxRetries))
 	if lockErr != nil {
 		return types.Locks{}, lockErr
 	}
 	return locks, nil
 }
 
-func GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
-	return stakeManager.WithdrawReleasePeriod(&callOpts)
+func (*UtilsStruct) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, error) {
+	callOpts := UtilsInterface.GetOptions()
+	var (
+		withdrawReleasePeriod uint8
+		err                   error
+	)
+	err = retry.Do(
+		func() error {
+			withdrawReleasePeriod, err = Options.WithdrawReleasePeriod(client, &callOpts)
+			if err != nil {
+				log.Error("Error in fetching withdraw release period.... Retrying")
+				return err
+			}
+			return nil
+		}, Options.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return withdrawReleasePeriod, nil
 }
 
-func GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
+func (*UtilsStruct) GetMaxCommission(client *ethclient.Client) (uint8, error) {
+	callOpts := UtilsInterface.GetOptions()
 	var (
 		maxCommission uint8
 		err           error
 	)
 	err = retry.Do(func() error {
-		maxCommission, err = stakeManager.MaxCommission(&callOpts)
+		maxCommission, err = Options.MaxCommission(client, &callOpts)
 		if err != nil {
 			log.Error("Error in fetching max commission.... Retrying")
 			return err
 		}
 		return nil
-	})
+	}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
 	return maxCommission, nil
 }
 
-func GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	stakeManager, callOpts := getStakeManagerWithOpts(client)
+func (*UtilsStruct) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	callOpts := UtilsInterface.GetOptions()
 	var (
 		epochLimitForUpdateCommission uint16
 		err                           error
 	)
 	err = retry.Do(func() error {
-		epochLimitForUpdateCommission, err = stakeManager.EpochLimitForUpdateCommission(&callOpts)
+		epochLimitForUpdateCommission, err = Options.EpochLimitForUpdateCommission(client, &callOpts)
 		if err != nil {
 			log.Error("Error in fetching epoch limit for update commission")
 			return err
 		}
 		return nil
-	})
+	}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}

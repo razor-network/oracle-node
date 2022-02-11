@@ -925,11 +925,11 @@ func (_m *UtilsCmdInterface) InfluencedMedian(_a0 []*big.Int, _a1 *big.Int) *big
 }
 
 // IsElectedProposer provides a mock function with given fields: _a0, _a1
-func (_m *UtilsCmdInterface) IsElectedProposer(_a0 *ethclient.Client, _a1 types.ElectedProposer) bool {
+func (_m *UtilsCmdInterface) IsElectedProposer(_a0 types.ElectedProposer, _a1 *big.Int) bool {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer) bool); ok {
+	if rf, ok := ret.Get(0).(func(types.ElectedProposer, *big.Int) bool); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(bool)
