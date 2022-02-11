@@ -128,7 +128,7 @@ func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Cli
 	if IsFlagPassed("stakerId") {
 		return flagSet.GetUint32("stakerId")
 	}
-	return GetStakerId(client, address)
+	return UtilsInterface.GetStakerId(client, address)
 }
 
 func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
