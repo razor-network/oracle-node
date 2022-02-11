@@ -25,10 +25,10 @@ func Test_getGasPrice(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		gasPrice           *big.Int
-		gasPriceErr        error
-		config             types.Configurations
-		multipliedGasPrice *big.Int
+		suggestedGasPrice    *big.Int
+		suggestedGasPriceErr error
+		config               types.Configurations
+		multipliedGasPrice   *big.Int
 	}
 	tests := []struct {
 		name          string
@@ -37,43 +37,69 @@ func Test_getGasPrice(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When getGasPrice() function executes successfully",
+			name: "Test 1: When config gas price is greater than suggested gas price",
+			args: args{
+				config: types.Configurations{
+					GasPrice:      2,
+					GasMultiplier: 2,
+				},
+				suggestedGasPrice:  big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e9)),
+				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(4), big.NewInt(1e9)),
+			},
+			want:          big.NewInt(1).Mul(big.NewInt(4), big.NewInt(1e9)),
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When config gas price is less than suggested gas price",
+			args: args{
+				config: types.Configurations{
+					GasPrice:      2,
+					GasMultiplier: 2,
+				},
+				suggestedGasPrice:  big.NewInt(1).Mul(big.NewInt(4), big.NewInt(1e9)),
+				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(8), big.NewInt(1e9)),
+			},
+			want:          big.NewInt(1).Mul(big.NewInt(8), big.NewInt(1e9)),
+			expectedFatal: false,
+		},
+		{
+			name: "Test 3: When config gas price is 0",
+			args: args{
+				config: types.Configurations{
+					GasPrice:      0,
+					GasMultiplier: 2,
+				},
+				suggestedGasPrice:  big.NewInt(1).Mul(big.NewInt(4), big.NewInt(1e9)),
+				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(8), big.NewInt(1e9)),
+			},
+			want:          big.NewInt(1).Mul(big.NewInt(8), big.NewInt(1e9)),
+			expectedFatal: false,
+		},
+		{
+			name: "Test 3: When suggest gas price throws an error and config gas price has a non-zero value",
 			args: args{
 				config: types.Configurations{
 					GasPrice:      1,
 					GasMultiplier: 2,
 				},
-				gasPrice:           big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e9)),
-				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+				suggestedGasPriceErr: errors.New("error in fetching gas price"),
+				multipliedGasPrice:   big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
 			},
 			want:          big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2: When getGasPrice() executes successfully config.GasPrice is 0",
+			name: "Test 4: When suggest gas price throws an error and config gas price is 0",
 			args: args{
 				config: types.Configurations{
 					GasPrice:      0,
 					GasMultiplier: 2,
 				},
-				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+				suggestedGasPriceErr: errors.New("error in fetching gas price"),
+				multipliedGasPrice:   big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
 			},
-			want:          big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
+			want:          big.NewInt(0),
 			expectedFatal: false,
-		},
-		{
-			name: "Test 3: When there is an error in getting gasPrice from SuggestGasPriceWithRetry()",
-			args: args{
-				config: types.Configurations{
-					GasPrice:      0,
-					GasMultiplier: 2,
-				},
-				gasPrice:           big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e9)),
-				gasPriceErr:        errors.New("gas error"),
-				multipliedGasPrice: big.NewInt(1).Mul(big.NewInt(2), big.NewInt(1e9)),
-			},
-			want:          nil,
-			expectedFatal: true,
 		},
 	}
 
@@ -85,7 +111,7 @@ func Test_getGasPrice(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsMock := new(mocks.Utils)
 
-			UtilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			UtilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
 			UtilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(tt.args.multipliedGasPrice)
 
 			fatal = false

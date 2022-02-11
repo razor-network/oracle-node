@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -47,12 +48,16 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("StakerId error: ", err)
 
+	commission, err := flagSetUtils.GetUint8Commission(flagSet)
+	utils.CheckError("Error in fetching commission: ", err)
+
 	delegationInput := types.SetDelegationInput{
 		Address:      address,
 		Password:     password,
 		Status:       status,
 		StatusString: statusString,
 		StakerId:     stakerId,
+		Commission:   commission,
 	}
 
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
@@ -63,9 +68,20 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 }
 
 func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
-	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.Address, delegationInput.StakerId)
+	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
+	}
+	if delegationInput.Commission != 0 {
+		err = cmdUtils.UpdateCommission(config, client, types.UpdateCommissionInput{
+			StakerId:   delegationInput.StakerId,
+			Address:    delegationInput.Address,
+			Password:   delegationInput.Password,
+			Commission: delegationInput.Commission,
+		})
+		if err != nil {
+			return core.NilHash, err
+		}
 	}
 
 	txnOpts := types.TransactionOptions{
@@ -106,14 +122,16 @@ func init() {
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (
-		Status   string
-		Address  string
-		Password string
+		Status     string
+		Address    string
+		Password   string
+		Commission uint8
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
+	setDelegationCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

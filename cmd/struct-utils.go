@@ -2,6 +2,15 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"math/big"
+	"os"
+	"razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"razor/utils"
+	"strconv"
+	"time"
+
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -13,14 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"math/big"
-	"os"
-	"razor/core/types"
-	"razor/path"
-	"razor/pkg/bindings"
-	"razor/utils"
-	"strconv"
-	"time"
 )
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -134,11 +135,11 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 }
 
 func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastCommitted(client, stakerId)
+	return utils.UtilsInterface.GetEpochLastCommitted(client, stakerId)
 }
 
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
-	return utils.GetCommitments(client, address)
+	return utils.UtilsInterface.GetCommitments(client, address)
 }
 
 func (u Utils) AllZero(bytesValue [32]byte) bool {
@@ -166,15 +167,15 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 }
 
 func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
-	return utils.GetLock(client, address, stakerId)
+	return utils.UtilsInterface.GetLock(client, address, stakerId)
 }
 
-func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.GetStaker(client, address, stakerId)
+func (u Utils) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.UtilsInterface.GetStaker(client, stakerId)
 }
 
-func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.GetStaker(client, address, stakerId)
+func (u Utils) GetUpdatedStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.UtilsInterface.GetStaker(client, stakerId)
 }
 
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
@@ -189,24 +190,24 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
 }
 
-func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
-	return utils.GetWithdrawReleasePeriod(client, address)
+func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, error) {
+	return utils.UtilsInterface.GetWithdrawReleasePeriod(client)
 }
 
 func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.GetInfluenceSnapshot(client, stakerId, epoch)
+	return utils.UtilsInterface.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
 	return utils.UtilsInterface.GetCollections(client)
 }
 
-func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetNumberOfStakers(client, address)
+func (u Utils) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
+	return utils.UtilsInterface.GetNumberOfStakers(client)
 }
 
 func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
-	return utils.GetRandaoHash(client)
+	return utils.UtilsInterface.GetRandaoHash(client)
 }
 
 //TODO: Check direct usage from utils package without implementing it here
@@ -224,15 +225,15 @@ func (u Utils) GetProposedBlock(client *ethclient.Client, epoch uint32, proposed
 }
 
 func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utils.GetEpochLastRevealed(client, stakerId)
+	return utils.UtilsInterface.GetEpochLastRevealed(client, stakerId)
 }
 
 func (u Utils) GetVoteValue(client *ethclient.Client, assetId uint16, stakerId uint32) (*big.Int, error) {
-	return utils.GetVoteValue(client, assetId, stakerId)
+	return utils.UtilsInterface.GetVoteValue(client, assetId, stakerId)
 }
 
 func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32) (*big.Int, error) {
-	return utils.GetTotalInfluenceRevealed(client, epoch)
+	return utils.UtilsInterface.GetTotalInfluenceRevealed(client, epoch)
 }
 
 func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
@@ -248,7 +249,7 @@ func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager 
 }
 
 func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
-	return utils.GetVotes(client, stakerId)
+	return utils.UtilsInterface.GetVotes(client, stakerId)
 }
 
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
@@ -260,7 +261,11 @@ func (u Utils) ParseBool(str string) (bool, error) {
 }
 
 func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetStakerId(client, address)
+	return utils.UtilsInterface.GetStakerId(client, address)
+}
+
+func (u Utils) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
+	return utils.UtilsInterface.GetStake(client, stakerId)
 }
 
 func (u Utils) PrivateKeyPrompt() string {
@@ -272,19 +277,15 @@ func (u Utils) PasswordPrompt() string {
 }
 
 func (u Utils) GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	return utils.GetMaxCommission(client)
+	return utils.UtilsInterface.GetMaxCommission(client)
 }
 
 func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	return utils.GetEpochLimitForUpdateCommission(client)
+	return utils.UtilsInterface.GetEpochLimitForUpdateCommission(client)
 }
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.GetStakeSnapshot(client, stakerId, epoch)
-}
-
-func (u Utils) GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
-	return utils.GetStake(client, address, stakerId)
+	return utils.UtilsInterface.GetStakeSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
