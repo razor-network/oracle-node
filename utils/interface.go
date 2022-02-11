@@ -145,6 +145,7 @@ type Utils interface {
 	ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error)
 	CalculateBlockTime(client *ethclient.Client) int64
 	GetStakerId(*ethclient.Client, string) (uint32, error)
+	IsFlagPassed(string) bool
 }
 
 type OptionsStruct struct{}

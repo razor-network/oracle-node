@@ -85,7 +85,7 @@ func CheckError(msg string, err error) {
 	}
 }
 
-func IsFlagPassed(name string) bool {
+func (*UtilsStruct) IsFlagPassed(name string) bool {
 	found := false
 	for _, arg := range os.Args {
 		if arg == "--"+name {
@@ -125,7 +125,8 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 }
 
 func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
-	if IsFlagPassed("stakerId") {
+	x := UtilsInterface.IsFlagPassed("stakerId")
+	if x {
 		return flagSet.GetUint32("stakerId")
 	}
 	return UtilsInterface.GetStakerId(client, address)
