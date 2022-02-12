@@ -66,7 +66,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	home, err := path.GetDefaultPath()
+	home, err := path.PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		log.Fatal("Error in fetching .razor directory: ", err)
 	}
