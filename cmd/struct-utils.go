@@ -25,7 +25,7 @@ import (
 )
 
 func (u Utils) GetConfigFilePath() (string, error) {
-	return path.GetConfigFilePath()
+	return path.PathUtilsInterface.GetConfigFilePath()
 }
 
 func (u Utils) ViperWriteConfigAs(path string) error {
@@ -103,11 +103,11 @@ func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, e
 }
 
 func (u Utils) GetDefaultPath() (string, error) {
-	return path.GetDefaultPath()
+	return path.PathUtilsInterface.GetDefaultPath()
 }
 
 func (u Utils) GetJobFilePath() (string, error) {
-	return path.GetJobFilePath()
+	return path.PathUtilsInterface.GetJobFilePath()
 }
 
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
@@ -313,11 +313,11 @@ func (u Utils) Exit(code int) {
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
-	return utils.DeleteJobFromJSON(s, jobId)
+	return utils.UtilsInterface.DeleteJobFromJSON(s, jobId)
 }
 
 func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
-	return utils.AddJobToJSON(s, job)
+	return utils.UtilsInterface.AddJobToJSON(s, job)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {

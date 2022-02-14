@@ -770,7 +770,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			optionsMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
-			optionsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
+			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
 			utilsMock.On("GetDataToCommitFromJob", mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
 			got, _, err := utils.GetDataToCommitFromJobs(jobsArray)

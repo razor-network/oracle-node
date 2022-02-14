@@ -69,7 +69,6 @@ type OptionUtils interface {
 	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
 	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
 	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
-	ReadJSONData(string) (map[string]*types.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
@@ -83,6 +82,10 @@ type OptionUtils interface {
 	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
 	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
 	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
+	ReadFile(filename string) ([]byte, error)
+	Unmarshal(data []byte, v interface{}) error
+	Marshal(v interface{}) ([]byte, error)
+	WriteFile(filename string, data []byte, perm fs.FileMode) error
 }
 
 type Utils interface {
@@ -165,6 +168,10 @@ type Utils interface {
 	Sleep(duration time.Duration)
 	GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error)
 	WaitTillNextNSecs(waitTime int32)
+	ReadJSONData(fileName string) (map[string]*types.StructsJob, error)
+	WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error
+	DeleteJobFromJSON(fileName string, jobId string) error
+	AddJobToJSON(fileName string, job *types.StructsJob) error
 }
 
 type OptionsStruct struct{}

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -39,11 +40,11 @@ func (o OptionsStruct) Pack(parsedData abi.ABI, name string, args ...interface{}
 }
 
 func (o OptionsStruct) GetDefaultPath() (string, error) {
-	return path.GetDefaultPath()
+	return path.PathUtilsInterface.GetDefaultPath()
 }
 
 func (o OptionsStruct) GetJobFilePath() (string, error) {
-	return path.GetJobFilePath()
+	return path.PathUtilsInterface.GetJobFilePath()
 }
 
 func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
@@ -172,10 +173,6 @@ func (o OptionsStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id ui
 	return assetManager.Jobs(opts, id)
 }
 
-func (o OptionsStruct) ReadJSONData(s string) (map[string]*coretypes.StructsJob, error) {
-	return ReadJSONData(s)
-}
-
 func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return ConvertToNumber(num)
 }
@@ -271,6 +268,22 @@ func (o OptionsStruct) Open(name string) (*os.File, error) {
 
 func (o OptionsStruct) NewScanner(r io.Reader) *bufio.Scanner {
 	return bufio.NewScanner(r)
+}
+
+func (o OptionsStruct) ReadFile(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filename)
+}
+
+func (o OptionsStruct) Unmarshal(data []byte, v interface{}) error {
+	return json.Unmarshal(data, v)
+}
+
+func (o OptionsStruct) Marshal(v interface{}) ([]byte, error) {
+	return json.Marshal(v)
+}
+
+func (o OptionsStruct) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+	return ioutil.WriteFile(filename, data, perm)
 }
 
 func (u UtilsStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
