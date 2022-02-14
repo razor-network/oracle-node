@@ -289,7 +289,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.
 	if err != nil {
 		return nil, nil, err
 	}
-	overrideJobData, err := Options.ReadJSONData(jobPath)
+	overrideJobData, err := UtilsInterface.ReadJSONData(jobPath)
 	if err != nil {
 		log.Error(err)
 	}

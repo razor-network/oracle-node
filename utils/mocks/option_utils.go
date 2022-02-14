@@ -25,6 +25,8 @@ import (
 
 	ethereum "github.com/ethereum/go-ethereum"
 
+	fs "io/fs"
+
 	io "io"
 
 	mock "github.com/stretchr/testify/mock"
@@ -686,6 +688,29 @@ func (_m *OptionUtils) Locks(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 comm
 	return r0, r1
 }
 
+// Marshal provides a mock function with given fields: v
+func (_m *OptionUtils) Marshal(v interface{}) ([]byte, error) {
+	ret := _m.Called(v)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(interface{}) []byte); ok {
+		r0 = rf(v)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
+		r1 = rf(v)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // MaxAltBlocks provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) MaxAltBlocks(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
 	ret := _m.Called(_a0, _a1)
@@ -774,13 +799,13 @@ func (_m *OptionUtils) NewAssetManager(_a0 common.Address, _a1 *ethclient.Client
 	return r0, r1
 }
 
-// NewBlockManager provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.BlockManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewBlockManager provides a mock function with given fields: address, client
+func (_m *OptionUtils) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.BlockManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.BlockManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.BlockManager)
@@ -789,7 +814,7 @@ func (_m *OptionUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -820,13 +845,13 @@ func (_m *OptionUtils) NewKeyedTransactorWithChainID(_a0 *ecdsa.PrivateKey, _a1 
 	return r0, r1
 }
 
-// NewRAZOR provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*bindings.RAZOR, error) {
-	ret := _m.Called(_a0, _a1)
+// NewRAZOR provides a mock function with given fields: address, client
+func (_m *OptionUtils) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.RAZOR
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.RAZOR); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.RAZOR)
@@ -835,7 +860,7 @@ func (_m *OptionUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*bin
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -843,13 +868,13 @@ func (_m *OptionUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*bin
 	return r0, r1
 }
 
-// NewStakeManager provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.StakeManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewStakeManager provides a mock function with given fields: address, client
+func (_m *OptionUtils) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.StakeManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.StakeManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.StakeManager)
@@ -858,7 +883,7 @@ func (_m *OptionUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Client
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -866,13 +891,13 @@ func (_m *OptionUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Client
 	return r0, r1
 }
 
-// NewStakedToken provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Client) (*bindings.StakedToken, error) {
-	ret := _m.Called(_a0, _a1)
+// NewStakedToken provides a mock function with given fields: address, client
+func (_m *OptionUtils) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.StakedToken
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.StakedToken); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.StakedToken)
@@ -881,7 +906,7 @@ func (_m *OptionUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Client)
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -889,13 +914,13 @@ func (_m *OptionUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Client)
 	return r0, r1
 }
 
-// NewVoteManager provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) NewVoteManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.VoteManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewVoteManager provides a mock function with given fields: address, client
+func (_m *OptionUtils) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.VoteManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.VoteManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.VoteManager)
@@ -904,7 +929,7 @@ func (_m *OptionUtils) NewVoteManager(_a0 common.Address, _a1 *ethclient.Client)
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1003,22 +1028,22 @@ func (_m *OptionUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
 	return r0, r1
 }
 
-// ReadJSONData provides a mock function with given fields: _a0
-func (_m *OptionUtils) ReadJSONData(_a0 string) (map[string]*types.StructsJob, error) {
-	ret := _m.Called(_a0)
+// ReadFile provides a mock function with given fields: filename
+func (_m *OptionUtils) ReadFile(filename string) ([]byte, error) {
+	ret := _m.Called(filename)
 
-	var r0 map[string]*types.StructsJob
-	if rf, ok := ret.Get(0).(func(string) map[string]*types.StructsJob); ok {
-		r0 = rf(_a0)
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(string) []byte); ok {
+		r0 = rf(filename)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]*types.StructsJob)
+			r0 = ret.Get(0).([]byte)
 		}
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(filename)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1086,6 +1111,20 @@ func (_m *OptionUtils) SuggestGasPrice(_a0 *ethclient.Client, _a1 context.Contex
 	return r0, r1
 }
 
+// Unmarshal provides a mock function with given fields: data, v
+func (_m *OptionUtils) Unmarshal(data []byte, v interface{}) error {
+	ret := _m.Called(data, v)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]byte, interface{}) error); ok {
+		r0 = rf(data, v)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // WithdrawReleasePeriod provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) WithdrawReleasePeriod(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
 	ret := _m.Called(_a0, _a1)
@@ -1105,4 +1144,18 @@ func (_m *OptionUtils) WithdrawReleasePeriod(_a0 *ethclient.Client, _a1 *bind.Ca
 	}
 
 	return r0, r1
+}
+
+// WriteFile provides a mock function with given fields: filename, data, perm
+func (_m *OptionUtils) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+	ret := _m.Called(filename, data, perm)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, []byte, fs.FileMode) error); ok {
+		r0 = rf(filename, data, perm)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

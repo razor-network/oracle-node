@@ -11,6 +11,7 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
+	"io/fs"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -64,15 +65,18 @@ type OptionUtils interface {
 	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
 	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
 	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
-	ReadJSONData(string) (map[string]*types.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
-	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
-	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
-	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
-	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
-	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
+	NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
+	ReadFile(filename string) ([]byte, error)
+	Unmarshal(data []byte, v interface{}) error
+	Marshal(v interface{}) ([]byte, error)
+	WriteFile(filename string, data []byte, perm fs.FileMode) error
 }
 
 type Utils interface {
@@ -136,8 +140,12 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
-	GetTokenManager(*ethclient.Client) *bindings.RAZOR
-	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	GetTokenManager(client *ethclient.Client) *bindings.RAZOR
+	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
+	ReadJSONData(fileName string) (map[string]*types.StructsJob, error)
+	WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error
+	DeleteJobFromJSON(fileName string, jobId string) error
+	AddJobToJSON(fileName string, job *types.StructsJob) error
 }
 
 type OptionsStruct struct{}

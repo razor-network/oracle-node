@@ -21,8 +21,8 @@ type StandardLogger struct {
 var standardLogger = &StandardLogger{logrus.New()}
 
 func init() {
-
-	logFilePath, err := path.GetLogFilePath()
+	path.PathUtilsInterface = &path.PathUtils{}
+	logFilePath, err := path.PathUtilsInterface.GetLogFilePath()
 	if err != nil {
 		standardLogger.Fatal("Error in fetching log file path: ", err)
 	}
