@@ -27,6 +27,7 @@ jobs:
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
+            cat coverage.txt
             docker run --rm -v $(pwd):/report --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=/report/coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
       - persist_to_workspace:
           root: .
