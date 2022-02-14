@@ -18,10 +18,12 @@ jobs:
           command: |
             docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --output /test/coverage.txt
             docker run --rm -v $(pwd):/test --name go  razor-test cat /test/coverage.txt > coverage.txt
+            ls
 
       - run:
           name: "Removing unnecessary files from coveralls report"
           command: |
+            ls
             sed -i '' '/razor\/accounts\/accountUtils.go/d;/razor\/cmd\/root.go/d;/razor\/cmd\/struct-utils.go/d;/razor\/path\/mocks*/d;/razor\/utils\/struct-utils.go/d' coverage.txt
           
              
