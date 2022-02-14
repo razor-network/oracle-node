@@ -21,6 +21,7 @@ jobs:
           name: "Removing unnecessary files from coveralls report"
           command:
             ls 
+            docker run --rm -v $(pwd):/test --name go  razor-test cat /test/coverage.txt
             # sed -i '' '/razor\/accounts\/accountUtils.go/d;/razor\/cmd\/root.go/d;/razor\/cmd\/struct-utils.go/d;/razor\/path\/mocks*/d;/razor\/utils\/struct-utils.go/d' coverage.txt 
       - run:
           name: "Publish Coverage to Coveralls.io"
