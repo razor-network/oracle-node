@@ -22,13 +22,14 @@ jobs:
       - run:
           name: "Removing unnecessary files from coveralls report"
           command: |
+            cat coverage.txt
             sed -i '/razor\/accounts\/accountUtils.go/d;/razor\/cmd\/root.go/d;/razor\/cmd\/struct-utils.go/d;/razor\/path\/mocks*/d;/razor\/utils\/struct-utils.go/d' coverage.txt
             cat coverage.txt
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
             cat coverage.txt
-            docker run --rm -v $(pwd):/report --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=/report/coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+            docker run --rm -v $(pwd)/coverage.txt:/report/coverage.txt --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=/report/coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
       - persist_to_workspace:
           root: .
           paths:
