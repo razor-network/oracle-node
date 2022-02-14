@@ -261,6 +261,7 @@ type UtilsCmdInterface interface {
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
+	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32) error
 	ExecuteExtendLock(*pflag.FlagSet)

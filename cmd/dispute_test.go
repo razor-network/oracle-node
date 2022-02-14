@@ -412,9 +412,8 @@ func TestGiveSorted(t *testing.T) {
 	var txnOpts *bind.TransactOpts
 	var epoch uint32
 	var assetId uint16
-	var sortedStakers []uint32
-
 	type args struct {
+		sortedStakers []uint32
 		giveSorted    *Types.Transaction
 		giveSortedErr error
 		hash          common.Hash
@@ -426,20 +425,22 @@ func TestGiveSorted(t *testing.T) {
 		{
 			name: "Test 1: When Give Sorted executes successfully",
 			args: args{
-				giveSorted: &Types.Transaction{},
-				hash:       common.BigToHash(big.NewInt(1)),
+				sortedStakers: []uint32{2, 1, 3, 5},
+				giveSorted:    &Types.Transaction{},
+				hash:          common.BigToHash(big.NewInt(1)),
 			},
 		},
 		{
 			name: "Test 2: When there is an error from GiveSorted",
 			args: args{
+				sortedStakers: []uint32{2, 1, 3, 5},
 				giveSortedErr: errors.New("giveSorted error"),
 			},
 		},
 		{
-			name: "Test 3: When the error from GiveSorted is gas limit reached error",
+			name: "Test 3: When sortedStakers is nil",
 			args: args{
-				giveSortedErr: errors.New("gas limit reached"),
+				sortedStakers: nil,
 			},
 		},
 	}
@@ -457,7 +458,7 @@ func TestGiveSorted(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
-			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedStakers)
 		})
 	}
 }

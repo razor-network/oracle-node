@@ -826,6 +826,11 @@ func (_m *UtilsCmdInterface) GetWaitTime() (int32, error) {
 	return r0, r1
 }
 
+// GiveSorted provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
+func (_m *UtilsCmdInterface) GiveSorted(_a0 *ethclient.Client, _a1 *bindings.BlockManager, _a2 *bind.TransactOpts, _a3 uint32, _a4 uint16, _a5 []uint32) {
+	_m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+}
+
 // HandleBlock provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
 func (_m *UtilsCmdInterface) HandleBlock(_a0 *ethclient.Client, _a1 types.Account, _a2 *big.Int, _a3 types.Configurations, _a4 types.Rogue) {
 	_m.Called(_a0, _a1, _a2, _a3, _a4)

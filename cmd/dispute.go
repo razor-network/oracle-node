@@ -123,7 +123,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	})
 
 	if !utils.Contains(giveSortedAssetIds, assetId) {
-		GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
+		cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, uint16(assetId), sortedStakers)
 	}
 
 	log.Info("Finalizing dispute...")
@@ -144,6 +144,9 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 }
 
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
+	if len(sortedStakers) == 0 {
+		return
+	}
 	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, assetId, sortedStakers)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {

@@ -711,3 +711,7 @@ func (keystoreUtils KeystoreUtils) ImportECDSA(path string, priv *ecdsa.PrivateK
 func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(hexKey)
 }
+
+func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
+	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
