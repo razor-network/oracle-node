@@ -70,7 +70,7 @@ type UtilsInterface interface {
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
-	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
+	ConvertUintArrayToUint16Array([]uint) []uint16
 	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
@@ -84,7 +84,7 @@ type UtilsInterface interface {
 	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	ParseBool(str string) (bool, error)
+	ParseBool(string) (bool, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetNumberOfStakers(*ethclient.Client) (uint32, error)
 	GetRandaoHash(*ethclient.Client) ([32]byte, error)
@@ -123,7 +123,7 @@ type StakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
-	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
+	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)

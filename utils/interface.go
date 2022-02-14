@@ -82,10 +82,10 @@ type OptionUtils interface {
 	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
 	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
 	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
-	ReadFile(filename string) ([]byte, error)
-	Unmarshal(data []byte, v interface{}) error
-	Marshal(v interface{}) ([]byte, error)
-	WriteFile(filename string, data []byte, perm fs.FileMode) error
+	ReadFile(string) ([]byte, error)
+	Unmarshal([]byte, interface{}) error
+	Marshal(interface{}) ([]byte, error)
+	WriteFile(string, []byte, fs.FileMode) error
 }
 
 type Utils interface {
@@ -149,29 +149,29 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
-	ConnectToClient(provider string) *ethclient.Client
-	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
-	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
-	CheckTransactionReceipt(client *ethclient.Client, _txHash string) int
-	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int
-	CheckEthBalanceIsZero(client *ethclient.Client, address string)
-	GetStateName(stateNumber int64) string
-	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
-	GetEpoch(client *ethclient.Client) (uint32, error)
-	SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error
-	ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error)
-	CalculateBlockTime(client *ethclient.Client) int64
+	ConnectToClient(string) *ethclient.Client
+	FetchBalance(*ethclient.Client, string) (*big.Int, error)
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	CheckTransactionReceipt(*ethclient.Client, string) int
+	WaitForBlockCompletion(*ethclient.Client, string) int
+	CheckEthBalanceIsZero(*ethclient.Client, string)
+	GetStateName(int64) string
+	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
+	GetEpoch(*ethclient.Client) (uint32, error)
+	SaveCommittedDataToFile(string, uint32, []*big.Int) error
+	ReadCommittedDataFromFile(string) (uint32, []*big.Int, error)
+	CalculateBlockTime(*ethclient.Client) int64
 	IsFlagPassed(string) bool
 	GetTokenManager(*ethclient.Client) *bindings.RAZOR
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
-	BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
-	Sleep(duration time.Duration)
-	GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error)
-	WaitTillNextNSecs(waitTime int32)
-	ReadJSONData(fileName string) (map[string]*types.StructsJob, error)
-	WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error
-	DeleteJobFromJSON(fileName string, jobId string) error
-	AddJobToJSON(fileName string, job *types.StructsJob) error
+	BalanceOf(*bindings.RAZOR, *bind.CallOpts, common.Address) (*big.Int, error)
+	Sleep(time.Duration)
+	GetUint32(*pflag.FlagSet, string) (uint32, error)
+	WaitTillNextNSecs(int32)
+	ReadJSONData(string) (map[string]*types.StructsJob, error)
+	WriteDataToJSON(string, map[string]*types.StructsJob) error
+	DeleteJobFromJSON(string, string) error
+	AddJobToJSON(string, *types.StructsJob) error
 }
 
 type OptionsStruct struct{}
