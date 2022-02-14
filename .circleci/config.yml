@@ -16,7 +16,9 @@ jobs:
       - run:
           name: "Executing test cases"
           command: |
+            ls
             docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --output /test/coverage.txt
+            ls
       - run:
           name: "Removing unnecessary files from coveralls report"
           command:
