@@ -69,7 +69,7 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		return core.NilHash, nil
 	}
 
-	withdrawReleasePeriod, err := razorUtils.GetWithdrawReleasePeriod(client, account.Address)
+	withdrawReleasePeriod, err := razorUtils.GetWithdrawReleasePeriod(client)
 	if err != nil {
 		log.Error("Error in fetching withdraw release period")
 		return core.NilHash, err

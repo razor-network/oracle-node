@@ -137,7 +137,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Staker doesn't exist")
 		return
 	}
-	stakedAmount, err := razorUtils.GetStake(client, account.Address, stakerId)
+
+	stakedAmount, err := razorUtils.GetStake(client, stakerId)
 	if err != nil {
 		log.Error("Error in getting staked amount: ", err)
 		return
@@ -162,7 +163,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	log.Debug("Block:", blockNumber, " Epoch:", epoch, " State:", razorUtils.GetStateName(state), " Address:", account.Address, " Staker ID:", stakerId, " Stake:", actualStake, " Eth Balance:", actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
@@ -175,7 +176,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		razorUtils.Exit(0)
 	}
 
-	staker, err := razorUtils.GetStaker(client, account.Address, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)
 		return
@@ -192,7 +193,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 		if lastCommit >= epoch {
-			log.Warnf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
+			log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 			break
 		}
 		secret := cmdUtils.CalculateSecret(account, epoch)
@@ -232,8 +233,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 		if lastReveal >= epoch {
-			log.Warnf("Last reveal: %d", lastReveal)
-			log.Warnf("Cannot reveal in epoch %d", epoch)
+			log.Debugf("Last reveal: %d", lastReveal)
+			log.Debugf("Cannot reveal in epoch %d", epoch)
 			break
 		}
 		if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
@@ -287,7 +288,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 		if lastProposal >= epoch {
-			log.Warnf("Cannot propose in epoch %d because last proposed epoch is %d", epoch, lastProposal)
+			log.Debugf("Cannot propose in epoch %d because last proposed epoch is %d", epoch, lastProposal)
 			break
 		}
 		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
@@ -296,7 +297,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 		if lastReveal < epoch {
-			log.Warnf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
+			log.Debugf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
 			break
 		}
 		proposeTxn, err := cmdUtils.Propose(client, account, config, stakerId, epoch, rogueData)

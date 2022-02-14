@@ -76,17 +76,17 @@ type UtilsInterface interface {
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
-	GetStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
-	GetUpdatedStaker(*ethclient.Client, string, uint32) (bindings.StructsStaker, error)
+	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
+	GetUpdatedStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
-	GetWithdrawReleasePeriod(*ethclient.Client, string) (uint8, error)
+	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	ParseBool(str string) (bool, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
-	GetNumberOfStakers(*ethclient.Client, string) (uint32, error)
+	GetNumberOfStakers(*ethclient.Client) (uint32, error)
 	GetRandaoHash(*ethclient.Client) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
@@ -104,7 +104,7 @@ type UtilsInterface interface {
 	GetMaxCommission(*ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
 	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	GetStake(*ethclient.Client, string, uint32) (*big.Int, error)
+	GetStake(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertWeiToEth(*big.Int) (*big.Float, error)
 	WaitTillNextNSecs(int32)
 	SaveCommittedDataToFile(string, uint32, []*big.Int) error
@@ -257,7 +257,7 @@ type UtilsCmdInterface interface {
 	InfluencedMedian([]*big.Int, *big.Int) *big.Int
 	GetSortedVotes(*ethclient.Client, string, uint16, uint32) ([]*big.Int, error)
 	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
-	IsElectedProposer(*ethclient.Client, types.ElectedProposer) bool
+	IsElectedProposer(types.ElectedProposer, *big.Int) bool
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)

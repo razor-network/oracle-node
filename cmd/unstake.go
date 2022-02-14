@@ -100,7 +100,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		return txnArgs, err
 	}
 
-	staker, err := razorUtils.GetStaker(client, txnArgs.AccountAddress, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error("Error in getting staker: ", err)
 		return txnArgs, err

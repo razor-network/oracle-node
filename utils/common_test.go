@@ -13,7 +13,6 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"testing"
-	"time"
 )
 
 func TestCheckError(t *testing.T) {
@@ -139,14 +138,14 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When CheckEthBalanceIsZero executes successfully",
+			name: "Test 1: When CheckEthBalanceIsZero() executes successfully",
 			args: args{
 				ethBalance: big.NewInt(1),
 			},
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2: When CheckEthBalanceIsZero returns zero",
+			name: "Test 2: When CheckEthBalanceIsZero() returns zero",
 			args: args{
 				ethBalance: big.NewInt(0),
 			},
@@ -258,14 +257,14 @@ func TestConnectToClient(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "When ConnectToClient() executes successfully",
+			name: "Test 1: When ConnectToClient() executes successfully",
 			args: args{
 				client: &ethclient.Client{},
 			},
 			expectedFatal: false,
 		},
 		{
-			name: "When there is an error in ConnectToClient() function",
+			name: "Test 2: When there is an error in ConnectToClient() function",
 			args: args{
 				clientErr: errors.New("error in connecting to client"),
 			},
@@ -307,6 +306,7 @@ func TestFetchBalance(t *testing.T) {
 	type args struct {
 		coinContract *bindings.RAZOR
 		balance      *big.Int
+		balanceErr   error
 	}
 	tests := []struct {
 		name          string
@@ -339,6 +339,7 @@ func TestFetchBalance(t *testing.T) {
 
 			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
 			utilsMock.On("GetOptions").Return(callOpts)
+			utilsMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 
 			utils = &UtilsStruct{}
 			fatal = false
@@ -353,11 +354,11 @@ func TestFetchBalance(t *testing.T) {
 
 func TestGetDelayedState(t *testing.T) {
 	var client *ethclient.Client
-	var buffer int32
 
 	type args struct {
 		block    *types.Header
 		blockErr error
+		buffer   int32
 	}
 	tests := []struct {
 		name    string
@@ -366,17 +367,19 @@ func TestGetDelayedState(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When GetDelayedState() executes successfully",
 			args: args{
 				block: &types.Header{
 					Number: big.NewInt(100),
 				},
+				buffer: 2,
 			},
+
 			want:    1,
 			wantErr: false,
 		},
 		{
-			name: "Test 2",
+			name: "Test 2: When there is an error in getting block",
 			args: args{
 				block: &types.Header{
 					Number: big.NewInt(100),
@@ -385,6 +388,17 @@ func TestGetDelayedState(t *testing.T) {
 			},
 			want:    -1,
 			wantErr: true,
+		},
+		{
+			name: "Test 3: When blockNumber%(core.StateLength) is greater than lowerLimit",
+			args: args{
+				block: &types.Header{
+					Number: big.NewInt(60),
+				},
+				buffer: 2,
+			},
+			want:    -1,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -400,7 +414,7 @@ func TestGetDelayedState(t *testing.T) {
 
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetDelayedState(client, buffer)
+			got, err := utils.GetDelayedState(client, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -426,7 +440,7 @@ func TestGetEpoch(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When GetEpoch() executes successfully",
 			args: args{
 				latestHeader: &types.Header{
 					Number: big.NewInt(100),
@@ -436,7 +450,7 @@ func TestGetEpoch(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 2",
+			name: "Test 2: When there is an error in getting latestHeader",
 			args: args{
 				latestHeader: &types.Header{
 					Number: big.NewInt(100),
@@ -480,42 +494,42 @@ func TestGetStateName(t *testing.T) {
 		want string
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When state is commit",
 			args: args{
 				stateNumber: 0,
 			},
 			want: "Commit",
 		},
 		{
-			name: "Test 2",
+			name: "Test 2: When state is reveal",
 			args: args{
 				stateNumber: 1,
 			},
 			want: "Reveal",
 		},
 		{
-			name: "Test 3",
+			name: "Test 3: When state is propose",
 			args: args{
 				stateNumber: 2,
 			},
 			want: "Propose",
 		},
 		{
-			name: "Test 4",
+			name: "Test 4: When state is dispute",
 			args: args{
 				stateNumber: 3,
 			},
 			want: "Dispute",
 		},
 		{
-			name: "Test 5",
+			name: "Test 5: When state is confirm",
 			args: args{
 				stateNumber: 4,
 			},
 			want: "Confirm",
 		},
 		{
-			name: "Test 6",
+			name: "Test 6: When state is none of the above",
 			args: args{
 				stateNumber: 5,
 			},
@@ -536,11 +550,9 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 	var fileName string
 
 	type args struct {
-		file     *os.File
-		fileErr  error
-		scanner  *bufio.Scanner
-		value    int
-		valueErr error
+		file    *os.File
+		fileErr error
+		scanner *bufio.Scanner
 	}
 	tests := []struct {
 		name          string
@@ -548,16 +560,15 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When ReadCommittedDataFromFile() executes successfully",
 			args: args{
 				file:    &os.File{},
 				scanner: &bufio.Scanner{},
-				value:   0,
 			},
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2",
+			name: "Test 2: When there is an error in getting file",
 			args: args{
 				fileErr: errors.New("error in getting file"),
 			},
@@ -580,7 +591,6 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 
 			optionsMock.On("Open", mock.AnythingOfType("string")).Return(tt.args.file, tt.args.fileErr)
 			optionsMock.On("NewScanner", mock.Anything).Return(tt.args.scanner)
-			optionsMock.On("Atoi", mock.AnythingOfType("string")).Return(tt.args.value, tt.args.valueErr)
 
 			fatal = false
 
@@ -608,7 +618,7 @@ func TestSaveCommittedDataToFile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When SaveCommittedDataToFile() executes successfully",
 			args: args{
 				committedData: []*big.Int{big.NewInt(2)},
 				file:          file,
@@ -616,7 +626,7 @@ func TestSaveCommittedDataToFile(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 2",
+			name: "Test 2: When there is an error inn getting file",
 			args: args{
 				committedData: []*big.Int{big.NewInt(2)},
 				fileErr:       errors.New("error in fetching file"),
@@ -624,7 +634,7 @@ func TestSaveCommittedDataToFile(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 3",
+			name: "Test 3: When there is an empty committedData",
 			args: args{
 				committedData: []*big.Int{},
 			},
@@ -662,18 +672,25 @@ func TestWaitForBlockCompletion(t *testing.T) {
 		want int
 	}{
 		{
-			name: "test 1",
+			name: "Test 1: When WaitForBlockCompletion() executes successfully",
 			args: args{
 				transactionStatus: 0,
 			},
 			want: 0,
 		},
 		{
-			name: "test 2",
+			name: "Test 2: When transactionStatus is 1",
 			args: args{
 				transactionStatus: 1,
 			},
 			want: 1,
+		},
+		{
+			name: "Test 3: When transactionStatus is neither 1 nor 0",
+			args: args{
+				transactionStatus: 2,
+			},
+			want: 0,
 		},
 	}
 	for _, tt := range tests {
@@ -686,6 +703,7 @@ func TestWaitForBlockCompletion(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("CheckTransactionReceipt", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.transactionStatus)
+			utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
 
 			if got := utils.WaitForBlockCompletion(client, hashToRead); got != tt.want {
 				t.Errorf("WaitForBlockCompletion() = %v, want %v", got, tt.want)
@@ -704,7 +722,7 @@ func TestIsFlagPassed(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "test 1",
+			name: "Test 1: When IsFlagPassed() executes successfully",
 			args: args{
 				name: "password",
 			},
@@ -736,43 +754,29 @@ func TestWaitTillNextNSecs(t *testing.T) {
 		args args
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When WaitTillNextNSecs() executes successfully",
 			args: args{
 				waitTime: 1,
 			},
 		},
 		{
-			name: "Test 2",
+			name: "Test 2: When waitTime is negative",
 			args: args{
 				waitTime: -1,
 			},
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			WaitTillNextNSecs(tt.args.waitTime)
-		})
-	}
-}
+		utilsMock := new(mocks.Utils)
 
-func TestSleep(t *testing.T) {
-	type args struct {
-		duration time.Duration
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "Test 1",
-			args: args{
-				duration: 1,
-			},
-		},
-	}
-	for _, tt := range tests {
+		optionsPackageStruct := OptionsPackageStruct{
+			UtilsInterface: utilsMock,
+		}
+		utils := StartRazor(optionsPackageStruct)
+		utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+
 		t.Run(tt.name, func(t *testing.T) {
-			Sleep(tt.args.duration)
+			utils.WaitTillNextNSecs(tt.args.waitTime)
 		})
 	}
 }
@@ -783,7 +787,11 @@ func TestAssignStakerId(t *testing.T) {
 	var address string
 
 	type args struct {
-		x bool
+		flagPassed         bool
+		flagSetStakerId    uint32
+		flagSetStakerIdErr error
+		stakerId           uint32
+		stakerIdErr        error
 	}
 	tests := []struct {
 		name          string
@@ -791,9 +799,26 @@ func TestAssignStakerId(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1: When AssignStakerId() executes successfully and flag is not passed",
 			args: args{
-				x: false,
+				flagPassed: false,
+				stakerId:   1,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When AssignStakerId() executes successfully and flag is passed",
+			args: args{
+				flagPassed:      true,
+				flagSetStakerId: 1,
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 3: When there is an error in getting stakerId",
+			args: args{
+				flagPassed:  false,
+				stakerIdErr: errors.New("stakerId error"),
 			},
 			expectedFatal: false,
 		},
@@ -812,7 +837,9 @@ func TestAssignStakerId(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.x)
+			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.flagPassed)
+			utilsMock.On("GetUint32", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.flagSetStakerId, tt.args.flagSetStakerIdErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 
 			utils = &UtilsStruct{}
 			fatal = false

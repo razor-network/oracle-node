@@ -219,7 +219,7 @@ func TestWithdrawFunds(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
-			utilsMock.On("GetWithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			utilsMock.On("GetWithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetUpdatedEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.updatedEpoch, tt.args.updatedEpochErr)

@@ -3,13 +3,13 @@ package cmd
 import (
 	"crypto/ecdsa"
 	"math/big"
+	"os"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strconv"
 	"time"
-	"os"
 
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
@@ -49,7 +49,7 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (u Utils) Sleep(duration time.Duration) {
-	utils.Sleep(duration)
+	utils.UtilsInterface.Sleep(duration)
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
@@ -115,7 +115,7 @@ func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*b
 }
 
 func (u Utils) IsFlagPassed(name string) bool {
-	return utils.IsFlagPassed(name)
+	return utils.UtilsInterface.IsFlagPassed(name)
 }
 
 func (u Utils) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
@@ -167,15 +167,15 @@ func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, 
 }
 
 func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32) (types.Locks, error) {
-	return utils.GetLock(client, address, stakerId)
+	return utils.UtilsInterface.GetLock(client, address, stakerId)
 }
 
-func (u Utils) GetStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.GetStaker(client, address, stakerId)
+func (u Utils) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.UtilsInterface.GetStaker(client, stakerId)
 }
 
-func (u Utils) GetUpdatedStaker(client *ethclient.Client, address string, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.GetStaker(client, address, stakerId)
+func (u Utils) GetUpdatedStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
+	return utils.UtilsInterface.GetStaker(client, stakerId)
 }
 
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
@@ -190,8 +190,8 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
 }
 
-func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client, address string) (uint8, error) {
-	return utils.GetWithdrawReleasePeriod(client, address)
+func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, error) {
+	return utils.UtilsInterface.GetWithdrawReleasePeriod(client)
 }
 
 func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
@@ -202,8 +202,8 @@ func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsColle
 	return utils.UtilsInterface.GetCollections(client)
 }
 
-func (u Utils) GetNumberOfStakers(client *ethclient.Client, address string) (uint32, error) {
-	return utils.GetNumberOfStakers(client, address)
+func (u Utils) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
+	return utils.UtilsInterface.GetNumberOfStakers(client)
 }
 
 func (u Utils) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
@@ -264,6 +264,10 @@ func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, er
 	return utils.UtilsInterface.GetStakerId(client, address)
 }
 
+func (u Utils) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
+	return utils.UtilsInterface.GetStake(client, stakerId)
+}
+
 func (u Utils) PrivateKeyPrompt() string {
 	return utils.PrivateKeyPrompt()
 }
@@ -273,19 +277,15 @@ func (u Utils) PasswordPrompt() string {
 }
 
 func (u Utils) GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	return utils.GetMaxCommission(client)
+	return utils.UtilsInterface.GetMaxCommission(client)
 }
 
 func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	return utils.GetEpochLimitForUpdateCommission(client)
+	return utils.UtilsInterface.GetEpochLimitForUpdateCommission(client)
 }
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	return utils.UtilsInterface.GetStakeSnapshot(client, stakerId, epoch)
-}
-
-func (u Utils) GetStake(client *ethclient.Client, address string, stakerId uint32) (*big.Int, error) {
-	return utils.GetStake(client, address, stakerId)
 }
 
 func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
@@ -293,7 +293,7 @@ func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 }
 
 func (u Utils) WaitTillNextNSecs(seconds int32) {
-	utils.WaitTillNextNSecs(seconds)
+	utils.UtilsInterface.WaitTillNextNSecs(seconds)
 }
 
 func (u Utils) SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {

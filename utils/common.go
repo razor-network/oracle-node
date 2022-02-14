@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 	"razor/core"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -27,7 +28,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	address := common.HexToAddress(accountAddress)
 	coinContract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
-	return coinContract.BalanceOf(&opts, address)
+	return UtilsInterface.BalanceOf(coinContract, &opts, address)
 }
 
 func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -66,17 +67,17 @@ func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead 
 			log.Info("Transaction mined successfully")
 			return 1
 		}
-		time.Sleep(3 * time.Second)
+		UtilsInterface.Sleep(3 * time.Second)
 	}
 	log.Info("Timeout Passed")
 	return 0
 }
 
-func WaitTillNextNSecs(waitTime int32) {
+func (*UtilsStruct) WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
 	}
-	time.Sleep(time.Duration(waitTime) * time.Second)
+	UtilsInterface.Sleep(time.Duration(waitTime) * time.Second)
 }
 
 func CheckError(msg string, err error) {
@@ -125,9 +126,8 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 }
 
 func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
-	x := UtilsInterface.IsFlagPassed("stakerId")
-	if x {
-		return flagSet.GetUint32("stakerId")
+	if UtilsInterface.IsFlagPassed("stakerId") {
+		return UtilsInterface.GetUint32(flagSet, "stakerId")
 	}
 	return UtilsInterface.GetStakerId(client, address)
 }
@@ -181,7 +181,7 @@ func (*UtilsStruct) ReadCommittedDataFromFile(fileName string) (uint32, []*big.I
 				committedData = append(committedData, data)
 			}
 		} else {
-			value, err := Options.Atoi(scanner.Text())
+			value, err := strconv.Atoi(scanner.Text())
 			if err != nil {
 				return 0, nil, err
 			}
@@ -194,10 +194,6 @@ func (*UtilsStruct) ReadCommittedDataFromFile(fileName string) (uint32, []*big.I
 		return 0, nil, err
 	}
 	return epoch, committedData, nil
-}
-
-func Sleep(duration time.Duration) {
-	time.Sleep(duration)
 }
 
 func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {

@@ -19,6 +19,7 @@ import (
 	"razor/accounts"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"time"
 )
 
 //go:generate mockery --name OptionUtils --output ./mocks/ --case=underscore
@@ -47,6 +48,13 @@ type OptionUtils interface {
 	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+	GetStakerId(*ethclient.Client, *bind.CallOpts, common.Address) (uint32, error)
+	GetStaker(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsStaker, error)
+	GetNumStakers(*ethclient.Client, *bind.CallOpts) (uint32, error)
+	Locks(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (types.Locks, error)
+	WithdrawReleasePeriod(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	MaxCommission(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	EpochLimitForUpdateCommission(*ethclient.Client, *bind.CallOpts) (uint16, error)
 	Commitments(*ethclient.Client, *bind.CallOpts, uint32) (types.Commitment, error)
 	GetVoteValue(*ethclient.Client, *bind.CallOpts, uint16, uint32) (*big.Int, error)
 	GetVote(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsVote, error)
@@ -69,8 +77,7 @@ type OptionUtils interface {
 	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
 	OpenFile(string, int, fs.FileMode) (*os.File, error)
 	Open(string) (*os.File, error)
-	Atoi(string) (int, error)
-	NewScanner(*os.File) *bufio.Scanner
+	NewScanner(r io.Reader) *bufio.Scanner
 	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
 	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
 	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
@@ -100,6 +107,16 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
+	GetStakeManager(*ethclient.Client) *bindings.StakeManager
+	GetStakeManagerWithOpts(*ethclient.Client) (*bindings.StakeManager, bind.CallOpts)
+	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
+	GetStake(*ethclient.Client, uint32) (*big.Int, error)
+	GetStakerId(*ethclient.Client, string) (uint32, error)
+	GetNumberOfStakers(*ethclient.Client) (uint32, error)
+	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
+	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
+	GetMaxCommission(*ethclient.Client) (uint8, error)
+	GetEpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
 	GetVoteManagerWithOpts(*ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
@@ -129,9 +146,6 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
-	GetTokenManager(client *ethclient.Client) *bindings.RAZOR
-	GetStakeManager(client *ethclient.Client) *bindings.StakeManager
-	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
@@ -144,8 +158,13 @@ type Utils interface {
 	SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error
 	ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error)
 	CalculateBlockTime(client *ethclient.Client) int64
-	GetStakerId(*ethclient.Client, string) (uint32, error)
 	IsFlagPassed(string) bool
+	GetTokenManager(*ethclient.Client) *bindings.RAZOR
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
+	Sleep(duration time.Duration)
+	GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error)
+	WaitTillNextNSecs(waitTime int32)
 }
 
 type OptionsStruct struct{}
