@@ -715,13 +715,13 @@ func (_m *OptionUtils) Locks(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 comm
 	return r0, r1
 }
 
-// Marshal provides a mock function with given fields: v
-func (_m *OptionUtils) Marshal(v interface{}) ([]byte, error) {
-	ret := _m.Called(v)
+// Marshal provides a mock function with given fields: _a0
+func (_m *OptionUtils) Marshal(_a0 interface{}) ([]byte, error) {
+	ret := _m.Called(_a0)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(interface{}) []byte); ok {
-		r0 = rf(v)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -730,7 +730,7 @@ func (_m *OptionUtils) Marshal(v interface{}) ([]byte, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
-		r1 = rf(v)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1117,13 +1117,13 @@ func (_m *OptionUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
 	return r0, r1
 }
 
-// ReadFile provides a mock function with given fields: filename
-func (_m *OptionUtils) ReadFile(filename string) ([]byte, error) {
-	ret := _m.Called(filename)
+// ReadFile provides a mock function with given fields: _a0
+func (_m *OptionUtils) ReadFile(_a0 string) ([]byte, error) {
+	ret := _m.Called(_a0)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(filename)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -1132,7 +1132,7 @@ func (_m *OptionUtils) ReadFile(filename string) ([]byte, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(filename)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1223,13 +1223,13 @@ func (_m *OptionUtils) TransactionReceipt(_a0 *ethclient.Client, _a1 context.Con
 	return r0, r1
 }
 
-// Unmarshal provides a mock function with given fields: data, v
-func (_m *OptionUtils) Unmarshal(data []byte, v interface{}) error {
-	ret := _m.Called(data, v)
+// Unmarshal provides a mock function with given fields: _a0, _a1
+func (_m *OptionUtils) Unmarshal(_a0 []byte, _a1 interface{}) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func([]byte, interface{}) error); ok {
-		r0 = rf(data, v)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1258,13 +1258,13 @@ func (_m *OptionUtils) WithdrawReleasePeriod(_a0 *ethclient.Client, _a1 *bind.Ca
 	return r0, r1
 }
 
-// WriteFile provides a mock function with given fields: filename, data, perm
-func (_m *OptionUtils) WriteFile(filename string, data []byte, perm fs.FileMode) error {
-	ret := _m.Called(filename, data, perm)
+// WriteFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *OptionUtils) WriteFile(_a0 string, _a1 []byte, _a2 fs.FileMode) error {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, []byte, fs.FileMode) error); ok {
-		r0 = rf(filename, data, perm)
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Error(0)
 	}
