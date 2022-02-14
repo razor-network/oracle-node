@@ -113,7 +113,6 @@ func TestCalculateBlockTime(t *testing.T) {
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.latestBlockErr)
 			optionsMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.lastSecondBlock, tt.args.lastSecondBlockErr)
 
-			utils = &UtilsStruct{}
 			fatal = false
 
 			utils.CalculateBlockTime(client)
@@ -168,15 +167,16 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:        optionsMock,
+				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			optionsMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 
-			utils = &UtilsStruct{}
 			fatal = false
 
 			utils.CheckEthBalanceIsZero(client, address)
@@ -226,15 +226,16 @@ func TestCheckTransactionReceipt(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:        optionsMock,
+				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			optionsMock.On("TransactionReceipt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.tx, tt.args.txErr)
 
-			utils = &UtilsStruct{}
 			fatal = false
 
 			utils.CheckTransactionReceipt(client, txHash)
@@ -279,15 +280,16 @@ func TestConnectToClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:        optionsMock,
+				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			optionsMock.On("Dial", mock.AnythingOfType("string")).Return(tt.args.client, tt.args.clientErr)
 
-			utils = &UtilsStruct{}
 			fatal = false
 
 			utils.ConnectToClient(provider)
@@ -312,6 +314,7 @@ func TestFetchBalance(t *testing.T) {
 		name          string
 		args          args
 		expectedFatal bool
+		wantErr       error
 	}{
 		{
 			name: "When FetchBalance() executes successfully",
@@ -320,6 +323,7 @@ func TestFetchBalance(t *testing.T) {
 				balance:      big.NewInt(1),
 			},
 			expectedFatal: false,
+			wantErr:       nil,
 		},
 	}
 
@@ -341,12 +345,20 @@ func TestFetchBalance(t *testing.T) {
 			utilsMock.On("GetOptions").Return(callOpts)
 			utilsMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 
-			utils = &UtilsStruct{}
 			fatal = false
 
-			utils.FetchBalance(client, accountAddress)
+			_, err := utils.FetchBalance(client, accountAddress)
 			if fatal != tt.expectedFatal {
 				t.Error("The FetchBalance function didn't execute as expected")
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for FetchBalance function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for fetchBalance function, got = %v, want = %v", err, tt.wantErr)
+				}
 			}
 		})
 	}
@@ -375,7 +387,7 @@ func TestGetDelayedState(t *testing.T) {
 				buffer: 2,
 			},
 
-			want:    1,
+			want:    0,
 			wantErr: false,
 		},
 		{
@@ -393,7 +405,7 @@ func TestGetDelayedState(t *testing.T) {
 			name: "Test 3: When blockNumber%(core.StateLength) is greater than lowerLimit",
 			args: args{
 				block: &types.Header{
-					Number: big.NewInt(60),
+					Number: big.NewInt(900),
 				},
 				buffer: 2,
 			},
@@ -558,6 +570,7 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 		name          string
 		args          args
 		expectedFatal bool
+		wantErr       error
 	}{
 		{
 			name: "Test 1: When ReadCommittedDataFromFile() executes successfully",
@@ -566,6 +579,7 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 				scanner: &bufio.Scanner{},
 			},
 			expectedFatal: false,
+			wantErr:       errors.New("bufio.Scanner: token too long"),
 		},
 		{
 			name: "Test 2: When there is an error in getting file",
@@ -573,6 +587,7 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 				fileErr: errors.New("error in getting file"),
 			},
 			expectedFatal: false,
+			wantErr:       errors.New("error in getting file"),
 		},
 	}
 
@@ -594,10 +609,20 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 
 			fatal = false
 
-			utils.ReadCommittedDataFromFile(fileName)
+			_, _, err := utils.ReadCommittedDataFromFile(fileName)
 			if fatal != tt.expectedFatal {
 				t.Error("The ReadCommittedDataFromFile function didn't execute as expected")
 			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for ReadCommittedDataFromFile function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for ReadCommittedDataFromFile function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+
 		})
 	}
 }
@@ -731,13 +756,14 @@ func TestIsFlagPassed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
+				Options:        optionsMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
-			utils = &UtilsStruct{}
 			if got := utils.IsFlagPassed(tt.args.name); got != tt.want {
 				t.Errorf("IsFlagPassed() = %v, want %v", got, tt.want)
 			}
@@ -797,6 +823,7 @@ func TestAssignStakerId(t *testing.T) {
 		name          string
 		args          args
 		expectedFatal bool
+		wantErr       error
 	}{
 		{
 			name: "Test 1: When AssignStakerId() executes successfully and flag is not passed",
@@ -805,6 +832,7 @@ func TestAssignStakerId(t *testing.T) {
 				stakerId:   1,
 			},
 			expectedFatal: false,
+			wantErr:       nil,
 		},
 		{
 			name: "Test 2: When AssignStakerId() executes successfully and flag is passed",
@@ -813,6 +841,7 @@ func TestAssignStakerId(t *testing.T) {
 				flagSetStakerId: 1,
 			},
 			expectedFatal: false,
+			wantErr:       nil,
 		},
 		{
 			name: "Test 3: When there is an error in getting stakerId",
@@ -821,6 +850,7 @@ func TestAssignStakerId(t *testing.T) {
 				stakerIdErr: errors.New("stakerId error"),
 			},
 			expectedFatal: false,
+			wantErr:       errors.New("stakerId error"),
 		},
 	}
 
@@ -830,9 +860,11 @@ func TestAssignStakerId(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
+				Options:        optionsMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
@@ -841,12 +873,20 @@ func TestAssignStakerId(t *testing.T) {
 			utilsMock.On("GetUint32", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.flagSetStakerId, tt.args.flagSetStakerIdErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 
-			utils = &UtilsStruct{}
 			fatal = false
 
-			utils.AssignStakerId(flagSet, client, address)
+			_, err := utils.AssignStakerId(flagSet, client, address)
 			if fatal != tt.expectedFatal {
 				t.Error("The AssignStakerId function didn't execute as expected")
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for AssignStakerId function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for AssignStakerId function, got = %v, want = %v", err, tt.wantErr)
+				}
 			}
 		})
 	}
