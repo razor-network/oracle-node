@@ -10,6 +10,9 @@ jobs:
           version: 20.10.7
           docker_layer_caching: true
       - run:
+          name: "Install goveralls lib"
+          command: go get github.com/mattn/goveralls
+      - run:
           name: "Building docker image"
           command: |
             docker build --file Dockerfile.test -t razor-test .
@@ -17,10 +20,16 @@ jobs:
           name: "Executing test cases"
           command: |
             docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --output /test/coverage.txt
+            docker run --rm -v $(pwd):/test --name go  razor-test cat /test/coverage.txt > coverage.txt
+      - run:
+          name: "Removing unnecessary files from coveralls report"
+          command: |
+            sed -i '/razor\/accounts\/accountUtils.go/d;/razor\/cmd\/root.go/d;/razor\/cmd\/struct-utils.go/d;/razor\/path\/mocks*/d;/razor\/utils\/struct-utils.go/d' coverage.txt
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            docker run --rm -v $(pwd):/test --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=/test/coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+            goveralls -coverprofile=coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
+          
       - persist_to_workspace:
           root: .
           paths:
