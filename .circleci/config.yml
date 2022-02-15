@@ -27,10 +27,13 @@ jobs:
           command: |
             sed -i '/razor\/accounts\/accountUtils.go/d;/razor\/cmd\/root.go/d;/razor\/cmd\/struct-utils.go/d;/razor\/path\/mocks*/d;/razor\/utils\/struct-utils.go/d' coverage.txt
       - run:
-          name: "Publish Coverage to Coveralls.io"
+          name: "Executing courtney"
           command: |
             docker run --rm -v $(pwd):/test --name go razor-test courtney -o /test/coverage.out
             docker run --rm -v $(pwd):/test --name go razor-test cat /test/coverage.out > coverage.out
+      - run:
+          name: "Publish Coverage to Coveralls.io"
+          command: |
             goveralls -coverprofile=coverage.out -service semaphore -repotoken $COVERALLS_TOKEN
           
       - persist_to_workspace:
