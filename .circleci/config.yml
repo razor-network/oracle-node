@@ -12,8 +12,8 @@ jobs:
       - run:
           name: "Install"
           command: |
-            go get github.com/mattn/goveralls
-            go get -d github.com/dave/courtney
+            go get -d github.com/mattn/goveralls
+            go get -u github.com/dave/courtney 
       - run:
           name: "Building docker image"
           command: |
@@ -30,7 +30,8 @@ jobs:
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            courtney
+            docker run --rm -v $(pwd):/test --name go -w /test  razor-test courtney
+            ls
             goveralls -coverprofile=coverage.out -service semaphore -repotoken $COVERALLS_TOKEN
           
       - persist_to_workspace:
