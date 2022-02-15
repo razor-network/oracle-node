@@ -34,6 +34,7 @@ jobs:
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
+            ls
             goveralls -coverprofile=coverage.out -service semaphore -repotoken $COVERALLS_TOKEN
           
       - persist_to_workspace:
