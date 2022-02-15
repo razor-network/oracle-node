@@ -30,7 +30,7 @@ jobs:
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
-            docker run --rm -v $(pwd):/test --name go -w /test  razor-test courtney
+            docker run --rm -v $(pwd):/test --name go razor-test courtney -o /test/
             ls
             goveralls -coverprofile=coverage.out -service semaphore -repotoken $COVERALLS_TOKEN
           
