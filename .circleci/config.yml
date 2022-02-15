@@ -13,7 +13,7 @@ jobs:
           name: "Install"
           command: |
             go get github.com/mattn/goveralls
-            go get -u github.com/dave/courtney
+            go get -d github.com/dave/courtney
       - run:
           name: "Building docker image"
           command: |
