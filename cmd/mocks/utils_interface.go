@@ -198,6 +198,22 @@ func (_m *UtilsInterface) ConvertSRZRToRZR(_a0 *big.Int, _a1 *big.Int, _a2 *big.
 	return r0
 }
 
+// ConvertUint32ArrayToBigIntArray provides a mock function with given fields: uint32Array
+func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
+	ret := _m.Called(uint32Array)
+
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func([]uint32) []*big.Int); ok {
+		r0 = rf(uint32Array)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	return r0
+}
+
 // ConvertUintArrayToUint16Array provides a mock function with given fields: uintArr
 func (_m *UtilsInterface) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	ret := _m.Called(uintArr)
@@ -1250,8 +1266,8 @@ func (_m *UtilsInterface) PrivateKeyPrompt() string {
 	return r0
 }
 
-// ReadCommittedDataFromFile provides a mock function with given fields: _a0
-func (_m *UtilsInterface) ReadCommittedDataFromFile(_a0 string) (uint32, []*big.Int, error) {
+// ReadDataFromFile provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ReadDataFromFile(_a0 string) (uint32, []*big.Int, error) {
 	ret := _m.Called(_a0)
 
 	var r0 uint32
@@ -1280,8 +1296,8 @@ func (_m *UtilsInterface) ReadCommittedDataFromFile(_a0 string) (uint32, []*big.
 	return r0, r1, r2
 }
 
-// SaveCommittedDataToFile provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsInterface) SaveCommittedDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
+// SaveDataToFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterface) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 error

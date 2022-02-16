@@ -71,6 +71,7 @@ type UtilsInterface interface {
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
+	ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int
 	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
@@ -107,8 +108,8 @@ type UtilsInterface interface {
 	GetStake(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertWeiToEth(*big.Int) (*big.Float, error)
 	WaitTillNextNSecs(int32)
-	SaveCommittedDataToFile(string, uint32, []*big.Int) error
-	ReadCommittedDataFromFile(string) (uint32, []*big.Int, error)
+	SaveDataToFile(string, uint32, []*big.Int) error
+	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
 	Exit(int)
 	DeleteJobFromJSON(string, string) error
@@ -285,6 +286,7 @@ type UtilsCmdInterface interface {
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
 	GetCommitDataFileName(string) (string, error)
+	GetMedianDataFileName(string) (string, error)
 	CalculateSecret(types.Account, uint32) []byte
 	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
 	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)

@@ -16,6 +16,8 @@ import (
 	"modernc.org/sortutil"
 )
 
+var _mediansData []*big.Int
+
 func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
@@ -92,6 +94,21 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 		log.Error(err)
 		return core.NilHash, err
 	}
+
+	_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+
+	log.Debug("Saving median data for recovery")
+	fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
+	if err != nil {
+		log.Error("Error in getting file name to save median data: ", err)
+		return core.NilHash, nil
+	}
+	err = razorUtils.SaveDataToFile(fileName, epoch, _mediansData)
+	if err != nil {
+		log.Errorf("Error in saving data to file %s: %t", fileName, err)
+		return core.NilHash, nil
+	}
+	log.Debug("Data saved!")
 
 	log.Debugf("Medians: %d", medians)
 
@@ -219,6 +236,14 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, address string, rogueDat
 	}
 	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(medians)
 	return mediansInUint32, nil
+}
+
+func (*UtilsStruct) GetMedianDataFileName(address string) (string, error) {
+	homeDir, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_median", nil
 }
 
 func (*UtilsStruct) GetSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32) ([]*big.Int, error) {
