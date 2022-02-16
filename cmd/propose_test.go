@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	randMath "math/rand"
@@ -1104,4 +1105,42 @@ func Test_pseudoRandomNumberGenerator(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkGetIteration(b *testing.B) {
+	var client *ethclient.Client
+
+	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	randaoHashBytes32 := [32]byte{}
+	copy(randaoHashBytes32[:], randaoHash)
+
+	proposer := types.ElectedProposer{
+		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
+		StakerId:        2,
+		NumberOfStakers: 5,
+		RandaoHash:      randaoHashBytes32,
+	}
+
+	var table = []struct {
+		stakeSnapshot *big.Int
+	}{
+		{stakeSnapshot: big.NewInt(1000)},
+		{stakeSnapshot: big.NewInt(10000)},
+		{stakeSnapshot: big.NewInt(100000)},
+		{stakeSnapshot: big.NewInt(1000000)},
+		{stakeSnapshot: big.NewInt(10000000)},
+	}
+
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsMock := new(mocks.UtilsInterface)
+				razorUtils = utilsMock
+				utils := &UtilsStruct{}
+				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
+				utils.GetIteration(client, proposer)
+			}
+		})
+	}
+
 }
