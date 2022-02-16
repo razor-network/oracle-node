@@ -61,6 +61,10 @@ func TestPropose(t *testing.T) {
 		lastProposedBlockStructErr error
 		medians                    []uint32
 		mediansErr                 error
+		fileName                   string
+		fileNameErr                error
+		saveDataErr                error
+		mediansBigInt              []*big.Int
 		txnOpts                    *bind.TransactOpts
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
@@ -383,6 +387,50 @@ func TestPropose(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("propose error"),
 		},
+		{
+			name: "Test 15: When there is an error in getting fileName",
+			args: args{
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              5,
+				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:      2,
+				randaoHash:              randaoHashBytes32,
+				iteration:               1,
+				numOfProposedBlocks:     3,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: bindings.StructsBlock{},
+				medians:                 []uint32{6701548, 478307},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				fileNameErr:             errors.New("fileName error"),
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
+		{
+			name: "Test 16: When there is an error in saving data to file",
+			args: args{
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              5,
+				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestInfluenceId:      2,
+				randaoHash:              randaoHashBytes32,
+				iteration:               1,
+				numOfProposedBlocks:     3,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: bindings.StructsBlock{},
+				medians:                 []uint32{6701548, 478307},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				saveDataErr:             errors.New("error in saving data"),
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 
@@ -406,6 +454,9 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr)
 		utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr)
 		cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.medians, tt.args.mediansErr)
+		cmdUtilsMock.On("GetMedianDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+		utilsMock.On("SaveDataToFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
+		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
@@ -1101,6 +1152,63 @@ func Test_pseudoRandomNumberGenerator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := pseudoRandomNumberGenerator(tt.args.seed, tt.args.max, tt.args.blockHashes); got.Cmp(tt.want) != 0 {
 				t.Errorf("pseudoRandomNumberGenerator() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetMedianDataFileName(t *testing.T) {
+	type args struct {
+		address string
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr error
+	}{
+		{
+			name: "Test 1: When GetMedianDataFileName() executes successfully",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				path:    "/home",
+			},
+			want:    "/home/0x000000000000000000000000000000000000dead_median",
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				pathErr: errors.New("path error"),
+			},
+			want:    "",
+			wantErr: errors.New("path error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
+
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			utils := &UtilsStruct{}
+			got, err := utils.GetMedianDataFileName(tt.args.address)
+			if got != tt.want {
+				t.Errorf("GetMedianDataFileName() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetMedianDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetMedianDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
 			}
 		})
 	}
