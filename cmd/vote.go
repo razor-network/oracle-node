@@ -220,7 +220,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			log.Error("Error in getting file name to save committed data: ", err)
 			break
 		}
-		err = razorUtils.SaveCommittedDataToFile(fileName, epoch, _committedData)
+		err = razorUtils.SaveDataToFile(fileName, epoch, _committedData)
 		if err != nil {
 			log.Errorf("Error in saving data to file %s: %t", fileName, err)
 			break
@@ -248,7 +248,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				log.Error("Error in getting file name to save committed data: ", err)
 				break
 			}
-			epochInFile, committedDataFromFile, err := razorUtils.ReadCommittedDataFromFile(fileName)
+			epochInFile, committedDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
 			if err != nil {
 				log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
 				break
