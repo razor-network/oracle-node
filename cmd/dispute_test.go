@@ -443,6 +443,15 @@ func TestGiveSorted(t *testing.T) {
 				sortedStakers: nil,
 			},
 		},
+		{
+			name: "Test 4: When error is gas limit reached",
+			args: args{
+				sortedStakers: []uint32{2, 1, 3, 5},
+				giveSortedErr: errors.New("gas limit reached"),
+				giveSorted:    &Types.Transaction{},
+				hash:          common.BigToHash(big.NewInt(1)),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -454,9 +463,10 @@ func TestGiveSorted(t *testing.T) {
 			blockManagerUtils = blockManagerUtilsMock
 			transactionUtils = transactionUtilsMock
 
-			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr)
+			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr).Once()
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
 
 			GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedStakers)
 		})
