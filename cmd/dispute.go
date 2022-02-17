@@ -30,7 +30,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	if _mediansData == nil {
 		fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
 		if err != nil {
-			log.Error("Error in getting file name to save median data: ", err)
+			log.Error("Error in getting file name to read median data: ", err)
 			return err
 		}
 		epochInFile, medianDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
