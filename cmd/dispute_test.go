@@ -452,6 +452,15 @@ func TestGiveSorted(t *testing.T) {
 				hash:          common.BigToHash(big.NewInt(1)),
 			},
 		},
+		{
+			name: "Test 5: When error is gas limit reached with higher number of stakers",
+			args: args{
+				sortedStakers: []uint32{2, 1, 3, 5, 7, 8, 9, 10, 6, 11, 13, 12, 14, 15, 4, 20, 19, 18, 17, 16},
+				giveSortedErr: errors.New("gas limit reached"),
+				giveSorted:    &Types.Transaction{},
+				hash:          common.BigToHash(big.NewInt(1)),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
