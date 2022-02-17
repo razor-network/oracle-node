@@ -14,7 +14,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
+func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, rogueData types.Rogue) error {
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
 		return err
@@ -27,7 +27,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 	log.Debug("Biggest Stake: ", biggestStake)
 
-	if _mediansData == nil {
+	if _mediansData == nil && !rogueData.IsRogue {
 		fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
@@ -43,6 +43,13 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			return err
 		}
 		_mediansData = medianDataFromFile
+
+	} else if _mediansData == nil && rogueData.IsRogue {
+		medians, err := cmdUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
+		if err != nil {
+			return err
+		}
+		_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
 	}
 
 	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(_mediansData)

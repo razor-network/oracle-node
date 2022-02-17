@@ -263,7 +263,7 @@ type UtilsCmdInterface interface {
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
-	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32) error
+	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32, types.Rogue) error
 	ExecuteExtendLock(*pflag.FlagSet)
 	ExtendLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, uint16) (bool, error)

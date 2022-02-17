@@ -185,6 +185,10 @@ func TestHandleDispute(t *testing.T) {
 		iteration                 int
 		disputeErr                error
 		epoch                     uint32
+		medians                   []uint32
+		mediansErr                error
+		mediansBigInt             []*big.Int
+		rogue                     types.Rogue
 	}
 	tests := []struct {
 		name string
@@ -207,6 +211,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:         false,
 				iteration:       0,
 				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -224,6 +231,9 @@ func TestHandleDispute(t *testing.T) {
 				activeAssetIds:  []uint16{3, 5},
 				isEqual:         true,
 				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -238,6 +248,9 @@ func TestHandleDispute(t *testing.T) {
 				activeAssetIds:  []uint16{3, 5},
 				isEqual:         true,
 				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: errors.New("sortedProposedBlockIds error"),
 		},
@@ -250,6 +263,9 @@ func TestHandleDispute(t *testing.T) {
 				activeAssetIds:         []uint16{3, 5},
 				isEqual:                true,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -270,6 +286,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:         false,
 				iteration:       0,
 				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: errors.New("fileName error"),
 		},
@@ -290,6 +309,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:         false,
 				iteration:       0,
 				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: errors.New("readFile error"),
 		},
@@ -309,6 +331,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:         false,
 				iteration:       0,
 				disputeErr:      errors.New("dispute error"),
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -326,6 +351,9 @@ func TestHandleDispute(t *testing.T) {
 				activeAssetIds:  []uint16{3, 5},
 				isEqual:         false,
 				iteration:       0,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -347,6 +375,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:                false,
 				iteration:              0,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -367,6 +398,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:                false,
 				iteration:              0,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: errors.New("biggestInfluenceAndIdErr"),
 		},
@@ -389,6 +423,9 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:                false,
 				iteration:              0,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -410,8 +447,56 @@ func TestHandleDispute(t *testing.T) {
 				isEqual:         false,
 				iteration:       0,
 				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
+		},
+		{
+			name: "Test 13: When HandleDispute function executes successfully and staker is in rogue mode",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: true,
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "Test 14: When there is an error in getting medians and staker is in rogue mode",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				mediansErr:      errors.New("error in getting medians"),
+				rogue: types.Rogue{
+					IsRogue: true,
+				},
+			},
+			want: errors.New("error in getting medians"),
 		},
 	}
 
@@ -437,12 +522,14 @@ func TestHandleDispute(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			cmdUtilsMock.On("GetMedianDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadDataFromFile", mock.AnythingOfType("string")).Return(tt.args.epochInFile, tt.args.medianDataInFile, tt.args.readFileErr)
+			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.medians, tt.args.mediansErr)
+			utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
 			utilsMock.On("GetActiveAssetIds", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 
 			utils := &UtilsStruct{}
-			err := utils.HandleDispute(client, config, account, tt.args.epoch)
+			err := utils.HandleDispute(client, config, account, tt.args.epoch, tt.args.rogue)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)
