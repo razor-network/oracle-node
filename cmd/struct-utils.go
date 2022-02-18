@@ -240,6 +240,10 @@ func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 
 	return utils.ConvertBigIntArrayToUint32Array(bigIntArray)
 }
 
+func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
+	return utils.ConvertUint32ArrayToBigIntArray(uint32Array)
+}
+
 func (u Utils) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
 	return utils.UtilsInterface.GetActiveAssetIds(client)
 }
@@ -296,12 +300,12 @@ func (u Utils) WaitTillNextNSecs(seconds int32) {
 	utils.WaitTillNextNSecs(seconds)
 }
 
-func (u Utils) SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
-	return utils.SaveCommittedDataToFile(fileName, epoch, committedData)
+func (u Utils) SaveDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
+	return utils.SaveDataToFile(fileName, epoch, committedData)
 }
 
-func (u Utils) ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
-	return utils.ReadCommittedDataFromFile(fileName)
+func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
+	return utils.ReadDataFromFile(fileName)
 }
 
 func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {

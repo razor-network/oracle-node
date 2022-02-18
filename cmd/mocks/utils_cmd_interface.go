@@ -726,6 +726,27 @@ func (_m *UtilsCmdInterface) GetLogLevel() (string, error) {
 	return r0, r1
 }
 
+// GetMedianDataFileName provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) GetMedianDataFileName(_a0 string) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetMultiplier provides a mock function with given fields:
 func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
 	ret := _m.Called()
@@ -859,13 +880,13 @@ func (_m *UtilsCmdInterface) HandleCommitState(_a0 *ethclient.Client, _a1 uint32
 	return r0, r1
 }
 
-// HandleDispute provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *UtilsCmdInterface) HandleDispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32) error {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// HandleDispute provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *UtilsCmdInterface) HandleDispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32, _a4 types.Rogue) error {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32) error); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, types.Rogue) error); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4)
 	} else {
 		r0 = ret.Error(0)
 	}

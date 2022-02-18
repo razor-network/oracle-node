@@ -14,7 +14,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
+func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, rogueData types.Rogue) error {
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
 		return err
@@ -27,12 +27,34 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 	log.Debug("Biggest Stake: ", biggestStake)
 
-	medians, err := cmdUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
-	if err != nil {
-		return err
+	if _mediansData == nil && !rogueData.IsRogue {
+		fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to read median data: ", err)
+			return err
+		}
+		epochInFile, medianDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
+		if err != nil {
+			log.Errorf("Error in getting median data from file %s: %t", fileName, err)
+			return err
+		}
+		if epochInFile != epoch {
+			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
+			return err
+		}
+		_mediansData = medianDataFromFile
+
+	} else if _mediansData == nil && rogueData.IsRogue {
+		medians, err := cmdUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
+		if err != nil {
+			return err
+		}
+		_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
 	}
+
+	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(_mediansData)
 	log.Debug("Locally calculated data:")
-	log.Debugf("Medians: %d", medians)
+	log.Debugf("Medians: %d", mediansInUint32)
 
 	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
 	for _, i := range randomSortedProposedBlockIds {
@@ -68,13 +90,13 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
 
-		isEqual, j := utils.IsEqual(proposedBlock.Medians, medians)
+		isEqual, j := utils.IsEqual(proposedBlock.Medians, mediansInUint32)
 		if !isEqual {
 			activeAssetIds, _ := razorUtils.GetActiveAssetIds(client)
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
-			log.Debug("Local Calculations: ", medians)
+			log.Debug("Local Calculations: ", mediansInUint32)
 			if proposedBlock.Valid {
 				err := cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId)
 				if err != nil {

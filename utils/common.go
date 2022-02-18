@@ -143,16 +143,16 @@ func GetEpoch(client *ethclient.Client) (uint32, error) {
 	return uint32(epoch), nil
 }
 
-func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
-	if len(committedData) == 0 {
-		return errors.New("committed data is empty")
+func SaveDataToFile(fileName string, epoch uint32, data []*big.Int) error {
+	if len(data) == 0 {
+		return errors.New("data is empty")
 	}
 	f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintln(f, epoch)
-	for _, datum := range committedData {
+	for _, datum := range data {
 		_, err := fmt.Fprintln(f, datum.String())
 		if err != nil {
 			return err
@@ -162,10 +162,10 @@ func SaveCommittedDataToFile(fileName string, epoch uint32, committedData []*big
 	return nil
 }
 
-func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
+func ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	var (
-		committedData []*big.Int
-		epoch         uint32
+		data  []*big.Int
+		epoch uint32
 	)
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -177,9 +177,9 @@ func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	lineCount := 0
 	for scanner.Scan() {
 		if lineCount > 0 {
-			data, ok := big.NewInt(0).SetString(scanner.Text(), 10)
+			dataToAppend, ok := big.NewInt(0).SetString(scanner.Text(), 10)
 			if ok {
-				committedData = append(committedData, data)
+				data = append(data, dataToAppend)
 			}
 		} else {
 			value, err := strconv.Atoi(scanner.Text())
@@ -194,7 +194,7 @@ func ReadCommittedDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	if err := scanner.Err(); err != nil {
 		return 0, nil, err
 	}
-	return epoch, committedData, nil
+	return epoch, data, nil
 }
 
 func Sleep(duration time.Duration) {

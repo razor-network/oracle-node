@@ -57,6 +57,14 @@ func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
 	return arr
 }
 
+func ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
+	var arr []*big.Int
+	for _, datum := range uint32Array {
+		arr = append(arr, big.NewInt(int64(datum)))
+	}
+	return arr
+}
+
 func CalculateWeightedSum(data []*big.Int, weight []uint8) *big.Int {
 	sum := big.NewInt(0)
 	for index, datum := range data {

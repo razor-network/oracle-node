@@ -269,6 +269,46 @@ func TestConvertBigIntArrayToUint32Array(t *testing.T) {
 	}
 }
 
+func TestConvertUint32ArrayToBigIntArray(t *testing.T) {
+	type args struct {
+		data []uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*big.Int
+	}{
+		{
+			name: "Test when array has length more than 1",
+			args: args{
+				data: []uint32{100, 200, 300},
+			},
+			want: []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
+		},
+		{
+			name: "Test when array has length 1",
+			args: args{
+				data: []uint32{100},
+			},
+			want: []*big.Int{big.NewInt(100)},
+		},
+		{
+			name: "Test when array is nil",
+			args: args{
+				data: nil,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ConvertUint32ArrayToBigIntArray(tt.args.data); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertUint32ArrayToBigIntArray() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestConvertUintArrayToUint16Array(t *testing.T) {
 	type args struct {
 		data []uint
