@@ -18,6 +18,10 @@ jobs:
           command: |
             docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --output /test/coverage.txt
       - run:
+          name: "Executing benchmarks"
+          command: |
+            docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... -bench=. -run=^#
+      - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
             docker run --rm -v $(pwd):/test --name go -e COVERALLS_TOKEN=$COVERALLS_TOKEN razor-test goveralls -coverprofile=/test/coverage.txt -service semaphore -repotoken $COVERALLS_TOKEN
