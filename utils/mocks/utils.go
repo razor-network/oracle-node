@@ -1553,8 +1553,8 @@ func (_m *Utils) MultiplyFloatAndBigInt(_a0 *big.Int, _a1 float64) *big.Int {
 	return r0
 }
 
-// ReadCommittedDataFromFile provides a mock function with given fields: _a0
-func (_m *Utils) ReadCommittedDataFromFile(_a0 string) (uint32, []*big.Int, error) {
+// ReadDataFromFile provides a mock function with given fields: _a0
+func (_m *Utils) ReadDataFromFile(_a0 string) (uint32, []*big.Int, error) {
 	ret := _m.Called(_a0)
 
 	var r0 uint32
@@ -1606,8 +1606,8 @@ func (_m *Utils) ReadJSONData(_a0 string) (map[string]*types.StructsJob, error) 
 	return r0, r1
 }
 
-// SaveCommittedDataToFile provides a mock function with given fields: _a0, _a1, _a2
-func (_m *Utils) SaveCommittedDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
+// SaveDataToFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 error

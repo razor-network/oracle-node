@@ -161,7 +161,6 @@ func TestHandleDispute(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
 	var account types.Account
-	var epoch uint32
 
 	type args struct {
 		sortedProposedBlockIds    []uint32
@@ -174,13 +173,22 @@ func TestHandleDispute(t *testing.T) {
 		disputeBiggestStakeTxn    *Types.Transaction
 		disputeBiggestStakeErr    error
 		Hash                      common.Hash
-		medians                   []uint32
-		mediansErr                error
+		fileName                  string
+		fileNameErr               error
+		epochInFile               uint32
+		medianDataInFile          []*big.Int
+		readFileErr               error
+		mediansInUint32           []uint32
 		activeAssetIds            []uint16
 		activeAssetIdsErr         error
 		isEqual                   bool
 		iteration                 int
 		disputeErr                error
+		epoch                     uint32
+		medians                   []uint32
+		mediansErr                error
+		mediansBigInt             []*big.Int
+		rogue                     types.Rogue
 	}
 	tests := []struct {
 		name string
@@ -198,11 +206,14 @@ func TestHandleDispute(t *testing.T) {
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				medians:        []uint32{6701548, 478307},
-				activeAssetIds: []uint16{3, 5},
-				isEqual:        false,
-				iteration:      0,
-				disputeErr:     nil,
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -216,10 +227,13 @@ func TestHandleDispute(t *testing.T) {
 					Medians:      []uint32{6701548, 478307},
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				medians:        []uint32{6701548, 478307},
-				activeAssetIds: []uint16{3, 5},
-				isEqual:        true,
-				disputeErr:     nil,
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         true,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
@@ -230,10 +244,13 @@ func TestHandleDispute(t *testing.T) {
 				proposedBlock: bindings.StructsBlock{
 					Medians: []uint32{6701548, 478307},
 				},
-				medians:        []uint32{6701548, 478307},
-				activeAssetIds: []uint16{3, 5},
-				isEqual:        true,
-				disputeErr:     nil,
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         true,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: errors.New("sortedProposedBlockIds error"),
 		},
@@ -242,32 +259,64 @@ func TestHandleDispute(t *testing.T) {
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				proposedBlockErr:       errors.New("proposedBlock error"),
-				medians:                []uint32{6701548, 478307},
+				mediansInUint32:        []uint32{6701548, 478307},
 				activeAssetIds:         []uint16{3, 5},
 				isEqual:                true,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
 		{
-			name: "Test 5: When there is an error in getting medians from MakeBlock",
+			name: "Test 5: When there is an error in getting fileName",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
+				fileNameErr:            errors.New("fileName error"),
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6701548, 478307},
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				mediansErr:     errors.New("medians error"),
-				activeAssetIds: []uint16{3, 5},
-				isEqual:        true,
-				disputeErr:     nil,
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
-			want: errors.New("medians error"),
+			want: errors.New("fileName error"),
 		},
 		{
-			name: "Test 6: When there is an error from Dispute function",
+			name: "Test 6: When there is an error in reading file",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				readFileErr:            errors.New("readFile error"),
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
+			},
+			want: errors.New("readFile error"),
+		},
+		{
+			name: "Test 7: When there is an error from Dispute function",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
@@ -277,16 +326,19 @@ func TestHandleDispute(t *testing.T) {
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 					Valid:        true,
 				},
-				medians:        []uint32{6701548, 478307},
-				activeAssetIds: []uint16{3, 5},
-				isEqual:        false,
-				iteration:      0,
-				disputeErr:     errors.New("dispute error"),
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      errors.New("dispute error"),
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
 		{
-			name: "Test 7: When there is a case of Dispute but block is already disputed",
+			name: "Test 8: When there is a case of Dispute but block is already disputed",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
@@ -295,15 +347,18 @@ func TestHandleDispute(t *testing.T) {
 					Medians:      []uint32{6701548, 478307},
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				medians:        []uint32{6901548, 498307},
-				activeAssetIds: []uint16{3, 5},
-				isEqual:        false,
-				iteration:      0,
+				mediansInUint32: []uint32{6901548, 498307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
 		{
-			name: "Test 8: When HandleDispute function executes successfully when there is a biggest influence dispute case",
+			name: "Test 9: When HandleDispute function executes successfully when there is a biggest influence dispute case",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
@@ -315,16 +370,19 @@ func TestHandleDispute(t *testing.T) {
 				},
 				disputeBiggestStakeTxn: &Types.Transaction{},
 				Hash:                   common.BigToHash(big.NewInt(1)),
-				medians:                []uint32{6701548, 478307},
+				mediansInUint32:        []uint32{6701548, 478307},
 				activeAssetIds:         []uint16{3, 5},
 				isEqual:                false,
 				iteration:              0,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
 		},
 		{
-			name: "Test 9: When there is an error in getting biggestInfluenceAndId",
+			name: "Test 10: When there is an error in getting biggestInfluenceAndId",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStakeErr:        errors.New("biggestInfluenceAndIdErr"),
@@ -335,17 +393,20 @@ func TestHandleDispute(t *testing.T) {
 				},
 				disputeBiggestStakeTxn: &Types.Transaction{},
 				Hash:                   common.BigToHash(big.NewInt(1)),
-				medians:                []uint32{6701548, 478307},
+				mediansInUint32:        []uint32{6701548, 478307},
 				activeAssetIds:         []uint16{3, 5},
 				isEqual:                false,
 				iteration:              0,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: errors.New("biggestInfluenceAndIdErr"),
 		},
 
 		{
-			name: "Test 10: When DisputeBiggestStakeProposed transaction fails",
+			name: "Test 11: When DisputeBiggestStakeProposed transaction fails",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
@@ -357,13 +418,85 @@ func TestHandleDispute(t *testing.T) {
 				},
 				disputeBiggestStakeErr: errors.New("disputeBiggestStake error"),
 				Hash:                   common.BigToHash(big.NewInt(1)),
-				medians:                []uint32{6701548, 478307},
+				mediansInUint32:        []uint32{6701548, 478307},
 				activeAssetIds:         []uint16{3, 5},
 				isEqual:                false,
 				iteration:              0,
 				disputeErr:             nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
 			},
 			want: nil,
+		},
+		{
+			name: "Test 12: When epochInFile is not equal to correct epoch",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				epoch:                  2,
+				epochInFile:            3,
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: false,
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "Test 13: When HandleDispute function executes successfully and staker is in rogue mode",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				rogue: types.Rogue{
+					IsRogue: true,
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "Test 14: When there is an error in getting medians and staker is in rogue mode",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				mediansInUint32: []uint32{6701548, 478307},
+				activeAssetIds:  []uint16{3, 5},
+				isEqual:         false,
+				iteration:       0,
+				disputeErr:      nil,
+				mediansErr:      errors.New("error in getting medians"),
+				rogue: types.Rogue{
+					IsRogue: true,
+				},
+			},
+			want: errors.New("error in getting medians"),
 		},
 	}
 
@@ -387,12 +520,16 @@ func TestHandleDispute(t *testing.T) {
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.Hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			cmdUtilsMock.On("GetMedianDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("ReadDataFromFile", mock.AnythingOfType("string")).Return(tt.args.epochInFile, tt.args.medianDataInFile, tt.args.readFileErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.medians, tt.args.mediansErr)
+			utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
+			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
 			utilsMock.On("GetActiveAssetIds", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 
 			utils := &UtilsStruct{}
-			err := utils.HandleDispute(client, config, account, epoch)
+			err := utils.HandleDispute(client, config, account, tt.args.epoch, tt.args.rogue)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)

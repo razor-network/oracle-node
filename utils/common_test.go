@@ -554,7 +554,7 @@ func TestGetStateName(t *testing.T) {
 	}
 }
 
-func TestReadCommittedDataFromFile(t *testing.T) {
+func TestReadDataFromFile(t *testing.T) {
 	var fileName string
 
 	type args struct {
@@ -569,7 +569,7 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 		wantErr       error
 	}{
 		{
-			name: "Test 1: When ReadCommittedDataFromFile() executes successfully",
+			name: "Test 1: When ReadDataFromFile() executes successfully",
 			args: args{
 				file:    &os.File{},
 				scanner: &bufio.Scanner{},
@@ -607,17 +607,17 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 
 			fatal = false
 
-			_, _, err := utils.ReadCommittedDataFromFile(fileName)
+			_, _, err := utils.ReadDataFromFile(fileName)
 			if fatal != tt.expectedFatal {
-				t.Error("The ReadCommittedDataFromFile function didn't execute as expected")
+				t.Error("The ReadDataFromFile function didn't execute as expected")
 			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
-					t.Errorf("Error for ReadCommittedDataFromFile function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for ReadDataFromFile function, got = %v, want = %v", err, tt.wantErr)
 				}
 			} else {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for ReadCommittedDataFromFile function, got = %v, want = %v", err, tt.wantErr)
+					t.Errorf("Error for ReadDataFromFile function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 
@@ -625,7 +625,7 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 	}
 }
 
-func TestSaveCommittedDataToFile(t *testing.T) {
+func TestSaveDataToFile(t *testing.T) {
 	var file *os.File
 	var fileName string
 	var epoch uint32
@@ -641,7 +641,7 @@ func TestSaveCommittedDataToFile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When SaveCommittedDataToFile() executes successfully",
+			name: "Test 1: When SaveDataToFile() executes successfully",
 			args: args{
 				committedData: []*big.Int{big.NewInt(2)},
 				file:          file,
@@ -675,8 +675,8 @@ func TestSaveCommittedDataToFile(t *testing.T) {
 
 			osMock.On("OpenFile", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
 
-			if err := utils.SaveCommittedDataToFile(fileName, epoch, tt.args.committedData); (err != nil) != tt.wantErr {
-				t.Errorf("SaveCommittedDataToFile() error = %v, wantErr %v", err, tt.wantErr)
+			if err := utils.SaveDataToFile(fileName, epoch, tt.args.committedData); (err != nil) != tt.wantErr {
+				t.Errorf("SaveDataToFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -161,8 +161,8 @@ type Utils interface {
 	GetStateName(int64) string
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	SaveCommittedDataToFile(string, uint32, []*big.Int) error
-	ReadCommittedDataFromFile(string) (uint32, []*big.Int, error)
+	SaveDataToFile(string, uint32, []*big.Int) error
+	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	CalculateBlockTime(*ethclient.Client) int64
 	IsFlagPassed(string) bool
 	GetTokenManager(*ethclient.Client) *bindings.RAZOR
