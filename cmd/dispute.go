@@ -14,7 +14,7 @@ import (
 
 var giveSortedAssetIds []int
 
-func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32) error {
+func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, rogueData types.Rogue) error {
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
 		return err
@@ -27,12 +27,34 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 	log.Debug("Biggest Stake: ", biggestStake)
 
-	medians, err := cmdUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
-	if err != nil {
-		return err
+	if _mediansData == nil && !rogueData.IsRogue {
+		fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to read median data: ", err)
+			return err
+		}
+		epochInFile, medianDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
+		if err != nil {
+			log.Errorf("Error in getting median data from file %s: %t", fileName, err)
+			return err
+		}
+		if epochInFile != epoch {
+			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
+			return err
+		}
+		_mediansData = medianDataFromFile
+
+	} else if _mediansData == nil && rogueData.IsRogue {
+		medians, err := cmdUtils.MakeBlock(client, account.Address, types.Rogue{IsRogue: false})
+		if err != nil {
+			return err
+		}
+		_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
 	}
+
+	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(_mediansData)
 	log.Debug("Locally calculated data:")
-	log.Debugf("Medians: %d", medians)
+	log.Debugf("Medians: %d", mediansInUint32)
 
 	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
 	for _, i := range randomSortedProposedBlockIds {
@@ -68,13 +90,13 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		log.Debug("Values in the block")
 		log.Debugf("Medians: %d", proposedBlock.Medians)
 
-		isEqual, j := utils.IsEqual(proposedBlock.Medians, medians)
+		isEqual, j := utils.IsEqual(proposedBlock.Medians, mediansInUint32)
 		if !isEqual {
 			activeAssetIds, _ := razorUtils.GetActiveAssetIds(client)
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
-			log.Debug("Local Calculations: ", medians)
+			log.Debug("Local Calculations: ", mediansInUint32)
 			if proposedBlock.Valid {
 				err := cmdUtils.Dispute(client, config, account, epoch, uint8(i), assetId)
 				if err != nil {
@@ -144,7 +166,10 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 }
 
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
-	txn, err := blockManager.GiveSorted(txnOpts, epoch, assetId, sortedStakers)
+	if len(sortedStakers) == 0 {
+		return
+	}
+	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, assetId, sortedStakers)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {
 			log.Error("Error in calling GiveSorted: ", err)
@@ -156,7 +181,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 		}
 	}
 	log.Info("Calling GiveSorted...")
-	log.Info("Txn Hash: ", txn.Hash())
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	giveSortedAssetIds = append(giveSortedAssetIds, int(assetId))
-	utils.WaitForBlockCompletion(client, txn.Hash().String())
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
 }
