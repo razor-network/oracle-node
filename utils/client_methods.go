@@ -38,7 +38,7 @@ func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.He
 	)
 	err = retry.Do(
 		func() error {
-			latestHeader, err = Options.HeaderByNumber(client, context.Background(), nil)
+			latestHeader, err = Client.HeaderByNumber(client, context.Background(), nil)
 			if err != nil {
 				log.Error("Error in fetching latest block.... Retrying")
 				return err
@@ -118,7 +118,7 @@ func (*UtilsStruct) BalanceAtWithRetry(client *ethclient.Client, account common.
 	)
 	err = retry.Do(
 		func() error {
-			balance, err = Options.BalanceAt(client, context.Background(), account, nil)
+			balance, err = Client.BalanceAt(client, context.Background(), account, nil)
 			if err != nil {
 				log.Error("Error in fetching logs.... Retrying")
 				return err

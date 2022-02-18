@@ -20,8 +20,6 @@ import (
 
 	pflag "github.com/spf13/pflag"
 
-	time "time"
-
 	types "razor/core/types"
 )
 
@@ -1620,11 +1618,6 @@ func (_m *Utils) SaveCommittedDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int)
 	}
 
 	return r0
-}
-
-// Sleep provides a mock function with given fields: _a0
-func (_m *Utils) Sleep(_a0 time.Duration) {
-	_m.Called(_a0)
 }
 
 // SuggestGasPriceWithRetry provides a mock function with given fields: _a0

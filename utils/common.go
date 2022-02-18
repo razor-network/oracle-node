@@ -16,7 +16,7 @@ import (
 )
 
 func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
-	client, err := Options.Dial(provider)
+	client, err := EthClient.Dial(provider)
 	if err != nil {
 		log.Fatal("Error in connecting...", err)
 	}
@@ -48,7 +48,7 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
-	tx, err := Options.TransactionReceipt(client, context.Background(), txHash)
+	tx, err := Client.TransactionReceipt(client, context.Background(), txHash)
 	if err != nil {
 		return -1
 	}
@@ -67,7 +67,7 @@ func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead 
 			log.Info("Transaction mined successfully")
 			return 1
 		}
-		UtilsInterface.Sleep(3 * time.Second)
+		Time.Sleep(3 * time.Second)
 	}
 	log.Info("Timeout Passed")
 	return 0
@@ -77,7 +77,7 @@ func (*UtilsStruct) WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
 	}
-	UtilsInterface.Sleep(time.Duration(waitTime) * time.Second)
+	Time.Sleep(time.Duration(waitTime) * time.Second)
 }
 
 func CheckError(msg string, err error) {
@@ -97,7 +97,7 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 }
 
 func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	ethBalance, err := Options.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
+	ethBalance, err := Client.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
 	if err != nil {
 		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
 	}
@@ -146,7 +146,7 @@ func (*UtilsStruct) SaveCommittedDataToFile(fileName string, epoch uint32, commi
 	if len(committedData) == 0 {
 		return errors.New("committed data is empty")
 	}
-	f, err := Options.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
+	f, err := OS.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
@@ -166,13 +166,13 @@ func (*UtilsStruct) ReadCommittedDataFromFile(fileName string) (uint32, []*big.I
 		committedData []*big.Int
 		epoch         uint32
 	)
-	file, err := Options.Open(fileName)
+	file, err := OS.Open(fileName)
 	if err != nil {
 		return 0, nil, err
 	}
 	defer file.Close()
 
-	scanner := Options.NewScanner(file)
+	scanner := Bufio.NewScanner(file)
 	lineCount := 0
 	for scanner.Scan() {
 		if lineCount > 0 {
@@ -202,7 +202,7 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
 	latestBlockNumber := latestBlock.Number
-	lastSecondBlock, err := Options.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	lastSecondBlock, err := Client.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
 	if err != nil {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}

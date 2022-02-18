@@ -28,6 +28,11 @@ import (
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	Options = optionsPackageStruct.Options
 	UtilsInterface = optionsPackageStruct.UtilsInterface
+	EthClient = optionsPackageStruct.EthClient
+	Client = optionsPackageStruct.Client
+	Time = optionsPackageStruct.Time
+	OS = optionsPackageStruct.OS
+	Bufio = optionsPackageStruct.Bufio
 	return &UtilsStruct{}
 }
 
@@ -59,10 +64,6 @@ func (o OptionsStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 	return retry.Attempts(numberOfAttempts)
 }
 
-func (o OptionsStruct) HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error) {
-	return client.HeaderByNumber(ctx, number)
-}
-
 func (o OptionsStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
 	return client.PendingNonceAt(ctx, account)
 }
@@ -77,10 +78,6 @@ func (o OptionsStruct) EstimateGas(client *ethclient.Client, ctx context.Context
 
 func (o OptionsStruct) FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
 	return client.FilterLogs(ctx, q)
-}
-
-func (o OptionsStruct) BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
-	return client.BalanceAt(ctx, account, blockNumber)
 }
 
 func (o OptionsStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
@@ -250,26 +247,6 @@ func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.
 	return bindings.NewStakedToken(address, client)
 }
 
-func (o OptionsStruct) Dial(rawurl string) (*ethclient.Client, error) {
-	return ethclient.Dial(rawurl)
-}
-
-func (o OptionsStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
-	return client.TransactionReceipt(ctx, txHash)
-}
-
-func (o OptionsStruct) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
-	return os.OpenFile(name, flag, perm)
-}
-
-func (o OptionsStruct) Open(name string) (*os.File, error) {
-	return os.Open(name)
-}
-
-func (o OptionsStruct) NewScanner(r io.Reader) *bufio.Scanner {
-	return bufio.NewScanner(r)
-}
-
 func (o OptionsStruct) ReadFile(filename string) ([]byte, error) {
 	return ioutil.ReadFile(filename)
 }
@@ -290,10 +267,38 @@ func (u UtilsStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts
 	return coinContract.BalanceOf(opts, account)
 }
 
-func (u UtilsStruct) Sleep(duration time.Duration) {
+func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error) {
+	return flagSet.GetUint32(name)
+}
+
+func (e EthClientStruct) Dial(rawurl string) (*ethclient.Client, error) {
+	return ethclient.Dial(rawurl)
+}
+
+func (t TimeStruct) Sleep(duration time.Duration) {
 	time.Sleep(duration)
 }
 
-func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error) {
-	return flagSet.GetUint32(name)
+func (o OSStruct) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
+	return os.OpenFile(name, flag, perm)
+}
+
+func (o OSStruct) Open(name string) (*os.File, error) {
+	return os.Open(name)
+}
+
+func (c ClientStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	return client.TransactionReceipt(ctx, txHash)
+}
+
+func (c ClientStruct) BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
+	return client.BalanceAt(ctx, account, blockNumber)
+}
+
+func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error) {
+	return client.HeaderByNumber(ctx, number)
+}
+
+func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
+	return bufio.NewScanner(r)
 }

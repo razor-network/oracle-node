@@ -49,7 +49,7 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (u Utils) Sleep(duration time.Duration) {
-	utils.UtilsInterface.Sleep(duration)
+	utils.Time.Sleep(duration)
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
@@ -451,6 +451,10 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 		return nil, err
 	}
 	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, collectionId uint16, sortedStakers []uint32) (*Types.Transaction, error) {
+	return blockManager.GiveSorted(opts, epoch, collectionId, sortedStakers)
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, values []*big.Int, secret [32]byte) (*Types.Transaction, error) {

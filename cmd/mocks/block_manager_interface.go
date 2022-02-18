@@ -4,6 +4,7 @@ package mocks
 
 import (
 	big "math/big"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -81,6 +82,29 @@ func (_m *BlockManagerInterface) FinalizeDispute(_a0 *ethclient.Client, _a1 *bin
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) error); ok {
 		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GiveSorted provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *BlockManagerInterface) GiveSorted(_a0 *bindings.BlockManager, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint16, _a4 []uint32) (*types.Transaction, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) *types.Transaction); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4)
 	} else {
 		r1 = ret.Error(1)
 	}

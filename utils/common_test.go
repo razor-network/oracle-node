@@ -103,15 +103,17 @@ func TestCalculateBlockTime(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				Options:        optionsMock,
 				UtilsInterface: utilsMock,
+				Client:         clientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.latestBlockErr)
-			optionsMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.lastSecondBlock, tt.args.lastSecondBlockErr)
+			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.lastSecondBlock, tt.args.lastSecondBlockErr)
 
 			fatal = false
 
@@ -166,16 +168,14 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
-			utilsMock := new(mocks.Utils)
+			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Client: clientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			clientMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 
 			fatal = false
 
@@ -225,16 +225,14 @@ func TestCheckTransactionReceipt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
-			utilsMock := new(mocks.Utils)
+			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Client: clientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("TransactionReceipt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.tx, tt.args.txErr)
+			clientMock.On("TransactionReceipt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.tx, tt.args.txErr)
 
 			fatal = false
 
@@ -279,16 +277,14 @@ func TestConnectToClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
-			utilsMock := new(mocks.Utils)
+			ethClientMock := new(mocks.EthClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				EthClient: ethClientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("Dial", mock.AnythingOfType("string")).Return(tt.args.client, tt.args.clientErr)
+			ethClientMock.On("Dial", mock.AnythingOfType("string")).Return(tt.args.client, tt.args.clientErr)
 
 			fatal = false
 
@@ -597,15 +593,17 @@ func TestReadCommittedDataFromFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			osMock := new(mocks.OSUtils)
+			bufioMock := new(mocks.BufioUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				OS:    osMock,
+				Bufio: bufioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("Open", mock.AnythingOfType("string")).Return(tt.args.file, tt.args.fileErr)
-			optionsMock.On("NewScanner", mock.Anything).Return(tt.args.scanner)
+			osMock.On("Open", mock.AnythingOfType("string")).Return(tt.args.file, tt.args.fileErr)
+			bufioMock.On("NewScanner", mock.Anything).Return(tt.args.scanner)
 
 			fatal = false
 
@@ -668,14 +666,14 @@ func TestSaveCommittedDataToFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			osMock := new(mocks.OSUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				OS: osMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("OpenFile", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
+			osMock.On("OpenFile", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
 
 			if err := utils.SaveCommittedDataToFile(fileName, epoch, tt.args.committedData); (err != nil) != tt.wantErr {
 				t.Errorf("SaveCommittedDataToFile() error = %v, wantErr %v", err, tt.wantErr)
@@ -721,14 +719,16 @@ func TestWaitForBlockCompletion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
+			timeMock := new(mocks.TimeUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
+				Time:           timeMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("CheckTransactionReceipt", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.transactionStatus)
-			utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+			timeMock.On("Sleep", mock.Anything).Return()
 
 			if got := utils.WaitForBlockCompletion(client, hashToRead); got != tt.want {
 				t.Errorf("WaitForBlockCompletion() = %v, want %v", got, tt.want)
@@ -756,13 +756,7 @@ func TestIsFlagPassed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
-			}
+			optionsPackageStruct := OptionsPackageStruct{}
 			utils := StartRazor(optionsPackageStruct)
 			if got := utils.IsFlagPassed(tt.args.name); got != tt.want {
 				t.Errorf("IsFlagPassed() = %v, want %v", got, tt.want)
@@ -793,13 +787,13 @@ func TestWaitTillNextNSecs(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		utilsMock := new(mocks.Utils)
+		timeMock := new(mocks.TimeUtils)
 
 		optionsPackageStruct := OptionsPackageStruct{
-			UtilsInterface: utilsMock,
+			Time: timeMock,
 		}
 		utils := StartRazor(optionsPackageStruct)
-		utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+		timeMock.On("Sleep", mock.Anything).Return()
 
 		t.Run(tt.name, func(t *testing.T) {
 			utils.WaitTillNextNSecs(tt.args.waitTime)

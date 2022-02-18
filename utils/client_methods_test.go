@@ -105,12 +105,14 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
 				Options: optionsMock,
+				Client:  clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
-			optionsMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.balance, tt.args.balanceErr)
+			clientMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.balance, tt.args.balanceErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.BalanceAtWithRetry(client, account)
@@ -267,12 +269,14 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
 				Options: optionsMock,
+				Client:  clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
-			optionsMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("*big.Int")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("*big.Int")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetLatestBlockWithRetry(client)

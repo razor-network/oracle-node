@@ -24,9 +24,19 @@ import (
 
 //go:generate mockery --name OptionUtils --output ./mocks/ --case=underscore
 //go:generate mockery --name Utils --output ./mocks/ --case=underscore
+//go:generate mockery --name EthClientUtils --output ./mocks --case=underscore
+//go:generate mockery --name ClientUtils --output ./mocks --case=underscore
+//go:generate mockery --name TimeUtils --output ./mocks --case=underscore
+//go:generate mockery --name OSUtils --output ./mocks --case=underscore
+//go:generate mockery --name BufioUtils --output ./mocks --case=underscore
 
 var Options OptionUtils
 var UtilsInterface Utils
+var EthClient EthClientUtils
+var Client ClientUtils
+var Time TimeUtils
+var OS OSUtils
+var Bufio BufioUtils
 
 type OptionUtils interface {
 	Parse(io.Reader) (abi.ABI, error)
@@ -37,11 +47,9 @@ type OptionUtils interface {
 	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
 	RetryAttempts(uint) retry.Option
 	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
-	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
 	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
 	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
 	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
-	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
 	GetNumProposedBlocks(*ethclient.Client, *bind.CallOpts, uint32) (uint8, error)
 	GetProposedBlock(*ethclient.Client, *bind.CallOpts, uint32, uint32) (bindings.StructsBlock, error)
 	GetBlock(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsBlock, error)
@@ -72,11 +80,6 @@ type OptionUtils interface {
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
-	Dial(string) (*ethclient.Client, error)
-	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
-	OpenFile(string, int, fs.FileMode) (*os.File, error)
-	Open(string) (*os.File, error)
-	NewScanner(r io.Reader) *bufio.Scanner
 	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
 	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
 	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
@@ -165,7 +168,6 @@ type Utils interface {
 	GetTokenManager(*ethclient.Client) *bindings.RAZOR
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	BalanceOf(*bindings.RAZOR, *bind.CallOpts, common.Address) (*big.Int, error)
-	Sleep(time.Duration)
 	GetUint32(*pflag.FlagSet, string) (uint32, error)
 	WaitTillNextNSecs(int32)
 	ReadJSONData(string) (map[string]*types.StructsJob, error)
@@ -174,10 +176,43 @@ type Utils interface {
 	AddJobToJSON(string, *types.StructsJob) error
 }
 
+type EthClientUtils interface {
+	Dial(string) (*ethclient.Client, error)
+}
+
+type ClientUtils interface {
+	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
+	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
+	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
+}
+
+type TimeUtils interface {
+	Sleep(time.Duration)
+}
+
+type OSUtils interface {
+	OpenFile(string, int, fs.FileMode) (*os.File, error)
+	Open(string) (*os.File, error)
+}
+
+type BufioUtils interface {
+	NewScanner(r io.Reader) *bufio.Scanner
+}
+
 type OptionsStruct struct{}
 type UtilsStruct struct{}
+type EthClientStruct struct{}
+type ClientStruct struct{}
+type TimeStruct struct{}
+type OSStruct struct{}
+type BufioStruct struct{}
 
 type OptionsPackageStruct struct {
 	Options        OptionUtils
 	UtilsInterface Utils
+	EthClient      EthClientUtils
+	Client         ClientUtils
+	Time           TimeUtils
+	OS             OSUtils
+	Bufio          BufioUtils
 }
