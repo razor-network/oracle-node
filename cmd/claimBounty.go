@@ -31,14 +31,14 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
+	utils.CheckError(GetError(ConfigErrorCode, ConfigErrorMessage), err)
 
 	password := razorUtils.AssignPassword(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
+	utils.CheckError(GetError(AddressErrorCode, AddressErrorMessage), err)
 
 	bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
-	utils.CheckError("Error in getting bountyId: ", err)
+	utils.CheckError(GetError(BountyIdErrorCode, BountyIdErrorMessage), err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -49,7 +49,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	}
 
 	txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
-	utils.CheckError("ClaimBounty error: ", err)
+	utils.CheckError(GetError(ClaimBountyErrorCode, ClaimBountyErrorMessage), err)
 
 	if txn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -70,7 +70,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	}
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
-		log.Error("Error in getting epoch: ", err)
+		log.Error(GetError(FetchEpochErrorCode, FetchEpochErrorMessage), err)
 		return common.Hash{0x00}, err
 	}
 

@@ -31,18 +31,18 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
+	utils.CheckError(GetError(ConfigErrorCode, ConfigErrorMessage), err)
 
 	password := razorUtils.AssignPassword(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
+	utils.CheckError(GetError(AddressErrorCode, AddressErrorMessage), err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	balance, err := razorUtils.FetchBalance(client, address)
-	utils.CheckError("Error in fetching balance for account: "+address, err)
+	utils.CheckError(GetError(FetchBalanceErrorCode, FetchBalanceErrorMessage), err)
 
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
-	utils.CheckError("Error in getting amount: ", err)
+	utils.CheckError(GetError(AmountErrorCode, AmountErrorMessage), err)
 
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
@@ -58,28 +58,28 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	}
 
 	approveTxnHash, err := cmdUtils.Approve(txnArgs)
-	utils.CheckError("Approve error: ", err)
+	utils.CheckError(GetError(ApproveErrorCode, ApproveErrorMessage), err)
 
 	if approveTxnHash != core.NilHash {
 		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
 	}
 
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
-	utils.CheckError("Stake error: ", err)
+	utils.CheckError(GetError(StakeErrorCode, StakeErrorMessage), err)
 	razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 
 	if razorUtils.IsFlagPassed("autoVote") {
 		isAutoVote, err := flagSetUtils.GetBoolAutoVote(flagSet)
-		utils.CheckError("Error in getting autoVote status: ", err)
+		utils.CheckError(GetError(AutoVoteStatusErrorCode, AutoVoteStatusErrorMessage), err)
 
 		if isAutoVote {
 			log.Info("Staked!...Starting to vote now.")
 			account := types.Account{Address: address, Password: password}
 			isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
-			utils.CheckError("Error in getting rogue status: ", err)
+			utils.CheckError(GetError(RogueStatusErrorCode, RogueStatusErrorMessage), err)
 
 			rogueMode, err := flagSetUtils.GetStringSliceRogueMode(flagSet)
-			utils.CheckError("Error in getting rogue modes: ", err)
+			utils.CheckError(GetError(RogueModeErrorCode, RogueModeErrorMessage), err)
 
 			rogueData := types.Rogue{
 				IsRogue:   isRogue,
