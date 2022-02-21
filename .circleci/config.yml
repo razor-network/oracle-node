@@ -20,7 +20,7 @@ jobs:
       - run:
           name: "Executing benchmarks"
           command: |
-            docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... -bench=. -run=^#
+            docker run --rm -v $(pwd):/test --name go  razor-test go test ./... -bench=. -run=^#
       - run:
           name: "Publish Coverage to Coveralls.io"
           command: |
