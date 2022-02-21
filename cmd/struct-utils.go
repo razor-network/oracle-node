@@ -702,6 +702,10 @@ func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet)
 	return flagSet.GetStringSlice("rogueMode")
 }
 
+func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("exposeMetrics")
+}
+
 func (KeystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.Accounts()
