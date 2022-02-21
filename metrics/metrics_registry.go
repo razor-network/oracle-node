@@ -11,16 +11,6 @@ import (
 var (
 	RazorRegistry *prometheus.Registry
 
-	// ErrorsMetric metric shows total errors count
-	// MUST contain a label with a "error" key
-	ErrorsMetric = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "errors_total",
-			Help: "Total amount of errors",
-		},
-		[]string{"error"},
-	)
-
 	osInfo = goInfo.GetInfo()
 
 	ClientMetric = promauto.NewGauge(prometheus.GaugeOpts{
@@ -41,12 +31,5 @@ func init() {
 
 	//register razor metrics into registry
 
-	RazorRegistry.MustRegister(ErrorsMetric)
 	RazorRegistry.MustRegister(ClientMetric)
-}
-
-// ErrorInc calls prometheus counter which counts amount of errors,
-// occurred on error, fatal and panic log levels
-func ErrorInc() {
-	ErrorsMetric.With(prometheus.Labels{"error": "error"}).Inc()
 }
