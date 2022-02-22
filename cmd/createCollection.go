@@ -13,7 +13,7 @@ import (
 
 var createCollectionCmd = &cobra.Command{
 	Use:   "createCollection",
-	Short: "createCollection can be used to create collections if existing jobs are present",
+	Short: "[ADMIN ONLY]createCollection can be used to create collections if existing jobs are present",
 	Long: `A collection is a group of jobs that reports the aggregated value of jobs. createCollection can be used to club multiple jobs into one collection bound by an aggregation method.
 
 Example: 
