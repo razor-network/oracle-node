@@ -1081,10 +1081,12 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 			utilsPkgMock := new(Mocks.Utils)
+			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			voteManagerUtils = voteManagerUtilsMock
+			timeUtils = timeMock
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -1114,7 +1116,7 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardHash, tt.args.claimBlockRewardErr)
-			utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
 			utilsMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			_committedData = tt.args.commitData
@@ -1291,15 +1293,17 @@ func TestGetLastProposedEpoch(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
 			optionsMock := new(Mocks.OptionUtils)
+			abiMock := new(mocks.AbiInterface)
 			utilsPkgMock := new(Mocks.Utils)
 
 			razorUtils = utilsMock
+			abiUtils = abiMock
 			utils.Options = optionsMock
 			utils.UtilsInterface = utilsPkgMock
 
 			optionsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
-			utilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
+			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
 
 			utils := &UtilsStruct{}
 			got, err := utils.GetLastProposedEpoch(client, blockNumber, tt.args.stakerId)

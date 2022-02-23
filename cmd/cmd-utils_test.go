@@ -237,14 +237,14 @@ func TestWaitIfCommitState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			timeMock := new(mocks.TimeInterface)
 
-			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			timeUtils = timeMock
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
-			utilsMock.On("Sleep", mock.Anything).Return()
+			timeMock.On("Sleep", mock.Anything).Return()
 
 			utils := &UtilsStruct{}
 

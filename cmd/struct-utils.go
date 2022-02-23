@@ -2,15 +2,6 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"math/big"
-	"os"
-	"razor/core/types"
-	"razor/path"
-	"razor/pkg/bindings"
-	"razor/utils"
-	"strconv"
-	"time"
-
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -22,14 +13,18 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"math/big"
+	"os"
+	"razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"razor/utils"
+	"strconv"
+	"time"
 )
 
 func (u Utils) GetConfigFilePath() (string, error) {
 	return path.PathUtilsInterface.GetConfigFilePath()
-}
-
-func (u Utils) ViperWriteConfigAs(path string) error {
-	return viper.WriteConfigAs(path)
 }
 
 func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
@@ -46,10 +41,6 @@ func (u Utils) GetOptions() bind.CallOpts {
 
 func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 	return utils.CalculateBlockTime(client)
-}
-
-func (u Utils) Sleep(duration time.Duration) {
-	utils.Sleep(duration)
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
@@ -260,10 +251,6 @@ func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32)
 	return utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
 }
 
-func (u Utils) ParseBool(str string) (bool, error) {
-	return strconv.ParseBool(str)
-}
-
 func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
 	return utils.UtilsInterface.GetStakerId(client, address)
 }
@@ -306,10 +293,6 @@ func (u Utils) SaveDataToFile(fileName string, epoch uint32, committedData []*bi
 
 func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	return utils.ReadDataFromFile(fileName)
-}
-
-func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
-	return abi.Unpack(name, data)
 }
 
 func (u Utils) Exit(code int) {
@@ -718,4 +701,20 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 
 func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (v ViperUtils) ViperWriteConfigAs(path string) error {
+	return viper.WriteConfigAs(path)
+}
+
+func (t TimeUtils) Sleep(duration time.Duration) {
+	utils.Sleep(duration)
+}
+
+func (s StringUtils) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
+}
+
+func (a AbiUtils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
+	return abi.Unpack(name, data)
 }

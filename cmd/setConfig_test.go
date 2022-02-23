@@ -244,10 +244,12 @@ func TestSetConfig(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			viperMock := new(mocks.ViperInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			flagSetUtils = flagSetUtilsMock
+			viperUtils = viperMock
 
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
 			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
@@ -257,7 +259,7 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
 			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
-			utilsMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
+			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
 
 			utils := &UtilsStruct{}
 			gotErr := utils.SetConfig(flagSet)

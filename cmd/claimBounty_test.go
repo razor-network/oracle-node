@@ -231,15 +231,17 @@ func TestClaimBounty(t *testing.T) {
 			stakeManagerMock := new(mocks.StakeManagerInterface)
 			utilsMock := new(mocks.UtilsInterface)
 			trasactionUtilsMock := new(mocks.TransactionInterface)
+			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			stakeManagerUtils = stakeManagerMock
 			transactionUtils = trasactionUtilsMock
+			timeUtils = timeMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetOptions").Return(callOpts)
 			stakeManagerMock.On("GetBountyLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.bountyLock, tt.args.bountyLockErr)
-			utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
 			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)

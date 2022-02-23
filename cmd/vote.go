@@ -342,7 +342,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	case -1:
 		if config.WaitTime > 5 {
-			razorUtils.Sleep(5 * time.Second)
+			timeUtils.Sleep(5 * time.Second)
 			return
 		}
 	}
@@ -369,7 +369,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	}
 	epochLastProposed := uint32(0)
 	for _, vLog := range logs {
-		data, unpackErr := razorUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
 		if unpackErr != nil {
 			log.Error(unpackErr)
 			continue
