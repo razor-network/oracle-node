@@ -29,14 +29,16 @@ import (
 //go:generate mockery --name TimeUtils --output ./mocks --case=underscore
 //go:generate mockery --name OSUtils --output ./mocks --case=underscore
 //go:generate mockery --name BufioUtils --output ./mocks --case=underscore
+//go:generate mockery --name CoinUtils --output ./mocks --case=underscore
 
 var Options OptionUtils
 var UtilsInterface Utils
 var EthClient EthClientUtils
-var Client ClientUtils
+var ClientInterface ClientUtils
 var Time TimeUtils
 var OS OSUtils
 var Bufio BufioUtils
+var CoinInterface CoinUtils
 
 type OptionUtils interface {
 	Parse(io.Reader) (abi.ABI, error)
@@ -155,7 +157,6 @@ type Utils interface {
 	ConnectToClient(string) *ethclient.Client
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
-	CheckTransactionReceipt(*ethclient.Client, string) int
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	GetStateName(int64) string
@@ -167,13 +168,13 @@ type Utils interface {
 	IsFlagPassed(string) bool
 	GetTokenManager(*ethclient.Client) *bindings.RAZOR
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
-	BalanceOf(*bindings.RAZOR, *bind.CallOpts, common.Address) (*big.Int, error)
 	GetUint32(*pflag.FlagSet, string) (uint32, error)
 	WaitTillNextNSecs(int32)
 	ReadJSONData(string) (map[string]*types.StructsJob, error)
 	WriteDataToJSON(string, map[string]*types.StructsJob) error
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
+	CheckTransactionReceipt(*ethclient.Client, string) int
 }
 
 type EthClientUtils interface {
@@ -199,6 +200,10 @@ type BufioUtils interface {
 	NewScanner(r io.Reader) *bufio.Scanner
 }
 
+type CoinUtils interface {
+	BalanceOf(*bindings.RAZOR, *bind.CallOpts, common.Address) (*big.Int, error)
+}
+
 type OptionsStruct struct{}
 type UtilsStruct struct{}
 type EthClientStruct struct{}
@@ -206,13 +211,15 @@ type ClientStruct struct{}
 type TimeStruct struct{}
 type OSStruct struct{}
 type BufioStruct struct{}
+type CoinStruct struct{}
 
 type OptionsPackageStruct struct {
-	Options        OptionUtils
-	UtilsInterface Utils
-	EthClient      EthClientUtils
-	Client         ClientUtils
-	Time           TimeUtils
-	OS             OSUtils
-	Bufio          BufioUtils
+	Options         OptionUtils
+	UtilsInterface  Utils
+	EthClient       EthClientUtils
+	ClientInterface ClientUtils
+	Time            TimeUtils
+	OS              OSUtils
+	Bufio           BufioUtils
+	CoinInterface   CoinUtils
 }

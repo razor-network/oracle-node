@@ -106,9 +106,9 @@ func TestCalculateBlockTime(t *testing.T) {
 			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
-				Client:         clientMock,
+				Options:         optionsMock,
+				UtilsInterface:  utilsMock,
+				ClientInterface: clientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
@@ -171,7 +171,7 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Client: clientMock,
+				ClientInterface: clientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
@@ -228,7 +228,7 @@ func TestCheckTransactionReceipt(t *testing.T) {
 			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Client: clientMock,
+				ClientInterface: clientMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
@@ -331,15 +331,17 @@ func TestFetchBalance(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.Utils)
+			coinMock := new(mocks.CoinUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
+				CoinInterface:  coinMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
 			utilsMock.On("GetOptions").Return(callOpts)
-			utilsMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 
 			fatal = false
 

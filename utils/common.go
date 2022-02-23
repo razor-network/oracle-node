@@ -28,7 +28,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	address := common.HexToAddress(accountAddress)
 	coinContract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
-	return UtilsInterface.BalanceOf(coinContract, &opts, address)
+	return CoinInterface.BalanceOf(coinContract, &opts, address)
 }
 
 func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -48,7 +48,7 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
-	tx, err := Client.TransactionReceipt(client, context.Background(), txHash)
+	tx, err := ClientInterface.TransactionReceipt(client, context.Background(), txHash)
 	if err != nil {
 		return -1
 	}
@@ -97,7 +97,7 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 }
 
 func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	ethBalance, err := Client.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
+	ethBalance, err := ClientInterface.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
 	if err != nil {
 		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
 	}
@@ -202,7 +202,7 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
 	latestBlockNumber := latestBlock.Number
-	lastSecondBlock, err := Client.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	lastSecondBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
 	if err != nil {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}

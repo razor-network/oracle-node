@@ -29,10 +29,11 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	Options = optionsPackageStruct.Options
 	UtilsInterface = optionsPackageStruct.UtilsInterface
 	EthClient = optionsPackageStruct.EthClient
-	Client = optionsPackageStruct.Client
+	ClientInterface = optionsPackageStruct.ClientInterface
 	Time = optionsPackageStruct.Time
 	OS = optionsPackageStruct.OS
 	Bufio = optionsPackageStruct.Bufio
+	CoinInterface = optionsPackageStruct.CoinInterface
 	return &UtilsStruct{}
 }
 
@@ -263,10 +264,6 @@ func (o OptionsStruct) WriteFile(filename string, data []byte, perm fs.FileMode)
 	return ioutil.WriteFile(filename, data, perm)
 }
 
-func (u UtilsStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	return coinContract.BalanceOf(opts, account)
-}
-
 func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error) {
 	return flagSet.GetUint32(name)
 }
@@ -301,4 +298,8 @@ func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Conte
 
 func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
 	return bufio.NewScanner(r)
+}
+
+func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
+	return coinContract.BalanceOf(opts, account)
 }

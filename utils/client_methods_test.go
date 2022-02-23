@@ -107,8 +107,8 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
-				Client:  clientMock,
+				Options:         optionsMock,
+				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
@@ -271,8 +271,8 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
-				Client:  clientMock,
+				Options:         optionsMock,
+				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
