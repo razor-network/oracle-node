@@ -262,11 +262,6 @@ func (_m *UtilsInterface) DeleteJobFromJSON(_a0 string, _a1 string) error {
 	return r0
 }
 
-// Exit provides a mock function with given fields: _a0
-func (_m *UtilsInterface) Exit(_a0 int) {
-	_m.Called(_a0)
-}
-
 // FetchBalance provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterface) FetchBalance(_a0 *ethclient.Client, _a1 string) (*big.Int, error) {
 	ret := _m.Called(_a0, _a1)

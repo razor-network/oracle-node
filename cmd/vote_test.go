@@ -130,10 +130,12 @@ func TestExecuteVote(t *testing.T) {
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			osMock := new(mocks.OSInterface)
 
 			flagSetUtils = flagSetUtilsMock
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			osUtils = osMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
@@ -143,7 +145,7 @@ func TestExecuteVote(t *testing.T) {
 			flagSetUtilsMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("HandleExit").Return()
 			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
-			utilsMock.On("Exit", mock.AnythingOfType("int")).Return()
+			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			utils := &UtilsStruct{}
 			fatal = false
@@ -1082,11 +1084,13 @@ func TestHandleBlock(t *testing.T) {
 			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 			utilsPkgMock := new(Mocks.Utils)
 			timeMock := new(mocks.TimeInterface)
+			osMock := new(mocks.OSInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			voteManagerUtils = voteManagerUtilsMock
 			timeUtils = timeMock
+			osUtils = osMock
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -1117,7 +1121,7 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardHash, tt.args.claimBlockRewardErr)
 			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
-			utilsMock.On("Exit", mock.AnythingOfType("int")).Return()
+			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			_committedData = tt.args.commitData
 			lastVerification = tt.args.lastVerification

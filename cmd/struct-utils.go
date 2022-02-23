@@ -295,10 +295,6 @@ func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	return utils.ReadDataFromFile(fileName)
 }
 
-func (u Utils) Exit(code int) {
-	os.Exit(code)
-}
-
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
 	return utils.UtilsInterface.DeleteJobFromJSON(s, jobId)
 }
@@ -717,4 +713,8 @@ func (s StringUtils) ParseBool(str string) (bool, error) {
 
 func (a AbiUtils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
 	return abi.Unpack(name, data)
+}
+
+func (o OSUtils) Exit(code int) {
+	os.Exit(code)
 }

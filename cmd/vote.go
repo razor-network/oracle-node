@@ -63,7 +63,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account); err != nil {
 		log.Errorf("%s\n", err)
-		razorUtils.Exit(1)
+		osUtils.Exit(1)
 	}
 }
 
@@ -173,7 +173,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			cmdUtils.AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
-		razorUtils.Exit(0)
+		osUtils.Exit(0)
 	}
 
 	staker, err := razorUtils.GetStaker(client, stakerId)
@@ -183,7 +183,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
-		razorUtils.Exit(0)
+		osUtils.Exit(0)
 	}
 	switch state {
 	case 0:

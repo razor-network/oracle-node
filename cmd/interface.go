@@ -31,6 +31,7 @@ import (
 //go:generate mockery --name TimeInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name StringInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name AbiInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name OSInterface --output ./mocks/ --case=underscore
 
 var razorUtils UtilsInterface
 var flagSetUtils FlagSetInterface
@@ -47,6 +48,7 @@ var viperUtils ViperInterface
 var timeUtils TimeInterface
 var stringUtils StringInterface
 var abiUtils AbiInterface
+var osUtils OSInterface
 
 type UtilsInterface interface {
 	GetConfigFilePath() (string, error)
@@ -114,7 +116,6 @@ type UtilsInterface interface {
 	WaitTillNextNSecs(int32)
 	SaveDataToFile(string, uint32, []*big.Int) error
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
-	Exit(int)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 }
@@ -325,6 +326,10 @@ type AbiInterface interface {
 	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
 }
 
+type OSInterface interface {
+	Exit(int)
+}
+
 type Utils struct{}
 type FLagSetUtils struct{}
 type UtilsStruct struct{}
@@ -340,3 +345,4 @@ type ViperUtils struct{}
 type TimeUtils struct{}
 type StringUtils struct{}
 type AbiUtils struct{}
+type OSUtils struct{}
