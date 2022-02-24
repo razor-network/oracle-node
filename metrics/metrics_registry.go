@@ -28,8 +28,5 @@ var (
 func init() {
 	//create a registry
 	RazorRegistry = prometheus.NewRegistry()
-
-	//register razor metrics into registry
-
 	RazorRegistry.MustRegister(ClientMetric)
 }
