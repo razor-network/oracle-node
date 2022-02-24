@@ -7,7 +7,11 @@ services:
     entrypoint: /bin/bash
     build: .
     tty: true
-    ports:
-      - 2112:2112
     volumes:
       - $HOME/.razor:/root/.razor
+    networks:
+      - razor_network
+networks:
+  razor_network:
+    name: razor_network
+    driver: bridge
