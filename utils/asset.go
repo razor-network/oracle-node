@@ -281,6 +281,11 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		}
 		dataString := string(data)
 
+		powerFromJSONFile := gjson.Get(dataString, "assets.collection."+collection.Name+".power").Int()
+		if powerFromJSONFile != 0 {
+			collection.Power = int8(powerFromJSONFile)
+		}
+
 		// Overriding the jobs from contracts with official jobs present here in asset.go
 		overrideJobs, overriddenJobIdsFromJSONfile := UtilsInterface.HandleOfficialJobsFromJSONFile(client, collection, dataString)
 		jobs = append(jobs, overrideJobs...)
@@ -471,10 +476,10 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 			if err != nil {
 				continue
 			}
-			job.Url = gjson.Get(officialJobs, officialJobsPath+"URL").String()
-			job.Selector = gjson.Get(officialJobs, officialJobsPath+"selector").String()
-			job.Weight = uint8(gjson.Get(officialJobs, officialJobsPath+"weight").Int())
-			job.Power = int8(gjson.Get(officialJobs, officialJobsPath+"power").Int())
+			job.Url = gjson.Get(officialJobs, "URL").String()
+			job.Selector = gjson.Get(officialJobs, "selector").String()
+			job.Weight = uint8(gjson.Get(officialJobs, "weight").Int())
+			job.Power = int8(gjson.Get(officialJobs, "power").Int())
 
 			overrideJobs = append(overrideJobs, job)
 			overriddenJobIds = append(overriddenJobIds, jobIds[i])

@@ -37,10 +37,5 @@ func (PathUtils) GetJobFilePath() (string, error) {
 		return "", err
 	}
 	filePath := home + "/assets.json"
-	//f, err := PathUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
-	//if err != nil {
-	//	return "", err
-	//}
-	//defer f.Close()
 	return filePath, nil
 }
