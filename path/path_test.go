@@ -67,13 +67,13 @@ func TestGetDefaultPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pathMock := new(mocks.PathInterface)
-			PathUtilsInterface = pathMock
+			osMock := new(mocks.OSInterface)
+			OSUtilsInterface = osMock
 
-			pathMock.On("UserHomeDir").Return(tt.args.homeDir, tt.args.homeDirErr)
-			pathMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
-			pathMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
-			pathMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
+			osMock.On("UserHomeDir").Return(tt.args.homeDir, tt.args.homeDirErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			pa := PathUtils{}
 			got, err := pa.GetDefaultPath()
@@ -242,10 +242,12 @@ func TestGetJobFilePath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pathMock := new(mocks.PathInterface)
+			osMock := new(mocks.OSInterface)
 			PathUtilsInterface = pathMock
+			OSUtilsInterface = osMock
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			pathMock.On("OpenFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
+			osMock.On("OpenFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
 			pa := PathUtils{}
 			got, err := pa.GetJobFilePath()
 			if got != tt.want {

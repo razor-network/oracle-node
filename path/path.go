@@ -5,13 +5,13 @@ import (
 )
 
 func (PathUtils) GetDefaultPath() (string, error) {
-	home, err := PathUtilsInterface.UserHomeDir()
+	home, err := OSUtilsInterface.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 	defaultPath := home + "/.razor"
-	if _, err := PathUtilsInterface.Stat(defaultPath); PathUtilsInterface.IsNotExist(err) {
-		mkdirErr := PathUtilsInterface.Mkdir(defaultPath, 0700)
+	if _, err := OSUtilsInterface.Stat(defaultPath); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(defaultPath, 0700)
 		if mkdirErr != nil {
 			return "", mkdirErr
 		}
@@ -41,7 +41,7 @@ func (PathUtils) GetJobFilePath() (string, error) {
 		return "", err
 	}
 	filePath := home + "/jobs.json"
-	f, err := PathUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	f, err := OSUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return "", err
 	}
