@@ -61,27 +61,6 @@ func (*UtilsStruct) GetVoteValue(client *ethclient.Client, assetId uint16, stake
 	return voteValue, nil
 }
 
-func (*UtilsStruct) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
-	callOpts := UtilsInterface.GetOptions()
-	var (
-		votes    bindings.StructsVote
-		votesErr error
-	)
-	votesErr = retry.Do(
-		func() error {
-			votes, votesErr = Options.GetVote(client, &callOpts, stakerId)
-			if votesErr != nil {
-				log.Error("Error in fetching last vote value....Retrying")
-				return votesErr
-			}
-			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
-	if votesErr != nil {
-		return bindings.StructsVote{}, votesErr
-	}
-	return votes, nil
-}
-
 func (*UtilsStruct) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	callOpts := UtilsInterface.GetOptions()
 	var (
@@ -143,27 +122,6 @@ func (*UtilsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch ui
 		return nil, influenceErr
 	}
 	return totalInfluenceRevealed, nil
-}
-
-func (*UtilsStruct) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
-	callOpts := UtilsInterface.GetOptions()
-	var (
-		randaoHash [32]byte
-		randaoErr  error
-	)
-	randaoErr = retry.Do(
-		func() error {
-			randaoHash, randaoErr = Options.GetRandaoHash(client, &callOpts)
-			if randaoErr != nil {
-				log.Error("Error in fetching randao hash.....Retrying")
-				return randaoErr
-			}
-			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
-	if randaoErr != nil {
-		return [32]byte{}, randaoErr
-	}
-	return randaoHash, nil
 }
 
 func (*UtilsStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {

@@ -218,7 +218,7 @@ func TestHandleCommitState(t *testing.T) {
 			razorUtils = utilsMock
 
 			utilsMock.On("GetActiveAssetsData", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.data, tt.args.dataErr)
-			utilsMock.On("GetNumActiveAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
+			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(tt.args.rogueValue)
 
 			utils := &UtilsStruct{}

@@ -132,7 +132,7 @@ func (*UtilsStruct) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, e
 	)
 	err = retry.Do(
 		func() error {
-			withdrawReleasePeriod, err = Options.WithdrawReleasePeriod(client, &callOpts)
+			withdrawReleasePeriod, err = Options.WithdrawInitiationPeriod(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching withdraw release period.... Retrying")
 				return err

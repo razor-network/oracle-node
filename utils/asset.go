@@ -8,25 +8,23 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
-	"razor/core/types"
 	"razor/pkg/bindings"
 	"regexp"
 	"strconv"
 )
 
-func (*UtilsStruct) GetAssetManagerWithOpts(client *ethclient.Client) (*bindings.AssetManager, bind.CallOpts) {
-	return UtilsInterface.GetAssetManager(client), UtilsInterface.GetOptions()
+func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bindings.CollectionManager, bind.CallOpts) {
+	return UtilsInterface.GetCollectionManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetNumAssets(client *ethclient.Client) (uint16, error) {
-	callOpts := UtilsInterface.GetOptions()
+func (*UtilsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
 	var (
 		numAssets uint16
 		err       error
 	)
 	err = retry.Do(
 		func() error {
-			numAssets, err = Options.GetNumAssets(client, &callOpts)
+			numAssets, err = Options.GetNumCollections(client)
 			if err != nil {
 				log.Error("Error in fetching numAssets.... Retrying")
 				return err
@@ -41,39 +39,21 @@ func (*UtilsStruct) GetNumAssets(client *ethclient.Client) (uint16, error) {
 
 func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
 	var jobs []bindings.StructsJob
-	var JobIDs []uint16
-
-	numAssets, err := UtilsInterface.GetNumAssets(client)
+	numJobs, err := Options.GetNumJobs(client)
 	if err != nil {
 		return nil, err
 	}
-	for i := uint16(1); i <= numAssets; i++ {
-		assetType, err := UtilsInterface.GetAssetType(client, i)
-		if err != nil {
-			return nil, err
-		}
-		if assetType == 1 {
-			JobIDs = append(JobIDs, i)
-		} else {
-			continue
-		}
-
-	}
-
-	for i := 0; i < len(JobIDs); i++ {
-		jobId := JobIDs[i]
-		job, err := UtilsInterface.GetActiveJob(client, jobId)
+	for i := 0; i < int(numJobs); i++ {
+		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
 		if err != nil {
 			return nil, err
 		}
 		jobs = append(jobs, job)
 	}
-
 	return jobs, nil
-
 }
 
-func (*UtilsStruct) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
+func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (*big.Int, error) {
 	callOpts := UtilsInterface.GetOptions()
 	var (
 		numActiveAssets *big.Int
@@ -94,73 +74,30 @@ func (*UtilsStruct) GetNumActiveAssets(client *ethclient.Client) (*big.Int, erro
 	return numActiveAssets, nil
 }
 
-func (*UtilsStruct) GetAssetType(client *ethclient.Client, assetId uint16) (uint8, error) {
-	callOpts := UtilsInterface.GetOptions()
-	var (
-		activeAsset types.Asset
-		err         error
-	)
-	err = retry.Do(
-		func() error {
-			activeAsset, err = Options.GetAsset(client, &callOpts, assetId)
-			if err != nil {
-				log.Error("Error in fetching asset.... Retrying")
-				return err
-			}
-			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
-	if err != nil {
-		return 0, err
-	}
-	if activeAsset.Job.Id == 0 {
-		return 2, nil
-	}
-	return 1, nil
-}
-
-func (*UtilsStruct) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
 	var collections []bindings.StructsCollection
-	var CollectionIDs []uint16
-
-	numAssets, err := UtilsInterface.GetNumAssets(client)
+	numCollections, err := UtilsInterface.GetNumCollections(client)
 	if err != nil {
 		return nil, err
 	}
-	for i := uint16(1); i <= numAssets; i++ {
-		assetType, err := UtilsInterface.GetAssetType(client, i)
-		if err != nil {
-			return nil, err
-		}
-		if assetType == 2 {
-			CollectionIDs = append(CollectionIDs, i)
-		} else {
-			continue
-		}
-
-	}
-
-	for i := 0; i < len(CollectionIDs); i++ {
-		collectionId := CollectionIDs[i]
-		collection, err := UtilsInterface.GetCollection(client, collectionId)
+	for i := 0; i < int(numCollections); i++ {
+		collection, err := Options.GetCollection(client, uint16(i))
 		if err != nil {
 			return nil, err
 		}
 		collections = append(collections, collection)
 	}
-
 	return collections, nil
-
 }
 
 func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	callOpts := UtilsInterface.GetOptions()
 	var (
-		asset types.Asset
-		err   error
+		collection bindings.StructsCollection
+		err        error
 	)
 	err = retry.Do(
 		func() error {
-			asset, err = Options.GetAsset(client, &callOpts, collectionId)
+			collection, err = Options.GetCollection(client, collectionId)
 			if err != nil {
 				log.Error("Error in fetching collection.... Retrying")
 				return err
@@ -170,10 +107,10 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}
-	return asset.Collection, nil
+	return collection, nil
 }
 
-func (*UtilsStruct) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
+func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
 	callOpts := UtilsInterface.GetOptions()
 	var (
 		activeAssetIds []uint16
@@ -197,33 +134,26 @@ func (*UtilsStruct) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error
 func (*UtilsStruct) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
 	var data []*big.Int
 
-	numOfAssets, err := UtilsInterface.GetNumAssets(client)
+	numOfCollections, err := UtilsInterface.GetNumCollections(client)
 	if err != nil {
 		return data, err
 	}
 
-	for assetIndex := 1; assetIndex <= int(numOfAssets); assetIndex++ {
-		assetType, err := UtilsInterface.GetAssetType(client, uint16(assetIndex))
+	for assetIndex := 1; assetIndex <= int(numOfCollections); assetIndex++ {
+		activeCollection, err := UtilsInterface.GetActiveCollection(client, uint16(assetIndex))
 		if err != nil {
-			log.Error("Error in fetching asset type: ", assetType)
+			log.Error(err)
+			if err.Error() == errors.New("collection inactive").Error() {
+				continue
+			}
 			return nil, err
 		}
-		if assetType == 2 {
-			activeCollection, err := UtilsInterface.GetActiveCollection(client, uint16(assetIndex))
-			if err != nil {
-				log.Error(err)
-				if err.Error() == errors.New("collection inactive").Error() {
-					continue
-				}
-				return nil, err
-			}
-			//Supply previous epoch to Aggregate in case if last reported value is required.
-			collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection)
-			if aggregationError != nil {
-				return nil, aggregationError
-			}
-			data = append(data, collectionData)
+		//Supply previous epoch to Aggregate in case if last reported value is required.
+		collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection)
+		if aggregationError != nil {
+			return nil, aggregationError
 		}
+		data = append(data, collectionData)
 	}
 	return data, nil
 }

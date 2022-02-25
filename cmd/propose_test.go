@@ -793,7 +793,7 @@ func TestMakeBlock(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
-			utilsMock.On("GetNumActiveAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
+			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetSortedVotes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sortedVotes, tt.args.sortedVotesErr)
 			utilsMock.On("GetTotalInfluenceRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.totalInfluenceRevealed, tt.args.totalInfluenceRevealedErr)

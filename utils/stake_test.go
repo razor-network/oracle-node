@@ -479,7 +479,7 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("WithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			optionsMock.On("WithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetWithdrawReleasePeriod(client)

@@ -43,7 +43,7 @@ func (o OptionsStruct) GetJobFilePath() (string, error) {
 	return path.PathUtilsInterface.GetJobFilePath()
 }
 
-func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
+func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
 	return accounts.AccountUtilsInterface.GetPrivateKey(address, password, keystorePath)
 }
 
@@ -79,29 +79,29 @@ func (o OptionsStruct) BalanceAt(client *ethclient.Client, ctx context.Context, 
 	return client.BalanceAt(ctx, account, blockNumber)
 }
 
-func (o OptionsStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
-	blockManager := UtilsInterface.GetBlockManager(client)
-	return blockManager.GetNumProposedBlocks(opts, epoch)
+func (o OptionsStruct) GetNumProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.GetNumProposedBlocks(&opts, epoch)
 }
 
-func (o OptionsStruct) GetProposedBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, proposedBlock uint32) (bindings.StructsBlock, error) {
-	blockManager := UtilsInterface.GetBlockManager(client)
-	return blockManager.GetProposedBlock(opts, epoch, proposedBlock)
+func (o OptionsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlock uint32) (bindings.StructsBlock, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.GetProposedBlock(&opts, epoch, proposedBlock)
 }
 
-func (o OptionsStruct) GetBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (bindings.StructsBlock, error) {
-	blockManager := UtilsInterface.GetBlockManager(client)
-	return blockManager.GetBlock(opts, epoch)
+func (o OptionsStruct) GetBlock(client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.GetBlock(&opts, epoch)
 }
 
-func (o OptionsStruct) MinStake(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
-	blockManager := UtilsInterface.GetBlockManager(client)
-	return blockManager.MinStake(opts)
+func (o OptionsStruct) MinStake(client *ethclient.Client) (*big.Int, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.MinStake(&opts)
 }
 
-func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
-	blockManager := UtilsInterface.GetBlockManager(client)
-	return blockManager.MaxAltBlocks(opts)
+func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client) (uint8, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.MaxAltBlocks(&opts)
 }
 
 func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
@@ -109,14 +109,14 @@ func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bi
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
 }
 
-func (o OptionsStruct) GetStakerId(client *ethclient.Client, opts *bind.CallOpts, address common.Address) (uint32, error) {
-	stakeManager := UtilsInterface.GetStakeManager(client)
-	return stakeManager.GetStakerId(opts, address)
+func (o OptionsStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.GetStakerId(&opts, address)
 }
 
-func (o OptionsStruct) GetNumStakers(client *ethclient.Client, opts *bind.CallOpts) (uint32, error) {
-	stakeManager := UtilsInterface.GetStakeManager(client)
-	return stakeManager.GetNumStakers(opts)
+func (o OptionsStruct) GetNumStakers(client *ethclient.Client) (uint32, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.GetNumStakers(&opts)
 }
 
 func (o OptionsStruct) Locks(client *ethclient.Client, opts *bind.CallOpts, address common.Address, address1 common.Address) (coretypes.Locks, error) {
@@ -124,49 +124,59 @@ func (o OptionsStruct) Locks(client *ethclient.Client, opts *bind.CallOpts, addr
 	return stakeManager.Locks(opts, address, address1)
 }
 
-func (o OptionsStruct) WithdrawReleasePeriod(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
-	stakeManager := UtilsInterface.GetStakeManager(client)
-	return stakeManager.WithdrawReleasePeriod(opts)
+func (o OptionsStruct) WithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.WithdrawInitiationPeriod(&opts)
 }
 
-func (o OptionsStruct) MaxCommission(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
-	stakeManager := UtilsInterface.GetStakeManager(client)
-	return stakeManager.MaxCommission(opts)
+func (o OptionsStruct) MaxCommission(client *ethclient.Client) (uint8, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.MaxCommission(&opts)
 }
 
-func (o OptionsStruct) EpochLimitForUpdateCommission(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
-	stakeManager := UtilsInterface.GetStakeManager(client)
-	return stakeManager.EpochLimitForUpdateCommission(opts)
+func (o OptionsStruct) EpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.EpochLimitForUpdateCommission(&opts)
 }
 
-func (o OptionsStruct) GetStaker(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsStaker, error) {
-	stakeManager := UtilsInterface.GetStakeManager(client)
-	return stakeManager.GetStaker(opts, stakerId)
+func (o OptionsStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.GetStaker(&opts, stakerId)
 }
 
-func (o OptionsStruct) GetNumAssets(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
-	assetManager := UtilsInterface.GetAssetManager(client)
-	return assetManager.GetNumAssets(opts)
+func (o OptionsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetNumCollections(&opts)
 }
 
-func (o OptionsStruct) GetNumActiveCollections(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
-	assetManager := UtilsInterface.GetAssetManager(client)
-	return assetManager.GetNumActiveCollections(opts)
+func (o OptionsStruct) GetNumJobs(client *ethclient.Client) (uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetNumJobs(&opts)
 }
 
-func (o OptionsStruct) GetAsset(client *ethclient.Client, opts *bind.CallOpts, id uint16) (coretypes.Asset, error) {
-	assetManager := UtilsInterface.GetAssetManager(client)
-	return assetManager.GetAsset(opts, id)
+func (o OptionsStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetNumActiveCollections(&opts)
 }
 
-func (o OptionsStruct) GetActiveCollections(client *ethclient.Client, opts *bind.CallOpts) ([]uint16, error) {
-	assetManager := UtilsInterface.GetAssetManager(client)
-	return assetManager.GetActiveCollections(opts)
+func (o OptionsStruct) GetCollection(client *ethclient.Client, id uint16) (bindings.StructsCollection, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetCollection(&opts, id)
 }
 
-func (o OptionsStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bindings.StructsJob, error) {
-	assetManager := UtilsInterface.GetAssetManager(client)
-	return assetManager.Jobs(opts, id)
+func (o OptionsStruct) GetJob(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetJob(&opts, id)
+}
+
+func (o OptionsStruct) GetActiveCollections(client *ethclient.Client) ([]uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetActiveCollections(&opts)
+}
+
+func (o OptionsStruct) Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.Jobs(&opts, id)
 }
 
 func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
@@ -182,14 +192,9 @@ func (o OptionsStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts
 	return voteManager.Commitments(opts, stakerId)
 }
 
-func (o OptionsStruct) GetVoteValue(client *ethclient.Client, opts *bind.CallOpts, assetIndex uint16, stakerId uint32) (*big.Int, error) {
+func (o OptionsStruct) GetVoteValue(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
-	return voteManager.GetVoteValue(opts, assetIndex, stakerId)
-}
-
-func (o OptionsStruct) GetVote(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsVote, error) {
-	voteManager := UtilsInterface.GetVoteManager(client)
-	return voteManager.GetVote(opts, stakerId)
+	return voteManager.GetVoteValue(opts, epoch, stakerId, medianIndex)
 }
 
 func (o OptionsStruct) GetInfluenceSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
@@ -202,14 +207,9 @@ func (o OptionsStruct) GetStakeSnapshot(client *ethclient.Client, opts *bind.Cal
 	return voteManager.GetStakeSnapshot(opts, epoch, stakerId)
 }
 
-func (o OptionsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (*big.Int, error) {
+func (o OptionsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, medianIndex uint16) (*big.Int, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
-	return voteManager.GetTotalInfluenceRevealed(opts, epoch)
-}
-
-func (o OptionsStruct) GetRandaoHash(client *ethclient.Client, opts *bind.CallOpts) ([32]byte, error) {
-	voteManager := UtilsInterface.GetVoteManager(client)
-	return voteManager.GetRandaoHash(opts)
+	return voteManager.GetTotalInfluenceRevealed(opts, epoch, medianIndex)
 }
 
 func (o OptionsStruct) GetEpochLastCommitted(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
@@ -222,8 +222,8 @@ func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind
 	return voteManager.GetEpochLastRevealed(opts, stakerId)
 }
 
-func (o OptionsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
-	return bindings.NewAssetManager(address, client)
+func (o OptionsStruct) NewCollectionManager(address common.Address, client *ethclient.Client) (*bindings.CollectionManager, error) {
+	return bindings.NewCollectionManager(address, client)
 }
 
 func (o OptionsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {

@@ -152,7 +152,7 @@ func TestGetActiveAssetIds(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetActiveAssetIds() executes successfully",
+			name: "Test 1: When GetActiveCollectionIds() executes successfully",
 			args: args{
 				activeAssetIds: []uint16{1, 2},
 			},
@@ -183,13 +183,13 @@ func TestGetActiveAssetIds(t *testing.T) {
 			optionsMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetActiveAssetIds(client)
+			got, err := utils.GetActiveCollectionIds(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetActiveAssetIds() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetActiveCollectionIds() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetActiveAssetIds() got = %v, want %v", got, tt.want)
+				t.Errorf("GetActiveCollectionIds() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -295,7 +295,7 @@ func TestGetActiveAssetsData(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
+			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
 			utilsMock.On("GetAssetType", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.assetType, tt.args.assetTypeErr)
 			utilsMock.On("GetActiveCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
 			utilsMock.On("Aggregate", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.aggregation, tt.args.aggregationErr)
@@ -515,7 +515,7 @@ func TestGetAssetType(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetAsset", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.activeAssets, tt.args.activeAssetsErr)
+			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.activeAssets, tt.args.activeAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetAssetType(client, assetId)
@@ -574,7 +574,7 @@ func TestGetCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetAsset", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
+			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetCollection(client, collectionId)
@@ -672,7 +672,7 @@ func TestGetCollections(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
+			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
 			utilsMock.On("GetAssetType", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.assetType, tt.args.assetTypeErr)
 			utilsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
 
@@ -717,7 +717,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			name: "Test 1: When GetDataToCommitFromJobs() executes successfully",
 			args: args{
 				jobPath: "",
-				overrideJobData: map[string]*types.StructsJob{"1": &types.StructsJob{
+				overrideJobData: map[string]*types.StructsJob{"1": {
 					Id: 2, SelectorType: 1, Weight: 100,
 					Power: 2, Name: "ethusd_gemini", Selector: "last",
 					Url: "https://api.gemini.com/v1/pubticker/ethusd",
@@ -1030,7 +1030,7 @@ func TestGetJobs(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
+			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
 			utilsMock.On("GetAssetType", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.assetType, tt.args.assetTypeErr)
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
 
@@ -1061,7 +1061,7 @@ func TestGetNumActiveAssets(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetNumActiveAssets() executes successfully",
+			name: "Test 1: When GetNumActiveCollections() executes successfully",
 			args: args{
 				numOfActiveAssets: big.NewInt(5),
 			},
@@ -1092,13 +1092,13 @@ func TestGetNumActiveAssets(t *testing.T) {
 			optionsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumActiveAssets(client)
+			got, err := utils.GetNumActiveCollections(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetNumActiveAssets() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetNumActiveCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetNumActiveAssets() got = %v, want %v", got, tt.want)
+				t.Errorf("GetNumActiveCollections() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1119,7 +1119,7 @@ func TestGetNumAssets(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetNumAssets() executes successfully",
+			name: "Test 1: When GetNumCollections() executes successfully",
 			args: args{
 				numOfAssets: 5,
 			},
@@ -1147,16 +1147,16 @@ func TestGetNumAssets(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetNumAssets", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
+			optionsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumAssets(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetNumAssets() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetNumCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetNumAssets() got = %v, want %v", got, tt.want)
+				t.Errorf("GetNumCollections() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1176,11 +1176,11 @@ func TestGetAssetManagerWithOpts(t *testing.T) {
 	utils := StartRazor(optionsPackageStruct)
 
 	utilsMock.On("GetOptions").Return(callOpts)
-	utilsMock.On("GetAssetManager", mock.AnythingOfType("*ethclient.Client")).Return(assetManager)
+	utilsMock.On("GetCollectionManager", mock.AnythingOfType("*ethclient.Client")).Return(assetManager)
 
-	gotAssetManager, gotCallOpts := utils.GetAssetManagerWithOpts(client)
+	gotAssetManager, gotCallOpts := utils.GetCollectionManagerWithOpts(client)
 	if !reflect.DeepEqual(gotCallOpts, callOpts) {
-		t.Errorf("GetAssetManagerWithOpts() got callopts = %v, want %v", gotCallOpts, callOpts)
+		t.Errorf("GetCollectionManagerWithOpts() got callopts = %v, want %v", gotCallOpts, callOpts)
 	}
 	if !reflect.DeepEqual(gotAssetManager, assetManager) {
 		t.Errorf("GetAssetkManagerWithOpts() got assetManager = %v, want %v", gotAssetManager, assetManager)

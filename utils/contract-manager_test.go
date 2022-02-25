@@ -180,7 +180,7 @@ func TestGetAssetManager(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When GetAssetManager() executes successfully",
+			name: "Test 1: When GetCollectionManager() executes successfully",
 			args: args{
 				assetManager: &bindings.AssetManager{},
 			},
@@ -207,13 +207,13 @@ func TestGetAssetManager(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewAssetManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.assetManager, tt.args.assetManagerErr)
+			optionsMock.On("NewCollectionManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.assetManager, tt.args.assetManagerErr)
 
 			fatal = false
-			utils.GetAssetManager(client)
+			utils.GetCollectionManager(client)
 
 			if fatal != tt.expectedFatal {
-				t.Error("The GetAssetManager() function didn't execute as expected")
+				t.Error("The GetCollectionManager() function didn't execute as expected")
 			}
 		})
 	}

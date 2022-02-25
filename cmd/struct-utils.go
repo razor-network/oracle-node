@@ -87,7 +87,7 @@ func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead strin
 }
 
 func (u Utils) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
-	return utils.UtilsInterface.GetNumActiveAssets(client)
+	return utils.UtilsInterface.GetNumActiveCollections(client)
 }
 
 func (u Utils) GetRogueRandomValue(value int) *big.Int {
@@ -245,7 +245,7 @@ func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int 
 }
 
 func (u Utils) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error) {
-	return utils.UtilsInterface.GetActiveAssetIds(client)
+	return utils.UtilsInterface.GetActiveCollectionIds(client)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
@@ -517,32 +517,32 @@ func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, op
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetCollectionManager(client)
 	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetCollectionManager(client)
 	return assetManager.SetCollectionStatus(opts, assetStatus, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
-	assetMananger := utils.UtilsInterface.GetAssetManager(client)
+	assetMananger := utils.UtilsInterface.GetCollectionManager(client)
 	return assetMananger.GetCollectionStatus(opts, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetCollectionManager(client)
 	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint16, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetCollectionManager(client)
 	return assetManager.CreateCollection(opts, tolerance, power, aggregationMethod, jobIDs, name)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint16, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetAssetManager(client)
+	assetManager := utils.UtilsInterface.GetCollectionManager(client)
 	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 

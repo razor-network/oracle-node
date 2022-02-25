@@ -25,12 +25,12 @@ func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeMan
 	return stakeManagerContract
 }
 
-func (*UtilsStruct) GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
-	assetManager, err := Options.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
+func (*UtilsStruct) GetCollectionManager(client *ethclient.Client) *bindings.CollectionManager {
+	collectionManager, err := Options.NewCollectionManager(common.HexToAddress(core.AssetManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return assetManager
+	return collectionManager
 }
 
 func (*UtilsStruct) GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
