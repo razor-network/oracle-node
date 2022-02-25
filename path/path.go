@@ -1,9 +1,5 @@
 package path
 
-import (
-	"os"
-)
-
 func (PathUtils) GetDefaultPath() (string, error) {
 	home, err := PathUtilsInterface.UserHomeDir()
 	if err != nil {
@@ -40,11 +36,11 @@ func (PathUtils) GetJobFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filePath := home + "/jobs.json"
-	f, err := PathUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
+	filePath := home + "/assets.json"
+	//f, err := PathUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	//if err != nil {
+	//	return "", err
+	//}
+	//defer f.Close()
 	return filePath, nil
 }
