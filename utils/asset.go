@@ -77,20 +77,6 @@ func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, er
 
 }
 
-func (*UtilsStruct) GetJobNames(client *ethclient.Client, collection bindings.StructsCollection) ([]string, error) {
-	var jobNames []string
-	jobIds := collection.JobIDs
-
-	for i := 0; i < len(jobIds); i++ {
-		job, err := UtilsInterface.GetActiveJob(client, jobIds[i])
-		if err != nil {
-			return nil, err
-		}
-		jobNames = append(jobNames, job.Name)
-	}
-	return jobNames, nil
-}
-
 func (*UtilsStruct) GetNumActiveAssets(client *ethclient.Client) (*big.Int, error) {
 	callOpts := UtilsInterface.GetOptions()
 	var (
@@ -168,19 +154,6 @@ func (*UtilsStruct) GetCollections(client *ethclient.Client) ([]bindings.Structs
 
 	return collections, nil
 
-}
-
-func (*UtilsStruct) GetCollectionNames(client *ethclient.Client) ([]string, error) {
-	var collectionNames []string
-	collections, err := UtilsInterface.GetCollections(client)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := 0; i < len(collections); i++ {
-		collectionNames = append(collectionNames, collections[i].Name)
-	}
-	return collectionNames, nil
 }
 
 func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
