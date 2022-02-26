@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tidwall/gjson"
-	"io/ioutil"
 	"math/big"
 	"os"
 	"razor/core"
@@ -241,14 +240,14 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if err != nil {
 		return nil, err
 	}
-	if _, err := os.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
-		jsonFile, err := os.Open(assetsFilePath)
+	if _, err := path.PathUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
+		jsonFile, err := path.PathUtilsInterface.Open(assetsFilePath)
 		if err != nil {
 			return nil, err
 		}
 		defer jsonFile.Close()
 
-		data, err := ioutil.ReadAll(jsonFile)
+		data, err := Options.ReadAll(jsonFile)
 		if err != nil {
 			return nil, err
 		}
@@ -259,22 +258,19 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 			collection.Power = int8(powerFromJSONFile)
 		}
 
-		// Overriding the jobs from contracts with official jobs present here in asset.go
+		// Overriding the jobs from contracts with official jobs present in asset.go
 		overrideJobs, overriddenJobIdsFromJSONfile := UtilsInterface.HandleOfficialJobsFromJSONFile(client, collection, dataString)
 		jobs = append(jobs, overrideJobs...)
 		overriddenJobIds = append(overriddenJobIds, overriddenJobIdsFromJSONfile...)
 
 		// Also adding custom jobs to jobs array
-		customJobs, err := UtilsInterface.GetCustomJobsFromJSONFile(collection.Name, dataString)
-		if err != nil {
-			return nil, err
-		}
+		customJobs := GetCustomJobsFromJSONFile(collection.Name, dataString)
 		jobs = append(jobs, customJobs...)
 	}
 
 	for _, id := range collection.JobIDs {
 
-		// Ignoring the Jobs which are already override
+		// Ignoring the Jobs which are already overriden and added to jobs array
 		if !Contains(overriddenJobIds, jobs) {
 			job, err := UtilsInterface.GetActiveJob(client, id)
 			if err != nil {
@@ -398,13 +394,13 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	return MultiplyWithPower(datum, job.Power), err
 }
 
-func (*UtilsStruct) GetCustomJobsFromJSONFile(collection string, jsonFileData string) ([]bindings.StructsJob, error) {
+func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []bindings.StructsJob {
 	var collectionCustomJobs []bindings.StructsJob
 
 	collectionCustomJobsPath := "assets.collection." + collection + ".custom jobs"
 	customJobs := gjson.Get(jsonFileData, collectionCustomJobsPath).Array()
 	if len(customJobs) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	for i := 0; i < len(customJobs); i++ {
@@ -413,7 +409,7 @@ func (*UtilsStruct) GetCustomJobsFromJSONFile(collection string, jsonFileData st
 		selector := gjson.Get(customJobsData, "selector").String()
 		power := int8(gjson.Get(customJobsData, "power").Int())
 		weight := uint8(gjson.Get(customJobsData, "weight").Int())
-		job := UtilsInterface.ConvertCustomJobToStructJob(types.CustomJob{
+		job := ConvertCustomJobToStructJob(types.CustomJob{
 			URL:      url,
 			Power:    power,
 			Selector: selector,
@@ -422,10 +418,10 @@ func (*UtilsStruct) GetCustomJobsFromJSONFile(collection string, jsonFileData st
 		collectionCustomJobs = append(collectionCustomJobs, job)
 	}
 
-	return collectionCustomJobs, nil
+	return collectionCustomJobs
 }
 
-func (*UtilsStruct) ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob {
+func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob {
 	return bindings.StructsJob{
 		Url:      customJob.URL,
 		Selector: customJob.Selector,

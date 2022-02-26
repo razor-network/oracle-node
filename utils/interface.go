@@ -146,9 +146,6 @@ type Utils interface {
 	WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error
 	DeleteJobFromJSON(fileName string, jobId string) error
 	AddJobToJSON(fileName string, job *types.StructsJob) error
-	GetCollectionNames(client *ethclient.Client) ([]string, error)
-	ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob
-	GetCustomJobsFromJSONFile(collection string, jsonFileData string) ([]bindings.StructsJob, error)
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
 }
 

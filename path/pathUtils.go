@@ -19,6 +19,7 @@ type PathInterface interface {
 	GetLogFilePath() (string, error)
 	GetConfigFilePath() (string, error)
 	GetJobFilePath() (string, error)
+	Open(string) (*os.File, error)
 }
 
 type PathUtils struct{}
@@ -41,4 +42,8 @@ func (p PathUtils) Mkdir(name string, perm fs.FileMode) error {
 
 func (p PathUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
 	return os.OpenFile(name, flag, perm)
+}
+
+func (p PathUtils) Open(name string) (*os.File, error) {
+	return os.Open(name)
 }
