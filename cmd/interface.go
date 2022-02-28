@@ -77,8 +77,8 @@ type UtilsInterface interface {
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
-	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
-	ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int
+	ConvertUintArrayToUint16Array([]uint) []uint16
+	ConvertUint32ArrayToBigIntArray([]uint32) []*big.Int
 	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
@@ -128,7 +128,7 @@ type StakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
-	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
+	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)

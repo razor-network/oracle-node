@@ -175,14 +175,14 @@ func TestWaitForAppropriateState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			timeMock := new(mocks.TimeInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
-			razorUtils = utilsMock
+			timeUtils = timeMock
 			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
-			utilsMock.On("Sleep", mock.Anything).Return()
+			timeMock.On("Sleep", mock.Anything).Return()
 			utils := &UtilsStruct{}
 			got, err := utils.WaitForAppropriateState(client, tt.args.action, tt.args.states)
 			if got != tt.want {
