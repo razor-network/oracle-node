@@ -92,7 +92,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 		isEqual, j := utils.IsEqual(proposedBlock.Medians, mediansInUint32)
 		if !isEqual {
-			activeAssetIds, _ := razorUtils.GetActiveAssetIds(client)
+			activeAssetIds, _ := razorUtils.GetActiveCollectionIds(client)
 			assetId := int(activeAssetIds[j])
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -124,9 +124,9 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	}
 
 	var sortedStakers []uint32
-
+	//TODO: How to get sorted values
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := razorUtils.GetVotes(client, uint32(i))
+		votes, err := razorUtils.GetVoteValue(client, uint32(i))
 		if err != nil {
 			return err
 		}
@@ -165,17 +165,17 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	return nil
 }
 
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
-	if len(sortedStakers) == 0 {
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedValues []uint32) {
+	if len(sortedValues) == 0 {
 		return
 	}
-	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, assetId, sortedStakers)
+	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, assetId, sortedValues)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {
 			log.Error("Error in calling GiveSorted: ", err)
-			mid := len(sortedStakers) / 2
-			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers[:mid])
-			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers[mid:])
+			mid := len(sortedValues) / 2
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedValues[:mid])
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedValues[mid:])
 		} else {
 			return
 		}

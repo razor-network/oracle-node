@@ -8,7 +8,7 @@ type ElectedProposer struct {
 	StakerId        uint32
 	BiggestStake    *big.Int
 	NumberOfStakers uint32
-	RandaoHash      [32]byte
+	Salt            [32]byte
 	Epoch           uint32
 }
 

@@ -434,7 +434,7 @@ func (_m *UtilsCmdInterface) ExecuteWithdraw(_a0 *pflag.FlagSet) {
 }
 
 // ExtendLock provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsCmdInterface) ExtendLock(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ExtendLockInput) (common.Hash, error) {
+func (_m *UtilsCmdInterface) ExtendUnstakeLock(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ExtendLockInput) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 common.Hash

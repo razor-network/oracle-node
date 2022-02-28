@@ -70,8 +70,8 @@ func (_m *StakeManagerInterface) Delegate(_a0 *ethclient.Client, _a1 *bind.Trans
 	return r0, r1
 }
 
-// ExtendLock provides a mock function with given fields: _a0, _a1, _a2
-func (_m *StakeManagerInterface) ExtendLock(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32) (*types.Transaction, error) {
+// ExtendUnstakeLock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *StakeManagerInterface) ExtendUnstakeLock(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32) (*types.Transaction, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *types.Transaction

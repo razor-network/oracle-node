@@ -19,11 +19,11 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, ro
 	)
 	//rogue mode
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-		numActiveAssets, err := razorUtils.GetNumActiveAssets(client)
+		numActiveAssets, err := razorUtils.GetNumActiveCollections(client)
 		if err != nil {
 			return nil, err
 		}
-		for i := 0; i < int(numActiveAssets.Int64()); i++ {
+		for i := 0; i < int(numActiveAssets); i++ {
 			rogueValue := razorUtils.GetRogueRandomValue(10000000)
 			data = append(data, rogueValue)
 		}
@@ -50,6 +50,15 @@ func (*UtilsStruct) Commit(client *ethclient.Client, data []*big.Int, secret []b
 	if err != nil {
 		return core.NilHash, err
 	}
+
+	previousEpoch := epoch - 1
+
+	previousBlock, err := utils.Options.GetBlock(client, previousEpoch)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	salt := utils.CalculateSalt(previousEpoch, previousBlock.Medians)
 
 	commitment := solsha3.SoliditySHA3([]string{"uint32", "uint256[]", "bytes32"}, []interface{}{epoch, data, "0x" + hex.EncodeToString(secret)})
 	commitmentToSend := [32]byte{}

@@ -43,14 +43,13 @@ func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Active", "Collection Id", "Asset Index", "Power", "Aggregation Method", "Job IDs", "Name", "Tolerance"})
+	table.SetHeader([]string{"Active", "Collection Id", "Power", "Aggregation Method", "Job IDs", "Name", "Tolerance"})
 	for i := 0; i < len(collections); i++ {
 		jobIDs, _ := json.Marshal(collections[i].JobIDs)
 
 		table.Append([]string{
 			strconv.FormatBool(collections[i].Active),
 			strconv.Itoa(int(collections[i].Id)),
-			strconv.Itoa(int(collections[i].AssetIndex)),
 			strconv.Itoa(int(collections[i].Power)),
 			strconv.Itoa(int(collections[i].AggregationMethod)),
 			strings.Trim(string(jobIDs), "[]"),

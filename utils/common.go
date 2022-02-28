@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"os"
 	"razor/core"
@@ -212,4 +213,10 @@ func CalculateBlockTime(client *ethclient.Client) int64 {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}
 	return int64(latestBlock.Time - lastSecondBlock.Time)
+}
+
+//TODO: Check if we need to return
+func CalculateSalt(epoch uint32, medians []uint32) []byte {
+	salt := solsha3.SoliditySHA3([]string{"uint32", "[]uint32"}, []interface{}{epoch, medians})
+	return salt
 }

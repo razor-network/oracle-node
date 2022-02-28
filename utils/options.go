@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/ethereum/go-ethereum"
-	"razor/accounts"
 	"razor/core/types"
 	"strings"
 
@@ -28,7 +27,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	defaultPath, err := Options.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	privateKey := Options.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
+	privateKey := Options.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath)
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}

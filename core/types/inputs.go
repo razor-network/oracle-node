@@ -41,7 +41,7 @@ type CreateCollectionInput struct {
 	Aggregation uint32
 	Power       int8
 	JobIds      []uint
-	Tolerance   uint16
+	Tolerance   uint32
 }
 
 type ExtendLockInput struct {

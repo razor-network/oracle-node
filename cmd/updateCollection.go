@@ -51,7 +51,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	tolerance, err := flagSetUtils.GetUint16Tolerance(flagSet)
+	tolerance, err := flagSetUtils.GetUint32Tolerance(flagSet)
 	utils.CheckError("Error in getting tolerance: ", err)
 
 	collectionInput := types.CreateCollectionInput{

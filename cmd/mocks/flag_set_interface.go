@@ -666,7 +666,7 @@ func (_m *FlagSetInterface) GetUint16JobId(_a0 *pflag.FlagSet) (uint16, error) {
 }
 
 // GetUint16Tolerance provides a mock function with given fields: _a0
-func (_m *FlagSetInterface) GetUint16Tolerance(_a0 *pflag.FlagSet) (uint16, error) {
+func (_m *FlagSetInterface) GetUint32Tolerance(_a0 *pflag.FlagSet) (uint16, error) {
 	ret := _m.Called(_a0)
 
 	var r0 uint16

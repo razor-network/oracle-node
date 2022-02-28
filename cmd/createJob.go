@@ -84,7 +84,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "createJob",
 		Parameters:      []interface{}{jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url},
-		ABI:             bindings.AssetManagerABI,
+		ABI:             bindings.CollectionManagerABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

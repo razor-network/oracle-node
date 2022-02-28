@@ -53,15 +53,14 @@ func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, er
 	return jobs, nil
 }
 
-func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (*big.Int, error) {
-	callOpts := UtilsInterface.GetOptions()
+func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
 	var (
-		numActiveAssets *big.Int
+		numActiveAssets uint16
 		err             error
 	)
 	err = retry.Do(
 		func() error {
-			numActiveAssets, err = Options.GetNumActiveCollections(client, &callOpts)
+			numActiveAssets, err = Options.GetNumActiveCollections(client)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -69,7 +68,7 @@ func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (*big.Int,
 			return nil
 		}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	return numActiveAssets, nil
 }
@@ -111,14 +110,13 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 }
 
 func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
-	callOpts := UtilsInterface.GetOptions()
 	var (
 		activeAssetIds []uint16
 		err            error
 	)
 	err = retry.Do(
 		func() error {
-			activeAssetIds, err = Options.GetActiveCollections(client, &callOpts)
+			activeAssetIds, err = Options.GetActiveCollections(client)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -183,14 +181,13 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 }
 
 func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
-	callOpts := UtilsInterface.GetOptions()
 	var (
 		job bindings.StructsJob
 		err error
 	)
 	err = retry.Do(
 		func() error {
-			job, err = Options.Jobs(client, &callOpts, jobId)
+			job, err = Options.Jobs(client, jobId)
 			if err != nil {
 				log.Errorf("Error in fetching job %d.... Retrying", jobId)
 				return err

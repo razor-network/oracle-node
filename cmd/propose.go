@@ -41,20 +41,24 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 		return core.NilHash, err
 	}
 
-	randaoHash, err := razorUtils.GetRandaoHash(client)
+	//TODO: Calculate salt:
+	//1.
+
+	//TODO: Check if this is correct for salt
+	salt, err := razorUtils.GetSalt(client)
 	if err != nil {
 		log.Error("Error in fetching random hash: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("Biggest Staker Id: ", biggestStakerId)
-	log.Debugf("Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStake, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
+	log.Debugf("Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStake, staker.Stake, stakerId, numStakers, hex.EncodeToString(salt[:]))
 
 	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
 		StakerId:        stakerId,
 		BiggestStake:    biggestStake,
 		NumberOfStakers: numStakers,
-		RandaoHash:      randaoHash,
+		Salt:            salt,
 		Epoch:           epoch,
 	})
 
@@ -127,7 +131,13 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
-	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, medians, big.NewInt(int64(iteration)), biggestStakerId)
+	//TODO: Chck if this is correct for ids
+	ids, err := razorUtils.GetActiveCollectionIds(client)
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -175,14 +185,14 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
-	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.RandaoHash[:])
+	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.Salt[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
 	pseudoRandomNumber = pseudoRandomNumber.Add(pseudoRandomNumber, big.NewInt(1))
 	if pseudoRandomNumber.Cmp(big.NewInt(int64(proposer.StakerId))) != 0 {
 		return false
 	}
 	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{big.NewInt(int64(proposer.StakerId)), big.NewInt(int64(proposer.Iteration))})
-	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.RandaoHash[:]), "0x" + hex.EncodeToString(seed2)})
+	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.Salt[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)
 	randomHashNumber = randomHashNumber.Mod(randomHashNumber, big.NewInt(int64(math.Exp2(32))))
 	biggestStake := big.NewInt(1).Mul(randomHashNumber, proposer.BiggestStake)
@@ -196,7 +206,7 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 }
 
 func (*UtilsStruct) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue) ([]uint32, error) {
-	numAssets, err := razorUtils.GetNumActiveAssets(client)
+	numAssets, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return nil, err
 	}
@@ -209,14 +219,14 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, address string, rogueDat
 		return nil, err
 	}
 
-	for assetId := 1; assetId <= int(numAssets.Int64()); assetId++ {
+	for assetId := 1; assetId <= int(numAssets); assetId++ {
 		sortedVotes, err := cmdUtils.GetSortedVotes(client, address, uint16(assetId), epoch)
 		if err != nil {
 			log.Error(err)
 			continue
 		}
-
-		totalInfluenceRevealed, err := razorUtils.GetTotalInfluenceRevealed(client, epoch)
+		//TODO: Check value of median index
+		totalInfluenceRevealed, err := razorUtils.GetTotalInfluenceRevealed(client, epoch, uint16(assetId))
 		if err != nil {
 			log.Error(err)
 			continue

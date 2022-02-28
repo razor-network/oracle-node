@@ -88,7 +88,7 @@ func (*UtilsStruct) ModifyAssetStatus(client *ethclient.Client, config types.Con
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "setCollectionStatus",
 		Parameters:      []interface{}{modifyAssetInput.Status, modifyAssetInput.AssetId},
-		ABI:             bindings.AssetManagerABI,
+		ABI:             bindings.CollectionManagerABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
