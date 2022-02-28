@@ -4,7 +4,6 @@ services:
     #platform: linux/x86_64 #Uncomment for silicon based MAC
     container_name: razor-go
     image: razornetwork/razor-go
-    entrypoint: /bin/bash
     build: .
     tty: true
     volumes:
