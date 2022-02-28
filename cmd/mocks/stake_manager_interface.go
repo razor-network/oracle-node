@@ -271,13 +271,13 @@ func (_m *StakeManagerInterface) Unstake(_a0 *ethclient.Client, _a1 *bind.Transa
 	return r0, r1
 }
 
-// UpdateCommission provides a mock function with given fields: client, opts, commission
-func (_m *StakeManagerInterface) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*types.Transaction, error) {
-	ret := _m.Called(client, opts, commission)
+// UpdateCommission provides a mock function with given fields: _a0, _a1, _a2
+func (_m *StakeManagerInterface) UpdateCommission(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint8) (*types.Transaction, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint8) *types.Transaction); ok {
-		r0 = rf(client, opts, commission)
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -286,7 +286,7 @@ func (_m *StakeManagerInterface) UpdateCommission(client *ethclient.Client, opts
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint8) error); ok {
-		r1 = rf(client, opts, commission)
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}

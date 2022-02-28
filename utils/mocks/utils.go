@@ -18,6 +18,8 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	pflag "github.com/spf13/pflag"
+
 	types "razor/core/types"
 )
 
@@ -26,13 +28,13 @@ type Utils struct {
 	mock.Mock
 }
 
-// AddJobToJSON provides a mock function with given fields: fileName, job
-func (_m *Utils) AddJobToJSON(fileName string, job *types.StructsJob) error {
-	ret := _m.Called(fileName, job)
+// AddJobToJSON provides a mock function with given fields: _a0, _a1
+func (_m *Utils) AddJobToJSON(_a0 string, _a1 *types.StructsJob) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, *types.StructsJob) error); ok {
-		r0 = rf(fileName, job)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -55,6 +57,27 @@ func (_m *Utils) Aggregate(_a0 *ethclient.Client, _a1 uint32, _a2 bindings.Struc
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// AssignStakerId provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) AssignStakerId(_a0 *pflag.FlagSet, _a1 *ethclient.Client, _a2 string) (uint32, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet, *ethclient.Client, string) uint32); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet, *ethclient.Client, string) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
@@ -86,13 +109,62 @@ func (_m *Utils) BalanceAtWithRetry(_a0 *ethclient.Client, _a1 common.Address) (
 	return r0, r1
 }
 
-// DeleteJobFromJSON provides a mock function with given fields: fileName, jobId
-func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
-	ret := _m.Called(fileName, jobId)
+// CalculateBlockTime provides a mock function with given fields: _a0
+func (_m *Utils) CalculateBlockTime(_a0 *ethclient.Client) int64 {
+	ret := _m.Called(_a0)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) int64); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	return r0
+}
+
+// CheckEthBalanceIsZero provides a mock function with given fields: _a0, _a1
+func (_m *Utils) CheckEthBalanceIsZero(_a0 *ethclient.Client, _a1 string) {
+	_m.Called(_a0, _a1)
+}
+
+// CheckTransactionReceipt provides a mock function with given fields: _a0, _a1
+func (_m *Utils) CheckTransactionReceipt(_a0 *ethclient.Client, _a1 string) int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	return r0
+}
+
+// ConnectToClient provides a mock function with given fields: _a0
+func (_m *Utils) ConnectToClient(_a0 string) *ethclient.Client {
+	ret := _m.Called(_a0)
+
+	var r0 *ethclient.Client
+	if rf, ok := ret.Get(0).(func(string) *ethclient.Client); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ethclient.Client)
+		}
+	}
+
+	return r0
+}
+
+// DeleteJobFromJSON provides a mock function with given fields: _a0, _a1
+func (_m *Utils) DeleteJobFromJSON(_a0 string, _a1 string) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = rf(fileName, jobId)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -113,6 +185,29 @@ func (_m *Utils) EstimateGasWithRetry(_a0 *ethclient.Client, _a1 ethereum.CallMs
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.CallMsg) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FetchBalance provides a mock function with given fields: _a0, _a1
+func (_m *Utils) FetchBalance(_a0 *ethclient.Client, _a1 string) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -539,6 +634,48 @@ func (_m *Utils) GetDataToCommitFromJobs(_a0 []bindings.StructsJob) ([]*big.Int,
 	}
 
 	return r0, r1, r2
+}
+
+// GetDelayedState provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetDelayedState(_a0 *ethclient.Client, _a1 int32) (int64, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetEpoch provides a mock function with given fields: _a0
+func (_m *Utils) GetEpoch(_a0 *ethclient.Client) (uint32, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetEpochLastCommitted provides a mock function with given fields: _a0, _a1
@@ -1090,13 +1227,13 @@ func (_m *Utils) GetStakeSnapshot(_a0 *ethclient.Client, _a1 uint32, _a2 uint32)
 	return r0, r1
 }
 
-// GetStakedToken provides a mock function with given fields: client, tokenAddress
-func (_m *Utils) GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
-	ret := _m.Called(client, tokenAddress)
+// GetStakedToken provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetStakedToken(_a0 *ethclient.Client, _a1 common.Address) *bindings.StakedToken {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *bindings.StakedToken
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *bindings.StakedToken); ok {
-		r0 = rf(client, tokenAddress)
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.StakedToken)
@@ -1148,13 +1285,27 @@ func (_m *Utils) GetStakerId(_a0 *ethclient.Client, _a1 string) (uint32, error) 
 	return r0, r1
 }
 
-// GetTokenManager provides a mock function with given fields: client
-func (_m *Utils) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
-	ret := _m.Called(client)
+// GetStateName provides a mock function with given fields: _a0
+func (_m *Utils) GetStateName(_a0 int64) string {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(int64) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// GetTokenManager provides a mock function with given fields: _a0
+func (_m *Utils) GetTokenManager(_a0 *ethclient.Client) *bindings.RAZOR {
+	ret := _m.Called(_a0)
 
 	var r0 *bindings.RAZOR
 	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.RAZOR); ok {
-		r0 = rf(client)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.RAZOR)
@@ -1201,6 +1352,27 @@ func (_m *Utils) GetTxnOpts(_a0 types.TransactionOptions) *bind.TransactOpts {
 	}
 
 	return r0
+}
+
+// GetUint32 provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetUint32(_a0 *pflag.FlagSet, _a1 string) (uint32, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet, string) uint32); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet, string) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetVoteManager provides a mock function with given fields: _a0
@@ -1328,6 +1500,20 @@ func (_m *Utils) IncreaseGasLimitValue(_a0 *ethclient.Client, _a1 uint64, _a2 fl
 	return r0, r1
 }
 
+// IsFlagPassed provides a mock function with given fields: _a0
+func (_m *Utils) IsFlagPassed(_a0 string) bool {
+	ret := _m.Called(_a0)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // MultiplyFloatAndBigInt provides a mock function with given fields: _a0, _a1
 func (_m *Utils) MultiplyFloatAndBigInt(_a0 *big.Int, _a1 float64) *big.Int {
 	ret := _m.Called(_a0, _a1)
@@ -1344,13 +1530,43 @@ func (_m *Utils) MultiplyFloatAndBigInt(_a0 *big.Int, _a1 float64) *big.Int {
 	return r0
 }
 
-// ReadJSONData provides a mock function with given fields: fileName
-func (_m *Utils) ReadJSONData(fileName string) (map[string]*types.StructsJob, error) {
-	ret := _m.Called(fileName)
+// ReadDataFromFile provides a mock function with given fields: _a0
+func (_m *Utils) ReadDataFromFile(_a0 string) (uint32, []*big.Int, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(string) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 []*big.Int
+	if rf, ok := ret.Get(1).(func(string) []*big.Int); ok {
+		r1 = rf(_a0)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]*big.Int)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(string) error); ok {
+		r2 = rf(_a0)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// ReadJSONData provides a mock function with given fields: _a0
+func (_m *Utils) ReadJSONData(_a0 string) (map[string]*types.StructsJob, error) {
+	ret := _m.Called(_a0)
 
 	var r0 map[string]*types.StructsJob
 	if rf, ok := ret.Get(0).(func(string) map[string]*types.StructsJob); ok {
-		r0 = rf(fileName)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[string]*types.StructsJob)
@@ -1359,12 +1575,26 @@ func (_m *Utils) ReadJSONData(fileName string) (map[string]*types.StructsJob, er
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(fileName)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
+}
+
+// SaveDataToFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, uint32, []*big.Int) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // SuggestGasPriceWithRetry provides a mock function with given fields: _a0
@@ -1390,13 +1620,32 @@ func (_m *Utils) SuggestGasPriceWithRetry(_a0 *ethclient.Client) (*big.Int, erro
 	return r0, r1
 }
 
-// WriteDataToJSON provides a mock function with given fields: fileName, data
-func (_m *Utils) WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error {
-	ret := _m.Called(fileName, data)
+// WaitForBlockCompletion provides a mock function with given fields: _a0, _a1
+func (_m *Utils) WaitForBlockCompletion(_a0 *ethclient.Client, _a1 string) int {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	return r0
+}
+
+// WaitTillNextNSecs provides a mock function with given fields: _a0
+func (_m *Utils) WaitTillNextNSecs(_a0 int32) {
+	_m.Called(_a0)
+}
+
+// WriteDataToJSON provides a mock function with given fields: _a0, _a1
+func (_m *Utils) WriteDataToJSON(_a0 string, _a1 map[string]*types.StructsJob) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, map[string]*types.StructsJob) error); ok {
-		r0 = rf(fileName, data)
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}
