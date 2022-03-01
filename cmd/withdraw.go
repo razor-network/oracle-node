@@ -104,7 +104,7 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		}
 		log.Debug("Waiting for lock period to get over....")
 		// Wait for 30 seconds if lock period isn't over
-		razorUtils.Sleep(30 * time.Second)
+		timeUtils.Sleep(30 * time.Second)
 		epoch, err = razorUtils.GetUpdatedEpoch(client)
 		if err != nil {
 			log.Error("Error in fetching epoch")

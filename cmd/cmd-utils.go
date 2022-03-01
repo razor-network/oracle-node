@@ -38,7 +38,7 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 		}
 		if !utils.Contains(states, int(state)) {
 			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
-			razorUtils.Sleep(5 * time.Second)
+			timeUtils.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
 		}
@@ -54,7 +54,7 @@ func (*UtilsStruct) WaitIfCommitState(client *ethclient.Client, action string) (
 		}
 		if state == 0 || state == -1 {
 			log.Debugf("Cannot perform %s during commit state. Retrying in 5 seconds...", action)
-			razorUtils.Sleep(5 * time.Second)
+			timeUtils.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
 		}
