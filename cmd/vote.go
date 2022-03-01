@@ -10,6 +10,7 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	jobManager "razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -39,6 +40,11 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
@@ -54,8 +60,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		RogueMode: rogueMode,
 	}
 	client := razorUtils.ConnectToClient(config.Provider)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	account := types.Account{Address: address, Password: password}
 

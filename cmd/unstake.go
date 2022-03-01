@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
@@ -32,12 +33,15 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	autoWithdraw, err := flagSetUtils.GetBoolAutoWithdraw(flagSet)
 	utils.CheckError("Error in getting autoWithdraw status: ", err)
