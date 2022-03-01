@@ -57,7 +57,7 @@ type UtilsInterface interface {
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	GetNumActiveCollections(*ethclient.Client) (uint16, error)
 	GetRogueRandomValue(int) *big.Int
-	GetAggregatedDataOfCollection(*ethclient.Client, uint32) ([]*big.Int, error)
+	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)
 	GetJobFilePath() (string, error)
@@ -88,7 +88,6 @@ type UtilsInterface interface {
 	ParseBool(string) (bool, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetNumberOfStakers(*ethclient.Client) (uint32, error)
-	GetSalt(*ethclient.Client) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)

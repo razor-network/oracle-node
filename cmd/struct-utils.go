@@ -96,8 +96,8 @@ func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
 }
 
-func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
-	return utilsInterface.GetAggregatedDataOfCollection(client, epoch)
+func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
+	return utilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
 }
 
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -696,7 +696,7 @@ func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet)
 	return flagSet.GetStringSlice("rogueMode")
 }
 
-func (KeystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
+func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 	return ks.Accounts()
 }
