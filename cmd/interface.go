@@ -287,7 +287,7 @@ type UtilsCmdInterface interface {
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
 	GetCommitDataFileName(string) (string, error)
 	GetMedianDataFileName(string) (string, error)
-	CalculateSecret(types.Account, uint32) []byte
+	CalculateSecret(types.Account, uint32) ([]byte, error)
 	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
 	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)
 	ExecuteVote(*pflag.FlagSet)

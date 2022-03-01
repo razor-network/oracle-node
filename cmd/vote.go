@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -188,59 +189,11 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	switch state {
 	case 0:
-		lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
-		if err != nil {
-			log.Error("Error in fetching last commit: ", err)
-			break
-		}
-		if lastCommit >= epoch {
-			log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
-			break
-		}
-		secret := cmdUtils.CalculateSecret(account, epoch)
-		if secret == nil {
-			break
-		}
-		previousEpoch := epoch - 1
-		previousBlock, err := utils.Options.GetBlock(client, previousEpoch)
+		err := InitiateCommit(client, config, account, epoch, stakerId, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
-
-		salt := utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians)
-		seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt), "0x" + hex.EncodeToString(secret)})
-
-		commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
-		if err != nil {
-			log.Error("Error in getting active assets: ", err)
-			break
-		}
-		merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
-		commitTxn, err := cmdUtils.Commit(client, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree), epoch, account, config)
-		if err != nil {
-			log.Error("Error in committing data: ", err)
-			break
-		}
-		if commitTxn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, commitTxn.String())
-		}
-
-		_merkleTree = merkleTree
-
-		//TODO: Modify this
-		//log.Debug("Saving committed data for recovery")
-		//fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
-		//if err != nil {
-		//	log.Error("Error in getting file name to save committed data: ", err)
-		//	break
-		//}
-		//err = razorUtils.SaveDataToFile(fileName, epoch, _committedData)
-		//if err != nil {
-		//	log.Errorf("Error in saving data to file %s: %t", fileName, err)
-		//	break
-		//}
-		//log.Debug("Data saved!")
 	case 1:
 		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
 		if err != nil {
@@ -365,6 +318,62 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	fmt.Println()
 }
 
+func InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
+	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
+	if err != nil {
+		return errors.New("Error in fetching last commit: " + err.Error())
+	}
+	if lastCommit >= epoch {
+		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
+		return nil
+	}
+
+	secret, err := cmdUtils.CalculateSecret(account, epoch)
+	if err != nil {
+		return err
+	}
+
+	previousEpoch := epoch - 1
+	previousBlock, err := utils.Options.GetBlock(client, previousEpoch)
+	if err != nil {
+		return errors.New("Error in getting previous block: " + err.Error())
+	}
+
+	salt := utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians)
+	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt), "0x" + hex.EncodeToString(secret)})
+
+	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
+	if err != nil {
+		return errors.New("Error in getting active assets: " + err.Error())
+	}
+
+	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	commitTxn, err := cmdUtils.Commit(client, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree), epoch, account, config)
+	if err != nil {
+		return errors.New("Error in committing data: " + err.Error())
+	}
+	if commitTxn != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+	}
+
+	_merkleTree = merkleTree
+
+	//TODO: Modify this
+	//log.Debug("Saving committed data for recovery")
+	//fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+	//if err != nil {
+	//	log.Error("Error in getting file name to save committed data: ", err)
+	//	break
+	//}
+	//err = razorUtils.SaveDataToFile(fileName, epoch, _committedData)
+	//if err != nil {
+	//	log.Errorf("Error in saving data to file %s: %t", fileName, err)
+	//	break
+	//}
+	//log.Debug("Data saved!")
+	return nil
+}
+
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
@@ -396,19 +405,18 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	return epochLastProposed, nil
 }
 
-func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) []byte {
+func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, error) {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
 	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
-		log.Error("Error in fetching .razor directory: ", err)
+		return nil, errors.New("Error in fetching .razor directory: " + err.Error())
 	}
 	signedData, err := accounts.AccountUtilsInterface.SignData(hash, account, razorPath)
 	if err != nil {
-		log.Error("Error in signing the data: ", err)
-		return nil
+		return nil, errors.New("Error in signing the data: " + err.Error())
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
-	return secret
+	return secret, nil
 }
 
 func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
