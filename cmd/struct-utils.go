@@ -26,6 +26,18 @@ import (
 
 var utilsInterface = utils.UtilsInterface
 
+func InitializeUtils() {
+	utilsInterface = &utils.UtilsStruct{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	utils.EthClient = &utils.EthClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
+	utils.Time = &utils.TimeStruct{}
+	utils.OS = &utils.OSStruct{}
+	utils.Bufio = &utils.BufioStruct{}
+	utils.CoinInterface = &utils.CoinStruct{}
+}
+
 func (u Utils) GetConfigFilePath() (string, error) {
 	return path.PathUtilsInterface.GetConfigFilePath()
 }
@@ -56,11 +68,23 @@ func (u Utils) Sleep(duration time.Duration) {
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
-		Options:        utils.Options,
-		UtilsInterface: utils.UtilsInterface,
+		Options:         utils.Options,
+		UtilsInterface:  utils.UtilsInterface,
+		EthClient:       utils.EthClient,
+		ClientInterface: utils.ClientInterface,
+		Time:            utils.Time,
+		OS:              utils.OS,
+		Bufio:           utils.Bufio,
+		CoinInterface:   utils.CoinInterface,
 	})
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	utils.EthClient = &utils.EthClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
+	utils.Time = &utils.TimeStruct{}
+	utils.OS = &utils.OSStruct{}
+	utils.Bufio = &utils.BufioStruct{}
+	utils.CoinInterface = &utils.CoinStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 

@@ -432,13 +432,12 @@ func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account typ
 func init() {
 
 	razorUtils = Utils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtils = &UtilsStruct{}
 	blockManagerUtils = BlockManagerUtils{}
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
+	InitializeUtils()
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(voteCmd)
