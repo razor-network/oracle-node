@@ -3,31 +3,14 @@
 package mocks
 
 import (
-	accounts "razor/accounts"
-
-	abi "github.com/ethereum/go-ethereum/accounts/abi"
-
 	big "math/big"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
-	bindings "razor/pkg/bindings"
-
 	common "github.com/ethereum/go-ethereum/common"
 
-	context "context"
-
-	coretypes "github.com/ethereum/go-ethereum/core/types"
-
-	ecdsa "crypto/ecdsa"
-
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
-
-	ethereum "github.com/ethereum/go-ethereum"
-
-	fs "io/fs"
-
-	io "io"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -106,50 +89,6 @@ func (_m *OptionUtils) EpochLimitForUpdateCommission(_a0 *ethclient.Client, _a1 
 	return r0, r1
 }
 
-// EstimateGas provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) EstimateGas(_a0 *ethclient.Client, _a1 context.Context, _a2 ethereum.CallMsg) (uint64, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, ethereum.CallMsg) uint64); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.CallMsg) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterLogs provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) FilterLogs(_a0 *ethclient.Client, _a1 context.Context, _a2 ethereum.FilterQuery) ([]coretypes.Log, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 []coretypes.Log
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, ethereum.FilterQuery) []coretypes.Log); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]coretypes.Log)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.FilterQuery) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetActiveCollections provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) GetActiveCollections(_a0 *ethclient.Client, _a1 *bind.CallOpts) ([]uint16, error) {
 	ret := _m.Called(_a0, _a1)
@@ -187,48 +126,6 @@ func (_m *OptionUtils) GetAsset(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 u
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint16) error); ok {
 		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetBlock provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) GetBlock(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint32) (bindings.StructsBlock, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 bindings.StructsBlock
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint32) bindings.StructsBlock); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		r0 = ret.Get(0).(bindings.StructsBlock)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetDefaultPath provides a mock function with given fields:
-func (_m *OptionUtils) GetDefaultPath() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -301,27 +198,6 @@ func (_m *OptionUtils) GetInfluenceSnapshot(_a0 *ethclient.Client, _a1 *bind.Cal
 	return r0, r1
 }
 
-// GetJobFilePath provides a mock function with given fields:
-func (_m *OptionUtils) GetJobFilePath() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetNumActiveCollections provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) GetNumActiveCollections(_a0 *ethclient.Client, _a1 *bind.CallOpts) (*big.Int, error) {
 	ret := _m.Called(_a0, _a1)
@@ -366,27 +242,6 @@ func (_m *OptionUtils) GetNumAssets(_a0 *ethclient.Client, _a1 *bind.CallOpts) (
 	return r0, r1
 }
 
-// GetNumProposedBlocks provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) GetNumProposedBlocks(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint32) (uint8, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint32) uint8); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		r0 = ret.Get(0).(uint8)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetNumStakers provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) GetNumStakers(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint32, error) {
 	ret := _m.Called(_a0, _a1)
@@ -401,43 +256,6 @@ func (_m *OptionUtils) GetNumStakers(_a0 *ethclient.Client, _a1 *bind.CallOpts) 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
 		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetPrivateKey provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *OptionUtils) GetPrivateKey(_a0 string, _a1 string, _a2 string, _a3 accounts.AccountInterface) *ecdsa.PrivateKey {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
-
-	var r0 *ecdsa.PrivateKey
-	if rf, ok := ret.Get(0).(func(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ecdsa.PrivateKey)
-		}
-	}
-
-	return r0
-}
-
-// GetProposedBlock provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *OptionUtils) GetProposedBlock(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint32, _a3 uint32) (bindings.StructsBlock, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
-
-	var r0 bindings.StructsBlock
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint32, uint32) bindings.StructsBlock); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
-	} else {
-		r0 = ret.Get(0).(bindings.StructsBlock)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -665,27 +483,6 @@ func (_m *OptionUtils) Marshal(_a0 interface{}) ([]byte, error) {
 	return r0, r1
 }
 
-// MaxAltBlocks provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) MaxAltBlocks(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) uint8); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Get(0).(uint8)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // MaxCommission provides a mock function with given fields: _a0, _a1
 func (_m *OptionUtils) MaxCommission(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
 	ret := _m.Called(_a0, _a1)
@@ -695,29 +492,6 @@ func (_m *OptionUtils) MaxCommission(_a0 *ethclient.Client, _a1 *bind.CallOpts) 
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(uint8)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// MinStake provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) MinStake(_a0 *ethclient.Client, _a1 *bind.CallOpts) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) *big.Int); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
 	}
 
 	var r1 error
@@ -768,29 +542,6 @@ func (_m *OptionUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// NewKeyedTransactorWithChainID provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) NewKeyedTransactorWithChainID(_a0 *ecdsa.PrivateKey, _a1 *big.Int) (*bind.TransactOpts, error) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 *bind.TransactOpts
-	if rf, ok := ret.Get(0).(func(*ecdsa.PrivateKey, *big.Int) *bind.TransactOpts); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bind.TransactOpts)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ecdsa.PrivateKey, *big.Int) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -891,120 +642,6 @@ func (_m *OptionUtils) NewVoteManager(_a0 common.Address, _a1 *ethclient.Client)
 	return r0, r1
 }
 
-// Pack provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) Pack(_a0 abi.ABI, _a1 string, _a2 ...interface{}) ([]byte, error) {
-	var _ca []interface{}
-	_ca = append(_ca, _a0, _a1)
-	_ca = append(_ca, _a2...)
-	ret := _m.Called(_ca...)
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(abi.ABI, string, ...interface{}) []byte); ok {
-		r0 = rf(_a0, _a1, _a2...)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(abi.ABI, string, ...interface{}) error); ok {
-		r1 = rf(_a0, _a1, _a2...)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Parse provides a mock function with given fields: _a0
-func (_m *OptionUtils) Parse(_a0 io.Reader) (abi.ABI, error) {
-	ret := _m.Called(_a0)
-
-	var r0 abi.ABI
-	if rf, ok := ret.Get(0).(func(io.Reader) abi.ABI); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(abi.ABI)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(io.Reader) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// PendingNonceAt provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) PendingNonceAt(_a0 *ethclient.Client, _a1 context.Context, _a2 common.Address) (uint64, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, common.Address) uint64); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, common.Address) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ReadAll provides a mock function with given fields: _a0
-func (_m *OptionUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
-	ret := _m.Called(_a0)
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(io.ReadCloser) []byte); ok {
-		r0 = rf(_a0)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(io.ReadCloser) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ReadFile provides a mock function with given fields: _a0
-func (_m *OptionUtils) ReadFile(_a0 string) ([]byte, error) {
-	ret := _m.Called(_a0)
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(_a0)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // RetryAttempts provides a mock function with given fields: _a0
 func (_m *OptionUtils) RetryAttempts(_a0 uint) retry.Option {
 	ret := _m.Called(_a0)
@@ -1019,50 +656,6 @@ func (_m *OptionUtils) RetryAttempts(_a0 uint) retry.Option {
 	}
 
 	return r0
-}
-
-// SortedProposedBlockIds provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *OptionUtils) SortedProposedBlockIds(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint32, _a3 *big.Int) (uint32, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) uint32); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SuggestGasPrice provides a mock function with given fields: _a0, _a1
-func (_m *OptionUtils) SuggestGasPrice(_a0 *ethclient.Client, _a1 context.Context) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context) *big.Int); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context) error); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // Unmarshal provides a mock function with given fields: _a0, _a1
@@ -1098,18 +691,4 @@ func (_m *OptionUtils) WithdrawReleasePeriod(_a0 *ethclient.Client, _a1 *bind.Ca
 	}
 
 	return r0, r1
-}
-
-// WriteFile provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OptionUtils) WriteFile(_a0 string, _a1 []byte, _a2 fs.FileMode) error {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, []byte, fs.FileMode) error); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }

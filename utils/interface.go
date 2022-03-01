@@ -30,6 +30,12 @@ import (
 //go:generate mockery --name OSUtils --output ./mocks --case=underscore
 //go:generate mockery --name BufioUtils --output ./mocks --case=underscore
 //go:generate mockery --name CoinUtils --output ./mocks --case=underscore
+//go:generate mockery --name IoutilUtils --output ./mocks --case=underscore
+//go:generate mockery --name ABIUtils --output ./mocks --case=underscore
+//go:generate mockery --name PathUtils --output ./mocks --case=underscore
+//go:generate mockery --name BindUtils --output ./mocks --case=underscore
+//go:generate mockery --name AccountsUtils --output ./mocks --case=underscore
+//go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
 
 var Options OptionUtils
 var UtilsInterface Utils
@@ -39,25 +45,15 @@ var Time TimeUtils
 var OS OSUtils
 var Bufio BufioUtils
 var CoinInterface CoinUtils
+var IoutilInterface IoutilUtils
+var ABIInterface ABIUtils
+var PathInterface PathUtils
+var BindInterface BindUtils
+var AccountsInterface AccountsUtils
+var BlockManagerInterface BlockManagerUtils
 
 type OptionUtils interface {
-	Parse(io.Reader) (abi.ABI, error)
-	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
-	GetDefaultPath() (string, error)
-	GetJobFilePath() (string, error)
-	GetPrivateKey(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey
-	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
 	RetryAttempts(uint) retry.Option
-	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
-	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
-	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
-	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
-	GetNumProposedBlocks(*ethclient.Client, *bind.CallOpts, uint32) (uint8, error)
-	GetProposedBlock(*ethclient.Client, *bind.CallOpts, uint32, uint32) (bindings.StructsBlock, error)
-	GetBlock(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsBlock, error)
-	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
-	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
-	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
 	GetStakerId(*ethclient.Client, *bind.CallOpts, common.Address) (uint32, error)
 	GetStaker(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsStaker, error)
 	GetNumStakers(*ethclient.Client, *bind.CallOpts) (uint32, error)
@@ -80,17 +76,14 @@ type OptionUtils interface {
 	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
 	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
-	ReadAll(io.ReadCloser) ([]byte, error)
 	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
 	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
 	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
 	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
 	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
 	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
-	ReadFile(string) ([]byte, error)
 	Unmarshal([]byte, interface{}) error
 	Marshal(interface{}) ([]byte, error)
-	WriteFile(string, []byte, fs.FileMode) error
 }
 
 type Utils interface {
@@ -185,6 +178,10 @@ type ClientUtils interface {
 	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
 	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
 	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
+	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
+	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
+	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
+	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
 }
 
 type TimeUtils interface {
@@ -204,6 +201,39 @@ type CoinUtils interface {
 	BalanceOf(*bindings.RAZOR, *bind.CallOpts, common.Address) (*big.Int, error)
 }
 
+type IoutilUtils interface {
+	ReadAll(io.ReadCloser) ([]byte, error)
+	ReadFile(string) ([]byte, error)
+	WriteFile(string, []byte, fs.FileMode) error
+}
+
+type ABIUtils interface {
+	Parse(io.Reader) (abi.ABI, error)
+	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
+}
+
+type PathUtils interface {
+	GetDefaultPath() (string, error)
+	GetJobFilePath() (string, error)
+}
+
+type BindUtils interface {
+	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
+}
+
+type AccountsUtils interface {
+	GetPrivateKey(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey
+}
+
+type BlockManagerUtils interface {
+	GetNumProposedBlocks(*ethclient.Client, *bind.CallOpts, uint32) (uint8, error)
+	GetProposedBlock(*ethclient.Client, *bind.CallOpts, uint32, uint32) (bindings.StructsBlock, error)
+	GetBlock(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsBlock, error)
+	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
+	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+}
+
 type OptionsStruct struct{}
 type UtilsStruct struct{}
 type EthClientStruct struct{}
@@ -212,14 +242,26 @@ type TimeStruct struct{}
 type OSStruct struct{}
 type BufioStruct struct{}
 type CoinStruct struct{}
+type IoutilStruct struct{}
+type ABIStruct struct{}
+type PathStruct struct{}
+type BindStruct struct{}
+type AccountsStruct struct{}
+type BlockManagerStruct struct{}
 
 type OptionsPackageStruct struct {
-	Options         OptionUtils
-	UtilsInterface  Utils
-	EthClient       EthClientUtils
-	ClientInterface ClientUtils
-	Time            TimeUtils
-	OS              OSUtils
-	Bufio           BufioUtils
-	CoinInterface   CoinUtils
+	Options               OptionUtils
+	UtilsInterface        Utils
+	EthClient             EthClientUtils
+	ClientInterface       ClientUtils
+	Time                  TimeUtils
+	OS                    OSUtils
+	Bufio                 BufioUtils
+	CoinInterface         CoinUtils
+	IoutilInterface       IoutilUtils
+	ABIInterface          ABIUtils
+	PathInterface         PathUtils
+	BindInterface         BindUtils
+	AccountsInterface     AccountsUtils
+	BlockManagerInterface BlockManagerUtils
 }

@@ -1290,14 +1290,14 @@ func TestGetLastProposedEpoch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
-			optionsMock := new(Mocks.OptionUtils)
+			abiMock := new(Mocks.ABIUtils)
 			utilsPkgMock := new(Mocks.Utils)
 
 			razorUtils = utilsMock
-			utils.Options = optionsMock
+			utils.ABIInterface = abiMock
 			utils.UtilsInterface = utilsPkgMock
 
-			optionsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
+			abiMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			utilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
 

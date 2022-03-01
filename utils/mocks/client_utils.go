@@ -10,6 +10,8 @@ import (
 
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
+	ethereum "github.com/ethereum/go-ethereum"
+
 	mock "github.com/stretchr/testify/mock"
 
 	types "github.com/ethereum/go-ethereum/core/types"
@@ -43,6 +45,50 @@ func (_m *ClientUtils) BalanceAt(_a0 *ethclient.Client, _a1 context.Context, _a2
 	return r0, r1
 }
 
+// EstimateGas provides a mock function with given fields: _a0, _a1, _a2
+func (_m *ClientUtils) EstimateGas(_a0 *ethclient.Client, _a1 context.Context, _a2 ethereum.CallMsg) (uint64, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, ethereum.CallMsg) uint64); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.CallMsg) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterLogs provides a mock function with given fields: _a0, _a1, _a2
+func (_m *ClientUtils) FilterLogs(_a0 *ethclient.Client, _a1 context.Context, _a2 ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 []types.Log
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, ethereum.FilterQuery) []types.Log); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Log)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.FilterQuery) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // HeaderByNumber provides a mock function with given fields: _a0, _a1, _a2
 func (_m *ClientUtils) HeaderByNumber(_a0 *ethclient.Client, _a1 context.Context, _a2 *big.Int) (*types.Header, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -59,6 +105,50 @@ func (_m *ClientUtils) HeaderByNumber(_a0 *ethclient.Client, _a1 context.Context
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, *big.Int) error); ok {
 		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// PendingNonceAt provides a mock function with given fields: _a0, _a1, _a2
+func (_m *ClientUtils) PendingNonceAt(_a0 *ethclient.Client, _a1 context.Context, _a2 common.Address) (uint64, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context, common.Address) uint64); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, common.Address) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SuggestGasPrice provides a mock function with given fields: _a0, _a1
+func (_m *ClientUtils) SuggestGasPrice(_a0 *ethclient.Client, _a1 context.Context) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, context.Context) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

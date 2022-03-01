@@ -18,7 +18,7 @@ func (*UtilsStruct) GetPendingNonceAtWithRetry(client *ethclient.Client, account
 	)
 	err = retry.Do(
 		func() error {
-			nonce, err = Options.PendingNonceAt(client, context.Background(), accountAddress)
+			nonce, err = ClientInterface.PendingNonceAt(client, context.Background(), accountAddress)
 			if err != nil {
 				log.Error("Error in fetching nonce.... Retrying")
 				return err
@@ -58,7 +58,7 @@ func (o *UtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.I
 	)
 	err = retry.Do(
 		func() error {
-			gasPrice, err = Options.SuggestGasPrice(client, context.Background())
+			gasPrice, err = ClientInterface.SuggestGasPrice(client, context.Background())
 			if err != nil {
 				log.Error("Error in fetching gas price.... Retrying")
 				return err
@@ -78,7 +78,7 @@ func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ether
 	)
 	err = retry.Do(
 		func() error {
-			gasLimit, err = Options.EstimateGas(client, context.Background(), message)
+			gasLimit, err = ClientInterface.EstimateGas(client, context.Background(), message)
 			if err != nil {
 				log.Error("Error in estimating gas limit.... Retrying")
 				return err
@@ -98,7 +98,7 @@ func (*UtilsStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum
 	)
 	err = retry.Do(
 		func() error {
-			logs, err = Options.FilterLogs(client, context.Background(), query)
+			logs, err = ClientInterface.FilterLogs(client, context.Background(), query)
 			if err != nil {
 				log.Error("Error in fetching logs.... Retrying")
 				return err

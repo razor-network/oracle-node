@@ -363,7 +363,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, err
 	}
-	contractAbi, err := utils.Options.Parse(strings.NewReader(jobManager.BlockManagerABI))
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(jobManager.BlockManagerABI))
 	if err != nil {
 		return 0, err
 	}

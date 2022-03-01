@@ -49,13 +49,15 @@ func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			optionsMock := new(mocks.OptionUtils)
+			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:         optionsMock,
+				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("SuggestGasPrice", mock.AnythingOfType("*ethclient.Client"), context.Background()).Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			clientMock.On("SuggestGasPrice", mock.AnythingOfType("*ethclient.Client"), context.Background()).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.SuggestGasPriceWithRetry(client)
@@ -162,12 +164,14 @@ func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:         optionsMock,
+				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
-			optionsMock.On("EstimateGas", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			clientMock.On("EstimateGas", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.EstimateGasWithRetry(client, message)
@@ -216,12 +220,14 @@ func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:         optionsMock,
+				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
-			optionsMock.On("FilterLogs", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			clientMock.On("FilterLogs", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.FilterLogsWithRetry(client, query)
@@ -325,12 +331,14 @@ func TestUtilsStruct_GetPendingNonceAtWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
+			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				Options:         optionsMock,
+				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
-			optionsMock.On("PendingNonceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
+			clientMock.On("PendingNonceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetPendingNonceAtWithRetry(client, accountAddress)

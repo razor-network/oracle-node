@@ -285,7 +285,7 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 }
 
 func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
-	jobPath, err := Options.GetJobFilePath()
+	jobPath, err := PathInterface.GetJobFilePath()
 	if err != nil {
 		return nil, nil, err
 	}

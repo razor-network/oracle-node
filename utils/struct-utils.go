@@ -34,79 +34,49 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	OS = optionsPackageStruct.OS
 	Bufio = optionsPackageStruct.Bufio
 	CoinInterface = optionsPackageStruct.CoinInterface
+	IoutilInterface = optionsPackageStruct.IoutilInterface
+	ABIInterface = optionsPackageStruct.ABIInterface
+	PathInterface = optionsPackageStruct.PathInterface
+	BindInterface = optionsPackageStruct.BindInterface
+	AccountsInterface = optionsPackageStruct.AccountsInterface
+	BlockManagerInterface = optionsPackageStruct.BlockManagerInterface
 	return &UtilsStruct{}
 }
 
-func (o OptionsStruct) Parse(reader io.Reader) (abi.ABI, error) {
-	return abi.JSON(reader)
-}
-
-func (o OptionsStruct) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
-	return parsedData.Pack(name, args...)
-}
-
-func (o OptionsStruct) GetDefaultPath() (string, error) {
-	return path.PathUtilsInterface.GetDefaultPath()
-}
-
-func (o OptionsStruct) GetJobFilePath() (string, error) {
-	return path.PathUtilsInterface.GetJobFilePath()
-}
-
-func (o OptionsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
+func (a AccountsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
 	return accounts.AccountUtilsInterface.GetPrivateKey(address, password, keystorePath)
-}
-
-func (o OptionsStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
-	return bind.NewKeyedTransactorWithChainID(key, chainID)
 }
 
 func (o OptionsStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 	return retry.Attempts(numberOfAttempts)
 }
 
-func (o OptionsStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
-	return client.PendingNonceAt(ctx, account)
-}
-
-func (o OptionsStruct) SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error) {
-	return client.SuggestGasPrice(ctx)
-}
-
-func (o OptionsStruct) EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
-	return client.EstimateGas(ctx, msg)
-}
-
-func (o OptionsStruct) FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
-	return client.FilterLogs(ctx, q)
-}
-
-func (o OptionsStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
+func (b BlockManagerStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.GetNumProposedBlocks(opts, epoch)
 }
 
-func (o OptionsStruct) GetProposedBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, proposedBlock uint32) (bindings.StructsBlock, error) {
+func (b BlockManagerStruct) GetProposedBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, proposedBlock uint32) (bindings.StructsBlock, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.GetProposedBlock(opts, epoch, proposedBlock)
 }
 
-func (o OptionsStruct) GetBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (bindings.StructsBlock, error) {
+func (b BlockManagerStruct) GetBlock(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (bindings.StructsBlock, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.GetBlock(opts, epoch)
 }
 
-func (o OptionsStruct) MinStake(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
+func (b BlockManagerStruct) MinStake(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.MinStake(opts)
 }
 
-func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+func (b BlockManagerStruct) MaxAltBlocks(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.MaxAltBlocks(opts)
 }
 
-func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
+func (b BlockManagerStruct) SortedProposedBlockIds(client *ethclient.Client, opts *bind.CallOpts, arg0 uint32, arg1 *big.Int) (uint32, error) {
 	blockManager := UtilsInterface.GetBlockManager(client)
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
 }
@@ -173,10 +143,6 @@ func (o OptionsStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id ui
 
 func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return ConvertToNumber(num)
-}
-
-func (o OptionsStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
-	return ioutil.ReadAll(body)
 }
 
 func (o OptionsStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (coretypes.Commitment, error) {
@@ -248,20 +214,12 @@ func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.
 	return bindings.NewStakedToken(address, client)
 }
 
-func (o OptionsStruct) ReadFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filename)
-}
-
 func (o OptionsStruct) Unmarshal(data []byte, v interface{}) error {
 	return json.Unmarshal(data, v)
 }
 
 func (o OptionsStruct) Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(v)
-}
-
-func (o OptionsStruct) WriteFile(filename string, data []byte, perm fs.FileMode) error {
-	return ioutil.WriteFile(filename, data, perm)
 }
 
 func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error) {
@@ -296,10 +254,58 @@ func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Conte
 	return client.HeaderByNumber(ctx, number)
 }
 
+func (c ClientStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
+	return client.PendingNonceAt(ctx, account)
+}
+
+func (c ClientStruct) SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error) {
+	return client.SuggestGasPrice(ctx)
+}
+
+func (c ClientStruct) EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
+	return client.EstimateGas(ctx, msg)
+}
+
+func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
+	return client.FilterLogs(ctx, q)
+}
+
 func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
 	return bufio.NewScanner(r)
 }
 
 func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
 	return coinContract.BalanceOf(opts, account)
+}
+
+func (a ABIStruct) Parse(reader io.Reader) (abi.ABI, error) {
+	return abi.JSON(reader)
+}
+
+func (a ABIStruct) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
+	return parsedData.Pack(name, args...)
+}
+
+func (i IoutilStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
+	return ioutil.ReadAll(body)
+}
+
+func (i IoutilStruct) ReadFile(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filename)
+}
+
+func (i IoutilStruct) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+	return ioutil.WriteFile(filename, data, perm)
+}
+
+func (p PathStruct) GetDefaultPath() (string, error) {
+	return path.PathUtilsInterface.GetDefaultPath()
+}
+
+func (p PathStruct) GetJobFilePath() (string, error) {
+	return path.PathUtilsInterface.GetJobFilePath()
+}
+
+func (b BindStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
+	return bind.NewKeyedTransactorWithChainID(key, chainID)
 }

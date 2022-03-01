@@ -760,16 +760,16 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			pathMock := new(mocks.PathUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
 				UtilsInterface: utilsMock,
+				PathInterface:  pathMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
+			pathMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
 			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
 			utilsMock.On("GetDataToCommitFromJob", mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
