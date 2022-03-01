@@ -212,11 +212,13 @@ func TestWithdrawFunds(t *testing.T) {
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			cmdUtils = cmdUtilsMock
 			transactionUtils = transactionUtilsMock
+			timeUtils = timeMock
 
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetWithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
@@ -224,7 +226,7 @@ func TestWithdrawFunds(t *testing.T) {
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetUpdatedEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.updatedEpoch, tt.args.updatedEpochErr)
 			cmdUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
-			utilsMock.On("Sleep", mock.Anything).Return()
+			timeMock.On("Sleep", mock.Anything).Return()
 
 			utils := &UtilsStruct{}
 			got, err := utils.WithdrawFunds(client, account, configurations, stakerId)

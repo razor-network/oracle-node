@@ -40,7 +40,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
-	status, err := razorUtils.ParseBool(statusString)
+	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status to boolean: ", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
