@@ -20,6 +20,8 @@ type StandardLogger struct {
 
 var standardLogger = &StandardLogger{logrus.New()}
 
+var Address string
+
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
 	path.OSUtilsInterface = &path.OSUtils{}
@@ -66,25 +68,37 @@ func joinString(args ...interface{}) string {
 }
 
 func (logger *StandardLogger) Error(args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
 	sentry.CaptureException(err)
-	logger.Errorln(args...)
+	logger.WithFields(addressLogField).Errorln(args...)
 }
 
 func (logger *StandardLogger) Info(args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
-	logger.Infoln(args...)
+	logger.WithFields(addressLogField).Infoln(args...)
 }
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
-	logger.Debugln(args...)
+	logger.WithFields(addressLogField).Debugln(args...)
 }
 
 func (logger *StandardLogger) Fatal(args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
 	defer sentry.Recover()
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
@@ -92,5 +106,5 @@ func (logger *StandardLogger) Fatal(args ...interface{}) {
 		scope.SetLevel(sentry.LevelFatal)
 		sentry.CaptureException(err)
 	})
-	logger.Fatalln(err)
+	logger.WithFields(addressLogField).Fatalln(err)
 }
