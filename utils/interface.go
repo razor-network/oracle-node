@@ -209,9 +209,9 @@ type CoinUtils interface {
 }
 
 type MerkleTreeInterface interface {
-	CreateMerkle(values []string) [][][]byte
-	GetProofPath(tree [][][]byte, assetId uint16) [][]byte
-	GetMerkleRoot(tree [][][]byte) []byte
+	CreateMerkle(values []*big.Int) [][][]byte
+	GetProofPath(tree [][][]byte, assetId uint16) [][32]byte
+	GetMerkleRoot(tree [][][]byte) [32]byte
 }
 
 type OptionsStruct struct{}

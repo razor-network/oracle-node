@@ -11,7 +11,7 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	jobManager "razor/pkg/bindings"
+	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
 	"time"
@@ -112,8 +112,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 }
 
 var (
-	_merkleTree      [][][]byte
-	_committedData   []*big.Int
+	_commitData      types.CommitData
 	lastVerification uint32
 	blockConfirmed   uint32
 )
@@ -195,59 +194,10 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 1:
-		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
+		err := InitiateReveal(client, config, account, epoch, staker, rogueData)
 		if err != nil {
-			log.Error("Error in fetching last reveal: ", err)
-			break
-		}
-		if lastReveal >= epoch {
-			log.Debugf("Last reveal: %d", lastReveal)
-			log.Debugf("Cannot reveal in epoch %d", epoch)
-			break
-		}
-		if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
 			log.Error(err)
 			break
-		}
-		log.Debug("Epoch last revealed: ", lastReveal)
-		if _committedData == nil {
-			fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
-			if err != nil {
-				log.Error("Error in getting file name to save committed data: ", err)
-				break
-			}
-			epochInFile, committedDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
-			if err != nil {
-				log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
-				break
-			}
-			if epochInFile != epoch {
-				log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
-				break
-			}
-			_committedData = committedDataFromFile
-		}
-		secret := cmdUtils.CalculateSecret(account, epoch)
-		if secret == nil {
-			break
-		}
-
-		// Reveal wrong data if rogueMode contains reveal
-		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
-			var rogueCommittedData []*big.Int
-			for i := 0; i < len(_committedData); i++ {
-				rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
-			}
-			_committedData = rogueCommittedData
-		}
-
-		revealTxn, err := cmdUtils.Reveal(client, _committedData, secret, account, account.Address, config)
-		if err != nil {
-			log.Error("Reveal error: ", err)
-			break
-		}
-		if revealTxn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, revealTxn.String())
 		}
 	case 2:
 		lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, stakerId)
@@ -296,7 +246,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
-				ABI:             jobManager.BlockManagerABI,
+				ABI:             bindings.BlockManagerABI,
 			})
 
 			if err != nil {
@@ -347,6 +297,8 @@ func InitiateCommit(client *ethclient.Client, config types.Configurations, accou
 		return errors.New("Error in getting active assets: " + err.Error())
 	}
 
+	_commitData = commitData
+
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
 	commitTxn, err := cmdUtils.Commit(client, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree), epoch, account, config)
 	if err != nil {
@@ -355,8 +307,6 @@ func InitiateCommit(client *ethclient.Client, config types.Configurations, accou
 	if commitTxn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, commitTxn.String())
 	}
-
-	_merkleTree = merkleTree
 
 	//TODO: Modify this
 	//log.Debug("Saving committed data for recovery")
@@ -374,6 +324,64 @@ func InitiateCommit(client *ethclient.Client, config types.Configurations, accou
 	return nil
 }
 
+func InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
+	lastReveal, err := razorUtils.GetEpochLastRevealed(client, staker.Id)
+	if err != nil {
+		return errors.New("Error in fetching last reveal: " + err.Error())
+	}
+	if lastReveal >= epoch {
+		log.Debugf("Since last reveal was at epoch: %d, won't reveal again in epoch: %d", lastReveal, epoch)
+		return nil
+	}
+
+	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+		log.Error(err)
+	}
+	log.Debug("Epoch last revealed: ", lastReveal)
+	//TODO: Modify this
+	//if _committedData == nil {
+	//	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+	//	if err != nil {
+	//		log.Error("Error in getting file name to save committed data: ", err)
+	//		break
+	//	}
+	//	epochInFile, committedDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
+	//	if err != nil {
+	//		log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
+	//		break
+	//	}
+	//	if epochInFile != epoch {
+	//		log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
+	//		break
+	//	}
+	//	_committedData = committedDataFromFile
+	//}
+
+	//TODO: Check this
+	// Reveal wrong data if rogueMode contains reveal
+	//if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+	//	var rogueCommittedData []*big.Int
+	//	for i := 0; i < len(_committedData); i++ {
+	//		rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
+	//	}
+	//	_committedData = rogueCommittedData
+	//}
+
+	secret, err := cmdUtils.CalculateSecret(account, epoch)
+	if err != nil {
+		return err
+	}
+
+	revealTxn, err := cmdUtils.Reveal(client, config, account, _commitData, secret)
+	if err != nil {
+		return errors.New("Reveal error: " + err.Error())
+	}
+	if revealTxn != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+	}
+	return nil
+}
+
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
@@ -387,7 +395,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, err
 	}
-	contractAbi, err := utils.Options.Parse(strings.NewReader(jobManager.BlockManagerABI))
+	contractAbi, err := utils.Options.Parse(strings.NewReader(bindings.BlockManagerABI))
 	if err != nil {
 		return 0, err
 	}

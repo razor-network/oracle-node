@@ -23,7 +23,7 @@ type Rogue struct {
 }
 
 type CommitData struct {
-	AssignedCollections   map[int]bool
+	AssignedCollections    map[int]bool
 	SeqAllottedCollections []*big.Int
-	Leaves                []string
+	Leaves                 []*big.Int
 }

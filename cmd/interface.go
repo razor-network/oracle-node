@@ -147,8 +147,8 @@ type BlockManagerInterface interface {
 }
 
 type VoteManagerInterface interface {
-	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
-	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, [32]byte) (*Types.Transaction, error)
+	Commit(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error)
+	Reveal(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error)
 }
 
 type TokenManagerInterface interface {
@@ -222,13 +222,13 @@ type UtilsCmdInterface interface {
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
 	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
-	Commit(client *ethclient.Client, seed []byte, root []byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error)
+	Commit(client *ethclient.Client, seed []byte, root [32]byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(*pflag.FlagSet)
 	Transfer(*ethclient.Client, types.Configurations, types.TransferInput) (common.Hash, error)
 	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
-	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
+	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, commitData types.CommitData, secret []byte) (common.Hash, error)
 	ExecuteCreateJob(*pflag.FlagSet)
 	CreateJob(*ethclient.Client, types.Configurations, types.CreateJobInput) (common.Hash, error)
 	ExecuteCreateCollection(*pflag.FlagSet)

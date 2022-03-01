@@ -3,9 +3,10 @@ package utils
 import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
+	"math/big"
 )
 
-func (*UtilsStruct) CreateMerkle(values []string) [][][]byte {
+func (*UtilsStruct) CreateMerkle(values []*big.Int) [][][]byte {
 	var tree [][][]byte
 	var leaves [][]byte
 
@@ -38,9 +39,9 @@ func (*UtilsStruct) CreateMerkle(values []string) [][][]byte {
 	return tree
 }
 
-func (*UtilsStruct) GetProofPath(tree [][][]byte, assetId uint16) [][]byte {
+func (*UtilsStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byte {
 	index := assetId - 1
-	var compactProofPath [][]byte
+	var compactProofPath [][32]byte
 	for currentLevel := len(tree) - 1; currentLevel > 0; currentLevel-- {
 		currentLevelNodes := tree[currentLevel]
 		currentLevelCount := len(currentLevelNodes)
@@ -48,16 +49,20 @@ func (*UtilsStruct) GetProofPath(tree [][][]byte, assetId uint16) [][]byte {
 			index = uint16(math.Floor(float64(index / 2)))
 			continue
 		}
+		var node [32]byte
 		if index%2 == 1 {
-			compactProofPath = append(compactProofPath, currentLevelNodes[index-1])
+			copy(node[:], currentLevelNodes[index-1])
 		} else {
-			compactProofPath = append(compactProofPath, currentLevelNodes[index+1])
+			copy(node[:], currentLevelNodes[index+1])
 		}
+		compactProofPath = append(compactProofPath, node)
 		index = uint16(math.Floor(float64(index / 2)))
 	}
 	return compactProofPath
 }
 
-func (*UtilsStruct) GetMerkleRoot(tree [][][]byte) []byte {
-	return tree[0][0]
+func (*UtilsStruct) GetMerkleRoot(tree [][][]byte) [32]byte {
+	var root [32]byte
+	copy(root[:], tree[0][0])
+	return root
 }

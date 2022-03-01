@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -26,7 +27,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 		return types.CommitData{}, err
 	}
 
-	var leavesOfTree []string
+	var leavesOfTree []*big.Int
 	for i := 0; i < int(numActiveCollections); i++ {
 		if assignedCollections[i] {
 			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, uint16(i), epoch)
@@ -34,9 +35,9 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 				return types.CommitData{}, err
 			}
 			log.Debugf("Data of collection %d:%s", i, collectionData)
-			leavesOfTree = append(leavesOfTree, collectionData.String())
+			leavesOfTree = append(leavesOfTree, collectionData)
 		} else {
-			leavesOfTree = append(leavesOfTree, "0")
+			leavesOfTree = append(leavesOfTree, big.NewInt(0))
 		}
 	}
 
@@ -48,13 +49,13 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 }
 
 /*Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.*/
-func (*UtilsStruct) Commit(client *ethclient.Client, seed []byte, root []byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error) {
+func (*UtilsStruct) Commit(client *ethclient.Client, seed []byte, root [32]byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
 
-	commitment := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(root), "0x" + hex.EncodeToString(seed)})
+	commitment := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(root[:]), "0x" + hex.EncodeToString(seed)})
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
