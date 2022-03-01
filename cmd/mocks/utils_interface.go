@@ -198,13 +198,13 @@ func (_m *UtilsInterface) ConvertSRZRToRZR(_a0 *big.Int, _a1 *big.Int, _a2 *big.
 	return r0
 }
 
-// ConvertUint32ArrayToBigIntArray provides a mock function with given fields: uint32Array
-func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
-	ret := _m.Called(uint32Array)
+// ConvertUint32ArrayToBigIntArray provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(_a0 []uint32) []*big.Int {
+	ret := _m.Called(_a0)
 
 	var r0 []*big.Int
 	if rf, ok := ret.Get(0).(func([]uint32) []*big.Int); ok {
-		r0 = rf(uint32Array)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*big.Int)
@@ -214,13 +214,13 @@ func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) 
 	return r0
 }
 
-// ConvertUintArrayToUint16Array provides a mock function with given fields: uintArr
-func (_m *UtilsInterface) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
-	ret := _m.Called(uintArr)
+// ConvertUintArrayToUint16Array provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ConvertUintArrayToUint16Array(_a0 []uint) []uint16 {
+	ret := _m.Called(_a0)
 
 	var r0 []uint16
 	if rf, ok := ret.Get(0).(func([]uint) []uint16); ok {
-		r0 = rf(uintArr)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]uint16)
@@ -1217,20 +1217,20 @@ func (_m *UtilsInterface) IsFlagPassed(_a0 string) bool {
 	return r0
 }
 
-// ParseBool provides a mock function with given fields: str
-func (_m *UtilsInterface) ParseBool(str string) (bool, error) {
-	ret := _m.Called(str)
+// ParseBool provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ParseBool(_a0 string) (bool, error) {
+	ret := _m.Called(_a0)
 
 	var r0 bool
 	if rf, ok := ret.Get(0).(func(string) bool); ok {
-		r0 = rf(str)
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(str)
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

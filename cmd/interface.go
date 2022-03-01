@@ -57,7 +57,7 @@ type UtilsInterface interface {
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	GetNumActiveCollections(*ethclient.Client) (uint16, error)
 	GetRogueRandomValue(int) *big.Int
-	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
+	GetAggregatedDataOfCollection(*ethclient.Client, uint32) ([]*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)
 	GetJobFilePath() (string, error)
@@ -70,8 +70,8 @@ type UtilsInterface interface {
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
-	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
-	ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int
+	ConvertUintArrayToUint16Array([]uint) []uint16
+	ConvertUint32ArrayToBigIntArray([]uint32) []*big.Int
 	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
@@ -85,7 +85,7 @@ type UtilsInterface interface {
 	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	ParseBool(str string) (bool, error)
+	ParseBool(string) (bool, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetNumberOfStakers(*ethclient.Client) (uint32, error)
 	GetSalt(*ethclient.Client) ([32]byte, error)
@@ -123,7 +123,7 @@ type StakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
-	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
+	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -221,8 +221,8 @@ type UtilsCmdInterface interface {
 	ExecuteClaimBounty(*pflag.FlagSet)
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
-	HandleCommitState(*ethclient.Client, uint32, types.Rogue) ([]*big.Int, error)
-	Commit(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) (common.Hash, error)
+	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
+	Commit(client *ethclient.Client, seed []byte, root []byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(*pflag.FlagSet)

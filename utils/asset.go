@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"razor/core"
 	"razor/pkg/bindings"
@@ -129,31 +131,18 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeAssetIds, nil
 }
 
-func (*UtilsStruct) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
-	var data []*big.Int
-
-	numOfCollections, err := UtilsInterface.GetNumCollections(client)
+func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
+	activeCollection, err := UtilsInterface.GetActiveCollection(client, collectionId)
 	if err != nil {
-		return data, err
+		log.Error(err)
+		return nil, err
 	}
-
-	for assetIndex := 1; assetIndex <= int(numOfCollections); assetIndex++ {
-		activeCollection, err := UtilsInterface.GetActiveCollection(client, uint16(assetIndex))
-		if err != nil {
-			log.Error(err)
-			if err.Error() == errors.New("collection inactive").Error() {
-				continue
-			}
-			return nil, err
-		}
-		//Supply previous epoch to Aggregate in case if last reported value is required.
-		collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection)
-		if aggregationError != nil {
-			return nil, aggregationError
-		}
-		data = append(data, collectionData)
+	//Supply previous epoch to Aggregate in case if last reported value is required.
+	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection)
+	if aggregationError != nil {
+		return nil, aggregationError
 	}
-	return data, nil
+	return collectionData, nil
 }
 
 func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
@@ -290,4 +279,19 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	}
 
 	return MultiplyWithPower(datum, job.Power), err
+}
+
+func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
+	assignedCollections := make(map[int]bool)
+	var seqAllotedCollections []*big.Int
+	toAssign, err := UtilsInterface.ToAssign(client)
+	if err != nil {
+		return nil, nil, err
+	}
+	for i := 0; i < int(toAssign); i++ {
+		assigned := UtilsInterface.Prng(uint32(numActiveCollections), solsha3.SoliditySHA3([]string{"bytes32", "uint256"}, []interface{}{"0x" + hex.EncodeToString(seed), i}))
+		assignedCollections[int(assigned.Int64())] = true
+		seqAllotedCollections = append(seqAllotedCollections, assigned)
+	}
+	return assignedCollections, seqAllotedCollections, nil
 }

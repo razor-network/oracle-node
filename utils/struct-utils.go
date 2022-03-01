@@ -1,9 +1,21 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
+	"io"
+	"io/fs"
+	"io/ioutil"
+	"math/big"
+	"os"
+	"razor/accounts"
+	coretypes "razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"time"
+
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -11,19 +23,18 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"io"
-	"io/fs"
-	"io/ioutil"
-	"math/big"
-	"razor/accounts"
-	coretypes "razor/core/types"
-	"razor/path"
-	"razor/pkg/bindings"
+	"github.com/spf13/pflag"
 )
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	Options = optionsPackageStruct.Options
 	UtilsInterface = optionsPackageStruct.UtilsInterface
+	EthClient = optionsPackageStruct.EthClient
+	ClientInterface = optionsPackageStruct.ClientInterface
+	Time = optionsPackageStruct.Time
+	OS = optionsPackageStruct.OS
+	Bufio = optionsPackageStruct.Bufio
+	CoinInterface = optionsPackageStruct.CoinInterface
 	return &UtilsStruct{}
 }
 
@@ -53,10 +64,6 @@ func (o OptionsStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chai
 
 func (o OptionsStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 	return retry.Attempts(numberOfAttempts)
-}
-
-func (o OptionsStruct) HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error) {
-	return client.HeaderByNumber(ctx, number)
 }
 
 func (o OptionsStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
@@ -222,9 +229,9 @@ func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId u
 	return voteManager.GetEpochLastRevealed(&opts, stakerId)
 }
 
-func (o OptionsStruct) GetSalt(client *ethclient.Client) ([32]byte, error) {
+func (o OptionsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetSalt(&opts)
+	return voteManager.ToAssign(&opts)
 }
 
 func (o OptionsStruct) NewCollectionManager(address common.Address, client *ethclient.Client) (*bindings.CollectionManager, error) {
@@ -265,4 +272,44 @@ func (o OptionsStruct) Marshal(v interface{}) ([]byte, error) {
 
 func (o OptionsStruct) WriteFile(filename string, data []byte, perm fs.FileMode) error {
 	return ioutil.WriteFile(filename, data, perm)
+}
+
+func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, error) {
+	return flagSet.GetUint32(name)
+}
+
+func (e EthClientStruct) Dial(rawurl string) (*ethclient.Client, error) {
+	return ethclient.Dial(rawurl)
+}
+
+func (t TimeStruct) Sleep(duration time.Duration) {
+	time.Sleep(duration)
+}
+
+func (o OSStruct) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
+	return os.OpenFile(name, flag, perm)
+}
+
+func (o OSStruct) Open(name string) (*os.File, error) {
+	return os.Open(name)
+}
+
+func (c ClientStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	return client.TransactionReceipt(ctx, txHash)
+}
+
+func (c ClientStruct) BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
+	return client.BalanceAt(ctx, account, blockNumber)
+}
+
+func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error) {
+	return client.HeaderByNumber(ctx, number)
+}
+
+func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
+	return bufio.NewScanner(r)
+}
+
+func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
+	return coinContract.BalanceOf(opts, account)
 }

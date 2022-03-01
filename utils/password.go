@@ -67,7 +67,7 @@ func GetPasswordFromFile(path string) string {
 }
 
 func AssignPassword(flagset *pflag.FlagSet) string {
-	if IsFlagPassed("password") {
+	if UtilsInterface.IsFlagPassed("password") {
 		log.Warn("Password flag is passed")
 		passwordPath, _ := flagset.GetString("password")
 		return GetPasswordFromFile(passwordPath)

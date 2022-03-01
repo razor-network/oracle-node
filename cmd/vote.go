@@ -111,6 +111,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 }
 
 var (
+	_merkleTree      [][][]byte
 	_committedData   []*big.Int
 	lastVerification uint32
 	blockConfirmed   uint32
@@ -163,7 +164,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, utils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
@@ -200,12 +201,23 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if secret == nil {
 			break
 		}
-		data, err := cmdUtils.HandleCommitState(client, epoch, rogueData)
+		previousEpoch := epoch - 1
+		previousBlock, err := utils.Options.GetBlock(client, previousEpoch)
+		if err != nil {
+			log.Error(err)
+			break
+		}
+
+		salt := utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians)
+		seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt), "0x" + hex.EncodeToString(secret)})
+
+		commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
 		if err != nil {
 			log.Error("Error in getting active assets: ", err)
 			break
 		}
-		commitTxn, err := cmdUtils.Commit(client, data, secret, account, config)
+		merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+		commitTxn, err := cmdUtils.Commit(client, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree), epoch, account, config)
 		if err != nil {
 			log.Error("Error in committing data: ", err)
 			break
@@ -213,19 +225,22 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if commitTxn != core.NilHash {
 			razorUtils.WaitForBlockCompletion(client, commitTxn.String())
 		}
-		_committedData = data
-		log.Debug("Saving committed data for recovery")
-		fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
-		if err != nil {
-			log.Error("Error in getting file name to save committed data: ", err)
-			break
-		}
-		err = razorUtils.SaveDataToFile(fileName, epoch, _committedData)
-		if err != nil {
-			log.Errorf("Error in saving data to file %s: %t", fileName, err)
-			break
-		}
-		log.Debug("Data saved!")
+
+		_merkleTree = merkleTree
+
+		//TODO: Modify this
+		//log.Debug("Saving committed data for recovery")
+		//fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+		//if err != nil {
+		//	log.Error("Error in getting file name to save committed data: ", err)
+		//	break
+		//}
+		//err = razorUtils.SaveDataToFile(fileName, epoch, _committedData)
+		//if err != nil {
+		//	log.Errorf("Error in saving data to file %s: %t", fileName, err)
+		//	break
+		//}
+		//log.Debug("Data saved!")
 	case 1:
 		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
 		if err != nil {

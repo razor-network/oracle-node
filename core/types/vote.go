@@ -21,3 +21,9 @@ type Rogue struct {
 	IsRogue   bool
 	RogueMode []string
 }
+
+type CommitData struct {
+	AssignedCollections   map[int]bool
+	SeqAllottedCollections []*big.Int
+	Leaves                []string
+}

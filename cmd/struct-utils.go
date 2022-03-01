@@ -24,6 +24,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var utilsInterface = utils.UtilsInterface
+
 func (u Utils) GetConfigFilePath() (string, error) {
 	return path.PathUtilsInterface.GetConfigFilePath()
 }
@@ -33,23 +35,23 @@ func (u Utils) ViperWriteConfigAs(path string) error {
 }
 
 func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
-	return utils.GetEpoch(client)
+	return utilsInterface.GetEpoch(client)
 }
 
 func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
-	return utils.GetEpoch(client)
+	return utilsInterface.GetEpoch(client)
 }
 
 func (u Utils) GetOptions() bind.CallOpts {
-	return utils.UtilsInterface.GetOptions()
+	return utilsInterface.GetOptions()
 }
 
 func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
-	return utils.CalculateBlockTime(client)
+	return utilsInterface.CalculateBlockTime(client)
 }
 
 func (u Utils) Sleep(duration time.Duration) {
-	utils.Sleep(duration)
+	utils.Time.Sleep(duration)
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
@@ -79,27 +81,27 @@ func (u Utils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 }
 
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
-	return utils.ConnectToClient(provider)
+	return utilsInterface.ConnectToClient(provider)
 }
 
 func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
-	return utils.WaitForBlockCompletion(client, hashToRead)
+	return utilsInterface.WaitForBlockCompletion(client, hashToRead)
 }
 
 func (u Utils) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
-	return utils.UtilsInterface.GetNumActiveCollections(client)
+	return utilsInterface.GetNumActiveCollections(client)
 }
 
 func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
 }
 
-func (u Utils) GetActiveAssetsData(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
-	return utils.UtilsInterface.GetActiveAssetsData(client, epoch)
+func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, epoch uint32) ([]*big.Int, error) {
+	return utilsInterface.GetAggregatedDataOfCollection(client, epoch)
 }
 
 func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utils.GetDelayedState(client, buffer)
+	return utilsInterface.GetDelayedState(client, buffer)
 }
 
 func (u Utils) GetDefaultPath() (string, error) {
@@ -111,11 +113,11 @@ func (u Utils) GetJobFilePath() (string, error) {
 }
 
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	return utils.FetchBalance(client, accountAddress)
+	return utilsInterface.FetchBalance(client, accountAddress)
 }
 
 func (u Utils) IsFlagPassed(name string) bool {
-	return utils.IsFlagPassed(name)
+	return utilsInterface.IsFlagPassed(name)
 }
 
 func (u Utils) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
@@ -135,11 +137,11 @@ func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 }
 
 func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utils.UtilsInterface.GetEpochLastCommitted(client, stakerId)
+	return utilsInterface.GetEpochLastCommitted(client, stakerId)
 }
 
 func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
-	return utils.UtilsInterface.GetCommitments(client, address)
+	return utilsInterface.GetCommitments(client, address)
 }
 
 func (u Utils) AllZero(bytesValue [32]byte) bool {
@@ -151,35 +153,35 @@ func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 }
 
 func (u Utils) GetStateName(state int64) string {
-	return utils.GetStateName(state)
+	return utilsInterface.GetStateName(state)
 }
 
 func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
-	return utils.UtilsInterface.GetJobs(client)
+	return utilsInterface.GetJobs(client)
 }
 
 func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	utils.CheckEthBalanceIsZero(client, address)
+	utilsInterface.CheckEthBalanceIsZero(client, address)
 }
 
 func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
-	return utils.AssignStakerId(flagSet, client, address)
+	return utilsInterface.AssignStakerId(flagSet, client, address)
 }
 
 func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error) {
-	return utils.UtilsInterface.GetLock(client, address, stakerId, lockType)
+	return utilsInterface.GetLock(client, address, stakerId, lockType)
 }
 
 func (u Utils) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.UtilsInterface.GetStaker(client, stakerId)
+	return utilsInterface.GetStaker(client, stakerId)
 }
 
 func (u Utils) GetUpdatedStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
-	return utils.UtilsInterface.GetStaker(client, stakerId)
+	return utilsInterface.GetStaker(client, stakerId)
 }
 
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
-	return utils.UtilsInterface.GetStakedToken(client, address)
+	return utilsInterface.GetStakedToken(client, address)
 }
 
 func (u Utils) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
@@ -191,49 +193,45 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 }
 
 func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, error) {
-	return utils.UtilsInterface.GetWithdrawReleasePeriod(client)
+	return utilsInterface.GetWithdrawReleasePeriod(client)
 }
 
 func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.UtilsInterface.GetInfluenceSnapshot(client, stakerId, epoch)
+	return utilsInterface.GetInfluenceSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
-	return utils.UtilsInterface.GetAllCollections(client)
+	return utilsInterface.GetAllCollections(client)
 }
 
 func (u Utils) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
-	return utils.UtilsInterface.GetNumberOfStakers(client)
-}
-
-func (u Utils) GetSalt(client *ethclient.Client) ([32]byte, error) {
-	return utils.UtilsInterface.GetSalt(client)
+	return utilsInterface.GetNumberOfStakers(client)
 }
 
 //TODO: Check direct usage from utils package without implementing it here
 
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
-	return utils.UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
+	return utilsInterface.GetNumberOfProposedBlocks(client, epoch)
 }
 
 func (u Utils) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
-	return utils.UtilsInterface.GetMaxAltBlocks(client)
+	return utilsInterface.GetMaxAltBlocks(client)
 }
 
 func (u Utils) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
-	return utils.UtilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
+	return utilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
 }
 
 func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utils.UtilsInterface.GetEpochLastRevealed(client, stakerId)
+	return utilsInterface.GetEpochLastRevealed(client, stakerId)
 }
 
 func (u Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
-	return utils.UtilsInterface.GetVoteValue(client, epoch, stakerId, medianIndex)
+	return utilsInterface.GetVoteValue(client, epoch, stakerId, medianIndex)
 }
 
 func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
-	return utils.UtilsInterface.GetTotalInfluenceRevealed(client, epoch, medianIndex)
+	return utilsInterface.GetTotalInfluenceRevealed(client, epoch, medianIndex)
 }
 
 func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
@@ -245,19 +243,15 @@ func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int 
 }
 
 func (u Utils) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
-	return utils.UtilsInterface.GetActiveCollectionIds(client)
+	return utilsInterface.GetActiveCollectionIds(client)
 }
 
 func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	return utils.UtilsInterface.GetBlockManager(client)
+	return utilsInterface.GetBlockManager(client)
 }
 
-//func (u Utils) GetVotes(client *ethclient.Client, stakerId uint32) (bindings.StructsVote, error) {
-//	return utils.UtilsInterface.GetVotes(client, stakerId)
-//}
-
 func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
-	return utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
+	return utilsInterface.GetSortedProposedBlockIds(client, epoch)
 }
 
 func (u Utils) ParseBool(str string) (bool, error) {
@@ -265,11 +259,11 @@ func (u Utils) ParseBool(str string) (bool, error) {
 }
 
 func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
-	return utils.UtilsInterface.GetStakerId(client, address)
+	return utilsInterface.GetStakerId(client, address)
 }
 
 func (u Utils) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
-	return utils.UtilsInterface.GetStake(client, stakerId)
+	return utilsInterface.GetStake(client, stakerId)
 }
 
 func (u Utils) PrivateKeyPrompt() string {
@@ -281,15 +275,15 @@ func (u Utils) PasswordPrompt() string {
 }
 
 func (u Utils) GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	return utils.UtilsInterface.GetMaxCommission(client)
+	return utilsInterface.GetMaxCommission(client)
 }
 
 func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	return utils.UtilsInterface.GetEpochLimitForUpdateCommission(client)
+	return utilsInterface.GetEpochLimitForUpdateCommission(client)
 }
 
 func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utils.UtilsInterface.GetStakeSnapshot(client, stakerId, epoch)
+	return utilsInterface.GetStakeSnapshot(client, stakerId, epoch)
 }
 
 func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
@@ -297,15 +291,15 @@ func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 }
 
 func (u Utils) WaitTillNextNSecs(seconds int32) {
-	utils.WaitTillNextNSecs(seconds)
+	utilsInterface.WaitTillNextNSecs(seconds)
 }
 
 func (u Utils) SaveDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
-	return utils.SaveDataToFile(fileName, epoch, committedData)
+	return utilsInterface.SaveDataToFile(fileName, epoch, committedData)
 }
 
 func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
-	return utils.ReadDataFromFile(fileName)
+	return utilsInterface.ReadDataFromFile(fileName)
 }
 
 func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
@@ -317,11 +311,11 @@ func (u Utils) Exit(code int) {
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
-	return utils.UtilsInterface.DeleteJobFromJSON(s, jobId)
+	return utilsInterface.DeleteJobFromJSON(s, jobId)
 }
 
 func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
-	return utils.UtilsInterface.AddJobToJSON(s, job)
+	return utilsInterface.AddJobToJSON(s, job)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
@@ -329,58 +323,58 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 }
 
 func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) ExtendUnstakeLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.ExtendUnstakeLock(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.Delegate(opts, stakerId, amount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.InitiateWithdraw(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.SetDelegationAcceptance(opts, status)
 }
 
 func (stakeManagerUtils StakeManagerUtils) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.UpdateCommission(opts, commission)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.Unstake(opts, stakerId, sAmount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.RedeemBounty(opts, bountyId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.Stakers(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	index := age / 10000
 	return stakeManager.Maturities(opts, big.NewInt(int64(index)))
 }
 
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
-	stakeManager := utils.UtilsInterface.GetStakeManager(client)
+	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
 }
 
@@ -393,12 +387,12 @@ func (stakeManagerUtils StakeManagerUtils) GetTotalSupply(token *bindings.Staked
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	blockManager := utilsInterface.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)
 }
 
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
-	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	blockManager := utilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -418,7 +412,7 @@ func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Cli
 }
 
 func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestStakerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	blockManager := utilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -438,7 +432,7 @@ func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *e
 }
 
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utils.UtilsInterface.GetBlockManager(client)
+	blockManager := utilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -462,7 +456,7 @@ func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.Blo
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.UtilsInterface.GetVoteManager(client)
+	voteManager := utilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -482,7 +476,7 @@ func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *
 }
 
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
-	voteManager := utils.UtilsInterface.GetVoteManager(client)
+	voteManager := utilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -502,47 +496,47 @@ func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *
 }
 
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	tokenManager := utils.UtilsInterface.GetTokenManager(client)
+	tokenManager := utilsInterface.GetTokenManager(client)
 	return tokenManager.Allowance(opts, owner, spender)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
-	tokenManager := utils.UtilsInterface.GetTokenManager(client)
+	tokenManager := utilsInterface.GetTokenManager(client)
 	return tokenManager.Approve(opts, spender, amount)
 }
 
 func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
-	tokenManager := utils.UtilsInterface.GetTokenManager(client)
+	tokenManager := utilsInterface.GetTokenManager(client)
 	return tokenManager.Transfer(opts, recipient, amount)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetCollectionManager(client)
+	assetManager := utilsInterface.GetCollectionManager(client)
 	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetCollectionManager(client)
+	assetManager := utilsInterface.GetCollectionManager(client)
 	return assetManager.SetCollectionStatus(opts, assetStatus, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
-	assetMananger := utils.UtilsInterface.GetCollectionManager(client)
+	assetMananger := utilsInterface.GetCollectionManager(client)
 	return assetMananger.GetCollectionStatus(opts, id)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetCollectionManager(client)
+	assetManager := utilsInterface.GetCollectionManager(client)
 	return assetManager.UpdateJob(opts, jobId, weight, power, selectorType, selector, url)
 }
 
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetCollectionManager(client)
+	assetManager := utilsInterface.GetCollectionManager(client)
 	return assetManager.CreateCollection(opts, tolerance, power, aggregationMethod, jobIDs, name)
 }
 
 func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint32, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
-	assetManager := utils.UtilsInterface.GetCollectionManager(client)
+	assetManager := utilsInterface.GetCollectionManager(client)
 	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 

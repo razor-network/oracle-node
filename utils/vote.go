@@ -159,22 +159,22 @@ func (*UtilsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint
 	return epochLastRevealed, nil
 }
 
-func (*UtilsStruct) GetSalt(client *ethclient.Client) ([32]byte, error) {
+func (*UtilsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	var (
-		salt [32]byte
-		err  error
+		toAssign uint16
+		err      error
 	)
 	err = retry.Do(
 		func() error {
-			salt, err = Options.GetSalt(client)
+			toAssign, err = Options.ToAssign(client)
 			if err != nil {
-				log.Error("Error in fetching salt....Retrying")
+				log.Error("Error in fetching toAssign....Retrying")
 				return err
 			}
 			return nil
 		}, Options.RetryAttempts(core.MaxRetries))
 	if err != nil {
-		return [32]byte{}, err
+		return 0, err
 	}
-	return salt, nil
+	return toAssign, nil
 }
