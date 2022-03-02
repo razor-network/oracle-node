@@ -167,7 +167,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), stakerId, actualStake, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {

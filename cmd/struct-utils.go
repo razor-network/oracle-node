@@ -46,12 +46,6 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
-		Options:        utils.Options,
-		UtilsInterface: utils.UtilsInterface,
-	})
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 
