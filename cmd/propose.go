@@ -18,14 +18,17 @@ import (
 
 var _mediansData []*big.Int
 
-func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, config types.Configurations, stakerId uint32, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
+// Index reveal events of staker's
+// Reveal Event would have two things, activeCollectionIndex/medianIndex and values
+// Loop
+// Medians Path : Find Medians on basis of weight (influence)
+// Ids path : collectionManager.getIndexToIdRegistry(activeCollectionIndex)
+
+// Find iteration using salt as seed
+
+func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
-		return core.NilHash, err
-	}
-	staker, err := razorUtils.GetStaker(client, stakerId)
-	if err != nil {
-		log.Error("Error in fetching staker: ", err)
 		return core.NilHash, err
 	}
 	numStakers, err := razorUtils.GetNumberOfStakers(client)
@@ -41,21 +44,16 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 		return core.NilHash, err
 	}
 
-	//TODO: Calculate salt:
-	//1.
-
-	//TODO: Check if this is correct for salt
-	salt, err := razorUtils.GetSalt(client)
+	salt, err := cmdUtils.GetSalt(client, epoch)
 	if err != nil {
-		log.Error("Error in fetching random hash: ", err)
 		return core.NilHash, err
 	}
-	log.Debug("Biggest Staker Id: ", biggestStakerId)
-	log.Debugf("Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStake, staker.Stake, stakerId, numStakers, hex.EncodeToString(salt[:]))
+
+	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
 
 	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
-		StakerId:        stakerId,
+		StakerId:        staker.Id,
 		BiggestStake:    biggestStake,
 		NumberOfStakers: numStakers,
 		Salt:            salt,

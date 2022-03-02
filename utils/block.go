@@ -158,3 +158,23 @@ func (*UtilsStruct) GetSortedProposedBlockIds(client *ethclient.Client, epoch ui
 	}
 	return sortedProposedBlockIds, nil
 }
+
+func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
+	var (
+		blockIndex int8
+		err        error
+	)
+	err = retry.Do(
+		func() error {
+			blockIndex, err = Options.GetBlockIndexToBeConfirmed(client)
+			if err != nil {
+				log.Error("Error in fetching salt....Retrying")
+				return err
+			}
+			return nil
+		}, Options.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return blockIndex, nil
+}

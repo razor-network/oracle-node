@@ -126,7 +126,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	var sortedStakers []uint32
 	//TODO: How to get sorted values
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := razorUtils.GetVoteValue(client, uint32(i))
+		votes, err := razorUtils.GetVoteValue(client, epoch, uint32(i))
 		if err != nil {
 			return err
 		}

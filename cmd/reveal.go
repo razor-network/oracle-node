@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strings"
 )
 
 func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
@@ -83,4 +86,35 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil
+}
+
+func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]bindings.StructsAssignedAsset, error) {
+	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
+	query := ethereum.FilterQuery{
+		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
+		ToBlock:   blockNumber,
+		Addresses: []common.Address{
+			common.HexToAddress(core.VoteManagerAddress),
+		},
+	}
+	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	if err != nil {
+		return nil, err
+	}
+	contractAbi, err := utils.Options.Parse(strings.NewReader(bindings.VoteManagerABI))
+	if err != nil {
+		return nil, err
+	}
+	var revealedData []bindings.StructsAssignedAsset
+	for _, vLog := range logs {
+		data, unpackErr := abiUtils.Unpack(contractAbi, "Revealed", vLog.Data)
+		if unpackErr != nil {
+			log.Error(unpackErr)
+			continue
+		}
+		if epoch == data[0].(uint32) {
+			revealedData = append(revealedData, data[2].(bindings.StructsAssignedAsset))
+		}
+	}
+	return revealedData, nil
 }

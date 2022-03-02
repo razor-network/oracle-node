@@ -188,44 +188,19 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	switch state {
 	case 0:
-		err := InitiateCommit(client, config, account, epoch, stakerId, rogueData)
+		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 1:
-		err := InitiateReveal(client, config, account, epoch, staker, rogueData)
+		err := cmdUtils.InitiateReveal(client, config, account, epoch, staker, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 2:
-		lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, stakerId)
-		if err != nil {
-			log.Error("Error in fetching last proposal: ", err)
-			break
-		}
-		if lastProposal >= epoch {
-			log.Debugf("Cannot propose in epoch %d because last proposed epoch is %d", epoch, lastProposal)
-			break
-		}
-		lastReveal, err := razorUtils.GetEpochLastRevealed(client, stakerId)
-		if err != nil {
-			log.Error("Error in fetching last reveal: ", err)
-			break
-		}
-		if lastReveal < epoch {
-			log.Debugf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
-			break
-		}
-		proposeTxn, err := cmdUtils.Propose(client, account, config, stakerId, epoch, rogueData)
-		if err != nil {
-			log.Error("Propose error: ", err)
-			break
-		}
-		if proposeTxn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
-		}
+
 	case 3:
 		if lastVerification >= epoch {
 			break
@@ -268,7 +243,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	fmt.Println()
 }
 
-func InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
 	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
 	if err != nil {
 		return errors.New("Error in fetching last commit: " + err.Error())
@@ -283,13 +258,11 @@ func InitiateCommit(client *ethclient.Client, config types.Configurations, accou
 		return err
 	}
 
-	previousEpoch := epoch - 1
-	previousBlock, err := utils.Options.GetBlock(client, previousEpoch)
+	salt, err := cmdUtils.GetSalt(client, epoch)
 	if err != nil {
-		return errors.New("Error in getting previous block: " + err.Error())
+		return err
 	}
 
-	salt := utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians)
 	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt), "0x" + hex.EncodeToString(secret)})
 
 	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
@@ -308,23 +281,21 @@ func InitiateCommit(client *ethclient.Client, config types.Configurations, accou
 		razorUtils.WaitForBlockCompletion(client, commitTxn.String())
 	}
 
-	//TODO: Modify this
-	//log.Debug("Saving committed data for recovery")
-	//fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
-	//if err != nil {
-	//	log.Error("Error in getting file name to save committed data: ", err)
-	//	break
-	//}
-	//err = razorUtils.SaveDataToFile(fileName, epoch, _committedData)
-	//if err != nil {
-	//	log.Errorf("Error in saving data to file %s: %t", fileName, err)
-	//	break
-	//}
-	//log.Debug("Data saved!")
+	log.Debug("Saving committed data for recovery")
+	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+	if err != nil {
+		return errors.New("Error in getting file name to save committed data: " + err.Error())
+	}
+
+	err = razorUtils.SaveDataToFile(fileName, epoch, commitData.Leaves)
+	if err != nil {
+		return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
+	}
+	log.Debug("Data saved!")
 	return nil
 }
 
-func InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
 	lastReveal, err := razorUtils.GetEpochLastRevealed(client, staker.Id)
 	if err != nil {
 		return errors.New("Error in fetching last reveal: " + err.Error())
@@ -378,6 +349,34 @@ func InitiateReveal(client *ethclient.Client, config types.Configurations, accou
 	}
 	if revealTxn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+	}
+	return nil
+}
+
+func InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
+	lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, staker.Id)
+	if err != nil {
+		return errors.New("Error in fetching last proposal: " + err.Error())
+	}
+	if lastProposal >= epoch {
+		log.Debugf("Since last propose was at epoch: %d, won't propose again in epoch: %d", epoch, lastProposal)
+		return nil
+	}
+	lastReveal, err := razorUtils.GetEpochLastRevealed(client, staker.Id)
+	if err != nil {
+		return errors.New("Error in fetching last reveal: " + err.Error())
+	}
+	if lastReveal < epoch {
+		log.Debugf("Cannot propose in epoch %d because last reveal was in epoch %d", epoch, lastReveal)
+		return nil
+	}
+
+	proposeTxn, err := cmdUtils.Propose(client, config, account, staker, epoch, rogueData)
+	if err != nil {
+		return errors.New("Propose error: " + err.Error())
+	}
+	if proposeTxn != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/hex"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -12,10 +13,32 @@ import (
 	"razor/utils"
 )
 
+func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
+	previousEpoch := epoch - 1
+	numProposedBlock, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	blockIndexedToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
+		return utils.Options.GetSaltFromBlockchain(client)
+	}
+	previousBlock, err := utils.UtilsInterface.GetBlock(client, previousEpoch)
+	if err != nil {
+		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
+	}
+	return utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians), nil
+}
+
 //TODO: rogue mode
 
-/*HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
-Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.*/
+/*
+HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
+Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
+*/
 func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := utils.UtilsInterface.GetNumActiveCollections(client)
 	if err != nil {
@@ -48,7 +71,9 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	}, nil
 }
 
-/*Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.*/
+/*
+Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
+*/
 func (*UtilsStruct) Commit(client *ethclient.Client, seed []byte, root [32]byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")

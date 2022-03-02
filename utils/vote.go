@@ -178,3 +178,23 @@ func (*UtilsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	}
 	return toAssign, nil
 }
+
+func (*UtilsStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
+	var (
+		salt [32]byte
+		err  error
+	)
+	err = retry.Do(
+		func() error {
+			salt, err = Options.GetSaltFromBlockchain(client)
+			if err != nil {
+				log.Error("Error in fetching salt....Retrying")
+				return err
+			}
+			return nil
+		}, Options.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return [32]byte{}, err
+	}
+	return salt, nil
+}

@@ -59,6 +59,7 @@ type OptionUtils interface {
 	MinStake(*ethclient.Client) (*big.Int, error)
 	MaxAltBlocks(*ethclient.Client) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, uint32, *big.Int) (uint32, error)
+	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
 	GetStakerId(*ethclient.Client, common.Address) (uint32, error)
 	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
 	GetNumStakers(*ethclient.Client) (uint32, error)
@@ -74,6 +75,7 @@ type OptionUtils interface {
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
 	ToAssign(*ethclient.Client) (uint16, error)
+	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 	GetNumCollections(*ethclient.Client) (uint16, error)
 	GetNumJobs(*ethclient.Client) (uint16, error)
 	GetNumActiveCollections(*ethclient.Client) (uint16, error)
@@ -117,6 +119,7 @@ type Utils interface {
 	GetMinStakeAmount(*ethclient.Client) (*big.Int, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
+	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
 	GetStakeManager(*ethclient.Client) *bindings.StakeManager
 	GetStakeManagerWithOpts(*ethclient.Client) (*bindings.StakeManager, bind.CallOpts)
@@ -176,9 +179,10 @@ type Utils interface {
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 	CheckTransactionReceipt(*ethclient.Client, string) int
-	CalculateSalt(epoch uint32, medians []uint32) []byte
+	CalculateSalt(epoch uint32, medians []uint32) [32]byte
 	ToAssign(*ethclient.Client) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
+	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 }
 
 type EthClientUtils interface {

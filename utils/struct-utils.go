@@ -111,9 +111,15 @@ func (o OptionsStruct) MaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	return blockManager.MaxAltBlocks(&opts)
 }
 
+//TODO: Rename arg0 and arg1 here
 func (o OptionsStruct) SortedProposedBlockIds(client *ethclient.Client, arg0 uint32, arg1 *big.Int) (uint32, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
 	return blockManager.SortedProposedBlockIds(&opts, arg0, arg1)
+}
+
+func (o OptionsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.BlockIndexToBeConfirmed(&opts)
 }
 
 func (o OptionsStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
@@ -232,6 +238,11 @@ func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId u
 func (o OptionsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
 	return voteManager.ToAssign(&opts)
+}
+
+func (o OptionsStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
+	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
+	return voteManager.GetSalt(&opts)
 }
 
 func (o OptionsStruct) NewCollectionManager(address common.Address, client *ethclient.Client) (*bindings.CollectionManager, error) {

@@ -98,7 +98,7 @@ type UtilsInterface interface {
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
-	GetVoteValue(*ethclient.Client, uint32, uint32, uint16) (uint32, error)
+	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error)
 	GetTotalInfluenceRevealed(*ethclient.Client, uint32, uint16) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
 	GetActiveCollectionIds(*ethclient.Client) ([]uint16, error)
@@ -224,6 +224,7 @@ type UtilsCmdInterface interface {
 	ExecuteClaimBounty(*pflag.FlagSet)
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
+	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
 	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
 	Commit(client *ethclient.Client, seed []byte, root [32]byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
@@ -263,7 +264,7 @@ type UtilsCmdInterface interface {
 	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
-	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
+	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, rogueData types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32, types.Rogue) error
@@ -298,6 +299,8 @@ type UtilsCmdInterface interface {
 	HandleExit()
 	ExecuteListAccounts()
 	ExecuteStake(*pflag.FlagSet)
+	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
+	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
 }
 
 type TransactionInterface interface {
