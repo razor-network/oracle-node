@@ -25,40 +25,14 @@ func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.
 	return nil
 }
 
-func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, commitData types.CommitData, secret []byte) (common.Hash, error) {
+func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}
 
-	epoch, err := razorUtils.GetEpoch(client)
-	if err != nil {
-		log.Error(err)
-		return core.NilHash, err
-	}
-
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
-	var (
-		values []bindings.StructsAssignedAsset
-		proofs [][][32]byte
-	)
-
-	for i := 0; i < len(commitData.SeqAllottedCollections); i++ {
-		value := bindings.StructsAssignedAsset{
-			MedianIndex: uint16(commitData.SeqAllottedCollections[i].Uint64()),
-			Value:       uint32(commitData.Leaves[i].Uint64()),
-		}
-		proof := utils.MerkleInterface.GetProofPath(merkleTree, value.MedianIndex)
-		values = append(values, value)
-		proofs = append(proofs, proof)
-	}
-
-	treeRevealData := bindings.StructsMerkleTree{
-		Values: values,
-		Proofs: proofs,
-		Root:   utils.MerkleInterface.GetMerkleRoot(merkleTree),
-	}
-
+	treeRevealData := cmdUtils.GenerateTreeRevealData(merkleTree, commitData)
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
 
@@ -86,6 +60,33 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil
+}
+
+func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree {
+	if merkleTree == nil || commitData.SeqAllottedCollections == nil || commitData.Leaves == nil {
+		log.Error("No data present for construction of StructsMerkleTree")
+		return bindings.StructsMerkleTree{}
+	}
+	var (
+		values []bindings.StructsAssignedAsset
+		proofs [][][32]byte
+	)
+
+	for i := 0; i < len(commitData.SeqAllottedCollections); i++ {
+		value := bindings.StructsAssignedAsset{
+			MedianIndex: uint16(commitData.SeqAllottedCollections[i].Uint64()),
+			Value:       uint32(commitData.Leaves[i].Uint64()),
+		}
+		proof := utils.MerkleInterface.GetProofPath(merkleTree, value.MedianIndex)
+		values = append(values, value)
+		proofs = append(proofs, proof)
+	}
+
+	return bindings.StructsMerkleTree{
+		Values: values,
+		Proofs: proofs,
+		Root:   utils.MerkleInterface.GetMerkleRoot(merkleTree),
+	}
 }
 
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]bindings.StructsAssignedAsset, error) {

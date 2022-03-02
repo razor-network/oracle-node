@@ -13,6 +13,10 @@ import (
 	"razor/utils"
 )
 
+/*
+GetSalt calculates the salt on the basis of previous epoch and the medians of the previous epoch.
+If the previous epoch doesn't contain any medians, then the value is fetched from the smart contract.
+*/
 func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
 	numProposedBlock, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
@@ -33,11 +37,11 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 	return utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians), nil
 }
 
-//TODO: rogue mode
-
 /*
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
+
+TODO: Add rogue mode changes
 */
 func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := utils.UtilsInterface.GetNumActiveCollections(client)

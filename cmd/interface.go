@@ -232,7 +232,9 @@ type UtilsCmdInterface interface {
 	ExecuteTransfer(*pflag.FlagSet)
 	Transfer(*ethclient.Client, types.Configurations, types.TransferInput) (common.Hash, error)
 	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
-	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, commitData types.CommitData, secret []byte) (common.Hash, error)
+	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error)
+	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
+	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]bindings.StructsAssignedAsset, error)
 	ExecuteCreateJob(*pflag.FlagSet)
 	CreateJob(*ethclient.Client, types.Configurations, types.CreateJobInput) (common.Hash, error)
 	ExecuteCreateCollection(*pflag.FlagSet)
@@ -260,11 +262,11 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCollection(*pflag.FlagSet)
 	UpdateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) (common.Hash, error)
 	InfluencedMedian([]*big.Int, *big.Int) *big.Int
-	GetSortedVotes(*ethclient.Client, string, uint16, uint32) ([]*big.Int, error)
-	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
+	//GetSortedVotes(*ethclient.Client, string, uint16, uint32) ([]*big.Int, error)
+	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, error)
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
-	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, rogueData types.Rogue) (common.Hash, error)
+	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
 	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32, types.Rogue) error

@@ -138,12 +138,13 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Staker doesn't exist")
 		return
 	}
-
-	stakedAmount, err := razorUtils.GetStake(client, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
-		log.Error("Error in getting staked amount: ", err)
+		log.Error(err)
 		return
 	}
+	stakedAmount := staker.Stake
+
 	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
@@ -177,15 +178,11 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		osUtils.Exit(0)
 	}
 
-	staker, err := razorUtils.GetStaker(client, stakerId)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
 		osUtils.Exit(0)
 	}
+
 	switch state {
 	case 0:
 		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, rogueData)
@@ -263,7 +260,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return err
 	}
 
-	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt), "0x" + hex.EncodeToString(secret)})
+	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt[:]), "0x" + hex.EncodeToString(secret)})
 
 	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
 	if err != nil {
@@ -281,6 +278,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		razorUtils.WaitForBlockCompletion(client, commitTxn.String())
 	}
 
+	//TODO: Need to save the entire commitData, which includes AssignedCollections, SeqAllottedCollections and Leaves to construct merkle tree
 	log.Debug("Saving committed data for recovery")
 	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
@@ -343,7 +341,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return err
 	}
 
-	revealTxn, err := cmdUtils.Reveal(client, config, account, _commitData, secret)
+	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, secret)
 	if err != nil {
 		return errors.New("Reveal error: " + err.Error())
 	}
@@ -371,7 +369,7 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 		return nil
 	}
 
-	proposeTxn, err := cmdUtils.Propose(client, config, account, staker, epoch, rogueData)
+	proposeTxn, err := cmdUtils.Propose(client, config, account, staker, epoch, blockNumber, rogueData)
 	if err != nil {
 		return errors.New("Propose error: " + err.Error())
 	}
