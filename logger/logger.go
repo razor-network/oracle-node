@@ -108,3 +108,45 @@ func (logger *StandardLogger) Fatal(args ...interface{}) {
 	})
 	logger.WithFields(addressLogField).Fatalln(err)
 }
+
+func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
+	errMsg := joinString(args)
+	err := errors.New(errMsg)
+	sentry.CaptureException(err)
+	logger.WithFields(addressLogField).Errorf(format, args...)
+}
+
+func (logger *StandardLogger) Infof(format string, args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
+	msg := joinString(args)
+	sentry.CaptureMessage(msg)
+	logger.WithFields(addressLogField).Infof(format, args...)
+}
+
+func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
+	msg := joinString(args)
+	sentry.CaptureMessage(msg)
+	logger.WithFields(addressLogField).Debugf(format, args...)
+}
+
+func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
+	var addressLogField = logrus.Fields{
+		"Address": Address,
+	}
+	defer sentry.Recover()
+	errMsg := joinString(args)
+	err := errors.New(errMsg)
+	sentry.WithScope(func(scope *sentry.Scope) {
+		scope.SetLevel(sentry.LevelFatal)
+		sentry.CaptureException(err)
+	})
+	logger.WithFields(addressLogField).Fatalf(format, err)
+}
