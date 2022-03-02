@@ -60,6 +60,7 @@ func init() {
 	razorUtils = Utils{}
 	cmdUtils = &UtilsStruct{}
 	flagSetUtils = FLagSetUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(overrideJobCmd)
 	var (

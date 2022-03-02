@@ -105,6 +105,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 
 	var (
 		JobId        uint16
