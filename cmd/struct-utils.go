@@ -2,15 +2,6 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"math/big"
-	"os"
-	"razor/core/types"
-	"razor/path"
-	"razor/pkg/bindings"
-	"razor/utils"
-	"strconv"
-	"time"
-
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -22,16 +13,42 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"math/big"
+	"os"
+	"razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"razor/utils"
+	"strconv"
+	"time"
 )
 
 var utilsInterface = utils.UtilsInterface
 
-func (u Utils) GetConfigFilePath() (string, error) {
-	return path.PathUtilsInterface.GetConfigFilePath()
+func InitializeUtils() {
+	utilsInterface = &utils.UtilsStruct{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	utils.EthClient = &utils.EthClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
+	utils.Time = &utils.TimeStruct{}
+	utils.OS = &utils.OSStruct{}
+	utils.Bufio = &utils.BufioStruct{}
+	utils.CoinInterface = &utils.CoinStruct{}
+	utils.IoutilInterface = &utils.IoutilStruct{}
+	utils.ABIInterface = &utils.ABIStruct{}
+	utils.PathInterface = &utils.PathStruct{}
+	utils.BindInterface = &utils.BindStruct{}
+	utils.AccountsInterface = &utils.AccountsStruct{}
+	utils.BlockManagerInterface = &utils.BlockManagerStruct{}
+	utils.AssetManagerInterface = &utils.AssetManagerStruct{}
+	utils.VoteManagerInterface = &utils.VoteManagerStruct{}
+	utils.BindingsInterface = &utils.BindingsStruct{}
+	utils.JsonInterface = &utils.JsonStruct{}
 }
 
-func (u Utils) ViperWriteConfigAs(path string) error {
-	return viper.WriteConfigAs(path)
+func (u Utils) GetConfigFilePath() (string, error) {
+	return path.PathUtilsInterface.GetConfigFilePath()
 }
 
 func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
@@ -50,17 +67,25 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 	return utilsInterface.CalculateBlockTime(client)
 }
 
-func (u Utils) Sleep(duration time.Duration) {
-	utils.Time.Sleep(duration)
-}
-
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
-		Options:        utils.Options,
-		UtilsInterface: utils.UtilsInterface,
+		Options:         utils.Options,
+		UtilsInterface:  utils.UtilsInterface,
+		EthClient:       utils.EthClient,
+		ClientInterface: utils.ClientInterface,
+		Time:            utils.Time,
+		OS:              utils.OS,
+		Bufio:           utils.Bufio,
+		CoinInterface:   utils.CoinInterface,
 	})
 	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
+	utils.EthClient = &utils.EthClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
+	utils.Time = &utils.TimeStruct{}
+	utils.OS = &utils.OSStruct{}
+	utils.Bufio = &utils.BufioStruct{}
+	utils.CoinInterface = &utils.CoinStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 
@@ -262,10 +287,6 @@ func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32)
 	return utilsInterface.GetSortedProposedBlockIds(client, epoch)
 }
 
-func (u Utils) ParseBool(str string) (bool, error) {
-	return strconv.ParseBool(str)
-}
-
 func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
 	return utilsInterface.GetStakerId(client, address)
 }
@@ -308,14 +329,6 @@ func (u Utils) SaveDataToFile(fileName string, epoch uint32, committedData []*bi
 
 func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
 	return utilsInterface.ReadDataFromFile(fileName)
-}
-
-func (u Utils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
-	return abi.Unpack(name, data)
-}
-
-func (u Utils) Exit(code int) {
-	os.Exit(code)
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
@@ -720,4 +733,24 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 
 func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+}
+
+func (v ViperUtils) ViperWriteConfigAs(path string) error {
+	return viper.WriteConfigAs(path)
+}
+
+func (t TimeUtils) Sleep(duration time.Duration) {
+	utils.Time.Sleep(duration)
+}
+
+func (s StringUtils) ParseBool(str string) (bool, error) {
+	return strconv.ParseBool(str)
+}
+
+func (a AbiUtils) Unpack(abi abi.ABI, name string, data []byte) ([]interface{}, error) {
+	return abi.Unpack(name, data)
+}
+
+func (o OSUtils) Exit(code int) {
+	os.Exit(code)
 }

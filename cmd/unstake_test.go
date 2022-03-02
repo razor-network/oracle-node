@@ -404,12 +404,14 @@ func TestAutoWithdraw(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			timeUtils = timeMock
 
 			cmdUtilsMock.On("WithdrawFunds", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawFundsHash, tt.args.withdrawFundsErr)
-			utilsMock.On("Sleep", mock.Anything).Return()
+			timeMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
 			utils := &UtilsStruct{}

@@ -130,10 +130,12 @@ func TestExecuteVote(t *testing.T) {
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			osMock := new(mocks.OSInterface)
 
 			flagSetUtils = flagSetUtilsMock
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			osUtils = osMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
@@ -143,7 +145,7 @@ func TestExecuteVote(t *testing.T) {
 			flagSetUtilsMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("HandleExit").Return()
 			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
-			utilsMock.On("Exit", mock.AnythingOfType("int")).Return()
+			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			utils := &UtilsStruct{}
 			fatal = false
@@ -1081,10 +1083,14 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 			utilsPkgMock := new(Mocks.Utils)
+			timeMock := new(mocks.TimeInterface)
+			osMock := new(mocks.OSInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			voteManagerUtils = voteManagerUtilsMock
+			timeUtils = timeMock
+			osUtils = osMock
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -1114,8 +1120,8 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardHash, tt.args.claimBlockRewardErr)
-			utilsMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
-			utilsMock.On("Exit", mock.AnythingOfType("int")).Return()
+			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
+			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			_committedData = tt.args.commitData
 			lastVerification = tt.args.lastVerification
@@ -1289,17 +1295,17 @@ func TestGetLastProposedEpoch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
-			abiMock := new(Mocks.ABIUtils)
+			abiMock := new(mocks.AbiInterface)
 			utilsPkgMock := new(Mocks.Utils)
+			abiUtilsMock := new(Mocks.ABIUtils)
 
-			razorUtils = utilsMock
-			utils.ABIInterface = abiMock
+			abiUtils = abiMock
 			utils.UtilsInterface = utilsPkgMock
+			utils.ABIInterface = abiUtilsMock
 
-			abiMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
-			utilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
+			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
 
 			utils := &UtilsStruct{}
 			got, err := utils.GetLastProposedEpoch(client, blockNumber, tt.args.stakerId)

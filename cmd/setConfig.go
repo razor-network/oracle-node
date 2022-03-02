@@ -87,7 +87,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		log.Error("Error in fetching config file path")
 		return pathErr
 	}
-	configErr := razorUtils.ViperWriteConfigAs(path)
+	configErr := viperUtils.ViperWriteConfigAs(path)
 	if configErr != nil {
 		log.Error("Error in writing config")
 		return configErr
@@ -100,6 +100,7 @@ func init() {
 	razorUtils = Utils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(setConfig)
 

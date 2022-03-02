@@ -76,6 +76,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(stakerInfoCmd)
 
