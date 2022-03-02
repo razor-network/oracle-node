@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"github.com/avast/retry-go"
@@ -10,19 +11,34 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"io"
 	"io/fs"
 	"math/big"
+	"os"
 	"razor/accounts"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"time"
 )
 
 //go:generate mockery --name OptionUtils --output ./mocks/ --case=underscore
 //go:generate mockery --name Utils --output ./mocks/ --case=underscore
+//go:generate mockery --name EthClientUtils --output ./mocks --case=underscore
+//go:generate mockery --name ClientUtils --output ./mocks --case=underscore
+//go:generate mockery --name TimeUtils --output ./mocks --case=underscore
+//go:generate mockery --name OSUtils --output ./mocks --case=underscore
+//go:generate mockery --name BufioUtils --output ./mocks --case=underscore
+//go:generate mockery --name CoinUtils --output ./mocks --case=underscore
 
 var Options OptionUtils
 var UtilsInterface Utils
+var EthClient EthClientUtils
+var ClientInterface ClientUtils
+var Time TimeUtils
+var OS OSUtils
+var Bufio BufioUtils
+var CoinInterface CoinUtils
 
 type OptionUtils interface {
 	Parse(io.Reader) (abi.ABI, error)
@@ -33,11 +49,9 @@ type OptionUtils interface {
 	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
 	RetryAttempts(uint) retry.Option
 	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
-	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
 	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
 	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
 	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
-	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
 	GetNumProposedBlocks(*ethclient.Client, *bind.CallOpts, uint32) (uint8, error)
 	GetProposedBlock(*ethclient.Client, *bind.CallOpts, uint32, uint32) (bindings.StructsBlock, error)
 	GetBlock(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsBlock, error)
@@ -68,15 +82,15 @@ type OptionUtils interface {
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
-	NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error)
-	NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error)
-	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
-	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
-	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
-	ReadFile(filename string) ([]byte, error)
-	Unmarshal(data []byte, v interface{}) error
-	Marshal(v interface{}) ([]byte, error)
-	WriteFile(filename string, data []byte, perm fs.FileMode) error
+	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
+	ReadFile(string) ([]byte, error)
+	Unmarshal([]byte, interface{}) error
+	Marshal(interface{}) ([]byte, error)
+	WriteFile(string, []byte, fs.FileMode) error
 }
 
 type Utils interface {
@@ -140,19 +154,73 @@ type Utils interface {
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
 	GetDataFromHTML(string, string) (string, error)
-	GetTokenManager(client *ethclient.Client) *bindings.RAZOR
-	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
-	ReadJSONData(fileName string) (map[string]*types.StructsJob, error)
-	WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error
-	DeleteJobFromJSON(fileName string, jobId string) error
-	AddJobToJSON(fileName string, job *types.StructsJob) error
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
+	ConnectToClient(string) *ethclient.Client
+	FetchBalance(*ethclient.Client, string) (*big.Int, error)
+	GetDelayedState(*ethclient.Client, int32) (int64, error)
+	WaitForBlockCompletion(*ethclient.Client, string) int
+	CheckEthBalanceIsZero(*ethclient.Client, string)
+	GetStateName(int64) string
+	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
+	GetEpoch(*ethclient.Client) (uint32, error)
+	SaveDataToFile(string, uint32, []*big.Int) error
+	ReadDataFromFile(string) (uint32, []*big.Int, error)
+	CalculateBlockTime(*ethclient.Client) int64
+	IsFlagPassed(string) bool
+	GetTokenManager(*ethclient.Client) *bindings.RAZOR
+	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
+	GetUint32(*pflag.FlagSet, string) (uint32, error)
+	WaitTillNextNSecs(int32)
+	ReadJSONData(string) (map[string]*types.StructsJob, error)
+	WriteDataToJSON(string, map[string]*types.StructsJob) error
+	DeleteJobFromJSON(string, string) error
+	AddJobToJSON(string, *types.StructsJob) error
+	CheckTransactionReceipt(*ethclient.Client, string) int
+}
+
+type EthClientUtils interface {
+	Dial(string) (*ethclient.Client, error)
+}
+
+type ClientUtils interface {
+	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
+	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
+	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
+}
+
+type TimeUtils interface {
+	Sleep(time.Duration)
+}
+
+type OSUtils interface {
+	OpenFile(string, int, fs.FileMode) (*os.File, error)
+	Open(string) (*os.File, error)
+}
+
+type BufioUtils interface {
+	NewScanner(r io.Reader) *bufio.Scanner
+}
+
+type CoinUtils interface {
+	BalanceOf(*bindings.RAZOR, *bind.CallOpts, common.Address) (*big.Int, error)
 }
 
 type OptionsStruct struct{}
 type UtilsStruct struct{}
+type EthClientStruct struct{}
+type ClientStruct struct{}
+type TimeStruct struct{}
+type OSStruct struct{}
+type BufioStruct struct{}
+type CoinStruct struct{}
 
 type OptionsPackageStruct struct {
-	Options        OptionUtils
-	UtilsInterface Utils
+	Options         OptionUtils
+	UtilsInterface  Utils
+	EthClient       EthClientUtils
+	ClientInterface ClientUtils
+	Time            TimeUtils
+	OS              OSUtils
+	Bufio           BufioUtils
+	CoinInterface   CoinUtils
 }

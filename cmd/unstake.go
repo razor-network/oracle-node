@@ -132,7 +132,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
-	razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+	timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
 	txn, err := cmdUtils.WithdrawFunds(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,

@@ -162,6 +162,7 @@ func TestAggregate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
 			pathUtilsMock := new(pathMocks.PathInterface)
+			osUtilsMock := new(pathMocks.OSInterface)
 			optionsMock := new(mocks.OptionUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
@@ -175,8 +176,8 @@ func TestAggregate(t *testing.T) {
 			utilsMock.On("GetDataToCommitFromJobs", mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
-			pathUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
-			pathUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
+			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
+			osUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			optionsMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
 			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 

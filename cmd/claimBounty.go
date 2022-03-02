@@ -93,7 +93,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		log.Debug("Waiting for lock period to get over....")
 
 		//waiting till epoch reaches redeemAfter
-		razorUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second)
+		timeUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second)
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -108,7 +108,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		if retry != int(core.MaxRetries) {
 			log.Info("Retrying again...")
 			log.Info("Waiting for 1 more epoch...")
-			razorUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+			timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
 		}
 	}
 	return core.NilHash, err

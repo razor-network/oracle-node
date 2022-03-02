@@ -240,8 +240,8 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if err != nil {
 		return nil, err
 	}
-	if _, err := path.PathUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
-		jsonFile, err := path.PathUtilsInterface.Open(assetsFilePath)
+	if _, err := path.OSUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
+		jsonFile, err := path.OSUtilsInterface.Open(assetsFilePath)
 		if err != nil {
 			return nil, err
 		}

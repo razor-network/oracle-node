@@ -4,12 +4,9 @@ package mocks
 
 import (
 	big "math/big"
-
-	abi "github.com/ethereum/go-ethereum/accounts/abi"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
-
-	bindings "razor/pkg/bindings"
 
 	common "github.com/ethereum/go-ethereum/common"
 
@@ -18,8 +15,6 @@ import (
 	mock "github.com/stretchr/testify/mock"
 
 	pflag "github.com/spf13/pflag"
-
-	time "time"
 
 	types "razor/core/types"
 )
@@ -198,13 +193,13 @@ func (_m *UtilsInterface) ConvertSRZRToRZR(_a0 *big.Int, _a1 *big.Int, _a2 *big.
 	return r0
 }
 
-// ConvertUint32ArrayToBigIntArray provides a mock function with given fields: uint32Array
-func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
-	ret := _m.Called(uint32Array)
+// ConvertUint32ArrayToBigIntArray provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(_a0 []uint32) []*big.Int {
+	ret := _m.Called(_a0)
 
 	var r0 []*big.Int
 	if rf, ok := ret.Get(0).(func([]uint32) []*big.Int); ok {
-		r0 = rf(uint32Array)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*big.Int)
@@ -214,13 +209,13 @@ func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) 
 	return r0
 }
 
-// ConvertUintArrayToUint16Array provides a mock function with given fields: uintArr
-func (_m *UtilsInterface) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
-	ret := _m.Called(uintArr)
+// ConvertUintArrayToUint16Array provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ConvertUintArrayToUint16Array(_a0 []uint) []uint16 {
+	ret := _m.Called(_a0)
 
 	var r0 []uint16
 	if rf, ok := ret.Get(0).(func([]uint) []uint16); ok {
-		r0 = rf(uintArr)
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]uint16)
@@ -265,11 +260,6 @@ func (_m *UtilsInterface) DeleteJobFromJSON(_a0 string, _a1 string) error {
 	}
 
 	return r0
-}
-
-// Exit provides a mock function with given fields: _a0
-func (_m *UtilsInterface) Exit(_a0 int) {
-	_m.Called(_a0)
 }
 
 // FetchBalance provides a mock function with given fields: _a0, _a1
@@ -1217,27 +1207,6 @@ func (_m *UtilsInterface) IsFlagPassed(_a0 string) bool {
 	return r0
 }
 
-// ParseBool provides a mock function with given fields: str
-func (_m *UtilsInterface) ParseBool(str string) (bool, error) {
-	ret := _m.Called(str)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(string) bool); ok {
-		r0 = rf(str)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(str)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // PasswordPrompt provides a mock function with given fields:
 func (_m *UtilsInterface) PasswordPrompt() string {
 	ret := _m.Called()
@@ -1303,48 +1272,6 @@ func (_m *UtilsInterface) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int)
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, uint32, []*big.Int) error); ok {
 		r0 = rf(_a0, _a1, _a2)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Sleep provides a mock function with given fields: _a0
-func (_m *UtilsInterface) Sleep(_a0 time.Duration) {
-	_m.Called(_a0)
-}
-
-// Unpack provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsInterface) Unpack(_a0 abi.ABI, _a1 string, _a2 []byte) ([]interface{}, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 []interface{}
-	if rf, ok := ret.Get(0).(func(abi.ABI, string, []byte) []interface{}); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]interface{})
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(abi.ABI, string, []byte) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ViperWriteConfigAs provides a mock function with given fields: _a0
-func (_m *UtilsInterface) ViperWriteConfigAs(_a0 string) error {
-	ret := _m.Called(_a0)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(_a0)
 	} else {
 		r0 = ret.Error(0)
 	}

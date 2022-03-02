@@ -1,13 +1,13 @@
 package path
 
 func (PathUtils) GetDefaultPath() (string, error) {
-	home, err := PathUtilsInterface.UserHomeDir()
+	home, err := OSUtilsInterface.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 	defaultPath := home + "/.razor"
-	if _, err := PathUtilsInterface.Stat(defaultPath); PathUtilsInterface.IsNotExist(err) {
-		mkdirErr := PathUtilsInterface.Mkdir(defaultPath, 0700)
+	if _, err := OSUtilsInterface.Stat(defaultPath); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(defaultPath, 0700)
 		if mkdirErr != nil {
 			return "", mkdirErr
 		}
