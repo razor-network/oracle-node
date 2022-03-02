@@ -40,6 +40,11 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	BindInterface = optionsPackageStruct.BindInterface
 	AccountsInterface = optionsPackageStruct.AccountsInterface
 	BlockManagerInterface = optionsPackageStruct.BlockManagerInterface
+	StakeManagerInterface = optionsPackageStruct.StakeManagerInterface
+	AssetManagerInterface = optionsPackageStruct.AssetManagerInterface
+	VoteManagerInterface = optionsPackageStruct.VoteManagerInterface
+	BindingsInterface = optionsPackageStruct.BindingsInterface
+	JsonInterface = optionsPackageStruct.JsonInterface
 	return &UtilsStruct{}
 }
 
@@ -49,6 +54,10 @@ func (a AccountsStruct) GetPrivateKey(address string, password string, keystoreP
 
 func (o OptionsStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 	return retry.Attempts(numberOfAttempts)
+}
+
+func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
+	return ConvertToNumber(num)
 }
 
 func (b BlockManagerStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
@@ -81,144 +90,140 @@ func (b BlockManagerStruct) SortedProposedBlockIds(client *ethclient.Client, opt
 	return blockManager.SortedProposedBlockIds(opts, arg0, arg1)
 }
 
-func (o OptionsStruct) GetStakerId(client *ethclient.Client, opts *bind.CallOpts, address common.Address) (uint32, error) {
+func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, opts *bind.CallOpts, address common.Address) (uint32, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.GetStakerId(opts, address)
 }
 
-func (o OptionsStruct) GetNumStakers(client *ethclient.Client, opts *bind.CallOpts) (uint32, error) {
+func (s StakeManagerStruct) GetNumStakers(client *ethclient.Client, opts *bind.CallOpts) (uint32, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.GetNumStakers(opts)
 }
 
-func (o OptionsStruct) Locks(client *ethclient.Client, opts *bind.CallOpts, address common.Address, address1 common.Address) (coretypes.Locks, error) {
+func (s StakeManagerStruct) Locks(client *ethclient.Client, opts *bind.CallOpts, address common.Address, address1 common.Address) (coretypes.Locks, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.Locks(opts, address, address1)
 }
 
-func (o OptionsStruct) WithdrawReleasePeriod(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+func (s StakeManagerStruct) WithdrawReleasePeriod(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.WithdrawReleasePeriod(opts)
 }
 
-func (o OptionsStruct) MaxCommission(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
+func (s StakeManagerStruct) MaxCommission(client *ethclient.Client, opts *bind.CallOpts) (uint8, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.MaxCommission(opts)
 }
 
-func (o OptionsStruct) EpochLimitForUpdateCommission(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
+func (s StakeManagerStruct) EpochLimitForUpdateCommission(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.EpochLimitForUpdateCommission(opts)
 }
 
-func (o OptionsStruct) GetStaker(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsStaker, error) {
+func (s StakeManagerStruct) GetStaker(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsStaker, error) {
 	stakeManager := UtilsInterface.GetStakeManager(client)
 	return stakeManager.GetStaker(opts, stakerId)
 }
 
-func (o OptionsStruct) GetNumAssets(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
+func (a AssetManagerStruct) GetNumAssets(client *ethclient.Client, opts *bind.CallOpts) (uint16, error) {
 	assetManager := UtilsInterface.GetAssetManager(client)
 	return assetManager.GetNumAssets(opts)
 }
 
-func (o OptionsStruct) GetNumActiveCollections(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
+func (a AssetManagerStruct) GetNumActiveCollections(client *ethclient.Client, opts *bind.CallOpts) (*big.Int, error) {
 	assetManager := UtilsInterface.GetAssetManager(client)
 	return assetManager.GetNumActiveCollections(opts)
 }
 
-func (o OptionsStruct) GetAsset(client *ethclient.Client, opts *bind.CallOpts, id uint16) (coretypes.Asset, error) {
+func (a AssetManagerStruct) GetAsset(client *ethclient.Client, opts *bind.CallOpts, id uint16) (coretypes.Asset, error) {
 	assetManager := UtilsInterface.GetAssetManager(client)
 	return assetManager.GetAsset(opts, id)
 }
 
-func (o OptionsStruct) GetActiveCollections(client *ethclient.Client, opts *bind.CallOpts) ([]uint16, error) {
+func (a AssetManagerStruct) GetActiveCollections(client *ethclient.Client, opts *bind.CallOpts) ([]uint16, error) {
 	assetManager := UtilsInterface.GetAssetManager(client)
 	return assetManager.GetActiveCollections(opts)
 }
 
-func (o OptionsStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bindings.StructsJob, error) {
+func (a AssetManagerStruct) Jobs(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bindings.StructsJob, error) {
 	assetManager := UtilsInterface.GetAssetManager(client)
 	return assetManager.Jobs(opts, id)
 }
 
-func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
-	return ConvertToNumber(num)
-}
-
-func (o OptionsStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (coretypes.Commitment, error) {
+func (v VoteManagerStruct) Commitments(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (coretypes.Commitment, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.Commitments(opts, stakerId)
 }
 
-func (o OptionsStruct) GetVoteValue(client *ethclient.Client, opts *bind.CallOpts, assetIndex uint16, stakerId uint32) (*big.Int, error) {
+func (v VoteManagerStruct) GetVoteValue(client *ethclient.Client, opts *bind.CallOpts, assetIndex uint16, stakerId uint32) (*big.Int, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetVoteValue(opts, assetIndex, stakerId)
 }
 
-func (o OptionsStruct) GetVote(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsVote, error) {
+func (v VoteManagerStruct) GetVote(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (bindings.StructsVote, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetVote(opts, stakerId)
 }
 
-func (o OptionsStruct) GetInfluenceSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
+func (v VoteManagerStruct) GetInfluenceSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetInfluenceSnapshot(opts, epoch, stakerId)
 }
 
-func (o OptionsStruct) GetStakeSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
+func (v VoteManagerStruct) GetStakeSnapshot(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, stakerId uint32) (*big.Int, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetStakeSnapshot(opts, epoch, stakerId)
 }
 
-func (o OptionsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (*big.Int, error) {
+func (v VoteManagerStruct) GetTotalInfluenceRevealed(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (*big.Int, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetTotalInfluenceRevealed(opts, epoch)
 }
 
-func (o OptionsStruct) GetRandaoHash(client *ethclient.Client, opts *bind.CallOpts) ([32]byte, error) {
+func (v VoteManagerStruct) GetRandaoHash(client *ethclient.Client, opts *bind.CallOpts) ([32]byte, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetRandaoHash(opts)
 }
 
-func (o OptionsStruct) GetEpochLastCommitted(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
+func (v VoteManagerStruct) GetEpochLastCommitted(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetEpochLastCommitted(opts, stakerId)
 }
 
-func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
+func (v VoteManagerStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (uint32, error) {
 	voteManager := UtilsInterface.GetVoteManager(client)
 	return voteManager.GetEpochLastRevealed(opts, stakerId)
 }
 
-func (o OptionsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
+func (b BindingsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
 	return bindings.NewAssetManager(address, client)
 }
 
-func (o OptionsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
+func (b BindingsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
 	return bindings.NewRAZOR(address, client)
 }
 
-func (o OptionsStruct) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
+func (b BindingsStruct) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
 	return bindings.NewStakeManager(address, client)
 }
 
-func (o OptionsStruct) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
+func (b BindingsStruct) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
 	return bindings.NewVoteManager(address, client)
 }
 
-func (o OptionsStruct) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
+func (b BindingsStruct) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
 	return bindings.NewBlockManager(address, client)
 }
 
-func (o OptionsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
+func (b BindingsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
 	return bindings.NewStakedToken(address, client)
 }
 
-func (o OptionsStruct) Unmarshal(data []byte, v interface{}) error {
+func (j JsonStruct) Unmarshal(data []byte, v interface{}) error {
 	return json.Unmarshal(data, v)
 }
 
-func (o OptionsStruct) Marshal(v interface{}) ([]byte, error) {
+func (j JsonStruct) Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(v)
 }
 

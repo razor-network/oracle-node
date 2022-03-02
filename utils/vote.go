@@ -27,7 +27,7 @@ func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([3
 	)
 	commitmentErr = retry.Do(
 		func() error {
-			commitments, commitmentErr = Options.Commitments(client, &callOpts, stakerId)
+			commitments, commitmentErr = VoteManagerInterface.Commitments(client, &callOpts, stakerId)
 			if commitmentErr != nil {
 				log.Error("Error in fetching commitment....Retrying")
 				return commitmentErr
@@ -48,7 +48,7 @@ func (*UtilsStruct) GetVoteValue(client *ethclient.Client, assetId uint16, stake
 	)
 	voteValueErr = retry.Do(
 		func() error {
-			voteValue, voteValueErr = Options.GetVoteValue(client, &callOpts, assetId-1, stakerId)
+			voteValue, voteValueErr = VoteManagerInterface.GetVoteValue(client, &callOpts, assetId-1, stakerId)
 			if voteValueErr != nil {
 				log.Error("Error in fetching last vote value....Retrying")
 				return voteValueErr
@@ -69,7 +69,7 @@ func (*UtilsStruct) GetVotes(client *ethclient.Client, stakerId uint32) (binding
 	)
 	votesErr = retry.Do(
 		func() error {
-			votes, votesErr = Options.GetVote(client, &callOpts, stakerId)
+			votes, votesErr = VoteManagerInterface.GetVote(client, &callOpts, stakerId)
 			if votesErr != nil {
 				log.Error("Error in fetching last vote value....Retrying")
 				return votesErr
@@ -90,7 +90,7 @@ func (*UtilsStruct) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint
 	)
 	influenceErr = retry.Do(
 		func() error {
-			influenceSnapshot, influenceErr = Options.GetInfluenceSnapshot(client, &callOpts, epoch, stakerId)
+			influenceSnapshot, influenceErr = VoteManagerInterface.GetInfluenceSnapshot(client, &callOpts, epoch, stakerId)
 			if influenceErr != nil {
 				log.Error("Error in fetching influence snapshot....Retrying")
 				return influenceErr
@@ -111,7 +111,7 @@ func (*UtilsStruct) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, 
 	)
 	snapshotErr = retry.Do(
 		func() error {
-			stakeSnapshot, snapshotErr = Options.GetStakeSnapshot(client, &callOpts, epoch, stakerId)
+			stakeSnapshot, snapshotErr = VoteManagerInterface.GetStakeSnapshot(client, &callOpts, epoch, stakerId)
 			if snapshotErr != nil {
 				log.Error("Error in fetching stake snapshot....Retrying")
 				return snapshotErr
@@ -132,7 +132,7 @@ func (*UtilsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch ui
 	)
 	influenceErr = retry.Do(
 		func() error {
-			totalInfluenceRevealed, influenceErr = Options.GetTotalInfluenceRevealed(client, &callOpts, epoch)
+			totalInfluenceRevealed, influenceErr = VoteManagerInterface.GetTotalInfluenceRevealed(client, &callOpts, epoch)
 			if influenceErr != nil {
 				log.Error("Error in fetching total influence revealed....Retrying")
 				return influenceErr
@@ -153,7 +153,7 @@ func (*UtilsStruct) GetRandaoHash(client *ethclient.Client) ([32]byte, error) {
 	)
 	randaoErr = retry.Do(
 		func() error {
-			randaoHash, randaoErr = Options.GetRandaoHash(client, &callOpts)
+			randaoHash, randaoErr = VoteManagerInterface.GetRandaoHash(client, &callOpts)
 			if randaoErr != nil {
 				log.Error("Error in fetching randao hash.....Retrying")
 				return randaoErr
@@ -174,7 +174,7 @@ func (*UtilsStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uin
 	)
 	err = retry.Do(
 		func() error {
-			epochLastCommitted, err = Options.GetEpochLastCommitted(client, &callOpts, stakerId)
+			epochLastCommitted, err = VoteManagerInterface.GetEpochLastCommitted(client, &callOpts, stakerId)
 			if err != nil {
 				log.Error("Error in fetching epoch last committed....Retrying")
 				return err
@@ -195,7 +195,7 @@ func (*UtilsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint
 	)
 	err = retry.Do(
 		func() error {
-			epochLastRevealed, err = Options.GetEpochLastRevealed(client, &callOpts, stakerId)
+			epochLastRevealed, err = VoteManagerInterface.GetEpochLastRevealed(client, &callOpts, stakerId)
 			if err != nil {
 				log.Error("Error in fetching epoch last revealed....Retrying")
 				return err

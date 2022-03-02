@@ -63,16 +63,18 @@ func TestGetCommitments(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			optionsMock.On("Commitments", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.commitments, tt.args.commitmentErr)
+			voteManagerMock.On("Commitments", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.commitments, tt.args.commitmentErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetCommitments(client, address)
@@ -123,15 +125,17 @@ func TestGetEpochLastCommitted(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
+			voteManagerMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetEpochLastCommitted(client, stakerId)
@@ -182,15 +186,17 @@ func TestGetEpochLastRevealed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
+			voteManagerMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetEpochLastRevealed(client, stakerId)
@@ -242,15 +248,17 @@ func TestGetInfluenceSnapshot(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influenceSnapshot, tt.args.influenceErr)
+			voteManagerMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influenceSnapshot, tt.args.influenceErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetInfluenceSnapshot(client, stakerId, epoch)
@@ -300,15 +308,17 @@ func TestGetRandaoHash(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.randaoHash, tt.args.randoErr)
+			voteManagerMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.randaoHash, tt.args.randoErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetRandaoHash(client)
@@ -360,15 +370,17 @@ func TestGetStakeSnapshot(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.snapshotErr)
+			voteManagerMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.snapshotErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetStakeSnapshot(client, stakerId, epoch)
@@ -419,15 +431,17 @@ func TestGetTotalInfluenceRevealed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetTotalInfluenceRevealed", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.totalInfluenceRevealed, tt.args.influenceErr)
+			voteManagerMock.On("GetTotalInfluenceRevealed", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.totalInfluenceRevealed, tt.args.influenceErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetTotalInfluenceRevealed(client, epoch)
@@ -479,15 +493,17 @@ func TestGetVoteValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetVoteValue", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16"), mock.AnythingOfType("uint32")).Return(tt.args.voteValue, tt.args.voteValueErr)
+			voteManagerMock.On("GetVoteValue", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16"), mock.AnythingOfType("uint32")).Return(tt.args.voteValue, tt.args.voteValueErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetVoteValue(client, assetId, stakerId)
@@ -544,15 +560,17 @@ func TestGetVotes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:              optionsMock,
+				UtilsInterface:       utilsMock,
+				VoteManagerInterface: voteManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetVote", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.votes, tt.args.votesErr)
+			voteManagerMock.On("GetVote", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.votes, tt.args.votesErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetVotes(client, stakerId)

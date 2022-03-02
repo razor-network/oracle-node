@@ -172,15 +172,17 @@ func TestGetActiveAssetIds(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:               optionsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
+			assetManagerMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetActiveAssetIds(client)
@@ -423,15 +425,17 @@ func TestGetActiveJob(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:               optionsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
+			assetManagerMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetActiveJob(client, jobId)
@@ -507,15 +511,17 @@ func TestGetAssetType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:               optionsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetAsset", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.activeAssets, tt.args.activeAssetsErr)
+			assetManagerMock.On("GetAsset", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.activeAssets, tt.args.activeAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetAssetType(client, assetId)
@@ -566,15 +572,17 @@ func TestGetCollection(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:               optionsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetAsset", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
+			assetManagerMock.On("GetAsset", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetCollection(client, collectionId)
@@ -1081,15 +1089,17 @@ func TestGetNumActiveAssets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:               optionsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
+			assetManagerMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumActiveAssets(client)
@@ -1139,15 +1149,17 @@ func TestGetNumAssets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				Options:               optionsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetNumAssets", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
+			assetManagerMock.On("GetNumAssets", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumAssets(client)

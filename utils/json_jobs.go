@@ -12,7 +12,7 @@ func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob,
 	if err != nil {
 		return nil, err
 	}
-	err = Options.Unmarshal(file, &data)
+	err = JsonInterface.Unmarshal(file, &data)
 	if err != nil {
 		// If file is blank, do nothing
 		if err.Error() == "unexpected end of JSON input" {
@@ -24,7 +24,7 @@ func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob,
 }
 
 func (*UtilsStruct) WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error {
-	jsonString, err := Options.Marshal(data)
+	jsonString, err := JsonInterface.Marshal(data)
 	if err != nil {
 		return err
 	}

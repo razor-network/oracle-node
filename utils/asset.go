@@ -26,7 +26,7 @@ func (*UtilsStruct) GetNumAssets(client *ethclient.Client) (uint16, error) {
 	)
 	err = retry.Do(
 		func() error {
-			numAssets, err = Options.GetNumAssets(client, &callOpts)
+			numAssets, err = AssetManagerInterface.GetNumAssets(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching numAssets.... Retrying")
 				return err
@@ -81,7 +81,7 @@ func (*UtilsStruct) GetNumActiveAssets(client *ethclient.Client) (*big.Int, erro
 	)
 	err = retry.Do(
 		func() error {
-			numActiveAssets, err = Options.GetNumActiveCollections(client, &callOpts)
+			numActiveAssets, err = AssetManagerInterface.GetNumActiveCollections(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -102,7 +102,7 @@ func (*UtilsStruct) GetAssetType(client *ethclient.Client, assetId uint16) (uint
 	)
 	err = retry.Do(
 		func() error {
-			activeAsset, err = Options.GetAsset(client, &callOpts, assetId)
+			activeAsset, err = AssetManagerInterface.GetAsset(client, &callOpts, assetId)
 			if err != nil {
 				log.Error("Error in fetching asset.... Retrying")
 				return err
@@ -160,7 +160,7 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 	)
 	err = retry.Do(
 		func() error {
-			asset, err = Options.GetAsset(client, &callOpts, collectionId)
+			asset, err = AssetManagerInterface.GetAsset(client, &callOpts, collectionId)
 			if err != nil {
 				log.Error("Error in fetching collection.... Retrying")
 				return err
@@ -181,7 +181,7 @@ func (*UtilsStruct) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error
 	)
 	err = retry.Do(
 		func() error {
-			activeAssetIds, err = Options.GetActiveCollections(client, &callOpts)
+			activeAssetIds, err = AssetManagerInterface.GetActiveCollections(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -260,7 +260,7 @@ func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindin
 	)
 	err = retry.Do(
 		func() error {
-			job, err = Options.Jobs(client, &callOpts, jobId)
+			job, err = AssetManagerInterface.Jobs(client, &callOpts, jobId)
 			if err != nil {
 				log.Errorf("Error in fetching job %d.... Retrying", jobId)
 				return err

@@ -36,6 +36,10 @@ import (
 //go:generate mockery --name BindUtils --output ./mocks --case=underscore
 //go:generate mockery --name AccountsUtils --output ./mocks --case=underscore
 //go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name AssetManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name BindingsUtils --output ./mocks --case=underscore
+//go:generate mockery --name JsonUtils --output ./mocks --case=underscore
 
 var Options OptionUtils
 var UtilsInterface Utils
@@ -51,39 +55,15 @@ var PathInterface PathUtils
 var BindInterface BindUtils
 var AccountsInterface AccountsUtils
 var BlockManagerInterface BlockManagerUtils
+var StakeManagerInterface StakeManagerUtils
+var AssetManagerInterface AssetManagerUtils
+var VoteManagerInterface VoteManagerUtils
+var BindingsInterface BindingsUtils
+var JsonInterface JsonUtils
 
 type OptionUtils interface {
 	RetryAttempts(uint) retry.Option
-	GetStakerId(*ethclient.Client, *bind.CallOpts, common.Address) (uint32, error)
-	GetStaker(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsStaker, error)
-	GetNumStakers(*ethclient.Client, *bind.CallOpts) (uint32, error)
-	Locks(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (types.Locks, error)
-	WithdrawReleasePeriod(*ethclient.Client, *bind.CallOpts) (uint8, error)
-	MaxCommission(*ethclient.Client, *bind.CallOpts) (uint8, error)
-	EpochLimitForUpdateCommission(*ethclient.Client, *bind.CallOpts) (uint16, error)
-	Commitments(*ethclient.Client, *bind.CallOpts, uint32) (types.Commitment, error)
-	GetVoteValue(*ethclient.Client, *bind.CallOpts, uint16, uint32) (*big.Int, error)
-	GetVote(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsVote, error)
-	GetInfluenceSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
-	GetStakeSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
-	GetTotalInfluenceRevealed(*ethclient.Client, *bind.CallOpts, uint32) (*big.Int, error)
-	GetRandaoHash(*ethclient.Client, *bind.CallOpts) ([32]byte, error)
-	GetEpochLastCommitted(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
-	GetEpochLastRevealed(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
-	GetNumAssets(*ethclient.Client, *bind.CallOpts) (uint16, error)
-	GetNumActiveCollections(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
-	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
-	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
-	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
-	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
-	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
-	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
-	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
-	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
-	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
-	Unmarshal([]byte, interface{}) error
-	Marshal(interface{}) ([]byte, error)
 }
 
 type Utils interface {
@@ -234,6 +214,50 @@ type BlockManagerUtils interface {
 	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
 }
 
+type StakeManagerUtils interface {
+	GetStakerId(*ethclient.Client, *bind.CallOpts, common.Address) (uint32, error)
+	GetStaker(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsStaker, error)
+	GetNumStakers(*ethclient.Client, *bind.CallOpts) (uint32, error)
+	Locks(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (types.Locks, error)
+	WithdrawReleasePeriod(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	MaxCommission(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	EpochLimitForUpdateCommission(*ethclient.Client, *bind.CallOpts) (uint16, error)
+}
+
+type AssetManagerUtils interface {
+	GetNumAssets(*ethclient.Client, *bind.CallOpts) (uint16, error)
+	GetNumActiveCollections(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
+	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
+	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
+	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
+}
+
+type VoteManagerUtils interface {
+	Commitments(*ethclient.Client, *bind.CallOpts, uint32) (types.Commitment, error)
+	GetVoteValue(*ethclient.Client, *bind.CallOpts, uint16, uint32) (*big.Int, error)
+	GetVote(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, *bind.CallOpts, uint32) (*big.Int, error)
+	GetRandaoHash(*ethclient.Client, *bind.CallOpts) ([32]byte, error)
+	GetEpochLastCommitted(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
+}
+
+type BindingsUtils interface {
+	NewAssetManager(common.Address, *ethclient.Client) (*bindings.AssetManager, error)
+	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
+}
+
+type JsonUtils interface {
+	Unmarshal([]byte, interface{}) error
+	Marshal(interface{}) ([]byte, error)
+}
+
 type OptionsStruct struct{}
 type UtilsStruct struct{}
 type EthClientStruct struct{}
@@ -248,6 +272,11 @@ type PathStruct struct{}
 type BindStruct struct{}
 type AccountsStruct struct{}
 type BlockManagerStruct struct{}
+type StakeManagerStruct struct{}
+type AssetManagerStruct struct{}
+type VoteManagerStruct struct{}
+type BindingsStruct struct{}
+type JsonStruct struct{}
 
 type OptionsPackageStruct struct {
 	Options               OptionUtils
@@ -264,4 +293,9 @@ type OptionsPackageStruct struct {
 	BindInterface         BindUtils
 	AccountsInterface     AccountsUtils
 	BlockManagerInterface BlockManagerUtils
+	StakeManagerInterface StakeManagerUtils
+	AssetManagerInterface AssetManagerUtils
+	VoteManagerInterface  VoteManagerUtils
+	BindingsInterface     BindingsUtils
+	JsonInterface         JsonUtils
 }
