@@ -91,6 +91,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	tokenManagerUtils = TokenManagerUtils{}
 	flagSetUtils = FLagSetUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(transferCmd)
 	var (

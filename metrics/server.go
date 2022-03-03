@@ -15,7 +15,6 @@ var (
 func Run(port string) error {
 	portNumber := ":" + port
 	logrus.Infof("Starting http server to serve metrics at port '%s', endpoint '%s'", portNumber, endpoint)
-	
 
 	http.Handle(endpoint, promhttp.Handler())
 

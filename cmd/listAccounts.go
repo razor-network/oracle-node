@@ -41,5 +41,6 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 func init() {
 	razorUtils = &Utils{}
 	keystoreUtils = KeystoreUtils{}
+	InitializeUtils()
 	rootCmd.AddCommand(listAccountsCmd)
 }

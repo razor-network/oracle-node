@@ -38,7 +38,7 @@ func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
-	status, err := razorUtils.ParseBool(statusString)
+	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
@@ -108,8 +108,7 @@ func init() {
 	flagSetUtils = FLagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

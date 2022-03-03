@@ -3,11 +3,6 @@ package cmd
 import (
 	"context"
 	"crypto/ecdsa"
-	"math/big"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"time"
-
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -15,6 +10,10 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"math/big"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"time"
 )
 
 //go:generate mockery --name UtilsInterface --output ./mocks/ --case=underscore
@@ -28,6 +27,11 @@ import (
 //go:generate mockery --name TokenManagerInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name AssetManagerInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name CryptoInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name ViperInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name TimeInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name StringInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name AbiInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name OSInterface --output ./mocks/ --case=underscore
 
 var razorUtils UtilsInterface
 var flagSetUtils FlagSetInterface
@@ -40,15 +44,18 @@ var keystoreUtils KeystoreInterface
 var tokenManagerUtils TokenManagerInterface
 var assetManagerUtils AssetManagerInterface
 var cryptoUtils CryptoInterface
+var viperUtils ViperInterface
+var timeUtils TimeInterface
+var stringUtils StringInterface
+var abiUtils AbiInterface
+var osUtils OSInterface
 
 type UtilsInterface interface {
 	GetConfigFilePath() (string, error)
-	ViperWriteConfigAs(string) error
 	GetEpoch(*ethclient.Client) (uint32, error)
 	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(*ethclient.Client) int64
-	Sleep(time.Duration)
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
 	AssignPassword(*pflag.FlagSet) string
 	GetStringAddress(*pflag.FlagSet) (string, error)
@@ -70,8 +77,8 @@ type UtilsInterface interface {
 	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
 	GetCommitments(*ethclient.Client, string) ([32]byte, error)
 	AllZero([32]byte) bool
-	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
-	ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int
+	ConvertUintArrayToUint16Array([]uint) []uint16
+	ConvertUint32ArrayToBigIntArray([]uint32) []*big.Int
 	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
@@ -85,7 +92,6 @@ type UtilsInterface interface {
 	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	ParseBool(str string) (bool, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetNumberOfStakers(*ethclient.Client) (uint32, error)
 	GetRandaoHash(*ethclient.Client) ([32]byte, error)
@@ -110,8 +116,6 @@ type UtilsInterface interface {
 	WaitTillNextNSecs(int32)
 	SaveDataToFile(string, uint32, []*big.Int) error
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
-	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
-	Exit(int)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 }
@@ -124,7 +128,7 @@ type StakeManagerInterface interface {
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
-	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
+	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -307,6 +311,26 @@ type CryptoInterface interface {
 	HexToECDSA(string) (*ecdsa.PrivateKey, error)
 }
 
+type ViperInterface interface {
+	ViperWriteConfigAs(string) error
+}
+
+type TimeInterface interface {
+	Sleep(time.Duration)
+}
+
+type StringInterface interface {
+	ParseBool(str string) (bool, error)
+}
+
+type AbiInterface interface {
+	Unpack(abi.ABI, string, []byte) ([]interface{}, error)
+}
+
+type OSInterface interface {
+	Exit(int)
+}
+
 type Utils struct{}
 type FLagSetUtils struct{}
 type UtilsStruct struct{}
@@ -318,3 +342,8 @@ type KeystoreUtils struct{}
 type TokenManagerUtils struct{}
 type AssetManagerUtils struct{}
 type CryptoUtils struct{}
+type ViperUtils struct{}
+type TimeUtils struct{}
+type StringUtils struct{}
+type AbiUtils struct{}
+type OSUtils struct{}

@@ -22,6 +22,7 @@ var standardLogger = &StandardLogger{logrus.New()}
 
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
+	path.OSUtilsInterface = &path.OSUtils{}
 	logFilePath, err := path.PathUtilsInterface.GetLogFilePath()
 	if err != nil {
 		standardLogger.Fatal("Error in fetching log file path: ", err)
