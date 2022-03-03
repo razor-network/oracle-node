@@ -69,7 +69,7 @@ func joinString(args ...interface{}) string {
 
 func (logger *StandardLogger) Error(args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
@@ -79,7 +79,7 @@ func (logger *StandardLogger) Error(args ...interface{}) {
 
 func (logger *StandardLogger) Info(args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
@@ -88,7 +88,7 @@ func (logger *StandardLogger) Info(args ...interface{}) {
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
@@ -97,7 +97,7 @@ func (logger *StandardLogger) Debug(args ...interface{}) {
 
 func (logger *StandardLogger) Fatal(args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	defer sentry.Recover()
 	errMsg := joinString(args)
@@ -111,7 +111,7 @@ func (logger *StandardLogger) Fatal(args ...interface{}) {
 
 func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
@@ -121,7 +121,7 @@ func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
 
 func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
@@ -130,7 +130,7 @@ func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	msg := joinString(args)
 	sentry.CaptureMessage(msg)
@@ -139,7 +139,7 @@ func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 
 func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
-		"Address": Address,
+		"address": Address,
 	}
 	defer sentry.Recover()
 	errMsg := joinString(args)
