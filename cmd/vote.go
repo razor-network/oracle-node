@@ -63,7 +63,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account); err != nil {
 		log.Errorf("%s\n", err)
-		razorUtils.Exit(1)
+		osUtils.Exit(1)
 	}
 }
 
@@ -163,7 +163,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, utils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
@@ -173,7 +173,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			cmdUtils.AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
-		razorUtils.Exit(0)
+		osUtils.Exit(0)
 	}
 
 	staker, err := razorUtils.GetStaker(client, stakerId)
@@ -183,7 +183,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
-		razorUtils.Exit(0)
+		osUtils.Exit(0)
 	}
 	switch state {
 	case 0:
@@ -342,7 +342,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	case -1:
 		if config.WaitTime > 5 {
-			razorUtils.Sleep(5 * time.Second)
+			timeUtils.Sleep(5 * time.Second)
 			return
 		}
 	}
@@ -369,7 +369,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	}
 	epochLastProposed := uint32(0)
 	for _, vLog := range logs {
-		data, unpackErr := razorUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
 		if unpackErr != nil {
 			log.Error(unpackErr)
 			continue
@@ -432,13 +432,12 @@ func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account typ
 func init() {
 
 	razorUtils = Utils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
 	cmdUtils = &UtilsStruct{}
 	blockManagerUtils = BlockManagerUtils{}
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
+	InitializeUtils()
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(voteCmd)

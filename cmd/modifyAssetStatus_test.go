@@ -345,17 +345,19 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			stringMock := new(mocks.StringInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			flagSetUtils = flagsetUtilsMock
+			stringUtils = stringMock
 
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagsetUtilsMock.On("GetUint16AssetId", flagSet).Return(tt.args.assetId, tt.args.assetIdErr)
 			flagsetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
+			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("ModifyAssetStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyAssetStatusHash, tt.args.ModifyAssetStatusErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)

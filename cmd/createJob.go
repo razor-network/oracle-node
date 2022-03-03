@@ -14,7 +14,7 @@ import (
 
 var createJobCmd = &cobra.Command{
 	Use:   "createJob",
-	Short: "createJob can be used to create a job",
+	Short: "[ADMIN ONLY]createJob can be used to create a job",
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The createJob command can be used to create a job that the stakers can vote upon.
 
 Example:
@@ -104,6 +104,7 @@ func init() {
 	assetManagerUtils = &AssetManagerUtils{}
 	transactionUtils = &TransactionUtils{}
 	flagSetUtils = &FLagSetUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(createJobCmd)
 

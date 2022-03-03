@@ -119,8 +119,7 @@ func init() {
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(stakeCmd)

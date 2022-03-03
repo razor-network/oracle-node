@@ -14,7 +14,7 @@ import (
 
 var modifyAssetStatusCmd = &cobra.Command{
 	Use:   "modifyAssetStatus",
-	Short: "modify the active status of an asset",
+	Short: "[ADMIN ONLY]modify the active status of an asset",
 	Long: `modifyAssetStatus can be used by admins to change the status of an asset
 Example:	
   ./razor modifyAssetStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --assetId 1 --status true`,
@@ -38,7 +38,7 @@ func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
-	status, err := razorUtils.ParseBool(statusString)
+	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
@@ -108,8 +108,7 @@ func init() {
 	flagSetUtils = FLagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

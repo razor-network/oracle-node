@@ -110,6 +110,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 
 	var (
 		Address    string

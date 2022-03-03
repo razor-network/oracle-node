@@ -6,39 +6,45 @@ import (
 )
 
 //go:generate mockery --name PathInterface --output ./mocks/ --case=underscore
+//go:generate mockery --name OSInterface --output ./mocks/ --case=underscore
 
 var PathUtilsInterface PathInterface
+var OSUtilsInterface OSInterface
 
 type PathInterface interface {
-	UserHomeDir() (string, error)
-	Stat(string) (fs.FileInfo, error)
-	IsNotExist(error) bool
-	Mkdir(string, fs.FileMode) error
 	GetDefaultPath() (string, error)
-	OpenFile(string, int, fs.FileMode) (*os.File, error)
 	GetLogFilePath() (string, error)
 	GetConfigFilePath() (string, error)
 	GetJobFilePath() (string, error)
 }
 
-type PathUtils struct{}
+type OSInterface interface {
+	UserHomeDir() (string, error)
+	Stat(string) (fs.FileInfo, error)
+	IsNotExist(error) bool
+	Mkdir(string, fs.FileMode) error
+	OpenFile(string, int, fs.FileMode) (*os.File, error)
+}
 
-func (p PathUtils) UserHomeDir() (string, error) {
+type PathUtils struct{}
+type OSUtils struct{}
+
+func (o OSUtils) UserHomeDir() (string, error) {
 	return os.UserHomeDir()
 }
 
-func (p PathUtils) Stat(name string) (fs.FileInfo, error) {
+func (o OSUtils) Stat(name string) (fs.FileInfo, error) {
 	return os.Stat(name)
 }
 
-func (p PathUtils) IsNotExist(err error) bool {
+func (o OSUtils) IsNotExist(err error) bool {
 	return os.IsNotExist(err)
 }
 
-func (p PathUtils) Mkdir(name string, perm fs.FileMode) error {
+func (o OSUtils) Mkdir(name string, perm fs.FileMode) error {
 	return os.Mkdir(name, perm)
 }
 
-func (p PathUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
+func (o OSUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
 	return os.OpenFile(name, flag, perm)
 }

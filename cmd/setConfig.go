@@ -68,7 +68,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 
 		viper.Set("exposeMetricsPort", port)
 
-		configErr := razorUtils.ViperWriteConfigAs(path)
+		configErr := viperUtils.ViperWriteConfigAs(path)
 		if configErr != nil {
 			log.Error("Error in writing config")
 			return configErr
@@ -111,7 +111,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 
-	configErr := razorUtils.ViperWriteConfigAs(path)
+	configErr := viperUtils.ViperWriteConfigAs(path)
 	if configErr != nil {
 		log.Error("Error in writing config")
 		return configErr
@@ -124,6 +124,8 @@ func init() {
 	razorUtils = Utils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	viperUtils = &ViperUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(setConfig)
 

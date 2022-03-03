@@ -13,7 +13,7 @@ import (
 
 var updateCollectionCmd = &cobra.Command{
 	Use:   "updateCollection",
-	Short: "updateCollection can be used to update an existing collection",
+	Short: "[ADMIN ONLY]updateCollection can be used to update an existing collection",
 	Long: `A collection is a group of jobs that reports the aggregated value of jobs. updateCollection can be used to modify an already existing collection.
 
 Example: 
@@ -101,6 +101,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(updateCollectionCmd)
 
