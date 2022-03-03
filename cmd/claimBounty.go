@@ -120,6 +120,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
+	timeUtils = TimeUtils{}
 	InitializeUtils()
 
 	rootCmd.AddCommand(claimBountyCmd)

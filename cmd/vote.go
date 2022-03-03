@@ -360,10 +360,12 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 		},
 	}
 	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	fmt.Println(1)
 	if err != nil {
 		return 0, err
 	}
 	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(jobManager.BlockManagerABI))
+	fmt.Println(2)
 	if err != nil {
 		return 0, err
 	}
@@ -437,6 +439,9 @@ func init() {
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
+	abiUtils = AbiUtils{}
+	timeUtils = TimeUtils{}
+	osUtils = OSUtils{}
 	InitializeUtils()
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 

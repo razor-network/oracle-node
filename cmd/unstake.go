@@ -186,6 +186,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
 	flagSetUtils = FLagSetUtils{}
+	timeUtils = TimeUtils{}
 	InitializeUtils()
 
 	rootCmd.AddCommand(unstakeCmd)

@@ -118,6 +118,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	stringUtils = StringUtils{}
 	InitializeUtils()
 
 	rootCmd.AddCommand(setDelegationCmd)

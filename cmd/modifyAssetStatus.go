@@ -108,6 +108,7 @@ func init() {
 	flagSetUtils = FLagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
+	stringUtils = StringUtils{}
 	InitializeUtils()
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)

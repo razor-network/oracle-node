@@ -100,6 +100,7 @@ func init() {
 	razorUtils = Utils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	viperUtils = ViperUtils{}
 	InitializeUtils()
 
 	rootCmd.AddCommand(setConfig)

@@ -133,6 +133,7 @@ func init() {
 	razorUtils = Utils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
+	timeUtils = TimeUtils{}
 	InitializeUtils()
 	cmdUtils = &UtilsStruct{}
 
