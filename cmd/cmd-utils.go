@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 	"razor/utils"
+	"strconv"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -30,6 +31,14 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 }
 
 func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error) {
+	var allowedStates string
+	for i := 0; i < len(states); i++ {
+		if i == len(states)-1 {
+			allowedStates = allowedStates + strconv.Itoa(i) + ":" + razorUtils.GetStateName(int64(i))
+		} else {
+			allowedStates = allowedStates + strconv.Itoa(i) + ":" + razorUtils.GetStateName(int64(i)) + ","
+		}
+	}
 	for {
 		epoch, state, err := cmdUtils.GetEpochAndState(client)
 		if err != nil {
@@ -37,7 +46,7 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 			return epoch, err
 		}
 		if !utils.Contains(states, int(state)) {
-			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
+			log.Debugf("Can only %s during %s state(s). Retrying in 5 seconds...", action, allowedStates)
 			timeUtils.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
