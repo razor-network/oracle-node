@@ -69,46 +69,6 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
-		Options:               utils.Options,
-		UtilsInterface:        utils.UtilsInterface,
-		EthClient:             utils.EthClient,
-		ClientInterface:       utils.ClientInterface,
-		Time:                  utils.Time,
-		OS:                    utils.OS,
-		Bufio:                 utils.Bufio,
-		CoinInterface:         utils.CoinInterface,
-		IoutilInterface:       utils.IoutilInterface,
-		ABIInterface:          utils.ABIInterface,
-		PathInterface:         utils.PathInterface,
-		BindInterface:         utils.BindInterface,
-		AccountsInterface:     utils.AccountsInterface,
-		BlockManagerInterface: utils.BlockManagerInterface,
-		StakeManagerInterface: utils.StakeManagerInterface,
-		AssetManagerInterface: utils.AssetManagerInterface,
-		VoteManagerInterface:  utils.VoteManagerInterface,
-		BindingsInterface:     utils.BindingsInterface,
-		JsonInterface:         utils.JsonInterface,
-	})
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
-	utils.EthClient = &utils.EthClientStruct{}
-	utils.ClientInterface = &utils.ClientStruct{}
-	utils.Time = &utils.TimeStruct{}
-	utils.OS = &utils.OSStruct{}
-	utils.Bufio = &utils.BufioStruct{}
-	utils.CoinInterface = &utils.CoinStruct{}
-	utils.IoutilInterface = &utils.IoutilStruct{}
-	utils.ABIInterface = &utils.ABIStruct{}
-	utils.PathInterface = &utils.PathStruct{}
-	utils.BindInterface = &utils.BindStruct{}
-	utils.AccountsInterface = &utils.AccountsStruct{}
-	utils.BlockManagerInterface = &utils.BlockManagerStruct{}
-	utils.StakeManagerInterface = &utils.StakeManagerStruct{}
-	utils.AssetManagerInterface = &utils.AssetManagerStruct{}
-	utils.VoteManagerInterface = &utils.VoteManagerStruct{}
-	utils.BindingsInterface = &utils.BindingsStruct{}
-	utils.JsonInterface = &utils.JsonStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 
