@@ -16,7 +16,7 @@ jobs:
       - run:
           name: "go-fmt"
           command: |
-            docker run --rm -v $(pwd):/test --name go  razor-test gofmt -w .
+            docker run --rm -v $(pwd):/test --name go  razor-test gofmt
       - run:
           name: "go-lint"
           command: |
