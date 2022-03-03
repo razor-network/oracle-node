@@ -120,14 +120,11 @@ func init() {
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utilsInterface = &utils.UtilsStruct{}
-	utils.EthClient = utils.EthClientStruct{}
-	utils.Time = utils.TimeStruct{}
-	utils.ClientInterface = utils.ClientStruct{}
-	utils.Bufio = utils.BufioStruct{}
-	utils.CoinInterface = utils.CoinStruct{}
-	utils.OS = utils.OSStruct{}
+	abiUtils = AbiUtils{}
+	timeUtils = TimeUtils{}
+	stringUtils = StringUtils{}
+	osUtils = OSUtils{}
+	InitializeUtils()
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(stakeCmd)

@@ -45,6 +45,7 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 func init() {
 	razorUtils = Utils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 	razorAccounts.AccountUtilsInterface = razorAccounts.AccountUtils{}
 
 	rootCmd.AddCommand(createCmd)

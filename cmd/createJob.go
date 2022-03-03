@@ -108,6 +108,7 @@ func init() {
 	assetManagerUtils = &AssetManagerUtils{}
 	transactionUtils = &TransactionUtils{}
 	flagSetUtils = &FLagSetUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(createJobCmd)
 

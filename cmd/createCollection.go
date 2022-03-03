@@ -102,8 +102,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 
 func init() {
 
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 	cmdUtils = &UtilsStruct{}
 	razorUtils = Utils{}
 	assetManagerUtils = AssetManagerUtils{}

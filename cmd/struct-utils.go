@@ -25,6 +25,18 @@ import (
 
 var utilsInterface = utils.UtilsInterface
 
+func InitializeUtils() {
+	utilsInterface = &utils.UtilsStruct{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	utils.EthClient = &utils.EthClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
+	utils.Time = &utils.TimeStruct{}
+	utils.OS = &utils.OSStruct{}
+	utils.Bufio = &utils.BufioStruct{}
+	utils.CoinInterface = &utils.CoinStruct{}
+}
+
 func (u Utils) GetConfigFilePath() (string, error) {
 	return path.PathUtilsInterface.GetConfigFilePath()
 }

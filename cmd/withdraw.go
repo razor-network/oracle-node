@@ -137,8 +137,7 @@ func init() {
 	razorUtils = Utils{}
 	transactionUtils = TransactionUtils{}
 	stakeManagerUtils = StakeManagerUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 	cmdUtils = &UtilsStruct{}
 
 	rootCmd.AddCommand(withdrawCmd)
