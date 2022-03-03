@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 )
@@ -30,15 +31,17 @@ func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	jobIdInUint, err := flagSetUtils.GetUintSliceJobIds(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
