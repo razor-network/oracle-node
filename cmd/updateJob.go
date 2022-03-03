@@ -13,7 +13,7 @@ import (
 
 var updateJobCmd = &cobra.Command{
 	Use:   "updateJob",
-	Short: "updateJob can be used to update an existing job",
+	Short: "[ADMIN ONLY]updateJob can be used to update an existing job",
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The updateJob command can be used to update an existing job that the stakers can vote upon.
 
 Example:
