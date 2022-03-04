@@ -186,6 +186,8 @@ func TestHandleBlock(t *testing.T) {
 		minStakeErr           error
 		staker                bindings.StructsStaker
 		stakerErr             error
+		sRZR                  *big.Int
+		sRZRErr               error
 		epochLastCommitted    uint32
 		epochLastCommittedErr error
 		secret                []byte
@@ -1075,6 +1077,24 @@ func TestHandleBlock(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 41: When there is an error in getting sRZR balance",
+			args: args{
+				rogueData: types.Rogue{
+					IsRogue: false,
+				},
+				state:         0,
+				stateName:     "commit",
+				epoch:         5,
+				stakerId:      2,
+				stake:         big.NewInt(10000),
+				ethBalance:    big.NewInt(1),
+				actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
+				minStake:      big.NewInt(10000),
+				sRZRErr:       errors.New("sRZR error"),
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1103,6 +1123,7 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 			cmdUtilsMock.On("AutoUnstakeAndWithdraw", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret)
 			cmdUtilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.commitFile, tt.args.commitFileErr)

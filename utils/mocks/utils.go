@@ -1285,6 +1285,29 @@ func (_m *Utils) GetStakerId(_a0 *ethclient.Client, _a1 string) (uint32, error) 
 	return r0, r1
 }
 
+// GetStakerSRZRBalance provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetStakerSRZRBalance(_a0 *ethclient.Client, _a1 bindings.StructsStaker) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsStaker) *big.Int); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsStaker) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStateName provides a mock function with given fields: _a0
 func (_m *Utils) GetStateName(_a0 int64) string {
 	ret := _m.Called(_a0)
