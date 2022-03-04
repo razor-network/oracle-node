@@ -311,6 +311,10 @@ func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
 	return utilsInterface.AddJobToJSON(s, job)
 }
 
+func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
+	return utilsInterface.GetStakerSRZRBalance(client, staker)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -369,14 +373,6 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
-}
-
-func (stakeManagerUtils StakeManagerUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
-	return stakedToken.BalanceOf(callOpts, address)
-}
-
-func (stakeManagerUtils StakeManagerUtils) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
-	return token.TotalSupply(callOpts)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

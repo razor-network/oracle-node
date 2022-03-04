@@ -118,6 +118,7 @@ type UtilsInterface interface {
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
+	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 }
 
 type StakeManagerInterface interface {
@@ -134,8 +135,6 @@ type StakeManagerInterface interface {
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
-	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
-	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
 type KeystoreInterface interface {
@@ -242,7 +241,6 @@ type UtilsCmdInterface interface {
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
 	ExecuteJobList()
 	GetJobList(*ethclient.Client) error
-	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int) (*big.Int, error)
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
 	AutoWithdraw(types.TransactionOptions, uint32) error
