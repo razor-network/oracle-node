@@ -78,6 +78,7 @@ type OptionUtils interface {
 	GetNumActiveCollections(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
 	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
 	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
 	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
@@ -175,6 +176,7 @@ type Utils interface {
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 	CheckTransactionReceipt(*ethclient.Client, string) int
+	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 }
 
 type EthClientUtils interface {

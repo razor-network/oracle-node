@@ -167,7 +167,23 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), stakerId, actualStake, actualBalance)
+	staker, err := razorUtils.GetStaker(client, stakerId)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	sRZRBalance, err := razorUtils.GetStakerSRZRBalance(client, staker)
+	if err != nil {
+		log.Error("Error in getting sRZR balance for staker: ", err)
+		return
+	}
+	sRZRInEth, err := razorUtils.ConvertWeiToEth(sRZRBalance)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
@@ -180,11 +196,6 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		osUtils.Exit(0)
 	}
 
-	staker, err := razorUtils.GetStaker(client, stakerId)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
 		osUtils.Exit(0)
