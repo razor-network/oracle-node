@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
@@ -30,12 +31,15 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 	utils.CheckError("Error in getting bountyId: ", err)
@@ -120,8 +124,7 @@ func init() {
 	stakeManagerUtils = StakeManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(claimBountyCmd)
 	var (

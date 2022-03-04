@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -28,12 +29,15 @@ func initialiseExtendLock(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config data: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -78,8 +82,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(extendUnstakeLockCmd)
 

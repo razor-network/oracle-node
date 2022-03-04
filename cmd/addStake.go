@@ -5,6 +5,7 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -30,17 +31,17 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-
-	password := razorUtils.AssignPassword(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
+	logger.Address = address
+
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	password := razorUtils.AssignPassword(flagSet)
 	client := razorUtils.ConnectToClient(config.Provider)
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching balance for account: "+address, err)
-
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
@@ -119,8 +120,11 @@ func init() {
 	voteManagerUtils = VoteManagerUtils{}
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	abiUtils = AbiUtils{}
+	timeUtils = TimeUtils{}
+	stringUtils = StringUtils{}
+	osUtils = OSUtils{}
+	InitializeUtils()
 	accounts.AccountUtilsInterface = accounts.AccountUtils{}
 
 	rootCmd.AddCommand(stakeCmd)

@@ -57,6 +57,7 @@ func init() {
 	razorUtils = Utils{}
 	keystoreUtils = KeystoreUtils{}
 	cryptoUtils = CryptoUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(importCmd)
 }

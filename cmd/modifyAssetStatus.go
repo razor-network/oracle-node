@@ -3,6 +3,7 @@ package cmd
 import (
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -26,11 +27,13 @@ func initialiseModifyAssetStatus(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in fetching config data: ", err)
-
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in fetching config data: ", err)
 
 	assetId, err := flagSetUtils.GetUint16AssetId(flagSet)
 	utils.CheckError("Error in getting assetId: ", err)
@@ -108,8 +111,7 @@ func init() {
 	flagSetUtils = FLagSetUtils{}
 	assetManagerUtils = AssetManagerUtils{}
 	transactionUtils = TransactionUtils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(modifyAssetStatusCmd)
 

@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -28,11 +29,15 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
+	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
+	utils.CheckError("Error in getting fromAddress: ", err)
+
+	logger.Address = fromAddress
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 	password := razorUtils.AssignPassword(flagSet)
-	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
-	utils.CheckError("Error in getting fromAddress: ", err)
+
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
 
@@ -91,6 +96,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	tokenManagerUtils = TokenManagerUtils{}
 	flagSetUtils = FLagSetUtils{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(transferCmd)
 	var (

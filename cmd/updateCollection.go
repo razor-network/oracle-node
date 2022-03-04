@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 )
@@ -30,12 +31,15 @@ func initialiseUpdateCollection(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionID: ", err)
@@ -101,6 +105,7 @@ func init() {
 	transactionUtils = TransactionUtils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
+	InitializeUtils()
 
 	rootCmd.AddCommand(updateCollectionCmd)
 
