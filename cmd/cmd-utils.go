@@ -46,7 +46,7 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 			return epoch, err
 		}
 		if !utils.Contains(states, int(state)) {
-			log.Debugf("Can only %s during %s state(s). Retrying in 5 seconds...", action, allowedStates)
+			log.Infof("Can only %s during %s state(s). Retrying in 5 seconds...", action, allowedStates)
 			timeUtils.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
