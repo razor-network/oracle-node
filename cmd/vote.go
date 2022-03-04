@@ -175,7 +175,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
 			log.Error("Stopped voting as total stake is already withdrawn.")
 		} else {
-			log.Debug("Auto starting Unstake followed by Withdraw")
+			log.Debug("Auto starting Unstake followed by InitiateWithdraw")
 			cmdUtils.AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}

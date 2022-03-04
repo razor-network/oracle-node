@@ -225,7 +225,7 @@ func TestWithdrawFunds(t *testing.T) {
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetUpdatedEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.updatedEpoch, tt.args.updatedEpochErr)
-			cmdUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
 			timeMock.On("Sleep", mock.Anything).Return()
 
 			utils := &UtilsStruct{}
@@ -276,7 +276,7 @@ func TestWithdraw(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When Withdraw transaction fails",
+			name: "Test 2: When InitiateWithdraw transaction fails",
 			args: args{
 				withdrawTxn: &Types.Transaction{},
 				withdrawErr: errors.New("withdraw error"),
@@ -295,7 +295,7 @@ func TestWithdraw(t *testing.T) {
 			stakeManagerUtils = stakeManagerUtilsMock
 			transactionUtils = transactionUtilsMock
 
-			stakeManagerUtilsMock.On("Withdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawTxn, tt.args.withdrawErr)
+			stakeManagerUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawTxn, tt.args.withdrawErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}

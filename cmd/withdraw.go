@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteWithdraw(flagSet *pflag.FlagSet) {
 		Password: password,
 	}, config, stakerId)
 
-	utils.CheckError("Withdraw error: ", err)
+	utils.CheckError("InitiateWithdraw error: ", err)
 	if txn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
@@ -62,13 +62,13 @@ func (*UtilsStruct) ExecuteWithdraw(flagSet *pflag.FlagSet) {
 
 func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 
-	lock, err := razorUtils.GetLock(client, account.Address, stakerId)
+	withdrawLock, err := razorUtils.GetLock(client, account.Address, stakerId, 1)
 	if err != nil {
-		log.Error("Error in fetching lock")
+		log.Error("Error in fetching withdrawLock")
 		return core.NilHash, err
 	}
 
-	if lock.WithdrawAfter.Cmp(big.NewInt(0)) == 0 {
+	if withdrawLock.UnlockAfter.Cmp(big.NewInt(0)) == 0 {
 		log.Info("Please unstake Razors before withdrawing.")
 		return core.NilHash, nil
 	}
@@ -78,7 +78,7 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		log.Error("Error in fetching withdraw release period")
 		return core.NilHash, err
 	}
-	withdrawBefore := big.NewInt(0).Add(lock.WithdrawAfter, big.NewInt(int64(withdrawReleasePeriod)))
+	withdrawBefore := big.NewInt(0).Add(withdrawLock.UnlockAfter, big.NewInt(int64(withdrawReleasePeriod)))
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
@@ -95,7 +95,7 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		return core.NilHash, err
 	}
 	if big.NewInt(int64(epoch)).Cmp(withdrawBefore) > 0 {
-		log.Info("Withdrawal period has passed. Cannot withdraw now, please reset the lock!")
+		log.Info("Withdrawal period has passed. Cannot withdraw now, please reset the withdrawLock!")
 		return core.NilHash, nil
 	}
 
@@ -103,11 +103,11 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
 	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
-		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
+		if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
 			return cmdUtils.Withdraw(client, txnOpts, stakerId)
 		}
-		log.Debug("Waiting for lock period to get over....")
-		// Wait for 30 seconds if lock period isn't over
+		log.Debug("Waiting for withdrawLock period to get over....")
+		// Wait for 30 seconds if withdrawLock period isn't over
 		timeUtils.Sleep(30 * time.Second)
 		epoch, err = razorUtils.GetUpdatedEpoch(client)
 		if err != nil {
@@ -119,9 +119,9 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 }
 
 func (*UtilsStruct) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
-	log.Info("Withdrawing funds...")
+	log.Info("Initiating Withdraw funds...")
 
-	txn, err := stakeManagerUtils.Withdraw(client, txnOpts, stakerId)
+	txn, err := stakeManagerUtils.InitiateWithdraw(client, txnOpts, stakerId)
 	if err != nil {
 		log.Error("Error in withdrawing funds")
 		return core.NilHash, err

@@ -322,7 +322,7 @@ func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, op
 	return stakeManager.Delegate(opts, stakerId, amount)
 }
 
-func (stakeManagerUtils StakeManagerUtils) Withdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) InitiateWithdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.InitiateWithdraw(opts, stakerId)
 }

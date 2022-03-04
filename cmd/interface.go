@@ -122,7 +122,7 @@ type StakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	ExtendUnstakeLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	InitiateWithdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
