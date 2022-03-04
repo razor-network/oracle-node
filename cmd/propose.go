@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
 	"math/big"
 	"math/rand"
@@ -10,10 +12,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	"modernc.org/sortutil"
+	"sort"
 )
 
 var _mediansData []*big.Int
@@ -26,7 +25,7 @@ var _mediansData []*big.Int
 
 // Find iteration using salt as seed
 
-func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, rogueData types.Rogue) (common.Hash, error) {
+func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
@@ -49,7 +48,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		return core.NilHash, err
 	}
 
-	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
+	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Salt: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
 
 	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
@@ -91,7 +90,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := cmdUtils.MakeBlock(client, account.Address, rogueData)
+	medians, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -129,7 +128,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
-	//TODO: Chck if this is correct for ids
+	//TODO: Check if this is correct for ids
 	ids, err := razorUtils.GetActiveCollectionIds(client)
 	if err != nil {
 		return core.NilHash, err
@@ -203,47 +202,79 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func (*UtilsStruct) MakeBlock(client *ethclient.Client, address string, rogueData types.Rogue) ([]uint32, error) {
-	numAssets, err := razorUtils.GetNumActiveCollections(client)
+func (*UtilsStruct) getSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
+	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
 	if err != nil {
 		return nil, err
 	}
-
-	var medians []*big.Int
-
-	epoch, err := razorUtils.GetEpoch(client)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	for assetId := 1; assetId <= int(numAssets); assetId++ {
-		sortedVotes, err := cmdUtils.GetSortedVotes(client, address, uint16(assetId), epoch)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		//TODO: Check value of median index
-		totalInfluenceRevealed, err := razorUtils.GetTotalInfluenceRevealed(client, epoch, uint16(assetId))
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-
-		log.Debug("Sorted Votes: ", sortedVotes)
-		log.Debug("Total influence revealed: ", totalInfluenceRevealed)
-
-		var median *big.Int
-		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
-			median = big.NewInt(int64(rand.Intn(10000000)))
+	revealedValuesWithIndex := make(map[uint16][]uint32)
+	voteWeights := make(map[uint32]*big.Int)
+	influenceSum := make(map[uint16]*big.Int)
+	for _, asset := range assignedAsset {
+		if revealedValuesWithIndex[asset.MedianIndex] == nil {
+			revealedValuesWithIndex[asset.MedianIndex] = []uint32{asset.Value}
 		} else {
-			median = cmdUtils.InfluencedMedian(sortedVotes, totalInfluenceRevealed)
+			if !utils.Contains(revealedValuesWithIndex[asset.MedianIndex], asset.Value) {
+				revealedValuesWithIndex[asset.MedianIndex] = append(revealedValuesWithIndex[asset.MedianIndex], asset.Value)
+			}
 		}
-		log.Debugf("Median: %s", median)
-		medians = append(medians, median)
+		//Calculate vote weights
+		if voteWeights[asset.Value] == nil {
+			voteWeights[asset.Value] = big.NewInt(0)
+		}
+		voteWeights[asset.Value] = big.NewInt(0).Add(voteWeights[asset.Value], asset.Influence)
+
+		//Calculate influence sum
+		if influenceSum[asset.MedianIndex] == nil {
+			influenceSum[asset.MedianIndex] = big.NewInt(0)
+		}
+		influenceSum[asset.MedianIndex] = big.NewInt(0).Add(influenceSum[asset.MedianIndex], asset.Influence)
 	}
-	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(medians)
-	return mediansInUint32, nil
+	//sort revealed values
+	for _, element := range revealedValuesWithIndex {
+		sort.Slice(element, func(i, j int) bool {
+			return element[i] < element[j]
+		})
+	}
+	return &types.RevealedDataMaps{
+		SortedRevealedValues: revealedValuesWithIndex,
+		VoteWeights:          voteWeights,
+		InfluenceSum:         influenceSum,
+	}, nil
+}
+
+func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, error) {
+	revealedDataMaps, err := cmdUtils.getSortedRevealedValues(client, blockNumber, epoch)
+	if err != nil {
+		return nil, err
+	}
+
+	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
+	if err != nil {
+		return nil, err
+	}
+
+	var medians []uint32
+
+	//TODO: Check if 0 is the correct value for collectionId
+	for collectionId := uint16(0); collectionId < numActiveCollections; collectionId++ {
+		influenceSum := revealedDataMaps.InfluenceSum[collectionId]
+		if influenceSum.Cmp(big.NewInt(0)) != 0 {
+			accWeight := big.NewInt(0)
+			for i := 0; i < len(revealedDataMaps.SortedRevealedValues); i++ {
+				revealedValue := revealedDataMaps.SortedRevealedValues[collectionId][i]
+				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
+					medians = append(medians, rand.Uint32())
+				} else {
+					accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue])
+					if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
+						medians = append(medians, revealedValue)
+					}
+				}
+			}
+		}
+	}
+	return medians, nil
 }
 
 func (*UtilsStruct) GetMedianDataFileName(address string) (string, error) {
@@ -252,38 +283,6 @@ func (*UtilsStruct) GetMedianDataFileName(address string) (string, error) {
 		return "", err
 	}
 	return homeDir + "/" + address + "_median", nil
-}
-
-func (*UtilsStruct) GetSortedVotes(client *ethclient.Client, address string, assetId uint16, epoch uint32) ([]*big.Int, error) {
-	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
-	if err != nil {
-		return nil, err
-	}
-	var weightedVoteValues []*big.Int
-	for i := 1; i <= int(numberOfStakers); i++ {
-		epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, uint32(i))
-		if err != nil {
-			return nil, err
-		}
-		if epoch == epochLastRevealed {
-			vote, err := razorUtils.GetVoteValue(client, assetId, uint32(i))
-			if err != nil {
-				return nil, err
-			}
-			influence, err := razorUtils.GetInfluenceSnapshot(client, uint32(i), epoch)
-			if err != nil {
-				return nil, err
-			}
-			log.Debugf("Vote Value of staker %v: %v", i, vote)
-			log.Debugf("Influence snapshot of staker %v: %v", i, influence)
-			weightedVote := big.NewInt(1).Mul(vote, influence)
-			log.Debugf("Weighted vote of staker %v: %v", i, weightedVote)
-			weightedVoteValues = append(weightedVoteValues, weightedVote)
-		}
-	}
-
-	sortutil.BigIntSlice.Sort(weightedVoteValues)
-	return weightedVoteValues, nil
 }
 
 func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {

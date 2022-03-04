@@ -89,7 +89,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	}
 }
 
-func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]bindings.StructsAssignedAsset, error) {
+func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
@@ -106,7 +106,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 	if err != nil {
 		return nil, err
 	}
-	var revealedData []bindings.StructsAssignedAsset
+	var revealedData []types.RevealedStruct
 	for _, vLog := range logs {
 		data, unpackErr := abiUtils.Unpack(contractAbi, "Revealed", vLog.Data)
 		if unpackErr != nil {
@@ -114,7 +114,13 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			continue
 		}
 		if epoch == data[0].(uint32) {
-			revealedData = append(revealedData, data[2].(bindings.StructsAssignedAsset))
+			values := data[3].(bindings.StructsAssignedAsset)
+			consolidatedRevealedData := types.RevealedStruct{
+				MedianIndex: values.MedianIndex,
+				Value:       values.Value,
+				Influence:   data[2].(*big.Int),
+			}
+			revealedData = append(revealedData, consolidatedRevealedData)
 		}
 	}
 	return revealedData, nil

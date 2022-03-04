@@ -197,7 +197,11 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 2:
-
+		err := InitiatePropose(client, config, account, epoch, staker, blockNumber, rogueData)
+		if err != nil {
+			log.Error(err)
+			break
+		}
 	case 3:
 		if lastVerification >= epoch {
 			break
@@ -307,7 +311,9 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		log.Error(err)
 	}
 	log.Debug("Epoch last revealed: ", lastReveal)
-	//TODO: Modify this
+
+	//TODO: Reveal rogue and fetch committed data from file
+
 	//if _committedData == nil {
 	//	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
 	//	if err != nil {
@@ -325,9 +331,6 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	//	}
 	//	_committedData = committedDataFromFile
 	//}
-
-	//TODO: Check this
-	// Reveal wrong data if rogueMode contains reveal
 	//if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
 	//	var rogueCommittedData []*big.Int
 	//	for i := 0; i < len(_committedData); i++ {

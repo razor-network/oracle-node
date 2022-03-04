@@ -104,7 +104,6 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	}
 	return nil, errors.New("invalid aggregation method")
 }
-
 func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) *big.Int {
 	if len(data) == 0 || len(weight) == 0 || totalWeight == 0 {
 		return nil

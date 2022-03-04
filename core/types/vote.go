@@ -27,3 +27,15 @@ type CommitData struct {
 	SeqAllottedCollections []*big.Int
 	Leaves                 []*big.Int
 }
+
+type RevealedStruct struct {
+	MedianIndex uint16
+	Value       uint32
+	Influence   *big.Int
+}
+
+type RevealedDataMaps struct {
+	SortedRevealedValues map[uint16][]uint32
+	VoteWeights          map[uint32]*big.Int
+	InfluenceSum         map[uint16]*big.Int
+}
