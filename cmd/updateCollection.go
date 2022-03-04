@@ -83,7 +83,7 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 		ContractAddress: core.AssetManagerAddress,
 		MethodName:      "updateCollection",
 		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
-		ABI:             bindings.AssetManagerABI,
+		ABI:             bindings.CollectionManagerABI,
 	})
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {
