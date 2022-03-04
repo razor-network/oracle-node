@@ -34,9 +34,9 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 	var allowedStates string
 	for i := 0; i < len(states); i++ {
 		if i == len(states)-1 {
-			allowedStates = allowedStates + strconv.Itoa(i) + ":" + razorUtils.GetStateName(int64(i))
+			allowedStates = allowedStates + strconv.Itoa(states[i]) + ":" + razorUtils.GetStateName(int64(states[i]))
 		} else {
-			allowedStates = allowedStates + strconv.Itoa(i) + ":" + razorUtils.GetStateName(int64(i)) + ","
+			allowedStates = allowedStates + strconv.Itoa(states[i]) + ":" + razorUtils.GetStateName(int64(states[i])) + ", "
 		}
 	}
 	for {
