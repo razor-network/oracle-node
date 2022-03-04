@@ -52,14 +52,6 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
 
-	lock, err := razorUtils.GetLock(client, address, stakerId)
-	utils.CheckError("Error in getting lock: ", err)
-
-	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		err = errors.New("existing lock")
-		log.Fatal(err)
-	}
-
 	unstakeInput := types.UnstakeInput{
 		Address:    address,
 		Password:   password,
@@ -88,14 +80,14 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		ABI:             bindings.StakeManagerABI,
 	}
 	stakerId := input.StakerId
-	lock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
 	if err != nil {
-		log.Error("Error in getting lock: ", err)
+		log.Error("Error in getting unstakeLock: ", err)
 		return txnArgs, err
 	}
 
-	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		err := errors.New("existing lock")
+	if unstakeLock.Amount.Cmp(big.NewInt(0)) != 0 {
+		err := errors.New("existing unstakeLock")
 		log.Error(err)
 		return txnArgs, err
 	}
