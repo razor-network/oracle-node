@@ -85,7 +85,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
-		ContractAddress: core.AssetManagerAddress,
+		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createJob",
 		Parameters:      []interface{}{jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.CollectionManagerABI,

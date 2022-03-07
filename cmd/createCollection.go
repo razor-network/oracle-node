@@ -85,7 +85,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		AccountAddress:  collectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
-		ContractAddress: core.AssetManagerAddress,
+		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createCollection",
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
 		ABI:             bindings.CollectionManagerABI,

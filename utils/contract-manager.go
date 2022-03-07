@@ -26,7 +26,7 @@ func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeMan
 }
 
 func (*UtilsStruct) GetCollectionManager(client *ethclient.Client) *bindings.CollectionManager {
-	collectionManager, err := Options.NewCollectionManager(common.HexToAddress(core.AssetManagerAddress), client)
+	collectionManager, err := Options.NewCollectionManager(common.HexToAddress(core.CollectionManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
