@@ -322,12 +322,12 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --rogue --ro
 
 ### Unstake
 
-If you wish to withdraw your funds, you can run the `unstake` command followed by the `withdraw` command.
+If you wish to unstake your funds, you can run the `unstake` command.
 
 razor cli
 
 ```
-$ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
+$ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power>
 ```
 
 docker
@@ -336,13 +336,13 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    unstake --address <address> --stakerId <staker_id> --value <value> --pow <power> --autoWithdraw
+    unstake --address <address> --stakerId <staker_id> --value <value> --pow <power>
 ```
 
 Example:
 
 ```
-$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount --pow 10 1000 --autoWithdraw
+$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount --pow 10 1000
 ```
 
 ### Withdraw

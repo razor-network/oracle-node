@@ -185,20 +185,18 @@ func TestExecuteUnstake(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		config          types.Configurations
-		configErr       error
-		password        string
-		address         string
-		addressErr      error
-		autoWithdraw    bool
-		autoWithdrawErr error
-		value           *big.Int
-		valueErr        error
-		stakerId        uint32
-		stakerIdErr     error
-		lock            types.Locks
-		lockErr         error
-		unstakeErr      error
+		config      types.Configurations
+		configErr   error
+		password    string
+		address     string
+		addressErr  error
+		value       *big.Int
+		valueErr    error
+		stakerId    uint32
+		stakerIdErr error
+		lock        types.Locks
+		lockErr     error
+		unstakeErr  error
 	}
 	tests := []struct {
 		name          string
@@ -208,12 +206,11 @@ func TestExecuteUnstake(t *testing.T) {
 		{
 			name: "Test 1: When inputUnstake function executes successfully",
 			args: args{
-				config:       types.Configurations{},
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				autoWithdraw: true,
-				value:        big.NewInt(10000),
-				stakerId:     1,
+				config:   types.Configurations{},
+				password: "test",
+				address:  "0x000000000000000000000000000000000000dead",
+				value:    big.NewInt(10000),
+				stakerId: 1,
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
@@ -224,12 +221,11 @@ func TestExecuteUnstake(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting config",
 			args: args{
-				configErr:    errors.New("config error"),
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				autoWithdraw: true,
-				value:        big.NewInt(10000),
-				stakerId:     1,
+				configErr: errors.New("config error"),
+				password:  "test",
+				address:   "0x000000000000000000000000000000000000dead",
+				value:     big.NewInt(10000),
+				stakerId:  1,
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
@@ -240,12 +236,11 @@ func TestExecuteUnstake(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting address",
 			args: args{
-				config:       types.Configurations{},
-				password:     "test",
-				addressErr:   errors.New("address error"),
-				autoWithdraw: true,
-				value:        big.NewInt(10000),
-				stakerId:     1,
+				config:     types.Configurations{},
+				password:   "test",
+				addressErr: errors.New("address error"),
+				value:      big.NewInt(10000),
+				stakerId:   1,
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
@@ -254,14 +249,13 @@ func TestExecuteUnstake(t *testing.T) {
 			expectedFatal: true,
 		},
 		{
-			name: "Test 4: When there is an error in getting autoWithdraw status",
+			name: "Test 4: When there is an error in getting stakerId",
 			args: args{
-				config:          types.Configurations{},
-				password:        "test",
-				address:         "0x000000000000000000000000000000000000dead",
-				autoWithdrawErr: errors.New("autoWithdraw error"),
-				value:           big.NewInt(10000),
-				stakerId:        1,
+				config:      types.Configurations{},
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dead",
+				value:       big.NewInt(10000),
+				stakerIdErr: errors.New("stakerId error"),
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
@@ -270,30 +264,13 @@ func TestExecuteUnstake(t *testing.T) {
 			expectedFatal: true,
 		},
 		{
-			name: "Test 5: When there is an error in getting stakerId",
+			name: "Test 5: When there is an existing lock",
 			args: args{
-				config:       types.Configurations{},
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				autoWithdraw: true,
-				value:        big.NewInt(10000),
-				stakerIdErr:  errors.New("stakerId error"),
-				lock: types.Locks{
-					Amount: big.NewInt(0),
-				},
-				unstakeErr: nil,
-			},
-			expectedFatal: true,
-		},
-		{
-			name: "Test 6: When there is an existing lock",
-			args: args{
-				config:       types.Configurations{},
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				autoWithdraw: true,
-				value:        big.NewInt(10000),
-				stakerId:     1,
+				config:   types.Configurations{},
+				password: "test",
+				address:  "0x000000000000000000000000000000000000dead",
+				value:    big.NewInt(10000),
+				stakerId: 1,
 				lock: types.Locks{
 					Amount: big.NewInt(1000),
 				},
@@ -302,14 +279,13 @@ func TestExecuteUnstake(t *testing.T) {
 			expectedFatal: true,
 		},
 		{
-			name: "Test 7: When there is an error from Unstake function",
+			name: "Test 6: When there is an error from Unstake function",
 			args: args{
-				config:       types.Configurations{},
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				autoWithdraw: true,
-				value:        big.NewInt(10000),
-				stakerId:     1,
+				config:   types.Configurations{},
+				password: "test",
+				address:  "0x000000000000000000000000000000000000dead",
+				value:    big.NewInt(10000),
+				stakerId: 1,
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
@@ -341,14 +317,12 @@ func TestExecuteUnstake(t *testing.T) {
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
-			flagSetUtilsMock.On("GetBoolAutoWithdraw", flagSet).Return(tt.args.autoWithdraw, tt.args.autoWithdrawErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(txnArgs, tt.args.unstakeErr)
-			cmdUtilsMock.On("AutoWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoWithdrawErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

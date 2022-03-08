@@ -561,10 +561,6 @@ func (flagSetUtils FLagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (flo
 	return flagSet.GetFloat32("gasLimit")
 }
 
-func (flagSetUtils FLagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool, error) {
-	return flagSet.GetBool("autoWithdraw")
-}
-
 func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 	return flagSet.GetUint32("bountyId")
 }
