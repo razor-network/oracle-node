@@ -102,14 +102,6 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 }
 
 func init() {
-
-	cmdUtils = &UtilsStruct{}
-	razorUtils = &Utils{}
-	assetManagerUtils = &AssetManagerUtils{}
-	transactionUtils = &TransactionUtils{}
-	flagSetUtils = &FLagSetUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(createJobCmd)
 
 	var (
