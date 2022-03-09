@@ -1014,20 +1014,6 @@ func (_m *UtilsInterface) GetStakerSRZRBalance(client *ethclient.Client, staker 
 	return r0, r1
 }
 
-// GetStateName provides a mock function with given fields: _a0
-func (_m *UtilsInterface) GetStateName(_a0 int64) string {
-	ret := _m.Called(_a0)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(int64) string); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
 // GetStringAddress provides a mock function with given fields: _a0
 func (_m *UtilsInterface) GetStringAddress(_a0 *pflag.FlagSet) (string, error) {
 	ret := _m.Called(_a0)

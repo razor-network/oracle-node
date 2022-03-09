@@ -81,7 +81,6 @@ type UtilsInterface interface {
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array([]uint) []uint16
 	ConvertUint32ArrayToBigIntArray([]uint32) []*big.Int
-	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)

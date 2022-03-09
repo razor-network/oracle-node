@@ -149,10 +149,6 @@ func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	return utils.ConvertUintArrayToUint16Array(uintArr)
 }
 
-func (u Utils) GetStateName(state int64) string {
-	return utilsInterface.GetStateName(state)
-}
-
 func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
 	return utilsInterface.GetJobs(client)
 }

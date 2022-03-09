@@ -160,7 +160,6 @@ type Utils interface {
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	CheckEthBalanceIsZero(*ethclient.Client, string)
-	GetStateName(int64) string
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
 	SaveDataToFile(string, uint32, []*big.Int) error
