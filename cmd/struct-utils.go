@@ -328,6 +328,11 @@ func (stakeManagerUtils StakeManagerUtils) InitiateWithdraw(client *ethclient.Cl
 	return stakeManager.InitiateWithdraw(opts, stakerId)
 }
 
+func (stakeManagerUtils StakeManagerUtils) UnlockWithdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+	stakeManager := utilsInterface.GetStakeManager(client)
+	return stakeManager.UnlockWithdraw(opts, stakerId)
+}
+
 func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.SetDelegationAcceptance(opts, status)

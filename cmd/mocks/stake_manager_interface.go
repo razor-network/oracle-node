@@ -294,7 +294,7 @@ func (_m *StakeManagerInterface) UpdateCommission(_a0 *ethclient.Client, _a1 *bi
 	return r0, r1
 }
 
-// Withdraw provides a mock function with given fields: _a0, _a1, _a2
+// InitiateWithdraw provides a mock function with given fields: _a0, _a1, _a2
 func (_m *StakeManagerInterface) InitiateWithdraw(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32) (*types.Transaction, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 

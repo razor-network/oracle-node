@@ -299,7 +299,7 @@ func TestWithdraw(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Withdraw(client, txnOpts, stakerId)
+			got, err := utils.InitiateWithdraw(client, txnOpts, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdraw function, got = %v, want = %v", got, tt.want)
 			}
@@ -339,7 +339,7 @@ func TestExecuteWithdraw(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When ExecuteWithdraw executes successfully",
+			name: "Test 1: When ExecuteInitiateWithdraw executes successfully",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -426,9 +426,9 @@ func TestExecuteWithdraw(t *testing.T) {
 			utils := &UtilsStruct{}
 			fatal = false
 
-			utils.ExecuteWithdraw(flagSet)
+			utils.ExecuteInitiateWithdraw(flagSet)
 			if fatal != tt.expectedFatal {
-				t.Error("The ExecuteWithdraw function didn't execute as expected")
+				t.Error("The ExecuteInitiateWithdraw function didn't execute as expected")
 			}
 
 		})
