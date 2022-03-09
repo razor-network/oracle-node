@@ -8,3 +8,9 @@ services:
     tty: true
     volumes:
       - $HOME/.razor:/root/.razor
+    networks:
+      - razor_network
+networks:
+  razor_network:
+    name: razor_network
+    driver: bridge
