@@ -11,7 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
+	Accounts "razor/accounts"
 	"razor/core/types"
+	"razor/path"
 	"razor/pkg/bindings"
 	"time"
 )
@@ -347,3 +349,26 @@ type TimeUtils struct{}
 type StringUtils struct{}
 type AbiUtils struct{}
 type OSUtils struct{}
+
+func InitializeInterfaces() {
+	razorUtils = Utils{}
+	flagSetUtils = FLagSetUtils{}
+	cmdUtils = &UtilsStruct{}
+	stakeManagerUtils = StakeManagerUtils{}
+	transactionUtils = TransactionUtils{}
+	blockManagerUtils = BlockManagerUtils{}
+	voteManagerUtils = VoteManagerUtils{}
+	keystoreUtils = KeystoreUtils{}
+	tokenManagerUtils = TokenManagerUtils{}
+	assetManagerUtils = AssetManagerUtils{}
+	cryptoUtils = CryptoUtils{}
+	viperUtils = ViperUtils{}
+	timeUtils = TimeUtils{}
+	stringUtils = StringUtils{}
+	abiUtils = AbiUtils{}
+	osUtils = OSUtils{}
+
+	Accounts.AccountUtilsInterface = Accounts.AccountUtils{}
+	path.PathUtilsInterface = path.PathUtils{}
+	InitializeUtils()
+}

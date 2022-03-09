@@ -37,12 +37,6 @@ func (*UtilsStruct) DeleteOverrideJob(jobId uint16) error {
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	cmdUtils = &UtilsStruct{}
-	flagSetUtils = FLagSetUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(deleteOverrideCmd)
 	var JobId uint16
 

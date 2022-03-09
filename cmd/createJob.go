@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -31,12 +32,15 @@ func initialiseCreateJob(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	password := razorUtils.AssignPassword(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -98,14 +102,6 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 }
 
 func init() {
-
-	cmdUtils = &UtilsStruct{}
-	razorUtils = &Utils{}
-	assetManagerUtils = &AssetManagerUtils{}
-	transactionUtils = &TransactionUtils{}
-	flagSetUtils = &FLagSetUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(createJobCmd)
 
 	var (
