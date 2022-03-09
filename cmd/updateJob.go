@@ -104,13 +104,6 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 func init() {
 	rootCmd.AddCommand(updateJobCmd)
 
-	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	var (
 		JobId        uint16
 		URL          string

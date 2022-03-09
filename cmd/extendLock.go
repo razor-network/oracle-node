@@ -77,13 +77,6 @@ func (*UtilsStruct) ExtendLock(client *ethclient.Client, config types.Configurat
 }
 
 func init() {
-	razorUtils = Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(extendLockCmd)
 
 	var (

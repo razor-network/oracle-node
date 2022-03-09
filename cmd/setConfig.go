@@ -96,12 +96,6 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(setConfig)
 
 	var (
