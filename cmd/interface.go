@@ -213,6 +213,7 @@ type FlagSetInterface interface {
 	GetBoolAutoVote(*pflag.FlagSet) (bool, error)
 	GetBoolRogue(*pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(*pflag.FlagSet) ([]string, error)
+	GetStringExposeMetrics(*pflag.FlagSet) (string, error)
 }
 
 type UtilsCmdInterface interface {
