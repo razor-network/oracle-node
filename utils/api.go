@@ -47,10 +47,10 @@ func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector 
 	return jsonpath.Get(selector, jsonObject)
 }
 
-func (*UtilsStruct) GetDataFromHTML(url string, selector string) (string, error) {
+func (*UtilsStruct) GetDataFromXHTML(url string, selector string) (string, error) {
 	c := colly.NewCollector()
 	var priceData string
-	c.OnHTML(selector, func(e *colly.HTMLElement) {
+	c.OnXML(selector, func(e *colly.XMLElement) {
 		priceData = e.Text
 	})
 	err := c.Visit(url)
