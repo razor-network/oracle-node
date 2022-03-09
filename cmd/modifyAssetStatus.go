@@ -105,17 +105,7 @@ func (*UtilsStruct) ModifyAssetStatus(client *ethclient.Client, config types.Con
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	cmdUtils = &UtilsStruct{}
-	flagSetUtils = FLagSetUtils{}
-	assetManagerUtils = AssetManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	stringUtils = StringUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(modifyAssetStatusCmd)
-
 	var (
 		Address string
 		AssetId uint16

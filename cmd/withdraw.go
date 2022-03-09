@@ -134,13 +134,6 @@ func (*UtilsStruct) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpt
 
 func init() {
 
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	timeUtils = TimeUtils{}
-	InitializeUtils()
-	cmdUtils = &UtilsStruct{}
-
 	rootCmd.AddCommand(withdrawCmd)
 
 	var (

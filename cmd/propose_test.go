@@ -1187,9 +1187,9 @@ func BenchmarkGetIteration(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				utilsMock := new(mocks.UtilsInterface)
 				razorUtils = utilsMock
-				utils := &UtilsStruct{}
+				cmdUtils = &UtilsStruct{}
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
-				utils.GetIteration(client, proposer)
+				cmdUtils.GetIteration(client, proposer)
 			}
 		})
 	}

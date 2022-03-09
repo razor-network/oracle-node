@@ -101,14 +101,6 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 }
 
 func init() {
-
-	InitializeUtils()
-	cmdUtils = &UtilsStruct{}
-	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-
 	rootCmd.AddCommand(createCollectionCmd)
 
 	var (

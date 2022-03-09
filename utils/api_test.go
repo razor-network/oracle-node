@@ -235,7 +235,7 @@ func TestGetDataFromHTML(t *testing.T) {
 			name: "Test 1: Test data from coin market cap",
 			args: args{
 				url:      "https://coinmarketcap.com/all/views/all/",
-				selector: `div h1`,
+				selector: `/html/body/div/div[1]/div[2]/div/div[1]/h1`,
 			},
 			want:    "All Cryptocurrencies",
 			wantErr: false,
@@ -243,8 +243,7 @@ func TestGetDataFromHTML(t *testing.T) {
 		{
 			name: "Test 2: Test for invalid website",
 			args: args{
-				url:      "http://razor-go.com/",
-				selector: `table tbody tr td a[href="/en/coins/bitcoin"]`,
+				url: "http://razor-go.com/",
 			},
 			want:    "",
 			wantErr: true,
@@ -261,7 +260,7 @@ func TestGetDataFromHTML(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			got, err := utils.GetDataFromHTML(tt.args.url, tt.args.selector)
+			got, err := utils.GetDataFromXHTML(tt.args.url, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return

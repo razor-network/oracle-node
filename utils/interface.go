@@ -126,7 +126,7 @@ type Utils interface {
 	GetActiveAssetIds(*ethclient.Client) ([]uint16, error)
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
-	GetDataFromHTML(string, string) (string, error)
+	GetDataFromXHTML(string, string) (string, error)
 	ConnectToClient(string) *ethclient.Client
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)

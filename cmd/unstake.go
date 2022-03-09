@@ -184,15 +184,6 @@ func (*UtilsStruct) GetAmountInSRZRs(client *ethclient.Client, address string, s
 }
 
 func init() {
-
-	cmdUtils = &UtilsStruct{}
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FLagSetUtils{}
-	timeUtils = TimeUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(unstakeCmd)
 
 	var (

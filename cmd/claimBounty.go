@@ -119,14 +119,6 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 }
 
 func init() {
-	razorUtils = &Utils{}
-	cmdUtils = &UtilsStruct{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	timeUtils = TimeUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(claimBountyCmd)
 	var (
 		Address  string
