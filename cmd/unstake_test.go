@@ -155,7 +155,6 @@ func TestUnstake(t *testing.T) {
 			cmdUtilsMock.On("GetAmountInSRZRs", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sAmount, tt.args.sAmountErr)
 			stakeManagerUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
 			utils := &UtilsStruct{}
 			_, gotErr := utils.Unstake(config, client,
@@ -181,7 +180,7 @@ func TestUnstake(t *testing.T) {
 func TestExecuteUnstake(t *testing.T) {
 
 	var client *ethclient.Client
-	var txnArgs types.TransactionOptions
+	var hash common.Hash
 	var flagSet *pflag.FlagSet
 
 	type args struct {
@@ -322,7 +321,8 @@ func TestExecuteUnstake(t *testing.T) {
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
-			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(txnArgs, tt.args.unstakeErr)
+			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(hash, tt.args.unstakeErr)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
 			utils := &UtilsStruct{}
 			fatal = false
