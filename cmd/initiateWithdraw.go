@@ -1,22 +1,21 @@
 package cmd
 
 import (
+	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
-	"time"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
-var initiateWithdraw = &cobra.Command{
+var initiateWithdrawCmd = &cobra.Command{
 	Use:   "initiateWithdraw",
 	Short: "initiateWithdraw for your razors once you've unstaked",
 	Long: `initiateWithdraw command can be used once the user has unstaked their token and the withdraw period is upon them.
@@ -47,7 +46,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
 
-	txn, err := cmdUtils.WithdrawFunds(client, types.Account{
+	txn, err := cmdUtils.HandleUnstakeLock(client, types.Account{
 		Address:  address,
 		Password: password,
 	}, config, stakerId)
@@ -58,25 +57,37 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	}
 }
 
-func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 
-	withdrawLock, err := razorUtils.GetLock(client, account.Address, stakerId, 1)
+	unstakeLock, err := razorUtils.GetLock(client, account.Address, stakerId, 0)
 	if err != nil {
-		log.Error("Error in fetching withdrawLock")
+		log.Error("Error in fetching unstakeLock")
 		return core.NilHash, err
 	}
 
-	if withdrawLock.UnlockAfter.Cmp(big.NewInt(0)) == 0 {
-		log.Info("Please unstake Razors before withdrawing.")
-		return core.NilHash, nil
+	if unstakeLock.UnlockAfter.Cmp(big.NewInt(0)) == 0 {
+		log.Error("Unstake command not called before initiating withdrawal!")
+		return core.NilHash, errors.New("unstake Razors before withdrawing")
 	}
 
-	withdrawReleasePeriod, err := razorUtils.GetWithdrawReleasePeriod(client)
+	withdrawInitiationPeriod, err := razorUtils.GetWithdrawInitiationPeriod(client)
 	if err != nil {
 		log.Error("Error in fetching withdraw release period")
 		return core.NilHash, err
 	}
-	withdrawBefore := big.NewInt(0).Add(withdrawLock.UnlockAfter, big.NewInt(int64(withdrawReleasePeriod)))
+
+	withdrawBefore := big.NewInt(0).Add(unstakeLock.UnlockAfter, big.NewInt(int64(withdrawInitiationPeriod)))
+	epoch, err := razorUtils.GetEpoch(client)
+	if err != nil {
+		log.Error("Error in fetching epoch")
+		return core.NilHash, err
+	}
+
+	if big.NewInt(int64(epoch)).Cmp(withdrawBefore) > 0 {
+		log.Info("Withdraw initiation period has passed. Cannot withdraw now, please reset the unstakeLock!")
+		return core.NilHash, nil
+	}
+
 	txnArgs := types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
@@ -84,36 +95,16 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		ChainId:         core.ChainId,
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "withdraw",
+		MethodName:      "initiateWithdrawCmd",
 		ABI:             bindings.StakeManagerABI,
+		Parameters:      []interface{}{stakerId},
 	}
-	epoch, err := razorUtils.GetEpoch(client)
-	if err != nil {
-		log.Error("Error in fetching epoch")
-		return core.NilHash, err
-	}
-	if big.NewInt(int64(epoch)).Cmp(withdrawBefore) > 0 {
-		log.Info("Withdrawal period has passed. Cannot withdraw now, please reset the withdrawLock!")
-		return core.NilHash, nil
-	}
-
-	txnArgs.Parameters = []interface{}{stakerId}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
-		if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-			return cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
-		}
-		log.Debug("Waiting for withdrawLock period to get over....")
-		// Wait for 30 seconds if withdrawLock period isn't over
-		timeUtils.Sleep(30 * time.Second)
-		epoch, err = razorUtils.GetUpdatedEpoch(client)
-		if err != nil {
-			log.Error("Error in fetching epoch")
-			return core.NilHash, err
-		}
+	if big.NewInt(int64(epoch)).Cmp(unstakeLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
+		return cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
 	}
-	return core.NilHash, nil
+	return core.NilHash, errors.New("unstakeLock period not over yet! Please try after some time")
 }
 
 func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
@@ -131,7 +122,7 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 }
 
 func init() {
-	rootCmd.AddCommand(initiateWithdraw)
+	rootCmd.AddCommand(initiateWithdrawCmd)
 
 	var (
 		Address  string
@@ -139,10 +130,10 @@ func init() {
 		StakerId uint32
 	)
 
-	initiateWithdraw.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	initiateWithdraw.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
-	initiateWithdraw.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
+	initiateWithdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
+	initiateWithdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
+	initiateWithdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
 
-	addrErr := initiateWithdraw.MarkFlagRequired("address")
+	addrErr := initiateWithdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 }

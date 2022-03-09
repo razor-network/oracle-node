@@ -129,12 +129,12 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
 	timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := cmdUtils.WithdrawFunds(txnArgs.Client, types.Account{
+	txn, err := cmdUtils.HandleUnstakeLock(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
 	}, txnArgs.Config, stakerId)
 	if err != nil {
-		log.Error("WithdrawFunds error ", err)
+		log.Error("HandleUnstakeLock error ", err)
 		return err
 	}
 	if txn != core.NilHash {

@@ -91,7 +91,7 @@ type UtilsInterface interface {
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
-	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
+	GetWithdrawInitiationPeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
@@ -254,7 +254,9 @@ type UtilsCmdInterface interface {
 	ExecuteInitiateWithdraw(*pflag.FlagSet)
 	ExecuteUnlockWithdraw(set *pflag.FlagSet)
 	InitiateWithdraw(*ethclient.Client, *bind.TransactOpts, uint32) (common.Hash, error)
-	WithdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32) (common.Hash, error)
+	UnlockWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
+	HandleUnstakeLock(*ethclient.Client, types.Account, types.Configurations, uint32) (common.Hash, error)
+	HandleWithdrawLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
 	ExecuteUpdateJob(*pflag.FlagSet)
 	UpdateJob(*ethclient.Client, types.Configurations, types.CreateJobInput, uint16) (common.Hash, error)
 	WaitIfCommitState(*ethclient.Client, string) (uint32, error)

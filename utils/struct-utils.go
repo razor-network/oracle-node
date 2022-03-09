@@ -142,6 +142,11 @@ func (o OptionsStruct) WithdrawInitiationPeriod(client *ethclient.Client) (uint8
 	return stakeManager.WithdrawInitiationPeriod(&opts)
 }
 
+func (o OptionsStruct) WithdrawLockPeriod(client *ethclient.Client) (uint8, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.WithdrawLockPeriod(&opts)
+}
+
 func (o OptionsStruct) MaxCommission(client *ethclient.Client) (uint8, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.MaxCommission(&opts)

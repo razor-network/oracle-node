@@ -191,8 +191,8 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
 }
 
-func (u Utils) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, error) {
-	return utilsInterface.GetWithdrawReleasePeriod(client)
+func (u Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+	return utilsInterface.GetWithdrawInitiationPeriod(client)
 }
 
 func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {

@@ -451,7 +451,7 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetWithdrawReleasePeriod() executes successfully",
+			name: "Test 1: When GetWithdrawInitiationPeriod() executes successfully",
 			args: args{
 				withdrawReleasePeriod: 5,
 			},
@@ -482,13 +482,13 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 			optionsMock.On("WithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetWithdrawReleasePeriod(client)
+			got, err := utils.GetWithdrawInitiationPeriod(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetWithdrawReleasePeriod() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetWithdrawInitiationPeriod() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetWithdrawReleasePeriod() got = %v, want %v", got, tt.want)
+				t.Errorf("GetWithdrawInitiationPeriod() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
