@@ -139,14 +139,6 @@ func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint
 }
 
 func init() {
-
-	cmdUtils = &UtilsStruct{}
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FLagSetUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(unstakeCmd)
 
 	var (

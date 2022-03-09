@@ -109,13 +109,6 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 }
 
 func init() {
-	razorUtils = Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	var (
 		Address    string
 		Commission uint8

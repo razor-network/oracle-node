@@ -23,5 +23,7 @@ func main() {
 	}
 	defer sentry.Flush(2 * time.Second)
 	defer sentry.Recover()
+
+	cmd.InitializeInterfaces()
 	cmd.Execute()
 }

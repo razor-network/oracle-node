@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -112,21 +111,6 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 }
 
 func init() {
-	tokenManagerUtils = TokenManagerUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	razorUtils = Utils{}
-	cmdUtils = &UtilsStruct{}
-	blockManagerUtils = BlockManagerUtils{}
-	voteManagerUtils = VoteManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	abiUtils = AbiUtils{}
-	timeUtils = TimeUtils{}
-	stringUtils = StringUtils{}
-	osUtils = OSUtils{}
-	InitializeUtils()
-	accounts.AccountUtilsInterface = accounts.AccountUtils{}
-
 	rootCmd.AddCommand(stakeCmd)
 	var (
 		Amount            string
