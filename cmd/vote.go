@@ -263,12 +263,16 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return err
 	}
 
+	log.Debugf("Secret: %s", hex.EncodeToString(secret))
+
 	salt, err := cmdUtils.GetSalt(client, epoch)
 	if err != nil {
 		return err
 	}
+	log.Debugf("Salt: %s", hex.EncodeToString(salt[:]))
 
 	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt[:]), "0x" + hex.EncodeToString(secret)})
+	log.Debugf("Seed: %s", hex.EncodeToString(seed[:]))
 
 	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
 	if err != nil {

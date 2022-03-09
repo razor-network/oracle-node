@@ -35,6 +35,7 @@ func InitializeUtils() {
 	utils.OS = &utils.OSStruct{}
 	utils.Bufio = &utils.BufioStruct{}
 	utils.CoinInterface = &utils.CoinStruct{}
+	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {

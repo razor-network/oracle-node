@@ -6,7 +6,7 @@ import (
 	"math/big"
 )
 
-func (*UtilsStruct) CreateMerkle(values []*big.Int) [][][]byte {
+func (*MerkleTreeStruct) CreateMerkle(values []*big.Int) [][][]byte {
 	var tree [][][]byte
 	var leaves [][]byte
 
@@ -39,29 +39,28 @@ func (*UtilsStruct) CreateMerkle(values []*big.Int) [][][]byte {
 	return tree
 }
 
-func (*UtilsStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byte {
-	index := assetId - 1
+func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byte {
 	var compactProofPath [][32]byte
 	for currentLevel := len(tree) - 1; currentLevel > 0; currentLevel-- {
 		currentLevelNodes := tree[currentLevel]
 		currentLevelCount := len(currentLevelNodes)
-		if int(index) == currentLevelCount-1 && currentLevelCount%2 == 1 {
-			index = uint16(math.Floor(float64(index / 2)))
+		if int(assetId) == currentLevelCount-1 && currentLevelCount%2 == 1 {
+			assetId = uint16(math.Floor(float64(assetId / 2)))
 			continue
 		}
 		var node [32]byte
-		if index%2 == 1 {
-			copy(node[:], currentLevelNodes[index-1])
+		if assetId%2 == 1 {
+			copy(node[:], currentLevelNodes[assetId-1])
 		} else {
-			copy(node[:], currentLevelNodes[index+1])
+			copy(node[:], currentLevelNodes[assetId+1])
 		}
 		compactProofPath = append(compactProofPath, node)
-		index = uint16(math.Floor(float64(index / 2)))
+		assetId = uint16(math.Floor(float64(assetId / 2)))
 	}
 	return compactProofPath
 }
 
-func (*UtilsStruct) GetMerkleRoot(tree [][][]byte) [32]byte {
+func (*MerkleTreeStruct) GetMerkleRoot(tree [][][]byte) [32]byte {
 	var root [32]byte
 	copy(root[:], tree[0][0])
 	return root

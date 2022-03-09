@@ -187,6 +187,11 @@ func (o OptionsStruct) GetActiveCollections(client *ethclient.Client) ([]uint16,
 	return collectionManager.GetActiveCollections(&opts)
 }
 
+func (o OptionsStruct) GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.IndexToIdRegistry(&opts, index)
+}
+
 func (o OptionsStruct) Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
 	return collectionManager.Jobs(&opts, id)

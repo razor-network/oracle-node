@@ -81,7 +81,7 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 	if err != nil {
 		return nil, err
 	}
-	for i := 0; i < int(numCollections); i++ {
+	for i := 1; i <= int(numCollections); i++ {
 		collection, err := Options.GetCollection(client, uint16(i))
 		if err != nil {
 			return nil, err
@@ -283,15 +283,36 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 
 func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
 	assignedCollections := make(map[int]bool)
-	var seqAllotedCollections []*big.Int
+	var seqAllottedCollections []*big.Int
 	toAssign, err := UtilsInterface.ToAssign(client)
 	if err != nil {
 		return nil, nil, err
 	}
+	log.Debugf("SEED: %s", hex.EncodeToString(seed))
 	for i := 0; i < int(toAssign); i++ {
-		assigned := UtilsInterface.Prng(uint32(numActiveCollections), solsha3.SoliditySHA3([]string{"bytes32", "uint256"}, []interface{}{"0x" + hex.EncodeToString(seed), i}))
+		assigned := UtilsInterface.Prng(uint32(numActiveCollections), solsha3.SoliditySHA3([]string{"bytes32", "uint256"}, []interface{}{"0x" + hex.EncodeToString(seed), big.NewInt(int64(i))}))
 		assignedCollections[int(assigned.Int64())] = true
-		seqAllotedCollections = append(seqAllotedCollections, assigned)
+		seqAllottedCollections = append(seqAllottedCollections, assigned)
 	}
-	return assignedCollections, seqAllotedCollections, nil
+	return assignedCollections, seqAllottedCollections, nil
+}
+
+func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error) {
+	var (
+		collectionId uint16
+		err          error
+	)
+	err = retry.Do(
+		func() error {
+			collectionId, err = Options.GetCollectionIdFromIndex(client, medianIndex)
+			if err != nil {
+				log.Error("Error in fetching collection id.... Retrying")
+				return err
+			}
+			return nil
+		}, Options.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return collectionId, nil
 }

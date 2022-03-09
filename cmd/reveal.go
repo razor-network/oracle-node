@@ -75,7 +75,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	for i := 0; i < len(commitData.SeqAllottedCollections); i++ {
 		value := bindings.StructsAssignedAsset{
 			MedianIndex: uint16(commitData.SeqAllottedCollections[i].Uint64()),
-			Value:       uint32(commitData.Leaves[i].Uint64()),
+			Value:       uint32(commitData.Leaves[commitData.SeqAllottedCollections[i].Uint64()].Uint64()),
 		}
 		proof := utils.MerkleInterface.GetProofPath(merkleTree, value.MedianIndex)
 		values = append(values, value)

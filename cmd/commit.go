@@ -57,17 +57,23 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	var leavesOfTree []*big.Int
 	for i := 0; i < int(numActiveCollections); i++ {
 		if assignedCollections[i] {
-			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, uint16(i), epoch)
+			collectionId, err := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
 			if err != nil {
 				return types.CommitData{}, err
 			}
-			log.Debugf("Data of collection %d:%s", i, collectionData)
+			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			if err != nil {
+				return types.CommitData{}, err
+			}
+			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
 			leavesOfTree = append(leavesOfTree, collectionData)
 		} else {
 			leavesOfTree = append(leavesOfTree, big.NewInt(0))
 		}
 	}
-
+	log.Debug("Assigned Collections: ", assignedCollections)
+	log.Debug("SeqAllottedCollections: ", seqAllottedCollections)
+	log.Debug("Leaves: ", leavesOfTree)
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,
 		SeqAllottedCollections: seqAllottedCollections,

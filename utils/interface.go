@@ -82,6 +82,7 @@ type OptionUtils interface {
 	GetCollection(*ethclient.Client, uint16) (bindings.StructsCollection, error)
 	GetJob(*ethclient.Client, uint16) (bindings.StructsJob, error)
 	GetActiveCollections(*ethclient.Client) ([]uint16, error)
+	GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error)
 	Jobs(*ethclient.Client, uint16) (bindings.StructsJob, error)
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewCollectionManager(common.Address, *ethclient.Client) (*bindings.CollectionManager, error)
@@ -150,6 +151,7 @@ type Utils interface {
 	GetDataToCommitFromJobs([]bindings.StructsJob) ([]*big.Int, []uint8, error)
 	GetDataToCommitFromJob(bindings.StructsJob) (*big.Int, error)
 	GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
+	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
 	GetNumActiveCollections(*ethclient.Client) (uint16, error)
 	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
@@ -226,14 +228,16 @@ type TimeStruct struct{}
 type OSStruct struct{}
 type BufioStruct struct{}
 type CoinStruct struct{}
+type MerkleTreeStruct struct{}
 
 type OptionsPackageStruct struct {
-	Options         OptionUtils
-	UtilsInterface  Utils
-	EthClient       EthClientUtils
-	ClientInterface ClientUtils
-	Time            TimeUtils
-	OS              OSUtils
-	Bufio           BufioUtils
-	CoinInterface   CoinUtils
+	Options             OptionUtils
+	UtilsInterface      Utils
+	EthClient           EthClientUtils
+	ClientInterface     ClientUtils
+	Time                TimeUtils
+	OS                  OSUtils
+	Bufio               BufioUtils
+	CoinInterface       CoinUtils
+	MerkleTreeInterface MerkleTreeStruct
 }
