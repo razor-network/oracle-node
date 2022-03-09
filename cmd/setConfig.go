@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"razor/metrics"
+	"razor/utils"
+
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"razor/utils"
 )
 
 var setConfig = &cobra.Command{
@@ -51,6 +54,31 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+
+	path, pathErr := razorUtils.GetConfigFilePath()
+	if pathErr != nil {
+		log.Error("Error in fetching config file path")
+		return pathErr
+	}
+
+	if razorUtils.IsFlagPassed("exposeMetrics") {
+		port, err := flagSetUtils.GetStringExposeMetrics(flagSet)
+		if err != nil {
+			return err
+		}
+
+		viper.Set("exposeMetricsPort", port)
+
+		configErr := viperUtils.ViperWriteConfigAs(path)
+		if configErr != nil {
+			log.Error("Error in writing config")
+			return configErr
+		}
+		err = metrics.Run(port)
+		if err != nil {
+			logrus.Errorf("failed to start metrics http server: %s", err)
+		}
+	}
 	if provider != "" {
 		viper.Set("provider", provider)
 	}
@@ -80,13 +108,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasprice", 0)
 		viper.Set("logLevel", "")
 		viper.Set("gasLimit", 2)
+		//viper.Set("exposeMetricsPort", "")
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
-	path, pathErr := razorUtils.GetConfigFilePath()
-	if pathErr != nil {
-		log.Error("Error in fetching config file path")
-		return pathErr
-	}
+
 	configErr := viperUtils.ViperWriteConfigAs(path)
 	if configErr != nil {
 		log.Error("Error in writing config")
@@ -96,13 +121,6 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	viperUtils = &ViperUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(setConfig)
 
 	var (
@@ -113,6 +131,7 @@ func init() {
 		GasPrice           int32
 		LogLevel           string
 		GasLimitMultiplier float32
+		ExposeMetrics      string
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
@@ -121,5 +140,6 @@ func init() {
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
+	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 
 }

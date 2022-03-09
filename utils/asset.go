@@ -263,7 +263,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		}
 	} else {
 		//TODO: Add retry here.
-		dataPoint, err := UtilsInterface.GetDataFromHTML(job.Url, job.Selector)
+		dataPoint, err := UtilsInterface.GetDataFromXHTML(job.Url, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed XHTML: ", err)
 			return nil, err

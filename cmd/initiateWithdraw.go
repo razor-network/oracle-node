@@ -131,13 +131,6 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	InitializeUtils()
-	cmdUtils = &UtilsStruct{}
-
 	rootCmd.AddCommand(initiateWithdraw)
 
 	var (

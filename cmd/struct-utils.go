@@ -2,6 +2,15 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"math/big"
+	"os"
+	"razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"razor/utils"
+	"strconv"
+	"time"
+
 	"github.com/avast/retry-go"
 	ethAccounts "github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -13,14 +22,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"math/big"
-	"os"
-	"razor/core/types"
-	"razor/path"
-	"razor/pkg/bindings"
-	"razor/utils"
-	"strconv"
-	"time"
 )
 
 var utilsInterface = utils.UtilsInterface
@@ -685,6 +686,10 @@ func (flagSetUtils FLagSetUtils) GetBoolRogue(flagSet *pflag.FlagSet) (bool, err
 
 func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error) {
 	return flagSet.GetStringSlice("rogueMode")
+}
+
+func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("exposeMetrics")
 }
 
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {

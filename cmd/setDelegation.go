@@ -115,14 +115,6 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 }
 
 func init() {
-
-	razorUtils = &Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (

@@ -90,14 +90,6 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 }
 
 func init() {
-
-	cmdUtils = &UtilsStruct{}
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	tokenManagerUtils = TokenManagerUtils{}
-	flagSetUtils = FLagSetUtils{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(transferCmd)
 	var (
 		Amount   string

@@ -65,11 +65,6 @@ func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
 }
 
 func init() {
-	razorUtils = Utils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(collectionListCmd)
 
 }

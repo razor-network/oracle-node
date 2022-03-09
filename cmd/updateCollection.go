@@ -100,13 +100,6 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 }
 
 func init() {
-	razorUtils = Utils{}
-	assetManagerUtils = AssetManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(updateCollectionCmd)
 
 	var (

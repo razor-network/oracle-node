@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -77,13 +78,6 @@ func (*UtilsStruct) ExtendUnstakeLock(client *ethclient.Client, config types.Con
 }
 
 func init() {
-	razorUtils = Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(extendUnstakeLockCmd)
 
 	var (

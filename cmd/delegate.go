@@ -92,13 +92,6 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 }
 
 func init() {
-	razorUtils = Utils{}
-	transactionUtils = TransactionUtils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-	InitializeUtils()
-
 	rootCmd.AddCommand(delegateCmd)
 	var (
 		Amount   string
