@@ -729,7 +729,7 @@ Note : _All the commands have an additional --password flag that you can provide
 
 
 ### Expose Metrics
-Can expose the prometheus based metrics for monitoring
+Expose Prometheus-based metrics for monitoring
 
 Example:
 
