@@ -59,6 +59,12 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 
+	_, err := cmdUtils.WaitForAppropriateState(client, "initiateWithdraw", 0, 1, 4)
+	if err != nil {
+		log.Error("Error in fetching epoch: ", err)
+		return core.NilHash, err
+	}
+
 	unstakeLock, err := razorUtils.GetLock(client, account.Address, stakerId, 0)
 	if err != nil {
 		log.Error("Error in fetching unstakeLock")
@@ -95,7 +101,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 		ChainId:         core.ChainId,
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "initiateWithdrawCmd",
+		MethodName:      "initiateWithdraw",
 		ABI:             bindings.StakeManagerABI,
 		Parameters:      []interface{}{stakerId},
 	}
