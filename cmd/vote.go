@@ -169,11 +169,6 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	staker, err := razorUtils.GetStaker(client, stakerId)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	sRZRBalance, err := razorUtils.GetStakerSRZRBalance(client, staker)
 	if err != nil {

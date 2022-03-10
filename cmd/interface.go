@@ -130,6 +130,7 @@ type StakeManagerInterface interface {
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -246,6 +247,7 @@ type UtilsCmdInterface interface {
 	GetJobList(*ethclient.Client) error
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (common.Hash, error)
+	ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error)
 	AutoWithdraw(types.TransactionOptions, uint32) error
 	ExecuteInitiateWithdraw(*pflag.FlagSet)
 	ExecuteUnlockWithdraw(set *pflag.FlagSet)

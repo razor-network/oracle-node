@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 	"os"
+	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -347,6 +348,11 @@ func (stakeManagerUtils StakeManagerUtils) UpdateCommission(client *ethclient.Cl
 func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.Unstake(opts, stakerId, sAmount)
+}
+
+func (stakeManagerUtils StakeManagerUtils) ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error) {
+	stakedToken := razorUtils.GetStakedToken(client, staker.TokenAddress)
+	return stakedToken.Approve(opts, common.HexToAddress(core.StakeManagerAddress), amount)
 }
 
 func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
