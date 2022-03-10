@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 	"razor/utils"
+	"strconv"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -25,11 +26,12 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 		return 0, 0, err
 	}
 	log.Debug("Epoch ", epoch)
-	log.Debug("State ", razorUtils.GetStateName(state))
+	log.Debug("State ", utils.GetStateName(state))
 	return epoch, state, nil
 }
 
 func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error) {
+	statesAllowed := GetStatesAllowed(states)
 	for {
 		epoch, state, err := cmdUtils.GetEpochAndState(client)
 		if err != nil {
@@ -37,7 +39,7 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 			return epoch, err
 		}
 		if !utils.Contains(states, int(state)) {
-			log.Debugf("Can only %s during %d state(s). Retrying in 5 seconds...", action, states)
+			log.Infof("Can only %s during %s state(s). Retrying in 5 seconds...", action, statesAllowed)
 			timeUtils.Sleep(5 * time.Second)
 		} else {
 			return epoch, nil
@@ -86,4 +88,16 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 		amountInWei = razorUtils.GetAmountInWei(_amount)
 	}
 	return amountInWei, nil
+}
+
+func GetStatesAllowed(states []int) string {
+	var statesAllowed string
+	for i := 0; i < len(states); i++ {
+		if i == len(states)-1 {
+			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.GetStateName(int64(states[i]))
+		} else {
+			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.GetStateName(int64(states[i])) + ", "
+		}
+	}
+	return statesAllowed
 }

@@ -384,3 +384,36 @@ func TestAssignAmountInWei1(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStatesAllowed(t *testing.T) {
+	type args struct {
+		states []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Test 1: When states has multiple elements",
+			args: args{
+				states: []int{1, 2, 4},
+			},
+			want: "1:Reveal, 2:Propose, 4:Confirm",
+		},
+		{
+			name: "Test 2: When states array is nil",
+			args: args{
+				states: []int{},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetStatesAllowed(tt.args.states); got != tt.want {
+				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

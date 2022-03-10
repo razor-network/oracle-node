@@ -259,6 +259,10 @@ func (o OptionsStruct) NewCollectionManager(address common.Address, client *ethc
 	return bindings.NewCollectionManager(address, client)
 }
 
+func (o OptionsStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
+}
+
 func (o OptionsStruct) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
 	return bindings.NewRAZOR(address, client)
 }

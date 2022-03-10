@@ -52,6 +52,7 @@ type OptionUtils interface {
 	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
 	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
 	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
+<<<<<<< HEAD
 	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
 	GetNumProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
@@ -85,6 +86,37 @@ type OptionUtils interface {
 	GetActiveCollections(*ethclient.Client) ([]uint16, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error)
 	Jobs(*ethclient.Client, uint16) (bindings.StructsJob, error)
+=======
+	GetNumProposedBlocks(*ethclient.Client, *bind.CallOpts, uint32) (uint8, error)
+	GetProposedBlock(*ethclient.Client, *bind.CallOpts, uint32, uint32) (bindings.StructsBlock, error)
+	GetBlock(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsBlock, error)
+	MinStake(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
+	MaxAltBlocks(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	SortedProposedBlockIds(*ethclient.Client, *bind.CallOpts, uint32, *big.Int) (uint32, error)
+	GetStakerId(*ethclient.Client, *bind.CallOpts, common.Address) (uint32, error)
+	GetStaker(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsStaker, error)
+	GetNumStakers(*ethclient.Client, *bind.CallOpts) (uint32, error)
+	Locks(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) (types.Locks, error)
+	WithdrawReleasePeriod(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	MaxCommission(*ethclient.Client, *bind.CallOpts) (uint8, error)
+	EpochLimitForUpdateCommission(*ethclient.Client, *bind.CallOpts) (uint16, error)
+	Commitments(*ethclient.Client, *bind.CallOpts, uint32) (types.Commitment, error)
+	GetVoteValue(*ethclient.Client, *bind.CallOpts, uint16, uint32) (*big.Int, error)
+	GetVote(*ethclient.Client, *bind.CallOpts, uint32) (bindings.StructsVote, error)
+	GetInfluenceSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, *bind.CallOpts, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, *bind.CallOpts, uint32) (*big.Int, error)
+	GetRandaoHash(*ethclient.Client, *bind.CallOpts) ([32]byte, error)
+	GetEpochLastCommitted(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, *bind.CallOpts, uint32) (uint32, error)
+	GetNumAssets(*ethclient.Client, *bind.CallOpts) (uint16, error)
+	GetNumActiveCollections(*ethclient.Client, *bind.CallOpts) (*big.Int, error)
+	GetAsset(*ethclient.Client, *bind.CallOpts, uint16) (types.Asset, error)
+	GetActiveCollections(*ethclient.Client, *bind.CallOpts) ([]uint16, error)
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+	Jobs(*ethclient.Client, *bind.CallOpts, uint16) (bindings.StructsJob, error)
+	ConvertToNumber(interface{}) (*big.Float, error)
+>>>>>>> upstream/main
 	ReadAll(io.ReadCloser) ([]byte, error)
 	NewCollectionManager(common.Address, *ethclient.Client) (*bindings.CollectionManager, error)
 	NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error)
@@ -166,7 +198,6 @@ type Utils interface {
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	CheckEthBalanceIsZero(*ethclient.Client, string)
-	GetStateName(int64) string
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
 	SaveDataToFile(string, uint32, []*big.Int) error
@@ -186,6 +217,7 @@ type Utils interface {
 	ToAssign(*ethclient.Client) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
+	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 }
 
 type EthClientUtils interface {
