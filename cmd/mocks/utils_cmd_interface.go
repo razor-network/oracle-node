@@ -378,11 +378,6 @@ func (_m *UtilsCmdInterface) ExecuteModifyAssetStatus(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExecuteOverrideJob provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) ExecuteOverrideJob(_a0 *pflag.FlagSet) {
-	_m.Called(_a0)
-}
-
 // ExecuteSetDelegation provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) ExecuteSetDelegation(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
@@ -1031,20 +1026,6 @@ func (_m *UtilsCmdInterface) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.
 	}
 
 	return r0, r1
-}
-
-// OverrideJob provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) OverrideJob(_a0 *types.StructsJob) error {
-	ret := _m.Called(_a0)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*types.StructsJob) error); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
