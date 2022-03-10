@@ -224,6 +224,10 @@ func (o OptionsStruct) GetEpochLastRevealed(client *ethclient.Client, opts *bind
 	return voteManager.GetEpochLastRevealed(opts, stakerId)
 }
 
+func (o OptionsStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
+}
+
 func (o OptionsStruct) NewAssetManager(address common.Address, client *ethclient.Client) (*bindings.AssetManager, error) {
 	return bindings.NewAssetManager(address, client)
 }
