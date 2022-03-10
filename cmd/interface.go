@@ -179,7 +179,6 @@ type FlagSetInterface interface {
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
-	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
 	GetRootStringProvider() (string, error)
 	GetRootFloat32GasMultiplier() (float32, error)
@@ -244,7 +243,7 @@ type UtilsCmdInterface interface {
 	ExecuteJobList()
 	GetJobList(*ethclient.Client) error
 	ExecuteUnstake(*pflag.FlagSet)
-	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
+	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (common.Hash, error)
 	AutoWithdraw(types.TransactionOptions, uint32) error
 	ExecuteWithdraw(*pflag.FlagSet)
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (common.Hash, error)

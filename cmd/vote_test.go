@@ -1160,7 +1160,7 @@ func TestAutoUnstakeAndWithdraw(t *testing.T) {
 	var account types.Account
 	var amount *big.Int
 	var config types.Configurations
-	var txnArgs types.TransactionOptions
+	var hash common.Hash
 
 	type args struct {
 		stakerId        uint32
@@ -1225,7 +1225,7 @@ func TestAutoUnstakeAndWithdraw(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(txnArgs, tt.args.unstakeErr)
+			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(hash, tt.args.unstakeErr)
 			cmdUtilsMock.On("AutoWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoWithdrawErr)
 
 			utils := &UtilsStruct{}
