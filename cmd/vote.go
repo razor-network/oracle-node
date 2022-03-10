@@ -10,6 +10,7 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	jobManager "razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -39,6 +40,11 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.Address = address
+
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
@@ -54,8 +60,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		RogueMode: rogueMode,
 	}
 	client := razorUtils.ConnectToClient(config.Provider)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
 
 	account := types.Account{Address: address, Password: password}
 
@@ -163,7 +167,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
 	}
-	log.Infof("Block: %d Epoch: %d State: %s Address: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), account.Address, stakerId, actualStake, actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f Eth Balance: %f", blockNumber, epoch, razorUtils.GetStateName(state), stakerId, actualStake, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
@@ -430,17 +434,6 @@ func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account typ
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
-	cmdUtils = &UtilsStruct{}
-	blockManagerUtils = BlockManagerUtils{}
-	voteManagerUtils = VoteManagerUtils{}
-	transactionUtils = TransactionUtils{}
-	flagSetUtils = FLagSetUtils{}
-	accounts.AccountUtilsInterface = accounts.AccountUtils{}
-
 	rootCmd.AddCommand(voteCmd)
 
 	var (

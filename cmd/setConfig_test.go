@@ -258,6 +258,8 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetInt32GasPrice", flagSet).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
+			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return("", nil)
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(false)
 			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
 

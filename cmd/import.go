@@ -54,9 +54,5 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 }
 
 func init() {
-	razorUtils = Utils{}
-	keystoreUtils = KeystoreUtils{}
-	cryptoUtils = CryptoUtils{}
-
 	rootCmd.AddCommand(importCmd)
 }

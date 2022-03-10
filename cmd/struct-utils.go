@@ -25,6 +25,18 @@ import (
 
 var utilsInterface = utils.UtilsInterface
 
+func InitializeUtils() {
+	utilsInterface = &utils.UtilsStruct{}
+	utils.Options = &utils.OptionsStruct{}
+	utils.UtilsInterface = &utils.UtilsStruct{}
+	utils.EthClient = &utils.EthClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
+	utils.Time = &utils.TimeStruct{}
+	utils.OS = &utils.OSStruct{}
+	utils.Bufio = &utils.BufioStruct{}
+	utils.CoinInterface = &utils.CoinStruct{}
+}
+
 func (u Utils) GetConfigFilePath() (string, error) {
 	return path.PathUtilsInterface.GetConfigFilePath()
 }
@@ -46,12 +58,6 @@ func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	utilsInterface := utils.StartRazor(utils.OptionsPackageStruct{
-		Options:        utils.Options,
-		UtilsInterface: utils.UtilsInterface,
-	})
-	utils.Options = &utils.OptionsStruct{}
-	utils.UtilsInterface = &utils.UtilsStruct{}
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 
@@ -681,6 +687,10 @@ func (flagSetUtils FLagSetUtils) GetBoolRogue(flagSet *pflag.FlagSet) (bool, err
 
 func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error) {
 	return flagSet.GetStringSlice("rogueMode")
+}
+
+func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("exposeMetrics")
 }
 
 func (KeystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {

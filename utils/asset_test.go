@@ -987,7 +987,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string")).Return(tt.args.response, tt.args.responseErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
-			utilsMock.On("GetDataFromHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
+			utilsMock.On("GetDataFromXHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			optionsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
 
 			got, err := utils.GetDataToCommitFromJob(tt.args.job)

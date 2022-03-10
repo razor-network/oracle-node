@@ -56,11 +56,6 @@ func (*UtilsStruct) OverrideJob(job *types.StructsJob) error {
 }
 
 func init() {
-
-	razorUtils = Utils{}
-	cmdUtils = &UtilsStruct{}
-	flagSetUtils = FLagSetUtils{}
-
 	rootCmd.AddCommand(overrideJobCmd)
 	var (
 		JobId        uint16

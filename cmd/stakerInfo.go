@@ -72,11 +72,6 @@ func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) err
 }
 
 func init() {
-	razorUtils = &Utils{}
-	stakeManagerUtils = StakeManagerUtils{}
-	flagSetUtils = FLagSetUtils{}
-	cmdUtils = &UtilsStruct{}
-
 	rootCmd.AddCommand(stakerInfoCmd)
 
 	var (
