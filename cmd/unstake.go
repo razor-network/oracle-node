@@ -62,7 +62,6 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 		ValueInWei: valueInWei,
 		StakerId:   stakerId,
 	}
-
 	txnOptions, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if autoWithdraw {
@@ -73,17 +72,24 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 
 func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (types.TransactionOptions, error) {
 	txnArgs := types.TransactionOptions{
-		Client:          client,
-		Password:        input.Password,
-		AccountAddress:  input.Address,
-		Amount:          input.ValueInWei,
-		ChainId:         core.ChainId,
-		Config:          config,
-		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "unstake",
-		ABI:             bindings.StakeManagerABI,
+		Client:         client,
+		Password:       input.Password,
+		AccountAddress: input.Address,
+		Amount:         input.ValueInWei,
+		ChainId:        core.ChainId,
+		Config:         config,
 	}
 	stakerId := input.StakerId
+	staker, err := razorUtils.GetStaker(client, stakerId)
+	if err != nil {
+		log.Error("Error in getting staker: ", err)
+		return txnArgs, err
+	}
+
+	txnArgs.ContractAddress = core.StakeManagerAddress
+	txnArgs.MethodName = "unstake"
+	txnArgs.ABI = bindings.StakeManagerABI
+
 	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
 	if err != nil {
 		log.Error("Error in getting unstakeLock: ", err)
@@ -96,19 +102,13 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		return txnArgs, err
 	}
 
-	staker, err := razorUtils.GetStaker(client, stakerId)
-	if err != nil {
-		log.Error("Error in getting staker: ", err)
-		return txnArgs, err
-	}
-
 	sAmount, err := cmdUtils.GetAmountInSRZRs(client, txnArgs.AccountAddress, staker, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in getting sRZR amount: ", err)
 		return txnArgs, err
 	}
 
-	_, err = cmdUtils.WaitForAppropriateState(txnArgs.Client, "unstake", 0, 1, 4)
+	_, err = cmdUtils.WaitForAppropriateState(txnArgs.Client, "unstake", 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
 		return txnArgs, err
