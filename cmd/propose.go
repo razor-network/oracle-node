@@ -257,7 +257,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	var medians []uint32
 
 	//TODO: Check if 0 is the correct value for collectionId
-	for collectionId := uint16(0); collectionId < numActiveCollections; collectionId++ {
+	for collectionId := uint16(1); collectionId <= numActiveCollections; collectionId++ {
 		influenceSum := revealedDataMaps.InfluenceSum[collectionId]
 		if influenceSum.Cmp(big.NewInt(0)) != 0 {
 			accWeight := big.NewInt(0)
