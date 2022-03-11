@@ -571,15 +571,15 @@ func TestGetStakerSRZRBalance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
-			optionsMock := new(mocks.OptionUtils)
+			stakedTokenMock := new(mocks.StakedTokenUtils)
 
 			utilsMock.On("GetStakedToken", mock.Anything, mock.Anything).Return(stakedToken)
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
+			stakedTokenMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
 
 			utils := StartRazor(OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-				Options:        optionsMock,
+				UtilsInterface:       utilsMock,
+				StakedTokenInterface: stakedTokenMock,
 			})
 
 			got, err := utils.GetStakerSRZRBalance(client, staker)
