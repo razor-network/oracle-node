@@ -271,7 +271,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	for _, id := range collection.JobIDs {
 
 		// Ignoring the Jobs which are already overriden and added to jobs array
-		if !Contains(overriddenJobIds, jobs) {
+		if !Contains(overriddenJobIds, id) {
 			job, err := UtilsInterface.GetActiveJob(client, id)
 			if err != nil {
 				log.Errorf("Error in fetching job %d: %s", id, err)

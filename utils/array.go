@@ -20,6 +20,12 @@ func Contains(slice interface{}, val interface{}) bool {
 				return true
 			}
 		}
+	case []uint16:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
+		}
 	}
 	return false
 }
