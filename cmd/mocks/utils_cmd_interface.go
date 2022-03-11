@@ -456,29 +456,6 @@ func (_m *UtilsCmdInterface) ExtendLock(_a0 *ethclient.Client, _a1 types.Configu
 	return r0, r1
 }
 
-// GetAmountInSRZRs provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *UtilsCmdInterface) GetAmountInSRZRs(_a0 *ethclient.Client, _a1 string, _a2 bindings.StructsStaker, _a3 *big.Int) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, bindings.StructsStaker, *big.Int) *big.Int); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, bindings.StructsStaker, *big.Int) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetBiggestStakeAndId provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsCmdInterface) GetBiggestStakeAndId(_a0 *ethclient.Client, _a1 string, _a2 uint32) (*big.Int, uint32, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -1177,14 +1154,16 @@ func (_m *UtilsCmdInterface) Transfer(_a0 *ethclient.Client, _a1 types.Configura
 }
 
 // Unstake provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsCmdInterface) Unstake(_a0 types.Configurations, _a1 *ethclient.Client, _a2 types.UnstakeInput) (types.TransactionOptions, error) {
+func (_m *UtilsCmdInterface) Unstake(_a0 types.Configurations, _a1 *ethclient.Client, _a2 types.UnstakeInput) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
-	var r0 types.TransactionOptions
-	if rf, ok := ret.Get(0).(func(types.Configurations, *ethclient.Client, types.UnstakeInput) types.TransactionOptions); ok {
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(types.Configurations, *ethclient.Client, types.UnstakeInput) common.Hash); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
-		r0 = ret.Get(0).(types.TransactionOptions)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
 	}
 
 	var r1 error

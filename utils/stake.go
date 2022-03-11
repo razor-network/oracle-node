@@ -184,3 +184,15 @@ func (*UtilsStruct) GetEpochLimitForUpdateCommission(client *ethclient.Client) (
 	}
 	return epochLimitForUpdateCommission, nil
 }
+
+func (*UtilsStruct) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
+	stakedToken := UtilsInterface.GetStakedToken(client, staker.TokenAddress)
+	callOpts := UtilsInterface.GetOptions()
+
+	sRZRBalance, err := StakedTokenInterface.BalanceOf(stakedToken, &callOpts, staker.Address)
+	if err != nil {
+		log.Error("Error in getting sRZRBalance: ", err)
+		return nil, err
+	}
+	return sRZRBalance, nil
+}

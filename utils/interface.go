@@ -40,6 +40,7 @@ import (
 //go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name BindingsUtils --output ./mocks --case=underscore
 //go:generate mockery --name JsonUtils --output ./mocks --case=underscore
+//go:generate mockery --name StakedTokenUtils --output ./mocks --case=underscore
 
 var Options OptionUtils
 var UtilsInterface Utils
@@ -60,6 +61,7 @@ var AssetManagerInterface AssetManagerUtils
 var VoteManagerInterface VoteManagerUtils
 var BindingsInterface BindingsUtils
 var JsonInterface JsonUtils
+var StakedTokenInterface StakedTokenUtils
 
 type OptionUtils interface {
 	RetryAttempts(uint) retry.Option
@@ -132,7 +134,6 @@ type Utils interface {
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	CheckEthBalanceIsZero(*ethclient.Client, string)
-	GetStateName(int64) string
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
 	SaveDataToFile(string, uint32, []*big.Int) error
@@ -148,6 +149,7 @@ type Utils interface {
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 	CheckTransactionReceipt(*ethclient.Client, string) int
+	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 }
 
 type EthClientUtils interface {
@@ -258,6 +260,10 @@ type JsonUtils interface {
 	Marshal(interface{}) ([]byte, error)
 }
 
+type StakedTokenUtils interface {
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+}
+
 type OptionsStruct struct{}
 type UtilsStruct struct{}
 type EthClientStruct struct{}
@@ -277,6 +283,7 @@ type AssetManagerStruct struct{}
 type VoteManagerStruct struct{}
 type BindingsStruct struct{}
 type JsonStruct struct{}
+type StakedTokenStruct struct{}
 
 type OptionsPackageStruct struct {
 	Options               OptionUtils
@@ -298,4 +305,5 @@ type OptionsPackageStruct struct {
 	VoteManagerInterface  VoteManagerUtils
 	BindingsInterface     BindingsUtils
 	JsonInterface         JsonUtils
+	StakedTokenInterface  StakedTokenUtils
 }

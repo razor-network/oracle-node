@@ -45,6 +45,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	VoteManagerInterface = optionsPackageStruct.VoteManagerInterface
 	BindingsInterface = optionsPackageStruct.BindingsInterface
 	JsonInterface = optionsPackageStruct.JsonInterface
+	StakedTokenInterface = optionsPackageStruct.StakedTokenInterface
 	return &UtilsStruct{}
 }
 
@@ -313,4 +314,8 @@ func (p PathStruct) GetJobFilePath() (string, error) {
 
 func (b BindStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
 	return bind.NewKeyedTransactorWithChainID(key, chainID)
+}
+
+func (s StakedTokenStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
+	return stakedToken.BalanceOf(callOpts, address)
 }

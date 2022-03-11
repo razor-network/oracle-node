@@ -46,6 +46,7 @@ func InitializeUtils() {
 	utils.VoteManagerInterface = &utils.VoteManagerStruct{}
 	utils.BindingsInterface = &utils.BindingsStruct{}
 	utils.JsonInterface = &utils.JsonStruct{}
+	utils.StakedTokenInterface = &utils.StakedTokenStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -158,10 +159,6 @@ func (u Utils) AllZero(bytesValue [32]byte) bool {
 
 func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	return utils.ConvertUintArrayToUint16Array(uintArr)
-}
-
-func (u Utils) GetStateName(state int64) string {
-	return utilsInterface.GetStateName(state)
 }
 
 func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
@@ -322,6 +319,10 @@ func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
 	return utilsInterface.AddJobToJSON(s, job)
 }
 
+func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
+	return utilsInterface.GetStakerSRZRBalance(client, staker)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -380,14 +381,6 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
-}
-
-func (stakeManagerUtils StakeManagerUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
-	return stakedToken.BalanceOf(callOpts, address)
-}
-
-func (stakeManagerUtils StakeManagerUtils) GetTotalSupply(token *bindings.StakedToken, callOpts *bind.CallOpts) (*big.Int, error) {
-	return token.TotalSupply(callOpts)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
@@ -570,10 +563,6 @@ func (flagSetUtils FLagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 
 func (flagSetUtils FLagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error) {
 	return flagSet.GetFloat32("gasLimit")
-}
-
-func (flagSetUtils FLagSetUtils) GetBoolAutoWithdraw(flagSet *pflag.FlagSet) (bool, error) {
-	return flagSet.GetBool("autoWithdraw")
 }
 
 func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
