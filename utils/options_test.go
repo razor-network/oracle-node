@@ -13,7 +13,6 @@ import (
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/accounts"
 	"razor/core/types"
 	"razor/utils/mocks"
 	"reflect"
@@ -137,7 +136,6 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	accountUtils := accounts.AccountUtilsInterface
 	type args struct {
 		path            string
 		pathErr         error
@@ -282,7 +280,7 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			optionsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			optionsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string"), accountUtils).Return(tt.args.privateKey)
+			optionsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey)
 			utilsMock.On("GetPendingNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
 			utilsMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
 			optionsMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)

@@ -2,7 +2,6 @@ package utils
 
 import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	"math"
 	"math/big"
 )
 
@@ -45,7 +44,7 @@ func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byt
 		currentLevelNodes := tree[currentLevel]
 		currentLevelCount := len(currentLevelNodes)
 		if int(assetId) == currentLevelCount-1 && currentLevelCount%2 == 1 {
-			assetId = uint16(math.Floor(float64(assetId / 2)))
+			assetId = assetId / 2
 			continue
 		}
 		var node [32]byte
@@ -55,7 +54,7 @@ func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byt
 			copy(node[:], currentLevelNodes[assetId+1])
 		}
 		compactProofPath = append(compactProofPath, node)
-		assetId = uint16(math.Floor(float64(assetId / 2)))
+		assetId = assetId / 2
 	}
 	return compactProofPath
 }

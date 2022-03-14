@@ -23,8 +23,13 @@ func TestAggregate(t *testing.T) {
 		Url: "https://api.gemini.com/v1/pubticker/ethusd",
 	}
 
-	collection := bindings.StructsCollection{Active: true, Id: 4, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollectionMean",
+	collection := bindings.StructsCollection{
+		Active:            true,
+		Id:                4,
+		Power:             2,
+		AggregationMethod: 2,
+		JobIDs:            []uint16{1, 2, 3},
+		Name:              "ethCollectionMean",
 	}
 
 	type args struct {
@@ -137,7 +142,7 @@ func TestAggregate(t *testing.T) {
 	}
 }
 
-func TestGetActiveAssetIds(t *testing.T) {
+func TestGetActiveCollectionIds(t *testing.T) {
 	var client *ethclient.Client
 	var callOpts bind.CallOpts
 
@@ -180,7 +185,7 @@ func TestGetActiveAssetIds(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
+			optionsMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetActiveCollectionIds(client)
@@ -195,132 +200,19 @@ func TestGetActiveAssetIds(t *testing.T) {
 	}
 }
 
-func TestGetActiveAssetsData(t *testing.T) {
-	var client *ethclient.Client
-	var epoch uint32
-
-	collection := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
-	}
-
-	type args struct {
-		numAssets           uint16
-		numAssetsErr        error
-		assetType           uint8
-		assetTypeErr        error
-		activeCollection    bindings.StructsCollection
-		activeCollectionErr error
-		aggregation         *big.Int
-		aggregationErr      error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []*big.Int
-		wantErr bool
-	}{
-		{
-			name: "Test 1: When GetActiveAssetsData() executes successfully",
-			args: args{
-				numAssets:        2,
-				assetType:        2,
-				activeCollection: collection,
-				aggregation:      big.NewInt(2),
-			},
-			want:    []*big.Int{big.NewInt(2), big.NewInt(2)},
-			wantErr: false,
-		},
-		{
-			name: "Test 2: When there is an error in getting numAssets",
-			args: args{
-				numAssetsErr:     errors.New("numAssets error"),
-				assetType:        2,
-				activeCollection: collection,
-				aggregation:      big.NewInt(2),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When there is an error in getting assetType",
-			args: args{
-				numAssets:        2,
-				assetTypeErr:     errors.New("assetType error"),
-				activeCollection: collection,
-				aggregation:      big.NewInt(2),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 4: When there is an error in getting activeCollection",
-			args: args{
-				numAssets:           2,
-				assetType:           2,
-				activeCollectionErr: errors.New("activeCollection error"),
-				aggregation:         big.NewInt(2),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 5: When there is an error in getting aggregation",
-			args: args{
-				numAssets:        2,
-				assetType:        2,
-				activeCollection: collection,
-				aggregationErr:   errors.New("aggregation error"),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 6: When there is an inactive collection",
-			args: args{
-				numAssets:           2,
-				assetType:           2,
-				activeCollectionErr: errors.New("collection inactive"),
-				aggregation:         big.NewInt(2),
-			},
-			want:    nil,
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
-			utilsMock.On("GetAssetType", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.assetType, tt.args.assetTypeErr)
-			utilsMock.On("GetActiveCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
-			utilsMock.On("Aggregate", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.aggregation, tt.args.aggregationErr)
-
-			got, err := utils.GetActiveAssetsData(client, epoch)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetActiveAssetsData() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetActiveAssetsData() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetActiveCollection(t *testing.T) {
 	var client *ethclient.Client
 	var collectionId uint16
 
-	collectionEth := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
+	collectionEth := bindings.StructsCollection{Active: true,
+		Id:                2,
+		Power:             2,
+		AggregationMethod: 2,
+		JobIDs:            []uint16{1, 2},
+		Name:              "ethCollectionMean",
 	}
 
-	collectionEthInactive := bindings.StructsCollection{Active: false, Id: 2, AssetIndex: 1, Power: 2,
+	collectionEthInactive := bindings.StructsCollection{Active: false, Id: 2, Power: 2,
 		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
 	}
 
@@ -431,7 +323,7 @@ func TestGetActiveJob(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
+			optionsMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetActiveJob(client, jobId)
@@ -446,97 +338,13 @@ func TestGetActiveJob(t *testing.T) {
 	}
 }
 
-func TestGetAssetType(t *testing.T) {
-	var client *ethclient.Client
-	var callOpts bind.CallOpts
-	var assetId uint16
-
-	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
-		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
-	}
-
-	collection := bindings.StructsCollection{Active: true, Id: 2, AssetIndex: 1, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 3, 4}, Name: "ethCollectionMean",
-	}
-
-	assetJob := types.Asset{
-		Job: job,
-	}
-
-	assetCollection := types.Asset{
-		Collection: collection,
-	}
-
-	type args struct {
-		activeAssets    types.Asset
-		activeAssetsErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    uint8
-		wantErr bool
-	}{
-		{
-			name: "Test 1: When GetAssetType() executes successfully and assetType is job",
-			args: args{
-				activeAssets: assetJob,
-			},
-			want:    1,
-			wantErr: false,
-		},
-		{
-			name: "Test 2: When asssetType is collection",
-			args: args{
-				activeAssets: assetCollection,
-			},
-			want:    2,
-			wantErr: false,
-		},
-		{
-			name: "Test 3: When there is an error in getting activeAssets",
-			args: args{
-				activeAssetsErr: errors.New("activeAssets error"),
-			},
-			want:    0,
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.activeAssets, tt.args.activeAssetsErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
-
-			got, err := utils.GetAssetType(client, assetId)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetAssetType() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GetAssetType() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetCollection(t *testing.T) {
 	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var collectionId uint16
 
 	type args struct {
-		asset    types.Asset
+		asset    bindings.StructsCollection
 		assetErr error
 	}
 	tests := []struct {
@@ -548,7 +356,7 @@ func TestGetCollection(t *testing.T) {
 		{
 			name: "Test 1: When GetCollection() executes successfully",
 			args: args{
-				asset: types.Asset{},
+				asset: bindings.StructsCollection{},
 			},
 			want:    bindings.StructsCollection{},
 			wantErr: false,
@@ -574,7 +382,7 @@ func TestGetCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
+			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetCollection(client, collectionId)
@@ -589,12 +397,17 @@ func TestGetCollection(t *testing.T) {
 	}
 }
 
-func TestGetCollections(t *testing.T) {
+func TestGetAllCollections(t *testing.T) {
 	var client *ethclient.Client
 
 	collectionListArray := []bindings.StructsCollection{
-		{Active: true, Id: 7, AssetIndex: 1, Power: 2,
-			AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollectionMean",
+		{
+			Active:            true,
+			Id:                7,
+			Power:             2,
+			AggregationMethod: 2,
+			JobIDs:            []uint16{1, 2, 3},
+			Name:              "ethCollectionMean",
 		},
 	}
 
@@ -613,7 +426,7 @@ func TestGetCollections(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetCollections() executes successfully",
+			name: "Test 1: When GetAllCollections() executes successfully",
 			args: args{
 				numAssets:  1,
 				assetType:  2,
@@ -633,16 +446,6 @@ func TestGetCollections(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 3: When there is an error in getting assetType",
-			args: args{
-				numAssets:    1,
-				assetTypeErr: errors.New("assetType error"),
-				collection:   collectionListArray[0],
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
 			name: "Test 4: When there is an error in getting collection",
 			args: args{
 				numAssets:     1,
@@ -652,37 +455,28 @@ func TestGetCollections(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
-		{
-			name: "Test 4: When there is a different assetType",
-			args: args{
-				numAssets:  1,
-				assetType:  1,
-				collection: collectionListArray[0],
-			},
-			want:    nil,
-			wantErr: false,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
+			optionsMock := new(mocks.OptionUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
+				Options:        optionsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
-			utilsMock.On("GetAssetType", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.assetType, tt.args.assetTypeErr)
-			utilsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
+			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
 
-			got, err := utils.GetCollections(client)
+			got, err := utils.GetAllCollections(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCollections() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetAllCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetCollections() got = %v, want %v", got, tt.want)
+				t.Errorf("GetAllCollections() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -957,8 +751,8 @@ func TestGetJobs(t *testing.T) {
 	}
 
 	type args struct {
-		numAssets    uint16
-		numAssetsErr error
+		numJobs      uint16
+		numJobsErr   error
 		assetType    uint8
 		assetTypeErr error
 		activeJob    bindings.StructsJob
@@ -973,7 +767,7 @@ func TestGetJobs(t *testing.T) {
 		{
 			name: "Test 1: When GetJobs() executes successfully",
 			args: args{
-				numAssets: 1,
+				numJobs:   1,
 				assetType: 1,
 				activeJob: jobsArray[0],
 			},
@@ -981,21 +775,11 @@ func TestGetJobs(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting numAssets",
+			name: "Test 2: When there is an error in getting numJobs",
 			args: args{
-				numAssetsErr: errors.New("numAssets error"),
-				assetType:    1,
-				activeJob:    jobsArray[0],
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When there is an error in getting assetType",
-			args: args{
-				numAssets:    1,
-				assetTypeErr: errors.New("assetType error"),
-				activeJob:    jobsArray[0],
+				numJobsErr: errors.New("numJobs error"),
+				assetType:  1,
+				activeJob:  jobsArray[0],
 			},
 			want:    nil,
 			wantErr: true,
@@ -1003,35 +787,26 @@ func TestGetJobs(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting activeJob",
 			args: args{
-				numAssets:    1,
+				numJobs:      1,
 				assetType:    1,
 				activeJobErr: errors.New("activeJob error"),
 			},
 			want:    nil,
 			wantErr: true,
 		},
-		{
-			name: "Test 4: When there is a different assetType",
-			args: args{
-				numAssets: 1,
-				assetType: 2,
-				activeJob: jobsArray[0],
-			},
-			want:    nil,
-			wantErr: false,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
+				Options:        optionsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
-			utilsMock.On("GetAssetType", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.assetType, tt.args.assetTypeErr)
+			optionsMock.On("GetNumJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numJobs, tt.args.numJobsErr)
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
 
 			got, err := utils.GetJobs(client)
@@ -1046,26 +821,26 @@ func TestGetJobs(t *testing.T) {
 	}
 }
 
-func TestGetNumActiveAssets(t *testing.T) {
+func TestGetNumActiveCollections(t *testing.T) {
 	var client *ethclient.Client
 	var callOpts bind.CallOpts
 
 	type args struct {
-		numOfActiveAssets    *big.Int
+		numOfActiveAssets    uint16
 		numOfActiveAssetsErr error
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *big.Int
+		want    uint16
 		wantErr bool
 	}{
 		{
 			name: "Test 1: When GetNumActiveCollections() executes successfully",
 			args: args{
-				numOfActiveAssets: big.NewInt(5),
+				numOfActiveAssets: 5,
 			},
-			want:    big.NewInt(5),
+			want:    5,
 			wantErr: false,
 		},
 		{
@@ -1073,7 +848,7 @@ func TestGetNumActiveAssets(t *testing.T) {
 			args: args{
 				numOfActiveAssetsErr: errors.New("numOfActiveAssets error"),
 			},
-			want:    nil,
+			want:    0,
 			wantErr: true,
 		},
 	}
@@ -1089,7 +864,7 @@ func TestGetNumActiveAssets(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
+			optionsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumActiveCollections(client)
@@ -1104,7 +879,7 @@ func TestGetNumActiveAssets(t *testing.T) {
 	}
 }
 
-func TestGetNumAssets(t *testing.T) {
+func TestGetNumCollections(t *testing.T) {
 	var client *ethclient.Client
 	var callOpts bind.CallOpts
 
@@ -1147,10 +922,10 @@ func TestGetNumAssets(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
+			optionsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
 			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumAssets(client)
+			got, err := utils.GetNumCollections(client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1165,7 +940,7 @@ func TestGetNumAssets(t *testing.T) {
 func TestGetAssetManagerWithOpts(t *testing.T) {
 
 	var callOpts bind.CallOpts
-	var assetManager *bindings.AssetManager
+	var assetManager *bindings.CollectionManager
 	var client *ethclient.Client
 
 	utilsMock := new(mocks.Utils)

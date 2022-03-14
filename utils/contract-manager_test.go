@@ -171,7 +171,7 @@ func TestGetAssetManager(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		assetManager    *bindings.AssetManager
+		assetManager    *bindings.CollectionManager
 		assetManagerErr error
 	}
 	tests := []struct {
@@ -182,7 +182,7 @@ func TestGetAssetManager(t *testing.T) {
 		{
 			name: "Test 1: When GetCollectionManager() executes successfully",
 			args: args{
-				assetManager: &bindings.AssetManager{},
+				assetManager: &bindings.CollectionManager{},
 			},
 			expectedFatal: false,
 		},
