@@ -208,3 +208,14 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	}
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
+
+func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client) (int64, error) {
+	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	if err != nil {
+		return 0, err
+	}
+	timePassed := 1 - (uint64(block.Number.Int64())%core.StateLength)/core.StateLength
+	blockTime := UtilsInterface.CalculateBlockTime(client)
+
+	return int64(timePassed*core.StateLength) * blockTime, nil
+}
