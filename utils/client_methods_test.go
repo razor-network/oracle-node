@@ -48,17 +48,17 @@ func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
 			clientMock.On("SuggestGasPrice", mock.AnythingOfType("*ethclient.Client"), context.Background()).Return(tt.args.gasPrice, tt.args.gasPriceErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.SuggestGasPriceWithRetry(client)
 			if (err != nil) != tt.wantErr {
@@ -106,16 +106,16 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 			clientMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.balance, tt.args.balanceErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.BalanceAtWithRetry(client, account)
 			if (err != nil) != tt.wantErr {
@@ -163,16 +163,16 @@ func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 			clientMock.On("EstimateGas", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.EstimateGasWithRetry(client, message)
 			if (err != nil) != tt.wantErr {
@@ -219,16 +219,16 @@ func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 			clientMock.On("FilterLogs", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.FilterLogsWithRetry(client, query)
 			if (err != nil) != tt.wantErr {
@@ -274,16 +274,16 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("*big.Int")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetLatestBlockWithRetry(client)
 			if (err != nil) != tt.wantErr {
@@ -330,16 +330,16 @@ func TestUtilsStruct_GetPendingNonceAtWithRetry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			clientMock := new(mocks.ClientUtils)
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				ClientInterface: clientMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 			clientMock.On("PendingNonceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetPendingNonceAtWithRetry(client, accountAddress)
 			if (err != nil) != tt.wantErr {

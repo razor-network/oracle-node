@@ -30,7 +30,7 @@ func (*UtilsStruct) GetStakerId(client *ethclient.Client, address string) (uint3
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return 0, stakerErr
 	}
@@ -50,7 +50,7 @@ func (*UtilsStruct) GetStake(client *ethclient.Client, stakerId uint32) (*big.In
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return nil, stakerErr
 	}
@@ -71,7 +71,7 @@ func (*UtilsStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindin
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return bindings.StructsStaker{}, stakerErr
 	}
@@ -92,7 +92,7 @@ func (*UtilsStruct) GetNumberOfStakers(client *ethclient.Client) (uint32, error)
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return 0, stakerErr
 	}
@@ -117,7 +117,7 @@ func (*UtilsStruct) GetLock(client *ethclient.Client, address string, stakerId u
 				return lockErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if lockErr != nil {
 		return types.Locks{}, lockErr
 	}
@@ -138,7 +138,7 @@ func (*UtilsStruct) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, e
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -158,7 +158,7 @@ func (*UtilsStruct) GetMaxCommission(client *ethclient.Client) (uint8, error) {
 			return err
 		}
 		return nil
-	}, Options.RetryAttempts(core.MaxRetries))
+	}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -178,7 +178,7 @@ func (*UtilsStruct) GetEpochLimitForUpdateCommission(client *ethclient.Client) (
 			return err
 		}
 		return nil
-	}, Options.RetryAttempts(core.MaxRetries))
+	}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}

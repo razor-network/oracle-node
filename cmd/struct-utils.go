@@ -27,7 +27,6 @@ var utilsInterface = utils.UtilsInterface
 
 func InitializeUtils() {
 	utilsInterface = &utils.UtilsStruct{}
-	utils.Options = &utils.OptionsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	utils.EthClient = &utils.EthClientStruct{}
 	utils.ClientInterface = &utils.ClientStruct{}
@@ -47,6 +46,7 @@ func InitializeUtils() {
 	utils.BindingsInterface = &utils.BindingsStruct{}
 	utils.JsonInterface = &utils.JsonStruct{}
 	utils.StakedTokenInterface = &utils.StakedTokenStruct{}
+	utils.RetryInterface = &utils.RetryStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {

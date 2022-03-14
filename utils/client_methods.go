@@ -24,7 +24,7 @@ func (*UtilsStruct) GetPendingNonceAtWithRetry(client *ethclient.Client, account
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -44,7 +44,7 @@ func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.He
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (o *UtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.I
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(3))
+		}, RetryInterface.RetryAttempts(3))
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ether
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(3))
+		}, RetryInterface.RetryAttempts(3))
 	if err != nil {
 		return 0, err
 	}
@@ -104,7 +104,7 @@ func (*UtilsStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (*UtilsStruct) BalanceAtWithRetry(client *ethclient.Client, account common.
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}

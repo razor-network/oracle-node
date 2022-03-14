@@ -22,7 +22,6 @@ import (
 	"time"
 )
 
-//go:generate mockery --name OptionUtils --output ./mocks/ --case=underscore
 //go:generate mockery --name Utils --output ./mocks/ --case=underscore
 //go:generate mockery --name EthClientUtils --output ./mocks --case=underscore
 //go:generate mockery --name ClientUtils --output ./mocks --case=underscore
@@ -41,8 +40,8 @@ import (
 //go:generate mockery --name BindingsUtils --output ./mocks --case=underscore
 //go:generate mockery --name JsonUtils --output ./mocks --case=underscore
 //go:generate mockery --name StakedTokenUtils --output ./mocks --case=underscore
+//go:generate mockery --name RetryUtils --output ./mocks --case=underscore
 
-var Options OptionUtils
 var UtilsInterface Utils
 var EthClient EthClientUtils
 var ClientInterface ClientUtils
@@ -62,11 +61,7 @@ var VoteManagerInterface VoteManagerUtils
 var BindingsInterface BindingsUtils
 var JsonInterface JsonUtils
 var StakedTokenInterface StakedTokenUtils
-
-type OptionUtils interface {
-	RetryAttempts(uint) retry.Option
-	ConvertToNumber(interface{}) (*big.Float, error)
-}
+var RetryInterface RetryUtils
 
 type Utils interface {
 	SuggestGasPriceWithRetry(*ethclient.Client) (*big.Int, error)
@@ -150,6 +145,7 @@ type Utils interface {
 	AddJobToJSON(string, *types.StructsJob) error
 	CheckTransactionReceipt(*ethclient.Client, string) int
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	ConvertToNumber(interface{}) (*big.Float, error)
 }
 
 type EthClientUtils interface {
@@ -264,7 +260,10 @@ type StakedTokenUtils interface {
 	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
 }
 
-type OptionsStruct struct{}
+type RetryUtils interface {
+	RetryAttempts(uint) retry.Option
+}
+
 type UtilsStruct struct{}
 type EthClientStruct struct{}
 type ClientStruct struct{}
@@ -284,9 +283,9 @@ type VoteManagerStruct struct{}
 type BindingsStruct struct{}
 type JsonStruct struct{}
 type StakedTokenStruct struct{}
+type RetryStruct struct{}
 
 type OptionsPackageStruct struct {
-	Options               OptionUtils
 	UtilsInterface        Utils
 	EthClient             EthClientUtils
 	ClientInterface       ClientUtils
@@ -306,4 +305,5 @@ type OptionsPackageStruct struct {
 	BindingsInterface     BindingsUtils
 	JsonInterface         JsonUtils
 	StakedTokenInterface  StakedTokenUtils
+	RetryInterface        RetryUtils
 }

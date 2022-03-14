@@ -32,7 +32,7 @@ func (*UtilsStruct) GetNumAssets(client *ethclient.Client) (uint16, error) {
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -87,7 +87,7 @@ func (*UtilsStruct) GetNumActiveAssets(client *ethclient.Client) (*big.Int, erro
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (*UtilsStruct) GetAssetType(client *ethclient.Client, assetId uint16) (uint
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -166,7 +166,7 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}
@@ -187,7 +187,7 @@ func (*UtilsStruct) GetActiveAssetIds(client *ethclient.Client) ([]uint16, error
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindin
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsJob{}, err
 	}
@@ -333,7 +333,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 					return apiErr
 				}
 				return nil
-			}, Options.RetryAttempts(core.MaxRetries))
+			}, RetryInterface.RetryAttempts(core.MaxRetries))
 
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
@@ -356,7 +356,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		parsedData = regexp.MustCompile(`[\p{Sc},]`).ReplaceAllString(dataPoint, "")
 	}
 
-	datum, err := Options.ConvertToNumber(parsedData)
+	datum, err := UtilsInterface.ConvertToNumber(parsedData)
 	if err != nil {
 		log.Error("Result is not a number")
 		return nil, err

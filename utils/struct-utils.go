@@ -26,7 +26,6 @@ import (
 )
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
-	Options = optionsPackageStruct.Options
 	UtilsInterface = optionsPackageStruct.UtilsInterface
 	EthClient = optionsPackageStruct.EthClient
 	ClientInterface = optionsPackageStruct.ClientInterface
@@ -46,19 +45,12 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	BindingsInterface = optionsPackageStruct.BindingsInterface
 	JsonInterface = optionsPackageStruct.JsonInterface
 	StakedTokenInterface = optionsPackageStruct.StakedTokenInterface
+	RetryInterface = optionsPackageStruct.RetryInterface
 	return &UtilsStruct{}
 }
 
 func (a AccountsStruct) GetPrivateKey(address string, password string, keystorePath string, accountUtils accounts.AccountInterface) *ecdsa.PrivateKey {
 	return accounts.AccountUtilsInterface.GetPrivateKey(address, password, keystorePath)
-}
-
-func (o OptionsStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
-	return retry.Attempts(numberOfAttempts)
-}
-
-func (o OptionsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
-	return ConvertToNumber(num)
 }
 
 func (b BlockManagerStruct) GetNumProposedBlocks(client *ethclient.Client, opts *bind.CallOpts, epoch uint32) (uint8, error) {
@@ -318,4 +310,8 @@ func (b BindStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID
 
 func (s StakedTokenStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
 	return stakedToken.BalanceOf(callOpts, address)
+}
+
+func (r RetryStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
+	return retry.Attempts(numberOfAttempts)
 }

@@ -88,19 +88,19 @@ func TestGetDataFromAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
 			ioutilMock := new(mocks.IoutilUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
+				RetryInterface:  retryMock,
 				UtilsInterface:  utilsMock,
 				IoutilInterface: ioutilMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetDataFromAPI(tt.args.url)
 			if (err != nil) != tt.wantErr {
@@ -199,11 +199,9 @@ func TestGetDataFromJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
@@ -251,11 +249,9 @@ func TestGetDataFromHTML(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)

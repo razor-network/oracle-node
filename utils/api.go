@@ -31,7 +31,7 @@ func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}

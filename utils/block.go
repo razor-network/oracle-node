@@ -27,7 +27,7 @@ func (*UtilsStruct) GetNumberOfProposedBlocks(client *ethclient.Client, epoch ui
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -48,7 +48,7 @@ func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, pro
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
@@ -69,7 +69,7 @@ func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, a
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -90,7 +90,7 @@ func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -132,7 +132,7 @@ func (*UtilsStruct) GetSortedProposedBlockId(client *ethclient.Client, epoch uin
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
