@@ -55,7 +55,6 @@ var osUtils OSInterface
 type UtilsInterface interface {
 	GetConfigFilePath() (string, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(*ethclient.Client) int64
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts

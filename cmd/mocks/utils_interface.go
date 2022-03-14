@@ -1095,27 +1095,6 @@ func (_m *UtilsInterface) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32, error) 
 	return r0, r1
 }
 
-// GetUpdatedEpoch provides a mock function with given fields: _a0
-func (_m *UtilsInterface) GetUpdatedEpoch(_a0 *ethclient.Client) (uint32, error) {
-	ret := _m.Called(_a0)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetUpdatedStaker provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterface) GetUpdatedStaker(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsStaker, error) {
 	ret := _m.Called(_a0, _a1)

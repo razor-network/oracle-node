@@ -45,10 +45,6 @@ func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return utilsInterface.GetEpoch(client)
 }
 
-func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
-	return utilsInterface.GetEpoch(client)
-}
-
 func (u Utils) GetOptions() bind.CallOpts {
 	return utilsInterface.GetOptions()
 }
