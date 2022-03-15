@@ -704,7 +704,7 @@ docker run -it  --network razor_network\
 
 ### Override Job and Adding Your Custom Jobs
 
-Jobs URLs are a placeholder for where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
+Jobs URLs are a placeholder from where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
 You can override the existing job and also add your custom jobs by adding `assets.json` file in `.razor` directory so that razor-nodes can fetch data directly from the provided jobs.
 
 Shown below is an example of how your `assets.json` file should be -
@@ -750,7 +750,7 @@ In the above example for the collection `ethCollectionMean`, job having `jobId:1
           },
 ```
 
-- Additional jobs tha you want to add to a collection should be added in `custom jobs` field with their respective URLs and selectors.
+- Additional jobs that you want to add to a collection should be added in `custom jobs` field with their respective URLs and selectors.
 
 In the above example for the collection `ethCollectionMean`, new custom job having URL `https://api.lunarcrush.com/v2?data=assets&symbol=ETH` is added.
 ```
