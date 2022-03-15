@@ -119,7 +119,6 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 }
 
 func init() {
-
 	rootCmd.AddCommand(claimBountyCmd)
 	var (
 		Address  string

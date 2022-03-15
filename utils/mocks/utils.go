@@ -158,6 +158,29 @@ func (_m *Utils) ConnectToClient(_a0 string) *ethclient.Client {
 	return r0
 }
 
+// ConvertToNumber provides a mock function with given fields: _a0
+func (_m *Utils) ConvertToNumber(_a0 interface{}) (*big.Float, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *big.Float
+	if rf, ok := ret.Get(0).(func(interface{}) *big.Float); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Float)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // DeleteJobFromJSON provides a mock function with given fields: _a0, _a1
 func (_m *Utils) DeleteJobFromJSON(_a0 string, _a1 string) error {
 	ret := _m.Called(_a0, _a1)

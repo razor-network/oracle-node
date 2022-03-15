@@ -106,7 +106,6 @@ func (*UtilsStruct) ModifyAssetStatus(client *ethclient.Client, config types.Con
 
 func init() {
 	rootCmd.AddCommand(modifyAssetStatusCmd)
-
 	var (
 		Address string
 		AssetId uint16

@@ -133,6 +133,7 @@ func (*UtilsStruct) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpt
 }
 
 func init() {
+
 	rootCmd.AddCommand(withdrawCmd)
 
 	var (
