@@ -271,21 +271,25 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
+			pathMock := new(mocks.PathUtils)
+			bindMock := new(mocks.BindUtils)
+			accountsMock := new(mocks.AccountsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				UtilsInterface:    utilsMock,
+				PathInterface:     pathMock,
+				BindInterface:     bindMock,
+				AccountsInterface: accountsMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			optionsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string"), accountUtils).Return(tt.args.privateKey)
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string"), accountUtils).Return(tt.args.privateKey)
 			utilsMock.On("GetPendingNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
 			utilsMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
-			optionsMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
+			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
 			utilsMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			utilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
@@ -398,17 +402,17 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.Utils)
-			optionsMock := new(mocks.OptionUtils)
+			abiMock := new(mocks.ABIUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
-				Options:        optionsMock,
+				ABIInterface:   abiMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
-			optionsMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
+			abiMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
+			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
 			utilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			utilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
 			got, err := utils.GetGasLimit(tt.args.transactionData, txnOpts)
