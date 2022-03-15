@@ -269,7 +269,7 @@ type UtilsCmdInterface interface {
 	InfluencedMedian([]*big.Int, *big.Int) *big.Int
 	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, error)
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
-	getSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
+	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
 	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)

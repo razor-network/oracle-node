@@ -838,6 +838,29 @@ func (_m *UtilsCmdInterface) GetSalt(client *ethclient.Client, epoch uint32) ([3
 	return r0, r1
 }
 
+// GetSortedRevealedValues provides a mock function with given fields: client, blockNumber, epoch
+func (_m *UtilsCmdInterface) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
+	ret := _m.Called(client, blockNumber, epoch)
+
+	var r0 *types.RevealedDataMaps
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, uint32) *types.RevealedDataMaps); ok {
+		r0 = rf(client, blockNumber, epoch)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.RevealedDataMaps)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int, uint32) error); ok {
+		r1 = rf(client, blockNumber, epoch)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStakerInfo provides a mock function with given fields: _a0, _a1
 func (_m *UtilsCmdInterface) GetStakerInfo(_a0 *ethclient.Client, _a1 uint32) error {
 	ret := _m.Called(_a0, _a1)
@@ -1482,29 +1505,6 @@ func (_m *UtilsCmdInterface) WaitIfCommitState(_a0 *ethclient.Client, _a1 string
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
 		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// getSortedRevealedValues provides a mock function with given fields: client, blockNumber, epoch
-func (_m *UtilsCmdInterface) getSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
-	ret := _m.Called(client, blockNumber, epoch)
-
-	var r0 *types.RevealedDataMaps
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, uint32) *types.RevealedDataMaps); ok {
-		r0 = rf(client, blockNumber, epoch)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.RevealedDataMaps)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int, uint32) error); ok {
-		r1 = rf(client, blockNumber, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}

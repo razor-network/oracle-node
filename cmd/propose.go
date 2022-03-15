@@ -202,7 +202,7 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-func (*UtilsStruct) getSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
+func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
 	if err != nil {
 		return nil, err
@@ -244,7 +244,7 @@ func (*UtilsStruct) getSortedRevealedValues(client *ethclient.Client, blockNumbe
 }
 
 func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, error) {
-	revealedDataMaps, err := cmdUtils.getSortedRevealedValues(client, blockNumber, epoch)
+	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
 	if err != nil {
 		return nil, err
 	}

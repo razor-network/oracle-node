@@ -122,7 +122,7 @@ func TestCommit(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-
+			// Commit(client *ethclient.Client, seed []byte, root [32]byte, epoch uint32, account types.Account, config types.Configurations)
 			got, err := utils.Commit(client, data, secret, account, config)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
