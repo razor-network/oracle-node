@@ -81,7 +81,6 @@ type UtilsInterface interface {
 	AllZero([32]byte) bool
 	ConvertUintArrayToUint16Array([]uint) []uint16
 	ConvertUint32ArrayToBigIntArray([]uint32) []*big.Int
-	GetStateName(int64) string
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
@@ -120,6 +119,7 @@ type UtilsInterface interface {
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
+	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 }
 
 type StakeManagerInterface interface {
@@ -136,8 +136,6 @@ type StakeManagerInterface interface {
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
 	GetMaturity(*ethclient.Client, *bind.CallOpts, uint32) (uint16, error)
 	GetBountyLock(*ethclient.Client, *bind.CallOpts, uint32) (types.BountyLock, error)
-	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
-	GetTotalSupply(*bindings.StakedToken, *bind.CallOpts) (*big.Int, error)
 }
 
 type KeystoreInterface interface {
@@ -181,7 +179,6 @@ type FlagSetInterface interface {
 	GetInt32GasPrice(*pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(set *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(*pflag.FlagSet) (string, error)
-	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
 	GetRootStringProvider() (string, error)
 	GetRootFloat32GasMultiplier() (float32, error)
@@ -245,9 +242,8 @@ type UtilsCmdInterface interface {
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
 	ExecuteJobList()
 	GetJobList(*ethclient.Client) error
-	GetAmountInSRZRs(*ethclient.Client, string, bindings.StructsStaker, *big.Int) (*big.Int, error)
 	ExecuteUnstake(*pflag.FlagSet)
-	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (types.TransactionOptions, error)
+	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (common.Hash, error)
 	AutoWithdraw(types.TransactionOptions, uint32) error
 	ExecuteWithdraw(*pflag.FlagSet)
 	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (common.Hash, error)
