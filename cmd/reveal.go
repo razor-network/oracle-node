@@ -89,7 +89,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	}
 }
 
-func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
+func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (types.RevealedStruct, error) {
 	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
@@ -100,13 +100,13 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 	}
 	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
 	if err != nil {
-		return nil, err
+		return types.RevealedStruct{}, err
 	}
 	contractAbi, err := utils.Options.Parse(strings.NewReader(bindings.VoteManagerABI))
 	if err != nil {
-		return nil, err
+		return types.RevealedStruct{}, err
 	}
-	var revealedData []types.RevealedStruct
+	var consolidatedRevealedData types.RevealedStruct
 	for _, vLog := range logs {
 		data, unpackErr := abiUtils.Unpack(contractAbi, "Revealed", vLog.Data)
 		if unpackErr != nil {
@@ -114,14 +114,22 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			continue
 		}
 		if epoch == data[0].(uint32) {
-			values := data[3].(types.AssignedAsset)
-			consolidatedRevealedData := types.RevealedStruct{
-				MedianIndex: values.LeafId,
-				Value:       values.Value,
-				Influence:   data[2].(*big.Int),
+			treeValues := data[3].([]struct {
+				LeafId uint16 `json:"leafId"`
+				Value  uint32 `json:"value"`
+			})
+			var revealedValues []types.AssignedAsset
+			for _, value := range treeValues {
+				revealedValues = append(revealedValues, types.AssignedAsset{
+					LeafId: value.LeafId,
+					Value:  value.Value,
+				})
 			}
-			revealedData = append(revealedData, consolidatedRevealedData)
+			consolidatedRevealedData = types.RevealedStruct{
+				RevealedValues: revealedValues,
+				Influence:      data[2].(*big.Int),
+			}
 		}
 	}
-	return revealedData, nil
+	return consolidatedRevealedData, nil
 }

@@ -29,9 +29,8 @@ type CommitData struct {
 }
 
 type RevealedStruct struct {
-	MedianIndex uint16
-	Value       uint32
-	Influence   *big.Int
+	RevealedValues []AssignedAsset
+	Influence      *big.Int
 }
 
 type RevealedDataMaps struct {

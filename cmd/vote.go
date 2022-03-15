@@ -218,6 +218,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 3:
+		//TODO: Remove this
+		break
 		if lastVerification >= epoch {
 			break
 		}
