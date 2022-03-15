@@ -44,3 +44,8 @@ type StructsJob struct {
 	Selector     string `json:"selector"`
 	Url          string `json:"url"`
 }
+
+type AssignedAsset struct {
+	LeafId uint16 `json:"leafId"`
+	Value  uint32 `json:"value"`
+}

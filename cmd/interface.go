@@ -146,7 +146,7 @@ type KeystoreInterface interface {
 type BlockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) (*Types.Transaction, error)
-	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
+	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int) (*Types.Transaction, error)
 	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 	GiveSorted(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) (*Types.Transaction, error)
 }

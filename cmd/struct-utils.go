@@ -381,14 +381,14 @@ func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Cl
 	return blockManager.ClaimBlockReward(opts)
 }
 
-func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8) (*Types.Transaction, error) {
+func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error) {
 	blockManager := utilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
 	)
 	err = retry.Do(func() error {
-		txn, err = blockManager.FinalizeDispute(opts, epoch, blockIndex)
+		txn, err = blockManager.FinalizeDispute(opts, epoch, blockIndex, positionOfCollectionInBlock)
 		if err != nil {
 			log.Error("Error in finalizing dispute.. Retrying")
 			return err

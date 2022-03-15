@@ -89,7 +89,7 @@ func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpt
 	}
 	parsed, err := Options.Parse(strings.NewReader(transactionData.ABI))
 	if err != nil {
-		log.Error("Error in parsing ABI: ", err)
+		log.Error("Error in parsing abi: ", err)
 		return 0, err
 	}
 	inputData, err := Options.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
