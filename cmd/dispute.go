@@ -7,6 +7,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -125,13 +126,26 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 
 	var sortedStakers []uint32
 
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client)
+	if err != nil {
+		return err
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+
+loop:
 	for i := 1; i <= int(numOfStakers); i++ {
-		votes, err := razorUtils.GetVotes(client, uint32(i))
-		if err != nil {
-			return err
-		}
-		if votes.Epoch == epoch {
-			sortedStakers = append(sortedStakers, uint32(i))
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			break loop
+		default:
+			votes, err := razorUtils.GetVotes(client, uint32(i))
+			if err != nil {
+				return err
+			}
+			if votes.Epoch == epoch {
+				sortedStakers = append(sortedStakers, uint32(i))
+			}
 		}
 	}
 

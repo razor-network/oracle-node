@@ -383,14 +383,28 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 		return 0, err
 	}
 	epochLastProposed := uint32(0)
+
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client)
+	if err != nil {
+		return 0, err
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+
+loop:
 	for _, vLog := range logs {
-		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
-		if unpackErr != nil {
-			log.Error(unpackErr)
-			continue
-		}
-		if stakerId == data[1].(uint32) {
-			epochLastProposed = data[0].(uint32)
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			break loop
+		default:
+			data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+			if unpackErr != nil {
+				log.Error(unpackErr)
+				continue
+			}
+			if stakerId == data[1].(uint32) {
+				epochLastProposed = data[0].(uint32)
+			}
 		}
 	}
 	return epochLastProposed, nil
