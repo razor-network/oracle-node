@@ -290,20 +290,6 @@ func (_m *UtilsCmdInterface) Delegate(_a0 types.TransactionOptions, _a1 uint32) 
 	return r0, r1
 }
 
-// DeleteOverrideJob provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) DeleteOverrideJob(_a0 uint16) error {
-	ret := _m.Called(_a0)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(uint16) error); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Dispute provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
 func (_m *UtilsCmdInterface) Dispute(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.Account, _a3 uint32, _a4 uint8, _a5 int) error {
 	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
@@ -345,11 +331,6 @@ func (_m *UtilsCmdInterface) ExecuteCreateJob(_a0 *pflag.FlagSet) {
 
 // ExecuteDelegate provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) ExecuteDelegate(_a0 *pflag.FlagSet) {
-	_m.Called(_a0)
-}
-
-// ExecuteDeleteOverrideJob provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) ExecuteDeleteOverrideJob(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 

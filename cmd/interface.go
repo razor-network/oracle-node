@@ -283,8 +283,6 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCommission(*pflag.FlagSet)
 	UpdateCommission(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error
 	GetBiggestStakeAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
-	ExecuteDeleteOverrideJob(*pflag.FlagSet)
-	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
 	GetCommitDataFileName(string) (string, error)
