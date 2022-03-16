@@ -35,6 +35,8 @@ func TestDispute(t *testing.T) {
 		numOfStakersErr    error
 		votes              bindings.StructsVote
 		votesErr           error
+		bufferPercent      int32
+		bufferPercentErr   error
 		remainingTime      int64
 		remainingTimeErr   error
 		containsStatus     bool
@@ -147,6 +149,16 @@ func TestDispute(t *testing.T) {
 			},
 			want: errors.New("dispute state timeout"),
 		},
+		{
+			name: "Test 8: When there is an error in getting buffer percent",
+			args: args{
+				epoch:            4,
+				numOfStakers:     3,
+				remainingTime:    10,
+				bufferPercentErr: errors.New("buffer error"),
+			},
+			want: errors.New("buffer error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -171,7 +183,8 @@ func TestDispute(t *testing.T) {
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 

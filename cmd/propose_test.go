@@ -490,6 +490,8 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 	type args struct {
 		numOfStakers     uint32
 		numOfStakersErr  error
+		bufferPercent    int32
+		bufferPercentErr error
 		remainingTime    int64
 		remainingTimeErr error
 		stake            []*big.Int
@@ -568,15 +570,27 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			wantId:    0,
 			wantErr:   errors.New("state timeout error"),
 		},
+		{
+			name: "Test 7: When there is an error in getting buffer percent",
+			args: args{
+				numOfStakers:     2,
+				bufferPercentErr: errors.New("buffer error"),
+			},
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("buffer error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsPkgMock := new(Mocks.Utils)
 
 			razorUtils = utilsMock
 			utilsInterface = utilsPkgMock
+			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			if tt.args.stake != nil {
@@ -586,7 +600,8 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 
 			}
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 
@@ -623,6 +638,8 @@ func TestGetIteration(t *testing.T) {
 	type args struct {
 		stakeSnapshot     *big.Int
 		stakeSnapshotErr  error
+		bufferPercent     int32
+		bufferPercentErr  error
 		isElectedProposer bool
 		remainingTime     int64
 		remainingTimeErr  error
@@ -666,6 +683,14 @@ func TestGetIteration(t *testing.T) {
 			},
 			want: -1,
 		},
+		{
+			name: "Test 5: When there is an error in getting buffer percent",
+			args: args{
+				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
+				bufferPercentErr: errors.New("buffer error"),
+			},
+			want: -1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -678,7 +703,8 @@ func TestGetIteration(t *testing.T) {
 
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
 			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 
@@ -873,6 +899,8 @@ func TestGetSortedVotes(t *testing.T) {
 	type args struct {
 		numberOfStakers      uint32
 		numberOfStakersErr   error
+		bufferPercent        int32
+		bufferPercentErr     error
 		epoch                uint32
 		epochLastRevealed    uint32
 		remainingTime        int64
@@ -997,21 +1025,33 @@ func TestGetSortedVotes(t *testing.T) {
 			want:    nil,
 			wantErr: errors.New("state timeout error"),
 		},
+		{
+			name: "Test 10: When there is an error in getting buffer percent",
+			args: args{
+				numberOfStakers:  3,
+				bufferPercentErr: errors.New("buffer error"),
+			},
+			want:    nil,
+			wantErr: errors.New("buffer error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsPkgMock := new(Mocks.Utils)
 
 			razorUtils = utilsMock
 			utilsInterface = utilsPkgMock
+			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numberOfStakers, tt.args.numberOfStakersErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
 			utilsMock.On("GetVoteValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16"), mock.AnythingOfType("uint32")).Return(tt.args.vote, tt.args.voteErr)
 			utilsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influence, tt.args.influenceErr)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 

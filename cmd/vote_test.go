@@ -1251,6 +1251,8 @@ func TestGetLastProposedEpoch(t *testing.T) {
 		remainingTimeErr error
 		contractAbi      abi.ABI
 		parseErr         error
+		bufferPercent    int32
+		bufferPercentErr error
 		unpackedData     []interface{}
 		unpackErr        error
 	}
@@ -1345,6 +1347,22 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			want:    0,
 			wantErr: errors.New("propose state timeout"),
 		},
+		{
+			name: "Test 7: When there is an error in getting buffer percent",
+			args: args{
+				stakerId: 2,
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractAbi:      abi.ABI{},
+				unpackedData:     convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentErr: errors.New("buffer error"),
+			},
+			want:    0,
+			wantErr: errors.New("buffer error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1352,16 +1370,19 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			abiMock := new(mocks.AbiInterface)
 			utilsPkgMock := new(Mocks.Utils)
 			abiUtilsMock := new(Mocks.ABIUtils)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			abiUtils = abiMock
 			utils.UtilsInterface = utilsPkgMock
 			utilsInterface = utilsPkgMock
 			utils.ABIInterface = abiUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 			got, err := utils.GetLastProposedEpoch(client, blockNumber, tt.args.stakerId)
