@@ -764,31 +764,6 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
         ]
 ```
 
-### Delete override
-
-The overridden jobs can be deleted using `deleteOverride` command.
-
-razor cli
-
-```
-$ ./razor deleteOverride --jobId <jobId>
-```
-
-docker
-
-```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    deleteOverride --jobId <jobId>
-```
-
-Example:
-
-```
-$ ./razor deleteOverride --jobId 2
-```
-
 ### Contribute to razor-go
 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
