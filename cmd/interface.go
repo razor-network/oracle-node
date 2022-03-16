@@ -119,7 +119,7 @@ type UtilsInterface interface {
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
-	SecondsToHuman(int) string
+	SecondsToReadableTime(int) string
 }
 
 type StakeManagerInterface interface {

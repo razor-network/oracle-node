@@ -2,7 +2,7 @@ package utils
 
 import "testing"
 
-func TestSecondsToHuman(t *testing.T) {
+func TestSecondsToReadableTime(t *testing.T) {
 	type args struct {
 		input int
 	}
@@ -64,7 +64,7 @@ func TestSecondsToHuman(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ut := &UtilsStruct{}
-			if gotResult := ut.SecondsToHuman(tt.args.input); gotResult != tt.wantResult {
+			if gotResult := ut.SecondsToReadableTime(tt.args.input); gotResult != tt.wantResult {
 				t.Errorf("SecondsToHuman() = %v, want %v", gotResult, tt.wantResult)
 			}
 		})

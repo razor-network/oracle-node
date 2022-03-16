@@ -5,16 +5,18 @@ import (
 	"strconv"
 )
 
-func plural(count int, singular string) (result string) {
+func plural(count int, singular string) string {
+	var result string
 	if (count == 1) || (count == 0) {
 		result = strconv.Itoa(count) + " " + singular + " "
 	} else {
 		result = strconv.Itoa(count) + " " + singular + "s "
 	}
-	return
+	return result
 }
 
-func (*UtilsStruct) SecondsToHuman(input int) (result string) {
+func (*UtilsStruct) SecondsToReadableTime(input int) string {
+	var result string
 	years := math.Floor(float64(input) / 60 / 60 / 24 / 7 / 30 / 12)
 	seconds := input % (60 * 60 * 24 * 7 * 30 * 12)
 	months := math.Floor(float64(seconds) / 60 / 60 / 24 / 7 / 30)
@@ -44,5 +46,5 @@ func (*UtilsStruct) SecondsToHuman(input int) (result string) {
 		result = plural(int(seconds), "second")
 	}
 
-	return
+	return result
 }

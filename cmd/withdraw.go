@@ -106,7 +106,11 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		if err != nil {
 			return core.NilHash, err
 		}
-		log.Info("Withdrawal period not reached. Cannot withdraw now, please wait for", waitFor, "epochs!", "(approximately", razorUtils.SecondsToHuman(value), ")")
+		if waitFor.Cmp(big.NewInt(1)) == 0 {
+			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(value))
+		} else {
+			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(value))
+		}
 		return core.NilHash, nil
 	}
 

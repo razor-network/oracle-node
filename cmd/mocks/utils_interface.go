@@ -1267,8 +1267,8 @@ func (_m *UtilsInterface) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int)
 	return r0
 }
 
-// SecondsToHuman provides a mock function with given fields: _a0
-func (_m *UtilsInterface) SecondsToHuman(_a0 int) string {
+// SecondsToReadableTime provides a mock function with given fields: _a0
+func (_m *UtilsInterface) SecondsToReadableTime(_a0 int) string {
 	ret := _m.Called(_a0)
 
 	var r0 string
