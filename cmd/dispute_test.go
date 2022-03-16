@@ -14,6 +14,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	Mocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -34,6 +35,8 @@ func TestDispute(t *testing.T) {
 		numOfStakersErr    error
 		votes              bindings.StructsVote
 		votesErr           error
+		remainingTime      int64
+		remainingTimeErr   error
 		containsStatus     bool
 		finalizeDisputeTxn *Types.Transaction
 		finalizeDisputeErr error
@@ -47,8 +50,9 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 1: When Dispute function executes successfully",
 			args: args{
-				epoch:        4,
-				numOfStakers: 3,
+				epoch:         4,
+				numOfStakers:  3,
+				remainingTime: 10,
 				votes: bindings.StructsVote{
 					Epoch:  4,
 					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
@@ -62,8 +66,9 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 2: When Dispute function executes successfully without executing giveSorted",
 			args: args{
-				epoch:        4,
-				numOfStakers: 3,
+				epoch:         4,
+				numOfStakers:  3,
+				remainingTime: 10,
 				votes: bindings.StructsVote{
 					Epoch:  4,
 					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
@@ -104,8 +109,9 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 5: When FinalizeDispute transaction fails",
 			args: args{
-				epoch:        4,
-				numOfStakers: 3,
+				epoch:         4,
+				numOfStakers:  3,
+				remainingTime: 10,
 				votes: bindings.StructsVote{
 					Epoch:  4,
 					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
@@ -115,6 +121,32 @@ func TestDispute(t *testing.T) {
 			},
 			want: errors.New("finalizeDispute error"),
 		},
+		{
+			name: "Test 6: When there is an error in getting remaining time",
+			args: args{
+				epoch:        4,
+				numOfStakers: 3,
+				votes: bindings.StructsVote{
+					Epoch:  4,
+					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
+				},
+				remainingTimeErr: errors.New("time error"),
+			},
+			want: errors.New("time error"),
+		},
+		{
+			name: "Test 7: When there is a timeout case",
+			args: args{
+				epoch:        4,
+				numOfStakers: 10000000,
+				votes: bindings.StructsVote{
+					Epoch:  4,
+					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
+				},
+				remainingTime: 1,
+			},
+			want: errors.New("dispute state timeout"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -123,11 +155,13 @@ func TestDispute(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			utilsPkgMock := new(Mocks.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			blockManagerUtils = blockManagerUtilsMock
 			transactionUtils = transactionUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
@@ -137,6 +171,7 @@ func TestDispute(t *testing.T) {
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 
 			utils := &UtilsStruct{}
 

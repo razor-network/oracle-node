@@ -1244,13 +1244,15 @@ func TestGetLastProposedEpoch(t *testing.T) {
 	blockNumber := big.NewInt(20)
 
 	type args struct {
-		stakerId     uint32
-		logs         []Types.Log
-		logsErr      error
-		contractAbi  abi.ABI
-		parseErr     error
-		unpackedData []interface{}
-		unpackErr    error
+		stakerId         uint32
+		logs             []Types.Log
+		logsErr          error
+		remainingTime    int64
+		remainingTimeErr error
+		contractAbi      abi.ABI
+		parseErr         error
+		unpackedData     []interface{}
+		unpackErr        error
 	}
 	tests := []struct {
 		name    string
@@ -1300,7 +1302,8 @@ func TestGetLastProposedEpoch(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in unpacking",
 			args: args{
-				stakerId: 2,
+				stakerId:      2,
+				remainingTime: 10,
 				logs: []Types.Log{
 					{
 						Data: []byte{4, 2},
@@ -1312,6 +1315,36 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			want:    0,
 			wantErr: nil,
 		},
+		{
+			name: "Test 5: When there is an error in getting remaining time",
+			args: args{
+				stakerId:         2,
+				remainingTimeErr: errors.New("time error"),
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractAbi:  abi.ABI{},
+				unpackedData: convertToSliceOfInterface([]uint32{4, 2}),
+			},
+			want:    0,
+			wantErr: errors.New("time error"),
+		},
+		{
+			name: "Test 6: When there is a timeout case",
+			args: args{
+				stakerId:      2,
+				remainingTime: -1,
+				logs: []Types.Log{
+					{Data: []byte{4, 2}}, {Data: []byte{4, 2}}, {Data: []byte{4, 2}}, {Data: []byte{4, 2}}, {Data: []byte{4, 2}},
+				},
+				contractAbi: abi.ABI{},
+				unpackErr:   errors.New("unpack error"),
+			},
+			want:    0,
+			wantErr: errors.New("propose state timeout"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1322,11 +1355,13 @@ func TestGetLastProposedEpoch(t *testing.T) {
 
 			abiUtils = abiMock
 			utils.UtilsInterface = utilsPkgMock
+			utilsInterface = utilsPkgMock
 			utils.ABIInterface = abiUtilsMock
 
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
+			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 
 			utils := &UtilsStruct{}
 			got, err := utils.GetLastProposedEpoch(client, blockNumber, tt.args.stakerId)
