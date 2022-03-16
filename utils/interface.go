@@ -145,7 +145,7 @@ type Utils interface {
 	AddJobToJSON(string, *types.StructsJob) error
 	CheckTransactionReceipt(*ethclient.Client, string) int
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
-	GetRemainingTimeOfCurrentState(*ethclient.Client) (int64, error)
+	GetRemainingTimeOfCurrentState(*ethclient.Client, int32) (int64, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 }
 

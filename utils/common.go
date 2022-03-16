@@ -209,13 +209,14 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
 
-func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client) (int64, error) {
+func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return 0, err
 	}
 	timeRemaining := core.StateLength - (uint64(block.Number.Int64()) % core.StateLength)
 	blockTime := UtilsInterface.CalculateBlockTime(client)
+	upperLimit := (core.StateLength * uint64(bufferPercent)) / 100
 
-	return int64(timeRemaining) * blockTime, nil
+	return int64(timeRemaining-upperLimit) * blockTime, nil
 }

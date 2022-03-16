@@ -125,8 +125,11 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	}
 
 	var sortedStakers []uint32
-
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client)
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return err
+	}
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return err
 	}

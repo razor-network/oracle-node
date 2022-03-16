@@ -146,7 +146,12 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client)
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -183,7 +188,11 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 		return -1
 	}
 	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client)
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return -1
+	}
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return -1
 	}
@@ -284,8 +293,11 @@ func (*UtilsStruct) GetSortedVotes(client *ethclient.Client, address string, ass
 		return nil, err
 	}
 	var weightedVoteValues []*big.Int
-
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client)
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return nil, err
+	}
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return nil, err
 	}
