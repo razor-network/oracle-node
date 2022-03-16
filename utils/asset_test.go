@@ -6,8 +6,12 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
+	"io/fs"
 	"math/big"
+	"os"
 	"razor/core/types"
+	"razor/path"
+	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
@@ -17,6 +21,7 @@ import (
 func TestAggregate(t *testing.T) {
 	var client *ethclient.Client
 	var previousEpoch uint32
+	var fileInfo fs.FileInfo
 
 	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
@@ -36,6 +41,15 @@ func TestAggregate(t *testing.T) {
 		weight                []uint8
 		prevCommitmentData    uint32
 		prevCommitmentDataErr error
+		assetFilePath         string
+		assetFilePathErr      error
+		statErr               error
+		jsonFile              *os.File
+		jsonFileErr           error
+		fileData              []byte
+		fileDataErr           error
+		overrrideJobs         []bindings.StructsJob
+		overrideJobIds        []uint16
 	}
 	tests := []struct {
 		name    string
@@ -51,6 +65,8 @@ func TestAggregate(t *testing.T) {
 				dataToCommit:       []*big.Int{big.NewInt(2)},
 				weight:             []uint8{100},
 				prevCommitmentData: 1,
+				assetFilePath:      "",
+				statErr:            errors.New(""),
 			},
 			want:    big.NewInt(2),
 			wantErr: false,
@@ -63,9 +79,11 @@ func TestAggregate(t *testing.T) {
 				dataToCommit:       []*big.Int{big.NewInt(2)},
 				weight:             []uint8{100},
 				prevCommitmentData: 1,
+				assetFilePath:      "",
+				statErr:            errors.New(""),
 			},
-			want:    big.NewInt(2),
-			wantErr: false,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 3: When there is an error in getting dataToCommit",
@@ -107,6 +125,34 @@ func TestAggregate(t *testing.T) {
 			name: "Test 6: When there is a nil collection",
 			args: args{
 				collection: bindings.StructsCollection{},
+				statErr:    errors.New("file does not exist"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 7: When there is an error in getting asset file path",
+			args: args{
+				assetFilePathErr: errors.New("path error"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 8: When there is an error in opening json file",
+			args: args{
+				assetFilePath: "./razor/assets.json",
+				jsonFileErr:   errors.New("open file error"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 9: When there is an error in reading json file",
+			args: args{
+				assetFilePath: "./razor/assets.json",
+				jsonFile:      &os.File{},
+				fileDataErr:   errors.New("reading file error"),
 			},
 			want:    nil,
 			wantErr: true,
@@ -115,15 +161,25 @@ func TestAggregate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
+			pathUtilsMock := new(pathMocks.PathInterface)
+			osUtilsMock := new(pathMocks.OSInterface)
+			ioUtilsMock := new(mocks.IoutilUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				UtilsInterface:  utilsMock,
+				IoutilInterface: ioUtilsMock,
 			}
+			path.PathUtilsInterface = pathUtilsMock
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
 			utilsMock.On("GetDataToCommitFromJobs", mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
+			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
+			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
+			osUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
+			ioUtilsMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
+			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
 			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection)
 			if (err != nil) != tt.wantErr {
@@ -752,8 +808,8 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				overrideJobData: map[string]*types.StructsJob{},
 				dataToAppend:    big.NewInt(1),
 			},
-			want:    nil,
-			wantErr: true,
+			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
+			wantErr: false,
 		},
 		{
 			name: "Test 4: When there is an error in getting dataToAppend",
@@ -1198,3 +1254,208 @@ func TestGetAssetManagerWithOpts(t *testing.T) {
 		t.Errorf("GetAssetkManagerWithOpts() got assetManager = %v, want %v", gotAssetManager, assetManager)
 	}
 }
+
+func TestGetCustomJobsFromJSONFile(t *testing.T) {
+	type args struct {
+		collection   string
+		jsonFileData string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []bindings.StructsJob
+	}{
+		{
+			name: "Test 1: When collection is present in json file string",
+			args: args{
+				collection:   "ethCollection",
+				jsonFileData: jsonDataString,
+			},
+			want: []bindings.StructsJob{
+				bindings.StructsJob{
+					Url:      "http://127.0.0.1/eth1",
+					Selector: "eth1",
+					Power:    2,
+					Weight:   3,
+				},
+				bindings.StructsJob{
+					Url:      "http://127.0.0.1/eth2",
+					Selector: "eth2",
+					Power:    2,
+					Weight:   2,
+				},
+			},
+		},
+		{
+			name: "Test 2: When collection is not present in json file string",
+			args: args{
+				collection:   "btcCollection",
+				jsonFileData: jsonDataString,
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetCustomJobsFromJSONFile(tt.args.collection, tt.args.jsonFileData)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetCustomJobsFromJSONFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertCustomJobToStructJob(t *testing.T) {
+	type args struct {
+		customJob types.CustomJob
+	}
+	tests := []struct {
+		name string
+		args args
+		want bindings.StructsJob
+	}{
+		{
+			name: "Test 1: Converting customJob struct to bindings.Job struct",
+			args: args{
+				customJob: types.CustomJob{
+					URL:    "http://api.coinbase.com/eth2",
+					Power:  3,
+					Weight: 2,
+				},
+			},
+			want: bindings.StructsJob{
+				Url:    "http://api.coinbase.com/eth2",
+				Power:  3,
+				Weight: 2,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ConvertCustomJobToStructJob(tt.args.customJob); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertCustomJobToStructJob() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
+	var client *ethclient.Client
+	ethCollection := bindings.StructsCollection{
+		Active: true, Id: 7, AssetIndex: 1, Power: 2,
+		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollection",
+	}
+
+	type args struct {
+		collection bindings.StructsCollection
+		dataString string
+		job        bindings.StructsJob
+		jobErr     error
+	}
+	tests := []struct {
+		name               string
+		args               args
+		want               []bindings.StructsJob
+		wantOverrideJobIds []uint16
+	}{
+		{
+			name: "Test 1: When officialJobs for collection is present in assets.json",
+			args: args{
+				collection: ethCollection,
+				dataString: jsonDataString,
+				job: bindings.StructsJob{
+					Id: 1,
+				},
+			},
+			want: []bindings.StructsJob{
+				{
+					Id:       1,
+					Url:      "http://kucoin.com/eth1",
+					Selector: "eth1",
+					Power:    2,
+					Weight:   2,
+				},
+			},
+			wantOverrideJobIds: []uint16{1},
+		},
+		{
+			name: "Test 2: When officialJobs for collection is not present in assets.json",
+			args: args{
+				collection: ethCollection,
+				dataString: "",
+				job: bindings.StructsJob{
+					Id: 1,
+				},
+			},
+			want:               nil,
+			wantOverrideJobIds: nil,
+		},
+		{
+			name: "Test 3: When there is an error from GetActiveJob()",
+			args: args{
+				collection: ethCollection,
+				dataString: jsonDataString,
+				jobErr:     errors.New("job error"),
+			},
+			want:               nil,
+			wantOverrideJobIds: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			gotJobs, gotOverrideJobIds := utils.HandleOfficialJobsFromJSONFile(client, tt.args.collection, tt.args.dataString)
+			if !reflect.DeepEqual(gotJobs, tt.want) {
+				t.Errorf("HandleOfficialJobsFromJSONFile() gotJobs = %v, want %v", gotJobs, tt.want)
+			}
+			if !reflect.DeepEqual(gotOverrideJobIds, tt.wantOverrideJobIds) {
+				t.Errorf("HandleOfficialJobsFromJSONFile() gotOverrideJobIds = %v, want %v", gotOverrideJobIds, tt.wantOverrideJobIds)
+			}
+		})
+	}
+}
+
+var jsonDataString = `{
+  "assets": {
+    "collection": {
+      "ethCollection": {
+        "power": 2,
+        "official jobs": {
+          "1": {
+            "URL": "http://kucoin.com/eth1",
+            "selector": "eth1",
+            "power": 2,
+            "weight": 2
+          },
+          "2": {
+            "URL": "http://api.coinbase.com/eth2",
+            "selector": "eth2",
+            "power": 3,
+            "weight": 2
+          }
+        },
+        "custom jobs": [
+          {
+            "URL": "http://127.0.0.1/eth1",
+            "selector": "eth1",
+            "power": 2,
+            "weight": 3
+          },
+          {
+            "URL": "http://127.0.0.1/eth2",
+            "selector": "eth2",
+            "power": 2,
+            "weight": 2
+          },
+        ]
+      }
+    }
+  }
+}`

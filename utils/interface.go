@@ -123,6 +123,7 @@ type Utils interface {
 	GetActiveAssetIds(*ethclient.Client) ([]uint16, error)
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
+	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
 	GetDataFromXHTML(string, string) (string, error)
 	ConnectToClient(string) *ethclient.Client
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)

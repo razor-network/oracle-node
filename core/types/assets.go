@@ -44,3 +44,10 @@ type StructsJob struct {
 	Selector     string `json:"selector"`
 	Url          string `json:"url"`
 }
+
+type CustomJob struct {
+	URL      string `json:"URL"`
+	Selector string `json:"selector"`
+	Power    int8   `json:"power"`
+	Weight   uint8  `json:"weight"`
+}

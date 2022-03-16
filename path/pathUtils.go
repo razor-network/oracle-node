@@ -24,6 +24,7 @@ type OSInterface interface {
 	IsNotExist(error) bool
 	Mkdir(string, fs.FileMode) error
 	OpenFile(string, int, fs.FileMode) (*os.File, error)
+	Open(string) (*os.File, error)
 }
 
 type PathUtils struct{}
@@ -47,4 +48,8 @@ func (o OSUtils) Mkdir(name string, perm fs.FileMode) error {
 
 func (o OSUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
 	return os.OpenFile(name, flag, perm)
+}
+
+func (o OSUtils) Open(name string) (*os.File, error) {
+	return os.Open(name)
 }

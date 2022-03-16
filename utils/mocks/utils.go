@@ -1511,6 +1511,31 @@ func (_m *Utils) GetWithdrawReleasePeriod(_a0 *ethclient.Client) (uint8, error) 
 	return r0, r1
 }
 
+// HandleOfficialJobsFromJSONFile provides a mock function with given fields: client, collection, dataString
+func (_m *Utils) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16) {
+	ret := _m.Called(client, collection, dataString)
+
+	var r0 []bindings.StructsJob
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string) []bindings.StructsJob); ok {
+		r0 = rf(client, collection, dataString)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]bindings.StructsJob)
+		}
+	}
+
+	var r1 []uint16
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsCollection, string) []uint16); ok {
+		r1 = rf(client, collection, dataString)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]uint16)
+		}
+	}
+
+	return r0, r1
+}
+
 // IncreaseGasLimitValue provides a mock function with given fields: _a0, _a1, _a2
 func (_m *Utils) IncreaseGasLimitValue(_a0 *ethclient.Client, _a1 uint64, _a2 float32) (uint64, error) {
 	ret := _m.Called(_a0, _a1, _a2)
