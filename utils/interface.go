@@ -146,6 +146,7 @@ type Utils interface {
 	CheckTransactionReceipt(*ethclient.Client, string) int
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
+	SecondsToReadableTime(int) string
 }
 
 type EthClientUtils interface {

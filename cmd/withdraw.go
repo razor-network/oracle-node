@@ -1,19 +1,19 @@
 package cmd
 
 import (
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strconv"
 	"time"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 var withdrawCmd = &cobra.Command{
@@ -99,21 +99,26 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 		return core.NilHash, nil
 	}
 
+	waitFor := big.NewInt(0).Sub(lock.WithdrawAfter, big.NewInt(int64(epoch)))
+	if waitFor.Cmp(big.NewInt(0)) > 0 {
+		timeRemaining := (time.Duration(int64(uint32(waitFor.Int64()))*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second) / (1000000000)
+		value, err := strconv.Atoi(big.NewInt(int64(timeRemaining)).String())
+		if err != nil {
+			return core.NilHash, err
+		}
+		if waitFor.Cmp(big.NewInt(1)) == 0 {
+			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(value))
+		} else {
+			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(value))
+		}
+		return core.NilHash, nil
+	}
+
 	txnArgs.Parameters = []interface{}{stakerId}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	for i := epoch; big.NewInt(int64(i)).Cmp(withdrawBefore) < 0; {
-		if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-			return cmdUtils.Withdraw(client, txnOpts, stakerId)
-		}
-		log.Debug("Waiting for lock period to get over....")
-		// Wait for 30 seconds if lock period isn't over
-		timeUtils.Sleep(30 * time.Second)
-		epoch, err = razorUtils.GetUpdatedEpoch(client)
-		if err != nil {
-			log.Error("Error in fetching epoch")
-			return core.NilHash, err
-		}
+	if big.NewInt(int64(epoch)).Cmp(lock.WithdrawAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
+		return cmdUtils.Withdraw(client, txnOpts, stakerId)
 	}
 	return core.NilHash, nil
 }
