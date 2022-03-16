@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"math"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -102,13 +101,12 @@ func (*UtilsStruct) WithdrawFunds(client *ethclient.Client, account types.Accoun
 
 	waitFor := big.NewInt(0).Sub(lock.WithdrawAfter, big.NewInt(int64(epoch)))
 	if waitFor.Cmp(big.NewInt(0)) > 0 {
-		log.Info("Withdrawal period not reached. Cannot withdraw now, please wait for", waitFor, "epochs!")
 		timeRemaining := (time.Duration(int64(uint32(waitFor.Int64()))*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second) / (1000000000)
 		value, err := strconv.Atoi(big.NewInt(int64(timeRemaining)).String())
 		if err != nil {
 			return core.NilHash, err
 		}
-		log.Info("Time Remaining to withdraw : ", secondsToHuman(value))
+		log.Info("Withdrawal period not reached. Cannot withdraw now, please wait for", waitFor, "epochs!", "(approximately", razorUtils.SecondsToHuman(value), ")")
 		return core.NilHash, nil
 	}
 
@@ -133,48 +131,6 @@ func (*UtilsStruct) Withdraw(client *ethclient.Client, txnOpts *bind.TransactOpt
 	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 
 	return transactionUtils.Hash(txn), nil
-}
-
-func plural(count int, singular string) (result string) {
-	if (count == 1) || (count == 0) {
-		result = strconv.Itoa(count) + " " + singular + " "
-	} else {
-		result = strconv.Itoa(count) + " " + singular + "s "
-	}
-	return
-}
-
-func secondsToHuman(input int) (result string) {
-	years := math.Floor(float64(input) / 60 / 60 / 24 / 7 / 30 / 12)
-	seconds := input % (60 * 60 * 24 * 7 * 30 * 12)
-	months := math.Floor(float64(seconds) / 60 / 60 / 24 / 7 / 30)
-	seconds = input % (60 * 60 * 24 * 7 * 30)
-	weeks := math.Floor(float64(seconds) / 60 / 60 / 24 / 7)
-	seconds = input % (60 * 60 * 24 * 7)
-	days := math.Floor(float64(seconds) / 60 / 60 / 24)
-	seconds = input % (60 * 60 * 24)
-	hours := math.Floor(float64(seconds) / 60 / 60)
-	seconds = input % (60 * 60)
-	minutes := math.Floor(float64(seconds) / 60)
-	seconds = input % 60
-
-	if years > 0 {
-		result = plural(int(years), "year") + plural(int(months), "month") + plural(int(weeks), "week") + plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
-	} else if months > 0 {
-		result = plural(int(months), "month") + plural(int(weeks), "week") + plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
-	} else if weeks > 0 {
-		result = plural(int(weeks), "week") + plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
-	} else if days > 0 {
-		result = plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
-	} else if hours > 0 {
-		result = plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
-	} else if minutes > 0 {
-		result = plural(int(minutes), "minute") + plural(int(seconds), "second")
-	} else {
-		result = plural(int(seconds), "second")
-	}
-
-	return
 }
 
 func init() {

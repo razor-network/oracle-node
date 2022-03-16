@@ -118,7 +118,8 @@ type UtilsInterface interface {
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
-	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
+	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	SecondsToHuman(int) string
 }
 
 type StakeManagerInterface interface {

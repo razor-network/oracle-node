@@ -315,6 +315,10 @@ func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
 	return utilsInterface.AddJobToJSON(s, job)
 }
 
+func (u Utils) SecondsToHuman(time int) string {
+	return utilsInterface.SecondsToHuman(time)
+}
+
 func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
 	return utilsInterface.GetStakerSRZRBalance(client, staker)
 }
