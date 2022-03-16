@@ -8,11 +8,11 @@ import (
 
 func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob, error) {
 	var data = map[string]*types.StructsJob{}
-	file, err := Options.ReadFile(fileName)
+	file, err := IoutilInterface.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
-	err = Options.Unmarshal(file, &data)
+	err = JsonInterface.Unmarshal(file, &data)
 	if err != nil {
 		// If file is blank, do nothing
 		if err.Error() == "unexpected end of JSON input" {
@@ -24,11 +24,11 @@ func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob,
 }
 
 func (*UtilsStruct) WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error {
-	jsonString, err := Options.Marshal(data)
+	jsonString, err := JsonInterface.Marshal(data)
 	if err != nil {
 		return err
 	}
-	err = Options.WriteFile(fileName, jsonString, 0600)
+	err = IoutilInterface.WriteFile(fileName, jsonString, 0600)
 	if err != nil {
 		return err
 	}

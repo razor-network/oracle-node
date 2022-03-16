@@ -26,12 +26,12 @@ func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 			if response.StatusCode != 200 {
 				return errors.New("unable to reach API")
 			}
-			body, err = Options.ReadAll(response.Body)
+			body, err = IoutilInterface.ReadAll(response.Body)
 			if err != nil {
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}

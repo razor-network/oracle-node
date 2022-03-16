@@ -24,13 +24,13 @@ func (*UtilsStruct) GetStakerId(client *ethclient.Client, address string) (uint3
 	)
 	stakerErr = retry.Do(
 		func() error {
-			stakerId, stakerErr = Options.GetStakerId(client, &callOpts, common.HexToAddress(address))
+			stakerId, stakerErr = StakeManagerInterface.GetStakerId(client, &callOpts, common.HexToAddress(address))
 			if stakerErr != nil {
 				log.Error("Error in fetching staker id.... Retrying")
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return 0, stakerErr
 	}
@@ -50,7 +50,7 @@ func (*UtilsStruct) GetStake(client *ethclient.Client, stakerId uint32) (*big.In
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return nil, stakerErr
 	}
@@ -65,13 +65,13 @@ func (*UtilsStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindin
 	)
 	stakerErr = retry.Do(
 		func() error {
-			staker, stakerErr = Options.GetStaker(client, &callOpts, stakerId)
+			staker, stakerErr = StakeManagerInterface.GetStaker(client, &callOpts, stakerId)
 			if stakerErr != nil {
 				log.Error("Error in fetching staker id.... Retrying")
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return bindings.StructsStaker{}, stakerErr
 	}
@@ -86,13 +86,13 @@ func (*UtilsStruct) GetNumberOfStakers(client *ethclient.Client) (uint32, error)
 	)
 	stakerErr = retry.Do(
 		func() error {
-			numStakers, stakerErr = Options.GetNumStakers(client, &callOpts)
+			numStakers, stakerErr = StakeManagerInterface.GetNumStakers(client, &callOpts)
 			if stakerErr != nil {
 				log.Error("Error in fetching number of stakers.... Retrying")
 				return stakerErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if stakerErr != nil {
 		return 0, stakerErr
 	}
@@ -111,13 +111,13 @@ func (*UtilsStruct) GetLock(client *ethclient.Client, address string, stakerId u
 	)
 	lockErr = retry.Do(
 		func() error {
-			locks, lockErr = Options.Locks(client, &callOpts, common.HexToAddress(address), staker.TokenAddress)
+			locks, lockErr = StakeManagerInterface.Locks(client, &callOpts, common.HexToAddress(address), staker.TokenAddress)
 			if lockErr != nil {
 				log.Error("Error in fetching locks.... Retrying")
 				return lockErr
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if lockErr != nil {
 		return types.Locks{}, lockErr
 	}
@@ -132,13 +132,13 @@ func (*UtilsStruct) GetWithdrawReleasePeriod(client *ethclient.Client) (uint8, e
 	)
 	err = retry.Do(
 		func() error {
-			withdrawReleasePeriod, err = Options.WithdrawReleasePeriod(client, &callOpts)
+			withdrawReleasePeriod, err = StakeManagerInterface.WithdrawReleasePeriod(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching withdraw release period.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -152,13 +152,13 @@ func (*UtilsStruct) GetMaxCommission(client *ethclient.Client) (uint8, error) {
 		err           error
 	)
 	err = retry.Do(func() error {
-		maxCommission, err = Options.MaxCommission(client, &callOpts)
+		maxCommission, err = StakeManagerInterface.MaxCommission(client, &callOpts)
 		if err != nil {
 			log.Error("Error in fetching max commission.... Retrying")
 			return err
 		}
 		return nil
-	}, Options.RetryAttempts(core.MaxRetries))
+	}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -172,13 +172,13 @@ func (*UtilsStruct) GetEpochLimitForUpdateCommission(client *ethclient.Client) (
 		err                           error
 	)
 	err = retry.Do(func() error {
-		epochLimitForUpdateCommission, err = Options.EpochLimitForUpdateCommission(client, &callOpts)
+		epochLimitForUpdateCommission, err = StakeManagerInterface.EpochLimitForUpdateCommission(client, &callOpts)
 		if err != nil {
 			log.Error("Error in fetching epoch limit for update commission")
 			return err
 		}
 		return nil
-	}, Options.RetryAttempts(core.MaxRetries))
+	}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -189,7 +189,7 @@ func (*UtilsStruct) GetStakerSRZRBalance(client *ethclient.Client, staker bindin
 	stakedToken := UtilsInterface.GetStakedToken(client, staker.TokenAddress)
 	callOpts := UtilsInterface.GetOptions()
 
-	sRZRBalance, err := Options.BalanceOf(stakedToken, &callOpts, staker.Address)
+	sRZRBalance, err := StakedTokenInterface.BalanceOf(stakedToken, &callOpts, staker.Address)
 	if err != nil {
 		log.Error("Error in getting sRZRBalance: ", err)
 		return nil, err

@@ -10,7 +10,7 @@ import (
 )
 
 func (*UtilsStruct) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
-	coinContract, err := Options.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
+	coinContract, err := BindingsInterface.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func (*UtilsStruct) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 }
 
 func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
-	stakeManagerContract, err := Options.NewStakeManager(common.HexToAddress(core.StakeManagerAddress), client)
+	stakeManagerContract, err := BindingsInterface.NewStakeManager(common.HexToAddress(core.StakeManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeMan
 }
 
 func (*UtilsStruct) GetAssetManager(client *ethclient.Client) *bindings.AssetManager {
-	assetManager, err := Options.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
+	assetManager, err := BindingsInterface.NewAssetManager(common.HexToAddress(core.AssetManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func (*UtilsStruct) GetAssetManager(client *ethclient.Client) *bindings.AssetMan
 }
 
 func (*UtilsStruct) GetVoteManager(client *ethclient.Client) *bindings.VoteManager {
-	voteManager, err := Options.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
+	voteManager, err := BindingsInterface.NewVoteManager(common.HexToAddress(core.VoteManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func (*UtilsStruct) GetVoteManager(client *ethclient.Client) *bindings.VoteManag
 }
 
 func (*UtilsStruct) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	blockManager, err := Options.NewBlockManager(common.HexToAddress(core.BlockManagerAddress), client)
+	blockManager, err := BindingsInterface.NewBlockManager(common.HexToAddress(core.BlockManagerAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func (*UtilsStruct) GetBlockManager(client *ethclient.Client) *bindings.BlockMan
 }
 
 func (*UtilsStruct) GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
-	stakedTokenContract, err := Options.NewStakedToken(tokenAddress, client)
+	stakedTokenContract, err := BindingsInterface.NewStakedToken(tokenAddress, client)
 	if err != nil {
 		log.Fatal(err)
 	}

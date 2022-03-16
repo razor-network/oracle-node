@@ -178,6 +178,7 @@ func secondsToHuman(input int) (result string) {
 }
 
 func init() {
+
 	rootCmd.AddCommand(withdrawCmd)
 
 	var (
