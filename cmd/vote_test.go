@@ -1316,17 +1316,15 @@ func TestGetLastProposedEpoch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
-			optionsMock := new(Mocks.OptionUtils)
 			abiMock := new(mocks.AbiInterface)
 			utilsPkgMock := new(Mocks.Utils)
+			abiUtilsMock := new(Mocks.ABIUtils)
 
-			razorUtils = utilsMock
 			abiUtils = abiMock
-			utils.Options = optionsMock
 			utils.UtilsInterface = utilsPkgMock
+			utils.ABIInterface = abiUtilsMock
 
-			optionsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
 

@@ -21,13 +21,13 @@ func (*UtilsStruct) GetNumberOfProposedBlocks(client *ethclient.Client, epoch ui
 	)
 	err = retry.Do(
 		func() error {
-			numProposedBlocks, err = Options.GetNumProposedBlocks(client, &callOpts, epoch)
+			numProposedBlocks, err = BlockManagerInterface.GetNumProposedBlocks(client, &callOpts, epoch)
 			if err != nil {
 				log.Error("Error in fetching numProposedBlocks.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -42,13 +42,13 @@ func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, pro
 	)
 	err = retry.Do(
 		func() error {
-			proposedBlock, err = Options.GetProposedBlock(client, &callOpts, epoch, proposedBlockId)
+			proposedBlock, err = BlockManagerInterface.GetProposedBlock(client, &callOpts, epoch, proposedBlockId)
 			if err != nil {
 				log.Error("Error in fetching proposed block.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
@@ -63,13 +63,13 @@ func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, a
 	)
 	err = retry.Do(
 		func() error {
-			block, err = Options.GetBlock(client, &callOpts, epoch)
+			block, err = BlockManagerInterface.GetBlock(client, &callOpts, epoch)
 			if err != nil {
 				log.Error("Error in fetching proposed block.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -84,13 +84,13 @@ func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error
 	)
 	err = retry.Do(
 		func() error {
-			minStake, err = Options.MinStake(client, &callOpts)
+			minStake, err = BlockManagerInterface.MinStake(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching minimum stake amount.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -105,13 +105,13 @@ func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	)
 	err = retry.Do(
 		func() error {
-			maxAltBlocks, err = Options.MaxAltBlocks(client, &callOpts)
+			maxAltBlocks, err = BlockManagerInterface.MaxAltBlocks(client, &callOpts)
 			if err != nil {
 				log.Error("Error in fetching max alt blocks.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -126,13 +126,13 @@ func (*UtilsStruct) GetSortedProposedBlockId(client *ethclient.Client, epoch uin
 	)
 	err = retry.Do(
 		func() error {
-			sortedProposedBlockId, err = Options.SortedProposedBlockIds(client, &callOpts, epoch, index)
+			sortedProposedBlockId, err = BlockManagerInterface.SortedProposedBlockIds(client, &callOpts, epoch, index)
 			if err != nil {
 				log.Error("Error in fetching sorted proposed blockId.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
