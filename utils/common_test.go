@@ -101,12 +101,10 @@ func TestCalculateBlockTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 			clientMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:         optionsMock,
 				UtilsInterface:  utilsMock,
 				ClientInterface: clientMock,
 			}
@@ -855,11 +853,9 @@ func TestAssignStakerId(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)

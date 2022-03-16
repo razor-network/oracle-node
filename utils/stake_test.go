@@ -2,16 +2,17 @@ package utils
 
 import (
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetEpochLimitForUpdateCommission(t *testing.T) {
@@ -47,18 +48,20 @@ func TestGetEpochLimitForUpdateCommission(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("EpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("EpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetEpochLimitForUpdateCommission(client)
 			if (err != nil) != tt.wantErr {
@@ -121,18 +124,20 @@ func TestGetLock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
-			optionsMock.On("Locks", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.AnythingOfType("uint8")).Return(tt.args.locks, tt.args.locksErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("Locks", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.AnythingOfType("uint8")).Return(tt.args.locks, tt.args.locksErr)
 
 			got, err := utils.GetLock(client, address, stakerId, lockType)
 			if (err != nil) != tt.wantErr {
@@ -178,17 +183,19 @@ func TestGetMaxCommission(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("MaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("MaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetMaxCommission(client)
 			if (err != nil) != tt.wantErr {
@@ -234,17 +241,19 @@ func TestGetNumberOfStakers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("GetNumStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numStakers, tt.args.numStakersErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("GetNumStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numStakers, tt.args.numStakersErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumberOfStakers(client)
 			if (err != nil) != tt.wantErr {
@@ -291,17 +300,17 @@ func TestGetStake(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
+				RetryInterface: retryMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetStake(client, stakerId)
 			if (err != nil) != tt.wantErr {
@@ -348,17 +357,19 @@ func TestGetStaker(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetStaker(client, stakerId)
 			if (err != nil) != tt.wantErr {
@@ -405,17 +416,19 @@ func TestGetStakerId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetStakerId(client, account)
 			if (err != nil) != tt.wantErr {
@@ -461,17 +474,19 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
+			stakeManagerMock := new(mocks.StakeManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options:        optionsMock,
-				UtilsInterface: utilsMock,
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				StakeManagerInterface: stakeManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("WithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
-			optionsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			stakeManagerMock.On("WithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetWithdrawInitiationPeriod(client)
 			if (err != nil) != tt.wantErr {
@@ -548,15 +563,15 @@ func TestGetStakerSRZRBalance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
-			optionsMock := new(mocks.OptionUtils)
+			stakedTokenMock := new(mocks.StakedTokenUtils)
 
 			utilsMock.On("GetStakedToken", mock.Anything, mock.Anything).Return(stakedToken)
 			utilsMock.On("GetOptions").Return(callOpts)
-			optionsMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
+			stakedTokenMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
 
 			utils := StartRazor(OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-				Options:        optionsMock,
+				UtilsInterface:       utilsMock,
+				StakedTokenInterface: stakedTokenMock,
 			})
 
 			got, err := utils.GetStakerSRZRBalance(client, staker)

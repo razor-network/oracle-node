@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func ConvertToNumber(num interface{}) (*big.Float, error) {
+func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	if num == nil {
 		return big.NewFloat(0), errors.New("no data provided")
 	}

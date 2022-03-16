@@ -2,12 +2,13 @@ package utils
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stretchr/testify/mock"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetStakeManager(t *testing.T) {
@@ -43,14 +44,14 @@ func TestGetStakeManager(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			bindingsMock := new(mocks.BindingsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				BindingsInterface: bindingsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewStakeManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stakeManager, tt.args.stakeManagerErr)
+			bindingsMock.On("NewStakeManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stakeManager, tt.args.stakeManagerErr)
 
 			fatal = false
 			utils.GetStakeManager(client)
@@ -96,14 +97,14 @@ func TestGetStakedToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			bindingsMock := new(mocks.BindingsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				BindingsInterface: bindingsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewStakedToken", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stakedToken, tt.args.stakedTokenErr)
+			bindingsMock.On("NewStakedToken", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stakedToken, tt.args.stakedTokenErr)
 
 			fatal = false
 			utils.GetStakedToken(client, address)
@@ -148,14 +149,14 @@ func TestGetTokenManager(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			bindingsMock := new(mocks.BindingsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				BindingsInterface: bindingsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewRAZOR", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.tokenManager, tt.args.tokenManagerErr)
+			bindingsMock.On("NewRAZOR", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.tokenManager, tt.args.tokenManagerErr)
 
 			fatal = false
 			utils.GetTokenManager(client)
@@ -200,14 +201,14 @@ func TestGetAssetManager(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			bindingsMock := new(mocks.BindingsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				BindingsInterface: bindingsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewCollectionManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.assetManager, tt.args.assetManagerErr)
+			bindingsMock.On("NewCollectionManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.assetManager, tt.args.assetManagerErr)
 
 			fatal = false
 			utils.GetCollectionManager(client)
@@ -252,14 +253,14 @@ func TestGetBlockManager(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			bindingsMock := new(mocks.BindingsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				BindingsInterface: bindingsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewBlockManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockManager, tt.args.blockManagerErr)
+			bindingsMock.On("NewBlockManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockManager, tt.args.blockManagerErr)
 
 			fatal = false
 			utils.GetBlockManager(client)
@@ -304,14 +305,14 @@ func TestGetVoteManager(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			bindingsMock := new(mocks.BindingsUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				BindingsInterface: bindingsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("NewVoteManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.voteManager, tt.args.voteManagerErr)
+			bindingsMock.On("NewVoteManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.voteManager, tt.args.voteManagerErr)
 
 			fatal = false
 			utils.GetVoteManager(client)

@@ -62,15 +62,17 @@ func TestReadJSONData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			jsonMock := new(mocks.JsonUtils)
+			ioutilMock := new(mocks.IoutilUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				JsonInterface:   jsonMock,
+				IoutilInterface: ioutilMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("ReadFile", mock.AnythingOfType("string")).Return(tt.args.fileData, tt.args.fileErr)
-			optionsMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
+			ioutilMock.On("ReadFile", mock.AnythingOfType("string")).Return(tt.args.fileData, tt.args.fileErr)
+			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
 
 			got, err := utils.ReadJSONData(fileName)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -129,15 +131,17 @@ func TestWriteDataToJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			jsonMock := new(mocks.JsonUtils)
+			ioutilMock := new(mocks.IoutilUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				Options: optionsMock,
+				JsonInterface:   jsonMock,
+				IoutilInterface: ioutilMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("Marshal", mock.Anything).Return(tt.args.jsonString, tt.args.marshalErr)
-			optionsMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
+			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonString, tt.args.marshalErr)
+			ioutilMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
 
 			gotErr := utils.WriteDataToJSON(fileName, data)
 			if gotErr == nil || tt.wantErr == nil {

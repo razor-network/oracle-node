@@ -3,9 +3,10 @@ package utils
 import (
 	"context"
 	"errors"
-	"github.com/ethereum/go-ethereum"
 	"razor/core/types"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -25,9 +26,9 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 }
 
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	defaultPath, err := Options.GetDefaultPath()
+	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	privateKey := Options.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath)
+	privateKey := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath)
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
@@ -35,7 +36,7 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	CheckError("Error in fetching pending nonce: ", err)
 
 	gasPrice := UtilsInterface.GetGasPrice(transactionData.Client, transactionData.Config)
-	txnOpts, err := Options.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
+	txnOpts, err := BindInterface.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
@@ -87,12 +88,12 @@ func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpt
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
-	parsed, err := Options.Parse(strings.NewReader(transactionData.ABI))
+	parsed, err := ABIInterface.Parse(strings.NewReader(transactionData.ABI))
 	if err != nil {
 		log.Error("Error in parsing abi: ", err)
 		return 0, err
 	}
-	inputData, err := Options.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
+	inputData, err := ABIInterface.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
 	if err != nil {
 		log.Error("Error in calculating inputData: ", err)
 		return 0, err

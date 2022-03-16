@@ -28,7 +28,7 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 		return [32]byte{}, err
 	}
 	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
-		return utils.Options.GetSaltFromBlockchain(client)
+		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
 	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexedToBeConfirmed)))
 	previousBlock, err := utils.UtilsInterface.GetProposedBlock(client, previousEpoch, blockId)

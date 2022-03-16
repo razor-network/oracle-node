@@ -115,6 +115,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 }
 
 func init() {
+
 	rootCmd.AddCommand(setDelegationCmd)
 
 	var (

@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/pkg/bindings"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func (*UtilsStruct) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.BlockManager, bind.CallOpts) {
@@ -20,13 +21,13 @@ func (*UtilsStruct) GetNumberOfProposedBlocks(client *ethclient.Client, epoch ui
 	)
 	err = retry.Do(
 		func() error {
-			numProposedBlocks, err = Options.GetNumProposedBlocks(client, epoch)
+			numProposedBlocks, err = BlockManagerInterface.GetNumProposedBlocks(client, epoch)
 			if err != nil {
 				log.Error("Error in fetching numProposedBlocks.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -40,13 +41,13 @@ func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, pro
 	)
 	err = retry.Do(
 		func() error {
-			proposedBlock, err = Options.GetProposedBlock(client, epoch, proposedBlockId)
+			proposedBlock, err = BlockManagerInterface.GetProposedBlock(client, epoch, proposedBlockId)
 			if err != nil {
 				log.Error("Error in fetching proposed block.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
@@ -68,13 +69,13 @@ func (*UtilsStruct) GetBlock(client *ethclient.Client, epoch uint32) (bindings.S
 	)
 	err = retry.Do(
 		func() error {
-			block, err = Options.GetBlock(client, epoch)
+			block, err = BlockManagerInterface.GetBlock(client, epoch)
 			if err != nil {
 				log.Error("Error in fetching proposed block.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
@@ -88,13 +89,13 @@ func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error
 	)
 	err = retry.Do(
 		func() error {
-			minStake, err = Options.MinStake(client)
+			minStake, err = BlockManagerInterface.MinStake(client)
 			if err != nil {
 				log.Error("Error in fetching minimum stake amount.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return nil, err
 	}
@@ -108,13 +109,13 @@ func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	)
 	err = retry.Do(
 		func() error {
-			maxAltBlocks, err = Options.MaxAltBlocks(client)
+			maxAltBlocks, err = BlockManagerInterface.MaxAltBlocks(client)
 			if err != nil {
 				log.Error("Error in fetching max alt blocks.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -128,13 +129,13 @@ func (*UtilsStruct) GetSortedProposedBlockId(client *ethclient.Client, epoch uin
 	)
 	err = retry.Do(
 		func() error {
-			sortedProposedBlockId, err = Options.SortedProposedBlockIds(client, epoch, index)
+			sortedProposedBlockId, err = BlockManagerInterface.SortedProposedBlockIds(client, epoch, index)
 			if err != nil {
 				log.Error("Error in fetching sorted proposed blockId.... Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}
@@ -166,13 +167,13 @@ func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, 
 	)
 	err = retry.Do(
 		func() error {
-			blockIndex, err = Options.GetBlockIndexToBeConfirmed(client)
+			blockIndex, err = BlockManagerInterface.GetBlockIndexToBeConfirmed(client)
 			if err != nil {
 				log.Error("Error in fetching salt....Retrying")
 				return err
 			}
 			return nil
-		}, Options.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
 		return 0, err
 	}

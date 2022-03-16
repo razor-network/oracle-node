@@ -103,7 +103,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 	if err != nil {
 		return nil, err
 	}
-	contractAbi, err := utils.Options.Parse(strings.NewReader(bindings.VoteManagerABI))
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerABI))
 	if err != nil {
 		return nil, err
 	}

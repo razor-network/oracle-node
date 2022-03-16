@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/pflag"
 )
 
-//go:generate mockery --name OptionUtils --output ./mocks/ --case=underscore
 //go:generate mockery --name Utils --output ./mocks/ --case=underscore
 //go:generate mockery --name EthClientUtils --output ./mocks --case=underscore
 //go:generate mockery --name ClientUtils --output ./mocks --case=underscore
@@ -30,8 +29,19 @@ import (
 //go:generate mockery --name OSUtils --output ./mocks --case=underscore
 //go:generate mockery --name BufioUtils --output ./mocks --case=underscore
 //go:generate mockery --name CoinUtils --output ./mocks --case=underscore
+//go:generate mockery --name IoutilUtils --output ./mocks --case=underscore
+//go:generate mockery --name ABIUtils --output ./mocks --case=underscore
+//go:generate mockery --name PathUtils --output ./mocks --case=underscore
+//go:generate mockery --name BindUtils --output ./mocks --case=underscore
+//go:generate mockery --name AccountsUtils --output ./mocks --case=underscore
+//go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name AssetManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name BindingsUtils --output ./mocks --case=underscore
+//go:generate mockery --name JsonUtils --output ./mocks --case=underscore
+//go:generate mockery --name StakedTokenUtils --output ./mocks --case=underscore
+//go:generate mockery --name RetryUtils --output ./mocks --case=underscore
 
-var Options OptionUtils
 var UtilsInterface Utils
 var EthClient EthClientUtils
 var ClientInterface ClientUtils
@@ -39,67 +49,20 @@ var Time TimeUtils
 var OS OSUtils
 var Bufio BufioUtils
 var CoinInterface CoinUtils
+var IoutilInterface IoutilUtils
+var ABIInterface ABIUtils
+var PathInterface PathUtils
+var BindInterface BindUtils
+var AccountsInterface AccountsUtils
+var BlockManagerInterface BlockManagerUtils
+var StakeManagerInterface StakeManagerUtils
+var AssetManagerInterface AssetManagerUtils
+var VoteManagerInterface VoteManagerUtils
+var BindingsInterface BindingsUtils
+var JsonInterface JsonUtils
+var StakedTokenInterface StakedTokenUtils
+var RetryInterface RetryUtils
 var MerkleInterface MerkleTreeInterface
-
-type OptionUtils interface {
-	Parse(io.Reader) (abi.ABI, error)
-	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
-	GetDefaultPath() (string, error)
-	GetJobFilePath() (string, error)
-	GetPrivateKey(string, string, string) *ecdsa.PrivateKey
-	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
-	RetryAttempts(uint) retry.Option
-	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
-	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
-	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
-	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
-	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
-	GetNumProposedBlocks(*ethclient.Client, uint32) (uint8, error)
-	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
-	GetBlock(*ethclient.Client, uint32) (bindings.StructsBlock, error)
-	MinStake(*ethclient.Client) (*big.Int, error)
-	MaxAltBlocks(*ethclient.Client) (uint8, error)
-	SortedProposedBlockIds(*ethclient.Client, uint32, *big.Int) (uint32, error)
-	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
-	GetStakerId(*ethclient.Client, common.Address) (uint32, error)
-	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
-	GetNumStakers(*ethclient.Client) (uint32, error)
-	Locks(*ethclient.Client, common.Address, common.Address, uint8) (types.Locks, error)
-	WithdrawInitiationPeriod(*ethclient.Client) (uint8, error)
-	WithdrawLockPeriod(client *ethclient.Client) (uint8, error)
-	MaxCommission(*ethclient.Client) (uint8, error)
-	EpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
-	Commitments(*ethclient.Client, uint32) (types.Commitment, error)
-	GetVoteValue(*ethclient.Client, uint32, uint32, uint16) (uint32, error)
-	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
-	GetTotalInfluenceRevealed(*ethclient.Client, uint32, uint16) (*big.Int, error)
-	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
-	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
-	ToAssign(*ethclient.Client) (uint16, error)
-	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
-	GetNumCollections(*ethclient.Client) (uint16, error)
-	GetNumJobs(*ethclient.Client) (uint16, error)
-	GetNumActiveCollections(*ethclient.Client) (uint16, error)
-	GetCollection(*ethclient.Client, uint16) (bindings.StructsCollection, error)
-	GetJob(*ethclient.Client, uint16) (bindings.StructsJob, error)
-	GetActiveCollections(*ethclient.Client) ([]uint16, error)
-	GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error)
-	Jobs(*ethclient.Client, uint16) (bindings.StructsJob, error)
-	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
-	ReadAll(io.ReadCloser) ([]byte, error)
-	NewCollectionManager(common.Address, *ethclient.Client) (*bindings.CollectionManager, error)
-	NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error)
-	NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error)
-	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
-	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
-	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
-	ReadFile(filename string) ([]byte, error)
-	Unmarshal(data []byte, v interface{}) error
-	Marshal(v interface{}) ([]byte, error)
-	WriteFile(filename string, data []byte, perm fs.FileMode) error
-	ConvertToNumber(interface{}) (*big.Float, error)
-}
 
 type Utils interface {
 	SuggestGasPriceWithRetry(*ethclient.Client) (*big.Int, error)
@@ -188,6 +151,7 @@ type Utils interface {
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	ConvertToNumber(interface{}) (*big.Float, error)
 }
 
 type EthClientUtils interface {
@@ -198,6 +162,10 @@ type ClientUtils interface {
 	TransactionReceipt(*ethclient.Client, context.Context, common.Hash) (*Types.Receipt, error)
 	BalanceAt(*ethclient.Client, context.Context, common.Address, *big.Int) (*big.Int, error)
 	HeaderByNumber(*ethclient.Client, context.Context, *big.Int) (*Types.Header, error)
+	PendingNonceAt(*ethclient.Client, context.Context, common.Address) (uint64, error)
+	SuggestGasPrice(*ethclient.Client, context.Context) (*big.Int, error)
+	EstimateGas(*ethclient.Client, context.Context, ethereum.CallMsg) (uint64, error)
+	FilterLogs(*ethclient.Client, context.Context, ethereum.FilterQuery) ([]Types.Log, error)
 }
 
 type TimeUtils interface {
@@ -222,8 +190,96 @@ type MerkleTreeInterface interface {
 	GetProofPath(tree [][][]byte, assetId uint16) [][32]byte
 	GetMerkleRoot(tree [][][]byte) [32]byte
 }
+type IoutilUtils interface {
+	ReadAll(io.ReadCloser) ([]byte, error)
+	ReadFile(string) ([]byte, error)
+	WriteFile(string, []byte, fs.FileMode) error
+}
 
-type OptionsStruct struct{}
+type ABIUtils interface {
+	Parse(io.Reader) (abi.ABI, error)
+	Pack(abi.ABI, string, ...interface{}) ([]byte, error)
+}
+
+type PathUtils interface {
+	GetDefaultPath() (string, error)
+	GetJobFilePath() (string, error)
+}
+
+type BindUtils interface {
+	NewKeyedTransactorWithChainID(*ecdsa.PrivateKey, *big.Int) (*bind.TransactOpts, error)
+}
+
+type AccountsUtils interface {
+	GetPrivateKey(string, string, string) *ecdsa.PrivateKey
+}
+
+type BlockManagerUtils interface {
+	GetNumProposedBlocks(*ethclient.Client, uint32) (uint8, error)
+	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
+	GetBlock(*ethclient.Client, uint32) (bindings.StructsBlock, error)
+	MinStake(*ethclient.Client) (*big.Int, error)
+	MaxAltBlocks(*ethclient.Client) (uint8, error)
+	SortedProposedBlockIds(*ethclient.Client, uint32, *big.Int) (uint32, error)
+	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
+}
+
+type StakeManagerUtils interface {
+	GetStakerId(client *ethclient.Client, address common.Address) (uint32, error)
+	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
+	GetNumStakers(*ethclient.Client) (uint32, error)
+	Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (types.Locks, error)
+	MaxCommission(*ethclient.Client) (uint8, error)
+	EpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
+	WithdrawInitiationPeriod(client *ethclient.Client) (uint8, error)
+	WithdrawLockPeriod(client *ethclient.Client) (uint8, error)
+}
+
+type AssetManagerUtils interface {
+	GetNumCollections(client *ethclient.Client) (uint16, error)
+	GetNumJobs(client *ethclient.Client) (uint16, error)
+	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
+	GetJob(client *ethclient.Client, id uint16) (bindings.StructsJob, error)
+	GetCollection(client *ethclient.Client, id uint16) (bindings.StructsCollection, error)
+	GetActiveCollections(client *ethclient.Client) ([]uint16, error)
+	Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error)
+	GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error)
+}
+
+type VoteManagerUtils interface {
+	Commitments(*ethclient.Client, uint32) (types.Commitment, error)
+	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error)
+	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetStakeSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error)
+	GetEpochLastCommitted(*ethclient.Client, uint32) (uint32, error)
+	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
+	ToAssign(client *ethclient.Client) (uint16, error)
+	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
+}
+
+type BindingsUtils interface {
+	NewCollectionManager(common.Address, *ethclient.Client) (*bindings.CollectionManager, error)
+	NewRAZOR(common.Address, *ethclient.Client) (*bindings.RAZOR, error)
+	NewStakeManager(common.Address, *ethclient.Client) (*bindings.StakeManager, error)
+	NewVoteManager(common.Address, *ethclient.Client) (*bindings.VoteManager, error)
+	NewBlockManager(common.Address, *ethclient.Client) (*bindings.BlockManager, error)
+	NewStakedToken(common.Address, *ethclient.Client) (*bindings.StakedToken, error)
+}
+
+type JsonUtils interface {
+	Unmarshal([]byte, interface{}) error
+	Marshal(interface{}) ([]byte, error)
+}
+
+type StakedTokenUtils interface {
+	BalanceOf(*bindings.StakedToken, *bind.CallOpts, common.Address) (*big.Int, error)
+}
+
+type RetryUtils interface {
+	RetryAttempts(uint) retry.Option
+}
+
 type UtilsStruct struct{}
 type EthClientStruct struct{}
 type ClientStruct struct{}
@@ -231,16 +287,40 @@ type TimeStruct struct{}
 type OSStruct struct{}
 type BufioStruct struct{}
 type CoinStruct struct{}
+type IoutilStruct struct{}
+type ABIStruct struct{}
+type PathStruct struct{}
+type BindStruct struct{}
+type AccountsStruct struct{}
+type BlockManagerStruct struct{}
+type StakeManagerStruct struct{}
+type AssetManagerStruct struct{}
+type VoteManagerStruct struct{}
+type BindingsStruct struct{}
+type JsonStruct struct{}
+type StakedTokenStruct struct{}
+type RetryStruct struct{}
 type MerkleTreeStruct struct{}
 
 type OptionsPackageStruct struct {
-	Options             OptionUtils
-	UtilsInterface      Utils
-	EthClient           EthClientUtils
-	ClientInterface     ClientUtils
-	Time                TimeUtils
-	OS                  OSUtils
-	Bufio               BufioUtils
-	CoinInterface       CoinUtils
-	MerkleTreeInterface MerkleTreeStruct
+	UtilsInterface        Utils
+	EthClient             EthClientUtils
+	ClientInterface       ClientUtils
+	Time                  TimeUtils
+	OS                    OSUtils
+	Bufio                 BufioUtils
+	CoinInterface         CoinUtils
+	IoutilInterface       IoutilUtils
+	ABIInterface          ABIUtils
+	PathInterface         PathUtils
+	BindInterface         BindUtils
+	AccountsInterface     AccountsUtils
+	BlockManagerInterface BlockManagerUtils
+	StakeManagerInterface StakeManagerUtils
+	AssetManagerInterface AssetManagerUtils
+	VoteManagerInterface  VoteManagerUtils
+	BindingsInterface     BindingsUtils
+	JsonInterface         JsonUtils
+	StakedTokenInterface  StakedTokenUtils
+	RetryInterface        RetryUtils
 }
