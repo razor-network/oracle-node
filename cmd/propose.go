@@ -51,6 +51,10 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 	log.Debug("Biggest Staker Id: ", biggestStakerId)
 	log.Debugf("Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Randao Hash: %s", biggestStake, staker.Stake, stakerId, numStakers, hex.EncodeToString(randaoHash[:]))
 
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return core.NilHash, err
+	}
 	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
 		StakerId:        stakerId,
@@ -58,7 +62,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, account types.Account, con
 		NumberOfStakers: numStakers,
 		RandaoHash:      randaoHash,
 		Epoch:           epoch,
-	})
+	}, bufferPercent)
 
 	log.Debug("Iteration: ", iteration)
 
@@ -181,17 +185,13 @@ loop:
 	return biggestStake, biggestStakerId, nil
 }
 
-func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer) int {
+func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return -1
 	}
 	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
-	bufferPercent, err := cmdUtils.GetBufferPercent()
-	if err != nil {
-		return -1
-	}
 	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return -1

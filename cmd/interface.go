@@ -263,7 +263,7 @@ type UtilsCmdInterface interface {
 	GetSortedVotes(*ethclient.Client, string, uint16, uint32) ([]*big.Int, error)
 	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
-	GetIteration(*ethclient.Client, types.ElectedProposer) int
+	GetIteration(*ethclient.Client, types.ElectedProposer, int32) int
 	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
 	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
