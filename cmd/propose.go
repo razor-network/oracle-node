@@ -211,24 +211,27 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	voteWeights := make(map[uint32]*big.Int)
 	influenceSum := make(map[uint16]*big.Int)
 	for _, asset := range assignedAsset {
-		if revealedValuesWithIndex[asset.MedianIndex] == nil {
-			revealedValuesWithIndex[asset.MedianIndex] = []uint32{asset.Value}
-		} else {
-			if !utils.Contains(revealedValuesWithIndex[asset.MedianIndex], asset.Value) {
-				revealedValuesWithIndex[asset.MedianIndex] = append(revealedValuesWithIndex[asset.MedianIndex], asset.Value)
+		for _, assetValue := range asset.RevealedValues {
+			if revealedValuesWithIndex[assetValue.LeafId] == nil {
+				revealedValuesWithIndex[assetValue.LeafId] = []uint32{assetValue.Value}
+			} else {
+				if !utils.Contains(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
+					revealedValuesWithIndex[assetValue.LeafId] = append(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value)
+				}
 			}
-		}
-		//Calculate vote weights
-		if voteWeights[asset.Value] == nil {
-			voteWeights[asset.Value] = big.NewInt(0)
-		}
-		voteWeights[asset.Value] = big.NewInt(0).Add(voteWeights[asset.Value], asset.Influence)
+			//Calculate vote weights
+			if voteWeights[assetValue.Value] == nil {
+				voteWeights[assetValue.Value] = big.NewInt(0)
+			}
+			voteWeights[assetValue.Value] = big.NewInt(0).Add(voteWeights[assetValue.Value], asset.Influence)
 
-		//Calculate influence sum
-		if influenceSum[asset.MedianIndex] == nil {
-			influenceSum[asset.MedianIndex] = big.NewInt(0)
+			//Calculate influence sum
+			if influenceSum[assetValue.LeafId] == nil {
+				influenceSum[assetValue.LeafId] = big.NewInt(0)
+			}
+			influenceSum[assetValue.LeafId] = big.NewInt(0).Add(influenceSum[assetValue.LeafId], asset.Influence)
 		}
-		influenceSum[asset.MedianIndex] = big.NewInt(0).Add(influenceSum[asset.MedianIndex], asset.Influence)
+
 	}
 	//sort revealed values
 	for _, element := range revealedValuesWithIndex {
@@ -256,13 +259,12 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 
 	var medians []uint32
 
-	//TODO: Check if 0 is the correct value for collectionId
-	for collectionId := uint16(1); collectionId <= numActiveCollections; collectionId++ {
-		influenceSum := revealedDataMaps.InfluenceSum[collectionId]
+	for leafId := uint16(0); leafId < numActiveCollections; leafId++ {
+		influenceSum := revealedDataMaps.InfluenceSum[leafId]
 		if influenceSum.Cmp(big.NewInt(0)) != 0 {
 			accWeight := big.NewInt(0)
-			for i := 0; i < len(revealedDataMaps.SortedRevealedValues); i++ {
-				revealedValue := revealedDataMaps.SortedRevealedValues[collectionId][i]
+			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
+				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
 				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
 					medians = append(medians, rand.Uint32())
 				} else {

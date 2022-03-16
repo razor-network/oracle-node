@@ -330,6 +330,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 
 	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
 		log.Error(err)
+		return err
 	}
 	log.Debug("Epoch last revealed: ", lastReveal)
 
