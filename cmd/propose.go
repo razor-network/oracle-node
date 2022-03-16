@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/hex"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"math/big"
@@ -156,6 +157,7 @@ loop:
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
+			err = errors.New("state timeout error")
 			break loop
 		default:
 			stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
@@ -167,6 +169,9 @@ loop:
 				biggestStakerId = uint32(i)
 			}
 		}
+	}
+	if err != nil {
+		return nil, 0, err
 	}
 	return biggestStake, biggestStakerId, nil
 }
@@ -291,6 +296,7 @@ loop:
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
+			err = errors.New("state timeout error")
 			break loop
 		default:
 			epochLastRevealed, err := razorUtils.GetEpochLastRevealed(client, uint32(i))
@@ -313,6 +319,9 @@ loop:
 				weightedVoteValues = append(weightedVoteValues, weightedVote)
 			}
 		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	sortutil.BigIntSlice.Sort(weightedVoteValues)

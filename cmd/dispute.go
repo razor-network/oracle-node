@@ -137,6 +137,7 @@ loop:
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
+			err = errors.New("dispute state timeout")
 			break loop
 		default:
 			votes, err := razorUtils.GetVotes(client, uint32(i))
@@ -149,6 +150,9 @@ loop:
 		}
 	}
 
+	if err != nil {
+		return err
+	}
 	log.Debugf("Epoch: %d, StakerId's who voted: %d", epoch, sortedStakers)
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:         client,

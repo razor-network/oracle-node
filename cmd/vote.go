@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -395,6 +396,7 @@ loop:
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
+			err = errors.New("propose state timeout")
 			break loop
 		default:
 			data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
@@ -406,6 +408,9 @@ loop:
 				epochLastProposed = data[0].(uint32)
 			}
 		}
+	}
+	if err != nil {
+		return 0, err
 	}
 	return epochLastProposed, nil
 }
