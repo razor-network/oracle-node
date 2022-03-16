@@ -36,6 +36,13 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
 
+	log.Debugf("Revealing vote for epoch: %d secret: %s  commitAccount: %s, treeRevealData: %t",
+		epoch,
+		"0x"+common.Bytes2Hex(secret),
+		account.Address,
+		treeRevealData)
+	log.Info("Revealing votes...")
+
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
@@ -47,12 +54,6 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, treeRevealData, secretBytes32},
 	})
-
-	log.Debugf("Revealing vote for epoch: %d secret: %s  commitAccount: %s",
-		epoch,
-		"0x"+common.Bytes2Hex(secret),
-		account.Address)
-	log.Info("Revealing votes...")
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secretBytes32)
 	if err != nil {
 		log.Error(err)

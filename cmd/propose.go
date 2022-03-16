@@ -113,6 +113,13 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 
 	log.Debugf("Medians: %d", medians)
 
+	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
+	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
+	log.Info("Proposing block...")
+	ids, err := razorUtils.GetActiveCollectionIds(client)
+	if err != nil {
+		return core.NilHash, err
+	}
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
@@ -122,17 +129,8 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		ContractAddress: core.BlockManagerAddress,
 		ABI:             bindings.BlockManagerABI,
 		MethodName:      "propose",
-		Parameters:      []interface{}{epoch, medians, big.NewInt(int64(iteration)), biggestStakerId},
+		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})
-
-	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
-	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
-	log.Info("Proposing block...")
-	//TODO: Check if this is correct for ids
-	ids, err := razorUtils.GetActiveCollectionIds(client)
-	if err != nil {
-		return core.NilHash, err
-	}
 
 	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
