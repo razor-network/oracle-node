@@ -220,6 +220,5 @@ func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
 func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	sum := big.NewInt(0).SetBytes(prngHashes)
 	maxBigInt := big.NewInt(int64(max))
-	log.Debugf("Sum: %d", sum)
 	return sum.Mod(sum, maxBigInt)
 }

@@ -289,7 +289,6 @@ func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCo
 	if err != nil {
 		return nil, nil, err
 	}
-	log.Debugf("SEED: %s", hex.EncodeToString(seed))
 	for i := 0; i < int(toAssign); i++ {
 		assigned := UtilsInterface.Prng(uint32(numActiveCollections), solsha3.SoliditySHA3([]string{"bytes32", "uint256"}, []interface{}{"0x" + hex.EncodeToString(seed), big.NewInt(int64(i))}))
 		assignedCollections[int(assigned.Int64())] = true
