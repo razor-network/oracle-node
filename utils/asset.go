@@ -114,12 +114,12 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 
 func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
 	var (
-		activeAssetIds []uint16
-		err            error
+		activeCollectionIds []uint16
+		err                 error
 	)
 	err = retry.Do(
 		func() error {
-			activeAssetIds, err = AssetManagerInterface.GetActiveCollections(client)
+			activeCollectionIds, err = AssetManagerInterface.GetActiveCollections(client)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -129,7 +129,7 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	if err != nil {
 		return nil, err
 	}
-	return activeAssetIds, nil
+	return activeCollectionIds, nil
 }
 
 func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {

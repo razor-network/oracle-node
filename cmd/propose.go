@@ -15,7 +15,10 @@ import (
 	"sort"
 )
 
-var _mediansData []*big.Int
+var (
+	_mediansData           []*big.Int
+	_revealedCollectionIds []uint16
+)
 
 // Index reveal events of staker's
 // Reveal Event would have two things, activeCollectionIndex/medianIndex and values
@@ -90,13 +93,14 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
+	medians, ids, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
 
 	_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+	_revealedCollectionIds = ids
 
 	log.Debug("Saving median data for recovery")
 	fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
@@ -116,7 +120,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
-	ids, err := razorUtils.GetActiveCollectionIds(client)
+
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -244,22 +248,26 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	}, nil
 }
 
-func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, error) {
+func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
+	activeCollections, err := razorUtils.GetActiveCollections(client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var medians []uint32
+	var (
+		medians                []uint32
+		idsRevealedInThisEpoch []uint16
+	)
 
-	for leafId := uint16(0); leafId < numActiveCollections; leafId++ {
+	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
 		influenceSum := revealedDataMaps.InfluenceSum[leafId]
 		if influenceSum.Cmp(big.NewInt(0)) != 0 {
+			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
 			accWeight := big.NewInt(0)
 			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
 				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
@@ -274,7 +282,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 			}
 		}
 	}
-	return medians, nil
+	return medians, idsRevealedInThisEpoch, nil
 }
 
 func (*UtilsStruct) GetMedianDataFileName(address string) (string, error) {

@@ -250,7 +250,7 @@ func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int 
 	return utils.ConvertUint32ArrayToBigIntArray(uint32Array)
 }
 
-func (u Utils) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
+func (u Utils) GetActiveCollections(client *ethclient.Client) ([]uint16, error) {
 	return utilsInterface.GetActiveCollectionIds(client)
 }
 
@@ -423,6 +423,66 @@ func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *e
 		txn, err = blockManager.DisputeBiggestStakeProposed(opts, epoch, blockIndex, correctBiggestStakerId)
 		if err != nil {
 			log.Error("Error in disputing biggest influence proposed.. Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeCollectionIdShouldBeAbsent(opts, epoch, blockIndex, id, positionOfCollectionInBlock)
+		if err != nil {
+			log.Error("Error in disputing collection id should be absent... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeCollectionIdShouldBePresent(opts, epoch, blockIndex, id)
+		if err != nil {
+			log.Error("Error in disputing collection id should be present... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtils) DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*Types.Transaction, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeOnOrderOfIds(opts, epoch, blockIndex, index0, index1)
+		if err != nil {
+			log.Error("Error in disputing order of ids proposed... Retrying")
 			return err
 		}
 		return nil

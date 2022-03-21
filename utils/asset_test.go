@@ -158,7 +158,7 @@ func TestGetActiveCollectionIds(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetActiveCollectionIds() executes successfully",
+			name: "Test 1: When GetActiveCollections() executes successfully",
 			args: args{
 				activeAssetIds: []uint16{1, 2},
 			},
@@ -193,11 +193,11 @@ func TestGetActiveCollectionIds(t *testing.T) {
 
 			got, err := utils.GetActiveCollectionIds(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetActiveCollectionIds() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetActiveCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetActiveCollectionIds() got = %v, want %v", got, tt.want)
+				t.Errorf("GetActiveCollections() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -470,7 +470,6 @@ func TestGetAllCollections(t *testing.T) {
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
-				Options:        optionsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
@@ -809,7 +808,6 @@ func TestGetJobs(t *testing.T) {
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
-				Options:        optionsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 

@@ -218,17 +218,15 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 3:
-		//TODO: Remove this
-		break
 		if lastVerification >= epoch {
 			break
 		}
-		lastVerification = epoch
 		err := cmdUtils.HandleDispute(client, config, account, epoch, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
+		lastVerification = epoch
 	case 4:
 		//if lastVerification == epoch && blockConfirmed < epoch {
 		txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
