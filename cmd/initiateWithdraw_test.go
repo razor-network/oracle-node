@@ -5,17 +5,18 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/cmd/mocks"
+	"razor/core"
+	"razor/core/types"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/cmd/mocks"
-	"razor/core"
-	"razor/core/types"
-	"testing"
 )
 
 func TestWithdrawFunds(t *testing.T) {
@@ -26,6 +27,7 @@ func TestWithdrawFunds(t *testing.T) {
 	var account types.Account
 	var configurations types.Configurations
 	var stakerId uint32
+	var blockTime int64
 
 	type args struct {
 		lock                     types.Locks
@@ -35,8 +37,7 @@ func TestWithdrawFunds(t *testing.T) {
 		txnOpts                  *bind.TransactOpts
 		epoch                    uint32
 		epochErr                 error
-		updatedEpoch             uint32
-		updatedEpochErr          error
+		time                     string
 		withdrawHash             common.Hash
 		withdrawErr              error
 	}
@@ -150,7 +151,26 @@ func TestWithdrawFunds(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 7: When withdraw function is not being called",
+			name: "Test 7: When staker tries to withdraw when withdrawal period has not reached",
+			args: args{
+				lock: types.Locks{
+					WithdrawAfter: big.NewInt(4),
+				},
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    3,
+				epochErr:                 nil,
+				time:                     "10 minutes 0 seconds ",
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When there is an error in executing withdraw function",
 			args: args{
 				lock: types.Locks{
 					WithdrawAfter: big.NewInt(4),
@@ -161,49 +181,10 @@ func TestWithdrawFunds(t *testing.T) {
 				txnOpts:                  txnOpts,
 				epoch:                    5,
 				epochErr:                 nil,
-				withdrawHash:             common.BigToHash(big.NewInt(1)),
-				withdrawErr:              nil,
+				withdrawErr:              errors.New("withdraw error"),
 			},
 			want:    core.NilHash,
-			wantErr: nil,
-		},
-		{
-			name: "Test 8: When there is a need to wait till withdrawAfter and withdraw function executes successfully",
-			args: args{
-				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
-				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    3,
-				epochErr:                 nil,
-				updatedEpoch:             5,
-				withdrawHash:             common.BigToHash(big.NewInt(1)),
-				withdrawErr:              nil,
-			},
-			want:    common.BigToHash(big.NewInt(1)),
-			wantErr: nil,
-		},
-		{
-			name: "Test 9: When there is a need to wait till withdrawAfter but there is an error in getting updated Epoch ",
-			args: args{
-				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
-				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    3,
-				epochErr:                 nil,
-				updatedEpochErr:          errors.New("updatedEpoch error"),
-				withdrawHash:             common.BigToHash(big.NewInt(1)),
-				withdrawErr:              nil,
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("updatedEpoch error"),
+			wantErr: errors.New("withdraw error"),
 		},
 	}
 	for _, tt := range tests {
@@ -212,21 +193,19 @@ func TestWithdrawFunds(t *testing.T) {
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
-			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			cmdUtils = cmdUtilsMock
 			transactionUtils = transactionUtilsMock
-			timeUtils = timeMock
 
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetWithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetUpdatedEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.updatedEpoch, tt.args.updatedEpochErr)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
-			timeMock.On("Sleep", mock.Anything).Return()
+			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
+			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 
 			utils := &UtilsStruct{}
 			got, err := utils.HandleUnstakeLock(client, account, configurations, stakerId)

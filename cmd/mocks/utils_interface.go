@@ -966,13 +966,13 @@ func (_m *UtilsInterface) GetStakerId(_a0 *ethclient.Client, _a1 string) (uint32
 	return r0, r1
 }
 
-// GetStakerSRZRBalance provides a mock function with given fields: client, staker
-func (_m *UtilsInterface) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
-	ret := _m.Called(client, staker)
+// GetStakerSRZRBalance provides a mock function with given fields: _a0, _a1
+func (_m *UtilsInterface) GetStakerSRZRBalance(_a0 *ethclient.Client, _a1 bindings.StructsStaker) (*big.Int, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsStaker) *big.Int); ok {
-		r0 = rf(client, staker)
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -981,7 +981,7 @@ func (_m *UtilsInterface) GetStakerSRZRBalance(client *ethclient.Client, staker 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsStaker) error); ok {
-		r1 = rf(client, staker)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1062,27 +1062,6 @@ func (_m *UtilsInterface) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32, error) 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetUpdatedEpoch provides a mock function with given fields: _a0
-func (_m *UtilsInterface) GetUpdatedEpoch(_a0 *ethclient.Client) (uint32, error) {
-	ret := _m.Called(_a0)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
@@ -1235,6 +1214,20 @@ func (_m *UtilsInterface) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int)
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SecondsToReadableTime provides a mock function with given fields: _a0
+func (_m *UtilsInterface) SecondsToReadableTime(_a0 int) string {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(int) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

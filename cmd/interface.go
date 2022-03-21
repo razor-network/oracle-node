@@ -55,7 +55,6 @@ var osUtils OSInterface
 type UtilsInterface interface {
 	GetConfigFilePath() (string, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(*ethclient.Client) int64
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
@@ -117,7 +116,8 @@ type UtilsInterface interface {
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
-	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
+	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	SecondsToReadableTime(int) string
 }
 
 type StakeManagerInterface interface {
@@ -290,10 +290,6 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCommission(*pflag.FlagSet)
 	UpdateCommission(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error
 	GetBiggestStakeAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
-	ExecuteOverrideJob(*pflag.FlagSet)
-	OverrideJob(*types.StructsJob) error
-	ExecuteDeleteOverrideJob(*pflag.FlagSet)
-	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
 	GetCommitDataFileName(string) (string, error)

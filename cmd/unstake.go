@@ -123,7 +123,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in un-staking: ", err)
 		return core.NilHash, err
 	}
-	log.Info("Transaction hash: ", txn.Hash())
+	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil
 }
 
