@@ -83,7 +83,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 
 	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
-		waitFor := uint32(epochLimitForUpdateCommission) - (epoch - stakerInfo.EpochCommissionLastUpdated)
+		waitFor := uint32(epochLimitForUpdateCommission) - (epoch - stakerInfo.EpochCommissionLastUpdated) + 1
 		timeRemaining := (time.Duration(int64(waitFor)*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second) / (1000000000)
 		if waitFor == 1 {
 			log.Infof("Cannot update commission now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))

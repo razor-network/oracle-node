@@ -178,6 +178,22 @@ func TestUpdateCommission(t *testing.T) {
 			},
 			wantErr: errors.New("invalid epoch for update"),
 		},
+		{
+			name: "Test 10: When only one epoch is remaining for update commission",
+			args: args{
+				commission: 10,
+				stakerInfo: bindings.StructsStaker{
+					EpochCommissionLastUpdated: 1,
+				},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 100,
+				epoch:                         100,
+				time:                          "10 minutes 0 second ",
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("invalid epoch for update"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
