@@ -509,3 +509,76 @@ func TestIsMissing(t *testing.T) {
 		})
 	}
 }
+
+func TestIsSorted(t *testing.T) {
+	type args struct {
+		values []uint16
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  bool
+		want1 int
+		want2 int
+	}{
+		{
+			name: "Test1: When the array is sorted",
+			args: args{
+				values: []uint16{1, 2, 3, 4, 6, 8, 10},
+			},
+			want:  true,
+			want1: -1,
+			want2: -1,
+		},
+		{
+			name: "Test2: When the first two elements of the array is unsorted",
+			args: args{
+				values: []uint16{4, 2, 3, 4, 6, 8, 10},
+			},
+			want:  false,
+			want1: 0,
+			want2: 1,
+		},
+		{
+			name: "Test2: When the entire array is unsorted",
+			args: args{
+				values: []uint16{123, 2, 32, 4, 61, 800, 10},
+			},
+			want:  false,
+			want1: 0,
+			want2: 1,
+		},
+		{
+			name: "Test4: When the middle two array elements is unsorted",
+			args: args{
+				values: []uint16{1, 2, 3, 5, 4, 8, 10},
+			},
+			want:  false,
+			want1: 3,
+			want2: 4,
+		},
+		{
+			name: "Test5: When the array empty",
+			args: args{
+				values: nil,
+			},
+			want:  true,
+			want1: -1,
+			want2: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, got2 := IsSorted(tt.args.values)
+			if got != tt.want {
+				t.Errorf("IsSorted() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("IsSorted() got1 = %v, want %v", got1, tt.want1)
+			}
+			if got2 != tt.want2 {
+				t.Errorf("IsSorted() got2 = %v, want %v", got2, tt.want2)
+			}
+		})
+	}
+}

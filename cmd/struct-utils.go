@@ -212,8 +212,6 @@ func (u Utils) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
 	return utilsInterface.GetNumberOfStakers(client)
 }
 
-//TODO: Check direct usage from utils package without implementing it here
-
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
 	return utilsInterface.GetNumberOfProposedBlocks(client, epoch)
 }
@@ -513,8 +511,8 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 	return txn, nil
 }
 
-func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, collectionId uint16, sortedValues []uint32) (*Types.Transaction, error) {
-	return blockManager.GiveSorted(opts, epoch, collectionId, sortedValues)
+func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) (*Types.Transaction, error) {
+	return blockManager.GiveSorted(opts, epoch, leafId, sortedValues)
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error) {

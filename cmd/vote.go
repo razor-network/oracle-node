@@ -221,7 +221,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if lastVerification >= epoch {
 			break
 		}
-		err := cmdUtils.HandleDispute(client, config, account, epoch, rogueData)
+		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break

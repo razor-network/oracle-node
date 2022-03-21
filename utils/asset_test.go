@@ -17,11 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
-
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestAggregate(t *testing.T) {
@@ -1049,18 +1044,18 @@ func TestGetCustomJobsFromJSONFile(t *testing.T) {
 				jsonFileData: jsonDataString,
 			},
 			want: []bindings.StructsJob{
-				bindings.StructsJob{
+				{
 					Url:      "http://127.0.0.1/eth1",
 					Selector: "eth1",
 					Power:    2,
 					Weight:   3,
-				},
-				bindings.StructsJob{
+								},
+				{
 					Url:      "http://127.0.0.1/eth2",
 					Selector: "eth2",
 					Power:    2,
 					Weight:   2,
-				},
+								},
 			},
 		},
 		{
@@ -1119,7 +1114,7 @@ func TestConvertCustomJobToStructJob(t *testing.T) {
 func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 	var client *ethclient.Client
 	ethCollection := bindings.StructsCollection{
-		Active: true, Id: 7, AssetIndex: 1, Power: 2,
+		Active: true, Id: 7, Power: 2,
 		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollection",
 	}
 

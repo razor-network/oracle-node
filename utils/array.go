@@ -76,6 +76,15 @@ func IsSorted(values []uint16) (bool, int, int) {
 	return true, -1, -1
 }
 
+func IndexOf(array []uint32, value uint32) int {
+	for arrayIndex, arrayVal := range array {
+		if arrayVal == value {
+			return arrayIndex
+		}
+	}
+	return -1
+}
+
 func GetDataInBytes(data []*big.Int) [][]byte {
 	if len(data) == 0 {
 		return nil

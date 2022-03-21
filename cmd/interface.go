@@ -146,7 +146,7 @@ type KeystoreInterface interface {
 type BlockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
 	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) (*Types.Transaction, error)
-	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int) (*Types.Transaction, error)
+	FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
 	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
 	DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*Types.Transaction, error)
 	DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
@@ -270,14 +270,16 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCollection(*pflag.FlagSet)
 	UpdateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) (common.Hash, error)
 	InfluencedMedian([]*big.Int, *big.Int) *big.Int
-	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, error)
+	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
 	GetIteration(*ethclient.Client, types.ElectedProposer) int
 	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
-	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, error)
-	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
+	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
+	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
+	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, bindings.StructsBlock, uint16, []uint32) error
+	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
 	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
 	ExecuteExtendLock(*pflag.FlagSet)
 	ExtendUnstakeLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)

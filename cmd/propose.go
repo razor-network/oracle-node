@@ -18,6 +18,7 @@ import (
 var (
 	_mediansData           []*big.Int
 	_revealedCollectionIds []uint16
+	_revealedDataMaps      *types.RevealedDataMaps
 )
 
 // Index reveal events of staker's
@@ -93,7 +94,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	medians, ids, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
+	medians, ids, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
@@ -101,6 +102,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 
 	_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
 	_revealedCollectionIds = ids
+	_revealedDataMaps = revealedDataMaps
 
 	log.Debug("Saving median data for recovery")
 	fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
@@ -233,7 +235,6 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 			}
 			influenceSum[assetValue.LeafId] = big.NewInt(0).Add(influenceSum[assetValue.LeafId], asset.Influence)
 		}
-
 	}
 	//sort revealed values
 	for _, element := range revealedValuesWithIndex {
@@ -248,15 +249,16 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	}, nil
 }
 
-func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, error) {
+func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
+	//revealedDataMaps.SortedRevealedValues
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	activeCollections, err := razorUtils.GetActiveCollections(client)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	var (
@@ -282,7 +284,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 			}
 		}
 	}
-	return medians, idsRevealedInThisEpoch, nil
+	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
 func (*UtilsStruct) GetMedianDataFileName(address string) (string, error) {
