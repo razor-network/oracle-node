@@ -60,10 +60,6 @@ func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return utilsInterface.GetEpoch(client)
 }
 
-func (u Utils) GetUpdatedEpoch(client *ethclient.Client) (uint32, error) {
-	return utilsInterface.GetEpoch(client)
-}
-
 func (u Utils) GetOptions() bind.CallOpts {
 	return utilsInterface.GetOptions()
 }
@@ -312,6 +308,10 @@ func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
 
 func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
 	return utilsInterface.AddJobToJSON(s, job)
+}
+
+func (u Utils) SecondsToReadableTime(time int) string {
+	return utilsInterface.SecondsToReadableTime(time)
 }
 
 func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {

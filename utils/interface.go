@@ -125,6 +125,7 @@ type Utils interface {
 	GetActiveCollectionIds(*ethclient.Client) ([]uint16, error)
 	GetDataFromAPI(string) ([]byte, error)
 	GetDataFromJSON(map[string]interface{}, string) (interface{}, error)
+	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
 	GetDataFromXHTML(string, string) (string, error)
 	ConnectToClient(string) *ethclient.Client
 	FetchBalance(*ethclient.Client, string) (*big.Int, error)
@@ -152,6 +153,7 @@ type Utils interface {
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
+	SecondsToReadableTime(int) string
 }
 
 type EthClientUtils interface {

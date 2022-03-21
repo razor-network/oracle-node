@@ -49,3 +49,10 @@ type AssignedAsset struct {
 	LeafId uint16 `json:"leafId"`
 	Value  uint32 `json:"value"`
 }
+
+type CustomJob struct {
+	URL      string `json:"URL"`
+	Selector string `json:"selector"`
+	Power    int8   `json:"power"`
+	Weight   uint8  `json:"weight"`
+}
