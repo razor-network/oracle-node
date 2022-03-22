@@ -402,7 +402,7 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 }
 
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock := big.NewInt(utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber))
+	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,

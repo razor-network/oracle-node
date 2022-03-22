@@ -224,7 +224,7 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) int64 {
+func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) *big.Int {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Fatalf("Error in fetching block : %s", err)
@@ -243,6 +243,6 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 		return CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
 
 	}
-	return int64(previousBlockNumber)
+	return big.NewInt(int64(previousBlockNumber))
 
 }
