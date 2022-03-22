@@ -6,19 +6,19 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core/types"
+	"razor/utils/mocks"
+	"reflect"
+	"strings"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/accounts"
-	"razor/core/types"
-	"razor/utils/mocks"
-	"reflect"
-	"strings"
-	"testing"
 )
 
 func Test_getGasPrice(t *testing.T) {
@@ -137,7 +137,6 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	accountUtils := accounts.AccountUtilsInterface
 	type args struct {
 		path            string
 		pathErr         error
@@ -286,7 +285,7 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string"), accountUtils).Return(tt.args.privateKey)
+			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey)
 			utilsMock.On("GetPendingNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
 			utilsMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
 			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)

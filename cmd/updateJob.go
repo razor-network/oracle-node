@@ -89,10 +89,10 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
-		ContractAddress: core.AssetManagerAddress,
+		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "updateJob",
 		Parameters:      []interface{}{jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url},
-		ABI:             bindings.AssetManagerABI,
+		ABI:             bindings.CollectionManagerABI,
 	})
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	if err != nil {

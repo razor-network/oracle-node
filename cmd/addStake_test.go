@@ -132,27 +132,29 @@ func TestExecuteStake(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		password     string
-		address      string
-		addressErr   error
-		balance      *big.Int
-		balanceErr   error
-		amount       *big.Int
-		amountErr    error
-		approveTxn   common.Hash
-		approveErr   error
-		stakeTxn     common.Hash
-		stakeErr     error
-		isFlagPassed bool
-		autoVote     bool
-		autoVoteErr  error
-		isRogue      bool
-		isRogueErr   error
-		rogueMode    []string
-		rogueModeErr error
-		voteErr      error
+		config           types.Configurations
+		configErr        error
+		password         string
+		address          string
+		addressErr       error
+		balance          *big.Int
+		balanceErr       error
+		amount           *big.Int
+		amountErr        error
+		approveTxn       common.Hash
+		approveErr       error
+		stakeTxn         common.Hash
+		stakeErr         error
+		isFlagPassed     bool
+		autoVote         bool
+		autoVoteErr      error
+		isRogue          bool
+		isRogueErr       error
+		rogueMode        []string
+		rogueModeErr     error
+		voteErr          error
+		revealedDataMaps types.RevealedDataMaps
+		revealedDataErr  error
 	}
 	tests := []struct {
 		name          string
@@ -170,6 +172,11 @@ func TestExecuteStake(t *testing.T) {
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: false,
+				revealedDataMaps: types.RevealedDataMaps{
+					SortedRevealedValues: nil,
+					VoteWeights:          nil,
+					InfluenceSum:         nil,
+				},
 			},
 			expectedFatal: false,
 		},

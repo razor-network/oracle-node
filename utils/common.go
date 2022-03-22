@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"os"
 	"razor/core"
@@ -207,4 +208,17 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}
 	return int64(latestBlock.Time - lastSecondBlock.Time)
+}
+
+func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
+	salt := solsha3.SoliditySHA3([]string{"uint32", "[]uint32"}, []interface{}{epoch, medians})
+	var saltInBytes32 [32]byte
+	copy(saltInBytes32[:], salt)
+	return saltInBytes32
+}
+
+func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
+	sum := big.NewInt(0).SetBytes(prngHashes)
+	maxBigInt := big.NewInt(int64(max))
+	return sum.Mod(sum, maxBigInt)
 }
