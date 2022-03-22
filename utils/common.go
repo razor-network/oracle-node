@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"time"
 
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/pflag"
 )
 
@@ -212,7 +211,8 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
-	salt := solsha3.SoliditySHA3([]string{"uint32", "[]uint32"}, []interface{}{epoch, medians})
+	salt := solsha3.SoliditySHA3([]string{"uint32", "uint32[]"}, []interface{}{epoch, medians})
+
 	var saltInBytes32 [32]byte
 	copy(saltInBytes32[:], salt)
 	return saltInBytes32
@@ -224,13 +224,13 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength uint64, currentBlockNumber uint64) uint64 {
-	block, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(currentBlockNumber)))
+func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) int64 {
+	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Fatalf("Error in fetching block : %s", err)
 	}
 	current_epoch := block.Time / uint64(core.EpochLength)
-	previousBlockNumber := block.Time - uint64(core.StateLength)
+	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
@@ -240,9 +240,9 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
 	previous_epoch := previousBlockActualTimestamp / uint64(core.EpochLength)
 	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previous_epoch != current_epoch-1 {
-		return CalculateBlockNumberAtEpochBeginning(client, uint64(core.EpochLength), previousBlockNumber)
+		return CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
 
 	}
-	return previousBlockNumber
+	return int64(previousBlockNumber)
 
 }
