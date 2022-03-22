@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"os"
 	"razor/core"
@@ -36,13 +37,13 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	if err != nil {
 		return -1, err
 	}
-	blockNumber := uint64(block.Number.Int64())
+	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
+	if blockTime%(core.StateLength) > upperLimit || blockTime%(core.StateLength) < lowerLimit {
 		return -1, nil
 	}
-	state := blockNumber / core.StateLength
+	state := blockTime / core.StateLength
 	return int64(state) % core.NumberOfStates, nil
 }
 
@@ -138,7 +139,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := latestHeader.Number.Int64() / core.EpochLength
+	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
 	return uint32(epoch), nil
 }
 
@@ -207,4 +208,17 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}
 	return int64(latestBlock.Time - lastSecondBlock.Time)
+}
+
+func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
+	salt := solsha3.SoliditySHA3([]string{"uint32", "[]uint32"}, []interface{}{epoch, medians})
+	var saltInBytes32 [32]byte
+	copy(saltInBytes32[:], salt)
+	return saltInBytes32
+}
+
+func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
+	sum := big.NewInt(0).SetBytes(prngHashes)
+	maxBigInt := big.NewInt(int64(max))
+	return sum.Mod(sum, maxBigInt)
 }

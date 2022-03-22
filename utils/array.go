@@ -14,6 +14,12 @@ func Contains(slice interface{}, val interface{}) bool {
 				return true
 			}
 		}
+	case []uint32:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
+		}
 	case []string:
 		for _, value := range slice {
 			if value == val {

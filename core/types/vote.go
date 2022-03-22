@@ -8,7 +8,7 @@ type ElectedProposer struct {
 	StakerId        uint32
 	BiggestStake    *big.Int
 	NumberOfStakers uint32
-	RandaoHash      [32]byte
+	Salt            [32]byte
 	Epoch           uint32
 }
 
@@ -20,4 +20,21 @@ type Commitment struct {
 type Rogue struct {
 	IsRogue   bool
 	RogueMode []string
+}
+
+type CommitData struct {
+	AssignedCollections    map[int]bool
+	SeqAllottedCollections []*big.Int
+	Leaves                 []*big.Int
+}
+
+type RevealedStruct struct {
+	RevealedValues []AssignedAsset
+	Influence      *big.Int
+}
+
+type RevealedDataMaps struct {
+	SortedRevealedValues map[uint16][]uint32
+	VoteWeights          map[uint32]*big.Int
+	InfluenceSum         map[uint16]*big.Int
 }

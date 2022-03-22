@@ -112,13 +112,13 @@ func (_m *BlockManagerInterface) GiveSorted(_a0 *bindings.BlockManager, _a1 *bin
 	return r0, r1
 }
 
-// Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
-func (_m *BlockManagerInterface) Propose(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 []uint32, _a4 *big.Int, _a5 uint32) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+// Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5, _a6
+func (_m *BlockManagerInterface) Propose(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 []uint16, _a4 []uint32, _a5 *big.Int, _a6 uint32) (*types.Transaction, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) *types.Transaction); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -126,8 +126,8 @@ func (_m *BlockManagerInterface) Propose(_a0 *ethclient.Client, _a1 *bind.Transa
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
 	} else {
 		r1 = ret.Error(1)
 	}

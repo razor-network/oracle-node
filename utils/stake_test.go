@@ -2,16 +2,17 @@ package utils
 
 import (
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetEpochLimitForUpdateCommission(t *testing.T) {
@@ -29,7 +30,7 @@ func TestGetEpochLimitForUpdateCommission(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "When GetEpochLimitForUpdateCommission() exectues successfully",
+			name: "When GetEpochLimitForUpdateCommission() executes successfully",
 			args: args{
 				epochLimitForUpdateCommission: 100,
 			},
@@ -59,7 +60,7 @@ func TestGetEpochLimitForUpdateCommission(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("EpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
+			stakeManagerMock.On("EpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetEpochLimitForUpdateCommission(client)
@@ -75,10 +76,12 @@ func TestGetEpochLimitForUpdateCommission(t *testing.T) {
 }
 
 func TestGetLock(t *testing.T) {
-	var client *ethclient.Client
-	var callOpts bind.CallOpts
-	var address string
-	var stakerId uint32
+	var (
+		client   *ethclient.Client
+		address  string
+		stakerId uint32
+		lockType uint8
+	)
 
 	type args struct {
 		staker    bindings.StructsStaker
@@ -132,12 +135,11 @@ func TestGetLock(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
-			stakeManagerMock.On("Locks", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.Anything, mock.Anything).Return(tt.args.locks, tt.args.locksErr)
+			stakeManagerMock.On("Locks", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.AnythingOfType("uint8")).Return(tt.args.locks, tt.args.locksErr)
 
-			got, err := utils.GetLock(client, address, stakerId)
+			got, err := utils.GetLock(client, address, stakerId, lockType)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLock() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -151,7 +153,6 @@ func TestGetLock(t *testing.T) {
 
 func TestGetMaxCommission(t *testing.T) {
 	var client *ethclient.Client
-	var callOpts bind.CallOpts
 
 	type args struct {
 		maxCommission    uint8
@@ -193,8 +194,7 @@ func TestGetMaxCommission(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("MaxCommission", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
+			stakeManagerMock.On("MaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetMaxCommission(client)
@@ -211,7 +211,6 @@ func TestGetMaxCommission(t *testing.T) {
 
 func TestGetNumberOfStakers(t *testing.T) {
 	var client *ethclient.Client
-	var callOpts bind.CallOpts
 
 	type args struct {
 		numStakers    uint32
@@ -253,8 +252,7 @@ func TestGetNumberOfStakers(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("GetNumStakers", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numStakers, tt.args.numStakersErr)
+			stakeManagerMock.On("GetNumStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numStakers, tt.args.numStakersErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumberOfStakers(client)
@@ -328,7 +326,6 @@ func TestGetStake(t *testing.T) {
 
 func TestGetStaker(t *testing.T) {
 	var client *ethclient.Client
-	var callOpts bind.CallOpts
 	var stakerId uint32
 
 	type args struct {
@@ -371,8 +368,7 @@ func TestGetStaker(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			stakeManagerMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetStaker(client, stakerId)
@@ -389,7 +385,6 @@ func TestGetStaker(t *testing.T) {
 
 func TestGetStakerId(t *testing.T) {
 	var client *ethclient.Client
-	var callOpts bind.CallOpts
 	var account string
 
 	type args struct {
@@ -432,8 +427,7 @@ func TestGetStakerId(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			stakeManagerMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetStakerId(client, account)
@@ -450,7 +444,6 @@ func TestGetStakerId(t *testing.T) {
 
 func TestGetWithdrawReleasePeriod(t *testing.T) {
 	var client *ethclient.Client
-	var callOpts bind.CallOpts
 
 	type args struct {
 		withdrawReleasePeriod    uint8
@@ -463,7 +456,7 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetWithdrawReleasePeriod() executes successfully",
+			name: "Test 1: When GetWithdrawInitiationPeriod() executes successfully",
 			args: args{
 				withdrawReleasePeriod: 5,
 			},
@@ -492,17 +485,16 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("WithdrawReleasePeriod", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			stakeManagerMock.On("WithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetWithdrawReleasePeriod(client)
+			got, err := utils.GetWithdrawInitiationPeriod(client)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetWithdrawReleasePeriod() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetWithdrawInitiationPeriod() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetWithdrawReleasePeriod() got = %v, want %v", got, tt.want)
+				t.Errorf("GetWithdrawInitiationPeriod() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

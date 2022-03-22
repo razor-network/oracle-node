@@ -2,12 +2,13 @@ package utils
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stretchr/testify/mock"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetStakeManager(t *testing.T) {
@@ -171,7 +172,7 @@ func TestGetAssetManager(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		assetManager    *bindings.AssetManager
+		assetManager    *bindings.CollectionManager
 		assetManagerErr error
 	}
 	tests := []struct {
@@ -180,9 +181,9 @@ func TestGetAssetManager(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When GetAssetManager() executes successfully",
+			name: "Test 1: When GetCollectionManager() executes successfully",
 			args: args{
-				assetManager: &bindings.AssetManager{},
+				assetManager: &bindings.CollectionManager{},
 			},
 			expectedFatal: false,
 		},
@@ -207,13 +208,13 @@ func TestGetAssetManager(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			bindingsMock.On("NewAssetManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.assetManager, tt.args.assetManagerErr)
+			bindingsMock.On("NewCollectionManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.assetManager, tt.args.assetManagerErr)
 
 			fatal = false
-			utils.GetAssetManager(client)
+			utils.GetCollectionManager(client)
 
 			if fatal != tt.expectedFatal {
-				t.Error("The GetAssetManager() function didn't execute as expected")
+				t.Error("The GetCollectionManager() function didn't execute as expected")
 			}
 		})
 	}
