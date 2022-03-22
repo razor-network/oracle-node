@@ -279,6 +279,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 					accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue])
 					if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
 						medians = append(medians, revealedValue)
+						break
 					}
 				}
 			}
