@@ -21,7 +21,6 @@ import (
 
 func TestUpdateCommission(t *testing.T) {
 	var client *ethclient.Client
-	var blockTime int64
 	var config = types.Configurations{
 		Provider:      "127.0.0.1",
 		GasMultiplier: 1,
@@ -213,7 +212,6 @@ func TestUpdateCommission(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			utilsMock.On("GetMaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
 			utilsMock.On("GetEpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
-			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			stakeManagerUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionTxn, tt.args.UpdateCommissionErr)
 
