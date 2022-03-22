@@ -689,6 +689,10 @@ func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet)
 	return flagSet.GetStringSlice("rogueMode")
 }
 
+func (flagSetUtils FLagSetUtils) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("logFile")
+}
+
 func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("exposeMetrics")
 }

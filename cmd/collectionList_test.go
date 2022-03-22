@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
 	"razor/core/types"
@@ -86,6 +87,7 @@ func TestGetCollectionList(t *testing.T) {
 func TestExecuteCollectionList(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
+	var flagSet *pflag.FlagSet
 
 	type args struct {
 		config            types.Configurations
@@ -138,6 +140,7 @@ func TestExecuteCollectionList(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
+			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("GetCollectionList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionListErr)
@@ -145,7 +148,7 @@ func TestExecuteCollectionList(t *testing.T) {
 			utils := &UtilsStruct{}
 			fatal = false
 
-			utils.ExecuteCollectionList()
+			utils.ExecuteCollectionList(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteCollectionList function didn't execute as expected")
 			}

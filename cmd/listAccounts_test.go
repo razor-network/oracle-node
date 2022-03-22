@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
 	"reflect"
@@ -87,6 +88,7 @@ func TestListAccounts(t *testing.T) {
 }
 
 func TestExecuteListAccounts(t *testing.T) {
+	var flagSet *pflag.FlagSet
 
 	accountList := []accounts.Account{
 		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
@@ -132,12 +134,13 @@ func TestExecuteListAccounts(t *testing.T) {
 
 			cmdUtils = cmdUtilsMock
 
+			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("ListAccounts").Return(tt.args.allAccounts, tt.args.allAccountsErr)
 
 			utils := &UtilsStruct{}
 			fatal = false
 
-			utils.ExecuteListAccounts()
+			utils.ExecuteListAccounts(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteListAccounts function didn't execute as expected")
 			}

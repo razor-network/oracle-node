@@ -29,6 +29,7 @@ func initialiseExtendLock(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -83,11 +84,13 @@ func init() {
 		Address  string
 		Password string
 		StakerId uint32
+		LogFile  string
 	)
 
 	extendLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	extendLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 	extendLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
+	extendLockCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := extendLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

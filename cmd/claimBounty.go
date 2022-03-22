@@ -22,7 +22,7 @@ var claimBountyCmd = &cobra.Command{
 	Long: `ClaimBounty allows the users who are bountyHunter to redeem their bounty in razor network
 
 Example:
-  ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bountyId 2`,
+  ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bountyId 2 --logFile claimBounty`,
 	Run: initialiseClaimBounty,
 }
 
@@ -31,6 +31,7 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -124,11 +125,13 @@ func init() {
 		Address  string
 		Password string
 		BountyId uint32
+		LogFile  string
 	)
 
 	claimBountyCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	claimBountyCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	claimBountyCmd.Flags().Uint32VarP(&BountyId, "bountyId", "", 0, "bountyId of the bounty hunter")
+	claimBountyCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := claimBountyCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

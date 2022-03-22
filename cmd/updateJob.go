@@ -31,6 +31,7 @@ func initialiseUpdateJob(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -113,6 +114,7 @@ func init() {
 		Weight       uint8
 		Account      string
 		Password     string
+		LogFile      string
 	)
 
 	updateJobCmd.Flags().Uint16VarP(&JobId, "jobId", "", 0, "job id")
@@ -123,6 +125,7 @@ func init() {
 	updateJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight")
 	updateJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	updateJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
+	updateJobCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	jobIdErr := updateJobCmd.MarkFlagRequired("jobId")
 	utils.CheckError("Job Id error: ", jobIdErr)

@@ -13,7 +13,7 @@ var OSUtilsInterface OSInterface
 
 type PathInterface interface {
 	GetDefaultPath() (string, error)
-	GetLogFilePath() (string, error)
+	GetLogFilePath(string) (string, error)
 	GetConfigFilePath() (string, error)
 	GetJobFilePath() (string, error)
 }

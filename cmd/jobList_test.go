@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
 	"razor/core/types"
@@ -89,6 +90,7 @@ func TestGetJobList(t *testing.T) {
 func TestExecuteJobList(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
+	var flagSet *pflag.FlagSet
 
 	type args struct {
 		config     types.Configurations
@@ -141,6 +143,7 @@ func TestExecuteJobList(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
+			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("GetJobList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobListErr)
@@ -148,7 +151,7 @@ func TestExecuteJobList(t *testing.T) {
 			utils := &UtilsStruct{}
 			fatal = false
 
-			utils.ExecuteJobList()
+			utils.ExecuteJobList(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteJobList function didn't execute as expected")
 			}

@@ -180,6 +180,27 @@ func (_m *FlagSetInterface) GetInt8Power(_a0 *pflag.FlagSet) (int8, error) {
 	return r0, r1
 }
 
+// GetLogFileName provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetLogFileName(_a0 *pflag.FlagSet) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRootFloat32GasLimit provides a mock function with given fields:
 func (_m *FlagSetInterface) GetRootFloat32GasLimit() (float32, error) {
 	ret := _m.Called()

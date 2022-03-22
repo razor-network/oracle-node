@@ -19,7 +19,7 @@ var delegateCmd = &cobra.Command{
 	Long: `If a user has Razors with them, and wants to stake them but doesn't want to set up a node, they can use the delegate command.
 
 Example:
-  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
+  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1 --logFile delegateLogs
 `,
 	Run: initialiseDelegate,
 }
@@ -29,6 +29,7 @@ func initialiseDelegate(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -99,6 +100,7 @@ func init() {
 		StakerId uint32
 		Password string
 		Power    string
+		LogFile  string
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
@@ -106,6 +108,7 @@ func init() {
 	delegateCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	delegateCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	delegateCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", valueErr)

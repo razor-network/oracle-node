@@ -30,6 +30,7 @@ func initialiseSetDelegation(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -123,12 +124,14 @@ func init() {
 		Address    string
 		Password   string
 		Commission uint8
+		LogFile    string
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	setDelegationCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
+	setDelegationCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

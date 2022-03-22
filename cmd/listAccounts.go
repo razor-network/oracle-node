@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"razor/utils"
 )
 
@@ -16,10 +17,11 @@ Example:
 }
 
 func initialiseListAccounts(cmd *cobra.Command, args []string) {
-	cmdUtils.ExecuteListAccounts()
+	cmdUtils.ExecuteListAccounts(cmd.Flags())
 }
 
-func (*UtilsStruct) ExecuteListAccounts() {
+func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	allAccounts, err := cmdUtils.ListAccounts()
 	utils.CheckError("ListAccounts error: ", err)
 	log.Info("The available accounts are: ")
@@ -40,4 +42,10 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 
 func init() {
 	rootCmd.AddCommand(listAccountsCmd)
+
+	var (
+		LogFile string
+	)
+
+	listAccountsCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 }

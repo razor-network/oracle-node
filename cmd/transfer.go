@@ -29,6 +29,7 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
 
@@ -97,6 +98,7 @@ func init() {
 		To       string
 		Password string
 		Power    string
+		LogFile  string
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
@@ -104,6 +106,7 @@ func init() {
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	transferCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	transferCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	amountErr := transferCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

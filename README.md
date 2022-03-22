@@ -764,6 +764,21 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
         ]
 ```
 
+### Logs
+
+User can pass a seperate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
+
+```
+$ ./razor addStake --address <address> --value <value> --logFile stakingLogs
+```
+_The logs for above command will be stored in stakingLogs.log file in .razor directory_
+
+```
+$ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id> --logFile delegationLogs
+```
+_The logs for above command will be stored in delegationLogs.log file in .razor directory_
+
+
 ### Contribute to razor-go
 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)

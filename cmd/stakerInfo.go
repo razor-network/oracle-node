@@ -25,6 +25,7 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -76,7 +77,9 @@ func init() {
 
 	var (
 		StakerId uint32
+		LogFile  string
 	)
 
 	stakerInfoCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
+	stakerInfoCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 }

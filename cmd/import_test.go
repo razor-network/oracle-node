@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
 	"testing"
@@ -140,6 +141,7 @@ func TestImportAccount(t *testing.T) {
 }
 
 func TestExecuteImport(t *testing.T) {
+	var flagSet *pflag.FlagSet
 
 	type args struct {
 		account    accounts.Account
@@ -175,13 +177,14 @@ func TestExecuteImport(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			cmdUtilMock := new(mocks.UtilsCmdInterface)
-			cmdUtils = cmdUtilMock
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			cmdUtils = cmdUtilsMock
 
-			cmdUtilMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
+			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			cmdUtilsMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
 
 			utils := &UtilsStruct{}
-			utils.ExecuteImport()
+			utils.ExecuteImport(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The executeImport function didn't execute as expected")
 			}

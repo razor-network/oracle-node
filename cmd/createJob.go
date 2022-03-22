@@ -32,6 +32,7 @@ func initialiseCreateJob(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -113,6 +114,7 @@ func init() {
 		Account      string
 		Password     string
 		Weight       uint8
+		LogFile      string
 	)
 
 	createJobCmd.Flags().StringVarP(&URL, "url", "u", "", "url of job")
@@ -123,6 +125,7 @@ func init() {
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")
 	createJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
 	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
+	createJobCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	urlErr := createJobCmd.MarkFlagRequired("url")
 	utils.CheckError("URL error: ", urlErr)

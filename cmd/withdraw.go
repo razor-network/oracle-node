@@ -32,6 +32,7 @@ func initialiseWithdraw(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteWithdraw(flagSet *pflag.FlagSet) {
+	cmdUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -145,11 +146,13 @@ func init() {
 		Address  string
 		Password string
 		StakerId uint32
+		LogFile  string
 	)
 
 	withdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	withdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 	withdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
+	withdrawCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := withdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
