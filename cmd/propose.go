@@ -268,7 +268,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 
 	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
 		influenceSum := revealedDataMaps.InfluenceSum[leafId]
-		if influenceSum.Cmp(big.NewInt(0)) != 0 {
+		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
 			accWeight := big.NewInt(0)
 			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {

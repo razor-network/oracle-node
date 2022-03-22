@@ -136,5 +136,6 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			revealedData = append(revealedData, consolidatedRevealedData)
 		}
 	}
+	log.Debug(revealedData)
 	return revealedData, nil
 }
