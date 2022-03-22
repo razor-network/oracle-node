@@ -469,29 +469,6 @@ func (_m *UtilsCmdInterface) ExecuteVote(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExtendUnstakeLock provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsCmdInterface) ExtendUnstakeLock(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ExtendLockInput) (common.Hash, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 common.Hash
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) common.Hash); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Hash)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GenerateTreeRevealData provides a mock function with given fields: merkleTree, commitData
 func (_m *UtilsCmdInterface) GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree {
 	ret := _m.Called(merkleTree, commitData)
@@ -1292,6 +1269,29 @@ func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Conf
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *big.Int, types.Rogue) error); ok {
 		r1 = rf(client, config, account, staker, epoch, blockNumber, rogueData)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ResetUnstakeLock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterface) ResetUnstakeLock(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ExtendLockInput) (common.Hash, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) common.Hash); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ExtendLockInput) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}

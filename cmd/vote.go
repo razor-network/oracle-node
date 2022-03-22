@@ -228,27 +228,27 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 		lastVerification = epoch
 	case 4:
-		//if lastVerification == epoch && blockConfirmed < epoch {
-		txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
-			Client:          client,
-			Password:        account.Password,
-			AccountAddress:  account.Address,
-			ChainId:         core.ChainId,
-			Config:          config,
-			ContractAddress: core.BlockManagerAddress,
-			MethodName:      "claimBlockReward",
-			ABI:             bindings.BlockManagerABI,
-		})
+		if lastVerification == epoch && blockConfirmed < epoch {
+			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
+				Client:          client,
+				Password:        account.Password,
+				AccountAddress:  account.Address,
+				ChainId:         core.ChainId,
+				Config:          config,
+				ContractAddress: core.BlockManagerAddress,
+				MethodName:      "claimBlockReward",
+				ABI:             bindings.BlockManagerABI,
+			})
 
-		if err != nil {
-			log.Error("ClaimBlockReward error: ", err)
-			break
+			if err != nil {
+				log.Error("ClaimBlockReward error: ", err)
+				break
+			}
+			if txn != core.NilHash {
+				razorUtils.WaitForBlockCompletion(client, txn.Hex())
+				blockConfirmed = epoch
+			}
 		}
-		if txn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, txn.Hex())
-			blockConfirmed = epoch
-		}
-		//}
 	case -1:
 		if config.WaitTime > 5 {
 			timeUtils.Sleep(5 * time.Second)

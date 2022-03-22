@@ -50,12 +50,12 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 		Password: password,
 		StakerId: stakerId,
 	}
-	txn, err := cmdUtils.ExtendUnstakeLock(client, config, extendLockInput)
+	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStruct) ExtendUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        extendLockInput.Password,
@@ -69,7 +69,7 @@ func (*UtilsStruct) ExtendUnstakeLock(client *ethclient.Client, config types.Con
 	})
 
 	log.Info("Extending lock...")
-	txn, err := stakeManagerUtils.ExtendUnstakeLock(client, txnOpts, extendLockInput.StakerId)
+	txn, err := stakeManagerUtils.ResetUnstakeLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}

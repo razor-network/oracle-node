@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -44,13 +43,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		treeRevealData.Values,
 		common.Bytes2Hex(treeRevealData.Root[:]),
 	)
-	fmt.Printf("Proofs: \n")
-	for _, proof := range treeRevealData.Proofs {
-		for _, bytes := range proof {
-			fmt.Printf("%v\t", common.Bytes2Hex(bytes[:]))
-		}
-		fmt.Printf("\n")
-	}
+
 	log.Info("Revealing votes...")
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{

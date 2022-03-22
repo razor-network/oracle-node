@@ -122,7 +122,7 @@ type UtilsInterface interface {
 
 type StakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
-	ExtendUnstakeLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	ResetUnstakeLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	InitiateWithdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	UnlockWithdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error)
@@ -282,7 +282,7 @@ type UtilsCmdInterface interface {
 	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
 	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
 	ExecuteExtendLock(*pflag.FlagSet)
-	ExtendUnstakeLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)
+	ResetUnstakeLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, uint16) (bool, error)
 	ExecuteModifyAssetStatus(*pflag.FlagSet)
 	ModifyAssetStatus(*ethclient.Client, types.Configurations, types.ModifyAssetInput) (common.Hash, error)

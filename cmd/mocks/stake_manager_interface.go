@@ -68,29 +68,6 @@ func (_m *StakeManagerInterface) Delegate(_a0 *ethclient.Client, _a1 *bind.Trans
 	return r0, r1
 }
 
-// ExtendUnstakeLock provides a mock function with given fields: _a0, _a1, _a2
-func (_m *StakeManagerInterface) ExtendUnstakeLock(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*types.Transaction)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetBountyLock provides a mock function with given fields: _a0, _a1, _a2
 func (_m *StakeManagerInterface) GetBountyLock(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint32) (coretypes.BountyLock, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -158,6 +135,29 @@ func (_m *StakeManagerInterface) InitiateWithdraw(_a0 *ethclient.Client, _a1 *bi
 
 // RedeemBounty provides a mock function with given fields: _a0, _a1, _a2
 func (_m *StakeManagerInterface) RedeemBounty(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32) (*types.Transaction, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32) *types.Transaction); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ResetUnstakeLock provides a mock function with given fields: _a0, _a1, _a2
+func (_m *StakeManagerInterface) ResetUnstakeLock(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32) (*types.Transaction, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *types.Transaction

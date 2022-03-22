@@ -325,9 +325,9 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
-func (stakeManagerUtils StakeManagerUtils) ExtendUnstakeLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ResetUnstakeLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
-	return stakeManager.ExtendUnstakeLock(opts, stakerId)
+	return stakeManager.ResetUnstakeLock(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {

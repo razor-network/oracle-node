@@ -74,12 +74,12 @@ func TestExtendLock(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			stakeManagerUtilsMock.On("ExtendUnstakeLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
+			stakeManagerUtilsMock.On("ResetUnstakeLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.ExtendUnstakeLock(client, config, extendLockInput)
+			got, err := utils.ResetUnstakeLock(client, config, extendLockInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for resetLock function, got = %v, want = %v", got, tt.want)
 			}
@@ -200,7 +200,7 @@ func TestExecuteExtendLock(t *testing.T) {
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
-			cmdUtilsMock.On("ExtendUnstakeLock", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
+			cmdUtilsMock.On("ResetUnstakeLock", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 
 			utils := &UtilsStruct{}
 			fatal = false
