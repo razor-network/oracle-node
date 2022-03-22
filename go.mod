@@ -6,12 +6,12 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.8
-	github.com/getsentry/sentry-go v0.11.0
 	github.com/gocolly/colly v1.2.0
 	github.com/magiconair/properties v1.8.4
 	github.com/manifoldco/promptui v0.8.0
 	github.com/miguelmota/go-solidity-sha3 v0.1.1
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/prometheus/client_golang v1.12.1
 	github.com/razor-network/goInfo v0.0.0-20200404012835-b5f882ee2288
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.1.3
@@ -19,8 +19,8 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954
+	github.com/tidwall/gjson v1.14.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
-	modernc.org/sortutil v1.1.0
 )
 
 require (
@@ -57,7 +57,6 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
@@ -70,7 +69,6 @@ require (
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
-	github.com/tidwall/gjson v1.14.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect

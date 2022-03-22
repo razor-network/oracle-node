@@ -55,7 +55,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	tolerance, err := flagSetUtils.GetUint16Tolerance(flagSet)
+	tolerance, err := flagSetUtils.GetUint32Tolerance(flagSet)
 	utils.CheckError("Error in getting tolerance: ", err)
 
 	collectionInput := types.CreateCollectionInput{
@@ -84,10 +84,10 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 		AccountAddress:  collectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
-		ContractAddress: core.AssetManagerAddress,
+		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "updateCollection",
 		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
-		ABI:             bindings.AssetManagerABI,
+		ABI:             bindings.CollectionManagerABI,
 	})
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {

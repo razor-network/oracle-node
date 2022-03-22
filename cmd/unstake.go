@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -10,6 +9,8 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
@@ -53,14 +54,6 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
 
-	lock, err := razorUtils.GetLock(client, address, stakerId)
-	utils.CheckError("Error in getting lock: ", err)
-
-	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		err = errors.New("existing lock")
-		log.Fatal(err)
-	}
-
 	unstakeInput := types.UnstakeInput{
 		Address:    address,
 		Password:   password,
@@ -68,34 +61,51 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 		StakerId:   stakerId,
 	}
 
-	txn, err := cmdUtils.Unstake(config, client, unstakeInput)
+	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
-	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, txn.String())
+	if txnHash != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, txnHash.String())
 	}
 }
 
 func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
-		Client:          client,
-		Password:        input.Password,
-		AccountAddress:  input.Address,
-		Amount:          input.ValueInWei,
-		ChainId:         core.ChainId,
-		Config:          config,
-		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "unstake",
-		ABI:             bindings.StakeManagerABI,
+		Client:         client,
+		Password:       input.Password,
+		AccountAddress: input.Address,
+		Amount:         input.ValueInWei,
+		ChainId:        core.ChainId,
+		Config:         config,
 	}
 	stakerId := input.StakerId
-	lock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId)
+	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
-		log.Error("Error in getting lock: ", err)
+		log.Error("Error in getting staker: ", err)
+		return core.NilHash, err
+	}
+	approveHash, err := cmdUtils.ApproveUnstake(client, staker, txnArgs)
+	if err != nil {
 		return core.NilHash, err
 	}
 
-	if lock.Amount.Cmp(big.NewInt(0)) != 0 {
-		err := errors.New("existing lock")
+	if approveHash != core.NilHash {
+		razorUtils.WaitForBlockCompletion(client, approveHash.String())
+	}
+
+	log.Info("Approved for unstake!")
+
+	txnArgs.ContractAddress = core.StakeManagerAddress
+	txnArgs.MethodName = "unstake"
+	txnArgs.ABI = bindings.StakeManagerABI
+
+	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
+	if err != nil {
+		log.Error("Error in getting unstakeLock: ", err)
+		return core.NilHash, err
+	}
+
+	if unstakeLock.Amount.Cmp(big.NewInt(0)) != 0 {
+		err := errors.New("existing unstake lock")
 		log.Error(err)
 		return core.NilHash, err
 	}
@@ -117,15 +127,27 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	return transactionUtils.Hash(txn), nil
 }
 
+func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
+	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, staker, txnArgs.Amount)
+	if err != nil {
+		log.Error("Error in approving for unstake")
+		return core.NilHash, err
+	}
+	log.Info("Transaction Hash: ", txn.Hash().String())
+	return txn.Hash(), nil
+}
+
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
 	timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := cmdUtils.WithdrawFunds(txnArgs.Client, types.Account{
+	txn, err := cmdUtils.HandleUnstakeLock(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
 	}, txnArgs.Config, stakerId)
 	if err != nil {
-		log.Error("WithdrawFunds error ", err)
+		log.Error("HandleUnstakeLock error ", err)
 		return err
 	}
 	if txn != core.NilHash {

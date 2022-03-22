@@ -30,9 +30,9 @@ type Asset struct {
 }
 
 type Locks struct {
-	Amount        *big.Int
-	Commission    *big.Int
-	WithdrawAfter *big.Int
+	Amount      *big.Int
+	UnlockAfter *big.Int
+	Initial     *big.Int
 }
 
 type StructsJob struct {
@@ -43,6 +43,11 @@ type StructsJob struct {
 	Name         string `json:"name"`
 	Selector     string `json:"selector"`
 	Url          string `json:"url"`
+}
+
+type AssignedAsset struct {
+	LeafId uint16 `json:"leafId"`
+	Value  uint32 `json:"value"`
 }
 
 type CustomJob struct {
