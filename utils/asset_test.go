@@ -244,7 +244,7 @@ func TestGetActiveCollectionIds(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
+			assetManagerMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetActiveCollectionIds(client)
@@ -384,7 +384,7 @@ func TestGetActiveJob(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
+			assetManagerMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetActiveJob(client, jobId)
@@ -445,7 +445,7 @@ func TestGetCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), &callOpts, mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
+			assetManagerMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetCollection(client, collectionId)
@@ -522,15 +522,16 @@ func TestGetAllCollections(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
-			optionsMock := new(mocks.OptionUtils)
+			assetMock := new(mocks.AssetManagerUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
-			optionsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
+			assetMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
 
 			got, err := utils.GetAllCollections(client)
 			if (err != nil) != tt.wantErr {
@@ -859,15 +860,16 @@ func TestGetJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			optionsMock := new(mocks.OptionUtils)
+			assetMock := new(mocks.AssetManagerUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			optionsMock.On("GetNumJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numJobs, tt.args.numJobsErr)
+			assetMock.On("GetNumJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numJobs, tt.args.numJobsErr)
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
 
 			got, err := utils.GetJobs(client)
@@ -927,7 +929,7 @@ func TestGetNumActiveCollections(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
+			assetManagerMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumActiveCollections(client)
@@ -987,7 +989,7 @@ func TestGetNumCollections(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client"), &callOpts).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
+			assetManagerMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetNumCollections(client)
@@ -1049,13 +1051,13 @@ func TestGetCustomJobsFromJSONFile(t *testing.T) {
 					Selector: "eth1",
 					Power:    2,
 					Weight:   3,
-								},
+				},
 				{
 					Url:      "http://127.0.0.1/eth2",
 					Selector: "eth2",
 					Power:    2,
 					Weight:   2,
-								},
+				},
 			},
 		},
 		{
