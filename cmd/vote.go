@@ -291,7 +291,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	_commitData = commitData
 
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
-	commitTxn, err := cmdUtils.Commit(client, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree), epoch, account, config)
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}

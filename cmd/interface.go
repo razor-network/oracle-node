@@ -231,7 +231,7 @@ type UtilsCmdInterface interface {
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
 	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
 	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
-	Commit(client *ethclient.Client, seed []byte, root [32]byte, epoch uint32, account types.Account, config types.Configurations) (common.Hash, error)
+	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(*pflag.FlagSet)
