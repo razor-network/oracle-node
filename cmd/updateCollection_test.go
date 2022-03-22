@@ -311,7 +311,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("UpdateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
-			flagsetUtilsMock.On("GetUint16Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
+			flagsetUtilsMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

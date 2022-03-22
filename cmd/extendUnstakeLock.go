@@ -1,19 +1,20 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+
 	"github.com/spf13/cobra"
 )
 
-var extendLockCmd = &cobra.Command{
+var extendUnstakeLockCmd = &cobra.Command{
 	Use:   "extendLock",
 	Short: "extendLock can be used to reset the lock once the withdraw lock period is over",
 	Long: `If the withdrawal period is over, then the lock must be reset otherwise the user cannot unstake. This can be done by extendLock command.
@@ -50,12 +51,12 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 		Password: password,
 		StakerId: stakerId,
 	}
-	txn, err := cmdUtils.ExtendLock(client, config, extendLockInput)
+	txn, err := cmdUtils.ExtendUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
-func (*UtilsStruct) ExtendLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+func (*UtilsStruct) ExtendUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        extendLockInput.Password,
@@ -69,7 +70,7 @@ func (*UtilsStruct) ExtendLock(client *ethclient.Client, config types.Configurat
 	})
 
 	log.Info("Extending lock...")
-	txn, err := stakeManagerUtils.ExtendLock(client, txnOpts, extendLockInput.StakerId)
+	txn, err := stakeManagerUtils.ExtendUnstakeLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -78,7 +79,7 @@ func (*UtilsStruct) ExtendLock(client *ethclient.Client, config types.Configurat
 }
 
 func init() {
-	rootCmd.AddCommand(extendLockCmd)
+	rootCmd.AddCommand(extendUnstakeLockCmd)
 
 	var (
 		Address  string
@@ -87,11 +88,11 @@ func init() {
 		LogFile  string
 	)
 
-	extendLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	extendLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
-	extendLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
-	extendLockCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
+	extendUnstakeLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
+	extendUnstakeLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
+	extendUnstakeLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
+	extendUnstakeLockCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
-	addrErr := extendLockCmd.MarkFlagRequired("address")
+	addrErr := extendUnstakeLockCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
 }

@@ -807,7 +807,8 @@ We would really appreciate your contribution. To see our [contribution guideline
 5. Create account , and note address.
 
    ```bash
-   docker-compose run razor-go /usr/local/bin/razor create
+   docker-compose run razor-go /usr
+   /local/bin/razor create
    ```
 
 6. Import account

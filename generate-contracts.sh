@@ -18,7 +18,7 @@ generate_contract_address() {
 contract_addresses_list=(
   "StakeManager StakeManagerAddress"
   "RAZOR RAZORAddress"
-  "AssetManager AssetManagerAddress"
+  "CollectionManager CollectionManagerAddress"
   "VoteManager VoteManagerAddress"
   "BlockManager BlockManagerAddress"
 )

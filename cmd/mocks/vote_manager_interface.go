@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	big "math/big"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -19,13 +19,13 @@ type VoteManagerInterface struct {
 	mock.Mock
 }
 
-// Commit provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *VoteManagerInterface) Commit(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 [32]byte) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// Commit provides a mock function with given fields: client, txnOpts, epoch, commitment
+func (_m *VoteManagerInterface) Commit(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*types.Transaction, error) {
+	ret := _m.Called(client, txnOpts, epoch, commitment)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(client, txnOpts, epoch, commitment)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -34,7 +34,7 @@ func (_m *VoteManagerInterface) Commit(_a0 *ethclient.Client, _a1 *bind.Transact
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(client, txnOpts, epoch, commitment)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -42,13 +42,13 @@ func (_m *VoteManagerInterface) Commit(_a0 *ethclient.Client, _a1 *bind.Transact
 	return r0, r1
 }
 
-// Reveal provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
-func (_m *VoteManagerInterface) Reveal(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 []*big.Int, _a4 [32]byte) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+// Reveal provides a mock function with given fields: client, txnOpts, epoch, tree, secret
+func (_m *VoteManagerInterface) Reveal(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*types.Transaction, error) {
+	ret := _m.Called(client, txnOpts, epoch, tree, secret)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, [32]byte) *types.Transaction); ok {
+		r0 = rf(client, txnOpts, epoch, tree, secret)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -56,8 +56,8 @@ func (_m *VoteManagerInterface) Reveal(_a0 *ethclient.Client, _a1 *bind.Transact
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, [32]byte) error); ok {
+		r1 = rf(client, txnOpts, epoch, tree, secret)
 	} else {
 		r1 = ret.Error(1)
 	}

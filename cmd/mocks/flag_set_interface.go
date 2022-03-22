@@ -686,27 +686,6 @@ func (_m *FlagSetInterface) GetUint16JobId(_a0 *pflag.FlagSet) (uint16, error) {
 	return r0, r1
 }
 
-// GetUint16Tolerance provides a mock function with given fields: _a0
-func (_m *FlagSetInterface) GetUint16Tolerance(_a0 *pflag.FlagSet) (uint16, error) {
-	ret := _m.Called(_a0)
-
-	var r0 uint16
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(uint16)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetUint32Aggregation provides a mock function with given fields: _a0
 func (_m *FlagSetInterface) GetUint32Aggregation(_a0 *pflag.FlagSet) (uint32, error) {
 	ret := _m.Called(_a0)
@@ -751,6 +730,27 @@ func (_m *FlagSetInterface) GetUint32BountyId(_a0 *pflag.FlagSet) (uint32, error
 
 // GetUint32StakerId provides a mock function with given fields: _a0
 func (_m *FlagSetInterface) GetUint32StakerId(_a0 *pflag.FlagSet) (uint32, error) {
+	ret := _m.Called(_a0)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint32); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetUint32Tolerance provides a mock function with given fields: _a0
+func (_m *FlagSetInterface) GetUint32Tolerance(_a0 *pflag.FlagSet) (uint32, error) {
 	ret := _m.Called(_a0)
 
 	var r0 uint32

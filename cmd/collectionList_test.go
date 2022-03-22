@@ -21,11 +21,19 @@ func TestGetCollectionList(t *testing.T) {
 	}
 
 	collectionListArray := []bindings.StructsCollection{
-		{Active: true, Id: 7, AssetIndex: 1, Power: 2,
-			AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollectionMean",
+		{Active: true,
+			Id:                7,
+			Power:             2,
+			AggregationMethod: 2,
+			JobIDs:            []uint16{1, 2, 3},
+			Name:              "ethCollectionMean",
 		},
-		{Active: true, Id: 8, AssetIndex: 2, Power: 2,
-			AggregationMethod: 2, JobIDs: []uint16{4, 5, 6}, Name: "btcCollectionMean",
+		{Active: true,
+			Id:                8,
+			Power:             2,
+			AggregationMethod: 2,
+			JobIDs:            []uint16{4, 5, 6},
+			Name:              "btcCollectionMean",
 		},
 	}
 

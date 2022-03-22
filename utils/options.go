@@ -3,10 +3,10 @@ package utils
 import (
 	"context"
 	"errors"
-	"github.com/ethereum/go-ethereum"
-	"razor/accounts"
 	"razor/core/types"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -28,7 +28,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	privateKey := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath, accounts.AccountUtilsInterface)
+	privateKey := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath)
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
@@ -90,7 +90,7 @@ func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpt
 	}
 	parsed, err := ABIInterface.Parse(strings.NewReader(transactionData.ABI))
 	if err != nil {
-		log.Error("Error in parsing ABI: ", err)
+		log.Error("Error in parsing abi: ", err)
 		return 0, err
 	}
 	inputData, err := ABIInterface.Pack(parsed, transactionData.MethodName, transactionData.Parameters...)
