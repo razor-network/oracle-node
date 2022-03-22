@@ -66,13 +66,13 @@ func (_m *BlockManagerInterface) DisputeBiggestStakeProposed(_a0 *ethclient.Clie
 	return r0, r1
 }
 
-// FinalizeDispute provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *BlockManagerInterface) FinalizeDispute(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint8) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// FinalizeDispute provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
+func (_m *BlockManagerInterface) FinalizeDispute(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint8, _a4 *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int) *types.Transaction); ok {
+		r0 = rf(_a0, _a1, _a2, _a3, _a4)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -80,8 +80,8 @@ func (_m *BlockManagerInterface) FinalizeDispute(_a0 *ethclient.Client, _a1 *bin
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3, _a4)
 	} else {
 		r1 = ret.Error(1)
 	}
