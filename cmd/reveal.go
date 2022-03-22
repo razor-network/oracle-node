@@ -3,15 +3,16 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
@@ -101,9 +102,9 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 }
 
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
-	numberOfBlocks := int64(core.StateLength) * core.NumberOfStates
+	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	query := ethereum.FilterQuery{
-		FromBlock: big.NewInt(0).Sub(blockNumber, big.NewInt(numberOfBlocks)),
+		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
 		Addresses: []common.Address{
 			common.HexToAddress(core.VoteManagerAddress),
