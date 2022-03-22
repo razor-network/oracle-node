@@ -79,6 +79,27 @@ func (_m *AssetManagerUtils) GetCollectionIdFromIndex(client *ethclient.Client, 
 	return r0, r1
 }
 
+// GetCollectionIdFromLeafId provides a mock function with given fields: client, leafId
+func (_m *AssetManagerUtils) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
+	ret := _m.Called(client, leafId)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) uint16); ok {
+		r0 = rf(client, leafId)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
+		r1 = rf(client, leafId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetJob provides a mock function with given fields: client, id
 func (_m *AssetManagerUtils) GetJob(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
 	ret := _m.Called(client, id)
@@ -93,6 +114,27 @@ func (_m *AssetManagerUtils) GetJob(client *ethclient.Client, id uint16) (bindin
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
 		r1 = rf(client, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLeafIdOfACollection provides a mock function with given fields: client, collectionId
+func (_m *AssetManagerUtils) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
+	ret := _m.Called(client, collectionId)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) uint16); ok {
+		r0 = rf(client, collectionId)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
+		r1 = rf(client, collectionId)
 	} else {
 		r1 = ret.Error(1)
 	}
