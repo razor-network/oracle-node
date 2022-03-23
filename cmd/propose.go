@@ -267,20 +267,20 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	)
 
 	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
+		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
+			medians = append(medians, rand.Uint32())
+			continue
+		}
 		influenceSum := revealedDataMaps.InfluenceSum[leafId]
 		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
 			accWeight := big.NewInt(0)
 			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
 				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
-				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
-					medians = append(medians, rand.Uint32())
-				} else {
-					accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue])
-					if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
-						medians = append(medians, revealedValue)
-						break
-					}
+				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue])
+				if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
+					medians = append(medians, revealedValue)
+					break
 				}
 			}
 		}
