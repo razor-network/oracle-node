@@ -28,9 +28,9 @@ if [ -z "$WAIT_TIME" ]; then
    WAIT_TIME=1
 fi
 
-read -rp "Gas Price: (0) " GAS_PRICE
+read -rp "Gas Price: (1) " GAS_PRICE
 if [ -z "$GAS_PRICE" ]; then
-   GAS_PRICE=0
+   GAS_PRICE=1
 fi
 
 read -rp "Gas Limit Increment : (2) " GAS_LIMIT
