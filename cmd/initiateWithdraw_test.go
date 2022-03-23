@@ -51,7 +51,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 1: When withdrawFunds function executes successfully",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
+					//WithdrawAfter: big.NewInt(4),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriod:    4,
@@ -84,7 +84,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 3: When staker tries to withdraw without un-staking any Razors",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(0),
+					//WithdrawAfter: big.NewInt(0),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriod:    4,
@@ -102,7 +102,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 4: When there is an error in getting withdrawReleasePeriod",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
+					//WithdrawAfter: big.NewInt(4),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriodErr: errors.New("withdrawReleasePeriod error"),
@@ -119,7 +119,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 5: When there is an error in getting epoch",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
+					//WithdrawAfter: big.NewInt(4),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriod:    4,
@@ -136,7 +136,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 6: When staker tries to withdraw when withdrawal period has passed",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
+					//WithdrawAfter: big.NewInt(4),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriod:    4,
@@ -154,7 +154,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 7: When staker tries to withdraw when withdrawal period has not reached",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
+					//WithdrawAfter: big.NewInt(4),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriod:    4,
@@ -173,7 +173,7 @@ func TestWithdrawFunds(t *testing.T) {
 			name: "Test 8: When there is an error in executing withdraw function",
 			args: args{
 				lock: types.Locks{
-					WithdrawAfter: big.NewInt(4),
+					//WithdrawAfter: big.NewInt(4),
 				},
 				lockErr:                  nil,
 				withdrawReleasePeriod:    1,

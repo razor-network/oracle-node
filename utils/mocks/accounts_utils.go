@@ -4,7 +4,6 @@ package mocks
 
 import (
 	ecdsa "crypto/ecdsa"
-	accounts "razor/accounts"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -14,13 +13,13 @@ type AccountsUtils struct {
 	mock.Mock
 }
 
-// GetPrivateKey provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *AccountsUtils) GetPrivateKey(_a0 string, _a1 string, _a2 string, _a3 accounts.AccountInterface) *ecdsa.PrivateKey {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// GetPrivateKey provides a mock function with given fields: _a0, _a1, _a2
+func (_m *AccountsUtils) GetPrivateKey(_a0 string, _a1 string, _a2 string) *ecdsa.PrivateKey {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *ecdsa.PrivateKey
-	if rf, ok := ret.Get(0).(func(string, string, string, accounts.AccountInterface) *ecdsa.PrivateKey); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(0).(func(string, string, string) *ecdsa.PrivateKey); ok {
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ecdsa.PrivateKey)

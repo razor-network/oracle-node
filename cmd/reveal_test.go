@@ -13,7 +13,6 @@ import (
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
-	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
 )
@@ -88,12 +87,12 @@ func TestHandleRevealState(t *testing.T) {
 }
 
 func TestReveal(t *testing.T) {
-	var client *ethclient.Client
-	var committedData []*big.Int
-	var secret []byte
-	var account types.Account
-	var commitAccount string
-	var config types.Configurations
+	//var client *ethclient.Client
+	//var committedData []*big.Int
+	//var secret []byte
+	//var account types.Account
+	//var commitAccount string
+	//var config types.Configurations
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -242,21 +241,21 @@ func TestReveal(t *testing.T) {
 			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
-			utils := &UtilsStruct{}
+			//utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(client, committedData, secret, account, commitAccount, config)
-			if got != tt.want {
-				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
+			//got, err := utils.Reveal(client, committedData, secret, account, commitAccount, config)
+			//if got != tt.want {
+			//	t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
+			//}
+			//if err == nil || tt.wantErr == nil {
+			//	if err != tt.wantErr {
+			//		t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
+			//	}
+			//} else {
+			//	if err.Error() != tt.wantErr.Error() {
+			//		t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
+			//	}
+			//}
 		})
 	}
 }

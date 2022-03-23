@@ -1176,9 +1176,9 @@ func (_m *UtilsCmdInterface) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.
 	return r0, r1
 }
 
-// Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5
-func (_m *UtilsCmdInterface) Propose(_a0 *ethclient.Client, _a1 types.Account, _a2 types.Configurations, _a3 uint32, _a4 uint32, _a5 types.Rogue) (common.Hash, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5)
+// Propose provides a mock function with given fields: client, config, account, staker, epoch, blockNumber, rogueData
+func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
+	ret := _m.Called(client, config, account, staker, epoch, blockNumber, rogueData)
 
 	var r0 common.Hash
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *big.Int, types.Rogue) common.Hash); ok {
