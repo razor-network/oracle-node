@@ -110,7 +110,7 @@ func TestExecuteClaimBounty(t *testing.T) {
 			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
 
-			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)

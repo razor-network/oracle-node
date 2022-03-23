@@ -129,12 +129,13 @@ func TestExecuteListAccounts(t *testing.T) {
 	log.ExitFunc = func(int) { fatal = true }
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
+			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
-			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("ListAccounts").Return(tt.args.allAccounts, tt.args.allAccountsErr)
 
 			utils := &UtilsStruct{}

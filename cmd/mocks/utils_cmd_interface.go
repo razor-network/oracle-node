@@ -98,11 +98,6 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.Int, er
 	return r0, r1
 }
 
-// AssignLogFile provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) AssignLogFile(_a0 *pflag.FlagSet) {
-	_m.Called(_a0)
-}
-
 // AutoUnstakeAndWithdraw provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *UtilsCmdInterface) AutoUnstakeAndWithdraw(_a0 *ethclient.Client, _a1 types.Account, _a2 *big.Int, _a3 types.Configurations) {
 	_m.Called(_a0, _a1, _a2, _a3)

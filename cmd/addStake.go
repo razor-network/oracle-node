@@ -30,7 +30,7 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -111,14 +111,6 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	return transactionUtils.Hash(tx), nil
 }
 
-func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
-	if razorUtils.IsFlagPassed("logFile") {
-		fileName, err := flagSetUtils.GetLogFileName(flagSet)
-		utils.CheckError("Error in getting file name: ", err)
-		logger.InitializeLogger(fileName)
-	}
-}
-
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (
@@ -129,7 +121,6 @@ func init() {
 		VoteAutomatically bool
 		Rogue             bool
 		RogueMode         []string
-		LogFile           string
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
@@ -139,7 +130,6 @@ func init() {
 	stakeCmd.Flags().BoolVarP(&VoteAutomatically, "autoVote", "", false, "vote after stake automatically")
 	stakeCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	stakeCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
-	stakeCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

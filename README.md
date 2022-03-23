@@ -778,6 +778,7 @@ $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId 
 ```
 _The logs for above command will be stored in delegationLogs.log file in .razor directory_
 
+_Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
 
 ### Contribute to razor-go
 

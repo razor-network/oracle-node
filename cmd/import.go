@@ -23,7 +23,7 @@ func initialiseImport(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)
 	log.Info("Account Address: ", account.Address)
@@ -57,10 +57,5 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 
 func init() {
 	rootCmd.AddCommand(importCmd)
-	var (
-		LogFile string
-	)
-
-	importCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 }

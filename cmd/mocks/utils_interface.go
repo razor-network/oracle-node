@@ -52,6 +52,11 @@ func (_m *UtilsInterface) AllZero(_a0 [32]byte) bool {
 	return r0
 }
 
+// AssignLogFile provides a mock function with given fields: _a0
+func (_m *UtilsInterface) AssignLogFile(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // AssignPassword provides a mock function with given fields: _a0
 func (_m *UtilsInterface) AssignPassword(_a0 *pflag.FlagSet) string {
 	ret := _m.Called(_a0)

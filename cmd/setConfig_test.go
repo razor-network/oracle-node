@@ -251,7 +251,7 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtils = flagSetUtilsMock
 			viperUtils = viperMock
 
-			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
 			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
 			flagSetUtilsMock.On("GetInt32Buffer", flagSet).Return(tt.args.buffer, tt.args.bufferErr)

@@ -26,7 +26,7 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -65,10 +65,5 @@ func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
 
 func init() {
 	rootCmd.AddCommand(jobListCmd)
-	var (
-		LogFile string
-	)
-
-	jobListCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 }

@@ -26,7 +26,7 @@ Example:
 }
 
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	provider, err := flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err
@@ -132,7 +132,6 @@ func init() {
 		GasPrice           int32
 		LogLevel           string
 		GasLimitMultiplier float32
-		LogFile            string
 		ExposeMetrics      string
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
@@ -142,7 +141,6 @@ func init() {
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
-	setConfig.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 
 }

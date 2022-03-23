@@ -31,7 +31,7 @@ func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -111,7 +111,6 @@ func init() {
 		AggregationMethod uint32
 		Password          string
 		Power             int8
-		LogFile           string
 		Tolerance         uint32
 	)
 
@@ -122,7 +121,6 @@ func init() {
 	createCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
-	createCollectionCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)

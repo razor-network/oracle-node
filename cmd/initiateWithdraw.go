@@ -29,7 +29,7 @@ Example:
 }
 
 func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -146,13 +146,11 @@ func init() {
 		Address  string
 		Password string
 		StakerId uint32
-		LogFile  string
 	)
 
 	initiateWithdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	initiateWithdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 	initiateWithdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
-	initiateWithdrawCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := initiateWithdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

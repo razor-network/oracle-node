@@ -41,7 +41,7 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -489,14 +489,12 @@ func init() {
 		Rogue     bool
 		RogueMode []string
 		Password  string
-		LogFile   string
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
-	voteCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

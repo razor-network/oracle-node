@@ -27,7 +27,7 @@ func initialiseCollectionList(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
@@ -68,10 +68,5 @@ func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
 
 func init() {
 	rootCmd.AddCommand(collectionListCmd)
-	var (
-		LogFile string
-	)
-
-	collectionListCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 }

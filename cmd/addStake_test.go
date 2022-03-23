@@ -356,7 +356,7 @@ func TestExecuteStake(t *testing.T) {
 			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
 
-			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
@@ -381,41 +381,6 @@ func TestExecuteStake(t *testing.T) {
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteStake function didn't execute as expected")
 			}
-		})
-	}
-}
-
-func TestAssignLogFile(t *testing.T) {
-	var flagSet *pflag.FlagSet
-	type args struct {
-		isFlagPassed bool
-		fileName     string
-		fileNameErr  error
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "Test 1: When AssignLogFile() executes successfully",
-			args: args{
-				isFlagPassed: true,
-				fileName:     "",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-
-			razorUtils = utilsMock
-			flagSetUtils = flagSetUtilsMock
-
-			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
-			flagSetUtilsMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
-			ut := &UtilsStruct{}
-			ut.AssignLogFile(flagSet)
 		})
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 	"razor/core"
+	"razor/logger"
 	"strconv"
 	"time"
 
@@ -245,4 +246,14 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 	}
 	return big.NewInt(int64(previousBlockNumber))
 
+}
+
+func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
+	if UtilsInterface.IsFlagPassed("logFile") {
+		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
+		if err != nil {
+			log.Fatalf("Error in getting file name : ", err)
+		}
+		logger.InitializeLogger(fileName)
+	}
 }

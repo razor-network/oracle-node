@@ -28,7 +28,7 @@ func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address", err)
 
@@ -121,7 +121,6 @@ func init() {
 		Address    string
 		Commission uint8
 		Password   string
-		LogFile    string
 	)
 
 	rootCmd.AddCommand(updateCommissionCmd)
@@ -129,7 +128,6 @@ func init() {
 	updateCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	updateCommissionCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
 	updateCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
-	updateCommissionCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := updateCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

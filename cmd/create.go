@@ -24,7 +24,7 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	password := razorUtils.AssignPassword(flagSet)
 	account, err := cmdUtils.Create(password)
 	utils.CheckError("Create error: ", err)
@@ -47,9 +47,7 @@ func init() {
 
 	var (
 		Password string
-		LogFile  string
 	)
 
 	createCmd.Flags().StringVarP(&Password, "password", "", "", "password file path to protect the keystore")
-	createCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 }

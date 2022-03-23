@@ -21,7 +21,7 @@ func initialiseListAccounts(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	allAccounts, err := cmdUtils.ListAccounts()
 	utils.CheckError("ListAccounts error: ", err)
 	log.Info("The available accounts are: ")
@@ -42,10 +42,4 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 
 func init() {
 	rootCmd.AddCommand(listAccountsCmd)
-
-	var (
-		LogFile string
-	)
-
-	listAccountsCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 }

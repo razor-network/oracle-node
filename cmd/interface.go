@@ -118,6 +118,7 @@ type UtilsInterface interface {
 	AddJobToJSON(string, *types.StructsJob) error
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 	SecondsToReadableTime(int) string
+	AssignLogFile(*pflag.FlagSet)
 }
 
 type StakeManagerInterface interface {
@@ -211,7 +212,6 @@ type FlagSetInterface interface {
 	GetBoolRogue(*pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(*pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(*pflag.FlagSet) (string, error)
-	GetLogFileName(*pflag.FlagSet) (string, error)
 }
 
 type UtilsCmdInterface interface {
@@ -303,7 +303,6 @@ type UtilsCmdInterface interface {
 	HandleExit()
 	ExecuteListAccounts(*pflag.FlagSet)
 	ExecuteStake(*pflag.FlagSet)
-	AssignLogFile(*pflag.FlagSet)
 	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
 	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
 }

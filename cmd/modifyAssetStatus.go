@@ -27,7 +27,7 @@ func initialiseModifyAssetStatus(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -111,13 +111,11 @@ func init() {
 		Address string
 		AssetId uint16
 		Status  string
-		LogFile string
 	)
 
 	modifyAssetStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	modifyAssetStatusCmd.Flags().Uint16VarP(&AssetId, "assetId", "", 0, "assetId of the asset")
 	modifyAssetStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the asset")
-	modifyAssetStatusCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addressErr := modifyAssetStatusCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addressErr)

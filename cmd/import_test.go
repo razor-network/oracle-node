@@ -176,11 +176,13 @@ func TestExecuteImport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			cmdUtils = cmdUtilsMock
 
-			cmdUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			cmdUtils = cmdUtilsMock
+			razorUtils = utilsMock
+
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
 
 			utils := &UtilsStruct{}

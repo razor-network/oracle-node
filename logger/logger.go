@@ -59,10 +59,6 @@ func InitializeLogger(fileName string) {
 		standardLogger.SetOutput(mw)
 
 	} else {
-		_, err := path.PathUtilsInterface.GetLogFilePath(fileName)
-		if err != nil {
-			standardLogger.Fatal("Error in fetching log file path: ", err)
-		}
 		standardLogger.Formatter = &logrus.JSONFormatter{}
 	}
 }

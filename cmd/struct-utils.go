@@ -50,6 +50,7 @@ func InitializeUtils() {
 	utils.JsonInterface = &utils.JsonStruct{}
 	utils.StakedTokenInterface = &utils.StakedTokenStruct{}
 	utils.RetryInterface = &utils.RetryStruct{}
+	utils.FlagSetInterface = &utils.FlagSetStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -316,6 +317,10 @@ func (u Utils) SecondsToReadableTime(time int) string {
 
 func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
 	return utilsInterface.GetStakerSRZRBalance(client, staker)
+}
+
+func (u Utils) AssignLogFile(flagSet *pflag.FlagSet) {
+	utilsInterface.AssignLogFile(flagSet)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
@@ -692,10 +697,6 @@ func (flagSetUtils FLagSetUtils) GetBoolRogue(flagSet *pflag.FlagSet) (bool, err
 
 func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error) {
 	return flagSet.GetStringSlice("rogueMode")
-}
-
-func (flagSetUtils FLagSetUtils) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("logFile")
 }
 
 func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {

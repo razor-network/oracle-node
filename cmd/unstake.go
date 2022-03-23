@@ -34,7 +34,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -166,7 +166,6 @@ func init() {
 		Password        string
 		Power           string
 		StakerId        uint32
-		LogFile         string
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
@@ -174,7 +173,6 @@ func init() {
 	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	unstakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
 	unstakeCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
-	unstakeCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	addrErr := unstakeCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

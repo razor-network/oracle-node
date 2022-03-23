@@ -29,7 +29,7 @@ func initialiseDelegate(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
-	cmdUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -100,7 +100,6 @@ func init() {
 		StakerId uint32
 		Password string
 		Power    string
-		LogFile  string
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
@@ -108,7 +107,6 @@ func init() {
 	delegateCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	delegateCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
-	delegateCmd.Flags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", valueErr)

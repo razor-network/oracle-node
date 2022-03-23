@@ -19,6 +19,7 @@ var (
 	GasPrice           int32
 	LogLevel           string
 	GasLimitMultiplier float32
+	LogFile            string
 )
 
 var log = logger.NewLogger()
@@ -57,6 +58,7 @@ func init() {
 	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
 	rootCmd.PersistentFlags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	rootCmd.PersistentFlags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
+	rootCmd.PersistentFlags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
