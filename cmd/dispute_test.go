@@ -29,10 +29,10 @@ func TestDispute(t *testing.T) {
 	var assetId int
 
 	type args struct {
-		epoch              uint32
-		numOfStakers       uint32
-		numOfStakersErr    error
-		votes              bindings.StructsVote
+		epoch           uint32
+		numOfStakers    uint32
+		numOfStakersErr error
+		//votes              bindings.StructsVote
 		votesErr           error
 		containsStatus     bool
 		finalizeDisputeTxn *Types.Transaction
@@ -49,10 +49,10 @@ func TestDispute(t *testing.T) {
 			args: args{
 				epoch:        4,
 				numOfStakers: 3,
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				//votes: bindings.StructsVote{
+				//	Epoch:  4,
+				//	Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
+				//},
 				containsStatus:     false,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -64,10 +64,10 @@ func TestDispute(t *testing.T) {
 			args: args{
 				epoch:        4,
 				numOfStakers: 3,
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				//votes: bindings.StructsVote{
+				//	Epoch:  4,
+				//	Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
+				//},
 				containsStatus:     true,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -79,10 +79,10 @@ func TestDispute(t *testing.T) {
 			args: args{
 				epoch:           4,
 				numOfStakersErr: errors.New("numberOfStakers error"),
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				//votes: bindings.StructsVote{
+				//	Epoch:  4,
+				//	Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
+				//},
 				containsStatus:     false,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -106,10 +106,10 @@ func TestDispute(t *testing.T) {
 			args: args{
 				epoch:        4,
 				numOfStakers: 3,
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				//votes: bindings.StructsVote{
+				//	Epoch:  4,
+				//	Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
+				//},
 				containsStatus:     false,
 				finalizeDisputeErr: errors.New("finalizeDispute error"),
 			},
@@ -131,7 +131,7 @@ func TestDispute(t *testing.T) {
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
-			utilsMock.On("GetVotes", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.votes, tt.args.votesErr)
+			//utilsMock.On("GetVotes", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.votes, tt.args.votesErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
