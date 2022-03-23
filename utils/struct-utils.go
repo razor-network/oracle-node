@@ -139,6 +139,11 @@ func (s StakeManagerStruct) GetNumStakers(client *ethclient.Client) (uint32, err
 	return stakeManager.GetNumStakers(&opts)
 }
 
+func (s StakeManagerStruct) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.MinSafeRazor(&opts)
+}
+
 func (s StakeManagerStruct) Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (coretypes.Locks, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.Locks(&opts, address, address1, lockType)
