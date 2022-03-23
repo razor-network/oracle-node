@@ -52,6 +52,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Error(err)
 			continue
 		}
+		log.Debug("Proposed block ", blockId, proposedBlock)
 
 		//blockIndex is index of blockId in sortedProposedBlock
 		blockIndex := utils.IndexOf(sortedProposedBlockIds, uint32(blockId))
@@ -89,6 +90,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Error("Error in disputing: ", err)
 		}
 		if idDisputeTxn != nil {
+			log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
 			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
 			if status == 1 {
 				continue
@@ -176,6 +178,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.MethodName = "disputeOnOrderOfIds"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, index0, index1}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		log.Debug("Disputing sorted order of ids!")
+		log.Debugf("Epoch: %d, blockIndex: %d, index0: %d, index1: %d", epoch, blockIndex, index0, index1)
 		return blockManagerUtils.DisputeOnOrderOfIds(client, txnOpts, epoch, blockIndex, big.NewInt(int64(index0)), big.NewInt(int64(index1)))
 	}
 
@@ -186,6 +190,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		log.Debug("Disputing collection id should be present!")
+		log.Debugf("Epoch: %d, blockIndex: %d, missingCollectionId: %d", epoch, blockIndex, missingCollectionId)
 		return blockManagerUtils.DisputeCollectionIdShouldBePresent(client, txnOpts, epoch, blockIndex, missingCollectionId)
 	}
 
@@ -196,6 +202,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		log.Debug("Disputing collection id should be absent!")
+		log.Debugf("Epoch: %d, blockIndex: %d, presentCollectionId: %d, positionOfPresentValue: %d", epoch, blockIndex, presentCollectionId, positionOfPresentValue)
 		return blockManagerUtils.DisputeCollectionIdShouldBeAbsent(client, txnOpts, epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue)))
 	}
 

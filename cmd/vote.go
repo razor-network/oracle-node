@@ -296,7 +296,10 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		status := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		if status != 1 {
+			return errors.New("error in sending commit transaction")
+		}
 	}
 
 	//TODO: Need to save the entire commitData, which includes AssignedCollections, SeqAllottedCollections and Leaves to construct merkle tree
