@@ -63,7 +63,7 @@ func TestFetchPreviousValue(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			blockManagerMock.On("GetBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.block, tt.args.blockErr)
+			utilsMock.On("GetBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.block, tt.args.blockErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.FetchPreviousValue(client, epoch, tt.args.assetId)

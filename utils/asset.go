@@ -119,12 +119,12 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 
 func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
 	var (
-		activeAssetIds []uint16
-		err            error
+		activeCollectionIds []uint16
+		err                 error
 	)
 	err = retry.Do(
 		func() error {
-			activeAssetIds, err = AssetManagerInterface.GetActiveCollections(client)
+			activeCollectionIds, err = AssetManagerInterface.GetActiveCollections(client)
 			if err != nil {
 				log.Error("Error in fetching active assets.... Retrying")
 				return err
@@ -134,7 +134,7 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	if err != nil {
 		return nil, err
 	}
-	return activeAssetIds, nil
+	return activeCollectionIds, nil
 }
 
 func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
@@ -328,6 +328,26 @@ func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCo
 	return assignedCollections, seqAllottedCollections, nil
 }
 
+func (*UtilsStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
+	var (
+		leafId uint16
+		err    error
+	)
+	err = retry.Do(
+		func() error {
+			leafId, err = AssetManagerInterface.GetLeafIdOfACollection(client, collectionId)
+			if err != nil {
+				log.Error("Error in fetching collection id.... Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return leafId, nil
+}
+
 func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error) {
 	var (
 		collectionId uint16
@@ -336,6 +356,26 @@ func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianInd
 	err = retry.Do(
 		func() error {
 			collectionId, err = AssetManagerInterface.GetCollectionIdFromIndex(client, medianIndex)
+			if err != nil {
+				log.Error("Error in fetching collection id.... Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return collectionId, nil
+}
+
+func (*UtilsStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
+	var (
+		collectionId uint16
+		err          error
+	)
+	err = retry.Do(
+		func() error {
+			collectionId, err = AssetManagerInterface.GetCollectionIdFromLeafId(client, leafId)
 			if err != nil {
 				log.Error("Error in fetching collection id.... Retrying")
 				return err

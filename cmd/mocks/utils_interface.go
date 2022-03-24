@@ -290,8 +290,8 @@ func (_m *UtilsInterface) FetchBalance(_a0 *ethclient.Client, _a1 string) (*big.
 	return r0, r1
 }
 
-// GetActiveCollectionIds provides a mock function with given fields: _a0
-func (_m *UtilsInterface) GetActiveCollectionIds(_a0 *ethclient.Client) ([]uint16, error) {
+// GetActiveCollections provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetActiveCollections(_a0 *ethclient.Client) ([]uint16, error) {
 	ret := _m.Called(_a0)
 
 	var r0 []uint16

@@ -86,6 +86,16 @@ func (a AssetManagerStruct) GetCollectionIdFromIndex(client *ethclient.Client, i
 	return collectionManager.LeafIdToCollectionIdRegistry(&opts, index)
 }
 
+func (a AssetManagerStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetCollectionIdFromLeafId(&opts, leafId)
+}
+
+func (a AssetManagerStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	return collectionManager.GetLeafIdOfCollection(&opts, collectionId)
+}
+
 func (v VoteManagerStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
 	return voteManager.ToAssign(&opts)

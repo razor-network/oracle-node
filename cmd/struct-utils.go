@@ -213,8 +213,6 @@ func (u Utils) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
 	return utilsInterface.GetNumberOfStakers(client)
 }
 
-//TODO: Check direct usage from utils package without implementing it here
-
 func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
 	return utilsInterface.GetNumberOfProposedBlocks(client, epoch)
 }
@@ -247,7 +245,7 @@ func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int 
 	return utils.ConvertUint32ArrayToBigIntArray(uint32Array)
 }
 
-func (u Utils) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
+func (u Utils) GetActiveCollections(client *ethclient.Client) ([]uint16, error) {
 	return utilsInterface.GetActiveCollectionIds(client)
 }
 
@@ -332,9 +330,9 @@ func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOp
 	return stakeManager.Stake(txnOpts, epoch, amount)
 }
 
-func (stakeManagerUtils StakeManagerUtils) ExtendUnstakeLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ResetUnstakeLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
-	return stakeManager.ExtendUnstakeLock(opts, stakerId)
+	return stakeManager.ResetUnstakeLock(opts, stakerId)
 }
 
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
@@ -438,6 +436,66 @@ func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *e
 	return txn, nil
 }
 
+func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeCollectionIdShouldBeAbsent(opts, epoch, blockIndex, id, positionOfCollectionInBlock)
+		if err != nil {
+			log.Error("Error in disputing collection id should be absent... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeCollectionIdShouldBePresent(opts, epoch, blockIndex, id)
+		if err != nil {
+			log.Error("Error in disputing collection id should be present... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
+func (blockManagerUtils BlockManagerUtils) DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*Types.Transaction, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	var (
+		txn *Types.Transaction
+		err error
+	)
+	err = retry.Do(func() error {
+		txn, err = blockManager.DisputeOnOrderOfIds(opts, epoch, blockIndex, index0, index1)
+		if err != nil {
+			log.Error("Error in disputing order of ids proposed... Retrying")
+			return err
+		}
+		return nil
+	}, retry.Attempts(3))
+	if err != nil {
+		return nil, err
+	}
+	return txn, nil
+}
+
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utilsInterface.GetBlockManager(client)
 	var (
@@ -458,8 +516,8 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 	return txn, nil
 }
 
-func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, collectionId uint16, sortedValues []uint32) (*Types.Transaction, error) {
-	return blockManager.GiveSorted(opts, epoch, collectionId, sortedValues)
+func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) (*Types.Transaction, error) {
+	return blockManager.GiveSorted(opts, epoch, leafId, sortedValues)
 }
 
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error) {

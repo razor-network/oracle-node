@@ -32,7 +32,6 @@ func TestDispute(t *testing.T) {
 		epoch              uint32
 		numOfStakers       uint32
 		numOfStakersErr    error
-		votes              bindings.StructsVote
 		votesErr           error
 		containsStatus     bool
 		finalizeDisputeTxn *Types.Transaction
@@ -47,12 +46,8 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 1: When Dispute function executes successfully",
 			args: args{
-				epoch:        4,
-				numOfStakers: 3,
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				epoch:              4,
+				numOfStakers:       3,
 				containsStatus:     false,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -62,12 +57,8 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 2: When Dispute function executes successfully without executing giveSorted",
 			args: args{
-				epoch:        4,
-				numOfStakers: 3,
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				epoch:              4,
+				numOfStakers:       3,
 				containsStatus:     true,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -77,12 +68,8 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting number of stakers",
 			args: args{
-				epoch:           4,
-				numOfStakersErr: errors.New("numberOfStakers error"),
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				epoch:              4,
+				numOfStakersErr:    errors.New("numberOfStakers error"),
 				containsStatus:     false,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -104,12 +91,8 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 5: When FinalizeDispute transaction fails",
 			args: args{
-				epoch:        4,
-				numOfStakers: 3,
-				votes: bindings.StructsVote{
-					Epoch:  4,
-					Values: []*big.Int{big.NewInt(100), big.NewInt(200)},
-				},
+				epoch:              4,
+				numOfStakers:       3,
 				containsStatus:     false,
 				finalizeDisputeErr: errors.New("finalizeDispute error"),
 			},
@@ -525,7 +508,7 @@ func TestHandleDispute(t *testing.T) {
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.medians, tt.args.mediansErr)
 			utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
-			utilsMock.On("GetActiveCollectionIds", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
+			utilsMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 
 			utils := &UtilsStruct{}

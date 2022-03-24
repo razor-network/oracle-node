@@ -119,7 +119,9 @@ type Utils interface {
 	GetDataToCommitFromJobs([]bindings.StructsJob) ([]*big.Int, []uint8, error)
 	GetDataToCommitFromJob(bindings.StructsJob) (*big.Int, error)
 	GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
+	GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
+	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
 	GetNumActiveCollections(*ethclient.Client) (uint16, error)
 	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
@@ -249,6 +251,8 @@ type AssetManagerUtils interface {
 	GetActiveCollections(client *ethclient.Client) ([]uint16, error)
 	Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error)
+	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
+	GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error)
 }
 
 type VoteManagerUtils interface {

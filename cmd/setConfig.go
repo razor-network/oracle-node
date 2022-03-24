@@ -106,7 +106,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasmultiplier", 1.0)
 		viper.Set("buffer", 20)
 		viper.Set("wait", 3)
-		viper.Set("gasprice", 0)
+		viper.Set("gasprice", 1)
 		viper.Set("logLevel", "")
 		viper.Set("gasLimit", 2)
 		//viper.Set("exposeMetricsPort", "")

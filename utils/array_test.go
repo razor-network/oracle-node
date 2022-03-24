@@ -178,12 +178,12 @@ func TestIsEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := IsEqual(tt.args.arr1, tt.args.arr2)
+			got, got1 := IsEqualUint32(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
-				t.Errorf("IsEqual() got = %v, want %v", got, tt.want)
+				t.Errorf("IsEqualUint32() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("IsEqual() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("IsEqualUint32() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -396,6 +396,188 @@ func TestContainsStringFromArray(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ContainsStringFromArray(tt.args.source, tt.args.subStringArray); got != tt.want {
 				t.Errorf("ContainsStringFromArray() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsMissing(t *testing.T) {
+	type args struct {
+		arr1 []uint16
+		arr2 []uint16
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  bool
+		want1 int
+		want2 uint16
+	}{
+		{
+			name: "Test 1: When both arrays contain the same value",
+			args: args{
+				arr1: []uint16{100, 200, 300, 400, 500},
+				arr2: []uint16{100, 200, 300, 400, 500},
+			},
+			want:  false,
+			want1: -1,
+			want2: 0,
+		},
+		{
+			name: "Test 2: When array2 contains all values of array1 but also contains extra values",
+			args: args{
+				arr1: []uint16{100, 200, 300, 400, 500},
+				arr2: []uint16{100, 200, 300, 400, 500, 600, 700},
+			},
+			want:  false,
+			want1: -1,
+			want2: 0,
+		},
+		{
+			name: "Test 3: When array2 does not contain all the values of array1 but len(arr1)==len(arr2)",
+			args: args{
+				arr1: []uint16{100, 200, 300, 400, 500},
+				arr2: []uint16{100, 200, 400, 500, 600},
+			},
+			want:  true,
+			want1: 2,
+			want2: 300,
+		},
+		{
+			name: "Test 4: When array2 does not contain all the values of array1 but len(arr1) > len(arr2)",
+			args: args{
+				arr1: []uint16{100, 200, 300, 400, 500},
+				arr2: []uint16{100, 200, 300},
+			},
+			want:  true,
+			want1: 3,
+			want2: 400,
+		},
+		{
+			name: "Test 5: When array2 does not contain all the values of array1 but len(arr1) < len(arr2)",
+			args: args{
+				arr1: []uint16{100, 200, 300, 400, 500},
+				arr2: []uint16{100, 400, 500, 600, 700, 800, 900},
+			},
+			want:  true,
+			want1: 1,
+			want2: 200,
+		},
+		{
+			name: "Test 6: When both arrays are empty",
+			args: args{
+				arr1: nil,
+				arr2: nil,
+			},
+			want:  false,
+			want1: -1,
+			want2: 0,
+		},
+		{
+			name: "Test 7: When array1 is empty",
+			args: args{
+				arr1: nil,
+				arr2: []uint16{1, 2, 3, 4},
+			},
+			want:  false,
+			want1: -1,
+			want2: 0,
+		},
+		{
+			name: "Test 8: When array2 is empty",
+			args: args{
+				arr1: []uint16{1, 2, 3, 4},
+				arr2: nil,
+			},
+			want:  true,
+			want1: 0,
+			want2: 1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, got2 := IsMissing(tt.args.arr1, tt.args.arr2)
+			if got != tt.want {
+				t.Errorf("IsMissing() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("IsMissing() got1 = %v, want %v", got1, tt.want1)
+			}
+			if got2 != tt.want2 {
+				t.Errorf("IsMissing() got2 = %v, want %v", got2, tt.want2)
+			}
+		})
+	}
+}
+
+func TestIsSorted(t *testing.T) {
+	type args struct {
+		values []uint16
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  bool
+		want1 int
+		want2 int
+	}{
+		{
+			name: "Test1: When the array is sorted",
+			args: args{
+				values: []uint16{1, 2, 3, 4, 6, 8, 10},
+			},
+			want:  true,
+			want1: -1,
+			want2: -1,
+		},
+		{
+			name: "Test2: When the first two elements of the array is unsorted",
+			args: args{
+				values: []uint16{4, 2, 3, 4, 6, 8, 10},
+			},
+			want:  false,
+			want1: 0,
+			want2: 1,
+		},
+		{
+			name: "Test2: When the entire array is unsorted",
+			args: args{
+				values: []uint16{123, 2, 32, 4, 61, 800, 10},
+			},
+			want:  false,
+			want1: 0,
+			want2: 1,
+		},
+		{
+			name: "Test4: When the middle two array elements is unsorted",
+			args: args{
+				values: []uint16{1, 2, 3, 5, 4, 8, 10},
+			},
+			want:  false,
+			want1: 3,
+			want2: 4,
+		},
+		{
+			name: "Test5: When the array empty",
+			args: args{
+				values: nil,
+			},
+			want:  true,
+			want1: -1,
+			want2: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, got2 := IsSorted(tt.args.values)
+			if got != tt.want {
+				t.Errorf("IsSorted() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("IsSorted() got1 = %v, want %v", got1, tt.want1)
+			}
+			if got2 != tt.want2 {
+				t.Errorf("IsSorted() got2 = %v, want %v", got2, tt.want2)
 			}
 		})
 	}

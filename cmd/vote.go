@@ -219,39 +219,37 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 3:
-		//TODO: Remove this
-		break
 		if lastVerification >= epoch {
 			break
 		}
-		lastVerification = epoch
-		err := cmdUtils.HandleDispute(client, config, account, epoch, rogueData)
+		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
+		lastVerification = epoch
 	case 4:
-		//if lastVerification == epoch && blockConfirmed < epoch {
-		txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
-			Client:          client,
-			Password:        account.Password,
-			AccountAddress:  account.Address,
-			ChainId:         core.ChainId,
-			Config:          config,
-			ContractAddress: core.BlockManagerAddress,
-			MethodName:      "claimBlockReward",
-			ABI:             bindings.BlockManagerABI,
-		})
+		if lastVerification == epoch && blockConfirmed < epoch {
+			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
+				Client:          client,
+				Password:        account.Password,
+				AccountAddress:  account.Address,
+				ChainId:         core.ChainId,
+				Config:          config,
+				ContractAddress: core.BlockManagerAddress,
+				MethodName:      "claimBlockReward",
+				ABI:             bindings.BlockManagerABI,
+			})
 
-		if err != nil {
-			log.Error("ClaimBlockReward error: ", err)
-			break
+			if err != nil {
+				log.Error("ClaimBlockReward error: ", err)
+				break
+			}
+			if txn != core.NilHash {
+				razorUtils.WaitForBlockCompletion(client, txn.Hex())
+				blockConfirmed = epoch
+			}
 		}
-		if txn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, txn.Hex())
-			blockConfirmed = epoch
-		}
-		//}
 	case -1:
 		if config.WaitTime > 5 {
 			timeUtils.Sleep(5 * time.Second)
@@ -294,12 +292,15 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	_commitData = commitData
 
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
-	commitTxn, err := cmdUtils.Commit(client, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree), epoch, account, config)
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		status := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		if status != 1 {
+			return errors.New("error in sending commit transaction")
+		}
 	}
 
 	//TODO: Need to save the entire commitData, which includes AssignedCollections, SeqAllottedCollections and Leaves to construct merkle tree
