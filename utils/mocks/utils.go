@@ -565,6 +565,27 @@ func (_m *Utils) GetCollectionIdFromIndex(client *ethclient.Client, medianIndex 
 	return r0, r1
 }
 
+// GetCollectionIdFromLeafId provides a mock function with given fields: client, leafId
+func (_m *Utils) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
+	ret := _m.Called(client, leafId)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) uint16); ok {
+		r0 = rf(client, leafId)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
+		r1 = rf(client, leafId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCollectionManager provides a mock function with given fields: _a0
 func (_m *Utils) GetCollectionManager(_a0 *ethclient.Client) *bindings.CollectionManager {
 	ret := _m.Called(_a0)
@@ -953,6 +974,27 @@ func (_m *Utils) GetLatestBlockWithRetry(_a0 *ethclient.Client) (*coretypes.Head
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLeafIdOfACollection provides a mock function with given fields: client, collectionId
+func (_m *Utils) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
+	ret := _m.Called(client, collectionId)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) uint16); ok {
+		r0 = rf(client, collectionId)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
+		r1 = rf(client, collectionId)
 	} else {
 		r1 = ret.Error(1)
 	}

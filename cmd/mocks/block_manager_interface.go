@@ -66,13 +66,13 @@ func (_m *BlockManagerInterface) DisputeBiggestStakeProposed(_a0 *ethclient.Clie
 	return r0, r1
 }
 
-// FinalizeDispute provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *BlockManagerInterface) FinalizeDispute(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint8) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// DisputeCollectionIdShouldBeAbsent provides a mock function with given fields: client, opts, epoch, blockIndex, id, positionOfCollectionInBlock
+func (_m *BlockManagerInterface) DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, epoch, blockIndex, id, positionOfCollectionInBlock)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint16, *big.Int) *types.Transaction); ok {
+		r0 = rf(client, opts, epoch, blockIndex, id, positionOfCollectionInBlock)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -80,8 +80,77 @@ func (_m *BlockManagerInterface) FinalizeDispute(_a0 *ethclient.Client, _a1 *bin
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint16, *big.Int) error); ok {
+		r1 = rf(client, opts, epoch, blockIndex, id, positionOfCollectionInBlock)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DisputeCollectionIdShouldBePresent provides a mock function with given fields: client, opts, epoch, blockIndex, id
+func (_m *BlockManagerInterface) DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, epoch, blockIndex, id)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint16) *types.Transaction); ok {
+		r0 = rf(client, opts, epoch, blockIndex, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint16) error); ok {
+		r1 = rf(client, opts, epoch, blockIndex, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DisputeOnOrderOfIds provides a mock function with given fields: client, opts, epoch, blockIndex, index0, index1
+func (_m *BlockManagerInterface) DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, epoch, blockIndex, index0, index1)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int, *big.Int) *types.Transaction); ok {
+		r0 = rf(client, opts, epoch, blockIndex, index0, index1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int, *big.Int) error); ok {
+		r1 = rf(client, opts, epoch, blockIndex, index0, index1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FinalizeDispute provides a mock function with given fields: client, opts, epoch, blockIndex, positionOfCollectionInBlock
+func (_m *BlockManagerInterface) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, positionOfCollectionInBlock *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, epoch, blockIndex, positionOfCollectionInBlock)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int) *types.Transaction); ok {
+		r0 = rf(client, opts, epoch, blockIndex, positionOfCollectionInBlock)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int) error); ok {
+		r1 = rf(client, opts, epoch, blockIndex, positionOfCollectionInBlock)
 	} else {
 		r1 = ret.Error(1)
 	}
