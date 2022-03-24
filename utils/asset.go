@@ -51,7 +51,7 @@ func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, er
 	if err != nil {
 		return nil, err
 	}
-	for i := 0; i < int(numJobs); i++ {
+	for i := 1; i <= int(numJobs); i++ {
 		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
 		if err != nil {
 			return nil, err
