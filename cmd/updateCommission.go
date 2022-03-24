@@ -2,14 +2,13 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -82,6 +81,14 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 
 	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
+		waitFor := uint32(epochLimitForUpdateCommission) - (epoch - stakerInfo.EpochCommissionLastUpdated) + 1
+		timeRemaining := int64(waitFor) * core.EpochLength
+		if waitFor == 1 {
+			log.Infof("Cannot update commission now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
+		} else {
+			log.Infof("Cannot update commission now. Please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
+		}
+
 		return errors.New("invalid epoch for update")
 	}
 	txnOpts := types.TransactionOptions{
