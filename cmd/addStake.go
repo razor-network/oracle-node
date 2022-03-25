@@ -48,6 +48,13 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
+	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
+	utils.CheckError("Error in getting minimum safe razor amount: ", err)
+
+	if valueInWei.Cmp(minSafeRazor) < 0 {
+		log.Fatal("The amount of razors entered is below min safe value.")
+	}
+
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: address,
