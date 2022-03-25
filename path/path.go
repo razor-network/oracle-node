@@ -1,9 +1,5 @@
 package path
 
-import (
-	"os"
-)
-
 func (PathUtils) GetDefaultPath() (string, error) {
 	home, err := OSUtilsInterface.UserHomeDir()
 	if err != nil {
@@ -40,11 +36,6 @@ func (PathUtils) GetJobFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filePath := home + "/jobs.json"
-	f, err := OSUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
+	filePath := home + "/assets.json"
 	return filePath, nil
 }

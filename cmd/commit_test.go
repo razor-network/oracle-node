@@ -20,12 +20,12 @@ import (
 )
 
 func TestCommit(t *testing.T) {
-	var client *ethclient.Client
-	var data []*big.Int
-	var secret []byte
-	var account types.Account
-	var config types.Configurations
-
+	var (
+		client  *ethclient.Client
+		account types.Account
+		config  types.Configurations
+		seed    []byte
+	)
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
@@ -34,6 +34,7 @@ func TestCommit(t *testing.T) {
 		stateErr  error
 		epoch     uint32
 		epochErr  error
+		root      [32]byte
 		txnOpts   *bind.TransactOpts
 		commitTxn *Types.Transaction
 		commitErr error
@@ -122,8 +123,7 @@ func TestCommit(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-
-			got, err := utils.Commit(client, data, secret, account, config)
+			got, err := utils.Commit(client, config, account, tt.args.epoch, seed, tt.args.root)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -144,6 +144,7 @@ func TestHandleCommitState(t *testing.T) {
 	var (
 		client *ethclient.Client
 		epoch  uint32
+		seed   []byte
 	)
 
 	rogueValue := big.NewInt(int64(randMath.Intn(10000000)))
@@ -218,11 +219,11 @@ func TestHandleCommitState(t *testing.T) {
 			razorUtils = utilsMock
 
 			utilsMock.On("GetActiveAssetsData", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.data, tt.args.dataErr)
-			utilsMock.On("GetNumActiveAssets", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
+			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(tt.args.rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, tt.args.rogue)
+			got, err := utils.HandleCommitState(client, epoch, seed, tt.args.rogue)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}

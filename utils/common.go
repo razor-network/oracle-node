@@ -12,6 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/pflag"
 )
 
@@ -36,13 +37,13 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	if err != nil {
 		return -1, err
 	}
-	blockNumber := uint64(block.Number.Int64())
+	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockNumber%(core.StateLength) > upperLimit || blockNumber%(core.StateLength) < lowerLimit {
+	if blockTime%(core.StateLength) > upperLimit || blockTime%(core.StateLength) < lowerLimit {
 		return -1, nil
 	}
-	state := blockNumber / core.StateLength
+	state := blockTime / core.StateLength
 	return int64(state) % core.NumberOfStates, nil
 }
 
@@ -138,7 +139,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := latestHeader.Number.Int64() / core.EpochLength
+	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
 	return uint32(epoch), nil
 }
 
@@ -214,9 +215,44 @@ func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, buf
 	if err != nil {
 		return 0, err
 	}
-	timeRemaining := core.StateLength - (uint64(block.Number.Int64()) % core.StateLength)
-	blockTime := UtilsInterface.CalculateBlockTime(client)
+	timeRemaining := core.StateLength - (block.Time % core.StateLength)
 	upperLimit := (core.StateLength * uint64(bufferPercent)) / 100
 
-	return int64(timeRemaining-upperLimit) * blockTime, nil
+	return int64(timeRemaining - upperLimit), nil
+}
+
+func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
+	salt := solsha3.SoliditySHA3([]string{"uint32", "uint32[]"}, []interface{}{epoch, medians})
+	var saltInBytes32 [32]byte
+	copy(saltInBytes32[:], salt)
+	return saltInBytes32
+}
+
+func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
+	sum := big.NewInt(0).SetBytes(prngHashes)
+	maxBigInt := big.NewInt(int64(max))
+	return sum.Mod(sum, maxBigInt)
+}
+
+func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) *big.Int {
+	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
+	if err != nil {
+		log.Fatalf("Error in fetching block : %s", err)
+	}
+	current_epoch := block.Time / uint64(core.EpochLength)
+	previousBlockNumber := block.Number.Uint64() - core.StateLength
+
+	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
+	if err != nil {
+		log.Fatalf("Err in fetching Previous block : %s", err)
+	}
+	previousBlockActualTimestamp := previousBlock.Time
+	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
+	previous_epoch := previousBlockActualTimestamp / uint64(core.EpochLength)
+	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previous_epoch != current_epoch-1 {
+		return CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
+
+	}
+	return big.NewInt(int64(previousBlockNumber))
+
 }

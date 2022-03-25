@@ -16,16 +16,16 @@ type BindingsUtils struct {
 	mock.Mock
 }
 
-// NewAssetManager provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewAssetManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.AssetManager, error) {
+// NewBlockManager provides a mock function with given fields: _a0, _a1
+func (_m *BindingsUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.BlockManager, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *bindings.AssetManager
-	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.AssetManager); ok {
+	var r0 *bindings.BlockManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.BlockManager); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bindings.AssetManager)
+			r0 = ret.Get(0).(*bindings.BlockManager)
 		}
 	}
 
@@ -39,16 +39,16 @@ func (_m *BindingsUtils) NewAssetManager(_a0 common.Address, _a1 *ethclient.Clie
 	return r0, r1
 }
 
-// NewBlockManager provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.BlockManager, error) {
+// NewCollectionManager provides a mock function with given fields: _a0, _a1
+func (_m *BindingsUtils) NewCollectionManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.CollectionManager, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *bindings.BlockManager
-	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.BlockManager); ok {
+	var r0 *bindings.CollectionManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.CollectionManager); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bindings.BlockManager)
+			r0 = ret.Get(0).(*bindings.CollectionManager)
 		}
 	}
 

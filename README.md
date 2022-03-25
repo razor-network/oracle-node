@@ -445,57 +445,6 @@ Example:
 $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e --from 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
-### Override Job
-
-Jobs URLs are a placeholder for where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
-`overrideJob` command enables users to override the job URLs and selectors so that razor-nodes can fetch data directly from the override jobs.
-
-razor cli
-
-```
-$ ./razor overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
-```
-
-docker
-
-```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    overrideJob --jobId <job_id_to_override> --url <new_url_of_job> --selector <selector_in_json_or_XHTML_selector_format> --power <power> --selectorType <0_for_XHTML_or_1_for_JSON>
-```
-
-Example:
-
-```
-$ ./razor overrideJob --jobId 2 --url https://api.gemini.com/v1/pubticker/ethusd --selector last --power 2 --selectorType 0
-```
-
-### Delete override
-
-The overridden jobs can be deleted using `deleteOverride` command.
-
-razor cli
-
-```
-$ ./razor deleteOverride --jobId <jobId>
-```
-
-docker
-
-```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    deleteOverride --jobId <jobId>
-```
-
-Example:
-
-```
-$ ./razor deleteOverride --jobId 2
-```
-
 ### Set Config
 
 There are a set of parameters that are configurable. These include:
@@ -504,7 +453,7 @@ There are a set of parameters that are configurable. These include:
 - Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
 - Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
 - Wait Time: This is the number of blocks the system will wait while voting.
-- Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 0, the razor client will automatically calculate the optimum gas price and send it.
+- Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 1, the razor client will automatically calculate the optimum gas price and send it.
 - Log Level: Normally debug logs are not logged into the log file. But if you want you can set `logLevel` to `debug` and fetch the debug logs.
 - Gas Limit: The value with which the gas limit will be multiplied while sending every transaction.
 
@@ -752,6 +701,69 @@ docker run -it  --network razor_network\
     razornetwork/razor-go:latest \
     setConfig --exposeMetrics 2112
 ```
+
+### Override Job and Adding Your Custom Jobs
+
+Jobs URLs are a placeholder from where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
+You can override the existing job and also add your custom jobs by adding `assets.json` file in `.razor` directory so that razor-nodes can fetch data directly from the provided jobs.
+
+Shown below is an example of how your `assets.json` file should be -
+```
+{
+  "assets": {
+    "collection": {
+      "ethCollectionMean": {
+        "power": 2,
+        "official jobs": {
+          "1": {
+            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
+            "selector": "[`data`][`market_data`][`price_usd`]",
+            "power": 2,
+            "weight": 2
+          },
+        },
+        "custom jobs": [
+          {
+            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
+            "selector": "[`data`][`0`][`price`]",
+            "power": 3,
+            "weight": 2
+          },
+        ]
+      }
+    }
+  }
+}
+```
+
+Breaking down into components
+- The existing jobs that you want to override should be included in `official jobs` and fields like URL, selector should be replaced with your provided inputs respectively.
+
+In the above example for the collection `ethCollectionMean`, job having `jobId:1` is override by provided URL, selector, power and weight.
+```
+"official jobs": {
+          "1": {
+            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
+            "selector": "[`data`][`market_data`][`price_usd`]",
+            "power": 2,
+            "weight": 2
+          },
+```
+
+- Additional jobs that you want to add to a collection should be added in `custom jobs` field with their respective URLs and selectors.
+
+In the above example for the collection `ethCollectionMean`, new custom job having URL `https://api.lunarcrush.com/v2?data=assets&symbol=ETH` is added.
+```
+ "custom jobs": [
+          {
+            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
+            "selector": "[`data`][`0`][`price`]",
+            "power": 3,
+            "weight": 2
+          },
+        ]
+```
+
 ### Contribute to razor-go
 
 We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
@@ -780,7 +792,8 @@ We would really appreciate your contribution. To see our [contribution guideline
 5. Create account , and note address.
 
    ```bash
-   docker-compose run razor-go /usr/local/bin/razor create
+   docker-compose run razor-go /usr
+   /local/bin/razor create
    ```
 
 6. Import account

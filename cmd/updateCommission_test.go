@@ -41,6 +41,7 @@ func TestUpdateCommission(t *testing.T) {
 		epochLimitForUpdateCommissionErr error
 		epoch                            uint32
 		epochErr                         error
+		time                             string
 		UpdateCommissionTxn              *Types.Transaction
 		UpdateCommissionErr              error
 		hash                             common.Hash
@@ -169,7 +170,24 @@ func TestUpdateCommission(t *testing.T) {
 				},
 				maxCommission:                 20,
 				epochLimitForUpdateCommission: 100,
-				epoch:                         11,
+				epoch:                         1,
+				time:                          "8 hours 25 minutes 0 second ",
+				UpdateCommissionTxn:           &Types.Transaction{},
+				UpdateCommissionErr:           nil,
+			},
+			wantErr: errors.New("invalid epoch for update"),
+		},
+		{
+			name: "Test 10: When only one epoch is remaining for update commission",
+			args: args{
+				commission: 10,
+				stakerInfo: bindings.StructsStaker{
+					EpochCommissionLastUpdated: 1,
+				},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 100,
+				epoch:                         100,
+				time:                          "5 minutes 0 second ",
 				UpdateCommissionTxn:           &Types.Transaction{},
 				UpdateCommissionErr:           nil,
 			},
@@ -194,6 +212,7 @@ func TestUpdateCommission(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			utilsMock.On("GetMaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
 			utilsMock.On("GetEpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
+			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			stakeManagerUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionTxn, tt.args.UpdateCommissionErr)
 
 			utils := &UtilsStruct{}

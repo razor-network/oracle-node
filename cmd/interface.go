@@ -55,7 +55,6 @@ var osUtils OSInterface
 type UtilsInterface interface {
 	GetConfigFilePath() (string, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	GetUpdatedEpoch(*ethclient.Client) (uint32, error)
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(*ethclient.Client) int64
 	GetTxnOpts(types.TransactionOptions) *bind.TransactOpts
@@ -64,9 +63,9 @@ type UtilsInterface interface {
 	GetUint32BountyId(*pflag.FlagSet) (uint32, error)
 	ConnectToClient(string) *ethclient.Client
 	WaitForBlockCompletion(*ethclient.Client, string) int
-	GetNumActiveAssets(*ethclient.Client) (*big.Int, error)
+	GetNumActiveCollections(*ethclient.Client) (uint16, error)
 	GetRogueRandomValue(int) *big.Int
-	GetActiveAssetsData(*ethclient.Client, uint32) ([]*big.Int, error)
+	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)
 	GetJobFilePath() (string, error)
@@ -84,28 +83,26 @@ type UtilsInterface interface {
 	GetJobs(*ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
-	GetLock(*ethclient.Client, string, uint32) (types.Locks, error)
+	GetLock(*ethclient.Client, string, uint32, uint8) (types.Locks, error)
 	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
 	GetUpdatedStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
 	GetStakedToken(*ethclient.Client, common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(*big.Int, *big.Int, *big.Int) *big.Int
 	ConvertRZRToSRZR(*big.Int, *big.Int, *big.Int) (*big.Int, error)
-	GetWithdrawReleasePeriod(*ethclient.Client) (uint8, error)
+	GetWithdrawInitiationPeriod(*ethclient.Client) (uint8, error)
 	GetCollections(*ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(*ethclient.Client, uint32, uint32) (*big.Int, error)
 	GetStakerId(*ethclient.Client, string) (uint32, error)
 	GetNumberOfStakers(*ethclient.Client) (uint32, error)
-	GetRandaoHash(*ethclient.Client) ([32]byte, error)
 	GetNumberOfProposedBlocks(*ethclient.Client, uint32) (uint8, error)
 	GetMaxAltBlocks(*ethclient.Client) (uint8, error)
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetEpochLastRevealed(*ethclient.Client, uint32) (uint32, error)
-	GetVoteValue(*ethclient.Client, uint16, uint32) (*big.Int, error)
-	GetTotalInfluenceRevealed(*ethclient.Client, uint32) (*big.Int, error)
+	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error)
+	GetTotalInfluenceRevealed(*ethclient.Client, uint32, uint16) (*big.Int, error)
 	ConvertBigIntArrayToUint32Array([]*big.Int) []uint32
-	GetActiveAssetIds(*ethclient.Client) ([]uint16, error)
+	GetActiveCollections(*ethclient.Client) ([]uint16, error)
 	GetBlockManager(*ethclient.Client) *bindings.BlockManager
-	GetVotes(*ethclient.Client, uint32) (bindings.StructsVote, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	PrivateKeyPrompt() string
 	PasswordPrompt() string
@@ -119,18 +116,21 @@ type UtilsInterface interface {
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
-	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
+	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	SecondsToReadableTime(int) string
 }
 
 type StakeManagerInterface interface {
 	Stake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
-	ExtendLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	ResetUnstakeLock(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	Delegate(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	InitiateWithdraw(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
+	UnlockWithdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error)
 	SetDelegationAcceptance(*ethclient.Client, *bind.TransactOpts, bool) (*Types.Transaction, error)
 	Unstake(*ethclient.Client, *bind.TransactOpts, uint32, *big.Int) (*Types.Transaction, error)
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
+	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -145,15 +145,18 @@ type KeystoreInterface interface {
 
 type BlockManagerInterface interface {
 	ClaimBlockReward(*ethclient.Client, *bind.TransactOpts) (*Types.Transaction, error)
-	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint32, *big.Int, uint32) (*Types.Transaction, error)
-	FinalizeDispute(*ethclient.Client, *bind.TransactOpts, uint32, uint8) (*Types.Transaction, error)
+	Propose(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) (*Types.Transaction, error)
+	FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
 	DisputeBiggestStakeProposed(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) (*Types.Transaction, error)
+	DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*Types.Transaction, error)
+	DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
+	DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error)
 	GiveSorted(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) (*Types.Transaction, error)
 }
 
 type VoteManagerInterface interface {
-	Commit(*ethclient.Client, *bind.TransactOpts, uint32, [32]byte) (*Types.Transaction, error)
-	Reveal(*ethclient.Client, *bind.TransactOpts, uint32, []*big.Int, [32]byte) (*Types.Transaction, error)
+	Commit(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error)
+	Reveal(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error)
 }
 
 type TokenManagerInterface interface {
@@ -166,9 +169,9 @@ type AssetManagerInterface interface {
 	CreateJob(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) (*Types.Transaction, error)
 	SetCollectionStatus(*ethclient.Client, *bind.TransactOpts, bool, uint16) (*Types.Transaction, error)
 	GetActiveStatus(*ethclient.Client, *bind.CallOpts, uint16) (bool, error)
-	CreateCollection(*ethclient.Client, *bind.TransactOpts, uint16, int8, uint32, []uint16, string) (*Types.Transaction, error)
+	CreateCollection(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint32, []uint16, string) (*Types.Transaction, error)
 	UpdateJob(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) (*Types.Transaction, error)
-	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint16, uint32, int8, []uint16) (*Types.Transaction, error)
+	UpdateCollection(*ethclient.Client, *bind.TransactOpts, uint16, uint32, uint32, int8, []uint16) (*Types.Transaction, error)
 }
 
 type FlagSetInterface interface {
@@ -206,7 +209,7 @@ type FlagSetInterface interface {
 	GetUint16CollectionId(*pflag.FlagSet) (uint16, error)
 	GetStringValue(*pflag.FlagSet) (string, error)
 	GetStringPow(*pflag.FlagSet) (string, error)
-	GetUint16Tolerance(*pflag.FlagSet) (uint16, error)
+	GetUint32Tolerance(*pflag.FlagSet) (uint32, error)
 	GetBoolAutoVote(*pflag.FlagSet) (bool, error)
 	GetBoolRogue(*pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(*pflag.FlagSet) ([]string, error)
@@ -226,14 +229,17 @@ type UtilsCmdInterface interface {
 	ExecuteClaimBounty(*pflag.FlagSet)
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
-	HandleCommitState(*ethclient.Client, uint32, types.Rogue) ([]*big.Int, error)
-	Commit(*ethclient.Client, []*big.Int, []byte, types.Account, types.Configurations) (common.Hash, error)
+	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
+	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
+	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(*pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(*pflag.FlagSet)
 	Transfer(*ethclient.Client, types.Configurations, types.TransferInput) (common.Hash, error)
 	HandleRevealState(*ethclient.Client, bindings.StructsStaker, uint32) error
-	Reveal(*ethclient.Client, []*big.Int, []byte, types.Account, string, types.Configurations) (common.Hash, error)
+	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error)
+	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
+	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
 	ExecuteCreateJob(*pflag.FlagSet)
 	CreateJob(*ethclient.Client, types.Configurations, types.CreateJobInput) (common.Hash, error)
 	ExecuteCreateCollection(*pflag.FlagSet)
@@ -244,10 +250,14 @@ type UtilsCmdInterface interface {
 	GetJobList(*ethclient.Client) error
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (common.Hash, error)
+	ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error)
 	AutoWithdraw(types.TransactionOptions, uint32) error
-	ExecuteWithdraw(*pflag.FlagSet)
-	Withdraw(*ethclient.Client, *bind.TransactOpts, uint32) (common.Hash, error)
-	WithdrawFunds(*ethclient.Client, types.Account, types.Configurations, uint32) (common.Hash, error)
+	ExecuteInitiateWithdraw(*pflag.FlagSet)
+	ExecuteUnlockWithdraw(set *pflag.FlagSet)
+	InitiateWithdraw(*ethclient.Client, *bind.TransactOpts, uint32) (common.Hash, error)
+	UnlockWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
+	HandleUnstakeLock(*ethclient.Client, types.Account, types.Configurations, uint32) (common.Hash, error)
+	HandleWithdrawLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
 	ExecuteUpdateJob(*pflag.FlagSet)
 	UpdateJob(*ethclient.Client, types.Configurations, types.CreateJobInput, uint16) (common.Hash, error)
 	WaitIfCommitState(*ethclient.Client, string) (uint32, error)
@@ -260,16 +270,19 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCollection(*pflag.FlagSet)
 	UpdateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput, uint16) (common.Hash, error)
 	InfluencedMedian([]*big.Int, *big.Int) *big.Int
-	GetSortedVotes(*ethclient.Client, string, uint16, uint32) ([]*big.Int, error)
-	MakeBlock(*ethclient.Client, string, types.Rogue) ([]uint32, error)
+	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(types.ElectedProposer, *big.Int) bool
+	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
 	GetIteration(*ethclient.Client, types.ElectedProposer, int32) int
-	Propose(*ethclient.Client, types.Account, types.Configurations, uint32, uint32, types.Rogue) (common.Hash, error)
+	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
 	GiveSorted(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32)
-	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, int) error
-	HandleDispute(*ethclient.Client, types.Configurations, types.Account, uint32, types.Rogue) error
+	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
+	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
+	Dispute(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, bindings.StructsBlock, uint16, []uint32) error
+	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
+	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
 	ExecuteExtendLock(*pflag.FlagSet)
-	ExtendLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)
+	ResetUnstakeLock(*ethclient.Client, types.Configurations, types.ExtendLockInput) (common.Hash, error)
 	CheckCurrentStatus(*ethclient.Client, uint16) (bool, error)
 	ExecuteModifyAssetStatus(*pflag.FlagSet)
 	ModifyAssetStatus(*ethclient.Client, types.Configurations, types.ModifyAssetInput) (common.Hash, error)
@@ -283,15 +296,11 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCommission(*pflag.FlagSet)
 	UpdateCommission(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error
 	GetBiggestStakeAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
-	ExecuteOverrideJob(*pflag.FlagSet)
-	OverrideJob(*types.StructsJob) error
-	ExecuteDeleteOverrideJob(*pflag.FlagSet)
-	DeleteOverrideJob(uint16) error
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
 	GetCommitDataFileName(string) (string, error)
 	GetMedianDataFileName(string) (string, error)
-	CalculateSecret(types.Account, uint32) []byte
+	CalculateSecret(types.Account, uint32) ([]byte, error)
 	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
 	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)
 	ExecuteVote(*pflag.FlagSet)
@@ -299,6 +308,8 @@ type UtilsCmdInterface interface {
 	HandleExit()
 	ExecuteListAccounts()
 	ExecuteStake(*pflag.FlagSet)
+	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
+	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
 }
 
 type TransactionInterface interface {

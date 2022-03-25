@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/hex"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -12,46 +13,85 @@ import (
 	"razor/utils"
 )
 
-func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, rogueData types.Rogue) ([]*big.Int, error) {
-	var (
-		data []*big.Int
-		err  error
-	)
-	//rogue mode
-	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-		numActiveAssets, err := razorUtils.GetNumActiveAssets(client)
-		if err != nil {
-			return nil, err
-		}
-		for i := 0; i < int(numActiveAssets.Int64()); i++ {
-			rogueValue := razorUtils.GetRogueRandomValue(10000000)
-			data = append(data, rogueValue)
-		}
-		log.Debug("Data: ", data)
-		return data, nil
-	}
-
-	//normal mode
-	data, err = razorUtils.GetActiveAssetsData(client, epoch)
+/*
+GetSalt calculates the salt on the basis of previous epoch and the medians of the previous epoch.
+If the previous epoch doesn't contain any medians, then the value is fetched from the smart contract.
+*/
+func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
+	previousEpoch := epoch - 1
+	numProposedBlock, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
 	if err != nil {
-		return nil, err
+		return [32]byte{}, err
 	}
-	log.Debug("Data: ", data)
-	return data, nil
+	blockIndexedToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
+		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
+	}
+	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexedToBeConfirmed)))
+	previousBlock, err := utils.UtilsInterface.GetProposedBlock(client, previousEpoch, blockId)
+	if err != nil {
+		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
+	}
+	return utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians), nil
 }
 
-func (*UtilsStruct) Commit(client *ethclient.Client, data []*big.Int, secret []byte, account types.Account, config types.Configurations) (common.Hash, error) {
+/*
+HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
+Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
+
+TODO: Add rogue mode changes
+*/
+func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
+	numActiveCollections, err := utils.UtilsInterface.GetNumActiveCollections(client)
+	if err != nil {
+		return types.CommitData{}, err
+	}
+
+	assignedCollections, seqAllottedCollections, err := utils.UtilsInterface.GetAssignedCollections(client, numActiveCollections, seed)
+	if err != nil {
+		return types.CommitData{}, err
+	}
+
+	var leavesOfTree []*big.Int
+	for i := 0; i < int(numActiveCollections); i++ {
+		if assignedCollections[i] {
+			collectionId, err := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
+			if err != nil {
+				return types.CommitData{}, err
+			}
+			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			if err != nil {
+				return types.CommitData{}, err
+			}
+			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
+			leavesOfTree = append(leavesOfTree, collectionData)
+		} else {
+			leavesOfTree = append(leavesOfTree, big.NewInt(0))
+		}
+	}
+	log.Debug("Assigned Collections: ", assignedCollections)
+	log.Debug("SeqAllottedCollections: ", seqAllottedCollections)
+	log.Debug("Leaves: ", leavesOfTree)
+	return types.CommitData{
+		AssignedCollections:    assignedCollections,
+		SeqAllottedCollections: seqAllottedCollections,
+		Leaves:                 leavesOfTree,
+	}, nil
+}
+
+/*
+Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
+*/
+func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
 
-	epoch, err := razorUtils.GetEpoch(client)
-	if err != nil {
-		return core.NilHash, err
-	}
-
-	commitment := solsha3.SoliditySHA3([]string{"uint32", "uint256[]", "bytes32"}, []interface{}{epoch, data, "0x" + hex.EncodeToString(secret)})
+	commitment := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(root[:]), "0x" + hex.EncodeToString(seed)})
 	commitmentToSend := [32]byte{}
 	copy(commitmentToSend[:], commitment)
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -66,7 +106,7 @@ func (*UtilsStruct) Commit(client *ethclient.Client, data []*big.Int, secret []b
 		Parameters:      []interface{}{epoch, commitmentToSend},
 	})
 
-	log.Debugf("Committing: epoch: %d, commitment: %s, secret: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(secret), account.Address)
+	log.Debugf("Committing: epoch: %d, commitment: %s, seed: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(seed), account.Address)
 
 	log.Info("Commitment sent...")
 	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)

@@ -378,12 +378,12 @@ func TestGetDelayedState(t *testing.T) {
 			name: "Test 1: When GetDelayedState() executes successfully",
 			args: args{
 				block: &types.Header{
-					Number: big.NewInt(100),
+					Time: 100,
 				},
 				buffer: 2,
 			},
 
-			want:    0,
+			want:    1,
 			wantErr: false,
 		},
 		{
@@ -401,11 +401,23 @@ func TestGetDelayedState(t *testing.T) {
 			name: "Test 3: When blockNumber%(core.StateLength) is greater than lowerLimit",
 			args: args{
 				block: &types.Header{
-					Number: big.NewInt(900),
+					Time: 1080,
 				},
 				buffer: 2,
 			},
 			want:    -1,
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When GetDelayedState() executes successfully and state we get is other than 0",
+			args: args{
+				block: &types.Header{
+					Time: 900,
+				},
+				buffer: 2,
+			},
+
+			want:    2,
 			wantErr: false,
 		},
 	}

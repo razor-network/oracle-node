@@ -14,7 +14,19 @@ func Contains(slice interface{}, val interface{}) bool {
 				return true
 			}
 		}
+	case []uint32:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
+		}
 	case []string:
+		for _, value := range slice {
+			if value == val {
+				return true
+			}
+		}
+	case []uint16:
 		for _, value := range slice {
 			if value == val {
 				return true
@@ -24,7 +36,7 @@ func Contains(slice interface{}, val interface{}) bool {
 	return false
 }
 
-func IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
+func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
 	if len(arr1) > len(arr2) {
 		return false, len(arr2)
 	} else if len(arr1) < len(arr2) {
@@ -36,6 +48,41 @@ func IsEqual(arr1 []uint32, arr2 []uint32) (bool, int) {
 		}
 	}
 	return true, -1
+}
+
+// IsMissing checks for elements present in 1st array but not in second
+func IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
+	arrayMap := make(map[uint16]bool)
+	for i := 0; i < len(arr2); i++ {
+		arrayMap[arr2[i]] = true
+	}
+	for i := 0; i < len(arr1); i++ {
+		if !arrayMap[arr1[i]] {
+			return true, i, arr1[i]
+		}
+	}
+	return false, -1, 0
+}
+
+func IsSorted(values []uint16) (bool, int, int) {
+	if values == nil {
+		return true, -1, -1
+	}
+	for i := 0; i < len(values)-1; i++ {
+		if values[i] > values[i+1] {
+			return false, i, i + 1
+		}
+	}
+	return true, -1, -1
+}
+
+func IndexOf(array []uint32, value uint32) int {
+	for arrayIndex, arrayVal := range array {
+		if arrayVal == value {
+			return arrayIndex
+		}
+	}
+	return -1
 }
 
 func GetDataInBytes(data []*big.Int) [][]byte {
