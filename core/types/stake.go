@@ -16,6 +16,7 @@ type Staker struct {
 	EpochFirstStakedOrLastPenalized uint32
 	EpochCommissionLastUpdated      uint32
 	Stake                           *big.Int
+	StakerReward                    *big.Int
 }
 
 type BountyLock struct {
