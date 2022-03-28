@@ -34,6 +34,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 

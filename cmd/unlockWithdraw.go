@@ -28,6 +28,7 @@ func initializeUnlockWithdraw(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 

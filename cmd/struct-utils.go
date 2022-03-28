@@ -50,6 +50,7 @@ func InitializeUtils() {
 	utils.JsonInterface = &utils.JsonStruct{}
 	utils.StakedTokenInterface = &utils.StakedTokenStruct{}
 	utils.RetryInterface = &utils.RetryStruct{}
+	utils.FlagSetInterface = &utils.FlagSetStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -314,6 +315,10 @@ func (u Utils) SecondsToReadableTime(time int) string {
 
 func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
 	return utilsInterface.GetStakerSRZRBalance(client, staker)
+}
+
+func (u Utils) AssignLogFile(flagSet *pflag.FlagSet) {
+	utilsInterface.AssignLogFile(flagSet)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {

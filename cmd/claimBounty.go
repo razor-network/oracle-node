@@ -22,7 +22,7 @@ var claimBountyCmd = &cobra.Command{
 	Long: `ClaimBounty allows the users who are bountyHunter to redeem their bounty in razor network
 
 Example:
-  ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bountyId 2`,
+  ./razor claimBounty --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --bountyId 2 --logFile claimBounty`,
 	Run: initialiseClaimBounty,
 }
 
@@ -31,6 +31,7 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 

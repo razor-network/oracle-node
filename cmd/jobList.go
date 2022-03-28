@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"os"
 	"razor/utils"
 	"strconv"
@@ -20,11 +21,12 @@ Example:
 	Run: initialiseJobList,
 }
 
-func initialiseJobList(*cobra.Command, []string) {
-	cmdUtils.ExecuteJobList()
+func initialiseJobList(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteJobList(cmd.Flags())
 }
 
-func (*UtilsStruct) ExecuteJobList() {
+func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)

@@ -65,6 +65,11 @@ func (_m *Utils) Aggregate(_a0 *ethclient.Client, _a1 uint32, _a2 bindings.Struc
 	return r0, r1
 }
 
+// AssignLogFile provides a mock function with given fields: _a0
+func (_m *Utils) AssignLogFile(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // AssignStakerId provides a mock function with given fields: _a0, _a1, _a2
 func (_m *Utils) AssignStakerId(_a0 *pflag.FlagSet, _a1 *ethclient.Client, _a2 string) (uint32, error) {
 	ret := _m.Called(_a0, _a1, _a2)

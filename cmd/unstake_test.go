@@ -280,6 +280,7 @@ func TestExecuteUnstake(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 			flagSetUtils = flagSetUtilsMock
 
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
