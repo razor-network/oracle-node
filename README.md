@@ -286,6 +286,31 @@ Example:
 $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10 --stakerId 1
 ```
 
+### Claim Commission 
+
+Staker can claim the rewards earned from delegator's pool share as commission using `claimCommission`
+
+razor cli
+
+```
+$ ./razor claimCommission --address <address> 
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    claimCommission --address <address> 
+```
+
+Example:
+
+```
+$ ./razor claimCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
+```
+
 ### Vote
 
 You can start voting once you've staked some razors
