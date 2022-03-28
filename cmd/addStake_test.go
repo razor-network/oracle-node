@@ -158,7 +158,7 @@ func TestExecuteStake(t *testing.T) {
 		rogueModeErr     error
 		voteErr          error
 		revealedDataMaps types.RevealedDataMaps
-		revealedDataErr  error
+		//revealedDataErr  error
 	}
 	tests := []struct {
 		name          string

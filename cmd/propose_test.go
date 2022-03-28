@@ -41,10 +41,10 @@ func TestPropose(t *testing.T) {
 	copy(saltBytes32[:], salt)
 
 	type args struct {
-		state                      int64
-		stateErr                   error
-		staker                     bindings.StructsStaker
-		stakerErr                  error
+		state    int64
+		stateErr error
+		staker   bindings.StructsStaker
+		//stakerErr                  error
 		numStakers                 uint32
 		numStakerErr               error
 		biggestInfluence           *big.Int
