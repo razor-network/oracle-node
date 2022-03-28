@@ -41,7 +41,7 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit || blockTime%(core.StateLength) < lowerLimit {
+	if blockTime%(core.StateLength) > upperLimit+core.StateBuffer || blockTime%(core.StateLength) < lowerLimit+core.StateBuffer {
 		return -1, nil
 	}
 	state := blockTime / core.StateLength
