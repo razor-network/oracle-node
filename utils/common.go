@@ -236,6 +236,7 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
 		log.Errorf("Err in fetching Previous block : %s", err)
+		return nil, err
 	}
 	previousBlockActualTimestamp := previousBlock.Time
 	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
