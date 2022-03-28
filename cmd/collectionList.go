@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"os"
 	"razor/utils"
 	"strconv"
@@ -17,15 +18,16 @@ var collectionListCmd = &cobra.Command{
 	Short: "list of all collections",
 	Long: `Provides the list of all collections with their name, power, ID etc.
 Example:
-	./razor collectionList `,
+	./razor collectionList --logFile collectionListLogs`,
 	Run: initialiseCollectionList,
 }
 
-func initialiseCollectionList(*cobra.Command, []string) {
-	cmdUtils.ExecuteCollectionList()
+func initialiseCollectionList(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteCollectionList(cmd.Flags())
 }
 
-func (*UtilsStruct) ExecuteCollectionList() {
+func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 

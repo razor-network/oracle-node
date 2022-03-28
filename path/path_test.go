@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/mock"
 	"io/fs"
+	"os"
 	"razor/path/mocks"
 	"testing"
 )
@@ -94,9 +95,12 @@ func TestGetDefaultPath(t *testing.T) {
 }
 
 func TestGetLogFilePath(t *testing.T) {
+	var fileName string
 	type args struct {
 		path    string
 		pathErr error
+		file    *os.File
+		fileErr error
 	}
 	tests := []struct {
 		name    string
@@ -109,7 +113,7 @@ func TestGetLogFilePath(t *testing.T) {
 			args: args{
 				path: "./home/.razor",
 			},
-			want:    "./home/.razor/razor.log",
+			want:    "./home/.razor/.log",
 			wantErr: nil,
 		},
 		{
@@ -120,15 +124,28 @@ func TestGetLogFilePath(t *testing.T) {
 			want:    "",
 			wantErr: errors.New("path error"),
 		},
+		{
+			name: "Test 3: When there is an error in getting file",
+			args: args{
+				path:    "./home/.razor",
+				fileErr: errors.New("error in getting file"),
+			},
+			want:    "",
+			wantErr: errors.New("error in getting file"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pathMock := new(mocks.PathInterface)
+			osMock := new(mocks.OSInterface)
+
+			OSUtilsInterface = osMock
 			PathUtilsInterface = pathMock
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			osMock.On("OpenFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
 			pa := PathUtils{}
-			got, err := pa.GetLogFilePath()
+			got, err := pa.GetLogFilePath(fileName)
 			if got != tt.want {
 				t.Errorf("GetLogFilePath(), got = %v, want = %v", got, tt.want)
 			}

@@ -19,7 +19,7 @@ var delegateCmd = &cobra.Command{
 	Long: `If a user has Razors with them, and wants to stake them but doesn't want to set up a node, they can use the delegate command.
 
 Example:
-  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1
+  ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --stakerId 1 --logFile delegateLogs
 `,
 	Run: initialiseDelegate,
 }
@@ -29,6 +29,7 @@ func initialiseDelegate(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 

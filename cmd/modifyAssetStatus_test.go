@@ -352,6 +352,7 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			flagSetUtils = flagsetUtilsMock
 			stringUtils = stringMock
 
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagsetUtilsMock.On("GetUint16AssetId", flagSet).Return(tt.args.assetId, tt.args.assetIdErr)

@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 	"razor/core"
+	"razor/logger"
 	"strconv"
 	"time"
 
@@ -40,7 +41,7 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit || blockTime%(core.StateLength) < lowerLimit {
+	if blockTime%(core.StateLength) > upperLimit+core.StateBuffer || blockTime%(core.StateLength) < lowerLimit+core.StateBuffer {
 		return -1, nil
 	}
 	state := blockTime / core.StateLength
@@ -244,4 +245,14 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 	}
 	return big.NewInt(int64(previousBlockNumber))
 
+}
+
+func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
+	if UtilsInterface.IsFlagPassed("logFile") {
+		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
+		if err != nil {
+			log.Fatalf("Error in getting file name : ", err)
+		}
+		logger.InitializeLogger(fileName)
+	}
 }

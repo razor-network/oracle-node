@@ -43,6 +43,7 @@ import (
 //go:generate mockery --name StakedTokenUtils --output ./mocks --case=underscore
 //go:generate mockery --name RetryUtils --output ./mocks --case=underscore
 //go:generate mockery --name MerkleTreeInterface --output ./mocks --case=underscore
+//go:generate mockery --name FlagSetUtils --output ./mocks --case=underscore
 
 var UtilsInterface Utils
 var EthClient EthClientUtils
@@ -65,6 +66,7 @@ var JsonInterface JsonUtils
 var StakedTokenInterface StakedTokenUtils
 var RetryInterface RetryUtils
 var MerkleInterface MerkleTreeInterface
+var FlagSetInterface FlagSetUtils
 
 type Utils interface {
 	SuggestGasPriceWithRetry(*ethclient.Client) (*big.Int, error)
@@ -159,6 +161,7 @@ type Utils interface {
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	SecondsToReadableTime(int) string
+	AssignLogFile(*pflag.FlagSet)
 }
 
 type EthClientUtils interface {
@@ -290,6 +293,10 @@ type RetryUtils interface {
 	RetryAttempts(uint) retry.Option
 }
 
+type FlagSetUtils interface {
+	GetLogFileName(*pflag.FlagSet) (string, error)
+}
+
 type UtilsStruct struct{}
 type EthClientStruct struct{}
 type ClientStruct struct{}
@@ -311,6 +318,7 @@ type JsonStruct struct{}
 type StakedTokenStruct struct{}
 type RetryStruct struct{}
 type MerkleTreeStruct struct{}
+type FlagSetStruct struct{}
 
 type OptionsPackageStruct struct {
 	UtilsInterface        Utils
@@ -334,4 +342,5 @@ type OptionsPackageStruct struct {
 	StakedTokenInterface  StakedTokenUtils
 	RetryInterface        RetryUtils
 	MerkleInterface       MerkleTreeInterface
+	FlagSetInterface      FlagSetUtils
 }
