@@ -50,6 +50,7 @@ func InitializeUtils() {
 	utils.JsonInterface = &utils.JsonStruct{}
 	utils.StakedTokenInterface = &utils.StakedTokenStruct{}
 	utils.RetryInterface = &utils.RetryStruct{}
+	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {

@@ -15,6 +15,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"testing"
 )
 
@@ -29,14 +30,18 @@ func TestUnstake(t *testing.T) {
 	var stakerId uint32
 
 	type args struct {
-		amount     *big.Int
-		lock       types.Locks
-		lockErr    error
-		epoch      uint32
-		epochErr   error
-		unstakeTxn *Types.Transaction
-		unstakeErr error
-		hash       common.Hash
+		staker         bindings.StructsStaker
+		stakerErr      error
+		approveHash    common.Hash
+		approveHashErr error
+		amount         *big.Int
+		lock           types.Locks
+		lockErr        error
+		state          uint32
+		stateErr       error
+		unstakeTxn     *Types.Transaction
+		unstakeErr     error
+		hash           common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -49,7 +54,6 @@ func TestUnstake(t *testing.T) {
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
-				epoch:      5,
 				amount:     big.NewInt(1000),
 				unstakeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
@@ -60,23 +64,10 @@ func TestUnstake(t *testing.T) {
 			name: "Test 2: When there is an error in getting lock",
 			args: args{
 				lockErr:    errors.New("lock error"),
-				epoch:      5,
 				unstakeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: errors.New("lock error"),
-		},
-		{
-			name: "Test 3: When there is an error in getting epoch",
-			args: args{
-				lock: types.Locks{
-					Amount: big.NewInt(0),
-				},
-				epochErr:   errors.New("epoch error"),
-				unstakeTxn: &Types.Transaction{},
-				hash:       common.BigToHash(big.NewInt(1)),
-			},
-			wantErr: errors.New("epoch error"),
 		},
 		{
 			name: "Test 4: When Unstake transaction fails",
@@ -84,7 +75,6 @@ func TestUnstake(t *testing.T) {
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
-				epoch:      5,
 				amount:     big.NewInt(1000),
 				unstakeErr: errors.New("unstake error"),
 				hash:       common.BigToHash(big.NewInt(1)),
@@ -97,11 +87,10 @@ func TestUnstake(t *testing.T) {
 				lock: types.Locks{
 					Amount: big.NewInt(1000),
 				},
-				epoch:      5,
 				unstakeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
-			wantErr: errors.New("existing lock"),
+			wantErr: errors.New("existing unstake lock"),
 		},
 	}
 	for _, tt := range tests {
@@ -117,8 +106,11 @@ func TestUnstake(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 			transactionUtils = transactionUtilsMock
 
-			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("int")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.approveHash, tt.args.approveHashErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
@@ -242,7 +234,7 @@ func TestExecuteUnstake(t *testing.T) {
 				},
 				unstakeErr: nil,
 			},
-			expectedFatal: true,
+			expectedFatal: false,
 		},
 		{
 			name: "Test 6: When there is an error from Unstake function",

@@ -47,6 +47,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	JsonInterface = optionsPackageStruct.JsonInterface
 	StakedTokenInterface = optionsPackageStruct.StakedTokenInterface
 	RetryInterface = optionsPackageStruct.RetryInterface
+	MerkleInterface = optionsPackageStruct.MerkleInterface
 	return &UtilsStruct{}
 }
 
