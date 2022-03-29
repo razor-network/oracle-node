@@ -45,6 +45,29 @@ func (_m *StakeManagerInterface) ApproveUnstake(client *ethclient.Client, opts *
 	return r0, r1
 }
 
+// ClaimStakeReward provides a mock function with given fields: client, opts
+func (_m *StakeManagerInterface) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(client, opts)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts) *types.Transaction); ok {
+		r0 = rf(client, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts) error); ok {
+		r1 = rf(client, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Delegate provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *StakeManagerInterface) Delegate(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 *big.Int) (*types.Transaction, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)

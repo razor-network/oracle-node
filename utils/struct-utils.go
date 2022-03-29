@@ -47,6 +47,8 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	JsonInterface = optionsPackageStruct.JsonInterface
 	StakedTokenInterface = optionsPackageStruct.StakedTokenInterface
 	RetryInterface = optionsPackageStruct.RetryInterface
+	MerkleInterface = optionsPackageStruct.MerkleInterface
+	FlagSetInterface = optionsPackageStruct.FlagSetInterface
 	return &UtilsStruct{}
 }
 
@@ -147,6 +149,11 @@ func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common
 func (s StakeManagerStruct) GetNumStakers(client *ethclient.Client) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.GetNumStakers(&opts)
+}
+
+func (s StakeManagerStruct) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	return stakeManager.MinSafeRazor(&opts)
 }
 
 func (s StakeManagerStruct) Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (coretypes.Locks, error) {
@@ -350,4 +357,8 @@ func (s StakedTokenStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts
 
 func (r RetryStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 	return retry.Attempts(numberOfAttempts)
+}
+
+func (f FlagSetStruct) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("logFile")
 }

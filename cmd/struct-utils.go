@@ -50,6 +50,8 @@ func InitializeUtils() {
 	utils.JsonInterface = &utils.JsonStruct{}
 	utils.StakedTokenInterface = &utils.StakedTokenStruct{}
 	utils.RetryInterface = &utils.RetryStruct{}
+	utils.MerkleInterface = &utils.MerkleTreeStruct{}
+	utils.FlagSetInterface = &utils.FlagSetStruct{}
 }
 
 func (u Utils) GetConfigFilePath() (string, error) {
@@ -316,6 +318,10 @@ func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.St
 	return utilsInterface.GetStakerSRZRBalance(client, staker)
 }
 
+func (u Utils) AssignLogFile(flagSet *pflag.FlagSet) {
+	utilsInterface.AssignLogFile(flagSet)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
@@ -384,6 +390,11 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.BountyLocks(opts, bountyId)
+}
+
+func (stakeManagerUtils StakeManagerUtils) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	stakeManager := utilsInterface.GetStakeManager(client)
+	return stakeManager.ClaimStakerReward(opts)
 }
 
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {

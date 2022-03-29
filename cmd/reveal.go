@@ -95,7 +95,10 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 }
 
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
-	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	if err != nil {
+		return nil, errors.New("Not able to Fetch Block: " + err.Error())
+	}
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,

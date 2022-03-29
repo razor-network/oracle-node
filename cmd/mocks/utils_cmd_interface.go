@@ -232,6 +232,11 @@ func (_m *UtilsCmdInterface) ClaimBounty(_a0 types.Configurations, _a1 *ethclien
 	return r0, r1
 }
 
+// ClaimCommission provides a mock function with given fields: flagSet
+func (_m *UtilsCmdInterface) ClaimCommission(flagSet *pflag.FlagSet) {
+	_m.Called(flagSet)
+}
+
 // Commit provides a mock function with given fields: client, config, account, epoch, seed, root
 func (_m *UtilsCmdInterface) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error) {
 	ret := _m.Called(client, config, account, epoch, seed, root)
@@ -364,9 +369,9 @@ func (_m *UtilsCmdInterface) ExecuteClaimBounty(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExecuteCollectionList provides a mock function with given fields:
-func (_m *UtilsCmdInterface) ExecuteCollectionList() {
-	_m.Called()
+// ExecuteCollectionList provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteCollectionList(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
 }
 
 // ExecuteCreate provides a mock function with given fields: _a0
@@ -394,9 +399,9 @@ func (_m *UtilsCmdInterface) ExecuteExtendLock(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExecuteImport provides a mock function with given fields:
-func (_m *UtilsCmdInterface) ExecuteImport() {
-	_m.Called()
+// ExecuteImport provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteImport(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
 }
 
 // ExecuteInitiateWithdraw provides a mock function with given fields: _a0
@@ -404,14 +409,14 @@ func (_m *UtilsCmdInterface) ExecuteInitiateWithdraw(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExecuteJobList provides a mock function with given fields:
-func (_m *UtilsCmdInterface) ExecuteJobList() {
-	_m.Called()
+// ExecuteJobList provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteJobList(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
 }
 
-// ExecuteListAccounts provides a mock function with given fields:
-func (_m *UtilsCmdInterface) ExecuteListAccounts() {
-	_m.Called()
+// ExecuteListAccounts provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteListAccounts(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
 }
 
 // ExecuteModifyAssetStatus provides a mock function with given fields: _a0

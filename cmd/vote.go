@@ -41,6 +41,7 @@ func initializeVote(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
@@ -403,7 +404,10 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 }
 
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	if err != nil {
+		return 0, errors.New("Not able to Fetch Block: " + err.Error())
+	}
 	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,

@@ -32,7 +32,6 @@ type Asset struct {
 type Locks struct {
 	Amount      *big.Int
 	UnlockAfter *big.Int
-	Initial     *big.Int
 }
 
 type StructsJob struct {

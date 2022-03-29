@@ -3,9 +3,8 @@
 package mocks
 
 import (
+	big "math/big"
 	bindings "razor/pkg/bindings"
-
-	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	common "github.com/ethereum/go-ethereum/common"
 
@@ -21,20 +20,20 @@ type StakeManagerUtils struct {
 	mock.Mock
 }
 
-// EpochLimitForUpdateCommission provides a mock function with given fields: _a0, _a1
-func (_m *StakeManagerUtils) EpochLimitForUpdateCommission(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint16, error) {
-	ret := _m.Called(_a0, _a1)
+// EpochLimitForUpdateCommission provides a mock function with given fields: _a0
+func (_m *StakeManagerUtils) EpochLimitForUpdateCommission(_a0 *ethclient.Client) (uint16, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) uint16); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -42,20 +41,43 @@ func (_m *StakeManagerUtils) EpochLimitForUpdateCommission(_a0 *ethclient.Client
 	return r0, r1
 }
 
-// GetNumStakers provides a mock function with given fields: _a0, _a1
-func (_m *StakeManagerUtils) GetNumStakers(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint32, error) {
-	ret := _m.Called(_a0, _a1)
+// GetMinSafeRazor provides a mock function with given fields: client
+func (_m *StakeManagerUtils) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
+	ret := _m.Called(client)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNumStakers provides a mock function with given fields: _a0
+func (_m *StakeManagerUtils) GetNumStakers(_a0 *ethclient.Client) (uint32, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) uint32); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -63,20 +85,20 @@ func (_m *StakeManagerUtils) GetNumStakers(_a0 *ethclient.Client, _a1 *bind.Call
 	return r0, r1
 }
 
-// GetStaker provides a mock function with given fields: _a0, _a1, _a2
-func (_m *StakeManagerUtils) GetStaker(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint32) (bindings.StructsStaker, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetStaker provides a mock function with given fields: _a0, _a1
+func (_m *StakeManagerUtils) GetStaker(_a0 *ethclient.Client, _a1 uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 bindings.StructsStaker
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint32) bindings.StructsStaker); ok {
-		r0 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bindings.StructsStaker); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsStaker)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -84,20 +106,20 @@ func (_m *StakeManagerUtils) GetStaker(_a0 *ethclient.Client, _a1 *bind.CallOpts
 	return r0, r1
 }
 
-// GetStakerId provides a mock function with given fields: _a0, _a1, _a2
-func (_m *StakeManagerUtils) GetStakerId(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 common.Address) (uint32, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetStakerId provides a mock function with given fields: client, address
+func (_m *StakeManagerUtils) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
+	ret := _m.Called(client, address)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, common.Address) uint32); ok {
-		r0 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint32); ok {
+		r0 = rf(client, address)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, common.Address) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
+		r1 = rf(client, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -105,20 +127,20 @@ func (_m *StakeManagerUtils) GetStakerId(_a0 *ethclient.Client, _a1 *bind.CallOp
 	return r0, r1
 }
 
-// Locks provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *StakeManagerUtils) Locks(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 common.Address, _a3 common.Address) (types.Locks, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// Locks provides a mock function with given fields: client, address, address1, lockType
+func (_m *StakeManagerUtils) Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (types.Locks, error) {
+	ret := _m.Called(client, address, address1, lockType)
 
 	var r0 types.Locks
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) types.Locks); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address, common.Address, uint8) types.Locks); ok {
+		r0 = rf(client, address, address1, lockType)
 	} else {
 		r0 = ret.Get(0).(types.Locks)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address, common.Address, uint8) error); ok {
+		r1 = rf(client, address, address1, lockType)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -126,20 +148,20 @@ func (_m *StakeManagerUtils) Locks(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a
 	return r0, r1
 }
 
-// MaxCommission provides a mock function with given fields: _a0, _a1
-func (_m *StakeManagerUtils) MaxCommission(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
-	ret := _m.Called(_a0, _a1)
+// MaxCommission provides a mock function with given fields: _a0
+func (_m *StakeManagerUtils) MaxCommission(_a0 *ethclient.Client) (uint8, error) {
+	ret := _m.Called(_a0)
 
 	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) uint8); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -147,20 +169,41 @@ func (_m *StakeManagerUtils) MaxCommission(_a0 *ethclient.Client, _a1 *bind.Call
 	return r0, r1
 }
 
-// WithdrawReleasePeriod provides a mock function with given fields: _a0, _a1
-func (_m *StakeManagerUtils) WithdrawReleasePeriod(_a0 *ethclient.Client, _a1 *bind.CallOpts) (uint8, error) {
-	ret := _m.Called(_a0, _a1)
+// WithdrawInitiationPeriod provides a mock function with given fields: client
+func (_m *StakeManagerUtils) WithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+	ret := _m.Called(client)
 
 	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts) uint8); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(client)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WithdrawLockPeriod provides a mock function with given fields: client
+func (_m *StakeManagerUtils) WithdrawLockPeriod(client *ethclient.Client) (uint8, error) {
+	ret := _m.Called(client)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(client)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
 	} else {
 		r1 = ret.Error(1)
 	}

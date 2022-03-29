@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	razorAccounts "razor/accounts"
-
 	"razor/utils"
 )
 
@@ -16,7 +15,7 @@ var createCmd = &cobra.Command{
 	Long: `For a new user to start doing anything, an account is required. This command helps the user to create a new account secured by a password so that only that user would be able to use the account
 
 Example: 
-  ./razor create`,
+  ./razor create --logFile createLogs`,
 	Run: initialiseCreate,
 }
 
@@ -25,6 +24,7 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	password := razorUtils.AssignPassword(flagSet)
 	account, err := cmdUtils.Create(password)
 	utils.CheckError("Create error: ", err)

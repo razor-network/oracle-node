@@ -18,7 +18,7 @@ var modifyAssetStatusCmd = &cobra.Command{
 	Short: "[ADMIN ONLY]modify the active status of an asset",
 	Long: `modifyAssetStatus can be used by admins to change the status of an asset
 Example:	
-  ./razor modifyAssetStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --assetId 1 --status true`,
+  ./razor modifyAssetStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --assetId 1 --status true --logLevel modifyLogs`,
 	Run: initialiseModifyAssetStatus,
 }
 
@@ -27,6 +27,7 @@ func initialiseModifyAssetStatus(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 

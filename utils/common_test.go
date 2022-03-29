@@ -383,7 +383,7 @@ func TestGetDelayedState(t *testing.T) {
 				buffer: 2,
 			},
 
-			want:    1,
+			want:    0,
 			wantErr: false,
 		},
 		{
@@ -891,6 +891,43 @@ func TestAssignStakerId(t *testing.T) {
 					t.Errorf("Error for AssignStakerId function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestAssignLogFile(t *testing.T) {
+	var flagSet *pflag.FlagSet
+	type args struct {
+		isFlagPassed bool
+		fileName     string
+		fileNameErr  error
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Test 1: When AssignLogFile() executes successfully",
+			args: args{
+				isFlagPassed: true,
+				fileName:     "",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+			flagSetMock := new(mocks.FlagSetUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface:   utilsMock,
+				FlagSetInterface: flagSetMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
+			flagSetMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utils.AssignLogFile(flagSet)
 		})
 	}
 }
