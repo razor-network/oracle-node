@@ -232,6 +232,11 @@ func (_m *UtilsCmdInterface) ClaimBounty(_a0 types.Configurations, _a1 *ethclien
 	return r0, r1
 }
 
+// ClaimCommission provides a mock function with given fields: flagSet
+func (_m *UtilsCmdInterface) ClaimCommission(flagSet *pflag.FlagSet) {
+	_m.Called(flagSet)
+}
+
 // Commit provides a mock function with given fields: client, config, account, epoch, seed, root
 func (_m *UtilsCmdInterface) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error) {
 	ret := _m.Called(client, config, account, epoch, seed, root)

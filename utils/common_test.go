@@ -383,7 +383,7 @@ func TestGetDelayedState(t *testing.T) {
 				buffer: 2,
 			},
 
-			want:    1,
+			want:    0,
 			wantErr: false,
 		},
 		{

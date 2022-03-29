@@ -37,10 +37,12 @@ import (
 //go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name AssetManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name StakeManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name BindingsUtils --output ./mocks --case=underscore
 //go:generate mockery --name JsonUtils --output ./mocks --case=underscore
 //go:generate mockery --name StakedTokenUtils --output ./mocks --case=underscore
 //go:generate mockery --name RetryUtils --output ./mocks --case=underscore
+//go:generate mockery --name MerkleTreeInterface --output ./mocks --case=underscore
 //go:generate mockery --name FlagSetUtils --output ./mocks --case=underscore
 
 var UtilsInterface Utils
@@ -339,5 +341,6 @@ type OptionsPackageStruct struct {
 	JsonInterface         JsonUtils
 	StakedTokenInterface  StakedTokenUtils
 	RetryInterface        RetryUtils
+	MerkleInterface       MerkleTreeInterface
 	FlagSetInterface      FlagSetUtils
 }
