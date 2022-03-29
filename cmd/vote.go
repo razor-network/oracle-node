@@ -334,7 +334,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 	log.Debug("Epoch last revealed: ", lastReveal)
 
-	//TODO: Reveal rogue and fetch committed data from file
+	//TODO: Fetch committed data from file
 
 	//if _committedData == nil {
 	//	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
@@ -353,13 +353,13 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	//	}
 	//	_committedData = committedDataFromFile
 	//}
-	//if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
-	//	var rogueCommittedData []*big.Int
-	//	for i := 0; i < len(_committedData); i++ {
-	//		rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
-	//	}
-	//	_committedData = rogueCommittedData
-	//}
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+		var rogueLeaves []*big.Int
+		for i := 0; i < len(_commitData.Leaves); i++ {
+			rogueLeaves = append(rogueLeaves, razorUtils.GetRogueRandomValue(10000000))
+		}
+		_commitData.Leaves = rogueLeaves
+	}
 
 	secret, err := cmdUtils.CalculateSecret(account, epoch)
 	if err != nil {
