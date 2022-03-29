@@ -217,7 +217,7 @@ func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, buf
 		return 0, err
 	}
 	timeRemaining := core.StateLength - (block.Time % core.StateLength)
-	upperLimit := (core.StateLength * uint64(bufferPercent)) / 100
+	upperLimit := ((core.StateLength * uint64(bufferPercent)) / 100) + core.StateBuffer
 
 	return int64(timeRemaining - upperLimit), nil
 }
