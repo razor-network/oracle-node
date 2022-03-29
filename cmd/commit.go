@@ -44,8 +44,6 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 /*
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
-
-TODO: Add rogue mode changes
 */
 func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := utils.UtilsInterface.GetNumActiveCollections(client)
@@ -68,6 +66,9 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
 			if err != nil {
 				return types.CommitData{}, err
+			}
+			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
+				collectionData = utils.GetRogueRandomValue(100000)
 			}
 			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
 			leavesOfTree = append(leavesOfTree, collectionData)
