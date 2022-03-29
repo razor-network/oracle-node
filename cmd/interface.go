@@ -118,6 +118,8 @@ type UtilsInterface interface {
 	AddJobToJSON(string, *types.StructsJob) error
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 	SecondsToReadableTime(int) string
+	SaveDataToCommitJsonFile(string, uint32, types.CommitData) error
+	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
 }
 
 type StakeManagerInterface interface {

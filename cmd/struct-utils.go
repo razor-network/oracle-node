@@ -316,6 +316,14 @@ func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.St
 	return utilsInterface.GetStakerSRZRBalance(client, staker)
 }
 
+func (u Utils) SaveDataToCommitJsonFile(flePath string, epoch uint32, commitFileData types.CommitData) error {
+	return utilsInterface.SaveDataToCommitJsonFile(flePath, epoch, commitFileData)
+}
+
+func (u Utils) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
+	return utilsInterface.ReadFromCommitJsonFile(filePath)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

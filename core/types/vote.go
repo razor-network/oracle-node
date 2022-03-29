@@ -38,3 +38,10 @@ type RevealedDataMaps struct {
 	VoteWeights          map[uint32]*big.Int
 	InfluenceSum         map[uint16]*big.Int
 }
+
+type CommitFileData struct {
+	Epoch                  uint32
+	AssignedCollections    map[int]bool
+	SeqAllottedCollections []*big.Int
+	Leaves                 []*big.Int
+}
