@@ -108,7 +108,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
-				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian]
+				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
 				leafId, err := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
 				if err != nil {
 					log.Error("Error in leaf id: ", err)
