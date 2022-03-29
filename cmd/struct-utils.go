@@ -392,6 +392,11 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 	return stakeManager.BountyLocks(opts, bountyId)
 }
 
+func (stakeManagerUtils StakeManagerUtils) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+	stakeManager := utilsInterface.GetStakeManager(client)
+	return stakeManager.ClaimStakerReward(opts)
+}
+
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	blockManager := utilsInterface.GetBlockManager(client)
 	return blockManager.ClaimBlockReward(opts)

@@ -132,6 +132,7 @@ type StakeManagerInterface interface {
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error)
+	ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -308,6 +309,7 @@ type UtilsCmdInterface interface {
 	Vote(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error
 	HandleExit()
 	ExecuteListAccounts(*pflag.FlagSet)
+	ClaimCommission(flagSet *pflag.FlagSet)
 	ExecuteStake(*pflag.FlagSet)
 	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
 	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
