@@ -475,10 +475,10 @@ func TestGetAllCollections(t *testing.T) {
 	}
 
 	type args struct {
-		numAssets     uint16
-		numAssetsErr  error
-		assetType     uint8
-		assetTypeErr  error
+		numAssets    uint16
+		numAssetsErr error
+		assetType    uint8
+		//assetTypeErr  error
 		collection    bindings.StructsCollection
 		collectionErr error
 	}
@@ -814,10 +814,10 @@ func TestGetJobs(t *testing.T) {
 	}
 
 	type args struct {
-		numJobs      uint16
-		numJobsErr   error
-		assetType    uint8
-		assetTypeErr error
+		numJobs    uint16
+		numJobsErr error
+		assetType  uint8
+		//assetTypeErr error
 		activeJob    bindings.StructsJob
 		activeJobErr error
 	}

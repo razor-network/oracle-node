@@ -286,6 +286,31 @@ Example:
 $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10 --stakerId 1
 ```
 
+### Claim Commission 
+
+Staker can claim the rewards earned from delegator's pool share as commission using `claimCommission`
+
+razor cli
+
+```
+$ ./razor claimCommission --address <address> 
+```
+
+docker
+
+```
+docker run -it --rm \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    claimCommission --address <address> 
+```
+
+Example:
+
+```
+$ ./razor claimCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
+```
+
 ### Vote
 
 You can start voting once you've staked some razors
@@ -763,6 +788,22 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
           },
         ]
 ```
+
+### Logs
+
+User can pass a seperate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
+
+```
+$ ./razor addStake --address <address> --value <value> --logFile stakingLogs
+```
+_The logs for above command will be stored at "home/.razor/stakingLogs.log" path_
+
+```
+$ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id> --logFile delegationLogs
+```
+_The logs for above command will be stored at "home/.razor/delegationLogs.log" path_
+
+_Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
 
 ### Contribute to razor-go
 

@@ -4,6 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"razor/utils"
 	"strings"
 )
@@ -13,15 +14,16 @@ var importCmd = &cobra.Command{
 	Short: "import can be used to import existing accounts into razor-go",
 	Long: `If the user has their private key of an account, they can import that account into razor-go to perform further operations with razor-go.
 Example:
-  ./razor import`,
+  ./razor import --logFile importLogs`,
 	Run: initialiseImport,
 }
 
 func initialiseImport(cmd *cobra.Command, args []string) {
-	cmdUtils.ExecuteImport()
+	cmdUtils.ExecuteImport(cmd.Flags())
 }
 
-func (*UtilsStruct) ExecuteImport() {
+func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)
 	log.Info("Account Address: ", account.Address)
@@ -55,4 +57,5 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 
 func init() {
 	rootCmd.AddCommand(importCmd)
+
 }

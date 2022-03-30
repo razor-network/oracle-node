@@ -65,6 +65,11 @@ func (_m *Utils) Aggregate(_a0 *ethclient.Client, _a1 uint32, _a2 bindings.Struc
 	return r0, r1
 }
 
+// AssignLogFile provides a mock function with given fields: _a0
+func (_m *Utils) AssignLogFile(_a0 *pflag.FlagSet) {
+	_m.Called(_a0)
+}
+
 // AssignStakerId provides a mock function with given fields: _a0, _a1, _a2
 func (_m *Utils) AssignStakerId(_a0 *pflag.FlagSet, _a1 *ethclient.Client, _a2 string) (uint32, error) {
 	ret := _m.Called(_a0, _a1, _a2)
@@ -1058,6 +1063,29 @@ func (_m *Utils) GetMaxCommission(_a0 *ethclient.Client) (uint8, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetMinSafeRazor provides a mock function with given fields: client
+func (_m *Utils) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
+	ret := _m.Called(client)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
 	} else {
 		r1 = ret.Error(1)
 	}

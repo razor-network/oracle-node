@@ -20,28 +20,14 @@ type StandardLogger struct {
 var standardLogger = &StandardLogger{logrus.New()}
 
 var Address string
+var FileName string
 
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
 	path.OSUtilsInterface = &path.OSUtils{}
-	logFilePath, err := path.PathUtilsInterface.GetLogFilePath()
-	if err != nil {
-		standardLogger.Fatal("Error in fetching log file path: ", err)
-	}
+	InitializeLogger(FileName)
 
-	lumberJackLogger := &lumberjack.Logger{
-		Filename:   logFilePath,
-		MaxSize:    5,
-		MaxBackups: 10,
-		MaxAge:     30,
-	}
-
-	out := os.Stderr
-	mw := io.MultiWriter(out, lumberJackLogger)
-	standardLogger.Formatter = &logrus.JSONFormatter{}
-	standardLogger.SetOutput(mw)
 	osInfo := goInfo.GetInfo()
-
 	standardLogger.WithFields(logrus.Fields{
 		"Operating System": osInfo.OS,
 		"Core":             osInfo.Core,
@@ -51,6 +37,30 @@ func init() {
 		"go version":       runtime.Version(),
 	}).Info()
 
+}
+
+func InitializeLogger(fileName string) {
+	if fileName != "" {
+		logFilePath, err := path.PathUtilsInterface.GetLogFilePath(fileName)
+		if err != nil {
+			standardLogger.Fatal("Error in fetching log file path: ", err)
+		}
+
+		lumberJackLogger := &lumberjack.Logger{
+			Filename:   logFilePath,
+			MaxSize:    5,
+			MaxBackups: 10,
+			MaxAge:     30,
+		}
+
+		out := os.Stderr
+		mw := io.MultiWriter(out, lumberJackLogger)
+		standardLogger.Formatter = &logrus.JSONFormatter{}
+		standardLogger.SetOutput(mw)
+
+	} else {
+		standardLogger.Formatter = &logrus.JSONFormatter{}
+	}
 }
 
 func NewLogger() *StandardLogger {

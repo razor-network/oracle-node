@@ -1,5 +1,7 @@
 package path
 
+import "os"
+
 func (PathUtils) GetDefaultPath() (string, error) {
 	home, err := OSUtilsInterface.UserHomeDir()
 	if err != nil {
@@ -15,12 +17,18 @@ func (PathUtils) GetDefaultPath() (string, error) {
 	return defaultPath, nil
 }
 
-func (PathUtils) GetLogFilePath() (string, error) {
+func (PathUtils) GetLogFilePath(fileName string) (string, error) {
 	home, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	return home + "/razor.log", err
+	filePath := home + "/" + fileName + ".log"
+	f, err := OSUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	return filePath, nil
 }
 
 func (PathUtils) GetConfigFilePath() (string, error) {

@@ -21,7 +21,7 @@ var stakeCmd = &cobra.Command{
 	Long: `addStake allows user to stake razors in the razor network
 
 Example:
-  ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000`,
+  ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --logFile addStake`,
 	Run: initialiseStake,
 }
 
@@ -30,6 +30,7 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 

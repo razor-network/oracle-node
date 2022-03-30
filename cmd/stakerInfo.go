@@ -25,6 +25,7 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)

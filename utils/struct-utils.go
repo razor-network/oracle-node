@@ -47,6 +47,8 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	JsonInterface = optionsPackageStruct.JsonInterface
 	StakedTokenInterface = optionsPackageStruct.StakedTokenInterface
 	RetryInterface = optionsPackageStruct.RetryInterface
+	MerkleInterface = optionsPackageStruct.MerkleInterface
+	FlagSetInterface = optionsPackageStruct.FlagSetInterface
 	return &UtilsStruct{}
 }
 
@@ -355,4 +357,8 @@ func (s StakedTokenStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts
 
 func (r RetryStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 	return retry.Attempts(numberOfAttempts)
+}
+
+func (f FlagSetStruct) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("logFile")
 }

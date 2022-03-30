@@ -120,6 +120,7 @@ type UtilsInterface interface {
 	SecondsToReadableTime(int) string
 	SaveDataToCommitJsonFile(string, uint32, types.CommitData) error
 	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
+	AssignLogFile(*pflag.FlagSet)
 }
 
 type StakeManagerInterface interface {
@@ -133,6 +134,7 @@ type StakeManagerInterface interface {
 	RedeemBounty(*ethclient.Client, *bind.TransactOpts, uint32) (*Types.Transaction, error)
 	UpdateCommission(*ethclient.Client, *bind.TransactOpts, uint8) (*Types.Transaction, error)
 	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error)
+	ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(*ethclient.Client, *bind.CallOpts, uint32) (types.Staker, error)
@@ -248,7 +250,7 @@ type UtilsCmdInterface interface {
 	CreateCollection(*ethclient.Client, types.Configurations, types.CreateCollectionInput) (common.Hash, error)
 	GetEpochAndState(*ethclient.Client) (uint32, int64, error)
 	WaitForAppropriateState(*ethclient.Client, string, ...int) (uint32, error)
-	ExecuteJobList()
+	ExecuteJobList(*pflag.FlagSet)
 	GetJobList(*ethclient.Client) error
 	ExecuteUnstake(*pflag.FlagSet)
 	Unstake(types.Configurations, *ethclient.Client, types.UnstakeInput) (common.Hash, error)
@@ -263,7 +265,7 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateJob(*pflag.FlagSet)
 	UpdateJob(*ethclient.Client, types.Configurations, types.CreateJobInput, uint16) (common.Hash, error)
 	WaitIfCommitState(*ethclient.Client, string) (uint32, error)
-	ExecuteCollectionList()
+	ExecuteCollectionList(*pflag.FlagSet)
 	GetCollectionList(*ethclient.Client) error
 	ExecuteStakerinfo(*pflag.FlagSet)
 	ExecuteSetDelegation(*pflag.FlagSet)
@@ -293,7 +295,7 @@ type UtilsCmdInterface interface {
 	Delegate(types.TransactionOptions, uint32) (common.Hash, error)
 	ExecuteCreate(*pflag.FlagSet)
 	Create(string) (accounts.Account, error)
-	ExecuteImport()
+	ExecuteImport(*pflag.FlagSet)
 	ImportAccount() (accounts.Account, error)
 	ExecuteUpdateCommission(*pflag.FlagSet)
 	UpdateCommission(types.Configurations, *ethclient.Client, types.UpdateCommissionInput) error
@@ -308,7 +310,8 @@ type UtilsCmdInterface interface {
 	ExecuteVote(*pflag.FlagSet)
 	Vote(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error
 	HandleExit()
-	ExecuteListAccounts()
+	ExecuteListAccounts(*pflag.FlagSet)
+	ClaimCommission(flagSet *pflag.FlagSet)
 	ExecuteStake(*pflag.FlagSet)
 	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
 	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
@@ -379,5 +382,6 @@ func InitializeInterfaces() {
 
 	Accounts.AccountUtilsInterface = Accounts.AccountUtils{}
 	path.PathUtilsInterface = path.PathUtils{}
+	path.OSUtilsInterface = path.OSUtils{}
 	InitializeUtils()
 }

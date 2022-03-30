@@ -11,10 +11,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"math/big"
-	randMath "math/rand"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/utils"
+	mocks2 "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -25,6 +26,7 @@ func TestCommit(t *testing.T) {
 		account types.Account
 		config  types.Configurations
 		seed    []byte
+		epoch   uint32
 	)
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -32,8 +34,6 @@ func TestCommit(t *testing.T) {
 	type args struct {
 		state     int64
 		stateErr  error
-		epoch     uint32
-		epochErr  error
 		root      [32]byte
 		txnOpts   *bind.TransactOpts
 		commitTxn *Types.Transaction
@@ -51,8 +51,6 @@ func TestCommit(t *testing.T) {
 			args: args{
 				state:     0,
 				stateErr:  nil,
-				epoch:     1,
-				epochErr:  nil,
 				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
 				commitErr: nil,
@@ -65,8 +63,6 @@ func TestCommit(t *testing.T) {
 			name: "Test 2: When there is an error in getting state",
 			args: args{
 				stateErr:  errors.New("state error"),
-				epoch:     1,
-				epochErr:  nil,
 				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
 				commitErr: nil,
@@ -76,26 +72,10 @@ func TestCommit(t *testing.T) {
 			wantErr: errors.New("state error"),
 		},
 		{
-			name: "Test 3: When there is an error in getting epoch",
+			name: "Test 3: When Commit transaction fails",
 			args: args{
 				state:     0,
 				stateErr:  nil,
-				epochErr:  errors.New("epoch error"),
-				txnOpts:   txnOpts,
-				commitTxn: &Types.Transaction{},
-				commitErr: nil,
-				hash:      common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("epoch error"),
-		},
-		{
-			name: "Test 4: When Commit transaction fails",
-			args: args{
-				state:     0,
-				stateErr:  nil,
-				epoch:     1,
-				epochErr:  nil,
 				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
 				commitErr: errors.New("commit error"),
@@ -117,13 +97,12 @@ func TestCommit(t *testing.T) {
 			voteManagerUtils = voteManagerUtilsMock
 
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
 			voteManagerUtilsMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(client, config, account, tt.args.epoch, seed, tt.args.root)
+			got, err := utils.Commit(client, config, account, epoch, seed, tt.args.root)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -142,88 +121,61 @@ func TestCommit(t *testing.T) {
 
 func TestHandleCommitState(t *testing.T) {
 	var (
-		client *ethclient.Client
-		epoch  uint32
-		seed   []byte
+		client    *ethclient.Client
+		epoch     uint32
+		seed      []byte
+		rogueData types.Rogue
 	)
 
-	rogueValue := big.NewInt(int64(randMath.Intn(10000000)))
+	//rogueValue := big.NewInt(int64(randMath.Intn(10000000)))
 
 	type args struct {
-		data               []*big.Int
-		dataErr            error
-		numActiveAssets    *big.Int
-		numActiveAssetsErr error
-		rogueValue         *big.Int
-		rogue              types.Rogue
+		numActiveCollections    uint16
+		numActiveCollectionsErr error
+		assignedCollections     map[int]bool
+		seqAllottedCollections  []*big.Int
+		assignedCollectionsErr  error
+		collectionId            uint16
+		collectionIdErr         error
+		collectionData          *big.Int
+		collectionDataErr       error
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    []*big.Int
+		want    types.CommitData
 		wantErr error
 	}{
 		{
 			name: "Test 1: When HandleCommitState executes successfully",
 			args: args{
-				data:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				dataErr: nil,
-				rogue:   types.Rogue{IsRogue: false},
+				numActiveCollections:   3,
+				assignedCollections:    map[int]bool{1: true, 2: true},
+				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionId:           1,
+				collectionData:         big.NewInt(1),
 			},
-			want:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{1: true, 2: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				Leaves:                 []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(1)},
+			},
 			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in getting data from getActiveAssetData",
-			args: args{
-				rogue:   types.Rogue{IsRogue: false},
-				dataErr: errors.New("data error"),
-			},
-			want:    nil,
-			wantErr: errors.New("data error"),
-		},
-		{
-			name: "Test 3: When rogue mode is activated but not for commit ",
-			args: args{
-				rogue: types.Rogue{IsRogue: true, RogueMode: []string{"propose"}},
-				data:  []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-			},
-			want:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-			wantErr: nil,
-		},
-		{
-			name: "Test 4: When rogue mode is activated for commit ",
-			args: args{
-				numActiveAssets: big.NewInt(1),
-				rogue:           types.Rogue{IsRogue: true, RogueMode: []string{"propose", "commit"}},
-				rogueValue:      rogueValue,
-				data:            []*big.Int{rogueValue},
-			},
-			want:    []*big.Int{rogueValue},
-			wantErr: nil,
-		},
-		{
-			name: "Test 5: When there is an error in fetching numActiveAssets",
-			args: args{
-				numActiveAssets:    nil,
-				numActiveAssetsErr: errors.New("Error in fetching active assets"),
-				rogue:              types.Rogue{IsRogue: true, RogueMode: []string{"propose", "commit"}},
-			},
-			want:    nil,
-			wantErr: errors.New("Error in fetching active assets"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			razorUtils = utilsMock
+			utilsPkgMock := new(mocks2.Utils)
 
-			utilsMock.On("GetActiveAssetsData", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.data, tt.args.dataErr)
-			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveAssets, tt.args.numActiveAssetsErr)
-			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(tt.args.rogueValue)
+			utils.UtilsInterface = utilsPkgMock
+
+			utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
+			utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
+			utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, seed, tt.args.rogue)
+			got, err := utils.HandleCommitState(client, epoch, seed, rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}

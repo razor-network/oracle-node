@@ -10,6 +10,7 @@ import (
 	"os"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"strconv"
 	"time"
 
@@ -43,7 +44,7 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit || blockTime%(core.StateLength) < lowerLimit {
+	if blockTime%(core.StateLength) > upperLimit+core.StateBuffer || blockTime%(core.StateLength) < lowerLimit+core.StateBuffer {
 		return -1, nil
 	}
 	state := blockTime / core.StateLength
@@ -226,17 +227,19 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) *big.Int {
+func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
-		log.Fatalf("Error in fetching block : %s", err)
+		log.Errorf("Error in fetching block : %s", err)
+		return nil, err
 	}
 	current_epoch := block.Time / uint64(core.EpochLength)
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
-		log.Fatalf("Err in fetching Previous block : %s", err)
+		log.Errorf("Err in fetching Previous block : %s", err)
+		return nil, err
 	}
 	previousBlockActualTimestamp := previousBlock.Time
 	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
@@ -245,7 +248,7 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 		return CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
 
 	}
-	return big.NewInt(int64(previousBlockNumber))
+	return big.NewInt(int64(previousBlockNumber)), nil
 
 }
 
@@ -288,4 +291,14 @@ func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileDat
 		return types.CommitFileData{}, err
 	}
 	return commitedData, nil
+}
+
+func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
+	if UtilsInterface.IsFlagPassed("logFile") {
+		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
+		if err != nil {
+			log.Fatalf("Error in getting file name : ", err)
+		}
+		logger.InitializeLogger(fileName)
+	}
 }

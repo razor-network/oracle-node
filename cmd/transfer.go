@@ -29,6 +29,7 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 }
 
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
+	razorUtils.AssignLogFile(flagSet)
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
 

@@ -26,6 +26,7 @@ Example:
 }
 
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
+	razorUtils.AssignLogFile(flagSet)
 	provider, err := flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err
