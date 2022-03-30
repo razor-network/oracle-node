@@ -330,6 +330,14 @@ func (u Utils) AssignLogFile(flagSet *pflag.FlagSet) {
 	utilsInterface.AssignLogFile(flagSet)
 }
 
+func (u Utils) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
+	return utilsInterface.ReadFromProposeJsonFile(filePath)
+}
+
+func (u Utils) SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFileData types.ProposeData) error {
+	return utilsInterface.SaveDataToProposeJsonFile(flePath, epoch, proposeFileData)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

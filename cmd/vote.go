@@ -303,7 +303,6 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		}
 	}
 
-	//TODO: Need to save the entire commitData, which includes AssignedCollections, SeqAllottedCollections and Leaves to construct merkle tree
 	log.Debug("Saving committed data for recovery")
 	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
@@ -408,7 +407,6 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}
-	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -457,7 +455,7 @@ func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_data.json", nil
+	return homeDir + "/" + address + "_CommitData.json", nil
 }
 
 func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {

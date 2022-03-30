@@ -302,3 +302,44 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 		logger.InitializeLogger(fileName)
 	}
 }
+
+func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
+
+	var data types.ProposeFileData
+	data.Epoch = epoch
+	data.MediansData = proposeData.MediansData
+	data.RevealedCollectionIds = proposeData.RevealedCollectionIds
+	data.RevealedDataMaps = proposeData.RevealedDataMaps
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filePath, jsonData, 0600)
+	if err != nil {
+		log.Error("Error in writing to file: ", err)
+		return err
+	}
+	return nil
+}
+
+func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		log.Error("Error in opening json file: ", err)
+		return types.ProposeFileData{}, err
+	}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Error("Error in reading data from json file: ", err)
+		return types.ProposeFileData{}, err
+	}
+	var proposedData types.ProposeFileData
+
+	err = json.Unmarshal(byteValue, &proposedData)
+	if err != nil {
+		log.Error(" Unmarshal error: ", err)
+		return types.ProposeFileData{}, err
+	}
+	return proposedData, nil
+}
