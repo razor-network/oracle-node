@@ -134,31 +134,29 @@ func TestExecuteStake(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
-		config           types.Configurations
-		configErr        error
-		password         string
-		address          string
-		addressErr       error
-		balance          *big.Int
-		balanceErr       error
-		amount           *big.Int
-		amountErr        error
-		approveTxn       common.Hash
-		approveErr       error
-		minSafeRazor     *big.Int
-		minSafeRazorErr  error
-		stakeTxn         common.Hash
-		stakeErr         error
-		isFlagPassed     bool
-		autoVote         bool
-		autoVoteErr      error
-		isRogue          bool
-		isRogueErr       error
-		rogueMode        []string
-		rogueModeErr     error
-		voteErr          error
-		revealedDataMaps types.RevealedDataMaps
-		//revealedDataErr  error
+		config          types.Configurations
+		configErr       error
+		password        string
+		address         string
+		addressErr      error
+		balance         *big.Int
+		balanceErr      error
+		amount          *big.Int
+		amountErr       error
+		approveTxn      common.Hash
+		approveErr      error
+		minSafeRazor    *big.Int
+		minSafeRazorErr error
+		stakeTxn        common.Hash
+		stakeErr        error
+		isFlagPassed    bool
+		autoVote        bool
+		autoVoteErr     error
+		isRogue         bool
+		isRogueErr      error
+		rogueMode       []string
+		rogueModeErr    error
+		voteErr         error
 	}
 	tests := []struct {
 		name          string
@@ -177,11 +175,6 @@ func TestExecuteStake(t *testing.T) {
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: false,
-				revealedDataMaps: types.RevealedDataMaps{
-					SortedRevealedValues: nil,
-					VoteWeights:          nil,
-					InfluenceSum:         nil,
-				},
 			},
 			expectedFatal: false,
 		},
@@ -351,6 +344,18 @@ func TestExecuteStake(t *testing.T) {
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: false,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 12: When stake value is less than minSafeRazor",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(20),
+				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(100),
 			},
 			expectedFatal: true,
 		},

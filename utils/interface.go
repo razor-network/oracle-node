@@ -162,6 +162,10 @@ type Utils interface {
 	ConvertToNumber(interface{}) (*big.Float, error)
 	SecondsToReadableTime(int) string
 	AssignLogFile(*pflag.FlagSet)
+	IsEqualUint32([]uint32, []uint32) (bool, int)
+	IsSorted([]uint16) (bool, int, int)
+	IsMissing([]uint16, []uint16) (bool, int, uint16)
+	CalculateBlockNumberAtEpochBeginning(*ethclient.Client, int64, *big.Int) (*big.Int, error)
 }
 
 type EthClientUtils interface {

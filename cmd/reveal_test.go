@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -17,6 +18,7 @@ import (
 	"razor/pkg/bindings"
 	utils2 "razor/utils"
 	mocks2 "razor/utils/mocks"
+	"reflect"
 	"testing"
 )
 
@@ -191,6 +193,148 @@ func TestReveal(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for Reveal function, got = %v, want = %v", err, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestGenerateTreeRevealData(t *testing.T) {
+	type args struct {
+		merkleTree [][][]byte
+		commitData types.CommitData
+		proof      [][32]byte
+		root       [32]byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want bindings.StructsMerkleTree
+	}{
+		{
+			name: "Test 1: When merkleTree and commitData is nil",
+			args: args{
+				merkleTree: [][][]byte{},
+				commitData: types.CommitData{},
+			},
+			want: bindings.StructsMerkleTree{},
+		},
+		{
+			name: "Test 2: When GenerateTreeRevealData executes successfully",
+			args: args{
+				merkleTree: [][][]byte{{{byte(1)}, {byte(2)}}, {{byte(3)}, {byte(4)}}, {{byte(5)}, {byte(6)}}},
+				commitData: types.CommitData{
+					AssignedCollections:    map[int]bool{1: true},
+					SeqAllottedCollections: []*big.Int{big.NewInt(1)},
+					Leaves:                 []*big.Int{big.NewInt(1), big.NewInt(2)},
+				},
+				proof: [][32]byte{},
+				root:  [32]byte{},
+			},
+			want: bindings.StructsMerkleTree{
+				Values: []bindings.StructsAssignedAsset{{LeafId: 1, Value: 2}},
+				Proofs: [][][32]byte{{}},
+				Root:   [32]byte{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			merkleInterface := new(mocks2.MerkleTreeInterface)
+
+			utils2.MerkleInterface = merkleInterface
+
+			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return(tt.args.proof)
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.root)
+			ut := &UtilsStruct{}
+			if got := ut.GenerateTreeRevealData(tt.args.merkleTree, tt.args.commitData); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GenerateTreeRevealData() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
+	var (
+		client      *ethclient.Client
+		blockNumber *big.Int
+		epoch       uint32
+	)
+
+	type args struct {
+		fromBlock      *big.Int
+		fromBlockErr   error
+		logs           []Types.Log
+		logsErr        error
+		contractAbi    abi.ABI
+		contractAbiErr error
+		data           []interface{}
+		unpackErr      error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []types.RevealedStruct
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When IndexRevealEventsOfCurrentEpoch executes successfully",
+			args: args{
+				fromBlock:   big.NewInt(0),
+				logs:        []Types.Log{},
+				contractAbi: abi.ABI{},
+				data:        []interface{}{},
+			},
+			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting fromBlock",
+			args: args{
+				fromBlockErr: errors.New("error in getting fromBlock"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting logs",
+			args: args{
+				fromBlock: big.NewInt(0),
+				logsErr:   errors.New("error in getting logs"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting contractAbi",
+			args: args{
+				fromBlock:      big.NewInt(0),
+				logs:           []Types.Log{},
+				contractAbiErr: errors.New("error in getting contractAbi"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsPkgMock := new(mocks2.Utils)
+			abiUtilsMock := new(mocks2.ABIUtils)
+
+			utils2.UtilsInterface = utilsPkgMock
+			utils2.ABIInterface = abiUtilsMock
+
+			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
+			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.contractAbiErr)
+			abiUtilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
+			ut := &UtilsStruct{}
+			got, err := ut.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IndexRevealEventsOfCurrentEpoch() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("IndexRevealEventsOfCurrentEpoch() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

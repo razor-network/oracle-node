@@ -616,184 +616,6 @@ func TestGetIteration(t *testing.T) {
 	}
 }
 
-//func TestMakeBlock(t *testing.T) {
-//
-//	var (
-//		client      *ethclient.Client
-//		blockNumber *big.Int
-//		epoch       uint32
-//	)
-//
-//	rogueMedian := big.NewInt(int64(randMath.Intn(10000000)))
-//
-//	type args struct {
-//		numAssets                 *big.Int
-//		numAssetsErr              error
-//		epoch                     uint32
-//		epochErr                  error
-//		sortedVotes               []*big.Int
-//		sortedVotesErr            error
-//		totalInfluenceRevealed    *big.Int
-//		totalInfluenceRevealedErr error
-//		rogue                     types.Rogue
-//		influencedMedian          *big.Int
-//		mediansInUint32           []uint32
-//	}
-//	tests := []struct {
-//		name    string
-//		args    args
-//		want    []uint32
-//		wantErr error
-//	}{
-//		{
-//			name: "Test 1: When rogue is true and MakeBlock function executes successfully",
-//			args: args{
-//				numAssets:              big.NewInt(1),
-//				epoch:                  4,
-//				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18))},
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(1400), big.NewInt(1e18)),
-//				rogue: types.Rogue{
-//					IsRogue:   true,
-//					RogueMode: nil,
-//				},
-//				mediansInUint32: []uint32{uint32(rogueMedian.Int64())},
-//			},
-//			want:    []uint32{uint32(rogueMedian.Int64())},
-//			wantErr: nil,
-//		},
-//		{
-//			name: "Test 2: When rogue is false and MakeBlock function executes successfully",
-//			args: args{
-//				numAssets:              big.NewInt(1),
-//				epoch:                  4,
-//				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-//				rogue:                  types.Rogue{IsRogue: false},
-//				influencedMedian:       big.NewInt(498342),
-//				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64())},
-//			},
-//			want:    []uint32{498342},
-//			wantErr: nil,
-//		},
-//		{
-//			name: "Test 3: When there is an error in getting number of assets",
-//			args: args{
-//				numAssetsErr:           errors.New("numAssets error"),
-//				epoch:                  4,
-//				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-//				rogue:                  types.Rogue{IsRogue: false},
-//				influencedMedian:       big.NewInt(498342),
-//				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64())},
-//			},
-//			want:    nil,
-//			wantErr: errors.New("numAssets error"),
-//		},
-//		{
-//			name: "Test 3: When there is an error in getting epoch",
-//			args: args{
-//				numAssets:              big.NewInt(1),
-//				epochErr:               errors.New("epoch error"),
-//				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-//				rogue:                  types.Rogue{IsRogue: false},
-//				influencedMedian:       big.NewInt(498342),
-//				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64())},
-//			},
-//			want:    nil,
-//			wantErr: errors.New("epoch error"),
-//		},
-//		{
-//			name: "Test 4: When there is an error in getting sorted votes",
-//			args: args{
-//				numAssets:              big.NewInt(1),
-//				epoch:                  4,
-//				sortedVotesErr:         errors.New("sorted votes error"),
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-//				mediansInUint32:        nil,
-//			},
-//			want:    nil,
-//			wantErr: nil,
-//		},
-//		{
-//			name: "Test 5: When there is an error in getting totalInfluenceRevealed",
-//			args: args{
-//				numAssets:                 big.NewInt(1),
-//				epoch:                     4,
-//				sortedVotes:               []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-//				totalInfluenceRevealedErr: errors.New("totalInfluenceRevealed error"),
-//				mediansInUint32:           nil,
-//			},
-//			want:    nil,
-//			wantErr: nil,
-//		},
-//		{
-//			name: "Test 6: When number of assets are more than 1 and MakeBlock function executes successfully",
-//			args: args{
-//				numAssets:              big.NewInt(3),
-//				epoch:                  4,
-//				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-//				rogue:                  types.Rogue{IsRogue: false},
-//				influencedMedian:       big.NewInt(498342),
-//				mediansInUint32:        []uint32{uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64()), uint32(big.NewInt(498342).Int64())},
-//			},
-//			want:    []uint32{498342, 498342, 498342},
-//			wantErr: nil,
-//		},
-//		{
-//			name: "Test 7: When rogue is true in propose mode and MakeBlock function executes successfully",
-//			args: args{
-//				numAssets:              big.NewInt(1),
-//				epoch:                  4,
-//				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18))},
-//				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(1400), big.NewInt(1e18)),
-//				rogue: types.Rogue{
-//					IsRogue:   true,
-//					RogueMode: []string{"propose"},
-//				},
-//				mediansInUint32: []uint32{uint32(rogueMedian.Int64())},
-//			},
-//			want:    []uint32{uint32(rogueMedian.Int64())},
-//			wantErr: nil,
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//
-//			utilsMock := new(mocks.UtilsInterface)
-//			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-//
-//			razorUtils = utilsMock
-//			cmdUtils = cmdUtilsMock
-//
-//			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
-//			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-//			cmdUtilsMock.On("GetSortedRevealedValues", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.sortedVotes, tt.args.sortedVotesErr)
-//			utilsMock.On("GetTotalInfluenceRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.totalInfluenceRevealed, tt.args.totalInfluenceRevealedErr)
-//			cmdUtilsMock.On("InfluencedMedian", mock.Anything, mock.Anything).Return(tt.args.influencedMedian)
-//			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
-//
-//			utils := &UtilsStruct{}
-//
-//			got, err := utils.MakeBlock(client, blockNumber, epoch, tt.args.rogue)
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("Data from MakeBlock function, got = %v, want = %v", got, tt.want)
-//			}
-//			if err == nil || tt.wantErr == nil {
-//				if err != tt.wantErr {
-//					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
-//				}
-//			} else {
-//				if err.Error() != tt.wantErr.Error() {
-//					t.Errorf("Error from MakeBlock function, got = %v, want = %v", err, tt.wantErr)
-//				}
-//			}
-//
-//		})
-//	}
-//}
-
 func TestInfluencedMedian(t *testing.T) {
 	type args struct {
 		sortedVotes            []*big.Int
@@ -1083,6 +905,181 @@ func TestGetMedianDataFileName(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for GetMedianDataFileName(), got = %v, want = %v", err, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestMakeBlock(t *testing.T) {
+	var (
+		client      *ethclient.Client
+		blockNumber *big.Int
+		epoch       uint32
+	)
+
+	//rogueMedian := big.NewInt(int64(rand.Intn(10000000)))
+
+	type args struct {
+		revealedDataMaps     *types.RevealedDataMaps
+		revealedDataMapsErr  error
+		activeCollections    []uint16
+		activeCollectionsErr error
+		rogueData            types.Rogue
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []uint32
+		want1   []uint16
+		want2   *types.RevealedDataMaps
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When MakeBlock executes successfully and there is no rogue mode",
+			args: args{
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+				},
+				activeCollections: []uint16{1, 2},
+			},
+			want:  []uint32{1},
+			want1: []uint16{2},
+			want2: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(50)},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2 : When there is an error in getting revealedDataMaps",
+			args: args{
+				revealedDataMapsErr: errors.New("error in getting revealedDataMaps"),
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 3 : When there is an error in getting activeCollections",
+			args: args{
+				revealedDataMaps:     &types.RevealedDataMaps{},
+				activeCollectionsErr: errors.New("error in getting activeCollections"),
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: true,
+		},
+		//{
+		//	name: "Test 4: When MakeBlock executes successfully and there is no rogue mode",
+		//	args: args{
+		//		revealedDataMaps: &types.RevealedDataMaps{
+		//			SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+		//			VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+		//			InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+		//		},
+		//		activeCollections: []uint16{1, 2},
+		//		rogueData: types.Rogue{
+		//			IsRogue:   true,
+		//			RogueMode: []string{"propose"},
+		//		},
+		//	},
+		//	want:  []uint32{uint32(rogueMedian.Int64())},
+		//	want1: []uint16{2},
+		//	want2: &types.RevealedDataMaps{
+		//		SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+		//		VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+		//		InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+		//	},
+		//	wantErr: false,
+		//},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealedDataMaps, tt.args.revealedDataMapsErr)
+			utilsMock.On("GetActiveCollections", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
+			ut := &UtilsStruct{}
+			got, got1, got2, err := ut.MakeBlock(client, blockNumber, epoch, tt.args.rogueData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MakeBlock() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MakeBlock() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("MakeBlock() got1 = %v, want %v", got1, tt.want1)
+			}
+			if !reflect.DeepEqual(got2, tt.want2) {
+				t.Errorf("MakeBlock() got2 = %v, want %v", got2, tt.want2)
+			}
+		})
+	}
+}
+
+func TestGetSortedRevealedValues(t *testing.T) {
+	var (
+		client      *ethclient.Client
+		blockNumber *big.Int
+		epoch       uint32
+	)
+
+	type args struct {
+		assignedAssets    []types.RevealedStruct
+		assignedAssetsErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.RevealedDataMaps
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetSortedRevealedValues executes successfully",
+			args: args{
+				assignedAssets: []types.RevealedStruct{{RevealedValues: []types.AssignedAsset{{LeafId: 1, Value: 100}}, Influence: big.NewInt(100)}},
+			},
+			want: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]uint32{1: {100}},
+				VoteWeights:          map[uint32]*big.Int{100: big.NewInt(100)},
+				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting assignedAssets",
+			args: args{
+				assignedAssetsErr: errors.New("error in getting assets"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			cmdUtils = cmdUtilsMock
+
+			cmdUtilsMock.On("IndexRevealEventsOfCurrentEpoch", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assignedAssets, tt.args.assignedAssetsErr)
+			ut := &UtilsStruct{}
+			got, err := ut.GetSortedRevealedValues(client, blockNumber, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSortedRevealedValues() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSortedRevealedValues() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
