@@ -12,6 +12,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
+	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -120,6 +121,7 @@ var (
 	_commitData      types.CommitData
 	lastVerification uint32
 	blockConfirmed   uint32
+	disputeData      types.DisputeFileData
 )
 
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
@@ -222,12 +224,21 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if lastVerification >= epoch {
 			break
 		}
+		fmt.Println("claim bountyflag passed: ", utilsInterface.IsFlagPassed("autoClaimBounty"))
+
 		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 		lastVerification = epoch
+
+		err = AutoClaimBounty(client, config, account, blockNumber)
+		if err != nil {
+			log.Error(err)
+			break
+		}
+
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
@@ -403,9 +414,68 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 	return nil
 }
 
+func AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account, blockNumber *big.Int) error {
+	if utilsInterface.IsFlagPassed("autoClaimBounty") {
+		fmt.Println("AutoClaimBounty zone")
+		disputeFilePath, err := GetDisputeDataFileName(account.Address)
+		if err != nil {
+			return err
+		}
+
+		var latestBountyId uint32
+
+		//Checking if dispute happens, if yes than getting the bountyId from events
+		if disputedFlag {
+			fmt.Println("Getting bountyId from events")
+			latestBountyId, err = GetBountyIdFromEvents(client, blockNumber, account.Address)
+			if err != nil {
+				return err
+			}
+			fmt.Println("latestBountyId: ", latestBountyId)
+		}
+
+		if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
+			disputeData, err = utils.ReadFromJsonFile(disputeFilePath)
+			if err != nil {
+				return err
+			}
+		}
+		if disputeData.BountyIdQueue != nil {
+			claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
+				BountyId: disputeData.BountyIdQueue[0],
+				Address:  account.Address,
+				Password: account.Password,
+			})
+			if err != nil {
+				return err
+			}
+			if claimBountyTxn != core.NilHash {
+				claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+				if claimBountyStatus == 1 {
+					fmt.Println("writing data to file")
+					if len(disputeData.BountyIdQueue) > 1 {
+						//Removing the bountyId from the queue as the bounty is being claimed
+						disputeData.BountyIdQueue = disputeData.BountyIdQueue[1:]
+					} else {
+						disputeData.BountyIdQueue = nil
+					}
+				}
+			}
+		}
+
+		if latestBountyId != 0 {
+			disputeData.BountyIdQueue = append(disputeData.BountyIdQueue, latestBountyId)
+		}
+		err = utils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
 	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
-	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -424,6 +494,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	epochLastProposed := uint32(0)
 	for _, vLog := range logs {
 		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+		fmt.Println("Unpacked data: ", data)
 		if unpackErr != nil {
 			log.Error(unpackErr)
 			continue
@@ -457,6 +528,14 @@ func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
 	return homeDir + "/" + address + "_data", nil
 }
 
+func GetDisputeDataFileName(address string) (string, error) {
+	homeDir, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_disputeData.json", nil
+}
+
 func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
@@ -486,16 +565,18 @@ func init() {
 	rootCmd.AddCommand(voteCmd)
 
 	var (
-		Address   string
-		Rogue     bool
-		RogueMode []string
-		Password  string
+		Address         string
+		Rogue           bool
+		RogueMode       []string
+		Password        string
+		AutoClaimBounty bool
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
+	voteCmd.Flags().BoolVarP(&AutoClaimBounty, "autoClaimBounty", "", false, "auto claim bounty")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

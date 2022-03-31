@@ -38,3 +38,7 @@ type RevealedDataMaps struct {
 	VoteWeights          map[uint32]*big.Int
 	InfluenceSum         map[uint16]*big.Int
 }
+
+type DisputeFileData struct {
+	BountyIdQueue []uint32
+}

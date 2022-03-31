@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
@@ -11,13 +14,18 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strings"
 )
 
-var giveSortedLeafIds []int
+var (
+	giveSortedLeafIds []int
+	disputedFlag      bool
+)
 
 //blockId is id of the block
 
 func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
+	disputedFlag = false
 
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
@@ -38,13 +46,13 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 
 	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
-	transactionOptions := types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	}
+	//transactionOptions := types.TransactionOptions{
+	//	Client:         client,
+	//	Password:       account.Password,
+	//	AccountAddress: account.Address,
+	//	ChainId:        core.ChainId,
+	//	Config:         config,
+	//}
 
 	for _, blockId := range randomSortedProposedBlockIds {
 		proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, uint32(blockId))
@@ -77,6 +85,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Info("Txn Hash: ", transactionUtils.Hash(disputeBiggestStakeProposedTxn))
 			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(disputeBiggestStakeProposedTxn).String())
 			if status == 1 {
+				disputedFlag = true
 				continue
 			}
 		}
@@ -85,17 +94,18 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		log.Debug("Locally revealed collection ids: ", revealedCollectionIds)
 		log.Debug("Revealed collection ids in the block ", proposedBlock.Ids)
 
-		idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
-		if err != nil {
-			log.Error("Error in disputing: ", err)
-		}
-		if idDisputeTxn != nil {
-			log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
-			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
-			if status == 1 {
-				continue
-			}
-		}
+		//idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
+		//if err != nil {
+		//	log.Error("Error in disputing: ", err)
+		//}
+		//if idDisputeTxn != nil {
+		//	log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
+		//	status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
+		//	if status == 1 {
+		//		disputedFlag = true
+		//		continue
+		//	}
+		//}
 
 		// Median Value dispute
 		isEqual, mismatchIndex := utils.IsEqualUint32(proposedBlock.Medians, medians)
@@ -108,7 +118,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
-				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian]
+				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
 				leafId, err := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
 				if err != nil {
 					log.Error("Error in leaf id: ", err)
@@ -239,7 +249,10 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		return err
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
-	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+	status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+	if status == 1 {
+		disputedFlag = true
+	}
 	return nil
 }
 
@@ -277,4 +290,40 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 		}
 	}
 	return nil
+}
+
+func GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	query := ethereum.FilterQuery{
+		FromBlock: fromBlock,
+		ToBlock:   blockNumber,
+		Addresses: []common.Address{
+			common.HexToAddress(core.StakeManagerAddress),
+		},
+	}
+	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	if err != nil {
+		return 0, err
+	}
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.StakeManagerABI))
+	if err != nil {
+		return 0, err
+	}
+	bountyId := uint32(0)
+	for _, vLog := range logs {
+		data, unpackErr := abiUtils.Unpack(contractAbi, "Slashed", vLog.Data)
+		fmt.Println("Slash event Data: ", data)
+		fmt.Println("Unpack Err: ", unpackErr)
+		if unpackErr != nil {
+			log.Error(unpackErr)
+			continue
+		}
+		addressFromLogs := fmt.Sprint(data[1])
+		fmt.Println("Address from event logs: ", addressFromLogs)
+		if bountyHunter == addressFromLogs {
+			bountyId = data[0].(uint32)
+		}
+	}
+	fmt.Println("Bounty Id from logs: ", bountyId)
+	return bountyId, nil
 }
