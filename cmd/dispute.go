@@ -46,13 +46,13 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 
 	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
-	//transactionOptions := types.TransactionOptions{
-	//	Client:         client,
-	//	Password:       account.Password,
-	//	AccountAddress: account.Address,
-	//	ChainId:        core.ChainId,
-	//	Config:         config,
-	//}
+	transactionOptions := types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	}
 
 	for _, blockId := range randomSortedProposedBlockIds {
 		proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, uint32(blockId))
@@ -94,18 +94,18 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		log.Debug("Locally revealed collection ids: ", revealedCollectionIds)
 		log.Debug("Revealed collection ids in the block ", proposedBlock.Ids)
 
-		//idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
-		//if err != nil {
-		//	log.Error("Error in disputing: ", err)
-		//}
-		//if idDisputeTxn != nil {
-		//	log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
-		//	status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
-		//	if status == 1 {
-		//		disputedFlag = true
-		//		continue
-		//	}
-		//}
+		idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
+		if err != nil {
+			log.Error("Error in disputing: ", err)
+		}
+		if idDisputeTxn != nil {
+			log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
+			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
+			if status == 1 {
+				disputedFlag = true
+				continue
+			}
+		}
 
 		// Median Value dispute
 		isEqual, mismatchIndex := utils.IsEqualUint32(proposedBlock.Medians, medians)
