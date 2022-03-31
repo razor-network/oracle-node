@@ -72,7 +72,7 @@ docker exec -it razor-go razor ...
 3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary.
 4. If you want to build the binary without wanting to set the configurations use `npm run build-noargs`
 5. While building the binary, supply the provider RPC url and the gas multiplier.
-6. To bypass the intractive mode of providing password, create file in `.razor` directory with providing password in it.
+6. To bypass the interactive mode of providing password, create file in `.razor` directory with providing password in it.
 7. The binary will be generated at `build/bin`.
 
 ## Commands
@@ -791,7 +791,7 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
 
 ### Logs
 
-User can pass a seperate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
+User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
 
 ```
 $ ./razor addStake --address <address> --value <value> --logFile stakingLogs
@@ -850,7 +850,7 @@ We would really appreciate your contribution. To see our [contribution guideline
    #Provide password through CLI
    docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000
 
-   #Provide password throudh File
+   #Provide password through File
 
      #Create file and put password string
        vi ~/.razor/pass

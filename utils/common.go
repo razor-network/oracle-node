@@ -2,11 +2,14 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"razor/core"
+	"razor/core/types"
 	"razor/logger"
 	"strconv"
 	"time"
@@ -211,6 +214,17 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
 
+func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
+	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	if err != nil {
+		return 0, err
+	}
+	timeRemaining := core.StateLength - (block.Time % core.StateLength)
+	upperLimit := ((core.StateLength * uint64(bufferPercent)) / 100) + core.StateBuffer
+
+	return int64(timeRemaining - upperLimit), nil
+}
+
 func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
 	salt := solsha3.SoliditySHA3([]string{"uint32", "uint32[]"}, []interface{}{epoch, medians})
 	var saltInBytes32 [32]byte
@@ -249,6 +263,47 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 
 }
 
+func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
+
+	var data types.CommitFileData
+	data.Epoch = epoch
+	data.AssignedCollections = commitData.AssignedCollections
+	data.SeqAllottedCollections = commitData.SeqAllottedCollections
+	data.Leaves = commitData.Leaves
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filePath, jsonData, 0600)
+	if err != nil {
+		log.Error("Error in writing to file: ", err)
+		return err
+	}
+	return nil
+}
+
+func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		log.Error("Error in opening json file: ", err)
+		return types.CommitFileData{}, err
+	}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Error("Error in reading data from json file: ", err)
+		return types.CommitFileData{}, err
+	}
+	var commitedData types.CommitFileData
+
+	err = json.Unmarshal(byteValue, &commitedData)
+	if err != nil {
+		log.Error(" Unmarshal error: ", err)
+		return types.CommitFileData{}, err
+	}
+	return commitedData, nil
+}
+
 func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
@@ -257,4 +312,45 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 		}
 		logger.InitializeLogger(fileName)
 	}
+}
+
+func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
+
+	var data types.ProposeFileData
+	data.Epoch = epoch
+	data.MediansData = proposeData.MediansData
+	data.RevealedCollectionIds = proposeData.RevealedCollectionIds
+	data.RevealedDataMaps = proposeData.RevealedDataMaps
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filePath, jsonData, 0600)
+	if err != nil {
+		log.Error("Error in writing to file: ", err)
+		return err
+	}
+	return nil
+}
+
+func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		log.Error("Error in opening json file: ", err)
+		return types.ProposeFileData{}, err
+	}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Error("Error in reading data from json file: ", err)
+		return types.ProposeFileData{}, err
+	}
+	var proposedData types.ProposeFileData
+
+	err = json.Unmarshal(byteValue, &proposedData)
+	if err != nil {
+		log.Error(" Unmarshal error: ", err)
+		return types.ProposeFileData{}, err
+	}
+	return proposedData, nil
 }

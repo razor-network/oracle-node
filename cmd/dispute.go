@@ -133,26 +133,27 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 }
 
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
-	//TODO: Implement proper file reading and writing
 
-	//	if _mediansData == nil && !rogueData.IsRogue {
-	//		fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
-	//		if err != nil {
-	//			log.Error("Error in getting file name to read median data: ", err)
-	//			goto CalculateMedian
-	//		}
-	//		epochInFile, medianDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
-	//		if err != nil {
-	//			log.Errorf("Error in getting median data from file %s: %t", fileName, err)
-	//			goto CalculateMedian
-	//		}
-	//		if epochInFile != epoch {
-	//			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
-	//			goto CalculateMedian
-	//		}
-	//		_mediansData = medianDataFromFile
-	//	}
-	//CalculateMedian:
+	if _mediansData == nil && !rogueData.IsRogue {
+		fileName, err := cmdUtils.GetProposeDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to read median data: ", err)
+			goto CalculateMedian
+		}
+		proposedata, err := razorUtils.ReadFromProposeJsonFile(fileName)
+		if err != nil {
+			log.Errorf("Error in getting propose data from file %s: %t", fileName, err)
+			goto CalculateMedian
+		}
+		if proposedata.Epoch != epoch {
+			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
+			goto CalculateMedian
+		}
+		_mediansData = proposedata.MediansData
+		_revealedDataMaps = proposedata.RevealedDataMaps
+		_revealedCollectionIds = proposedata.RevealedCollectionIds
+	}
+CalculateMedian:
 	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil {
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {

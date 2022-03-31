@@ -143,6 +143,10 @@ type Utils interface {
 	GetEpoch(*ethclient.Client) (uint32, error)
 	SaveDataToFile(string, uint32, []*big.Int) error
 	ReadDataFromFile(string) (uint32, []*big.Int, error)
+	SaveDataToCommitJsonFile(string, uint32, types.CommitData) error
+	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
+	SaveDataToProposeJsonFile(string, uint32, types.ProposeData) error
+	ReadFromProposeJsonFile(string) (types.ProposeFileData, error)
 	CalculateBlockTime(*ethclient.Client) int64
 	IsFlagPassed(string) bool
 	GetTokenManager(*ethclient.Client) *bindings.RAZOR
@@ -159,6 +163,7 @@ type Utils interface {
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	GetRemainingTimeOfCurrentState(*ethclient.Client, int32) (int64, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	SecondsToReadableTime(int) string
 	AssignLogFile(*pflag.FlagSet)

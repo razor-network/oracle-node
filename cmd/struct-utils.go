@@ -318,8 +318,24 @@ func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.St
 	return utilsInterface.GetStakerSRZRBalance(client, staker)
 }
 
+func (u Utils) SaveDataToCommitJsonFile(flePath string, epoch uint32, commitFileData types.CommitData) error {
+	return utilsInterface.SaveDataToCommitJsonFile(flePath, epoch, commitFileData)
+}
+
+func (u Utils) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
+	return utilsInterface.ReadFromCommitJsonFile(filePath)
+}
+
 func (u Utils) AssignLogFile(flagSet *pflag.FlagSet) {
 	utilsInterface.AssignLogFile(flagSet)
+}
+
+func (u Utils) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
+	return utilsInterface.ReadFromProposeJsonFile(filePath)
+}
+
+func (u Utils) SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFileData types.ProposeData) error {
+	return utilsInterface.SaveDataToProposeJsonFile(flePath, epoch, proposeFileData)
 }
 
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {

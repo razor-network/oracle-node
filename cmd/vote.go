@@ -303,14 +303,13 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		}
 	}
 
-	//TODO: Need to save the entire commitData, which includes AssignedCollections, SeqAllottedCollections and Leaves to construct merkle tree
 	log.Debug("Saving committed data for recovery")
 	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
 
-	err = razorUtils.SaveDataToFile(fileName, epoch, commitData.Leaves)
+	err = razorUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
 	if err != nil {
 		return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
 	}
@@ -334,32 +333,32 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 	log.Debug("Epoch last revealed: ", lastReveal)
 
-	//TODO: Reveal rogue and fetch committed data from file
-
-	//if _committedData == nil {
-	//	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
-	//	if err != nil {
-	//		log.Error("Error in getting file name to save committed data: ", err)
-	//		break
-	//	}
-	//	epochInFile, committedDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
-	//	if err != nil {
-	//		log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
-	//		break
-	//	}
-	//	if epochInFile != epoch {
-	//		log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
-	//		break
-	//	}
-	//	_committedData = committedDataFromFile
-	//}
-	//if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
-	//	var rogueCommittedData []*big.Int
-	//	for i := 0; i < len(_committedData); i++ {
-	//		rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
-	//	}
-	//	_committedData = rogueCommittedData
-	//}
+	if _commitData.AssignedCollections == nil && _commitData.SeqAllottedCollections == nil && _commitData.Leaves == nil {
+		fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to save committed data: ", err)
+			return err
+		}
+		committedDataFromFile, err := razorUtils.ReadFromCommitJsonFile(fileName)
+		if err != nil {
+			log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
+			return err
+		}
+		if committedDataFromFile.Epoch != epoch {
+			log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
+			return errors.New("commit data file doesn't contain latest committed data")
+		}
+		_commitData.AssignedCollections = committedDataFromFile.AssignedCollections
+		_commitData.SeqAllottedCollections = committedDataFromFile.SeqAllottedCollections
+		_commitData.Leaves = committedDataFromFile.Leaves
+	}
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+		var rogueCommittedData []*big.Int
+		for i := 0; i < len(_commitData.Leaves); i++ {
+			rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
+		}
+		_commitData.Leaves = rogueCommittedData
+	}
 
 	secret, err := cmdUtils.CalculateSecret(account, epoch)
 	if err != nil {
@@ -408,7 +407,6 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}
-	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -425,15 +423,38 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 		return 0, err
 	}
 	epochLastProposed := uint32(0)
+
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return 0, err
+	}
+
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	if err != nil {
+		return 0, err
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+
+loop:
 	for _, vLog := range logs {
-		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
-		if unpackErr != nil {
-			log.Error(unpackErr)
-			continue
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			err = errors.New("propose state timeout")
+			break loop
+		default:
+			data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+			if unpackErr != nil {
+				log.Error(unpackErr)
+				continue
+			}
+			if stakerId == data[1].(uint32) {
+				epochLastProposed = data[0].(uint32)
+			}
 		}
-		if stakerId == data[1].(uint32) {
-			epochLastProposed = data[0].(uint32)
-		}
+	}
+	if err != nil {
+		return 0, err
 	}
 	return epochLastProposed, nil
 }
@@ -457,7 +478,7 @@ func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_data", nil
+	return homeDir + "/" + address + "_CommitData.json", nil
 }
 
 func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
