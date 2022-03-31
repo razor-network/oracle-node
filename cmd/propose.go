@@ -110,13 +110,17 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	_revealedCollectionIds = ids
 	_revealedDataMaps = revealedDataMaps
 
-	log.Debug("Saving median data for recovery")
-	fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
+	log.Debug("Saving proposed data for recovery")
+	fileName, err := cmdUtils.GetProposeDataFileName(account.Address)
 	if err != nil {
 		log.Error("Error in getting file name to save median data: ", err)
 		return core.NilHash, nil
 	}
-	err = razorUtils.SaveDataToFile(fileName, epoch, _mediansData)
+	err = razorUtils.SaveDataToProposeJsonFile(fileName, epoch, types.ProposeData{
+		MediansData:           _mediansData,
+		RevealedCollectionIds: _revealedCollectionIds,
+		RevealedDataMaps:      _revealedDataMaps,
+	})
 	if err != nil {
 		log.Errorf("Error in saving data to file %s: %t", fileName, err)
 		return core.NilHash, nil
@@ -329,12 +333,12 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
-func (*UtilsStruct) GetMedianDataFileName(address string) (string, error) {
+func (*UtilsStruct) GetProposeDataFileName(address string) (string, error) {
 	homeDir, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_median", nil
+	return homeDir + "/" + address + "_proposedData.json", nil
 }
 
 func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {

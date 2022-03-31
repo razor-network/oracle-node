@@ -118,6 +118,10 @@ type UtilsInterface interface {
 	AddJobToJSON(string, *types.StructsJob) error
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
 	SecondsToReadableTime(int) string
+	SaveDataToCommitJsonFile(string, uint32, types.CommitData) error
+	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
+	SaveDataToProposeJsonFile(string, uint32, types.ProposeData) error
+	ReadFromProposeJsonFile(string) (types.ProposeFileData, error)
 	AssignLogFile(*pflag.FlagSet)
 }
 
@@ -301,7 +305,7 @@ type UtilsCmdInterface interface {
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
 	GetCommitDataFileName(string) (string, error)
-	GetMedianDataFileName(string) (string, error)
+	GetProposeDataFileName(string) (string, error)
 	CalculateSecret(types.Account, uint32) ([]byte, error)
 	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
 	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)
