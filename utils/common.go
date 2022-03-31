@@ -355,7 +355,7 @@ func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileD
 	return proposedData, nil
 }
 
-func SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
+func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
 	var data types.DisputeFileData
 
 	data.BountyIdQueue = bountyIdQueue
@@ -371,7 +371,7 @@ func SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
 	return nil
 }
 
-func ReadFromJsonFile(filePath string) (types.DisputeFileData, error) {
+func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
 	jsonFile, err := os.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)

@@ -122,6 +122,8 @@ type UtilsInterface interface {
 	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
 	SaveDataToProposeJsonFile(string, uint32, types.ProposeData) error
 	ReadFromProposeJsonFile(string) (types.ProposeFileData, error)
+	SaveDataToDisputeJsonFile(string, []uint32) error
+	ReadFromDisputeJsonFile(string) (types.DisputeFileData, error)
 	AssignLogFile(*pflag.FlagSet)
 }
 
@@ -317,6 +319,8 @@ type UtilsCmdInterface interface {
 	ExecuteStake(*pflag.FlagSet)
 	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
 	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
+	GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
+	AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
 }
 
 type TransactionInterface interface {

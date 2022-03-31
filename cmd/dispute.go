@@ -118,6 +118,11 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
+
+				//collectionId starts from 1 and in SortedRevealedValues, the keys start from 0 which are collectionId-1 mapping to respective revealed data for that collectionId.
+				//e.g. collectionId = [1,2,3,4] & Sorted Reveal Votes: map[0:[100] 1:[200 202] 2:[300]]
+				//Here 0th key in map represents collectionId 1.
+
 				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
 				leafId, err := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
 				if err != nil {
@@ -293,7 +298,7 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 	return nil
 }
 
-func GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
 	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
 		log.Error(err)

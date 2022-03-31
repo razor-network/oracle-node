@@ -230,12 +230,15 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			log.Error(err)
 			break
 		}
+
 		lastVerification = epoch
 
-		err = AutoClaimBounty(client, config, account, blockNumber)
-		if err != nil {
-			log.Error(err)
-			break
+		if utilsInterface.IsFlagPassed("autoClaimBounty") {
+			err = cmdUtils.AutoClaimBounty(client, config, account)
+			if err != nil {
+				log.Error(err)
+				break
+			}
 		}
 
 	case 4:
@@ -412,66 +415,64 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 	return nil
 }
 
-func AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account, blockNumber *big.Int) error {
-	if utilsInterface.IsFlagPassed("autoClaimBounty") {
-		disputeFilePath, err := GetDisputeDataFileName(account.Address)
+func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+	disputeFilePath, err := GetDisputeDataFileName(account.Address)
+	if err != nil {
+		return err
+	}
+
+	var latestBountyId uint32
+
+	//Checking if dispute happens, if yes than getting the bountyId from events
+	if disputedFlag {
+		latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 		if err != nil {
+			log.Error("Error in fetching block: ", err)
 			return err
 		}
 
-		var latestBountyId uint32
-
-		//Checking if dispute happens, if yes than getting the bountyId from events
-		if disputedFlag {
-			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
-			if err != nil {
-				log.Error("Error in fetching block: ", err)
-				return err
-			}
-
-			latestBountyId, err = GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
-			if err != nil {
-				return err
-			}
+		latestBountyId, err = cmdUtils.GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
+		if err != nil {
+			return err
 		}
+	}
 
-		if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
-			disputeData, err = utils.ReadFromJsonFile(disputeFilePath)
-			if err != nil {
-				return err
-			}
+	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
+		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		if err != nil {
+			return err
 		}
-		if disputeData.BountyIdQueue != nil {
-			length := len(disputeData.BountyIdQueue)
-			claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
-				BountyId: disputeData.BountyIdQueue[length-1],
-				Address:  account.Address,
-				Password: account.Password,
-			})
-			if err != nil {
-				return err
-			}
-			if claimBountyTxn != core.NilHash {
-				claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
-				if claimBountyStatus == 1 {
-					if len(disputeData.BountyIdQueue) > 1 {
-						//Removing the bountyId from the queue as the bounty is being claimed
-						disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
-					} else {
-						disputeData.BountyIdQueue = nil
-					}
+	}
+	if disputeData.BountyIdQueue != nil {
+		length := len(disputeData.BountyIdQueue)
+		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
+			BountyId: disputeData.BountyIdQueue[length-1],
+			Address:  account.Address,
+			Password: account.Password,
+		})
+		if err != nil {
+			return err
+		}
+		if claimBountyTxn != core.NilHash {
+			claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			if claimBountyStatus == 1 {
+				if len(disputeData.BountyIdQueue) > 1 {
+					//Removing the bountyId from the queue as the bounty is being claimed
+					disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
+				} else {
+					disputeData.BountyIdQueue = nil
 				}
 			}
 		}
+	}
 
-		if latestBountyId != 0 {
-			//prepending the latestBountyId to the queue
-			disputeData.BountyIdQueue = append([]uint32{latestBountyId}, disputeData.BountyIdQueue...)
-		}
-		err = utils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
-		if err != nil {
-			return err
-		}
+	if latestBountyId != 0 {
+		//prepending the latestBountyId to the queue
+		disputeData.BountyIdQueue = append([]uint32{latestBountyId}, disputeData.BountyIdQueue...)
+	}
+	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	if err != nil {
+		return err
 	}
 	return nil
 }
