@@ -475,7 +475,11 @@ func AutoClaimBounty(client *ethclient.Client, config types.Configurations, acco
 }
 
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	if err != nil {
+		return 0, errors.New("Not able to Fetch Block: " + err.Error())
+	}
+	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -492,16 +496,38 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 		return 0, err
 	}
 	epochLastProposed := uint32(0)
+
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return 0, err
+	}
+
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	if err != nil {
+		return 0, err
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+
+loop:
 	for _, vLog := range logs {
-		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
-		fmt.Println("Unpacked data: ", data)
-		if unpackErr != nil {
-			log.Error(unpackErr)
-			continue
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			err = errors.New("propose state timeout")
+			break loop
+		default:
+			data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+			if unpackErr != nil {
+				log.Error(unpackErr)
+				continue
+			}
+			if stakerId == data[1].(uint32) {
+				epochLastProposed = data[0].(uint32)
+			}
 		}
-		if stakerId == data[1].(uint32) {
-			epochLastProposed = data[0].(uint32)
-		}
+	}
+	if err != nil {
+		return 0, err
 	}
 	return epochLastProposed, nil
 }

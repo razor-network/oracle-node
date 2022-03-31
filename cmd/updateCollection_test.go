@@ -136,7 +136,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 		aggregationErr      error
 		power               int8
 		powerErr            error
-		tolerance           uint16
+		tolerance           uint32
 		toleranceErr        error
 		jobId               []uint
 		jobIdErr            error

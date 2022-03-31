@@ -15,6 +15,8 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	utils2 "razor/utils"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -89,11 +91,11 @@ func TestHandleRevealState(t *testing.T) {
 
 func TestReveal(t *testing.T) {
 	var client *ethclient.Client
-	var committedData []*big.Int
+	var commitData types.CommitData
 	var secret []byte
 	var account types.Account
-	var commitAccount string
 	var config types.Configurations
+	var epoch uint32
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -101,11 +103,8 @@ func TestReveal(t *testing.T) {
 	type args struct {
 		state          int64
 		stateErr       error
-		epoch          uint32
-		epochErr       error
-		commitments    [32]byte
-		commitmentsErr error
-		allZeroStatus  bool
+		merkleTree     [][][]byte
+		treeRevealData bindings.StructsMerkleTree
 		txnOpts        *bind.TransactOpts
 		revealTxn      *Types.Transaction
 		revealErr      error
@@ -120,17 +119,12 @@ func TestReveal(t *testing.T) {
 		{
 			name: "Test 1: When Reveal function executes successfully",
 			args: args{
-				state:          1,
-				stateErr:       nil,
-				epoch:          1,
-				epochErr:       nil,
-				commitments:    [32]byte{39, 216, 48, 133, 246, 76, 27, 204, 106, 253, 89, 128, 162, 117, 198, 16, 120, 59, 207, 163, 118, 68, 154, 30, 86, 80, 42, 68, 229, 42, 231, 115},
-				commitmentsErr: nil,
-				allZeroStatus:  false,
-				txnOpts:        txnOpts,
-				revealTxn:      &Types.Transaction{},
-				revealErr:      nil,
-				hash:           common.BigToHash(big.NewInt(1)),
+				state:     1,
+				stateErr:  nil,
+				txnOpts:   txnOpts,
+				revealTxn: &Types.Transaction{},
+				revealErr: nil,
+				hash:      common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
@@ -138,86 +132,24 @@ func TestReveal(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting state",
 			args: args{
-				stateErr:       errors.New("state error"),
-				epoch:          1,
-				epochErr:       nil,
-				commitments:    [32]byte{39, 216, 48, 133, 246, 76, 27, 204, 106, 253, 89, 128, 162, 117, 198, 16, 120, 59, 207, 163, 118, 68, 154, 30, 86, 80, 42, 68, 229, 42, 231, 115},
-				commitmentsErr: nil,
-				allZeroStatus:  false,
-				txnOpts:        txnOpts,
-				revealTxn:      &Types.Transaction{},
-				revealErr:      nil,
-				hash:           common.BigToHash(big.NewInt(1)),
+				stateErr:  errors.New("state error"),
+				txnOpts:   txnOpts,
+				revealTxn: &Types.Transaction{},
+				revealErr: nil,
+				hash:      common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("state error"),
 		},
 		{
-			name: "Test 3: When there is an error in getting epoch",
-			args: args{
-				state:          1,
-				stateErr:       nil,
-				epochErr:       errors.New("epoch error"),
-				commitments:    [32]byte{39, 216, 48, 133, 246, 76, 27, 204, 106, 253, 89, 128, 162, 117, 198, 16, 120, 59, 207, 163, 118, 68, 154, 30, 86, 80, 42, 68, 229, 42, 231, 115},
-				commitmentsErr: nil,
-				allZeroStatus:  false,
-				txnOpts:        txnOpts,
-				revealTxn:      &Types.Transaction{},
-				revealErr:      nil,
-				hash:           common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("epoch error"),
-		},
-		{
-			name: "Test 4: When there is an error in getting commitments",
-			args: args{
-				state:          1,
-				stateErr:       nil,
-				epoch:          1,
-				epochErr:       nil,
-				commitmentsErr: errors.New("commitments error"),
-				allZeroStatus:  false,
-				txnOpts:        txnOpts,
-				revealTxn:      &Types.Transaction{},
-				revealErr:      nil,
-				hash:           common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("commitments error"),
-		},
-		{
-			name: "Test 5: When there are zero commitments ",
-			args: args{
-				state:          1,
-				stateErr:       nil,
-				epoch:          1,
-				epochErr:       nil,
-				commitments:    [32]byte{39, 216, 48, 133, 246, 76, 27, 204, 106, 253, 89, 128, 162, 117, 198, 16, 120, 59, 207, 163, 118, 68, 154, 30, 86, 80, 42, 68, 229, 42, 231, 115},
-				commitmentsErr: nil,
-				allZeroStatus:  true,
-				txnOpts:        txnOpts,
-				revealTxn:      &Types.Transaction{},
-				revealErr:      nil,
-				hash:           common.BigToHash(big.NewInt(1)),
-			},
-			want:    core.NilHash,
-			wantErr: nil,
-		},
-		{
 			name: "Test 6: When Reveal transaction fails",
 			args: args{
-				state:          1,
-				stateErr:       nil,
-				epoch:          1,
-				epochErr:       nil,
-				commitments:    [32]byte{39, 216, 48, 133, 246, 76, 27, 204, 106, 253, 89, 128, 162, 117, 198, 16, 120, 59, 207, 163, 118, 68, 154, 30, 86, 80, 42, 68, 229, 42, 231, 115},
-				commitmentsErr: nil,
-				allZeroStatus:  false,
-				txnOpts:        txnOpts,
-				revealTxn:      &Types.Transaction{},
-				revealErr:      errors.New("reveal error"),
-				hash:           common.BigToHash(big.NewInt(1)),
+				state:     1,
+				stateErr:  nil,
+				txnOpts:   txnOpts,
+				revealTxn: &Types.Transaction{},
+				revealErr: errors.New("reveal error"),
+				hash:      common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("reveal error"),
@@ -229,22 +161,25 @@ func TestReveal(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
+			merkleInterface := new(mocks2.MerkleTreeInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock
 			transactionUtils = transactionUtilsMock
 			voteManagerUtils = voteManagerUtilsMock
+			cmdUtils = cmdUtilsMock
+			utils2.MerkleInterface = merkleInterface
 
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
+			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
-			utilsMock.On("GetCommitments", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.commitments, tt.args.commitmentsErr)
-			utilsMock.On("AllZero", mock.Anything).Return(tt.args.allZeroStatus)
 			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(client, committedData, secret, account, commitAccount, config)
+			got, err := utils.Reveal(client, config, account, epoch, commitData, secret)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}

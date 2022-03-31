@@ -15,6 +15,8 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/utils"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -143,6 +145,8 @@ func TestExecuteStake(t *testing.T) {
 		amountErr        error
 		approveTxn       common.Hash
 		approveErr       error
+		minSafeRazor     *big.Int
+		minSafeRazorErr  error
 		stakeTxn         common.Hash
 		stakeErr         error
 		isFlagPassed     bool
@@ -154,7 +158,7 @@ func TestExecuteStake(t *testing.T) {
 		rogueModeErr     error
 		voteErr          error
 		revealedDataMaps types.RevealedDataMaps
-		revealedDataErr  error
+		//revealedDataErr  error
 	}
 	tests := []struct {
 		name          string
@@ -169,6 +173,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: false,
@@ -188,6 +193,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: true,
@@ -207,6 +213,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: false,
@@ -222,6 +229,7 @@ func TestExecuteStake(t *testing.T) {
 				addressErr:   errors.New("address error"),
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: false,
@@ -251,6 +259,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   core.NilHash,
 				approveErr:   errors.New("approve error"),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
@@ -266,6 +275,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     core.NilHash,
 				stakeErr:     errors.New("stake error"),
@@ -281,6 +291,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: true,
@@ -296,6 +307,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: true,
@@ -314,6 +326,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 				isFlagPassed: true,
@@ -332,6 +345,7 @@ func TestExecuteStake(t *testing.T) {
 				password:     "test",
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
+				minSafeRazor: big.NewInt(0),
 				balance:      nil,
 				balanceErr:   errors.New("balance error"),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
@@ -351,10 +365,12 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
+			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
@@ -366,6 +382,7 @@ func TestExecuteStake(t *testing.T) {
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
+			utilsPkgMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
