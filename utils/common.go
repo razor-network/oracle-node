@@ -211,6 +211,17 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
 
+func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
+	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	if err != nil {
+		return 0, err
+	}
+	timeRemaining := core.StateLength - (block.Time % core.StateLength)
+	upperLimit := ((core.StateLength * uint64(bufferPercent)) / 100) + core.StateBuffer
+
+	return int64(timeRemaining - upperLimit), nil
+}
+
 func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
 	salt := solsha3.SoliditySHA3([]string{"uint32", "uint32[]"}, []interface{}{epoch, medians})
 	var saltInBytes32 [32]byte

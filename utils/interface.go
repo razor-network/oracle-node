@@ -159,6 +159,7 @@ type Utils interface {
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)
+	GetRemainingTimeOfCurrentState(*ethclient.Client, int32) (int64, error)
 	ConvertToNumber(interface{}) (*big.Float, error)
 	SecondsToReadableTime(int) string
 	AssignLogFile(*pflag.FlagSet)

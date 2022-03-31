@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/hex"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -13,6 +14,7 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sort"
+	"time"
 )
 
 var (
@@ -54,6 +56,10 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 
 	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Salt: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
 
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return core.NilHash, err
+	}
 	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
 		StakerId:        staker.Id,
@@ -61,7 +67,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		NumberOfStakers: numStakers,
 		Salt:            salt,
 		Epoch:           epoch,
-	})
+	}, bufferPercent)
 
 	log.Debug("Iteration: ", iteration)
 
@@ -154,31 +160,66 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	}
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
+
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	if err != nil {
+		return nil, 0, err
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+
+loop:
 	for i := 1; i <= int(numberOfStakers); i++ {
-		stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
-		if err != nil {
-			return nil, 0, err
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			err = errors.New("state timeout error")
+			break loop
+		default:
+			stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
+			if err != nil {
+				return nil, 0, err
+			}
+			if stake.Cmp(biggestStake) > 0 {
+				biggestStake = stake
+				biggestStakerId = uint32(i)
+			}
 		}
-		if stake.Cmp(biggestStake) > 0 {
-			biggestStake = stake
-			biggestStakerId = uint32(i)
-		}
+	}
+	if err != nil {
+		return nil, 0, err
 	}
 	return biggestStake, biggestStakerId, nil
 }
 
-func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer) int {
+func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
 		return -1
 	}
 	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	if err != nil {
+		return -1
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+loop:
 	for i := 0; i < 10000000; i++ {
-		proposer.Iteration = i
-		isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
-		if isElected {
-			return i
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			break loop
+		default:
+			proposer.Iteration = i
+			isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
+			if isElected {
+				return i
+			}
 		}
 	}
 	return -1
