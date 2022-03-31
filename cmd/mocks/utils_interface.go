@@ -1210,12 +1210,82 @@ func (_m *UtilsInterface) ReadDataFromFile(_a0 string) (uint32, []*big.Int, erro
 	return r0, r1, r2
 }
 
+// ReadFromCommitJsonFile provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ReadFromCommitJsonFile(_a0 string) (types.CommitFileData, error) {
+	ret := _m.Called(_a0)
+
+	var r0 types.CommitFileData
+	if rf, ok := ret.Get(0).(func(string) types.CommitFileData); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(types.CommitFileData)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ReadFromProposeJsonFile provides a mock function with given fields: _a0
+func (_m *UtilsInterface) ReadFromProposeJsonFile(_a0 string) (types.ProposeFileData, error) {
+	ret := _m.Called(_a0)
+
+	var r0 types.ProposeFileData
+	if rf, ok := ret.Get(0).(func(string) types.ProposeFileData); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(types.ProposeFileData)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SaveDataToCommitJsonFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterface) SaveDataToCommitJsonFile(_a0 string, _a1 uint32, _a2 types.CommitData) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, uint32, types.CommitData) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SaveDataToFile provides a mock function with given fields: _a0, _a1, _a2
 func (_m *UtilsInterface) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, uint32, []*big.Int) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SaveDataToProposeJsonFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsInterface) SaveDataToProposeJsonFile(_a0 string, _a1 uint32, _a2 types.ProposeData) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, uint32, types.ProposeData) error); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Error(0)

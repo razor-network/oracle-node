@@ -15,6 +15,7 @@ import (
 	accountMocks "razor/accounts/mocks"
 	"razor/cmd/mocks"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
 	"reflect"
@@ -158,984 +159,6 @@ func TestExecuteVote(t *testing.T) {
 	}
 }
 
-//func TestHandleBlock(t *testing.T) {
-//
-//	var client *ethclient.Client
-//	var account types.Account
-//	var blockNumber *big.Int
-//
-//	//randomNum := utils.GetRogueRandomValue(10000000)
-//
-//	type args struct {
-//		config               types.Configurations
-//		rogueData            types.Rogue
-//		state                int64
-//		stateName            string
-//		stateErr             error
-//		epoch                uint32
-//		epochErr             error
-//		stakerId             uint32
-//		stakerIdErr          error
-//		ethBalance           *big.Int
-//		actualStake          *big.Float
-//		actualStakeErr       error
-//		ethBalanceErr        error
-//		actualBalance        *big.Float
-//		actualBalanceErr     error
-//		minStake             *big.Int
-//		minStakeErr          error
-//		staker               bindings.StructsStaker
-//		stakerErr            error
-//		sRZR                 *big.Int
-//		sRZRErr              error
-//		commitTxn            common.Hash
-//		revealTxn            common.Hash
-//		proposeTxn           common.Hash
-//		handleDisputeErr     error
-//		blockConfirmed       uint32
-//		claimBlockRewardHash common.Hash
-//		claimBlockRewardErr  error
-//	}
-//	tests := []struct {
-//		name    string
-//		args    args
-//		wantErr error
-//	}{
-//		{
-//			name: "Test 1: When the state is commit and there is an error to save committed date to file",
-//			args: args{
-//				rogueData: types.Rogue{
-//					IsRogue: false,
-//				},
-//				state:       0,
-//				stateName:   "commit",
-//				epoch:       5,
-//				stakerId:    2,
-//				actualStake: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//				//stake:         big.NewInt(2000),
-//				ethBalance:    big.NewInt(1),
-//				actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//				minStake:      big.NewInt(1000),
-//				staker: bindings.StructsStaker{
-//					IsSlashed: false,
-//				},
-//				//epochLastCommitted: 4,
-//				//secret:             []byte{1, 2, 3},
-//				//commitData:         []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//				commitTxn: common.BigToHash(big.NewInt(1)),
-//				//commitFile:         "commit.txt",
-//				//saveDataErr:        errors.New("error while saving committed data in file"),
-//			},
-//			wantErr: nil,
-//		},
-//{
-//	name: "Test 2: When there is an error in getting state",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		stateErr: errors.New("state error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 3: When there is an error in getting epoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:     0,
-//		stateName: "commit",
-//		epochErr:  errors.New("epoch error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 4: When there is an error in getting stakerId",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:       0,
-//		stateName:   "commit",
-//		epoch:       5,
-//		stakerIdErr: errors.New("stakerId error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 5: When there is an error in getting ethBalance",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalanceErr: errors.New("ethBalance error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 6: When there is an error in getting min stake",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStakeErr:   errors.New("min stake error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 7: When there is an error in getting staker",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		stakerErr:     errors.New("staker error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 8: When there is an error in getting actual balance",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:            0,
-//		stateName:        "commit",
-//		epoch:            5,
-//		stakerId:         2,
-//		stake:            big.NewInt(2000),
-//		ethBalance:       big.NewInt(1),
-//		actualBalanceErr: errors.New("converting to eth error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 9: When the state is commit and there is an error in getting epoch last committed",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommittedErr: errors.New("epoch last committed error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 10: When the state is commit and secret is nil",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommitted: 4,
-//		secret:             nil,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 11: When the state is commit and lastEpochCommited >= epoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommitted: 6,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 12: When the state is commit and there is an error from HandleCommitState()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommitted: 4,
-//		secret:             []byte{1, 2, 3},
-//		commitDataErr:      errors.New("handle commit state error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 13: When the state is commit and there is an error from Commit()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommitted: 4,
-//		secret:             []byte{1, 2, 3},
-//		commitData:         []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		commitErr:          errors.New("commit error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 14: When the state is commit and there is an error in getting file name where commit data needs to be saved",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommitted: 4,
-//		secret:             []byte{1, 2, 3},
-//		commitData:         []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		commitTxn:          common.BigToHash(big.NewInt(1)),
-//		commitFileErr:      errors.New("error in getting file name"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 15: When the state is Reveal and there is an error in getting epoch last revealed",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealedErr: errors.New("epoch last revealed error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 16: When the state is Reveal and lastEpochRevealed  >= epoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed: 6,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 17: When the state is Reveal and secret is nil",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed: 4,
-//		commitData:        []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		secret:            nil,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 18: When the state is Reveal and there is an error from HandleRevealState()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed:    4,
-//		commitData:           []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		secret:               []byte{1, 2, 3},
-//		handleRevealStateErr: errors.New("handle reveal state error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 19: When the state is Reveal and there is an error from Reveal()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed:    4,
-//		commitData:           []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		secret:               []byte{1, 2, 3},
-//		handleRevealStateErr: nil,
-//		revealErr:            errors.New("reveal error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 20: When the state is Reveal and committed data is nil",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed:  4,
-//		commitData:         nil,
-//		commitFile:         "commit.txt",
-//		epochInFile:        5,
-//		commitedDataInFile: []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		secret:             nil,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 21: When the state is Reveal and committed data is nil and there is an error in getting committed data file name",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed: 4,
-//		commitData:        nil,
-//		commitFileErr:     errors.New("error in getting committed data file name"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 22: When the state is Reveal and committed data is nil and there is an error in getting committed data from file",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed: 4,
-//		commitData:        nil,
-//		commitFile:        "commit.txt",
-//		readFileErr:       errors.New("error in getting committed data from file"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 23: When the state is Reveal and committed data is nil amd epochInfile != currentEpoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed:  4,
-//		commitData:         nil,
-//		commitFile:         "commit.txt",
-//		epochInFile:        4,
-//		commitedDataInFile: []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		secret:             nil,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 24: When the state is Reveal and rogue mode is ON for reveal state",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue:   true,
-//			RogueMode: []string{"reveal"},
-//		},
-//		state:         1,
-//		stateName:     "reveal",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastRevealed:    4,
-//		commitFile:           "commit.txt",
-//		commitData:           []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		secret:               []byte{1, 2, 3},
-//		handleRevealStateErr: nil,
-//		revealTxn:            common.BigToHash(big.NewInt(1)),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 25: When the state is propose and there is an error in getting epoch last proposed",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         2,
-//		stateName:     "propose",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastProposedErr: errors.New("epoch last proposed error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 26: When the state is propose and epochLastProposed >= currentEpoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         2,
-//		stateName:     "propose",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastProposed: 5,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 27: When the state is propose and there is an error in getting epochLastRevealed",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         2,
-//		stateName:     "propose",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastProposed:    4,
-//		epochLastRevealedErr: errors.New("epoch last revealed error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 28: When the state is propose and lastReveal < epoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         2,
-//		stateName:     "propose",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastProposed: 4,
-//		epochLastRevealed: 4,
-//	},
-//},
-//{
-//	name: "Test 29: When the state is propose and there is an error from Propose()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         2,
-//		stateName:     "propose",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastProposed: 4,
-//		epochLastRevealed: 5,
-//		proposeErr:        errors.New("propose error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 30: When the state is dispute and lastVerification >= epoch",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         3,
-//		stateName:     "dispute",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		lastVerification: 5,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 31: When the state is dispute and there is an error from HandleDispute()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         3,
-//		stateName:     "dispute",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		lastVerification: 4,
-//		handleDisputeErr: errors.New("handle dispute error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 32: When the state is confirm and there is an error from ClaimBlockReward()",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         4,
-//		stateName:     "confirm",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		lastVerification:    5,
-//		blockConfirmed:      4,
-//		claimBlockRewardErr: errors.New("claimBlockReward error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 33: When the state is -1 and config.waitTime > 5",
-//	args: args{
-//		config: types.Configurations{
-//			WaitTime: 6,
-//		},
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         -1,
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 34: When there is no error in confirm state",
-//	args: args{
-//		config: types.Configurations{
-//			WaitTime: 6,
-//		},
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		stateName:     "confirm",
-//		state:         4,
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		lastVerification:     5,
-//		blockConfirmed:       4,
-//		claimBlockRewardHash: common.BigToHash(big.NewInt(1)),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 35: When there is no error in commit",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastCommitted: 4,
-//		secret:             []byte{1, 2, 3},
-//		commitData:         []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-//		commitTxn:          common.BigToHash(big.NewInt(1)),
-//		commitFile:         "commit.txt",
-//		saveDataErr:        nil,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 36: When there is no error in propose state",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         2,
-//		stateName:     "propose",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(1000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: false,
-//		},
-//		epochLastProposed: 4,
-//		epochLastRevealed: 5,
-//		proposeTxn:        common.BigToHash(big.NewInt(1)),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 37: When stakerId is 0 ",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:     2,
-//		stateName: "propose",
-//		epoch:     5,
-//		stakerId:  0,
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 38: When there is an error in getting stake ",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:     2,
-//		stateName: "propose",
-//		epoch:     5,
-//		stakerId:  2,
-//		stakeErr:  errors.New("stake error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 39: When stakedAmount < minStake",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(2000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(10000),
-//		stakerErr:     errors.New("staker error"),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 39: When stakedAmount is 0 ",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(0),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(10000),
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 40: When staker is slashed",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(0),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(10000),
-//		staker: bindings.StructsStaker{
-//			IsSlashed: true,
-//		},
-//	},
-//	wantErr: nil,
-//},
-//{
-//	name: "Test 41: When there is an error in getting sRZR balance",
-//	args: args{
-//		rogueData: types.Rogue{
-//			IsRogue: false,
-//		},
-//		state:         0,
-//		stateName:     "commit",
-//		epoch:         5,
-//		stakerId:      2,
-//		stake:         big.NewInt(10000),
-//		ethBalance:    big.NewInt(1),
-//		actualBalance: new(big.Float).SetInt(big.NewInt(1)).Quo(big.NewFloat(1), big.NewFloat(1e18)).SetPrec(32),
-//		minStake:      big.NewInt(10000),
-//		sRZRErr:       errors.New("sRZR error"),
-//	},
-//	wantErr: nil,
-//},
-//}
-//for _, tt := range tests {
-//t.Run(tt.name, func (t *testing.T) {
-//
-//utilsMock := new(mocks.UtilsInterface)
-//cmdUtilsMock := new(mocks.UtilsCmdInterface)
-//voteManagerUtilsMock := new(mocks.VoteManagerInterface)
-//utilsPkgMock := new(Mocks.Utils)
-//timeMock := new(mocks.TimeInterface)
-//osMock := new(mocks.OSInterface)
-//
-//razorUtils = utilsMock
-//cmdUtils = cmdUtilsMock
-//voteManagerUtils = voteManagerUtilsMock
-//timeUtils = timeMock
-//osUtils = osMock
-//utils.UtilsInterface = utilsPkgMock
-//
-//utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-//utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-//utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-//utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-//utilsPkgMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
-//utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStake, tt.args.minStakeErr)
-//utilsMock.On("ConvertWeiToEth", mock.AnythingOfType("*big.Int")).Return(tt.args.actualBalance, tt.args.actualBalanceErr)
-//utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-//cmdUtilsMock.On("AutoUnstakeAndWithdraw", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-////utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-//utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
-////utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
-////cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret)
-////cmdUtilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.commitFile, tt.args.commitFileErr)
-////cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
-//cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn)
-//utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
-////utilsMock.On("SaveDataToFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
-////utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
-////utilsMock.On("ReadDataFromFile", mock.AnythingOfType("string")).Return(tt.args.epochInFile, tt.args.commitedDataInFile, tt.args.readFileErr)
-////cmdUtilsMock.On("HandleRevealState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.handleRevealStateErr)
-//cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn)
-////utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
-//utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
-////cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastProposed, tt.args.epochLastProposedErr)
-//cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn)
-//cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
-//cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardHash, tt.args.claimBlockRewardErr)
-//timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
-//osMock.On("Exit", mock.AnythingOfType("int")).Return()
-//
-////_committedData = tt.args.commitData
-////lastVerification = tt.args.lastVerification
-//blockConfirmed = tt.args.blockConfirmed
-//
-//utils := &UtilsStruct{}
-//utils.HandleBlock(client, account, blockNumber, tt.args.config, tt.args.rogueData)
-//
-//})
-//}
-//}
-
 func TestAutoUnstakeAndWithdraw(t *testing.T) {
 	var client *ethclient.Client
 	var account types.Account
@@ -1225,15 +248,19 @@ func TestGetLastProposedEpoch(t *testing.T) {
 	blockNumber := big.NewInt(20)
 
 	type args struct {
-		fromBlock    *big.Int
-		fromBlockErr error
-		stakerId     uint32
-		logs         []Types.Log
-		logsErr      error
-		contractAbi  abi.ABI
-		parseErr     error
-		unpackedData []interface{}
-		unpackErr    error
+		fromBlock        *big.Int
+		fromBlockErr     error
+		stakerId         uint32
+		logs             []Types.Log
+		logsErr          error
+		contractAbi      abi.ABI
+		parseErr         error
+		unpackedData     []interface{}
+		unpackErr        error
+		bufferPercent    int32
+		bufferPercentErr error
+		time             int64
+		timeErr          error
 	}
 	tests := []struct {
 		name    string
@@ -1251,8 +278,10 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Data: []byte{4, 2},
 					},
 				},
-				contractAbi:  abi.ABI{},
-				unpackedData: convertToSliceOfInterface([]uint32{4, 2}),
+				contractAbi:   abi.ABI{},
+				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercent: 1,
+				time:          0,
 			},
 			want:    4,
 			wantErr: nil,
@@ -1301,6 +330,41 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			want:    0,
 			wantErr: errors.New("Not able to Fetch Block: error in fetching blocks"),
 		},
+		{
+			name: "Test 6: When there is an error in getting bufferPercent",
+			args: args{
+				fromBlock: big.NewInt(0),
+				stakerId:  2,
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractAbi:      abi.ABI{},
+				unpackedData:     convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentErr: errors.New("error in getting buffer percent"),
+			},
+			want:    0,
+			wantErr: errors.New("error in getting buffer percent"),
+		},
+		{
+			name: "Test 7: When there is an error in getting remaining time",
+			args: args{
+				fromBlock: big.NewInt(0),
+				stakerId:  2,
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractAbi:   abi.ABI{},
+				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercent: 1,
+				timeErr:       errors.New("error in getting time"),
+			},
+			want:    0,
+			wantErr: errors.New("error in getting time"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1308,15 +372,23 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			abiMock := new(mocks.AbiInterface)
 			utilsPkgMock := new(mocks2.Utils)
 			abiUtilsMock := new(mocks2.ABIUtils)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsMock := new(mocks.UtilsInterface)
+			utilsPkgMock2 := new(mocks2.Utils)
 
+			utilsInterface = utilsPkgMock2
+			razorUtils = utilsMock
 			abiUtils = abiMock
 			utils.UtilsInterface = utilsPkgMock
 			utils.ABIInterface = abiUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
+			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			utilsPkgMock2.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.time, tt.args.timeErr)
 
 			utils := &UtilsStruct{}
 			got, err := utils.GetLastProposedEpoch(client, blockNumber, tt.args.stakerId)
@@ -1362,7 +434,7 @@ func TestGetCommitDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/0x000000000000000000000000000000000000dead_data",
+			want:    "/home/0x000000000000000000000000000000000000dead_CommitData.json",
 			wantErr: nil,
 		},
 		{
@@ -1460,47 +532,852 @@ func TestCalculateSecret(t *testing.T) {
 	}
 }
 
-//func TestVote(t *testing.T) {
-//	var (
-//		ctx       context.Context
-//		config    types.Configurations
-//		client    *ethclient.Client
-//		rogueData types.Rogue
-//		account   types.Account
-//	)
-//	type args struct {
-//		header    *Types.Header
-//		headerErr error
-//	}
-//	tests := []struct {
-//		name    string
-//		args    args
-//		wantErr bool
-//	}{
-//		{
-//			name: "Test 1: When Vote executes successfully",
-//			args: args{
-//				header: &Types.Header{
-//					Number: big.NewInt(1),
-//				},
-//			},
-//			wantErr: true,
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			utilsPkgMock := new(mocks2.Utils)
-//			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-//
-//			utils.UtilsInterface = utilsPkgMock
-//			cmdUtils = cmdUtilsMock
-//
-//			utilsPkgMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.header, tt.args.headerErr)
-//			cmdUtilsMock.On("HandleBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-//			ut := &UtilsStruct{}
-//			if err := ut.Vote(ctx, config, client, rogueData, account); (err != nil) != tt.wantErr {
-//				t.Errorf("Vote() error = %v, wantErr %v", err, tt.wantErr)
-//			}
-//		})
-//	}
-//}
+func TestInitiateCommit(t *testing.T) {
+	var (
+		client    *ethclient.Client
+		config    types.Configurations
+		account   types.Account
+		stakerId  uint32
+		rogueData types.Rogue
+	)
+	type args struct {
+		epoch         uint32
+		lastCommit    uint32
+		lastCommitErr error
+		secret        []byte
+		secretErr     error
+		salt          [32]byte
+		saltErr       error
+		commitData    types.CommitData
+		commitDataErr error
+		merkleTree    [][][]byte
+		merkleRoot    [32]byte
+		commitTxn     common.Hash
+		commitTxnErr  error
+		status        int
+		fileName      string
+		fileNameErr   error
+		saveErr       error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When InitiateCommit executes successfully",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTree: [][][]byte{},
+				commitTxn:  common.BigToHash(big.NewInt(1)),
+				status:     1,
+				fileName:   "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting last commit epoch",
+			args: args{
+				epoch:         5,
+				lastCommitErr: errors.New("error in getting last commit epoch"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When lastCommittedEpoch is greater or equal to current epoch",
+			args: args{
+				epoch:      5,
+				lastCommit: 6,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in getting secret",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secretErr:  errors.New("error in getting secret"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting salt",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				saltErr:    errors.New("error in getting salt"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting commitData",
+			args: args{
+				epoch:         5,
+				lastCommit:    2,
+				secret:        []byte{1},
+				salt:          [32]byte{},
+				commitDataErr: errors.New("error in getting commitData"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 7: When there is an erron in commit",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTree:   [][][]byte{},
+				commitTxnErr: errors.New("error in commit"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 8: When there is an error in getting fileName",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				fileNameErr: errors.New("error in getting fileName"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 8: When there is an error in sending commit transaction",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTree: [][][]byte{},
+				commitTxn:  common.BigToHash(big.NewInt(1)),
+				status:     2,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 9: When there is an error in saving data to file",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTree: [][][]byte{},
+				commitTxn:  common.BigToHash(big.NewInt(1)),
+				status:     1,
+				fileName:   "",
+				saveErr:    errors.New("error in saving data to file"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			merkleInterface := new(mocks2.MerkleTreeInterface)
+
+			utils.MerkleInterface = merkleInterface
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+
+			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastCommit, tt.args.lastCommitErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
+			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
+			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
+			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.status)
+			cmdUtilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
+			ut := &UtilsStruct{}
+			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, rogueData); (err != nil) != tt.wantErr {
+				t.Errorf("InitiateCommit() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestInitiateReveal(t *testing.T) {
+	var (
+		client  *ethclient.Client
+		config  types.Configurations
+		account types.Account
+		staker  bindings.StructsStaker
+	)
+
+	randomNum := utils.GetRogueRandomValue(10000000)
+
+	type args struct {
+		epoch                    uint32
+		lastReveal               uint32
+		lastRevealErr            error
+		revealStateErr           error
+		fileName                 string
+		fileNameErr              error
+		committedDataFromFile    types.CommitFileData
+		committedDataFromFileErr error
+		secret                   []byte
+		secretErr                error
+		revealTxn                common.Hash
+		revealTxnErr             error
+		rogueData                types.Rogue
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When InitiateReveal executes successfully",
+			args: args{
+				epoch:                 5,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				secret:                []byte{},
+				revealTxn:             common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting lastReveal",
+			args: args{
+				epoch:         5,
+				lastRevealErr: errors.New("error in getting lastReveal"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When lastRevealedEpoch is greater or equal to current epoch",
+			args: args{
+				epoch:      5,
+				lastReveal: 6,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in handleRevealState",
+			args: args{
+				epoch:          5,
+				lastReveal:     2,
+				revealStateErr: errors.New("error in handleRevealState"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting fileName",
+			args: args{
+				epoch:       5,
+				lastReveal:  2,
+				fileNameErr: errors.New("error in getting fileName"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting data from file",
+			args: args{
+				epoch:                    5,
+				lastReveal:               2,
+				fileName:                 "",
+				committedDataFromFileErr: errors.New("error in reading data from file"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 7: When file does not contain the latest data",
+			args: args{
+				epoch:                 5,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 3},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 8: When there is an error in getting secret",
+			args: args{
+				epoch:                 5,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				secretErr:             errors.New("error in getting secret"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 9: When there is an error in reveal",
+			args: args{
+				epoch:                 5,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				secret:                []byte{},
+				revealTxnErr:          errors.New("error in reveal"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 10: When InitiateReveal executes successfully and rogueMode is in reveal",
+			args: args{
+				epoch: 5,
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"reveal"},
+				},
+				lastReveal: 2,
+				fileName:   "",
+				committedDataFromFile: types.CommitFileData{
+					Epoch:  5,
+					Leaves: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				},
+				secret:    []byte{},
+				revealTxn: common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+
+			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
+			cmdUtilsMock.On("HandleRevealState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
+			cmdUtilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
+			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			ut := &UtilsStruct{}
+			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, staker, tt.args.rogueData); (err != nil) != tt.wantErr {
+				t.Errorf("InitiateReveal() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestInitiatePropose(t *testing.T) {
+	var (
+		client      *ethclient.Client
+		config      types.Configurations
+		account     types.Account
+		staker      bindings.StructsStaker
+		blockNumber *big.Int
+		rogueData   types.Rogue
+	)
+	type args struct {
+		epoch           uint32
+		lastProposal    uint32
+		lastProposalErr error
+		lastReveal      uint32
+		lastRevealErr   error
+		proposeTxn      common.Hash
+		proposeTxnErr   error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When InitiatePropose executes successfully",
+			args: args{
+				epoch:        5,
+				lastProposal: 4,
+				lastReveal:   6,
+				proposeTxn:   common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting last proposed epoch",
+			args: args{
+				epoch:           5,
+				lastProposalErr: errors.New("error in getting last proposed epoch"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When last proposed epoch is greater then current epoch",
+			args: args{
+				epoch:        5,
+				lastProposal: 6,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When last revealed epoch is less than current epoch",
+			args: args{
+				epoch:        5,
+				lastProposal: 4,
+				lastReveal:   3,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 5: When there is an error in getting last revealed epoch",
+			args: args{
+				epoch:         5,
+				lastProposal:  4,
+				lastRevealErr: errors.New("error in getting last revealed epoch"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When there is an error in propose",
+			args: args{
+				epoch:         5,
+				lastProposal:  4,
+				lastReveal:    6,
+				proposeTxnErr: errors.New("error in propose"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
+			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
+			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeTxnErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			ut := &UtilsStruct{}
+			if err := ut.InitiatePropose(client, config, account, tt.args.epoch, staker, blockNumber, rogueData); (err != nil) != tt.wantErr {
+				t.Errorf("InitiatePropose() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestHandleBlock(t *testing.T) {
+	var (
+		client      *ethclient.Client
+		account     types.Account
+		blockNumber *big.Int
+		rogueData   types.Rogue
+	)
+
+	type args struct {
+		config              types.Configurations
+		state               int64
+		stateErr            error
+		epoch               uint32
+		epochErr            error
+		stateName           string
+		stakerId            uint32
+		stakerIdErr         error
+		staker              bindings.StructsStaker
+		stakerErr           error
+		ethBalance          *big.Int
+		ethBalanceErr       error
+		minStakeAmount      *big.Int
+		minStakeAmountErr   error
+		actualStake         *big.Float
+		actualStakeErr      error
+		actualBalance       *big.Float
+		sRZRBalance         *big.Int
+		sRZRBalanceErr      error
+		sRZRInEth           *big.Float
+		initiateCommitErr   error
+		initiateRevealErr   error
+		initiateProposeErr  error
+		handleDisputeErr    error
+		claimBlockRewardTxn common.Hash
+		claimBlockRewardErr error
+		lastVerification    uint32
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Test 1: When HandleBlock executes successfully and state is commit",
+			args: args{
+				state:          0,
+				epoch:          1,
+				stateName:      "commit",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(100),
+				actualStake:    big.NewFloat(10000),
+				actualBalance:  big.NewFloat(1000),
+				sRZRBalance:    big.NewInt(10000),
+				sRZRInEth:      big.NewFloat(100),
+			},
+		},
+		{
+			name: "Test 2: When there is an error in getting state",
+			args: args{
+				stateErr: errors.New("error in getting state"),
+			},
+		},
+		{
+			name: "Test 3: When there is an error in getting epoch",
+			args: args{
+				state:    0,
+				epochErr: errors.New("error in getting epoch"),
+			},
+		},
+		{
+			name: "Test 4: When there is an error in getting stakerId",
+			args: args{
+				state:       0,
+				epoch:       1,
+				stakerIdErr: errors.New("error in getting stakerId"),
+			},
+		},
+		{
+			name: "Test 5: When stakerId is 0",
+			args: args{
+				state:     0,
+				epoch:     1,
+				stateName: "commit",
+				stakerId:  0,
+			},
+		},
+		{
+			name: "Test 6: When there is an error in getting staker",
+			args: args{
+				state:     0,
+				epoch:     1,
+				stateName: "commit",
+				stakerId:  1,
+				stakerErr: errors.New("error in getting staker"),
+			},
+		},
+		{
+			name: "Test 7: When there is an error in getting ethBalance",
+			args: args{
+				state:         0,
+				epoch:         1,
+				stateName:     "commit",
+				stakerId:      1,
+				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalanceErr: errors.New("error in getting ethBalance"),
+			},
+		},
+		{
+			name: "Test 8: When there is an error in getting minStake",
+			args: args{
+				state:             0,
+				epoch:             1,
+				stateName:         "commit",
+				stakerId:          1,
+				staker:            bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:        big.NewInt(1000),
+				minStakeAmountErr: errors.New("error in getting misStake"),
+			},
+		},
+		{
+			name: "Test 9: When there is error in converting stakedAmount",
+			args: args{
+				state:          0,
+				epoch:          1,
+				stateName:      "commit",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(100),
+				actualStakeErr: errors.New("error in converting stakedAmount"),
+			},
+		},
+
+		{
+			name: "Test 10: When there is an error in getting sRZR Balance",
+			args: args{
+				state:          0,
+				epoch:          1,
+				stateName:      "commit",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(100),
+				actualStake:    big.NewFloat(10000),
+				actualBalance:  big.NewFloat(1000),
+				sRZRBalanceErr: errors.New("error in getting sRZR Balance"),
+			},
+		},
+		{
+			name: "Test 11: When stake is less than the misStake",
+			args: args{
+				state:          0,
+				epoch:          1,
+				stateName:      "commit",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(100)},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(1000),
+				actualStake:    big.NewFloat(100),
+				actualBalance:  big.NewFloat(1000),
+				sRZRBalance:    big.NewInt(100),
+				sRZRInEth:      big.NewFloat(100),
+			},
+		},
+		{
+			name: "Test 12: When stake has already been withdrwan by staker",
+			args: args{
+				state:          0,
+				epoch:          1,
+				stateName:      "commit",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(0)},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(100),
+				actualStake:    big.NewFloat(0),
+				actualBalance:  big.NewFloat(1000),
+				sRZRBalance:    big.NewInt(0),
+				sRZRInEth:      big.NewFloat(100),
+			},
+		},
+		{
+			name: "Test 13: When staker is already slashed",
+			args: args{
+				state:          0,
+				epoch:          1,
+				stateName:      "commit",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000), IsSlashed: true},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(100),
+				actualStake:    big.NewFloat(10000),
+				actualBalance:  big.NewFloat(1000),
+				sRZRBalance:    big.NewInt(10000),
+				sRZRInEth:      big.NewFloat(100),
+			},
+		},
+		{
+			name: "Test 14: When there is an error in initiateCommit",
+			args: args{
+				state:             0,
+				epoch:             1,
+				stateName:         "commit",
+				stakerId:          1,
+				staker:            bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:        big.NewInt(1000),
+				minStakeAmount:    big.NewInt(100),
+				actualStake:       big.NewFloat(10000),
+				actualBalance:     big.NewFloat(1000),
+				sRZRBalance:       big.NewInt(10000),
+				sRZRInEth:         big.NewFloat(100),
+				initiateCommitErr: errors.New("error in initiateCommit"),
+			},
+		},
+		{
+			name: "Test 15: When there is an error in initiateReveal",
+			args: args{
+				state:             1,
+				epoch:             1,
+				stateName:         "reveal",
+				stakerId:          1,
+				staker:            bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:        big.NewInt(1000),
+				minStakeAmount:    big.NewInt(100),
+				actualStake:       big.NewFloat(10000),
+				actualBalance:     big.NewFloat(1000),
+				sRZRBalance:       big.NewInt(10000),
+				sRZRInEth:         big.NewFloat(100),
+				initiateRevealErr: errors.New("error in initiateReveal"),
+			},
+		},
+		{
+			name: "Test 16: When there is an error in initiatePropose",
+			args: args{
+				state:              2,
+				epoch:              1,
+				stateName:          "propose",
+				stakerId:           1,
+				staker:             bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:         big.NewInt(1000),
+				minStakeAmount:     big.NewInt(100),
+				actualStake:        big.NewFloat(10000),
+				actualBalance:      big.NewFloat(1000),
+				sRZRBalance:        big.NewInt(10000),
+				sRZRInEth:          big.NewFloat(100),
+				initiateProposeErr: errors.New("error in initiatePropose"),
+			},
+		},
+		{
+			name: "Test 17: When there is an error in handleDispute",
+			args: args{
+				state:            3,
+				epoch:            1,
+				stateName:        "dispute",
+				stakerId:         1,
+				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:       big.NewInt(1000),
+				minStakeAmount:   big.NewInt(100),
+				actualStake:      big.NewFloat(10000),
+				actualBalance:    big.NewFloat(1000),
+				sRZRBalance:      big.NewInt(10000),
+				sRZRInEth:        big.NewFloat(100),
+				handleDisputeErr: errors.New("error in handleDispute"),
+			},
+		},
+		{
+			name: "Test 18: When there is no error in dispute",
+			args: args{
+				state:          3,
+				epoch:          1,
+				stateName:      "dispute",
+				stakerId:       1,
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:     big.NewInt(1000),
+				minStakeAmount: big.NewInt(100),
+				actualStake:    big.NewFloat(10000),
+				actualBalance:  big.NewFloat(1000),
+				sRZRBalance:    big.NewInt(10000),
+				sRZRInEth:      big.NewFloat(100),
+			},
+		},
+		{
+			name: "Test 18: When claimBlockReward executes successfully in confirm state",
+			args: args{
+				state:               4,
+				epoch:               1,
+				stateName:           "confirm",
+				lastVerification:    1,
+				stakerId:            1,
+				staker:              bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:          big.NewInt(1000),
+				minStakeAmount:      big.NewInt(100),
+				actualStake:         big.NewFloat(10000),
+				actualBalance:       big.NewFloat(1000),
+				sRZRBalance:         big.NewInt(10000),
+				sRZRInEth:           big.NewFloat(100),
+				claimBlockRewardTxn: common.BigToHash(big.NewInt(1)),
+			},
+		},
+		{
+			name: "Test 19: When there is an error in claimBlockReward",
+			args: args{
+				state:               4,
+				epoch:               2,
+				stateName:           "confirm",
+				lastVerification:    1,
+				stakerId:            2,
+				staker:              bindings.StructsStaker{Id: 2, Stake: big.NewInt(10000)},
+				ethBalance:          big.NewInt(1000),
+				minStakeAmount:      big.NewInt(100),
+				actualStake:         big.NewFloat(10000),
+				actualBalance:       big.NewFloat(1000),
+				sRZRBalance:         big.NewInt(10000),
+				sRZRInEth:           big.NewFloat(100),
+				claimBlockRewardErr: errors.New("error in claimBlockReward"),
+			},
+		},
+		{
+			name: "Test 20: When lastVerification is greater than the current epoch in dispute state",
+			args: args{
+				state:            3,
+				epoch:            1,
+				lastVerification: 4,
+				stateName:        "dispute",
+				stakerId:         1,
+				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:       big.NewInt(1000),
+				minStakeAmount:   big.NewInt(100),
+				actualStake:      big.NewFloat(10000),
+				actualBalance:    big.NewFloat(1000),
+				sRZRBalance:      big.NewInt(10000),
+				sRZRInEth:        big.NewFloat(100),
+			},
+		},
+		{
+			name: "Test 21: When waitTime is more than 5 in -1 state",
+			args: args{
+				state:            -1,
+				epoch:            1,
+				lastVerification: 4,
+				stateName:        "",
+				stakerId:         1,
+				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:       big.NewInt(1000),
+				minStakeAmount:   big.NewInt(100),
+				actualStake:      big.NewFloat(10000),
+				actualBalance:    big.NewFloat(1000),
+				sRZRBalance:      big.NewInt(10000),
+				sRZRInEth:        big.NewFloat(100),
+				config:           types.Configurations{WaitTime: 6},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
+			osMock := new(mocks.OSInterface)
+			timeMock := new(mocks.TimeInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			utils.UtilsInterface = utilsPkgMock
+			osUtils = osMock
+			timeUtils = timeMock
+
+			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			utilsPkgMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("ConvertWeiToEth", mock.AnythingOfType("*big.Int")).Return(tt.args.actualStake, tt.args.actualStakeErr)
+			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZRBalance, tt.args.sRZRBalanceErr)
+			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
+			cmdUtilsMock.On("AutoUnstakeAndWithdraw", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+			osMock.On("Exit", mock.AnythingOfType("int")).Return()
+			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
+			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
+			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
+			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
+			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(1)
+			timeMock.On("Sleep", mock.Anything).Return()
+			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
+			lastVerification = tt.args.lastVerification
+			ut := &UtilsStruct{}
+			ut.HandleBlock(client, account, blockNumber, tt.args.config, rogueData)
+		})
+	}
+}

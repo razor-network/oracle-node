@@ -181,7 +181,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error(err)
 		return
 	}
-	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Cannot vote.")
 		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
@@ -192,6 +192,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			log.Error("Stopped voting as total stake is withdrawn now")
 		}
 		osUtils.Exit(0)
+
 	}
 
 	if staker.IsSlashed {
@@ -213,7 +214,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 2:
-		err := InitiatePropose(client, config, account, epoch, staker, blockNumber, rogueData)
+		err := cmdUtils.InitiatePropose(client, config, account, epoch, staker, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
@@ -374,7 +375,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	return nil
 }
 
-func InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
 	lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, staker.Id)
 	if err != nil {
 		return errors.New("Error in fetching last proposal: " + err.Error())

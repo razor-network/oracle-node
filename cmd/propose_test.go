@@ -456,8 +456,8 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr)
 		cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.ids, tt.args.revealDataMaps, tt.args.mediansErr)
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
-		cmdUtilsMock.On("GetMedianDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
-		utilsMock.On("SaveDataToFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
+		cmdUtilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+		utilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
@@ -949,63 +949,6 @@ func BenchmarkGetIteration(b *testing.B) {
 	}
 }
 
-func TestGetMedianDataFileName(t *testing.T) {
-	type args struct {
-		address string
-		path    string
-		pathErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr error
-	}{
-		{
-			name: "Test 1: When GetMedianDataFileName() executes successfully",
-			args: args{
-				address: "0x000000000000000000000000000000000000dead",
-				path:    "/home",
-			},
-			want:    "/home/0x000000000000000000000000000000000000dead_median",
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in getting path",
-			args: args{
-				address: "0x000000000000000000000000000000000000dead",
-				pathErr: errors.New("path error"),
-			},
-			want:    "",
-			wantErr: errors.New("path error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			razorUtils = utilsMock
-
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-
-			utils := &UtilsStruct{}
-			got, err := utils.GetMedianDataFileName(tt.args.address)
-			if got != tt.want {
-				t.Errorf("GetMedianDataFileName() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for GetMedianDataFileName(), got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for GetMedianDataFileName(), got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
 func TestMakeBlock(t *testing.T) {
 	var (
 		client      *ethclient.Client
@@ -1176,6 +1119,63 @@ func TestGetSortedRevealedValues(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSortedRevealedValues() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetProposeDataFileName(t *testing.T) {
+	type args struct {
+		address string
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr error
+	}{
+		{
+			name: "Test 1: When GetProposeDataFileName() executes successfully",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				path:    "/home",
+			},
+			want:    "/home/0x000000000000000000000000000000000000dead_proposedData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				pathErr: errors.New("path error"),
+			},
+			want:    "",
+			wantErr: errors.New("path error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			razorUtils = utilsMock
+
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			utils := &UtilsStruct{}
+			got, err := utils.GetProposeDataFileName(tt.args.address)
+			if got != tt.want {
+				t.Errorf("GetProposeDataFileName() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetProposeDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetProposeDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
 			}
 		})
 	}

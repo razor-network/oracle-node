@@ -792,27 +792,6 @@ func (_m *UtilsCmdInterface) GetLogLevel() (string, error) {
 	return r0, r1
 }
 
-// GetMedianDataFileName provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) GetMedianDataFileName(_a0 string) (string, error) {
-	ret := _m.Called(_a0)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetMultiplier provides a mock function with given fields:
 func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
 	ret := _m.Called()
@@ -827,6 +806,27 @@ func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetProposeDataFileName provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) GetProposeDataFileName(_a0 string) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1113,6 +1113,20 @@ func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config typ
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint32, types.Rogue) error); ok {
 		r0 = rf(client, config, account, epoch, stakerId, rogueData)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// InitiatePropose provides a mock function with given fields: client, config, account, epoch, staker, blockNumber, rogueData
+func (_m *UtilsCmdInterface) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
+	ret := _m.Called(client, config, account, epoch, staker, blockNumber, rogueData)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, bindings.StructsStaker, *big.Int, types.Rogue) error); ok {
+		r0 = rf(client, config, account, epoch, staker, blockNumber, rogueData)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -171,6 +171,7 @@ type Utils interface {
 	IsSorted([]uint16) (bool, int, int)
 	IsMissing([]uint16, []uint16) (bool, int, uint16)
 	CalculateBlockNumberAtEpochBeginning(*ethclient.Client, int64, *big.Int) (*big.Int, error)
+	GetStateName(int64) string
 }
 
 type EthClientUtils interface {

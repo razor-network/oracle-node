@@ -518,11 +518,15 @@ func TestGetLocalMediansData(t *testing.T) {
 	var (
 		client      *ethclient.Client
 		account     types.Account
-		epoch       uint32
 		blockNumber *big.Int
 		rogueData   types.Rogue
 	)
 	type args struct {
+		epoch                 uint32
+		fileName              string
+		fileNameErr           error
+		proposedData          types.ProposeFileData
+		proposeDataErr        error
 		medians               []uint32
 		revealedCollectionIds []uint16
 		revealedDataMaps      *types.RevealedDataMaps
@@ -539,7 +543,40 @@ func TestGetLocalMediansData(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When there is an error in getting medians",
+			name: "Test 1: When there is an error in getting fileName",
+			args: args{
+				fileNameErr: errors.New("error in getting fileName"),
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting proposedData",
+			args: args{
+				fileName:       "",
+				proposeDataErr: errors.New("error in getting proposedData"),
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: false,
+		},
+		{
+			name: "Test 3: When file does not contain latest data",
+			args: args{
+				fileName:     "",
+				proposedData: types.ProposeFileData{Epoch: 3},
+				epoch:        5,
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in getting medians",
 			args: args{
 				mediansErr: errors.New("error in fetching medians"),
 			},
@@ -549,7 +586,7 @@ func TestGetLocalMediansData(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 2: When GetLocalMediansData executes successfully",
+			name: "Test 5: When GetLocalMediansData executes successfully",
 			args: args{
 				medians:               []uint32{100, 200, 300},
 				revealedCollectionIds: []uint16{1, 2, 3},
@@ -571,11 +608,13 @@ func TestGetLocalMediansData(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
+			cmdUtilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
 			utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
 			ut := &UtilsStruct{}
-			got, got1, got2, err := ut.GetLocalMediansData(client, account, epoch, blockNumber, rogueData)
+			got, got1, got2, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLocalMediansData() error = %v, wantErr %v", err, tt.wantErr)
 				return
