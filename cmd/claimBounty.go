@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
@@ -95,14 +94,10 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 
 	log.Info("Claiming bounty transaction...")
 	waitFor := int32(bountyLock.RedeemAfter) - int32(epoch)
-	fmt.Println("bountyLock.RedeemAfter: ", bountyLock.RedeemAfter)
-	fmt.Println("epoch: ", epoch)
-	fmt.Println("waitFor: ", waitFor)
 	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
 		timeRemaining := int64(waitFor) * core.EpochLength
-		fmt.Println("Time Remaining: ", timeRemaining)
 		if waitFor == 1 {
 			log.Infof("Cannot claim bounty now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {

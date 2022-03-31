@@ -224,7 +224,6 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if lastVerification >= epoch {
 			break
 		}
-		fmt.Println("claim bountyflag passed: ", utilsInterface.IsFlagPassed("autoClaimBounty"))
 
 		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
 		if err != nil {
@@ -416,7 +415,6 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 
 func AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account, blockNumber *big.Int) error {
 	if utilsInterface.IsFlagPassed("autoClaimBounty") {
-		fmt.Println("AutoClaimBounty zone")
 		disputeFilePath, err := GetDisputeDataFileName(account.Address)
 		if err != nil {
 			return err
@@ -426,12 +424,16 @@ func AutoClaimBounty(client *ethclient.Client, config types.Configurations, acco
 
 		//Checking if dispute happens, if yes than getting the bountyId from events
 		if disputedFlag {
-			fmt.Println("Getting bountyId from events")
-			latestBountyId, err = GetBountyIdFromEvents(client, blockNumber, account.Address)
+			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+			if err != nil {
+				log.Error("Error in fetching block: ", err)
+				return err
+			}
+
+			latestBountyId, err = GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
 			if err != nil {
 				return err
 			}
-			fmt.Println("latestBountyId: ", latestBountyId)
 		}
 
 		if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
@@ -441,8 +443,9 @@ func AutoClaimBounty(client *ethclient.Client, config types.Configurations, acco
 			}
 		}
 		if disputeData.BountyIdQueue != nil {
+			length := len(disputeData.BountyIdQueue)
 			claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
-				BountyId: disputeData.BountyIdQueue[0],
+				BountyId: disputeData.BountyIdQueue[length-1],
 				Address:  account.Address,
 				Password: account.Password,
 			})
@@ -452,10 +455,9 @@ func AutoClaimBounty(client *ethclient.Client, config types.Configurations, acco
 			if claimBountyTxn != core.NilHash {
 				claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
 				if claimBountyStatus == 1 {
-					fmt.Println("writing data to file")
 					if len(disputeData.BountyIdQueue) > 1 {
 						//Removing the bountyId from the queue as the bounty is being claimed
-						disputeData.BountyIdQueue = disputeData.BountyIdQueue[1:]
+						disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
 					} else {
 						disputeData.BountyIdQueue = nil
 					}
@@ -464,7 +466,8 @@ func AutoClaimBounty(client *ethclient.Client, config types.Configurations, acco
 		}
 
 		if latestBountyId != 0 {
-			disputeData.BountyIdQueue = append(disputeData.BountyIdQueue, latestBountyId)
+			//prepending the latestBountyId to the queue
+			disputeData.BountyIdQueue = append([]uint32{latestBountyId}, disputeData.BountyIdQueue...)
 		}
 		err = utils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
 		if err != nil {
@@ -479,7 +482,6 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}
-	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,

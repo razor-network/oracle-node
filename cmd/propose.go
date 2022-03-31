@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/hex"
-	"fmt"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -293,7 +292,6 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 
 func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
-	fmt.Println("Sorted Reveal Votes: ", revealedDataMaps.SortedRevealedValues)
 	//revealedDataMaps.SortedRevealedValues
 	if err != nil {
 		return nil, nil, nil, err
@@ -311,11 +309,8 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 
 	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
 		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
-			fmt.Println("Rogue Mode enters")
 			medians = append(medians, rand.Uint32())
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
-			fmt.Println("Rogue Median: ", medians)
-			fmt.Println("Rogue Ids Revealed: ", idsRevealedInThisEpoch)
 			continue
 		}
 		influenceSum := revealedDataMaps.InfluenceSum[leafId]
@@ -336,7 +331,6 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 			}
 		}
 	}
-	fmt.Println("final medians: ", medians)
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 

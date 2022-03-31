@@ -293,7 +293,11 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 }
 
 func GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
-	fromBlock := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -312,18 +316,14 @@ func GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bount
 	bountyId := uint32(0)
 	for _, vLog := range logs {
 		data, unpackErr := abiUtils.Unpack(contractAbi, "Slashed", vLog.Data)
-		fmt.Println("Slash event Data: ", data)
-		fmt.Println("Unpack Err: ", unpackErr)
 		if unpackErr != nil {
 			log.Error(unpackErr)
 			continue
 		}
 		addressFromLogs := fmt.Sprint(data[1])
-		fmt.Println("Address from event logs: ", addressFromLogs)
 		if bountyHunter == addressFromLogs {
 			bountyId = data[0].(uint32)
 		}
 	}
-	fmt.Println("Bounty Id from logs: ", bountyId)
 	return bountyId, nil
 }
