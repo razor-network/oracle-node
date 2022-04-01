@@ -50,11 +50,11 @@ type ExtendLockInput struct {
 	StakerId uint32
 }
 
-type ModifyAssetInput struct {
-	Address  string
-	Password string
-	AssetId  uint16
-	Status   bool
+type ModifyCollectionInput struct {
+	Address      string
+	Password     string
+	CollectionId uint16
+	Status       bool
 }
 
 type SetDelegationInput struct {

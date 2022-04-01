@@ -13,20 +13,20 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var modifyAssetStatusCmd = &cobra.Command{
-	Use:   "modifyAssetStatus",
-	Short: "[ADMIN ONLY]modify the active status of an asset",
-	Long: `modifyAssetStatus can be used by admins to change the status of an asset
+var modifyCollectionStatusCmd = &cobra.Command{
+	Use:   "modifyCollectionStatus",
+	Short: "[ADMIN ONLY]modify the active status of an collection",
+	Long: `modifyCollectionStatus can be used by admins to change the status of an collection
 Example:	
-  ./razor modifyAssetStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --assetId 1 --status true --logLevel modifyLogs`,
-	Run: initialiseModifyAssetStatus,
+  ./razor modifyCollectionStatus --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --collectionId 1 --status true --logLevel modifyLogs`,
+	Run: initialiseModifyCollectionStatus,
 }
 
-func initialiseModifyAssetStatus(cmd *cobra.Command, args []string) {
-	cmdUtils.ExecuteModifyAssetStatus(cmd.Flags())
+func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
+	cmdUtils.ExecuteModifyCollectionStatus(cmd.Flags())
 }
 
-func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
+func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
@@ -36,8 +36,8 @@ func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config data: ", err)
 
-	assetId, err := flagSetUtils.GetUint16AssetId(flagSet)
-	utils.CheckError("Error in getting assetId: ", err)
+	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
+	utils.CheckError("Error in getting collectionId: ", err)
 
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
@@ -49,55 +49,55 @@ func (*UtilsStruct) ExecuteModifyAssetStatus(flagSet *pflag.FlagSet) {
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	modifyAssetInput := types.ModifyAssetInput{
-		Address:  address,
-		Password: password,
-		Status:   status,
-		AssetId:  assetId,
+	modifyCollectionInput := types.ModifyCollectionInput{
+		Address:      address,
+		Password:     password,
+		Status:       status,
+		CollectionId: collectionId,
 	}
 
-	txn, err := cmdUtils.ModifyAssetStatus(client, config, modifyAssetInput)
-	utils.CheckError("Error in changing asset active status: ", err)
+	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
+	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
 }
 
-func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, assetId uint16) (bool, error) {
+func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, collectionId uint16) (bool, error) {
 	callOpts := razorUtils.GetOptions()
-	return assetManagerUtils.GetActiveStatus(client, &callOpts, assetId)
+	return assetManagerUtils.GetActiveStatus(client, &callOpts, collectionId)
 }
 
-func (*UtilsStruct) ModifyAssetStatus(client *ethclient.Client, config types.Configurations, modifyAssetInput types.ModifyAssetInput) (common.Hash, error) {
-	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyAssetInput.AssetId)
+func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
+	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyCollectionInput.CollectionId)
 	if err != nil {
 		log.Error("Error in fetching active status")
 		return core.NilHash, err
 	}
-	if currentStatus == modifyAssetInput.Status {
-		log.Errorf("Asset %d has the active status already set to %t", modifyAssetInput.AssetId, modifyAssetInput.Status)
+	if currentStatus == modifyCollectionInput.Status {
+		log.Errorf("Collection %d has the active status already set to %t", modifyCollectionInput.CollectionId, modifyCollectionInput.Status)
 		return core.NilHash, nil
 	}
-	_, err = cmdUtils.WaitForAppropriateState(client, "modify asset status", 4)
+	_, err = cmdUtils.WaitForAppropriateState(client, "modify collection status", 4)
 	if err != nil {
 		return core.NilHash, err
 	}
 
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        modifyAssetInput.Password,
-		AccountAddress:  modifyAssetInput.Address,
+		Password:        modifyCollectionInput.Password,
+		AccountAddress:  modifyCollectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "setCollectionStatus",
-		Parameters:      []interface{}{modifyAssetInput.Status, modifyAssetInput.AssetId},
+		Parameters:      []interface{}{modifyCollectionInput.Status, modifyCollectionInput.CollectionId},
 		ABI:             bindings.CollectionManagerABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-	log.Infof("Changing active status of asset: %d from %t to %t", modifyAssetInput.AssetId, !modifyAssetInput.Status, modifyAssetInput.Status)
-	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyAssetInput.Status, modifyAssetInput.AssetId)
+	log.Infof("Changing active status of collection: %d from %t to %t", modifyCollectionInput.CollectionId, !modifyCollectionInput.Status, modifyCollectionInput.Status)
+	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -106,21 +106,21 @@ func (*UtilsStruct) ModifyAssetStatus(client *ethclient.Client, config types.Con
 }
 
 func init() {
-	rootCmd.AddCommand(modifyAssetStatusCmd)
+	rootCmd.AddCommand(modifyCollectionStatusCmd)
 	var (
-		Address string
-		AssetId uint16
-		Status  string
+		Address      string
+		CollectionId uint16
+		Status       string
 	)
 
-	modifyAssetStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	modifyAssetStatusCmd.Flags().Uint16VarP(&AssetId, "assetId", "", 0, "assetId of the asset")
-	modifyAssetStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the asset")
+	modifyCollectionStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
+	modifyCollectionStatusCmd.Flags().Uint16VarP(&CollectionId, "collectionId", "", 0, "collectionId of the collection")
+	modifyCollectionStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the collection")
 
-	addressErr := modifyAssetStatusCmd.MarkFlagRequired("address")
+	addressErr := modifyCollectionStatusCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addressErr)
-	assetIdErr := modifyAssetStatusCmd.MarkFlagRequired("assetId")
-	utils.CheckError("Asset Id error: ", assetIdErr)
-	statusErr := modifyAssetStatusCmd.MarkFlagRequired("status")
+	collectionIdErr := modifyCollectionStatusCmd.MarkFlagRequired("collectionId")
+	utils.CheckError("Collection Id error: ", collectionIdErr)
+	statusErr := modifyCollectionStatusCmd.MarkFlagRequired("status")
 	utils.CheckError("Status error: ", statusErr)
 }
