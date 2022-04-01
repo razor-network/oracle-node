@@ -576,16 +576,16 @@ Example:
 $ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2 --tolerance 200
 ```
 
-### Modify Asset Status
+### Modify Collection Status
 
-Modify the active status of an asset using the `modifyAssetStatus` command.
+Modify the active status of an collection using the `modifyCollectionStatus` command.
 
 _Note: This command is restricted to "Admin Role"_
 
 razor cli
 
 ```
-$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+$ ./razor modifyCollectionStatus --collectionId <collectionId> --address <address> --status <true_or_false>
 ```
 
 docker
@@ -594,13 +594,13 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+    modifyCollectionStatus --collectionId <collectionId> --address <address> --status <true_or_false>
 ```
 
 Example:
 
 ```
-$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
+$ ./razor modifyCollectionStatus --collectionId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
 ```
 
 ### Update Collection
