@@ -338,6 +338,14 @@ func (u Utils) SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFi
 	return utilsInterface.SaveDataToProposeJsonFile(flePath, epoch, proposeFileData)
 }
 
+func (u Utils) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
+	return utilsInterface.SaveDataToDisputeJsonFile(filePath, bountyIdQueue)
+}
+
+func (u Utils) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
+	return utilsInterface.ReadFromDisputeJsonFile(filePath)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }

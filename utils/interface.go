@@ -147,6 +147,8 @@ type Utils interface {
 	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
 	SaveDataToProposeJsonFile(string, uint32, types.ProposeData) error
 	ReadFromProposeJsonFile(string) (types.ProposeFileData, error)
+	SaveDataToDisputeJsonFile(string, []uint32) error
+	ReadFromDisputeJsonFile(string) (types.DisputeFileData, error)
 	CalculateBlockTime(*ethclient.Client) int64
 	IsFlagPassed(string) bool
 	GetTokenManager(*ethclient.Client) *bindings.RAZOR

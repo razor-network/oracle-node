@@ -1256,6 +1256,27 @@ func (_m *Utils) GetProposedBlock(_a0 *ethclient.Client, _a1 uint32, _a2 uint32)
 	return r0, r1
 }
 
+// GetRemainingTimeOfCurrentState provides a mock function with given fields: _a0, _a1
+func (_m *Utils) GetRemainingTimeOfCurrentState(_a0 *ethclient.Client, _a1 int32) (int64, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetSaltFromBlockchain provides a mock function with given fields: client
 func (_m *Utils) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
 	ret := _m.Called(client)
@@ -1272,27 +1293,6 @@ func (_m *Utils) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, erro
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetRemainingTimeOfCurrentState provides a mock function with given fields: _a0, _a1
-func (_m *Utils) GetRemainingTimeOfCurrentState(_a0 *ethclient.Client, _a1 int32) (int64, error) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
-		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1789,6 +1789,69 @@ func (_m *Utils) ReadDataFromFile(_a0 string) (uint32, []*big.Int, error) {
 	return r0, r1, r2
 }
 
+// ReadFromCommitJsonFile provides a mock function with given fields: _a0
+func (_m *Utils) ReadFromCommitJsonFile(_a0 string) (types.CommitFileData, error) {
+	ret := _m.Called(_a0)
+
+	var r0 types.CommitFileData
+	if rf, ok := ret.Get(0).(func(string) types.CommitFileData); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(types.CommitFileData)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ReadFromDisputeJsonFile provides a mock function with given fields: _a0
+func (_m *Utils) ReadFromDisputeJsonFile(_a0 string) (types.DisputeFileData, error) {
+	ret := _m.Called(_a0)
+
+	var r0 types.DisputeFileData
+	if rf, ok := ret.Get(0).(func(string) types.DisputeFileData); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(types.DisputeFileData)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ReadFromProposeJsonFile provides a mock function with given fields: _a0
+func (_m *Utils) ReadFromProposeJsonFile(_a0 string) (types.ProposeFileData, error) {
+	ret := _m.Called(_a0)
+
+	var r0 types.ProposeFileData
+	if rf, ok := ret.Get(0).(func(string) types.ProposeFileData); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(types.ProposeFileData)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ReadJSONData provides a mock function with given fields: _a0
 func (_m *Utils) ReadJSONData(_a0 string) (map[string]*types.StructsJob, error) {
 	ret := _m.Called(_a0)
@@ -1812,12 +1875,54 @@ func (_m *Utils) ReadJSONData(_a0 string) (map[string]*types.StructsJob, error) 
 	return r0, r1
 }
 
+// SaveDataToCommitJsonFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) SaveDataToCommitJsonFile(_a0 string, _a1 uint32, _a2 types.CommitData) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, uint32, types.CommitData) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SaveDataToDisputeJsonFile provides a mock function with given fields: _a0, _a1
+func (_m *Utils) SaveDataToDisputeJsonFile(_a0 string, _a1 []uint32) error {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, []uint32) error); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SaveDataToFile provides a mock function with given fields: _a0, _a1, _a2
 func (_m *Utils) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, uint32, []*big.Int) error); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SaveDataToProposeJsonFile provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Utils) SaveDataToProposeJsonFile(_a0 string, _a1 uint32, _a2 types.ProposeData) error {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, uint32, types.ProposeData) error); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Error(0)
