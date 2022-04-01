@@ -433,8 +433,8 @@ func (_m *UtilsCmdInterface) ExecuteListAccounts(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExecuteModifyAssetStatus provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) ExecuteModifyAssetStatus(_a0 *pflag.FlagSet) {
+// ExecuteModifyCollectionStatus provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteModifyCollectionStatus(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
@@ -1270,12 +1270,12 @@ func (_m *UtilsCmdInterface) MakeBlock(client *ethclient.Client, blockNumber *bi
 	return r0, r1, r2, r3
 }
 
-// ModifyAssetStatus provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsCmdInterface) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ModifyAssetInput) (common.Hash, error) {
+// ModifyCollectionStatus provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterface) ModifyCollectionStatus(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ModifyCollectionInput) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 common.Hash
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ModifyAssetInput) common.Hash); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ModifyCollectionInput) common.Hash); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
@@ -1284,7 +1284,7 @@ func (_m *UtilsCmdInterface) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ModifyAssetInput) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ModifyCollectionInput) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
