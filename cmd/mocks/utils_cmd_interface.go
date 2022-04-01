@@ -100,6 +100,20 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.Int, er
 	return r0, r1
 }
 
+// AutoClaimBounty provides a mock function with given fields: client, config, account
+func (_m *UtilsCmdInterface) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+	ret := _m.Called(client, config, account)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account) error); ok {
+		r0 = rf(client, config, account)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AutoUnstakeAndWithdraw provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *UtilsCmdInterface) AutoUnstakeAndWithdraw(_a0 *ethclient.Client, _a1 types.Account, _a2 *big.Int, _a3 types.Configurations) {
 	_m.Called(_a0, _a1, _a2, _a3)
@@ -516,6 +530,27 @@ func (_m *UtilsCmdInterface) GetBiggestStakeAndId(_a0 *ethclient.Client, _a1 str
 	}
 
 	return r0, r1, r2
+}
+
+// GetBountyIdFromEvents provides a mock function with given fields: client, blockNumber, bountyHunter
+func (_m *UtilsCmdInterface) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+	ret := _m.Called(client, blockNumber, bountyHunter)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, string) uint32); ok {
+		r0 = rf(client, blockNumber, bountyHunter)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int, string) error); ok {
+		r1 = rf(client, blockNumber, bountyHunter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetBufferPercent provides a mock function with given fields:

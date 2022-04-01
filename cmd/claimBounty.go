@@ -93,12 +93,17 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	}
 
 	log.Info("Claiming bounty transaction...")
-	waitFor := bountyLock.RedeemAfter - epoch
+	waitFor := int32(bountyLock.RedeemAfter) - int32(epoch)
 	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
-		//waiting till epoch reaches redeemAfter
-		timeUtils.Sleep(time.Duration(int64(waitFor)*core.EpochLength*razorUtils.CalculateBlockTime(client)) * time.Second)
+		timeRemaining := int64(waitFor) * core.EpochLength
+		if waitFor == 1 {
+			log.Infof("Cannot claim bounty now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
+		} else {
+			log.Infof("Cannot claim bounty now. Please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
+		}
+		return core.NilHash, nil
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

@@ -354,3 +354,40 @@ func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileD
 	}
 	return proposedData, nil
 }
+
+func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
+	var data types.DisputeFileData
+
+	data.BountyIdQueue = bountyIdQueue
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filePath, jsonData, 0600)
+	if err != nil {
+		log.Error("Error in writing to file: ", err)
+		return err
+	}
+	return nil
+}
+
+func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
+	jsonFile, err := os.Open(filePath)
+	if err != nil {
+		log.Error("Error in opening json file: ", err)
+		return types.DisputeFileData{}, err
+	}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		log.Error("Error in reading data from json file: ", err)
+		return types.DisputeFileData{}, err
+	}
+	var disputeData types.DisputeFileData
+
+	err = json.Unmarshal(byteValue, &disputeData)
+	if err != nil {
+		log.Error(" Unmarshal error: ", err)
+		return types.DisputeFileData{}, err
+	}
+	return disputeData, nil
+}

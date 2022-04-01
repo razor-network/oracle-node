@@ -1025,6 +1025,8 @@ func TestHandleBlock(t *testing.T) {
 		claimBlockRewardTxn common.Hash
 		claimBlockRewardErr error
 		lastVerification    uint32
+		isFlagPassed        bool
+		autoClaimBountyErr  error
 	}
 	tests := []struct {
 		name string
@@ -1255,7 +1257,7 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 18: When there is no error in dispute",
+			name: "Test 18: When there is no error in dispute and autoClaimBounty flag is passed",
 			args: args{
 				state:          3,
 				epoch:          1,
@@ -1268,10 +1270,29 @@ func TestHandleBlock(t *testing.T) {
 				actualBalance:  big.NewFloat(1000),
 				sRZRBalance:    big.NewInt(10000),
 				sRZRInEth:      big.NewFloat(100),
+				isFlagPassed:   true,
 			},
 		},
 		{
-			name: "Test 18: When claimBlockReward executes successfully in confirm state",
+			name: "Test 19: When there is no error in dispute but autoClaimBounty throws error",
+			args: args{
+				state:              3,
+				epoch:              1,
+				stateName:          "dispute",
+				stakerId:           1,
+				staker:             bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:         big.NewInt(1000),
+				minStakeAmount:     big.NewInt(100),
+				actualStake:        big.NewFloat(10000),
+				actualBalance:      big.NewFloat(1000),
+				sRZRBalance:        big.NewInt(10000),
+				sRZRInEth:          big.NewFloat(100),
+				isFlagPassed:       true,
+				autoClaimBountyErr: errors.New("error in autoClaimBounty"),
+			},
+		},
+		{
+			name: "Test 20: When claimBlockReward executes successfully in confirm state",
 			args: args{
 				state:               4,
 				epoch:               1,
@@ -1289,7 +1310,7 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 19: When there is an error in claimBlockReward",
+			name: "Test 21: When there is an error in claimBlockReward",
 			args: args{
 				state:               4,
 				epoch:               2,
@@ -1307,7 +1328,7 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 20: When lastVerification is greater than the current epoch in dispute state",
+			name: "Test 22: When lastVerification is greater than the current epoch in dispute state",
 			args: args{
 				state:            3,
 				epoch:            1,
@@ -1324,7 +1345,7 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 21: When waitTime is more than 5 in -1 state",
+			name: "Test 23: When waitTime is more than 5 in -1 state",
 			args: args{
 				state:            -1,
 				epoch:            1,
@@ -1353,6 +1374,7 @@ func TestHandleBlock(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			utils.UtilsInterface = utilsPkgMock
+			utilsInterface = utilsPkgMock
 			osUtils = osMock
 			timeUtils = timeMock
 
@@ -1371,6 +1393,8 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
 			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
+			utilsPkgMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
+			cmdUtilsMock.On("AutoClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoClaimBountyErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(1)
 			timeMock.On("Sleep", mock.Anything).Return()

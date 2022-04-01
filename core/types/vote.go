@@ -39,6 +39,10 @@ type RevealedDataMaps struct {
 	InfluenceSum         map[uint16]*big.Int
 }
 
+type DisputeFileData struct {
+	BountyIdQueue []uint32
+}
+
 type ProposeData struct {
 	MediansData           []*big.Int
 	RevealedCollectionIds []uint16
