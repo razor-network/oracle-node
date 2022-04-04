@@ -72,7 +72,7 @@ docker exec -it razor-go razor ...
 3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary.
 4. If you want to build the binary without wanting to set the configurations use `npm run build-noargs`
 5. While building the binary, supply the provider RPC url and the gas multiplier.
-6. To bypass the intractive mode of providing password, create file in `.razor` directory with providing password in it.
+6. To bypass the interactive mode of providing password, create file in `.razor` directory with providing password in it.
 7. The binary will be generated at `build/bin`.
 
 ## Commands
@@ -335,6 +335,7 @@ Example:
 ```
 $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
+If you want to claim your bounty automatically after disputing staker, you can just pass `--autoClaimBounty` flag in your vote command.
 
 If you want to report incorrect values, there is a `rogue` mode available. Just pass an extra flag `--rogue` to start voting in rogue mode and the client will report wrong medians.
 The rogueMode key can be used to specify in which particular voting state (commit, reveal, propose) you want to report incorrect values.
@@ -575,16 +576,16 @@ Example:
 $ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2 --tolerance 200
 ```
 
-### Modify Asset Status
+### Modify Collection Status
 
-Modify the active status of an asset using the `modifyAssetStatus` command.
+Modify the active status of an collection using the `modifyCollectionStatus` command.
 
 _Note: This command is restricted to "Admin Role"_
 
 razor cli
 
 ```
-$ ./razor modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+$ ./razor modifyCollectionStatus --collectionId <collectionId> --address <address> --status <true_or_false>
 ```
 
 docker
@@ -593,13 +594,13 @@ docker
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    modifyAssetStatus --assetId <assetId> --address <address> --status <true_or_false>
+    modifyCollectionStatus --collectionId <collectionId> --address <address> --status <true_or_false>
 ```
 
 Example:
 
 ```
-$ ./razor modifyAssetStatus --assetId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
+$ ./razor modifyCollectionStatus --collectionId 1 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status false
 ```
 
 ### Update Collection
@@ -791,7 +792,7 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
 
 ### Logs
 
-User can pass a seperate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
+User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
 
 ```
 $ ./razor addStake --address <address> --value <value> --logFile stakingLogs
@@ -850,7 +851,7 @@ We would really appreciate your contribution. To see our [contribution guideline
    #Provide password through CLI
    docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000
 
-   #Provide password throudh File
+   #Provide password through File
 
      #Create file and put password string
        vi ~/.razor/pass

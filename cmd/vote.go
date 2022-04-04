@@ -12,6 +12,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
+	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -120,6 +121,7 @@ var (
 	_commitData      types.CommitData
 	lastVerification uint32
 	blockConfirmed   uint32
+	disputeData      types.DisputeFileData
 )
 
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
@@ -222,12 +224,23 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if lastVerification >= epoch {
 			break
 		}
+
 		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
+
 		lastVerification = epoch
+
+		if utilsInterface.IsFlagPassed("autoClaimBounty") {
+			err = cmdUtils.AutoClaimBounty(client, config, account)
+			if err != nil {
+				log.Error(err)
+				break
+			}
+		}
+
 	case 4:
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
@@ -303,14 +316,13 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		}
 	}
 
-	//TODO: Need to save the entire commitData, which includes AssignedCollections, SeqAllottedCollections and Leaves to construct merkle tree
 	log.Debug("Saving committed data for recovery")
 	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
 
-	err = razorUtils.SaveDataToFile(fileName, epoch, commitData.Leaves)
+	err = razorUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
 	if err != nil {
 		return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
 	}
@@ -334,31 +346,31 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 	log.Debug("Epoch last revealed: ", lastReveal)
 
-	//TODO: Fetch committed data from file
-
-	//if _committedData == nil {
-	//	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
-	//	if err != nil {
-	//		log.Error("Error in getting file name to save committed data: ", err)
-	//		break
-	//	}
-	//	epochInFile, committedDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
-	//	if err != nil {
-	//		log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
-	//		break
-	//	}
-	//	if epochInFile != epoch {
-	//		log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
-	//		break
-	//	}
-	//	_committedData = committedDataFromFile
-	//}
-	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
-		var rogueLeaves []*big.Int
-		for i := 0; i < len(_commitData.Leaves); i++ {
-			rogueLeaves = append(rogueLeaves, razorUtils.GetRogueRandomValue(10000000))
+	if _commitData.AssignedCollections == nil && _commitData.SeqAllottedCollections == nil && _commitData.Leaves == nil {
+		fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to save committed data: ", err)
+			return err
 		}
-		_commitData.Leaves = rogueLeaves
+		committedDataFromFile, err := razorUtils.ReadFromCommitJsonFile(fileName)
+		if err != nil {
+			log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
+			return err
+		}
+		if committedDataFromFile.Epoch != epoch {
+			log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
+			return errors.New("commit data file doesn't contain latest committed data")
+		}
+		_commitData.AssignedCollections = committedDataFromFile.AssignedCollections
+		_commitData.SeqAllottedCollections = committedDataFromFile.SeqAllottedCollections
+		_commitData.Leaves = committedDataFromFile.Leaves
+	}
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+		var rogueCommittedData []*big.Int
+		for i := 0; i < len(_commitData.Leaves); i++ {
+			rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
+		}
+		_commitData.Leaves = rogueCommittedData
 	}
 
 	secret, err := cmdUtils.CalculateSecret(account, epoch)
@@ -403,12 +415,73 @@ func InitiatePropose(client *ethclient.Client, config types.Configurations, acco
 	return nil
 }
 
+func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+	disputeFilePath, err := GetDisputeDataFileName(account.Address)
+	if err != nil {
+		return err
+	}
+
+	var latestBountyId uint32
+
+	//Checking if dispute happens, if yes than getting the bountyId from events
+	if disputedFlag {
+		latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+		if err != nil {
+			log.Error("Error in fetching block: ", err)
+			return err
+		}
+
+		latestBountyId, err = cmdUtils.GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
+		if err != nil {
+			return err
+		}
+	}
+
+	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
+		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		if err != nil {
+			return err
+		}
+	}
+	if disputeData.BountyIdQueue != nil {
+		length := len(disputeData.BountyIdQueue)
+		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
+			BountyId: disputeData.BountyIdQueue[length-1],
+			Address:  account.Address,
+			Password: account.Password,
+		})
+		if err != nil {
+			return err
+		}
+		if claimBountyTxn != core.NilHash {
+			claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			if claimBountyStatus == 1 {
+				if len(disputeData.BountyIdQueue) > 1 {
+					//Removing the bountyId from the queue as the bounty is being claimed
+					disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
+				} else {
+					disputeData.BountyIdQueue = nil
+				}
+			}
+		}
+	}
+
+	if latestBountyId != 0 {
+		//prepending the latestBountyId to the queue
+		disputeData.BountyIdQueue = append([]uint32{latestBountyId}, disputeData.BountyIdQueue...)
+	}
+	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
 	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}
-	fmt.Println(fromBlock)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -425,15 +498,38 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 		return 0, err
 	}
 	epochLastProposed := uint32(0)
+
+	bufferPercent, err := cmdUtils.GetBufferPercent()
+	if err != nil {
+		return 0, err
+	}
+
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	if err != nil {
+		return 0, err
+	}
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+
+loop:
 	for _, vLog := range logs {
-		data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
-		if unpackErr != nil {
-			log.Error(unpackErr)
-			continue
+		select {
+		case <-stateTimeout.C:
+			log.Error("State timeout!")
+			err = errors.New("propose state timeout")
+			break loop
+		default:
+			data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
+			if unpackErr != nil {
+				log.Error(unpackErr)
+				continue
+			}
+			if stakerId == data[1].(uint32) {
+				epochLastProposed = data[0].(uint32)
+			}
 		}
-		if stakerId == data[1].(uint32) {
-			epochLastProposed = data[0].(uint32)
-		}
+	}
+	if err != nil {
+		return 0, err
 	}
 	return epochLastProposed, nil
 }
@@ -457,7 +553,15 @@ func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_data", nil
+	return homeDir + "/" + address + "_CommitData.json", nil
+}
+
+func GetDisputeDataFileName(address string) (string, error) {
+	homeDir, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_disputeData.json", nil
 }
 
 func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
@@ -489,16 +593,18 @@ func init() {
 	rootCmd.AddCommand(voteCmd)
 
 	var (
-		Address   string
-		Rogue     bool
-		RogueMode []string
-		Password  string
+		Address         string
+		Rogue           bool
+		RogueMode       []string
+		Password        string
+		AutoClaimBounty bool
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
+	voteCmd.Flags().BoolVarP(&AutoClaimBounty, "autoClaimBounty", "", false, "auto claim bounty")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

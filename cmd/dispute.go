@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
@@ -11,13 +14,18 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"strings"
 )
 
-var giveSortedLeafIds []int
+var (
+	giveSortedLeafIds []int
+	disputedFlag      bool
+)
 
 //blockId is id of the block
 
 func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
+	disputedFlag = false
 
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
@@ -77,6 +85,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Info("Txn Hash: ", transactionUtils.Hash(disputeBiggestStakeProposedTxn))
 			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(disputeBiggestStakeProposedTxn).String())
 			if status == 1 {
+				disputedFlag = true
 				continue
 			}
 		}
@@ -93,6 +102,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
 			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
 			if status == 1 {
+				disputedFlag = true
 				continue
 			}
 		}
@@ -108,7 +118,12 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
-				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian]
+
+				//collectionId starts from 1 and in SortedRevealedValues, the keys start from 0 which are collectionId-1 mapping to respective revealed data for that collectionId.
+				//e.g. collectionId = [1,2,3,4] & Sorted Reveal Votes: map[0:[100] 1:[200 202] 2:[300]]
+				//Here 0th key in map represents collectionId 1.
+
+				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
 				leafId, err := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
 				if err != nil {
 					log.Error("Error in leaf id: ", err)
@@ -133,26 +148,27 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 }
 
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
-	//TODO: Implement proper file reading and writing
 
-	//	if _mediansData == nil && !rogueData.IsRogue {
-	//		fileName, err := cmdUtils.GetMedianDataFileName(account.Address)
-	//		if err != nil {
-	//			log.Error("Error in getting file name to read median data: ", err)
-	//			goto CalculateMedian
-	//		}
-	//		epochInFile, medianDataFromFile, err := razorUtils.ReadDataFromFile(fileName)
-	//		if err != nil {
-	//			log.Errorf("Error in getting median data from file %s: %t", fileName, err)
-	//			goto CalculateMedian
-	//		}
-	//		if epochInFile != epoch {
-	//			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
-	//			goto CalculateMedian
-	//		}
-	//		_mediansData = medianDataFromFile
-	//	}
-	//CalculateMedian:
+	if _mediansData == nil && !rogueData.IsRogue {
+		fileName, err := cmdUtils.GetProposeDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to read median data: ", err)
+			goto CalculateMedian
+		}
+		proposedata, err := razorUtils.ReadFromProposeJsonFile(fileName)
+		if err != nil {
+			log.Errorf("Error in getting propose data from file %s: %t", fileName, err)
+			goto CalculateMedian
+		}
+		if proposedata.Epoch != epoch {
+			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
+			goto CalculateMedian
+		}
+		_mediansData = proposedata.MediansData
+		_revealedDataMaps = proposedata.RevealedDataMaps
+		_revealedCollectionIds = proposedata.RevealedCollectionIds
+	}
+CalculateMedian:
 	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil {
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
@@ -239,7 +255,10 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		return err
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
-	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+	status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+	if status == 1 {
+		disputedFlag = true
+	}
 	return nil
 }
 
@@ -277,4 +296,40 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 		}
 	}
 	return nil
+}
+
+func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+	fromBlock, err := utils.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	query := ethereum.FilterQuery{
+		FromBlock: fromBlock,
+		ToBlock:   blockNumber,
+		Addresses: []common.Address{
+			common.HexToAddress(core.StakeManagerAddress),
+		},
+	}
+	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	if err != nil {
+		return 0, err
+	}
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.StakeManagerABI))
+	if err != nil {
+		return 0, err
+	}
+	bountyId := uint32(0)
+	for _, vLog := range logs {
+		data, unpackErr := abiUtils.Unpack(contractAbi, "Slashed", vLog.Data)
+		if unpackErr != nil {
+			log.Error(unpackErr)
+			continue
+		}
+		addressFromLogs := fmt.Sprint(data[1])
+		if bountyHunter == addressFromLogs {
+			bountyId = data[0].(uint32)
+		}
+	}
+	return bountyId, nil
 }

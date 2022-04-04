@@ -100,6 +100,20 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(_a0 *pflag.FlagSet) (*big.Int, er
 	return r0, r1
 }
 
+// AutoClaimBounty provides a mock function with given fields: client, config, account
+func (_m *UtilsCmdInterface) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+	ret := _m.Called(client, config, account)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account) error); ok {
+		r0 = rf(client, config, account)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AutoUnstakeAndWithdraw provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *UtilsCmdInterface) AutoUnstakeAndWithdraw(_a0 *ethclient.Client, _a1 types.Account, _a2 *big.Int, _a3 types.Configurations) {
 	_m.Called(_a0, _a1, _a2, _a3)
@@ -419,8 +433,8 @@ func (_m *UtilsCmdInterface) ExecuteListAccounts(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
-// ExecuteModifyAssetStatus provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) ExecuteModifyAssetStatus(_a0 *pflag.FlagSet) {
+// ExecuteModifyCollectionStatus provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) ExecuteModifyCollectionStatus(_a0 *pflag.FlagSet) {
 	_m.Called(_a0)
 }
 
@@ -516,6 +530,27 @@ func (_m *UtilsCmdInterface) GetBiggestStakeAndId(_a0 *ethclient.Client, _a1 str
 	}
 
 	return r0, r1, r2
+}
+
+// GetBountyIdFromEvents provides a mock function with given fields: client, blockNumber, bountyHunter
+func (_m *UtilsCmdInterface) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+	ret := _m.Called(client, blockNumber, bountyHunter)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, string) uint32); ok {
+		r0 = rf(client, blockNumber, bountyHunter)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int, string) error); ok {
+		r1 = rf(client, blockNumber, bountyHunter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetBufferPercent provides a mock function with given fields:
@@ -681,13 +716,13 @@ func (_m *UtilsCmdInterface) GetGasPrice() (int32, error) {
 	return r0, r1
 }
 
-// GetIteration provides a mock function with given fields: _a0, _a1
-func (_m *UtilsCmdInterface) GetIteration(_a0 *ethclient.Client, _a1 types.ElectedProposer) int {
-	ret := _m.Called(_a0, _a1)
+// GetIteration provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterface) GetIteration(_a0 *ethclient.Client, _a1 types.ElectedProposer, _a2 int32) int {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer) int); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer, int32) int); ok {
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -792,27 +827,6 @@ func (_m *UtilsCmdInterface) GetLogLevel() (string, error) {
 	return r0, r1
 }
 
-// GetMedianDataFileName provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) GetMedianDataFileName(_a0 string) (string, error) {
-	ret := _m.Called(_a0)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetMultiplier provides a mock function with given fields:
 func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
 	ret := _m.Called()
@@ -827,6 +841,27 @@ func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetProposeDataFileName provides a mock function with given fields: _a0
+func (_m *UtilsCmdInterface) GetProposeDataFileName(_a0 string) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1235,12 +1270,12 @@ func (_m *UtilsCmdInterface) MakeBlock(client *ethclient.Client, blockNumber *bi
 	return r0, r1, r2, r3
 }
 
-// ModifyAssetStatus provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsCmdInterface) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ModifyAssetInput) (common.Hash, error) {
+// ModifyCollectionStatus provides a mock function with given fields: _a0, _a1, _a2
+func (_m *UtilsCmdInterface) ModifyCollectionStatus(_a0 *ethclient.Client, _a1 types.Configurations, _a2 types.ModifyCollectionInput) (common.Hash, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 common.Hash
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ModifyAssetInput) common.Hash); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.ModifyCollectionInput) common.Hash); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
@@ -1249,7 +1284,7 @@ func (_m *UtilsCmdInterface) ModifyAssetStatus(_a0 *ethclient.Client, _a1 types.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ModifyAssetInput) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.ModifyCollectionInput) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)

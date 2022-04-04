@@ -38,3 +38,27 @@ type RevealedDataMaps struct {
 	VoteWeights          map[uint32]*big.Int
 	InfluenceSum         map[uint16]*big.Int
 }
+
+type DisputeFileData struct {
+	BountyIdQueue []uint32
+}
+
+type ProposeData struct {
+	MediansData           []*big.Int
+	RevealedCollectionIds []uint16
+	RevealedDataMaps      *RevealedDataMaps
+}
+
+type CommitFileData struct {
+	Epoch                  uint32
+	AssignedCollections    map[int]bool
+	SeqAllottedCollections []*big.Int
+	Leaves                 []*big.Int
+}
+
+type ProposeFileData struct {
+	Epoch                 uint32
+	MediansData           []*big.Int
+	RevealedCollectionIds []uint16
+	RevealedDataMaps      *RevealedDataMaps
+}
