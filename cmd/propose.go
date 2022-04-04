@@ -55,8 +55,8 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	} else {
 		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
 		if biggestStakerErr != nil {
-			log.Error("Error in calculating biggest staker: ", err)
-			return core.NilHash, err
+			log.Error("Error in calculating biggest staker: ", biggestStakerErr)
+			return core.NilHash, biggestStakerErr
 		}
 	}
 

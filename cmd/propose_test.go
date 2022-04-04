@@ -42,15 +42,14 @@ func TestPropose(t *testing.T) {
 	copy(saltBytes32[:], salt)
 
 	type args struct {
-		state    int64
-		stateErr error
-		staker   bindings.StructsStaker
-		//stakerErr                  error
+		state                      int64
+		stateErr                   error
+		staker                     bindings.StructsStaker
 		numStakers                 uint32
 		numStakerErr               error
-		biggestInfluence           *big.Int
-		biggestInfluenceId         uint32
-		biggestInfluenceErr        error
+		biggestStake               *big.Int
+		biggestStakerId            uint32
+		biggestStakerIdErr         error
 		randaoHash                 [32]byte
 		randaoHashErr              error
 		bufferPercent              int32
@@ -90,8 +89,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -112,8 +111,8 @@ func TestPropose(t *testing.T) {
 				stateErr:                errors.New("state error"),
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -134,8 +133,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakerErr:            errors.New("numberOfStakers error"),
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
@@ -151,12 +150,12 @@ func TestPropose(t *testing.T) {
 			wantErr: errors.New("numberOfStakers error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting biggest influence staker",
+			name: "Test 4: When there is an error in getting biggest staker",
 			args: args{
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluenceErr:     errors.New("biggest influence staker error"),
+				biggestStakerIdErr:      errors.New("biggest staker error"),
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -169,7 +168,7 @@ func TestPropose(t *testing.T) {
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
 			want:    core.NilHash,
-			wantErr: errors.New("biggest influence staker error"),
+			wantErr: errors.New("biggest staker error"),
 		},
 		{
 			name: "Test 5: When there is an error in getting randaoHash",
@@ -177,8 +176,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				saltErr:                 errors.New("salt error"),
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -199,8 +198,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               -1,
 				numOfProposedBlocks:     3,
@@ -221,8 +220,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocksErr:  errors.New("numOfProposedBlocks error"),
@@ -243,8 +242,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
@@ -265,8 +264,8 @@ func TestPropose(t *testing.T) {
 				state:                      2,
 				staker:                     bindings.StructsStaker{},
 				numStakers:                 5,
-				biggestInfluence:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:         2,
+				biggestStake:               big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:            2,
 				salt:                       saltBytes32,
 				iteration:                  1,
 				numOfProposedBlocks:        4,
@@ -287,8 +286,8 @@ func TestPropose(t *testing.T) {
 				state:               2,
 				staker:              bindings.StructsStaker{},
 				numStakers:          5,
-				biggestInfluence:    big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:  2,
+				biggestStake:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:     2,
 				salt:                saltBytes32,
 				iteration:           2,
 				numOfProposedBlocks: 4,
@@ -311,8 +310,8 @@ func TestPropose(t *testing.T) {
 				state:               2,
 				staker:              bindings.StructsStaker{},
 				numStakers:          5,
-				biggestInfluence:    big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:  2,
+				biggestStake:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:     2,
 				salt:                saltBytes32,
 				iteration:           1,
 				numOfProposedBlocks: 4,
@@ -335,8 +334,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
@@ -357,8 +356,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
@@ -379,8 +378,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -401,8 +400,8 @@ func TestPropose(t *testing.T) {
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
 				numStakers:              5,
-				biggestInfluence:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId:      2,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -420,12 +419,12 @@ func TestPropose(t *testing.T) {
 		{
 			name: "Test 17: When there is an error in getting buffer percent",
 			args: args{
-				state:              2,
-				staker:             bindings.StructsStaker{},
-				numStakers:         5,
-				biggestInfluence:   big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestInfluenceId: 2,
-				bufferPercentErr:   errors.New("buffer error"),
+				state:            2,
+				staker:           bindings.StructsStaker{},
+				numStakers:       5,
+				biggestStake:     big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:  2,
+				bufferPercentErr: errors.New("buffer error"),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("buffer error"),
@@ -445,7 +444,7 @@ func TestPropose(t *testing.T) {
 
 		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
-		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestInfluence, tt.args.biggestInfluenceId, tt.args.biggestInfluenceErr)
+		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		utilsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.randaoHash, tt.args.randaoHashErr)
 		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
 		utilsMock.On("GetMaxAltBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.maxAltBlocks, tt.args.maxAltBlocksErr)
