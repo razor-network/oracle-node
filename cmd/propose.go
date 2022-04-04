@@ -325,7 +325,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		influenceSum := revealedDataMaps.InfluenceSum[leafId]
 		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
-			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "propose") {
+			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
 				medians = append(medians, rand.Uint32())
 				continue
 			}
