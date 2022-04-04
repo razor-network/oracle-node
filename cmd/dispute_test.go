@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -786,6 +787,119 @@ func TestCheckDisputeForIds(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CheckDisputeForIds() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetBountyIdFromEvents(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		blockNumber  *big.Int
+		bountyHunter string
+	)
+	type args struct {
+		fromBlock      *big.Int
+		fromBlockErr   error
+		logs           []Types.Log
+		logsErr        error
+		contractABI    abi.ABI
+		contractABIErr error
+		data           []interface{}
+		unpackErr      error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint32
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetBountyIdFromEvents() executes successfully",
+			args: args{
+				fromBlock: big.NewInt(0),
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractABI: abi.ABI{},
+				data:        convertToSliceOfInterface([]uint32{4, 2}),
+			},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting blockNumber",
+			args: args{
+				fromBlockErr: errors.New("error in getting blockNumber"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting logs",
+			args: args{
+				fromBlock: big.NewInt(0),
+				logsErr:   errors.New("error in getting logs"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting contractABI",
+			args: args{
+				fromBlock: big.NewInt(0),
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractABIErr: errors.New("error in contractABI"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in unpacking",
+			args: args{
+				fromBlock: big.NewInt(0),
+				logs: []Types.Log{
+					{
+						Data: []byte{4, 2},
+					},
+				},
+				contractABI: abi.ABI{},
+				unpackErr:   errors.New("error in unpacking"),
+			},
+			want:    0,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			abiMock := new(mocks.AbiInterface)
+			utilsPkgMock := new(mocks2.Utils)
+			abiUtilsMock := new(mocks2.ABIUtils)
+			utilsPkgMock2 := new(mocks2.Utils)
+
+			utilsInterface = utilsPkgMock2
+			abiUtils = abiMock
+			utils.UtilsInterface = utilsPkgMock
+			utils.ABIInterface = abiUtilsMock
+
+			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractABI, tt.args.contractABIErr)
+			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
+			ut := &UtilsStruct{}
+			got, err := ut.GetBountyIdFromEvents(client, blockNumber, bountyHunter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBountyIdFromEvents() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetBountyIdFromEvents() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -646,6 +646,27 @@ func (_m *UtilsCmdInterface) GetConfigData() (types.Configurations, error) {
 	return r0, r1
 }
 
+// GetDisputeDataFileName provides a mock function with given fields: address
+func (_m *UtilsCmdInterface) GetDisputeDataFileName(address string) (string, error) {
+	ret := _m.Called(address)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(address)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(address)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEpochAndState provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) GetEpochAndState(_a0 *ethclient.Client) (uint32, int64, error) {
 	ret := _m.Called(_a0)

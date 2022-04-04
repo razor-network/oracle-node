@@ -417,7 +417,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 }
 
 func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
-	disputeFilePath, err := GetDisputeDataFileName(account.Address)
+	disputeFilePath, err := cmdUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
 	}
@@ -557,7 +557,7 @@ func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
 	return homeDir + "/" + address + "_CommitData.json", nil
 }
 
-func GetDisputeDataFileName(address string) (string, error) {
+func (*UtilsStruct) GetDisputeDataFileName(address string) (string, error) {
 	homeDir, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		return "", err
