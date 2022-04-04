@@ -1349,7 +1349,7 @@ func TestGetCommitDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/0x000000000000000000000000000000000000dead_data",
+			want:    "/home/0x000000000000000000000000000000000000dead_CommitData.json",
 			wantErr: nil,
 		},
 		{
