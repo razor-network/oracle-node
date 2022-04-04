@@ -149,6 +149,7 @@ func TestClaimBounty(t *testing.T) {
 		redeemBountyTxn *Types.Transaction
 		redeemBountyErr error
 		hash            common.Hash
+		time            string
 	}
 	tests := []struct {
 		name    string
@@ -171,7 +172,7 @@ func TestClaimBounty(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When claimBounty function executes successfully after waiting for few epochs",
+			name: "Test 2: When claimBounty function exits successfully if lock is not reached",
 			args: args{
 				epoch: 70,
 				bountyLock: types.BountyLock{
@@ -179,9 +180,8 @@ func TestClaimBounty(t *testing.T) {
 					RedeemAfter: 80,
 				},
 				redeemBountyTxn: &Types.Transaction{},
-				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.BigToHash(big.NewInt(1)),
+			want:    core.NilHash,
 			wantErr: nil,
 		},
 		{
@@ -246,6 +246,7 @@ func TestClaimBounty(t *testing.T) {
 			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)
+			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			trasactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}

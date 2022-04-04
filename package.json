@@ -1,6 +1,6 @@
 {
   "name": "razor-go",
-  "version": "v0.2.0",
+  "version": "v1.0.0",
   "description": "Official node for running stakers in Golang.",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/razor-network/razor-go#readme",
   "dependencies": {
-    "@razor-network/contracts": "0.3.0-rc1"
+    "@razor-network/contracts": "1.0.1"
   }
 }

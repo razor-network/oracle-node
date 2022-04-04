@@ -194,7 +194,7 @@ func TestModifyAssetStatus(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.ModifyAssetStatus(client, config, types.ModifyAssetInput{
+			got, err := utils.ModifyCollectionStatus(client, config, types.ModifyCollectionInput{
 				Status: tt.args.status,
 			})
 			if got != tt.want {
@@ -220,19 +220,19 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		config                types.Configurations
-		configErr             error
-		address               string
-		addressErr            error
-		assetId               uint16
-		assetIdErr            error
-		status                string
-		statusErr             error
-		parseStatus           bool
-		parseStatusErr        error
-		password              string
-		ModifyAssetStatusHash common.Hash
-		ModifyAssetStatusErr  error
+		config                     types.Configurations
+		configErr                  error
+		address                    string
+		addressErr                 error
+		collectionId               uint16
+		collectionIdErr            error
+		status                     string
+		statusErr                  error
+		parseStatus                bool
+		parseStatusErr             error
+		password                   string
+		ModifyCollectionStatusHash common.Hash
+		ModifyCollectionStatusErr  error
 	}
 	tests := []struct {
 		name          string
@@ -242,94 +242,94 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 		{
 			name: "Test 1: When ModifyAssetStatus executes successfully",
 			args: args{
-				config:                config,
-				address:               "0x000000000000000000000000000000000000dea1",
-				assetId:               1,
-				status:                "true",
-				parseStatus:           true,
-				password:              "test",
-				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+				config:                     config,
+				address:                    "0x000000000000000000000000000000000000dea1",
+				collectionId:               1,
+				status:                     "true",
+				parseStatus:                true,
+				password:                   "test",
+				ModifyCollectionStatusHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
 		},
 		{
 			name: "Test 2: When there is an error in getting address",
 			args: args{
-				config:                config,
-				address:               "",
-				addressErr:            errors.New("address error"),
-				assetId:               1,
-				status:                "true",
-				parseStatus:           true,
-				password:              "test",
-				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+				config:                     config,
+				address:                    "",
+				addressErr:                 errors.New("address error"),
+				collectionId:               1,
+				status:                     "true",
+				parseStatus:                true,
+				password:                   "test",
+				ModifyCollectionStatusHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 3: When there is an error in getting assetId",
+			name: "Test 3: When there is an error in getting collectionId",
 			args: args{
-				config:                config,
-				address:               "0x000000000000000000000000000000000000dea1",
-				assetIdErr:            errors.New("assetId error"),
-				status:                "true",
-				parseStatus:           true,
-				password:              "test",
-				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+				config:                     config,
+				address:                    "0x000000000000000000000000000000000000dea1",
+				collectionIdErr:            errors.New("assetId error"),
+				status:                     "true",
+				parseStatus:                true,
+				password:                   "test",
+				ModifyCollectionStatusHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 4: When there is an error in getting status string",
 			args: args{
-				config:                config,
-				address:               "0x000000000000000000000000000000000000dea1",
-				assetId:               1,
-				statusErr:             errors.New("status error"),
-				parseStatus:           true,
-				password:              "test",
-				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+				config:                     config,
+				address:                    "0x000000000000000000000000000000000000dea1",
+				collectionId:               1,
+				statusErr:                  errors.New("status error"),
+				parseStatus:                true,
+				password:                   "test",
+				ModifyCollectionStatusHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 5: When there is an error in parsing status to bool",
 			args: args{
-				config:                config,
-				address:               "0x000000000000000000000000000000000000dea1",
-				assetId:               1,
-				status:                "true",
-				parseStatusErr:        errors.New("parsing status error"),
-				password:              "test",
-				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+				config:                     config,
+				address:                    "0x000000000000000000000000000000000000dea1",
+				collectionId:               1,
+				status:                     "true",
+				parseStatusErr:             errors.New("parsing status error"),
+				password:                   "test",
+				ModifyCollectionStatusHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 6: When there is an error from ModifyAssetStatus",
 			args: args{
-				config:                config,
-				address:               "0x000000000000000000000000000000000000dea1",
-				assetId:               1,
-				status:                "true",
-				parseStatus:           true,
-				password:              "test",
-				ModifyAssetStatusHash: core.NilHash,
-				ModifyAssetStatusErr:  errors.New("ModifyAssetStatus error"),
+				config:                     config,
+				address:                    "0x000000000000000000000000000000000000dea1",
+				collectionId:               1,
+				status:                     "true",
+				parseStatus:                true,
+				password:                   "test",
+				ModifyCollectionStatusHash: core.NilHash,
+				ModifyCollectionStatusErr:  errors.New("ModifyAssetStatus error"),
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 7: When there ia n error in getting config",
 			args: args{
-				config:                config,
-				configErr:             errors.New("config error"),
-				address:               "0x000000000000000000000000000000000000dea1",
-				assetId:               1,
-				status:                "true",
-				parseStatus:           true,
-				password:              "test",
-				ModifyAssetStatusHash: common.BigToHash(big.NewInt(1)),
+				config:                     config,
+				configErr:                  errors.New("config error"),
+				address:                    "0x000000000000000000000000000000000000dea1",
+				collectionId:               1,
+				status:                     "true",
+				parseStatus:                true,
+				password:                   "test",
+				ModifyCollectionStatusHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
 		},
@@ -355,18 +355,18 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
-			flagsetUtilsMock.On("GetUint16AssetId", flagSet).Return(tt.args.assetId, tt.args.assetIdErr)
+			flagsetUtilsMock.On("GetUint16CollectionId", flagSet).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			flagsetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("ModifyAssetStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyAssetStatusHash, tt.args.ModifyAssetStatusErr)
+			cmdUtilsMock.On("ModifyCollectionStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyCollectionStatusHash, tt.args.ModifyCollectionStatusErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
 			utils := &UtilsStruct{}
 			fatal = false
 
-			utils.ExecuteModifyAssetStatus(flagSet)
+			utils.ExecuteModifyCollectionStatus(flagSet)
 
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteModifyAssetStatus function didn't execute as expected")
