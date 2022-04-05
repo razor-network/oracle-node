@@ -136,8 +136,8 @@ func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.Str
 		log.Error("Error in approving for unstake")
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", txn.Hash().String())
-	return txn.Hash(), nil
+	log.Info("Transaction Hash: ", transactionUtils.Hash(txn).String())
+	return transactionUtils.Hash(txn), nil
 }
 
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {

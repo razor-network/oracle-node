@@ -111,7 +111,7 @@ func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address stri
 	}
 }
 
-func GetStateName(stateNumber int64) string {
+func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
 	case 0:
@@ -238,7 +238,7 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
+func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Errorf("Error in fetching block : %s", err)
@@ -256,7 +256,7 @@ func CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength 
 	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
 	previous_epoch := previousBlockActualTimestamp / uint64(core.EpochLength)
 	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previous_epoch != current_epoch-1 {
-		return CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
+		return UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
 
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil

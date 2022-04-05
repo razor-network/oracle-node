@@ -14,6 +14,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
 	"reflect"
@@ -162,6 +163,46 @@ func TestHandleCommitState(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 2: When there is an error in getting numActiveCollections",
+			args: args{
+				numActiveCollectionsErr: errors.New("error in getting numActiveCollections"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting numActiveCollections"),
+		},
+		{
+			name: "Test 3: When there is an error in getting assignedCollections",
+			args: args{
+				numActiveCollections:   1,
+				assignedCollectionsErr: errors.New("error in getting assignedCollections"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting assignedCollections"),
+		},
+		{
+			name: "Test 4: When there is an error in getting collectionId",
+			args: args{
+				numActiveCollections:   3,
+				assignedCollections:    map[int]bool{1: true, 2: true},
+				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionIdErr:        errors.New("error in getting collectionId"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting collectionId"),
+		},
+		{
+			name: "Test 5: When there is an error in getting collectionData",
+			args: args{
+				numActiveCollections:   3,
+				assignedCollections:    map[int]bool{1: true, 2: true},
+				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionId:           1,
+				collectionDataErr:      errors.New("error in getting collectionData"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting collectionData"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -189,6 +230,128 @@ func TestHandleCommitState(t *testing.T) {
 				}
 			}
 
+		})
+	}
+}
+
+func TestGetSalt(t *testing.T) {
+	var client *ethclient.Client
+
+	type args struct {
+		epoch                        uint32
+		numProposedBlocks            uint8
+		numProposedBlocksErr         error
+		blockIndexedToBeConfirmed    int8
+		blockIndexedToBeConfirmedErr error
+		saltFromBlockChain           [32]byte
+		saltFromBlockChainErr        error
+		blockId                      uint32
+		blockIdErr                   error
+		previousBlock                bindings.StructsBlock
+		previousBlockErr             error
+		salt                         [32]byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    [32]byte
+		wantErr error
+	}{
+		{
+			name: "Test 1: When GetSalt() function executes successfully",
+			args: args{
+				epoch:                     2,
+				numProposedBlocks:         1,
+				blockIndexedToBeConfirmed: 1,
+				blockId:                   1,
+				previousBlock:             bindings.StructsBlock{},
+				salt:                      [32]byte{},
+			},
+			want:    [32]byte{},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting numProposedBlocks",
+			args: args{
+				epoch:                2,
+				numProposedBlocksErr: errors.New("error in getting numProposedBlocks"),
+			},
+			want:    [32]byte{},
+			wantErr: errors.New("error in getting numProposedBlocks"),
+		},
+		{
+			name: "Test 3: When there is an error in getting blockIndexedToBeConfirmed",
+			args: args{
+				epoch:                        2,
+				numProposedBlocks:            1,
+				blockIndexedToBeConfirmedErr: errors.New("error in getting blockIndexedToBeConfirmed"),
+			},
+			want:    [32]byte{},
+			wantErr: errors.New("error in getting blockIndexedToBeConfirmed"),
+		},
+		{
+			name: "Test 4: When numProposedBlock is zero",
+			args: args{
+				epoch:              2,
+				numProposedBlocks:  0,
+				saltFromBlockChain: [32]byte{},
+			},
+			want:    [32]byte{},
+			wantErr: nil,
+		},
+		{
+			name: "Test 5: When there is an error in getting blockId",
+			args: args{
+				epoch:                     2,
+				numProposedBlocks:         1,
+				blockIndexedToBeConfirmed: 1,
+				blockIdErr:                errors.New("error"),
+			},
+			want:    [32]byte{},
+			wantErr: errors.New("Error in getting blockId: error"),
+		},
+		{
+			name: "Test 6: When there is an error in getting previousBlock",
+			args: args{
+				epoch:                     2,
+				numProposedBlocks:         1,
+				blockIndexedToBeConfirmed: 1,
+				blockId:                   1,
+				previousBlockErr:          errors.New("error"),
+			},
+			want:    [32]byte{},
+			wantErr: errors.New("Error in getting previous block: error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsPkgMock := new(mocks2.Utils)
+			utilsVoteManagerMock := new(mocks2.VoteManagerUtils)
+
+			utils.UtilsInterface = utilsPkgMock
+			utils.VoteManagerInterface = utilsVoteManagerMock
+
+			utilsPkgMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
+			utilsPkgMock.On("GetBlockIndexToBeConfirmed", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
+			utilsVoteManagerMock.On("GetSaltFromBlockchain", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.saltFromBlockChain, tt.args.saltFromBlockChainErr)
+			utilsPkgMock.On("GetSortedProposedBlockId", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
+			utilsPkgMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
+			utilsPkgMock.On("CalculateSalt", mock.Anything, mock.Anything).Return(tt.args.salt)
+
+			ut := &UtilsStruct{}
+			got, err := ut.GetSalt(client, tt.args.epoch)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Data from GetSalt function, got = %v, want = %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error from GetSalt function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error from GetSalt function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
 		})
 	}
 }

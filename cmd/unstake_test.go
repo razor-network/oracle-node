@@ -16,6 +16,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"reflect"
 	"testing"
 )
 
@@ -92,6 +93,44 @@ func TestUnstake(t *testing.T) {
 			},
 			wantErr: errors.New("existing unstake lock"),
 		},
+		{
+			name: "Test 6: When there is an error in getting staker",
+			args: args{
+				stakerErr: errors.New("error in getting staker"),
+			},
+			wantErr: errors.New("error in getting staker"),
+		},
+		{
+			name: "Test 7: When there is an error in getting approveHash",
+			args: args{
+				staker:         bindings.StructsStaker{},
+				approveHashErr: errors.New("error in getting approveHash"),
+			},
+			wantErr: errors.New("error in getting approveHash"),
+		},
+		{
+			name: "Test 8: When approveHash is not nil",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				amount:      big.NewInt(1000),
+				staker:      bindings.StructsStaker{},
+				approveHash: common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 9: When there is an error in getting epoch",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				amount:   big.NewInt(1000),
+				stateErr: errors.New("error in getting epoch"),
+			},
+			wantErr: errors.New("error in getting epoch"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -139,7 +178,6 @@ func TestUnstake(t *testing.T) {
 func TestExecuteUnstake(t *testing.T) {
 
 	var client *ethclient.Client
-	var hash common.Hash
 	var flagSet *pflag.FlagSet
 
 	type args struct {
@@ -154,6 +192,7 @@ func TestExecuteUnstake(t *testing.T) {
 		stakerIdErr error
 		lock        types.Locks
 		lockErr     error
+		unstakeHash common.Hash
 		unstakeErr  error
 	}
 	tests := []struct {
@@ -162,7 +201,7 @@ func TestExecuteUnstake(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When inputUnstake function executes successfully",
+			name: "Test 1: When ExecuteUnstake function executes successfully",
 			args: args{
 				config:   types.Configurations{},
 				password: "test",
@@ -251,6 +290,21 @@ func TestExecuteUnstake(t *testing.T) {
 			},
 			expectedFatal: true,
 		},
+		{
+			name: "Test 6: When ExecuteUnstake function executes successfully and WaitForBlockCompletion executes",
+			args: args{
+				config:   types.Configurations{},
+				password: "test",
+				address:  "0x000000000000000000000000000000000000dead",
+				value:    big.NewInt(10000),
+				stakerId: 1,
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				unstakeHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: false,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -281,7 +335,7 @@ func TestExecuteUnstake(t *testing.T) {
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
-			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(hash, tt.args.unstakeErr)
+			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeHash, tt.args.unstakeErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
 
 			utils := &UtilsStruct{}
@@ -358,6 +412,69 @@ func TestAutoWithdraw(t *testing.T) {
 				if gotErr.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for AutoWithdraw function, got = %v, want = %v", gotErr, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestApproveUnstake(t *testing.T) {
+	var (
+		client  *ethclient.Client
+		staker  bindings.StructsStaker
+		txnArgs types.TransactionOptions
+	)
+
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
+	type args struct {
+		txn    *Types.Transaction
+		txnErr error
+		hash   common.Hash
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    common.Hash
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When ApproveUnstake executes successfully",
+			args: args{
+				txn: &Types.Transaction{},
+			},
+			want:    core.NilHash,
+			wantErr: false,
+		},
+		{
+			name: "Test 1: When there is an error in getting transaction",
+			args: args{
+				txnErr: errors.New("error in getting transaction"),
+			},
+			want:    core.NilHash,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			stakeManagerUtils = stakeManagerUtilsMock
+			transactionUtils = transactionUtilsMock
+
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			stakeManagerUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			ut := &UtilsStruct{}
+			got, err := ut.ApproveUnstake(client, staker, txnArgs)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ApproveUnstake() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ApproveUnstake() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

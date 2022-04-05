@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
+	"razor/utils"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -82,14 +84,16 @@ func TestGetEpochAndState(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
+			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 
 			utils := &UtilsStruct{}
 			gotEpoch, gotState, err := utils.GetEpochAndState(client)
@@ -387,7 +391,8 @@ func TestAssignAmountInWei1(t *testing.T) {
 
 func TestGetStatesAllowed(t *testing.T) {
 	type args struct {
-		states []int
+		states    []int
+		stateName string
 	}
 	tests := []struct {
 		name string
@@ -397,9 +402,10 @@ func TestGetStatesAllowed(t *testing.T) {
 		{
 			name: "Test 1: When states has multiple elements",
 			args: args{
-				states: []int{1, 2, 4},
+				states:    []int{1},
+				stateName: "Reveal",
 			},
-			want: "1:Reveal, 2:Propose, 4:Confirm",
+			want: "1:Reveal",
 		},
 		{
 			name: "Test 2: When states array is nil",
@@ -411,6 +417,11 @@ func TestGetStatesAllowed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			utilsPkgMock := new(mocks2.Utils)
+
+			utils.UtilsInterface = utilsPkgMock
+
+			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 			if got := GetStatesAllowed(tt.args.states); got != tt.want {
 				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
 			}

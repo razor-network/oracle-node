@@ -67,7 +67,15 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When there is an error in getting lock",
+			name: "Test 2: When withdrawFunds function executes successfully",
+			args: args{
+				stateErr: errors.New("error in getting epoch"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("error in getting epoch"),
+		},
+		{
+			name: "Test 3: When there is an error in getting epoch",
 			args: args{
 				lockErr:                  errors.New("lock error"),
 				withdrawReleasePeriod:    4,
@@ -82,7 +90,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: errors.New("lock error"),
 		},
 		{
-			name: "Test 3: When staker tries to withdraw without un-staking any Razors",
+			name: "Test 4: When staker tries to withdraw without un-staking any Razors",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(0),
@@ -100,7 +108,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: errors.New("unstake Razors before withdrawing"),
 		},
 		{
-			name: "Test 4: When there is an error in getting withdrawReleasePeriod",
+			name: "Test 5: When there is an error in getting withdrawReleasePeriod",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
@@ -117,7 +125,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: errors.New("withdrawReleasePeriod error"),
 		},
 		{
-			name: "Test 5: When there is an error in getting epoch",
+			name: "Test 6: When there is an error in getting epoch",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
@@ -134,7 +142,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: errors.New("epoch error"),
 		},
 		{
-			name: "Test 6: When staker tries to withdraw when withdrawal period has passed",
+			name: "Test 7: When staker tries to withdraw when withdrawal period has passed",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
@@ -152,7 +160,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 7: When staker tries to withdraw when withdrawal period has not reached",
+			name: "Test 8: When staker tries to withdraw when withdrawal period has not reached",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
@@ -171,7 +179,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 8: When there is an error in executing withdraw function",
+			name: "Test 9: When there is an error in executing withdraw function",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),

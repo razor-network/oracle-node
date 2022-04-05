@@ -646,6 +646,27 @@ func (_m *UtilsCmdInterface) GetConfigData() (types.Configurations, error) {
 	return r0, r1
 }
 
+// GetDisputeDataFileName provides a mock function with given fields: address
+func (_m *UtilsCmdInterface) GetDisputeDataFileName(address string) (string, error) {
+	ret := _m.Called(address)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(address)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(address)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEpochAndState provides a mock function with given fields: _a0
 func (_m *UtilsCmdInterface) GetEpochAndState(_a0 *ethclient.Client) (uint32, int64, error) {
 	ret := _m.Called(_a0)
@@ -1148,6 +1169,20 @@ func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config typ
 	var r0 error
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint32, types.Rogue) error); ok {
 		r0 = rf(client, config, account, epoch, stakerId, rogueData)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// InitiatePropose provides a mock function with given fields: client, config, account, epoch, staker, blockNumber, rogueData
+func (_m *UtilsCmdInterface) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
+	ret := _m.Called(client, config, account, epoch, staker, blockNumber, rogueData)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, bindings.StructsStaker, *big.Int, types.Rogue) error); ok {
+		r0 = rf(client, config, account, epoch, staker, blockNumber, rogueData)
 	} else {
 		r0 = ret.Error(0)
 	}
