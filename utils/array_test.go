@@ -3,6 +3,7 @@ package utils
 import (
 	math2 "github.com/ethereum/go-ethereum/common/math"
 	"math/big"
+	"razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -178,7 +179,13 @@ func TestIsEqual(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := IsEqualUint32(tt.args.arr1, tt.args.arr2)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			got, got1 := utils.IsEqualUint32(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
 				t.Errorf("IsEqualUint32() got = %v, want %v", got, tt.want)
 			}
@@ -496,7 +503,13 @@ func TestIsMissing(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2 := IsMissing(tt.args.arr1, tt.args.arr2)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			got, got1, got2 := utils.IsMissing(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
 				t.Errorf("IsMissing() got = %v, want %v", got, tt.want)
 			}
@@ -569,7 +582,13 @@ func TestIsSorted(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, got2 := IsSorted(tt.args.values)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			got, got1, got2 := utils.IsSorted(tt.args.values)
 			if got != tt.want {
 				t.Errorf("IsSorted() got = %v, want %v", got, tt.want)
 			}

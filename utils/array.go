@@ -36,7 +36,7 @@ func Contains(slice interface{}, val interface{}) bool {
 	return false
 }
 
-func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
+func (*UtilsStruct) IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
 	if len(arr1) > len(arr2) {
 		return false, len(arr2)
 	} else if len(arr1) < len(arr2) {
@@ -51,7 +51,7 @@ func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
 }
 
 // IsMissing checks for elements present in 1st array but not in second
-func IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
+func (*UtilsStruct) IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
 	arrayMap := make(map[uint16]bool)
 	for i := 0; i < len(arr2); i++ {
 		arrayMap[arr2[i]] = true
@@ -64,7 +64,7 @@ func IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
 	return false, -1, 0
 }
 
-func IsSorted(values []uint16) (bool, int, int) {
+func (*UtilsStruct) IsSorted(values []uint16) (bool, int, int) {
 	if values == nil {
 		return true, -1, -1
 	}

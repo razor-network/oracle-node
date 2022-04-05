@@ -30,6 +30,9 @@ func TestSetConfig(t *testing.T) {
 		configErr             error
 		gasLimitMultiplier    float32
 		gasLimitMultiplierErr error
+		isFlagPassed          bool
+		port                  string
+		portErr               error
 	}
 	tests := []struct {
 		name    string
@@ -237,6 +240,23 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 14: When exposeMetrics flag is passed",
+			args: args{
+				isFlagPassed: true,
+				port:         "",
+				configErr:    errors.New("config error"),
+			},
+			wantErr: errors.New("config error"),
+		},
+		{
+			name: "Test 15: When there is an error in getting port",
+			args: args{
+				isFlagPassed: true,
+				portErr:      errors.New("error in getting port"),
+			},
+			wantErr: errors.New("error in getting port"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -259,8 +279,8 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetInt32GasPrice", flagSet).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
-			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return("", nil)
-			utilsMock.On("IsFlagPassed", mock.Anything).Return(false)
+			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return(tt.args.port, tt.args.portErr)
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
 
