@@ -73,6 +73,22 @@ func TestContains(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "Test if value is present in the array for uint32",
+			args: args{
+				arr: []uint32{0, 1, 2},
+				val: uint32(2),
+			},
+			want: true,
+		},
+		{
+			name: "Test if value is present in the array for uint16",
+			args: args{
+				arr: []uint16{0, 1, 2},
+				val: uint16(2),
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -578,6 +594,42 @@ func TestIsSorted(t *testing.T) {
 			}
 			if got2 != tt.want2 {
 				t.Errorf("IsSorted() got2 = %v, want %v", got2, tt.want2)
+			}
+		})
+	}
+}
+
+func TestIndexOf(t *testing.T) {
+	type args struct {
+		array []uint32
+		value uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "Test if value is not present in the array",
+			args: args{
+				array: []uint32{0, 1, 2},
+				value: 4,
+			},
+			want: -1,
+		},
+		{
+			name: "Test if value is present in the array",
+			args: args{
+				array: []uint32{0, 1, 2},
+				value: 2,
+			},
+			want: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IndexOf(tt.args.array, tt.args.value); got != tt.want {
+				t.Errorf("IndexOf() = %v, want %v", got, tt.want)
 			}
 		})
 	}
