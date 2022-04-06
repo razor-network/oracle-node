@@ -151,7 +151,7 @@ func (s StakeManagerStruct) GetNumStakers(client *ethclient.Client) (uint32, err
 	return stakeManager.GetNumStakers(&opts)
 }
 
-func (s StakeManagerStruct) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
+func (s StakeManagerStruct) MinSafeRazor(client *ethclient.Client) (*big.Int, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.MinSafeRazor(&opts)
 }

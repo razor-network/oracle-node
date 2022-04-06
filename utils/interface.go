@@ -250,7 +250,7 @@ type StakeManagerUtils interface {
 	GetStakerId(client *ethclient.Client, address common.Address) (uint32, error)
 	GetStaker(*ethclient.Client, uint32) (bindings.StructsStaker, error)
 	GetNumStakers(*ethclient.Client) (uint32, error)
-	GetMinSafeRazor(client *ethclient.Client) (*big.Int, error)
+	MinSafeRazor(client *ethclient.Client) (*big.Int, error)
 	Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (types.Locks, error)
 	MaxCommission(*ethclient.Client) (uint8, error)
 	EpochLimitForUpdateCommission(*ethclient.Client) (uint16, error)
