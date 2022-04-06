@@ -206,6 +206,12 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		gasLimit := txnOpts.GasLimit
+		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, 5.5)
+		if err != nil {
+			return nil, err
+		}
+		txnOpts.GasLimit = incrementedGasLimit
 		log.Debug("Disputing collection id should be present!")
 		log.Debugf("Epoch: %d, blockIndex: %d, missingCollectionId: %d", epoch, blockIndex, missingCollectionId)
 		return blockManagerUtils.DisputeCollectionIdShouldBePresent(client, txnOpts, epoch, blockIndex, missingCollectionId)
