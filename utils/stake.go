@@ -190,3 +190,23 @@ func (*UtilsStruct) GetStakerSRZRBalance(client *ethclient.Client, staker bindin
 	}
 	return sRZRBalance, nil
 }
+
+func (*UtilsStruct) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
+	var (
+		minSafeRazor *big.Int
+		err          error
+	)
+	err = retry.Do(
+		func() error {
+			minSafeRazor, err = StakeManagerInterface.MinSafeRazor(client)
+			if err != nil {
+				log.Error("Error in fetching minimum safe razor.... Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return nil, err
+	}
+	return minSafeRazor, nil
+}
