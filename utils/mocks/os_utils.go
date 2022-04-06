@@ -59,3 +59,17 @@ func (_m *OSUtils) OpenFile(_a0 string, _a1 int, _a2 fs.FileMode) (*os.File, err
 
 	return r0, r1
 }
+
+// WriteFile provides a mock function with given fields: name, data, perm
+func (_m *OSUtils) WriteFile(name string, data []byte, perm fs.FileMode) error {
+	ret := _m.Called(name, data, perm)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, []byte, fs.FileMode) error); ok {
+		r0 = rf(name, data, perm)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}

@@ -537,66 +537,6 @@ func TestGetBlock(t *testing.T) {
 	}
 }
 
-//func TestGetMinSafeRazor(t *testing.T) {
-//	var client *ethclient.Client
-//	var callOpts bind.CallOpts
-//
-//	type args struct {
-//		minSafeRazor    *big.Int
-//		minSafeRazorErr error
-//	}
-//	tests := []struct {
-//		name    string
-//		args    args
-//		want    *big.Int
-//		wantErr bool
-//	}{
-//		{
-//			name: "Test 1: When GetMinSafeRazor() executes successfully",
-//			args: args{
-//				minSafeRazor: big.NewInt(1000),
-//			},
-//			want:    big.NewInt(1000),
-//			wantErr: false,
-//		},
-//		{
-//			name: "Test 2: When there is an error in getting minSafeRazor",
-//			args: args{
-//				minSafeRazorErr: errors.New("minSafeRazor error"),
-//			},
-//			want:    nil,
-//			wantErr: true,
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			retryMock := new(mocks.RetryUtils)
-//			utilsMock := new(mocks.Utils)
-//			blockManagerMock := new(mocks.BlockManagerUtils)
-//
-//			optionsPackageStruct := OptionsPackageStruct{
-//				RetryInterface:        retryMock,
-//				UtilsInterface:        utilsMock,
-//				BlockManagerInterface: blockManagerMock,
-//			}
-//			utils := StartRazor(optionsPackageStruct)
-//
-//			utilsMock.On("GetOptions").Return(callOpts)
-//			blockManagerMock.On("MinStake", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStake, tt.args.minStakeErr)
-//			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
-//
-//			got, err := utils.GetMinStakeAmount(client)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("GetMinStakeAmount() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("GetMinStakeAmount() got = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-
 func TestGetBlockIndexToBeConfirmed(t *testing.T) {
 	var client *ethclient.Client
 	type args struct {
