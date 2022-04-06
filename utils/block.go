@@ -102,26 +102,6 @@ func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error
 	return minStake, nil
 }
 
-func (*UtilsStruct) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
-	var (
-		minStake *big.Int
-		err      error
-	)
-	err = retry.Do(
-		func() error {
-			minStake, err = BlockManagerInterface.MinStake(client)
-			if err != nil {
-				log.Error("Error in fetching minimum stake amount.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if err != nil {
-		return nil, err
-	}
-	return minStake, nil
-}
-
 func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	var (
 		maxAltBlocks uint8
