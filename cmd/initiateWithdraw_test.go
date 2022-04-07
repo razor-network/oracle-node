@@ -195,6 +195,25 @@ func TestHandleUnstakeLock(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("withdraw error"),
 		},
+		{
+			name: "Test 10: When staker tries to withdraw when withdrawal period has not reached",
+			args: args{
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				epoch:                    2,
+				epochErr:                 nil,
+				time:                     "20 minutes 0 seconds ",
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
