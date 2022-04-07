@@ -330,6 +330,16 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 			}
 		}
 	}
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "missingIds") {
+		//Replacing the last ID: id with id+1 in idsRevealed array if rogueMode == missingIds
+		idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1] = idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1] + 1
+	}
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "extraIds") {
+		//Adding a dummy median and appending extra id to idsRevealed array if rogueMode == extraIds
+		medians = append(medians, rand.Uint32())
+		idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1]+1)
+
+	}
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
