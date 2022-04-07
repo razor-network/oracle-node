@@ -338,7 +338,12 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		//Adding a dummy median and appending extra id to idsRevealed array if rogueMode == extraIds
 		medians = append(medians, rand.Uint32())
 		idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1]+1)
-
+	}
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "unsortedIds") {
+		//Interchanging the first 2 elements of idsRevealed array
+		temp := idsRevealedInThisEpoch[0]
+		idsRevealedInThisEpoch[0] = idsRevealedInThisEpoch[1]
+		idsRevealedInThisEpoch[1] = temp
 	}
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
