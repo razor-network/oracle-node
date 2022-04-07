@@ -339,7 +339,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		medians = append(medians, rand.Uint32())
 		idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1]+1)
 	}
-	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "unsortedIds") {
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "unsortedIds") && len(idsRevealedInThisEpoch) > 1 {
 		//Interchanging the first 2 elements of idsRevealed array
 		temp := idsRevealedInThisEpoch[0]
 		idsRevealedInThisEpoch[0] = idsRevealedInThisEpoch[1]
