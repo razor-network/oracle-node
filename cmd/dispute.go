@@ -150,7 +150,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
 
 	if _mediansData == nil && !rogueData.IsRogue {
-		fileName, err := cmdUtils.GetProposeDataFileName(account.Address)
+		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
 			goto CalculateMedian
@@ -169,7 +169,7 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 		_revealedCollectionIds = proposedata.RevealedCollectionIds
 	}
 CalculateMedian:
-	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil {
+	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil || rogueData.IsRogue {
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
 			log.Error("Error in calculating block medians")
@@ -206,6 +206,12 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		gasLimit := txnOpts.GasLimit
+		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, 5.5)
+		if err != nil {
+			return nil, err
+		}
+		txnOpts.GasLimit = incrementedGasLimit
 		log.Debug("Disputing collection id should be present!")
 		log.Debugf("Epoch: %d, blockIndex: %d, missingCollectionId: %d", epoch, blockIndex, missingCollectionId)
 		return blockManagerUtils.DisputeCollectionIdShouldBePresent(client, txnOpts, epoch, blockIndex, missingCollectionId)
@@ -218,6 +224,12 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		gasLimit := txnOpts.GasLimit
+		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, 5.5)
+		if err != nil {
+			return nil, err
+		}
+		txnOpts.GasLimit = incrementedGasLimit
 		log.Debug("Disputing collection id should be absent!")
 		log.Debugf("Epoch: %d, blockIndex: %d, presentCollectionId: %d, positionOfPresentValue: %d", epoch, blockIndex, presentCollectionId, positionOfPresentValue)
 		return blockManagerUtils.DisputeCollectionIdShouldBeAbsent(client, txnOpts, epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue)))

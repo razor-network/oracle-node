@@ -609,7 +609,7 @@ func TestGetLocalMediansData(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
-			cmdUtilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
 			utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
@@ -771,6 +771,7 @@ func TestCheckDisputeForIds(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 			razorUtils = utilsMock
 			blockManagerUtils = blockManagerUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsPkgMock.On("IsSorted", mock.Anything).Return(tt.args.isSorted, tt.args.index0, tt.args.index1)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
@@ -779,6 +780,7 @@ func TestCheckDisputeForIds(t *testing.T) {
 			blockManagerUtilsMock.On("DisputeCollectionIdShouldBePresent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBePresent, tt.args.DisputeCollectionIdShouldBePresentErr)
 			utilsPkgMock.On("IsMissing", mock.Anything, mock.Anything).Return(tt.args.isPresent, tt.args.positionOfPresentValue, tt.args.presentCollectionId)
 			blockManagerUtilsMock.On("DisputeCollectionIdShouldBeAbsent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBeAbsent, tt.args.DisputeCollectionIdShouldBeAbsentErr)
+			utilsPkgMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(uint64(2000), nil)
 			ut := &UtilsStruct{}
 			got, err := ut.CheckDisputeForIds(client, transactionOpts, epoch, blockIndex, tt.args.idsInProposedBlock, tt.args.revealedCollectionIds)
 			if (err != nil) != tt.wantErr {
