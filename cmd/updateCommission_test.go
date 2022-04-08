@@ -186,7 +186,7 @@ func TestUpdateCommission(t *testing.T) {
 				},
 				maxCommission:                 20,
 				epochLimitForUpdateCommission: 100,
-				epoch:                         100,
+				epoch:                         101,
 				time:                          "5 minutes 0 second ",
 				UpdateCommissionTxn:           &Types.Transaction{},
 				UpdateCommissionErr:           nil,
