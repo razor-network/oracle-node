@@ -150,7 +150,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
 
 	if _mediansData == nil && !rogueData.IsRogue {
-		fileName, err := cmdUtils.GetProposeDataFileName(account.Address)
+		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
 			goto CalculateMedian

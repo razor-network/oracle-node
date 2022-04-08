@@ -346,6 +346,18 @@ func (u Utils) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, 
 	return utilsInterface.ReadFromDisputeJsonFile(filePath)
 }
 
+func (u Utils) GetProposeDataFileName(address string) (string, error) {
+	return path.PathUtilsInterface.GetProposeDataFileName(address)
+}
+
+func (u Utils) GetCommitDataFileName(address string) (string, error) {
+	return path.PathUtilsInterface.GetCommitDataFileName(address)
+}
+
+func (u Utils) GetDisputeDataFileName(address string) (string, error) {
+	return path.PathUtilsInterface.GetDisputeDataFileName(address)
+}
+
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
 }
