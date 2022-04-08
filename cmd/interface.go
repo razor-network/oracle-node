@@ -125,6 +125,9 @@ type UtilsInterface interface {
 	SaveDataToDisputeJsonFile(string, []uint32) error
 	ReadFromDisputeJsonFile(string) (types.DisputeFileData, error)
 	AssignLogFile(*pflag.FlagSet)
+	GetCommitDataFileName(string) (string, error)
+	GetProposeDataFileName(string) (string, error)
+	GetDisputeDataFileName(address string) (string, error)
 }
 
 type StakeManagerInterface interface {
@@ -306,8 +309,6 @@ type UtilsCmdInterface interface {
 	GetBiggestStakeAndId(*ethclient.Client, string, uint32) (*big.Int, uint32, error)
 	StakeCoins(types.TransactionOptions) (common.Hash, error)
 	AutoUnstakeAndWithdraw(*ethclient.Client, types.Account, *big.Int, types.Configurations)
-	GetCommitDataFileName(string) (string, error)
-	GetProposeDataFileName(string) (string, error)
 	CalculateSecret(types.Account, uint32) ([]byte, error)
 	GetLastProposedEpoch(*ethclient.Client, *big.Int, uint32) (uint32, error)
 	HandleBlock(*ethclient.Client, types.Account, *big.Int, types.Configurations, types.Rogue)
@@ -322,7 +323,6 @@ type UtilsCmdInterface interface {
 	InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error
 	GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
 	AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
-	GetDisputeDataFileName(address string) (string, error)
 }
 
 type TransactionInterface interface {

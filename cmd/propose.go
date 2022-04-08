@@ -111,7 +111,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	_revealedDataMaps = revealedDataMaps
 
 	log.Debug("Saving proposed data for recovery")
-	fileName, err := cmdUtils.GetProposeDataFileName(account.Address)
+	fileName, err := razorUtils.GetProposeDataFileName(account.Address)
 	if err != nil {
 		log.Error("Error in getting file name to save median data: ", err)
 		return core.NilHash, nil
@@ -331,14 +331,6 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		}
 	}
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
-}
-
-func (*UtilsStruct) GetProposeDataFileName(address string) (string, error) {
-	homeDir, err := razorUtils.GetDefaultPath()
-	if err != nil {
-		return "", err
-	}
-	return homeDir + "/" + address + "_proposedData.json", nil
 }
 
 func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
