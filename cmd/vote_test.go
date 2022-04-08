@@ -419,63 +419,6 @@ func convertToSliceOfInterface(arr []uint32) []interface{} {
 	return s
 }
 
-func TestGetCommitDataFileName(t *testing.T) {
-	type args struct {
-		address string
-		path    string
-		pathErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr error
-	}{
-		{
-			name: "Test 1: When GetCommitDataFileName() executes successfully",
-			args: args{
-				address: "0x000000000000000000000000000000000000dead",
-				path:    "/home",
-			},
-			want:    "/home/0x000000000000000000000000000000000000dead_CommitData.json",
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in getting path",
-			args: args{
-				address: "0x000000000000000000000000000000000000dead",
-				pathErr: errors.New("path error"),
-			},
-			want:    "",
-			wantErr: errors.New("path error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			razorUtils = utilsMock
-
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-
-			utils := &UtilsStruct{}
-			got, err := utils.GetCommitDataFileName(tt.args.address)
-			if got != tt.want {
-				t.Errorf("GetCommitDataFileName() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for GetCommitDataFileName(), got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for GetCommitDataFileName(), got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
 func TestCalculateSecret(t *testing.T) {
 	var account types.Account
 	var epoch uint32
@@ -722,7 +665,7 @@ func TestInitiateCommit(t *testing.T) {
 			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.status)
-			cmdUtilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
 			ut := &UtilsStruct{}
 			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, rogueData); (err != nil) != tt.wantErr {
@@ -881,7 +824,7 @@ func TestInitiateReveal(t *testing.T) {
 
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
 			cmdUtilsMock.On("HandleRevealState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
-			cmdUtilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
@@ -1547,7 +1490,7 @@ func TestAutoClaimBounty(t *testing.T) {
 			utilsInterface = utilsPkgMock
 			path.OSUtilsInterface = osUtilsMock
 
-			cmdUtilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
+			utilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
 			utilsPkgMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			cmdUtilsMock.On("GetBountyIdFromEvents", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.latestBountyId, tt.args.latestBountyIdErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
@@ -1560,63 +1503,6 @@ func TestAutoClaimBounty(t *testing.T) {
 			ut := &UtilsStruct{}
 			if err := ut.AutoClaimBounty(client, config, account); (err != nil) != tt.wantErr {
 				t.Errorf("AutoClaimBounty() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestGetDisputeDataFileName(t *testing.T) {
-	type args struct {
-		address string
-		path    string
-		pathErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr error
-	}{
-		{
-			name: "Test 1: When GetDisputeDataFileName executes successfully",
-			args: args{
-				address: "0x000000000000000000000000000000000000dead",
-				path:    "/home",
-			},
-			want:    "/home/0x000000000000000000000000000000000000dead_disputeData.json",
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in getting path",
-			args: args{
-				address: "0x000000000000000000000000000000000000dead",
-				pathErr: errors.New("path error"),
-			},
-			want:    "",
-			wantErr: errors.New("path error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			razorUtils = utilsMock
-
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-
-			utils := &UtilsStruct{}
-			got, err := utils.GetDisputeDataFileName(tt.args.address)
-			if got != tt.want {
-				t.Errorf("GetDisputeDataFileName got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for GetDisputeDataFileName, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for GetDisputeDataFileName, got = %v, want = %v", err, tt.wantErr)
-				}
 			}
 		})
 	}

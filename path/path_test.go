@@ -267,3 +267,174 @@ func TestGetJobFilePath(t *testing.T) {
 		})
 	}
 }
+
+func TestGetCommitDataFileName(t *testing.T) {
+	type args struct {
+		address string
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr error
+	}{
+		{
+			name: "Test 1: When GetCommitDataFileName() executes successfully",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				path:    "/home",
+			},
+			want:    "/home/0x000000000000000000000000000000000000dead_CommitData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				pathErr: errors.New("path error"),
+			},
+			want:    "",
+			wantErr: errors.New("path error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			pathMock := new(mocks.PathInterface)
+			PathUtilsInterface = pathMock
+
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			pa := &PathUtils{}
+			got, err := pa.GetCommitDataFileName(tt.args.address)
+			if got != tt.want {
+				t.Errorf("GetCommitDataFileName() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetCommitDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetCommitDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetProposeDataFileName(t *testing.T) {
+	type args struct {
+		address string
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr error
+	}{
+		{
+			name: "Test 1: When GetProposeDataFileName() executes successfully",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				path:    "/home",
+			},
+			want:    "/home/0x000000000000000000000000000000000000dead_proposedData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				pathErr: errors.New("path error"),
+			},
+			want:    "",
+			wantErr: errors.New("path error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			pathMock := new(mocks.PathInterface)
+			PathUtilsInterface = pathMock
+
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			pa := &PathUtils{}
+			got, err := pa.GetProposeDataFileName(tt.args.address)
+			if got != tt.want {
+				t.Errorf("GetProposeDataFileName() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetProposeDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetProposeDataFileName(), got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetDisputeDataFileName(t *testing.T) {
+	type args struct {
+		address string
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr error
+	}{
+		{
+			name: "Test 1: When GetDisputeDataFileName executes successfully",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				path:    "/home",
+			},
+			want:    "/home/0x000000000000000000000000000000000000dead_disputeData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				address: "0x000000000000000000000000000000000000dead",
+				pathErr: errors.New("path error"),
+			},
+			want:    "",
+			wantErr: errors.New("path error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			pathMock := new(mocks.PathInterface)
+			PathUtilsInterface = pathMock
+
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			pa := &PathUtils{}
+			got, err := pa.GetDisputeDataFileName(tt.args.address)
+			if got != tt.want {
+				t.Errorf("GetDisputeDataFileName got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetDisputeDataFileName, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetDisputeDataFileName, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
