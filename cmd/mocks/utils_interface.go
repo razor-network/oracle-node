@@ -407,6 +407,27 @@ func (_m *UtilsInterface) GetCollections(_a0 *ethclient.Client) ([]bindings.Stru
 	return r0, r1
 }
 
+// GetCommitDataFileName provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetCommitDataFileName(_a0 string) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCommitments provides a mock function with given fields: _a0, _a1
 func (_m *UtilsInterface) GetCommitments(_a0 *ethclient.Client, _a1 string) ([32]byte, error) {
 	ret := _m.Called(_a0, _a1)
@@ -486,6 +507,27 @@ func (_m *UtilsInterface) GetDelayedState(_a0 *ethclient.Client, _a1 int32) (int
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
 		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetDisputeDataFileName provides a mock function with given fields: address
+func (_m *UtilsInterface) GetDisputeDataFileName(address string) (string, error) {
+	ret := _m.Called(address)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(address)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -805,6 +847,27 @@ func (_m *UtilsInterface) GetOptions() bind.CallOpts {
 	}
 
 	return r0
+}
+
+// GetProposeDataFileName provides a mock function with given fields: _a0
+func (_m *UtilsInterface) GetProposeDataFileName(_a0 string) (string, error) {
+	ret := _m.Called(_a0)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(_a0)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetProposedBlock provides a mock function with given fields: _a0, _a1, _a2

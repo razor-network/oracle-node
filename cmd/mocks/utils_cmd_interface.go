@@ -604,27 +604,6 @@ func (_m *UtilsCmdInterface) GetCollectionList(_a0 *ethclient.Client) error {
 	return r0
 }
 
-// GetCommitDataFileName provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) GetCommitDataFileName(_a0 string) (string, error) {
-	ret := _m.Called(_a0)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetConfigData provides a mock function with given fields:
 func (_m *UtilsCmdInterface) GetConfigData() (types.Configurations, error) {
 	ret := _m.Called()
@@ -639,27 +618,6 @@ func (_m *UtilsCmdInterface) GetConfigData() (types.Configurations, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetDisputeDataFileName provides a mock function with given fields: address
-func (_m *UtilsCmdInterface) GetDisputeDataFileName(address string) (string, error) {
-	ret := _m.Called(address)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(address)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -862,27 +820,6 @@ func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetProposeDataFileName provides a mock function with given fields: _a0
-func (_m *UtilsCmdInterface) GetProposeDataFileName(_a0 string) (string, error) {
-	ret := _m.Called(_a0)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(string) string); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
