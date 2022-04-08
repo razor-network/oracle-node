@@ -704,6 +704,8 @@ func TestCheckDisputeForIds(t *testing.T) {
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	type args struct {
+		isEqual                               bool
+		isEqualInt                            int
 		idsInProposedBlock                    []uint16
 		revealedCollectionIds                 []uint16
 		isSorted                              bool
@@ -713,6 +715,8 @@ func TestCheckDisputeForIds(t *testing.T) {
 		DisputeOnOrderOfIdsErr                error
 		isMissing                             bool
 		isMissingInt                          int
+		incrementedGasLimit                   uint64
+		incrementedGasLimitErr                error
 		missingCollectionId                   uint16
 		DisputeCollectionIdShouldBePresent    *Types.Transaction
 		DisputeCollectionIdShouldBePresentErr error
@@ -731,9 +735,11 @@ func TestCheckDisputeForIds(t *testing.T) {
 		{
 			name: "Test 1: When CheckDisputeForIds executes successfully and check if the error is in sorted ids",
 			args: args{
-				idsInProposedBlock:  []uint16{1, 2, 3},
-				isSorted:            false,
-				DisputeOnOrderOfIds: &Types.Transaction{},
+				isEqual:               false,
+				idsInProposedBlock:    []uint16{1, 2, 3},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				isSorted:              false,
+				DisputeOnOrderOfIds:   &Types.Transaction{},
 			},
 			want:    &Types.Transaction{},
 			wantErr: false,
@@ -741,6 +747,7 @@ func TestCheckDisputeForIds(t *testing.T) {
 		{
 			name: "Test 2: When CheckDisputeForIds executes successfully and check if the error is collectionIdShouldBePresent",
 			args: args{
+				isEqual:                            false,
 				idsInProposedBlock:                 []uint16{1, 2, 3},
 				isSorted:                           true,
 				isMissing:                          true,
@@ -750,13 +757,35 @@ func TestCheckDisputeForIds(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 3: When there is no error",
+			name: "Test 3: When there is an error in incrementalGasLimit",
 			args: args{
+				isEqual:                            false,
+				idsInProposedBlock:                 []uint16{1, 2, 3},
+				isSorted:                           true,
+				isMissing:                          true,
+				incrementedGasLimitErr:             errors.New("error in incremented gas limit"),
+				DisputeCollectionIdShouldBePresent: &Types.Transaction{},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is no error",
+			args: args{
+				isEqual:                           false,
 				idsInProposedBlock:                []uint16{1, 2, 3},
 				isSorted:                          true,
 				isMissing:                         false,
 				isPresent:                         false,
 				DisputeCollectionIdShouldBeAbsent: &Types.Transaction{},
+			},
+			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "Test 5: When there is no dispute",
+			args: args{
+				isEqual: true,
 			},
 			want:    nil,
 			wantErr: false,
@@ -773,10 +802,12 @@ func TestCheckDisputeForIds(t *testing.T) {
 			blockManagerUtils = blockManagerUtilsMock
 			utilsInterface = utilsPkgMock
 
+			utilsPkgMock.On("IsEqualByte", mock.Anything, mock.Anything).Return(tt.args.isEqual, tt.args.isEqualInt)
 			utilsPkgMock.On("IsSorted", mock.Anything).Return(tt.args.isSorted, tt.args.index0, tt.args.index1)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerUtilsMock.On("DisputeOnOrderOfIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeOnOrderOfIds, tt.args.DisputeOnOrderOfIdsErr)
 			utilsPkgMock.On("IsMissing", mock.Anything, mock.Anything).Return(tt.args.isMissing, tt.args.isMissingInt, tt.args.missingCollectionId)
+			utilsPkgMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.incrementedGasLimit, tt.args.incrementedGasLimitErr)
 			blockManagerUtilsMock.On("DisputeCollectionIdShouldBePresent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBePresent, tt.args.DisputeCollectionIdShouldBePresentErr)
 			utilsPkgMock.On("IsMissing", mock.Anything, mock.Anything).Return(tt.args.isPresent, tt.args.positionOfPresentValue, tt.args.presentCollectionId)
 			blockManagerUtilsMock.On("DisputeCollectionIdShouldBeAbsent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBeAbsent, tt.args.DisputeCollectionIdShouldBeAbsentErr)

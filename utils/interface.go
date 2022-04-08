@@ -174,6 +174,7 @@ type Utils interface {
 	IsMissing([]uint16, []uint16) (bool, int, uint16)
 	CalculateBlockNumberAtEpochBeginning(*ethclient.Client, int64, *big.Int) (*big.Int, error)
 	GetStateName(int64) string
+	IsEqualByte([]byte, []byte) (bool, int)
 }
 
 type EthClientUtils interface {

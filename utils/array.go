@@ -50,6 +50,20 @@ func (*UtilsStruct) IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return true, -1
 }
 
+func (*UtilsStruct) IsEqualByte(arr1 []byte, arr2 []byte) (bool, int) {
+	if len(arr1) > len(arr2) {
+		return false, len(arr2)
+	} else if len(arr1) < len(arr2) {
+		return false, len(arr1)
+	}
+	for i := 0; i < len(arr1); i++ {
+		if arr2[i] != arr1[i] {
+			return false, i
+		}
+	}
+	return true, -1
+}
+
 // IsMissing checks for elements present in 1st array but not in second
 func (*UtilsStruct) IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
 	arrayMap := make(map[uint16]bool)

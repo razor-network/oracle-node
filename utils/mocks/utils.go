@@ -1750,6 +1750,27 @@ func (_m *Utils) IncreaseGasLimitValue(_a0 *ethclient.Client, _a1 uint64, _a2 fl
 	return r0, r1
 }
 
+// IsEqualByte provides a mock function with given fields: _a0, _a1
+func (_m *Utils) IsEqualByte(_a0 []byte, _a1 []byte) (bool, int) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func([]byte, []byte) bool); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 int
+	if rf, ok := ret.Get(1).(func([]byte, []byte) int); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	return r0, r1
+}
+
 // IsEqualUint32 provides a mock function with given fields: _a0, _a1
 func (_m *Utils) IsEqualUint32(_a0 []uint32, _a1 []uint32) (bool, int) {
 	ret := _m.Called(_a0, _a1)
