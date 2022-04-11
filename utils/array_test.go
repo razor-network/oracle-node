@@ -653,3 +653,79 @@ func TestIndexOf(t *testing.T) {
 		})
 	}
 }
+
+func TestIsEqualByte(t *testing.T) {
+	type args struct {
+		arr1 []byte
+		arr2 []byte
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  bool
+		want1 int
+	}{
+		{
+			name: "Test when both arrays have same values but at different positions",
+			args: args{
+				arr1: []byte{1, 2, 3},
+				arr2: []byte{2, 1, 3},
+			},
+			want:  false,
+			want1: 0,
+		},
+		{
+			name: "Test when both arrays have different length and len(arr1) < len(arr2)",
+			args: args{
+				arr1: []byte{1, 2},
+				arr2: []byte{2, 1, 3},
+			},
+			want:  false,
+			want1: 2,
+		},
+		{
+			name: "Test when both arrays have different length and len(arr1) > len(arr2)",
+			args: args{
+				arr1: []byte{2, 1, 3},
+				arr2: []byte{1, 2},
+			},
+			want:  false,
+			want1: 2,
+		},
+		{
+			name: "Test when both arrays are empty",
+			args: args{
+				arr1: []byte{},
+				arr2: []byte{},
+			},
+			want:  true,
+			want1: -1,
+		},
+		{
+			name: "Test when both arrays are exactly identical",
+			args: args{
+				arr1: []byte{1, 2, 3},
+				arr2: []byte{1, 2, 3},
+			},
+			want:  true,
+			want1: -1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			got, got1 := utils.IsEqualByte(tt.args.arr1, tt.args.arr2)
+			if got != tt.want {
+				t.Errorf("IsEqualByte() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("IsEqualByte() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"math/rand"
 	"razor/core"
@@ -187,6 +188,16 @@ CalculateMedian:
 }
 
 func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*types2.Transaction, error) {
+	//checking for hashing whether there is any dispute or not
+	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
+	hashRevealedCollectionIds := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{revealedCollectionIds})
+
+	isEqual, _ := utils.UtilsInterface.IsEqualByte(hashIdsInProposedBlock, hashRevealedCollectionIds)
+
+	if isEqual {
+		return nil, nil
+	}
+
 	// Check if the error is in sorted ids
 	isSorted, index0, index1 := utils.UtilsInterface.IsSorted(idsInProposedBlock)
 	if !isSorted {
