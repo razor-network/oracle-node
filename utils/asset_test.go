@@ -72,7 +72,7 @@ func TestAggregate(t *testing.T) {
 				weight:             []uint8{100},
 				prevCommitmentData: 1,
 				assetFilePath:      "",
-				statErr:            errors.New(""),
+				statErr:            nil,
 			},
 			want:    big.NewInt(2),
 			wantErr: false,
@@ -1233,3 +1233,306 @@ var jsonDataString = `{
     }
   }
 }`
+
+func TestGetAggregatedDataOfCollection(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		collectionId uint16
+		epoch        uint32
+	)
+	type args struct {
+		activeCollection    bindings.StructsCollection
+		activeCollectionErr error
+		collectionData      *big.Int
+		aggregationErr      error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetAggregatedDataOfCollection() executes successfully",
+			args: args{
+				activeCollection: bindings.StructsCollection{},
+				collectionData:   &big.Int{},
+			},
+			want:    &big.Int{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting activeCollection",
+			args: args{
+				activeCollectionErr: errors.New("error in getting activeCollection"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an aggregation error",
+			args: args{
+				activeCollection: bindings.StructsCollection{},
+				aggregationErr:   errors.New("error in aggregation"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
+			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
+
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAggregatedDataOfCollection() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAssignedCollections(t *testing.T) {
+	var (
+		client               *ethclient.Client
+		numActiveCollections uint16
+		seed                 []byte
+	)
+	type args struct {
+		toAssign    uint16
+		toAssignErr error
+		assigned    *big.Int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[int]bool
+		want1   []*big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetAssignedCollections() executes successfully",
+			args: args{
+				toAssign: 1,
+				assigned: &big.Int{},
+			},
+			want:    map[int]bool{0: true},
+			want1:   []*big.Int{big.NewInt(0)},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting toAssign",
+			args: args{
+				toAssignErr: errors.New("error in getting toAssign"),
+			},
+			want:    nil,
+			want1:   nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("ToAssign", mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
+			utilsMock.On("Prng", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assigned)
+
+			got, got1, err := utils.GetAssignedCollections(client, numActiveCollections, seed)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAssignedCollections() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAssignedCollections() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("GetAssignedCollections() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestGetLeafIdOfACollection(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		collectionId uint16
+	)
+	type args struct {
+		leafId    uint16
+		leafIdErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint16
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetLeafIdOfACollection() executes successfully",
+			args: args{
+				leafId: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting leafId",
+			args: args{
+				leafIdErr: errors.New("error in getting leafId"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				AssetManagerInterface: assetManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			assetManagerMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetLeafIdOfACollection(client, collectionId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetLeafIdOfACollection() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetLeafIdOfACollection() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetCollectionIdFromIndex(t *testing.T) {
+	var (
+		client      *ethclient.Client
+		medianIndex uint16
+	)
+	type args struct {
+		collectionId    uint16
+		collectionIdErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint16
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetCollectionIdFromIndex() executes successfully",
+			args: args{
+				collectionId: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting collectionId",
+			args: args{
+				collectionIdErr: errors.New("error in getting collectionId"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				AssetManagerInterface: assetManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			assetManagerMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetCollectionIdFromIndex(client, medianIndex)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCollectionIdFromIndex() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetCollectionIdFromIndex() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetCollectionIdFromLeafId(t *testing.T) {
+	var (
+		client *ethclient.Client
+		leafId uint16
+	)
+	type args struct {
+		collectionId    uint16
+		collectionIdErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint16
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetCollectionIdFromLeafId() executes successfully",
+			args: args{
+				collectionId: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting collectionId",
+			args: args{
+				collectionIdErr: errors.New("error in getting collectionId"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				AssetManagerInterface: assetManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			assetManagerMock.On("GetCollectionIdFromLeafId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetCollectionIdFromLeafId(client, leafId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCollectionIdFromLeafId() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetCollectionIdFromLeafId() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

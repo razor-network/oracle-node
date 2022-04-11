@@ -488,3 +488,113 @@ func TestGetVoteManagerWithOpts(t *testing.T) {
 		t.Errorf("GetVoteManagerWithOpts() got voteManager = %v, want %v", gotVoteManager, voteManager)
 	}
 }
+
+func TestToAssign(t *testing.T) {
+	var client *ethclient.Client
+	type args struct {
+		toAssign    uint16
+		toAssignErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint16
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When ToAssign() executes successfully",
+			args: args{
+				toAssign: 1,
+			},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting toAssign",
+			args: args{
+				toAssignErr: errors.New("error in toAssign"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:       retryMock,
+				VoteManagerInterface: voteManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			voteManagerMock.On("ToAssign", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.toAssign, tt.args.toAssignErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.ToAssign(client)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToAssign() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ToAssign() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetSaltFromBlockchain(t *testing.T) {
+	var client *ethclient.Client
+	type args struct {
+		salt    [32]byte
+		saltErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    [32]byte
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetSaltFromBlockChain() executes successfully",
+			args: args{
+				salt: [32]byte{},
+			},
+			want:    [32]byte{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting salt",
+			args: args{
+				saltErr: errors.New("error in getting salt"),
+			},
+			want:    [32]byte{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			voteManagerMock := new(mocks.VoteManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:       retryMock,
+				VoteManagerInterface: voteManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			voteManagerMock.On("GetSaltFromBlockchain", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.salt, tt.args.saltErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetSaltFromBlockchain(client)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSaltFromBlockchain() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSaltFromBlockchain() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

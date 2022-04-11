@@ -283,6 +283,10 @@ func (o OSStruct) Open(name string) (*os.File, error) {
 	return os.Open(name)
 }
 
+func (o OSStruct) WriteFile(name string, data []byte, perm fs.FileMode) error {
+	return os.WriteFile(name, data, perm)
+}
+
 func (c ClientStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
 	return client.TransactionReceipt(ctx, txHash)
 }

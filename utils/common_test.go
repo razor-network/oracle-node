@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
+	Types "razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
+	"reflect"
 	"testing"
 )
 
@@ -934,6 +936,596 @@ func TestAssignLogFile(t *testing.T) {
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			flagSetMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utils.AssignLogFile(flagSet)
+		})
+	}
+}
+
+func TestGetRemainingTimeOfCurrentState(t *testing.T) {
+	var (
+		client        *ethclient.Client
+		bufferPercent int32
+	)
+	type args struct {
+		block    *types.Header
+		blockErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetRemainingTimeOfCurrentState() executes successfully",
+			args: args{
+				block: &types.Header{},
+			},
+			want:    355,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting block",
+			args: args{
+				blockErr: errors.New("error in getting block"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
+			got, err := utils.GetRemainingTimeOfCurrentState(client, bufferPercent)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetRemainingTimeOfCurrentState() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetRemainingTimeOfCurrentState() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCalculateSalt(t *testing.T) {
+	type args struct {
+		epoch   uint32
+		medians []uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want [32]byte
+	}{
+		{
+			name: "When CalculateSalt() is executed successfully",
+			args: args{
+				epoch:   1,
+				medians: []uint32{},
+			},
+			want: [32]byte{81, 248, 27, 205, 252, 50, 74, 13, 255, 43, 91, 236, 157, 146, 226, 28, 190, 188, 77, 94, 41, 211, 163, 211, 13, 227, 224, 63, 190, 171, 141, 127},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ut := &UtilsStruct{}
+			if got := ut.CalculateSalt(tt.args.epoch, tt.args.medians); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CalculateSalt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPrng(t *testing.T) {
+	type args struct {
+		max        uint32
+		prngHashes []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want *big.Int
+	}{
+		{
+			name: "When Prng() is calculated correctly",
+			args: args{
+				max:        10,
+				prngHashes: []byte{},
+			},
+			want: big.NewInt(0),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ut := &UtilsStruct{}
+			if got := ut.Prng(tt.args.max, tt.args.prngHashes); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Prng() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
+	var (
+		client             *ethclient.Client
+		epochLength        int64
+		currentBlockNumber *big.Int
+	)
+	type args struct {
+		block            *types.Header
+		blockErr         error
+		previousBlock    *types.Header
+		previousBlockErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When CalculateBlockNumberAtEpochBeginning() is executed successfully",
+			args: args{
+				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
+				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
+			},
+			want:    big.NewInt(-359),
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting block",
+			args: args{
+				blockErr: errors.New("error in getting block"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+			clientMock := new(mocks.ClientUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface:  utilsMock,
+				ClientInterface: clientMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
+			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
+			got, err := utils.CalculateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CalculateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSaveDataToCommitJsonFile(t *testing.T) {
+	var (
+		filePath   string
+		epoch      uint32
+		commitData Types.CommitData
+	)
+	type args struct {
+		jsonData     []byte
+		jsonDataErr  error
+		writeFileErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When SaveDataToCommitJsonFile() executes successfully",
+			args: args{
+				jsonData: []byte{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting jsonData",
+			args: args{
+				jsonDataErr: errors.New("error in getting jsonData"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in writing file",
+			args: args{
+				jsonData:     []byte{},
+				writeFileErr: errors.New("error in writing file"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonMock := new(mocks.JsonUtils)
+			osMock := new(mocks.OSUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				JsonInterface: jsonMock,
+				OS:            osMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
+			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
+
+			if err := utils.SaveDataToCommitJsonFile(filePath, epoch, commitData); (err != nil) != tt.wantErr {
+				t.Errorf("SaveDataToCommitJsonFile() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSaveDataToProposeJsonFile(t *testing.T) {
+	var (
+		filePath    string
+		epoch       uint32
+		proposeData Types.ProposeData
+	)
+
+	type args struct {
+		jsonData     []byte
+		jsonDataErr  error
+		writeFileErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When SaveDataToProposeJsonFile() executes successfully",
+			args: args{
+				jsonData: []byte{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting jsonData",
+			args: args{
+				jsonDataErr: errors.New("error in getting jsonData"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in writing file",
+			args: args{
+				jsonData:     []byte{},
+				writeFileErr: errors.New("error in writing file"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonMock := new(mocks.JsonUtils)
+			osMock := new(mocks.OSUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				JsonInterface: jsonMock,
+				OS:            osMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
+			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
+			if err := utils.SaveDataToProposeJsonFile(filePath, epoch, proposeData); (err != nil) != tt.wantErr {
+				t.Errorf("SaveDataToProposeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSaveDataToDisputeJsonFile(t *testing.T) {
+	var (
+		filePath      string
+		bountyIdQueue []uint32
+	)
+	type args struct {
+		jsonData     []byte
+		jsonDataErr  error
+		writeFileErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When SaveDataToDisputeJsonFile() executes successfully",
+			args: args{
+				jsonData: []byte{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting jsonData",
+			args: args{
+				jsonDataErr: errors.New("error in getting jsonData"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in writing file",
+			args: args{
+				jsonData:     []byte{},
+				writeFileErr: errors.New("error in writing file"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonMock := new(mocks.JsonUtils)
+			osMock := new(mocks.OSUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				JsonInterface: jsonMock,
+				OS:            osMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
+			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
+			if err := utils.SaveDataToDisputeJsonFile(filePath, bountyIdQueue); (err != nil) != tt.wantErr {
+				t.Errorf("SaveDataToDisputeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestReadFromCommitJsonFile(t *testing.T) {
+	var filePath string
+	type args struct {
+		jsonFile     *os.File
+		jsonFileErr  error
+		byteValue    []byte
+		byteValueErr error
+		unmarshalErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    Types.CommitFileData
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When ReadFromCommitJsonFile() executes successfully",
+			args: args{
+				jsonFile:  &os.File{},
+				byteValue: []byte{},
+			},
+			want:    Types.CommitFileData{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting jsonFile",
+			args: args{
+				jsonFileErr: errors.New("error in getting jsonFile"),
+			},
+			want:    Types.CommitFileData{},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting byteValue",
+			args: args{
+				jsonFile:     &os.File{},
+				byteValueErr: errors.New("error in getting byteValue"),
+			},
+			want:    Types.CommitFileData{},
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in unmarshal",
+			args: args{
+				jsonFile:     &os.File{},
+				byteValue:    []byte{},
+				unmarshalErr: errors.New("error in unmarshal"),
+			},
+			want:    Types.CommitFileData{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonMock := new(mocks.JsonUtils)
+			osMock := new(mocks.OSUtils)
+			ioutilMock := new(mocks.IoutilUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				JsonInterface:   jsonMock,
+				OS:              osMock,
+				IoutilInterface: ioutilMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
+			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
+			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
+			got, err := utils.ReadFromCommitJsonFile(filePath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadFromCommitJsonFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ReadFromCommitJsonFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadFromProposeJsonFile(t *testing.T) {
+	var filePath string
+	type args struct {
+		jsonFile     *os.File
+		jsonFileErr  error
+		byteValue    []byte
+		byteValueErr error
+		unmarshalErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    Types.ProposeFileData
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When ReadFromProposeJsonFile() executes successfully",
+			args: args{
+				jsonFile:  &os.File{},
+				byteValue: []byte{},
+			},
+			want:    Types.ProposeFileData{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting jsonFile",
+			args: args{
+				jsonFileErr: errors.New("error in getting jsonFile"),
+			},
+			want:    Types.ProposeFileData{},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting byteValue",
+			args: args{
+				jsonFile:     &os.File{},
+				byteValueErr: errors.New("error in getting byteValue"),
+			},
+			want:    Types.ProposeFileData{},
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in unmarshal",
+			args: args{
+				jsonFile:     &os.File{},
+				byteValue:    []byte{},
+				unmarshalErr: errors.New("error in unmarshal"),
+			},
+			want:    Types.ProposeFileData{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonMock := new(mocks.JsonUtils)
+			osMock := new(mocks.OSUtils)
+			ioutilMock := new(mocks.IoutilUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				JsonInterface:   jsonMock,
+				OS:              osMock,
+				IoutilInterface: ioutilMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
+			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
+			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
+
+			got, err := utils.ReadFromProposeJsonFile(filePath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadFromProposeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ReadFromProposeJsonFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadFromDisputeJsonFile(t *testing.T) {
+	var filePath string
+	type args struct {
+		jsonFile     *os.File
+		jsonFileErr  error
+		byteValue    []byte
+		byteValueErr error
+		unmarshalErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    Types.DisputeFileData
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When ReadFromDisputeJsonFile() executes successfully",
+			args: args{
+				jsonFile:  &os.File{},
+				byteValue: []byte{},
+			},
+			want:    Types.DisputeFileData{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting jsonFile",
+			args: args{
+				jsonFileErr: errors.New("error in getting jsonFile"),
+			},
+			want:    Types.DisputeFileData{},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting byteValue",
+			args: args{
+				jsonFile:     &os.File{},
+				byteValueErr: errors.New("error in getting byteValue"),
+			},
+			want:    Types.DisputeFileData{},
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in unmarshal",
+			args: args{
+				jsonFile:     &os.File{},
+				byteValue:    []byte{},
+				unmarshalErr: errors.New("error in unmarshal"),
+			},
+			want:    Types.DisputeFileData{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jsonMock := new(mocks.JsonUtils)
+			osMock := new(mocks.OSUtils)
+			ioutilMock := new(mocks.IoutilUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				JsonInterface:   jsonMock,
+				OS:              osMock,
+				IoutilInterface: ioutilMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
+			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
+			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
+
+			got, err := utils.ReadFromDisputeJsonFile(filePath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadFromDisputeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ReadFromDisputeJsonFile() got = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
