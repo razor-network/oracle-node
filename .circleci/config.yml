@@ -24,7 +24,9 @@ jobs:
       - run:
           name: "Executing test cases"
           command: |
-            docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --ignore razor/path/mocks --output /test/coverage.txt
+            docker run --rm -v $(pwd):/test --name go  razor-test go-acc ./... \
+              --ignore razor/accounts/mocks --ignore razor/cmd/mocks --ignore razor/utils/mocks --ignore pkg --ignore razor/path/mocks --ignore razor/accounts/accountUtils.go --ignore razor/cmd/interface.go --ignore razor/cmd/root.go --ignore razor/cmd/struct-utils.go --ignore razor/path/mocks --ignore razor/path/pathUtils.go --ignore razor/utils/password.go --ignore razor/utils/interface.go --ignore razor/utils/struct-utils.go --ignore razor/metrics/server.go  \
+              --output /test/coverage.txt
       - run:
           name: "Executing benchmarks"
           command: |
