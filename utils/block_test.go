@@ -478,3 +478,116 @@ func TestGetBlockManagerWithOpts(t *testing.T) {
 		t.Errorf("GetBlockManagerWithOpts() got blockManager = %v, want %v", gotBlockManager, blockManager)
 	}
 }
+
+func TestGetBlock(t *testing.T) {
+	var (
+		client *ethclient.Client
+		epoch  uint32
+	)
+	type args struct {
+		block    bindings.StructsBlock
+		blockErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bindings.StructsBlock
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetBlock() executes successfully",
+			args: args{
+				block: bindings.StructsBlock{},
+			},
+			want:    bindings.StructsBlock{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting block",
+			args: args{
+				blockErr: errors.New("error in getting block"),
+			},
+			want:    bindings.StructsBlock{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			blockManagerMock := new(mocks.BlockManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				BlockManagerInterface: blockManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			blockManagerMock.On("GetBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.block, tt.args.blockErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetBlock(client, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBlock() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetBlock() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetBlockIndexToBeConfirmed(t *testing.T) {
+	var client *ethclient.Client
+	type args struct {
+		blockIndex    int8
+		blockIndexErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int8
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetBlockIndexToBeConfirmed() executes successfully",
+			args: args{
+				blockIndex: 2,
+			},
+			want:    2,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting blockIndex",
+			args: args{
+				blockIndexErr: errors.New("error in getting blockIndex"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			blockManagerMock := new(mocks.BlockManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				BlockManagerInterface: blockManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			blockManagerMock.On("GetBlockIndexToBeConfirmed", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockIndex, tt.args.blockIndexErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetBlockIndexToBeConfirmed(client)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBlockIndexToBeConfirmed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetBlockIndexToBeConfirmed() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

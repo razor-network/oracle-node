@@ -198,6 +198,7 @@ type TimeUtils interface {
 type OSUtils interface {
 	OpenFile(string, int, fs.FileMode) (*os.File, error)
 	Open(string) (*os.File, error)
+	WriteFile(name string, data []byte, perm fs.FileMode) error
 }
 
 type BufioUtils interface {

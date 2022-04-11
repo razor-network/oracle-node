@@ -74,6 +74,22 @@ func TestContains(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "Test if value is present in the array for uint32",
+			args: args{
+				arr: []uint32{0, 1, 2},
+				val: uint32(2),
+			},
+			want: true,
+		},
+		{
+			name: "Test if value is present in the array for uint16",
+			args: args{
+				arr: []uint16{0, 1, 2},
+				val: uint16(2),
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -602,6 +618,42 @@ func TestIsSorted(t *testing.T) {
 	}
 }
 
+func TestIndexOf(t *testing.T) {
+	type args struct {
+		array []uint32
+		value uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "Test if value is not present in the array",
+			args: args{
+				array: []uint32{0, 1, 2},
+				value: 4,
+			},
+			want: -1,
+		},
+		{
+			name: "Test if value is present in the array",
+			args: args{
+				array: []uint32{0, 1, 2},
+				value: 2,
+			},
+			want: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IndexOf(tt.args.array, tt.args.value); got != tt.want {
+				t.Errorf("IndexOf() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestIsEqualByte(t *testing.T) {
 	type args struct {
 		arr1 []byte
@@ -661,8 +713,13 @@ func TestIsEqualByte(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ut := &UtilsStruct{}
-			got, got1 := ut.IsEqualByte(tt.args.arr1, tt.args.arr2)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+			got, got1 := utils.IsEqualByte(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
 				t.Errorf("IsEqualByte() got = %v, want %v", got, tt.want)
 			}
