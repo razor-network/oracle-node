@@ -18,7 +18,7 @@ import (
 // unlockWithdrawCmd represents the unlockWithdraw command
 var unlockWithdrawCmd = &cobra.Command{
 	Use:   "unlockWithdraw",
-	Short: "InitiateWithdraw your razors once withdraw lock has passed",
+	Short: "UnlockWithdraw withdraws your razors once withdraw lock has passed",
 	Long:  `unlockWithdraw has to be called once the withdraw lock period is over to get back all the razor tokens into your account`,
 	Run:   initializeUnlockWithdraw,
 }
