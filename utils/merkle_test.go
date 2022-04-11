@@ -121,6 +121,14 @@ func TestMerkleTreeStructGetProofPath(t *testing.T) {
 			},
 			want: [][32]byte{{7, 17}, {5, 15}},
 		},
+		{
+			name: "Test 3: When tree is nil",
+			args: args{
+				tree:    [][][]byte{},
+				assetId: 1,
+			},
+			want: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
