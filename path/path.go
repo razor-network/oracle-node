@@ -47,3 +47,27 @@ func (PathUtils) GetJobFilePath() (string, error) {
 	filePath := home + "/assets.json"
 	return filePath, nil
 }
+
+func (PathUtils) GetCommitDataFileName(address string) (string, error) {
+	homeDir, err := PathUtilsInterface.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_CommitData.json", nil
+}
+
+func (PathUtils) GetProposeDataFileName(address string) (string, error) {
+	homeDir, err := PathUtilsInterface.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_proposedData.json", nil
+}
+
+func (PathUtils) GetDisputeDataFileName(address string) (string, error) {
+	homeDir, err := PathUtilsInterface.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	return homeDir + "/" + address + "_disputeData.json", nil
+}

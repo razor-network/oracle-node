@@ -16,6 +16,9 @@ type PathInterface interface {
 	GetLogFilePath(string) (string, error)
 	GetConfigFilePath() (string, error)
 	GetJobFilePath() (string, error)
+	GetCommitDataFileName(string) (string, error)
+	GetProposeDataFileName(string) (string, error)
+	GetDisputeDataFileName(address string) (string, error)
 }
 
 type OSInterface interface {

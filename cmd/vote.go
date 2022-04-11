@@ -318,7 +318,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 
 	log.Debug("Saving committed data for recovery")
-	fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+	fileName, err := razorUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
@@ -348,7 +348,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	log.Debug("Epoch last revealed: ", lastReveal)
 
 	if _commitData.AssignedCollections == nil && _commitData.SeqAllottedCollections == nil && _commitData.Leaves == nil {
-		fileName, err := cmdUtils.GetCommitDataFileName(account.Address)
+		fileName, err := razorUtils.GetCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
 			return err
@@ -417,7 +417,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 }
 
 func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
-	disputeFilePath, err := cmdUtils.GetDisputeDataFileName(account.Address)
+	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
 	}
@@ -547,22 +547,6 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret, nil
-}
-
-func (*UtilsStruct) GetCommitDataFileName(address string) (string, error) {
-	homeDir, err := razorUtils.GetDefaultPath()
-	if err != nil {
-		return "", err
-	}
-	return homeDir + "/" + address + "_CommitData.json", nil
-}
-
-func (*UtilsStruct) GetDisputeDataFileName(address string) (string, error) {
-	homeDir, err := razorUtils.GetDefaultPath()
-	if err != nil {
-		return "", err
-	}
-	return homeDir + "/" + address + "_disputeData.json", nil
 }
 
 func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
