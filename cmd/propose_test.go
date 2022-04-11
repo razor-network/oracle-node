@@ -956,8 +956,6 @@ func TestMakeBlock(t *testing.T) {
 		epoch       uint32
 	)
 
-	//rogueMedian := big.NewInt(int64(rand.Intn(10000000)))
-
 	type args struct {
 		revealedDataMaps     *types.RevealedDataMaps
 		revealedDataMapsErr  error
@@ -1013,29 +1011,29 @@ func TestMakeBlock(t *testing.T) {
 			want2:   nil,
 			wantErr: true,
 		},
-		//{
-		//	name: "Test 4: When MakeBlock executes successfully and there is no rogue mode",
-		//	args: args{
-		//		revealedDataMaps: &types.RevealedDataMaps{
-		//			SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-		//			VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
-		//			InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
-		//		},
-		//		activeCollections: []uint16{1, 2},
-		//		rogueData: types.Rogue{
-		//			IsRogue:   true,
-		//			RogueMode: []string{"propose"},
-		//		},
-		//	},
-		//	want:  []uint32{uint32(rogueMedian.Int64())},
-		//	want1: []uint16{2},
-		//	want2: &types.RevealedDataMaps{
-		//		SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-		//		VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
-		//		InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
-		//	},
-		//	wantErr: false,
-		//},
+		{
+			name: "Test 4: When MakeBlock executes successfully and there is missingIds rogue mode",
+			args: args{
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+				},
+				activeCollections: []uint16{1, 2},
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"missingIds"},
+				},
+			},
+			want:  []uint32{1},
+			want1: []uint16{3},
+			want2: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(50)},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

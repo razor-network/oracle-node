@@ -400,12 +400,20 @@ func TestGetStatesAllowed(t *testing.T) {
 		want string
 	}{
 		{
-			name: "Test 1: When states has multiple elements",
+			name: "Test 1: When states has single elements",
 			args: args{
 				states:    []int{1},
 				stateName: "Reveal",
 			},
 			want: "1:Reveal",
+		},
+		{
+			name: "Test 2: When states has multiple elements",
+			args: args{
+				states:    []int{1, 1},
+				stateName: "Reveal",
+			},
+			want: "1:Reveal, 1:Reveal",
 		},
 		{
 			name: "Test 2: When states array is nil",

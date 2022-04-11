@@ -226,6 +226,19 @@ func TestClaimBounty(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: nil,
 		},
+		{
+			name: "Test 7: When claimBounty function exits successfully if lock is not reached",
+			args: args{
+				epoch: 79,
+				bountyLock: types.BountyLock{
+					Amount:      big.NewInt(1000),
+					RedeemAfter: 80,
+				},
+				redeemBountyTxn: &Types.Transaction{},
+			},
+			want:    core.NilHash,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
