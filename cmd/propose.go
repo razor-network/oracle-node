@@ -43,10 +43,21 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	}
 	log.Debug("Stake: ", staker.Stake)
 
-	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
-	if err != nil {
-		log.Error("Error in calculating biggest staker: ", err)
-		return core.NilHash, err
+	var (
+		biggestStake     *big.Int
+		biggestStakerId  uint32
+		biggestStakerErr error
+	)
+
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "biggestStakerId") {
+		biggestStake = utils.GetRogueRandomValue(1000000)
+		biggestStakerId = uint32(rand.Intn(int(numStakers)))
+	} else {
+		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
+		if biggestStakerErr != nil {
+			log.Error("Error in calculating biggest staker: ", biggestStakerErr)
+			return core.NilHash, biggestStakerErr
+		}
 	}
 
 	salt, err := cmdUtils.GetSalt(client, epoch)
@@ -296,7 +307,6 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 
 func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
-	//revealedDataMaps.SortedRevealedValues
 	if err != nil {
 		return nil, nil, nil, err
 	}
