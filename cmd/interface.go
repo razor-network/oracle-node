@@ -65,6 +65,7 @@ type UtilsInterface interface {
 	WaitForBlockCompletion(*ethclient.Client, string) int
 	GetNumActiveCollections(*ethclient.Client) (uint16, error)
 	GetRogueRandomValue(int) *big.Int
+	GetRogueRandomMedianValue() uint32
 	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
 	GetDelayedState(*ethclient.Client, int32) (int64, error)
 	GetDefaultPath() (string, error)

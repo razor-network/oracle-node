@@ -106,6 +106,10 @@ func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
 }
 
+func (u Utils) GetRogueRandomMedianValue() uint32 {
+	return utils.GetRogueRandomMedianValue()
+}
+
 func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
 	return utilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
 }

@@ -891,6 +891,20 @@ func (_m *UtilsInterface) GetProposedBlock(_a0 *ethclient.Client, _a1 uint32, _a
 	return r0, r1
 }
 
+// GetRogueRandomMedianValue provides a mock function with given fields:
+func (_m *UtilsInterface) GetRogueRandomMedianValue() uint32 {
+	ret := _m.Called()
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func() uint32); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	return r0
+}
+
 // GetRogueRandomValue provides a mock function with given fields: _a0
 func (_m *UtilsInterface) GetRogueRandomValue(_a0 int) *big.Int {
 	ret := _m.Called(_a0)

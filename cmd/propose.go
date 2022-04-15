@@ -144,9 +144,6 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
 
-	if err != nil {
-		return core.NilHash, err
-	}
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
@@ -326,7 +323,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
 			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
-				medians = append(medians, rand.Uint32())
+				medians = append(medians, razorUtils.GetRogueRandomMedianValue())
 				continue
 			}
 			accWeight := big.NewInt(0)
@@ -346,7 +343,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "extraIds") {
 		//Adding a dummy median and appending extra id to idsRevealed array if rogueMode == extraIds
-		medians = append(medians, rand.Uint32())
+		medians = append(medians, razorUtils.GetRogueRandomMedianValue())
 		idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1]+1)
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "unsortedIds") && len(idsRevealedInThisEpoch) > 1 {

@@ -12,6 +12,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/utils"
 	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
@@ -31,7 +32,6 @@ func TestPropose(t *testing.T) {
 		staker      bindings.StructsStaker
 		epoch       uint32
 		blockNumber *big.Int
-		rogue       types.Rogue
 	)
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -42,6 +42,7 @@ func TestPropose(t *testing.T) {
 	copy(saltBytes32[:], salt)
 
 	type args struct {
+		rogueData                  types.Rogue
 		state                      int64
 		stateErr                   error
 		staker                     bindings.StructsStaker
@@ -429,6 +430,32 @@ func TestPropose(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("buffer error"),
 		},
+		{
+			name: "Test 18: When rogue mode is on for biggestStakerId Propose function executes successfully",
+			args: args{
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"biggestStakerId"},
+				},
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              5,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
+				salt:                    saltBytes32,
+				iteration:               1,
+				numOfProposedBlocks:     3,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: bindings.StructsBlock{},
+				medians:                 []uint32{6701548, 478307},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
+			},
+			want:    common.BigToHash(big.NewInt(1)),
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 
@@ -464,7 +491,7 @@ func TestPropose(t *testing.T) {
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utils.Propose(client, config, account, staker, epoch, blockNumber, rogue)
+			got, err := utils.Propose(client, config, account, staker, epoch, blockNumber, tt.args.rogueData)
 			if got != tt.want {
 				t.Errorf("Txn hash for Propose function, got = %v, want %v", got, tt.want)
 			}
@@ -955,6 +982,8 @@ func TestMakeBlock(t *testing.T) {
 		epoch       uint32
 	)
 
+	randomValue := utils.GetRogueRandomMedianValue()
+
 	type args struct {
 		revealedDataMaps     *types.RevealedDataMaps
 		revealedDataMapsErr  error
@@ -1033,6 +1062,52 @@ func TestMakeBlock(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Test 5: When MakeBlock executes successfully and there is extraIds rogue mode",
+			args: args{
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+				},
+				activeCollections: []uint16{1, 2},
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"extraIds"},
+				},
+			},
+			want:  []uint32{1, randomValue},
+			want1: []uint16{2, 3},
+			want2: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(50)},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 5: When MakeBlock executes successfully and there is medians rogue mode",
+			args: args{
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+				},
+				activeCollections: []uint16{1, 2},
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"medians"},
+				},
+			},
+			want:  []uint32{randomValue},
+			want1: []uint16{2},
+			want2: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
+				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1044,6 +1119,7 @@ func TestMakeBlock(t *testing.T) {
 
 			cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealedDataMaps, tt.args.revealedDataMapsErr)
 			utilsMock.On("GetActiveCollections", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
+			utilsMock.On("GetRogueRandomMedianValue").Return(randomValue)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.MakeBlock(client, blockNumber, epoch, tt.args.rogueData)
 			if (err != nil) != tt.wantErr {
