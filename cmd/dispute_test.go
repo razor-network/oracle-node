@@ -767,9 +767,10 @@ func TestCheckDisputeForIds(t *testing.T) {
 				idsInProposedBlock:                []uint16{1, 2, 3, 4},
 				revealedCollectionIds:             []uint16{1, 2, 3},
 				DisputeCollectionIdShouldBeAbsent: &Types.Transaction{},
+				incrementedGasLimitErr:            errors.New("error in incremented gas limit"),
 			},
-			want:    &Types.Transaction{},
-			wantErr: false,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 5: When there is no dispute",
