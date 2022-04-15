@@ -294,14 +294,6 @@ func (u Utils) WaitTillNextNSecs(seconds int32) {
 	utilsInterface.WaitTillNextNSecs(seconds)
 }
 
-func (u Utils) SaveDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
-	return utilsInterface.SaveDataToFile(fileName, epoch, committedData)
-}
-
-func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
-	return utilsInterface.ReadDataFromFile(fileName)
-}
-
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
 	return utilsInterface.DeleteJobFromJSON(s, jobId)
 }

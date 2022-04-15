@@ -112,8 +112,6 @@ type UtilsInterface interface {
 	GetStake(*ethclient.Client, uint32) (*big.Int, error)
 	ConvertWeiToEth(*big.Int) (*big.Float, error)
 	WaitTillNextNSecs(int32)
-	SaveDataToFile(string, uint32, []*big.Int) error
-	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	DeleteJobFromJSON(string, string) error
 	AddJobToJSON(string, *types.StructsJob) error
 	GetStakerSRZRBalance(*ethclient.Client, bindings.StructsStaker) (*big.Int, error)

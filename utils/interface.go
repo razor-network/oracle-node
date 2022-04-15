@@ -141,8 +141,6 @@ type Utils interface {
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	SaveDataToFile(string, uint32, []*big.Int) error
-	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	SaveDataToCommitJsonFile(string, uint32, types.CommitData) error
 	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
 	SaveDataToProposeJsonFile(string, uint32, types.ProposeData) error

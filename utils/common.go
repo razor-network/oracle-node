@@ -2,14 +2,11 @@ package utils
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/big"
 	"os"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
-	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -143,60 +140,6 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 	}
 	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
 	return uint32(epoch), nil
-}
-
-func (*UtilsStruct) SaveDataToFile(fileName string, epoch uint32, data []*big.Int) error {
-	if len(data) == 0 {
-		return errors.New("data is empty")
-	}
-	f, err := OS.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintln(f, epoch)
-	for _, datum := range data {
-		_, err := fmt.Fprintln(f, datum.String())
-		if err != nil {
-			return err
-		}
-	}
-	defer f.Close()
-	return nil
-}
-
-func (*UtilsStruct) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
-	var (
-		data  []*big.Int
-		epoch uint32
-	)
-	file, err := OS.Open(fileName)
-	if err != nil {
-		return 0, nil, err
-	}
-	defer file.Close()
-
-	scanner := Bufio.NewScanner(file)
-	lineCount := 0
-	for scanner.Scan() {
-		if lineCount > 0 {
-			dataToAppend, ok := big.NewInt(0).SetString(scanner.Text(), 10)
-			if ok {
-				data = append(data, dataToAppend)
-			}
-		} else {
-			value, err := strconv.Atoi(scanner.Text())
-			if err != nil {
-				return 0, nil, err
-			}
-			epoch = uint32(value)
-		}
-		lineCount++
-	}
-
-	if err := scanner.Err(); err != nil {
-		return 0, nil, err
-	}
-	return epoch, data, nil
 }
 
 func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {

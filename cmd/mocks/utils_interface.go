@@ -1243,36 +1243,6 @@ func (_m *UtilsInterface) PrivateKeyPrompt() string {
 	return r0
 }
 
-// ReadDataFromFile provides a mock function with given fields: _a0
-func (_m *UtilsInterface) ReadDataFromFile(_a0 string) (uint32, []*big.Int, error) {
-	ret := _m.Called(_a0)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(string) uint32); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 []*big.Int
-	if rf, ok := ret.Get(1).(func(string) []*big.Int); ok {
-		r1 = rf(_a0)
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]*big.Int)
-		}
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(string) error); ok {
-		r2 = rf(_a0)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
-}
-
 // ReadFromCommitJsonFile provides a mock function with given fields: _a0
 func (_m *UtilsInterface) ReadFromCommitJsonFile(_a0 string) (types.CommitFileData, error) {
 	ret := _m.Called(_a0)
@@ -1357,20 +1327,6 @@ func (_m *UtilsInterface) SaveDataToDisputeJsonFile(_a0 string, _a1 []uint32) er
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, []uint32) error); ok {
 		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// SaveDataToFile provides a mock function with given fields: _a0, _a1, _a2
-func (_m *UtilsInterface) SaveDataToFile(_a0 string, _a1 uint32, _a2 []*big.Int) error {
-	ret := _m.Called(_a0, _a1, _a2)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, uint32, []*big.Int) error); ok {
-		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Error(0)
 	}
