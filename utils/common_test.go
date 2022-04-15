@@ -782,8 +782,9 @@ func TestAssignLogFile(t *testing.T) {
 		fileNameErr  error
 	}
 	tests := []struct {
-		name string
-		args args
+		name          string
+		args          args
+		expectedFatal bool
 	}{
 		{
 			name: "Test 1: When AssignLogFile() executes successfully",
@@ -791,8 +792,23 @@ func TestAssignLogFile(t *testing.T) {
 				isFlagPassed: true,
 				fileName:     "",
 			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting logFile name",
+			args: args{
+				isFlagPassed: true,
+				fileNameErr:  errors.New("fileName error"),
+				fileName:     "",
+			},
+			expectedFatal: true,
 		},
 	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
@@ -803,10 +819,15 @@ func TestAssignLogFile(t *testing.T) {
 				FlagSetInterface: flagSetMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
+			fatal = false
 
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			flagSetMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
+
 			utils.AssignLogFile(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The AssignLogFile function didn't execute as expected")
+			}
 		})
 	}
 }

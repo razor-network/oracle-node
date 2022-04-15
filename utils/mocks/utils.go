@@ -1750,48 +1750,6 @@ func (_m *Utils) IncreaseGasLimitValue(_a0 *ethclient.Client, _a1 uint64, _a2 fl
 	return r0, r1
 }
 
-// IsEqualByte provides a mock function with given fields: _a0, _a1
-func (_m *Utils) IsEqualByte(_a0 []byte, _a1 []byte) (bool, int) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func([]byte, []byte) bool); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 int
-	if rf, ok := ret.Get(1).(func([]byte, []byte) int); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Get(1).(int)
-	}
-
-	return r0, r1
-}
-
-// IsEqualUint32 provides a mock function with given fields: _a0, _a1
-func (_m *Utils) IsEqualUint32(_a0 []uint32, _a1 []uint32) (bool, int) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func([]uint32, []uint32) bool); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 int
-	if rf, ok := ret.Get(1).(func([]uint32, []uint32) int); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Get(1).(int)
-	}
-
-	return r0, r1
-}
-
 // IsFlagPassed provides a mock function with given fields: _a0
 func (_m *Utils) IsFlagPassed(_a0 string) bool {
 	ret := _m.Called(_a0)
@@ -1804,62 +1762,6 @@ func (_m *Utils) IsFlagPassed(_a0 string) bool {
 	}
 
 	return r0
-}
-
-// IsMissing provides a mock function with given fields: _a0, _a1
-func (_m *Utils) IsMissing(_a0 []uint16, _a1 []uint16) (bool, int, uint16) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func([]uint16, []uint16) bool); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 int
-	if rf, ok := ret.Get(1).(func([]uint16, []uint16) int); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Get(1).(int)
-	}
-
-	var r2 uint16
-	if rf, ok := ret.Get(2).(func([]uint16, []uint16) uint16); ok {
-		r2 = rf(_a0, _a1)
-	} else {
-		r2 = ret.Get(2).(uint16)
-	}
-
-	return r0, r1, r2
-}
-
-// IsSorted provides a mock function with given fields: _a0
-func (_m *Utils) IsSorted(_a0 []uint16) (bool, int, int) {
-	ret := _m.Called(_a0)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func([]uint16) bool); ok {
-		r0 = rf(_a0)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 int
-	if rf, ok := ret.Get(1).(func([]uint16) int); ok {
-		r1 = rf(_a0)
-	} else {
-		r1 = ret.Get(1).(int)
-	}
-
-	var r2 int
-	if rf, ok := ret.Get(2).(func([]uint16) int); ok {
-		r2 = rf(_a0)
-	} else {
-		r2 = ret.Get(2).(int)
-	}
-
-	return r0, r1, r2
 }
 
 // MultiplyFloatAndBigInt provides a mock function with given fields: _a0, _a1
