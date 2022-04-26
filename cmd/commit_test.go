@@ -122,13 +122,12 @@ func TestCommit(t *testing.T) {
 
 func TestHandleCommitState(t *testing.T) {
 	var (
-		client    *ethclient.Client
-		epoch     uint32
-		seed      []byte
-		rogueData types.Rogue
+		client *ethclient.Client
+		epoch  uint32
+		seed   []byte
 	)
 
-	//rogueValue := big.NewInt(int64(randMath.Intn(10000000)))
+	rogueValue := utils.GetRogueRandomValue(100000)
 
 	type args struct {
 		numActiveCollections    uint16
@@ -140,6 +139,7 @@ func TestHandleCommitState(t *testing.T) {
 		collectionIdErr         error
 		collectionData          *big.Int
 		collectionDataErr       error
+		rogueData               types.Rogue
 	}
 	tests := []struct {
 		name    string
@@ -203,20 +203,43 @@ func TestHandleCommitState(t *testing.T) {
 			want:    types.CommitData{},
 			wantErr: errors.New("error in getting collectionData"),
 		},
+		{
+			name: "Test 6: When rogue mode is on for commit state",
+			args: args{
+				numActiveCollections:   3,
+				assignedCollections:    map[int]bool{1: true, 2: true},
+				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionId:           1,
+				collectionData:         big.NewInt(1),
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"commit"},
+				},
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{1: true, 2: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				Leaves:                 []*big.Int{big.NewInt(0), rogueValue, rogueValue},
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsPkgMock := new(mocks2.Utils)
+			utilsMock := new(mocks.UtilsInterface)
 
 			utils.UtilsInterface = utilsPkgMock
+			razorUtils = utilsMock
 
 			utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
 			utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
 			utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
+			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, seed, rogueData)
+			got, err := utils.HandleCommitState(client, epoch, seed, tt.args.rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}

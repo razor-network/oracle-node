@@ -109,7 +109,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		}
 
 		// Median Value dispute
-		isEqual, mismatchIndex := utils.UtilsInterface.IsEqualUint32(proposedBlock.Medians, medians)
+		isEqual, mismatchIndex := utils.IsEqualUint32(proposedBlock.Medians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -192,14 +192,14 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
 	hashRevealedCollectionIds := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{revealedCollectionIds})
 
-	isEqual, _ := utils.UtilsInterface.IsEqualByte(hashIdsInProposedBlock, hashRevealedCollectionIds)
+	isEqual, _ := utils.IsEqualByte(hashIdsInProposedBlock, hashRevealedCollectionIds)
 
 	if isEqual {
 		return nil, nil
 	}
 
 	// Check if the error is in sorted ids
-	isSorted, index0, index1 := utils.UtilsInterface.IsSorted(idsInProposedBlock)
+	isSorted, index0, index1 := utils.IsSorted(idsInProposedBlock)
 	if !isSorted {
 		transactionOpts.ABI = bindings.BlockManagerABI
 		transactionOpts.MethodName = "disputeOnOrderOfIds"
@@ -211,7 +211,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	}
 
 	// Check if the error is collectionIdShouldBePresent
-	isMissing, _, missingCollectionId := utils.UtilsInterface.IsMissing(revealedCollectionIds, idsInProposedBlock)
+	isMissing, _, missingCollectionId := utils.IsMissing(revealedCollectionIds, idsInProposedBlock)
 	if isMissing {
 		transactionOpts.ABI = bindings.BlockManagerABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
@@ -229,7 +229,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	}
 
 	// Check if the error is collectionIdShouldBeAbsent
-	isPresent, positionOfPresentValue, presentCollectionId := utils.UtilsInterface.IsMissing(idsInProposedBlock, revealedCollectionIds)
+	isPresent, positionOfPresentValue, presentCollectionId := utils.IsMissing(idsInProposedBlock, revealedCollectionIds)
 	if isPresent {
 		transactionOpts.ABI = bindings.BlockManagerABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"

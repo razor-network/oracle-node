@@ -68,7 +68,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 				return types.CommitData{}, err
 			}
 			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-				collectionData = utils.GetRogueRandomValue(100000)
+				collectionData = razorUtils.GetRogueRandomValue(100000)
 			}
 			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
 			leavesOfTree = append(leavesOfTree, collectionData)

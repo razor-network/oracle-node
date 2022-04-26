@@ -141,8 +141,6 @@ type Utils interface {
 	CheckEthBalanceIsZero(*ethclient.Client, string)
 	AssignStakerId(*pflag.FlagSet, *ethclient.Client, string) (uint32, error)
 	GetEpoch(*ethclient.Client) (uint32, error)
-	SaveDataToFile(string, uint32, []*big.Int) error
-	ReadDataFromFile(string) (uint32, []*big.Int, error)
 	SaveDataToCommitJsonFile(string, uint32, types.CommitData) error
 	ReadFromCommitJsonFile(string) (types.CommitFileData, error)
 	SaveDataToProposeJsonFile(string, uint32, types.ProposeData) error
@@ -169,12 +167,8 @@ type Utils interface {
 	ConvertToNumber(interface{}) (*big.Float, error)
 	SecondsToReadableTime(int) string
 	AssignLogFile(*pflag.FlagSet)
-	IsEqualUint32([]uint32, []uint32) (bool, int)
-	IsSorted([]uint16) (bool, int, int)
-	IsMissing([]uint16, []uint16) (bool, int, uint16)
 	CalculateBlockNumberAtEpochBeginning(*ethclient.Client, int64, *big.Int) (*big.Int, error)
 	GetStateName(int64) string
-	IsEqualByte([]byte, []byte) (bool, int)
 }
 
 type EthClientUtils interface {

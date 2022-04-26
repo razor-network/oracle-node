@@ -167,3 +167,7 @@ func GetRogueRandomValue(value int) *big.Int {
 	}
 	return big.NewInt(int64(rand.Intn(value)))
 }
+
+func GetRogueRandomMedianValue() uint32 {
+	return rand.Uint32()
+}

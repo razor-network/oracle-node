@@ -106,6 +106,10 @@ func (u Utils) GetRogueRandomValue(value int) *big.Int {
 	return utils.GetRogueRandomValue(value)
 }
 
+func (u Utils) GetRogueRandomMedianValue() uint32 {
+	return utils.GetRogueRandomMedianValue()
+}
+
 func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
 	return utilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
 }
@@ -292,14 +296,6 @@ func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 
 func (u Utils) WaitTillNextNSecs(seconds int32) {
 	utilsInterface.WaitTillNextNSecs(seconds)
-}
-
-func (u Utils) SaveDataToFile(fileName string, epoch uint32, committedData []*big.Int) error {
-	return utilsInterface.SaveDataToFile(fileName, epoch, committedData)
-}
-
-func (u Utils) ReadDataFromFile(fileName string) (uint32, []*big.Int, error) {
-	return utilsInterface.ReadDataFromFile(fileName)
 }
 
 func (u Utils) DeleteJobFromJSON(s string, jobId string) error {

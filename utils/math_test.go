@@ -964,3 +964,18 @@ func TestGetRogueRandomValue(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRogueRandomMedianValue(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "Test 1: Getting any random value with function",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			GetRogueRandomMedianValue()
+		})
+	}
+}

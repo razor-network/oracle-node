@@ -154,10 +154,11 @@ func TestAggregate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 9: When there is an error in reading json file",
+			name: "Test 9: When assets are fetched from json file and there is an error in reading json file",
 			args: args{
 				assetFilePath: "./razor/assets.json",
 				jsonFile:      &os.File{},
+				statErr:       nil,
 				fileDataErr:   errors.New("reading file error"),
 			},
 			want:    nil,
@@ -176,6 +177,7 @@ func TestAggregate(t *testing.T) {
 				IoutilInterface: ioUtilsMock,
 			}
 			path.PathUtilsInterface = pathUtilsMock
+			path.OSUtilsInterface = osUtilsMock
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)

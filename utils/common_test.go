@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bufio"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -573,134 +572,6 @@ func TestGetStateName(t *testing.T) {
 	}
 }
 
-func TestReadDataFromFile(t *testing.T) {
-	var fileName string
-
-	type args struct {
-		file    *os.File
-		fileErr error
-		scanner *bufio.Scanner
-	}
-	tests := []struct {
-		name          string
-		args          args
-		expectedFatal bool
-		wantErr       error
-	}{
-		{
-			name: "Test 1: When ReadDataFromFile() executes successfully",
-			args: args{
-				file:    &os.File{},
-				scanner: &bufio.Scanner{},
-			},
-			expectedFatal: false,
-			wantErr:       errors.New("bufio.Scanner: token too long"),
-		},
-		{
-			name: "Test 2: When there is an error in getting file",
-			args: args{
-				fileErr: errors.New("error in getting file"),
-			},
-			expectedFatal: false,
-			wantErr:       errors.New("error in getting file"),
-		},
-	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			osMock := new(mocks.OSUtils)
-			bufioMock := new(mocks.BufioUtils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				OS:    osMock,
-				Bufio: bufioMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			osMock.On("Open", mock.AnythingOfType("string")).Return(tt.args.file, tt.args.fileErr)
-			bufioMock.On("NewScanner", mock.Anything).Return(tt.args.scanner)
-
-			fatal = false
-
-			_, _, err := utils.ReadDataFromFile(fileName)
-			if fatal != tt.expectedFatal {
-				t.Error("The ReadDataFromFile function didn't execute as expected")
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for ReadDataFromFile function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for ReadDataFromFile function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-
-		})
-	}
-}
-
-func TestSaveDataToFile(t *testing.T) {
-	var file *os.File
-	var fileName string
-	var epoch uint32
-
-	type args struct {
-		committedData []*big.Int
-		file          *os.File
-		fileErr       error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Test 1: When SaveDataToFile() executes successfully",
-			args: args{
-				committedData: []*big.Int{big.NewInt(2)},
-				file:          file,
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 2: When there is an error inn getting file",
-			args: args{
-				committedData: []*big.Int{big.NewInt(2)},
-				fileErr:       errors.New("error in fetching file"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When there is an empty committedData",
-			args: args{
-				committedData: []*big.Int{},
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			osMock := new(mocks.OSUtils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				OS: osMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			osMock.On("OpenFile", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
-
-			if err := utils.SaveDataToFile(fileName, epoch, tt.args.committedData); (err != nil) != tt.wantErr {
-				t.Errorf("SaveDataToFile() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestWaitForBlockCompletion(t *testing.T) {
 	var client *ethclient.Client
 	var hashToRead string
@@ -911,8 +782,9 @@ func TestAssignLogFile(t *testing.T) {
 		fileNameErr  error
 	}
 	tests := []struct {
-		name string
-		args args
+		name          string
+		args          args
+		expectedFatal bool
 	}{
 		{
 			name: "Test 1: When AssignLogFile() executes successfully",
@@ -920,8 +792,23 @@ func TestAssignLogFile(t *testing.T) {
 				isFlagPassed: true,
 				fileName:     "",
 			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting logFile name",
+			args: args{
+				isFlagPassed: true,
+				fileNameErr:  errors.New("fileName error"),
+				fileName:     "",
+			},
+			expectedFatal: true,
 		},
 	}
+
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
@@ -932,10 +819,15 @@ func TestAssignLogFile(t *testing.T) {
 				FlagSetInterface: flagSetMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
+			fatal = false
 
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			flagSetMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
+
 			utils.AssignLogFile(flagSet)
+			if fatal != tt.expectedFatal {
+				t.Error("The AssignLogFile function didn't execute as expected")
+			}
 		})
 	}
 }
