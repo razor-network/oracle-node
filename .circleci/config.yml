@@ -74,7 +74,7 @@ jobs:
           name: "Install Go" 
           command: | 
             go version
-            node version
+            node -v
 
 
 workflows:
