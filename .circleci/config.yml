@@ -79,7 +79,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install ethereum
             npm i
-            npm run build-noargs
+          # npm run build-noargs
 
 
 
