@@ -73,8 +73,8 @@ jobs:
       - run:
           name: "Install Go" 
           command: | 
-
             go version
+            node version
 
 
 workflows:
