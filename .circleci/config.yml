@@ -65,6 +65,24 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:$CIRCLE_TAG .
+  build:
+    machine:
+      image: ubuntu-2004:202101-01
+    steps:
+      - checkout
+      - run:
+          name: "Install Go" 
+          command: | 
+            wget https://golang.org/dl/go1.15.5.linux-amd64.tar.gz
+            tar -C /usr/local -xzf go1.15.5.linux-amd64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin
+            source ~/.bashrc
+            go version
+
+
+
+            
+
 workflows:
   tests:
     jobs:
