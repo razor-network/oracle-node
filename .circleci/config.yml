@@ -165,7 +165,7 @@ jobs:
             mv razor_go.${VERSION}.linux-amd64.tar.gz artifacts/
             mv razor_go.${VERSION}.linux-arm64.tar.gz artifacts/ 
             go get -u github.com/tcnksm/ghr
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./razor_go-${VERSION}.tar.gz
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} artifacts/*
 
 
 workflows:
