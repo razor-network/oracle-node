@@ -170,6 +170,29 @@ workflows:
   tests:
     jobs:
       - test
+  publish-github:
+    jobs:
+      - build-amd:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/      
+      - build-arm:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/  
+      - publish-github-release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          requires:
+            - build-arm
+            - build-amd
   publish:
     jobs:
       - push-docker-build:
@@ -179,16 +202,3 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
-      - publish-binary:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
-          jobs:
-            - build-amd
-            - build-arm
-            - publish-github-release:
-                requires:
-                  - build-arm
-                  - build-amd
