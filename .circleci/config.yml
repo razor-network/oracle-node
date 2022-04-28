@@ -172,7 +172,7 @@ workflows:
       - build-arm
       - publish-github-release:
           requires:
-            - build
+            - build-arm
   publish:
     jobs:
       - push-docker-build:
