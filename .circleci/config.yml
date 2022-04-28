@@ -158,7 +158,7 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: | 
-            go install github.com/tcnksm/ghr
+            go get -u github.com/tcnksm/ghr
             VERSION=$(git describe --tags --abbrev=0)
             mkdir artifacts
             mv razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz && mv razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
