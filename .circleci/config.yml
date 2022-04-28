@@ -73,7 +73,8 @@ jobs:
       - run:
           name: "Installing Go" 
           command: | 
-            sudo apt-get update  
+            sudo apt-get update
+            sudo rm -rf /usr/local/go  
             wget https://dl.google.com/go/go1.17.7.linux-amd64.tar.gz 
             sudo tar -xvf go1.17.7.linux-amd64.tar.gz   
             sudo mv go /usr/local  
