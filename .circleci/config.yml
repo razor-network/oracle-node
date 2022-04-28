@@ -65,7 +65,7 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:$CIRCLE_TAG .
-  build:
+  build-amd:
     machine:
       image: ubuntu-2004:202101-01
     steps:
@@ -105,6 +105,47 @@ jobs:
           root: .
           paths:
             - .
+  build-arm:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: "Installing Go" 
+          command: | 
+            sudo apt-get update
+            sudo rm -rf /usr/local/go  
+            wget https://dl.google.com/go/go1.17.7.linux-arm64.tar.gz 
+            sudo tar -xvf go1.17.7.linux-arm64.tar.gz   
+            sudo mv go /usr/local  
+      - run:
+          name: "Check Version" 
+          command: | 
+            go version
+            node -v
+      - run:
+          name: "Installing abigen" 
+          command: |             
+            sudo add-apt-repository -y ppa:ethereum/ethereum
+            sudo apt-get update -y
+            sudo apt-get install ethereum -y
+      - run:
+          name: "Start building" 
+          command: |         
+            npm i
+            npm run build-noargs
+      - run:
+          name: "Creating Zip"
+          command: |
+            VERSION=$(git describe --tags --abbrev=0)
+            cd build/bin
+            tar -czvf razor_go-${VERSION}.tar.gz razor
+            mv razor_go-${VERSION}.tar.gz ../../
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
 
 
   publish-github-release:
@@ -116,7 +157,6 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: | 
-            ls
             VERSION=$(git describe --tags --abbrev=0)
             go get -u github.com/tcnksm/ghr
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./razor_go-${VERSION}.tar.gz
@@ -128,7 +168,8 @@ workflows:
   #     - test
   build:
     jobs:
-      - build
+      # - build-amd
+      - build-arm
       - publish-github-release:
           requires:
             - build
