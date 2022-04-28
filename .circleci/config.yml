@@ -100,7 +100,7 @@ jobs:
             VERSION=$(git describe --tags --abbrev=0)
             cd build/bin
             tar -czvf razor_go-${VERSION}.tar.gz razor
-            mv razor_go-${VERSION}.tar.gz ./artifacts
+            mv razor_go-${VERSION}.tar.gz ../../
       - persist_to_workspace:
           root: .
           paths:
