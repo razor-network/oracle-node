@@ -167,17 +167,9 @@ jobs:
 
 
 workflows:
-  # tests:
-  #   jobs:
-  #     - test
-  build:
+  tests:
     jobs:
-      - build-amd
-      - build-arm
-      - publish-github-release:
-          requires:
-            - build-arm
-            - build-amd
+      - test
   publish:
     jobs:
       - push-docker-build:
@@ -187,3 +179,11 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v.*/
+      - publish-binary:
+          jobs:
+            - build-amd
+            - build-arm
+            - publish-github-release:
+                requires:
+                  - build-arm
+                  - build-amd
