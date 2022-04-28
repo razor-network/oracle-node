@@ -180,6 +180,11 @@ workflows:
             tags:
               only: /^v.*/
       - publish-binary:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
           jobs:
             - build-amd
             - build-arm
