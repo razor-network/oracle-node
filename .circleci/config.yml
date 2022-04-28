@@ -94,7 +94,30 @@ jobs:
           command: |         
             npm i
             npm run build-noargs
+      - run:
+          name: "Creating Zip"
+          command: |
+            tar -czvf razor-go.tar.gz build/bin/razor
+            mkdir ./artifacts
+            mv release.tar.gz ./artifacts
+      - persist_to_workspace:
+          root: .
+          paths:
+            - artifacts
 
+
+  publish-github-release:
+    docker:
+      - image: circleci/golang:1.10
+    steps:
+      - attach_workspace:
+          at: artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: | 
+            VERSION=$(git describe --tags --abbrev=0)
+            go get -u github.com/tcnksm/ghr
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./build/bin/*
 
 
 workflows:
@@ -104,6 +127,9 @@ workflows:
   build:
     jobs:
       - build
+      - publish-github-release:
+          requires:
+            - build
   publish:
     jobs:
       - push-docker-build:
