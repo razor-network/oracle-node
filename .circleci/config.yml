@@ -99,12 +99,12 @@ jobs:
           command: |
             VERSION=$(git describe --tags --abbrev=0)
             cd build/bin
-            tar -czvf razor_go-${VERSION}.tar.gz razor
-            mv razor_go-${VERSION}.tar.gz ../../
+            tar -czvf razor_go.${VERSION}.linux-amd64.tar.gz razor
+            mv razor_go.${VERSION}.linux-amd64.tar.gz ../../
       - persist_to_workspace:
           root: .
           paths:
-            - .
+            - razor_go.${VERSION}.linux-amd64.tar.gz
   build-arm:
     machine:
       image: ubuntu-2004:202101-01
@@ -140,24 +140,34 @@ jobs:
           command: |
             VERSION=$(git describe --tags --abbrev=0)
             cd build/bin
-            tar -czvf razor_go-${VERSION}.tar.gz razor
-            mv razor_go-${VERSION}.tar.gz ../../
+            tar -czvf razor_go.${VERSION}.linux-arm64.tar.gz razor
+            mv razor_go.${VERSION}.linux-arm64.tar.gz ../../
       - persist_to_workspace:
           root: .
           paths:
-            - .
+            - razor_go.${VERSION}.linux-arm64.tar.gz
 
 
   publish-github-release:
     docker:
       - image: cimg/go:1.17
     steps:
+      - checkout
+      - run:
+          name: "Getting Version"
+          command: |
+            VERSION=$(git describe --tags --abbrev=0)
       - attach_workspace:
-          at: .
+          at: razor_go.${VERSION}.linux-amd64.tar.gz
+      - attach_workspace:
+          at: razor_go.${VERSION}.linux-arm64.tar.gz
       - run:
           name: "Publish Release on GitHub"
           command: | 
             VERSION=$(git describe --tags --abbrev=0)
+            mkdir artifacts
+            mv razor_go.${VERSION}.linux-amd64.tar.gz artifacts/
+            mv razor_go.${VERSION}.linux-arm64.tar.gz artifacts/ 
             go get -u github.com/tcnksm/ghr
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./razor_go-${VERSION}.tar.gz
 
@@ -168,11 +178,12 @@ workflows:
   #     - test
   build:
     jobs:
-      # - build-amd
+      - build-amd
       - build-arm
       - publish-github-release:
           requires:
             - build-arm
+            - build-amd
   publish:
     jobs:
       - push-docker-build:
