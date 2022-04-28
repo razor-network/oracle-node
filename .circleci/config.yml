@@ -98,7 +98,8 @@ jobs:
           name: "Creating Zip"
           command: |
             VERSION=$(git describe --tags --abbrev=0)
-            tar -czvf razor_go-${VERSION}.tar.gz build/bin/razor
+            cd build/bin
+            tar -czvf razor_go-${VERSION}.tar.gz razor
             mkdir ./artifacts
             mv razor_go-${VERSION}.tar.gz ./artifacts
       - persist_to_workspace:
