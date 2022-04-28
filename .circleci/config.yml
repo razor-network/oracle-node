@@ -104,7 +104,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - artifacts
+            - .
 
 
   publish-github-release:
@@ -112,7 +112,7 @@ jobs:
       - image: circleci/golang:1.10
     steps:
       - attach_workspace:
-          at: artifacts
+          at: .
       - run:
           name: "Publish Release on GitHub"
           command: | 
