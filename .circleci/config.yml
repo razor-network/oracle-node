@@ -158,14 +158,13 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: | 
-            VERSION=$(git describe --tags --abbrev=0)
-            mv razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz
-            mv razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
-            mkdir artifacts
-            mv razor_go.${VERSION}.linux-amd64.tar.gz artifacts/
-            mv razor_go.${VERSION}.linux-arm64.tar.gz artifacts/ 
             go get -u github.com/tcnksm/ghr
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} artifacts/*
+            VERSION=$(git describe --tags --abbrev=0)
+            mkdir artifacts
+            mv razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz && mv razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
+            mv razor_go.${VERSION}.linux-amd64.tar.gz artifacts/ && mv razor_go.${VERSION}.linux-arm64.tar.gz artifacts/ 
+            echo "Pushing artifacts...."
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./artifacts/*
 
 
 workflows:
