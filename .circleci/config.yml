@@ -97,14 +97,13 @@ jobs:
       - run:
           name: "Creating Zip"
           command: |
-            VERSION=$(git describe --tags --abbrev=0)
             cd build/bin
-            tar -czvf razor_go.${VERSION}.linux-amd64.tar.gz razor
-            mv razor_go.${VERSION}.linux-amd64.tar.gz ../../
+            tar -czvf razor_go.linux-amd64.tar.gz razor
+            mv razor_go.linux-amd64.tar.gz ../../
       - persist_to_workspace:
           root: .
           paths:
-            - razor_go.${VERSION}.linux-amd64.tar.gz
+            - razor_go.linux-amd64.tar.gz
   build-arm:
     machine:
       image: ubuntu-2004:202101-01
@@ -138,14 +137,13 @@ jobs:
       - run:
           name: "Creating Zip"
           command: |
-            VERSION=$(git describe --tags --abbrev=0)
             cd build/bin
-            tar -czvf razor_go.${VERSION}.linux-arm64.tar.gz razor
-            mv razor_go.${VERSION}.linux-arm64.tar.gz ../../
+            tar -czvf razor_go.linux-arm64.tar.gz razor
+            mv razor_go.linux-arm64.tar.gz ../../
       - persist_to_workspace:
           root: .
           paths:
-            - razor_go.${VERSION}.linux-arm64.tar.gz
+            - razor_go.linux-arm64.tar.gz
 
 
   publish-github-release:
@@ -153,18 +151,16 @@ jobs:
       - image: cimg/go:1.17
     steps:
       - checkout
-      - run:
-          name: "Getting Version"
-          command: |
-            VERSION=$(git describe --tags --abbrev=0)
       - attach_workspace:
-          at: razor_go.${VERSION}.linux-amd64.tar.gz
+          at: razor_go.linux-amd64.tar.gz
       - attach_workspace:
-          at: razor_go.${VERSION}.linux-arm64.tar.gz
+          at: razor_go.linux-arm64.tar.gz
       - run:
           name: "Publish Release on GitHub"
           command: | 
             VERSION=$(git describe --tags --abbrev=0)
+            cp razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz
+            cp razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
             mkdir artifacts
             mv razor_go.${VERSION}.linux-amd64.tar.gz artifacts/
             mv razor_go.${VERSION}.linux-arm64.tar.gz artifacts/ 
