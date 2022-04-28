@@ -97,9 +97,10 @@ jobs:
       - run:
           name: "Creating Zip"
           command: |
-            tar -czvf razor-go.tar.gz build/bin/razor
+            VERSION=$(git describe --tags --abbrev=0)
+            tar -czvf razor_go-${VERSION}.tar.gz build/bin/razor
             mkdir ./artifacts
-            mv release.tar.gz ./artifacts
+            mv razor_go-${VERSION}.tar.gz ./artifacts
       - persist_to_workspace:
           root: .
           paths:
@@ -117,7 +118,7 @@ jobs:
           command: | 
             VERSION=$(git describe --tags --abbrev=0)
             go get -u github.com/tcnksm/ghr
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./build/bin/*
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} ./artifacts/*
 
 
 workflows:
