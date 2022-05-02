@@ -14,6 +14,7 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sort"
+	"sync"
 	"time"
 )
 
@@ -21,6 +22,7 @@ var (
 	_mediansData           []*big.Int
 	_revealedCollectionIds []uint16
 	_revealedDataMaps      *types.RevealedDataMaps
+	iterations             []int
 )
 
 // Index reveal events of staker's
@@ -220,21 +222,38 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 		return -1
 	}
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+	var wg sync.WaitGroup
+	wg.Add(10)
 loop:
-	for i := 0; i < 10000000; i++ {
+	for i := 0; i <= 10; i++ {
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
 			break loop
 		default:
-			proposer.Iteration = i
-			isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
-			if isElected {
-				return i
-			}
+			go getIterationConcurrently(proposer, currentStakerStake, i*1000000, &wg)
 		}
 	}
-	return -1
+	log.Debug("Waiting for goroutines to finish...")
+	wg.Wait()
+	log.Debug("Done!")
+	if iterations == nil {
+		return -1
+	}
+	sort.Ints(iterations)
+	return iterations[0]
+}
+
+func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := iteration; i < iteration+1000000; i++ {
+		proposer.Iteration = i
+		isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
+		if isElected {
+			iterations = append(iterations, i)
+			break
+		}
+	}
 }
 
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
