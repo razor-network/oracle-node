@@ -223,7 +223,7 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	}
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 	var wg sync.WaitGroup
-	wg.Add(10)
+	wg.Add(11)
 loop:
 	for i := 0; i <= 10; i++ {
 		select {
@@ -231,7 +231,10 @@ loop:
 			log.Error("State timeout!")
 			break loop
 		default:
-			go getIterationConcurrently(proposer, currentStakerStake, i*1000000, &wg)
+			go func(i int) {
+				defer wg.Done()
+				getIterationConcurrently(proposer, currentStakerStake, i*1000000, &wg)
+			}(i)
 		}
 	}
 	log.Debug("Waiting for goroutines to finish...")
@@ -245,7 +248,6 @@ loop:
 }
 
 func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int, wg *sync.WaitGroup) {
-	defer wg.Done()
 	for i := iteration; i < iteration+1000000; i++ {
 		proposer.Iteration = i
 		isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
