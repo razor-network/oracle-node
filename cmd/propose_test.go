@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
@@ -930,49 +931,49 @@ func Test_pseudoRandomNumberGenerator(t *testing.T) {
 	}
 }
 
-//func BenchmarkGetIteration(b *testing.B) {
-//	var client *ethclient.Client
-//	var bufferPercent int32
-//
-//	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
-//	saltBytes32 := [32]byte{}
-//	copy(saltBytes32[:], salt)
-//
-//	proposer := types.ElectedProposer{
-//		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
-//		StakerId:        2,
-//		NumberOfStakers: 5,
-//		Salt:            saltBytes32,
-//	}
-//
-//	var table = []struct {
-//		stakeSnapshot *big.Int
-//	}{
-//		{stakeSnapshot: big.NewInt(1000)},
-//		{stakeSnapshot: big.NewInt(10000)},
-//		{stakeSnapshot: big.NewInt(100000)},
-//		{stakeSnapshot: big.NewInt(1000000)},
-//		{stakeSnapshot: big.NewInt(10000000)},
-//	}
-//
-//	for _, v := range table {
-//		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
-//			for i := 0; i < b.N; i++ {
-//				utilsMock := new(mocks.UtilsInterface)
-//				utilsPkgMock := new(Mocks.Utils)
-//
-//				razorUtils = utilsMock
-//				cmdUtils = &UtilsStruct{}
-//				utilsInterface = utilsPkgMock
-//
-//				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
-//				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
-//
-//				cmdUtils.GetIteration(client, proposer, bufferPercent)
-//			}
-//		})
-//	}
-//}
+func BenchmarkGetIteration(b *testing.B) {
+	var client *ethclient.Client
+	var bufferPercent int32
+
+	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	saltBytes32 := [32]byte{}
+	copy(saltBytes32[:], salt)
+
+	proposer := types.ElectedProposer{
+		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
+		StakerId:        2,
+		NumberOfStakers: 5,
+		Salt:            saltBytes32,
+	}
+
+	var table = []struct {
+		stakeSnapshot *big.Int
+	}{
+		{stakeSnapshot: big.NewInt(1000)},
+		{stakeSnapshot: big.NewInt(10000)},
+		{stakeSnapshot: big.NewInt(100000)},
+		{stakeSnapshot: big.NewInt(1000000)},
+		{stakeSnapshot: big.NewInt(10000000)},
+	}
+
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsMock := new(mocks.UtilsInterface)
+				utilsPkgMock := new(Mocks.Utils)
+
+				razorUtils = utilsMock
+				cmdUtils = &UtilsStruct{}
+				utilsInterface = utilsPkgMock
+
+				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
+				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
+
+				cmdUtils.GetIteration(client, proposer, bufferPercent)
+			}
+		})
+	}
+}
 
 func TestMakeBlock(t *testing.T) {
 	var (
