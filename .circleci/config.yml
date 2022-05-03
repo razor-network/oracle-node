@@ -163,12 +163,30 @@ jobs:
             mv razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz && mv razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
             echo "Pushing artifacts echo  razor_go.${VERSION}.linux-amd64.tar.gz and razor_go.${VERSION}.linux-arm64.tar.gz"
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} razor_go.${VERSION}.linux-amd64.tar.gz
-
+  commit-github:
+    docker:
+      - image: cimg/go:1.17
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "58:11:de:b1:c6:a7:27:ce:e0:90:6c:59:5a:15:25:20"
+      - run:
+          name: Commit to GitHub
+          command: |
+            git config user.email "shrikant1997upadhyay@gmail.com"
+            git config user.name "CircleCI Job"
+            git checkout master
+            git commit --allow-empty -am "Automatic commit from CircleCI [skip ci]"
+            git push origin main
 
 workflows:
-  tests:
+  # tests:
+  #   jobs:
+  #     - test
+  commit:
     jobs:
-      - test
+      - commit-github
   publish-github:
     jobs:
       - build-amd:
