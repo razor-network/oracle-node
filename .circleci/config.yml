@@ -176,7 +176,7 @@ jobs:
           command: |
             git config user.email "shrikant1997upadhyay@gmail.com"
             git config user.name "CircleCI Job"
-            git checkout master
+            git checkout main
             git commit --allow-empty -am "Automatic commit from CircleCI [skip ci]"
             git push origin main
 
