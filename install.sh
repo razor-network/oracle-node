@@ -1,5 +1,5 @@
 #!/bin/bash
-version="${VERSION:-v0.0.0}"
+version="${VERSION:-v1.0.0}"
 bin_dir="${BIN_DIR:-/usr/local/bin}"
 platform="${PLATFORM:-amd64}"
 
