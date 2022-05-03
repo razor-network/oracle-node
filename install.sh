@@ -1,9 +1,9 @@
 #!/bin/bash
-version="${VERSION:-0.0.0}"
+version="${VERSION:-v0.0.0}"
 bin_dir="${BIN_DIR:-/usr/local/bin}"
 platform="${PLATFORM:-amd64}"
 
-wget "https://github.com/razor-network/razor-go/releases/download/v$version/razor_go.linux-$platform.tar.gz" \
+wget "https://github.com/razor-network/razor-go/releases/download/$version/razor_go.linux-$platform.tar.gz" \
     -O /tmp/razor_go.tar.gz
 
 mkdir -p /tmp/razor_go
