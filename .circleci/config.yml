@@ -176,6 +176,7 @@ jobs:
           command: |
             git config user.email "shrikant1997upadhyay@gmail.com"
             git config user.name "CircleCI Job"
+            git push --set-upstream origin ${CIRCLE_BRANCH}
             sed -i 's/v0.0.0/v1.0.0/g' install.sh
             git commit --allow-empty -am "Automatic commit from CircleCI [skip ci]"
             git push
