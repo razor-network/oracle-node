@@ -92,6 +92,7 @@ type Utils interface {
 	GetProposedBlock(*ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)
 	GetSortedProposedBlockIds(*ethclient.Client, uint32) ([]uint32, error)
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
+	IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error)
 	GetBlockManagerWithOpts(*ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
 	GetStakeManager(*ethclient.Client) *bindings.StakeManager
 	GetStakeManagerWithOpts(*ethclient.Client) (*bindings.StakeManager, bind.CallOpts)
@@ -240,6 +241,7 @@ type BlockManagerUtils interface {
 	MaxAltBlocks(*ethclient.Client) (uint8, error)
 	SortedProposedBlockIds(*ethclient.Client, uint32, *big.Int) (uint32, error)
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
+	IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error)
 }
 
 type StakeManagerUtils interface {

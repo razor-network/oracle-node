@@ -57,6 +57,11 @@ func (b BlockManagerStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client)
 	return blockManager.BlockIndexToBeConfirmed(&opts)
 }
 
+func (b BlockManagerStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.IsBlockConfirmed(&opts, epoch)
+}
+
 func (s StakeManagerStruct) WithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.WithdrawInitiationPeriod(&opts)
