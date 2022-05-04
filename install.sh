@@ -1,8 +1,8 @@
 #!/bin/bash
-version="${VERSION:-v1.0.0}"
+set -e
+version="${VERSION:-v0.0.0}"
 bin_dir="${BIN_DIR:-/usr/local/bin}"
 platform="${PLATFORM:-amd64}"
-
 wget "https://github.com/razor-network/razor-go/releases/download/$version/razor_go.linux-$platform.tar.gz" \
     -O /tmp/razor_go.tar.gz
 
