@@ -1209,7 +1209,6 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 		{numOfStakers: 1000},
 		{numOfStakers: 100000},
 		{numOfStakers: 1000000},
-		{numOfStakers: 10000000},
 	}
 
 	for _, v := range table {
