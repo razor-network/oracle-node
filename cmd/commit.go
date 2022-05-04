@@ -41,14 +41,65 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 	return utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians), nil
 }
 
+func (*UtilsStruct) ModifyCollections(client *ethclient.Client, epoch uint32) (uint16, []bindings.StructsCollection, error) {
+	sortedProposedBlockIds, err := utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
+	if err != nil {
+		return 0, nil, err
+	}
+	proposedBlockToBeConfirmed, err := utils.UtilsInterface.GetProposedBlock(client, epoch, sortedProposedBlockIds[0])
+	if err != nil {
+		return 0, nil, err
+	}
+	collectionIdsInTheBlock := proposedBlockToBeConfirmed.Ids
+	collections, err := utils.UtilsInterface.GetAllCollections(client)
+
+	numActiveCollections, err := utils.UtilsInterface.GetNumCollections(client)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	for i := 0; i < len(collectionIdsInTheBlock); i++ {
+		collectionId := collectionIdsInTheBlock[i]
+		if collections[collectionId].EpochLastReported+collections[collectionId].Occurence != epoch+1 {
+			numActiveCollections -= 1
+			collections[collectionId].Active = false
+		}
+	}
+	dataBondCollectionIds, err := utils.UtilsInterface.GetDataBondCollections(client)
+	if err != nil {
+		return 0, nil, err
+	}
+	for i := 0; i < len(dataBondCollectionIds); i++ {
+		collectionId := dataBondCollectionIds[i]
+		if collections[collectionId].EpochLastReported+collections[collectionId].Occurence == epoch+1 && !collections[collectionId].Active {
+			numActiveCollections += 1
+			collections[collectionId].Active = true
+		}
+	}
+	return numActiveCollections, collections, nil
+}
+
 /*
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
 func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
+	isPreviousBlockConfirmed, err := utils.UtilsInterface.IsBlockConfirmed(client, epoch-1)
+	if err != nil {
+		return types.CommitData{}, err
+	}
+
 	numActiveCollections, err := utils.UtilsInterface.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
+	}
+
+	if !isPreviousBlockConfirmed {
+		updatedActiveCollections, _, err := cmdUtils.ModifyCollections(client, epoch-1)
+		if err != nil {
+			return types.CommitData{}, err
+		}
+		numActiveCollections = updatedActiveCollections
 	}
 
 	assignedCollections, seqAllottedCollections, err := utils.UtilsInterface.GetAssignedCollections(client, numActiveCollections, seed)

@@ -97,6 +97,26 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 	return collections, nil
 }
 
+func (*UtilsStruct) GetDataBondCollections(client *ethclient.Client) ([]uint16, error) {
+	var (
+		dataBondCollections []uint16
+		err                 error
+	)
+	err = retry.Do(
+		func() error {
+			dataBondCollections, err = BondManagerInterface.GetDataBondCollections(client)
+			if err != nil {
+				log.Error("Error in fetching data bonds")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return nil, err
+	}
+	return dataBondCollections, nil
+}
+
 func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	var (
 		collection bindings.StructsCollection

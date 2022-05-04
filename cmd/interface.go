@@ -240,6 +240,7 @@ type UtilsCmdInterface interface {
 	ClaimBounty(types.Configurations, *ethclient.Client, types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(types.TransactionOptions) (common.Hash, error)
 	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
+	ModifyCollections(client *ethclient.Client, epoch uint32) (uint16, []bindings.StructsCollection, error)
 	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
 	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
