@@ -1225,7 +1225,7 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
 				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(20), nil)
-				cmdUtilsMock.On("GetBufferPercent").Return(int32(10), nil)
+				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
 
 				ut := &UtilsStruct{}
 				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)
