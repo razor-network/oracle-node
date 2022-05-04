@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -373,6 +374,48 @@ func TestGetSalt(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error from GetSalt function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkHandleCommitState(b *testing.B) {
+	var (
+		client *ethclient.Client
+		epoch  uint32
+		seed   []byte
+	)
+
+	rogueValue := utils.GetRogueRandomValue(100000)
+
+	var table = []struct {
+		numActiveCollections uint16
+		assignedCollections  map[int]bool
+	}{
+		{numActiveCollections: 5, assignedCollections: map[int]bool{1: true, 2: true}},
+		{numActiveCollections: 10, assignedCollections: map[int]bool{1: true, 2: true, 3: true, 4: true}},
+		{numActiveCollections: 20, assignedCollections: map[int]bool{1: true, 2: true, 3: true, 4: true, 5: true, 6: true}},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Active_Collections%d", v.numActiveCollections), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsPkgMock := new(mocks2.Utils)
+				utilsMock := new(mocks.UtilsInterface)
+
+				utils.UtilsInterface = utilsPkgMock
+				razorUtils = utilsMock
+
+				utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
+				utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
+				utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(uint16(1), nil)
+				utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
+				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
+
+				ut := &UtilsStruct{}
+				_, err := ut.HandleCommitState(client, epoch, seed, types.Rogue{IsRogue: false})
+				if err != nil {
+					log.Fatal(err)
 				}
 			}
 		})
