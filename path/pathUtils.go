@@ -13,21 +13,21 @@ var OSUtilsInterface OSInterface
 
 type PathInterface interface {
 	GetDefaultPath() (string, error)
-	GetLogFilePath(string) (string, error)
+	GetLogFilePath(fileName string) (string, error)
 	GetConfigFilePath() (string, error)
 	GetJobFilePath() (string, error)
-	GetCommitDataFileName(string) (string, error)
-	GetProposeDataFileName(string) (string, error)
+	GetCommitDataFileName(address string) (string, error)
+	GetProposeDataFileName(address string) (string, error)
 	GetDisputeDataFileName(address string) (string, error)
 }
 
 type OSInterface interface {
 	UserHomeDir() (string, error)
-	Stat(string) (fs.FileInfo, error)
-	IsNotExist(error) bool
-	Mkdir(string, fs.FileMode) error
-	OpenFile(string, int, fs.FileMode) (*os.File, error)
-	Open(string) (*os.File, error)
+	Stat(name string) (fs.FileInfo, error)
+	IsNotExist(err error) bool
+	Mkdir(name string, perm fs.FileMode) error
+	OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error)
+	Open(name string) (*os.File, error)
 }
 
 type PathUtils struct{}

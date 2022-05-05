@@ -37,20 +37,20 @@ func (_m *VoteManagerUtils) Commitments(_a0 *ethclient.Client, _a1 uint32) (type
 	return r0, r1
 }
 
-// GetEpochLastCommitted provides a mock function with given fields: _a0, _a1
-func (_m *VoteManagerUtils) GetEpochLastCommitted(_a0 *ethclient.Client, _a1 uint32) (uint32, error) {
-	ret := _m.Called(_a0, _a1)
+// GetEpochLastCommitted provides a mock function with given fields: client, stakerId
+func (_m *VoteManagerUtils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	ret := _m.Called(client, stakerId)
 
 	var r0 uint32
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(client, stakerId)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(client, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -58,20 +58,20 @@ func (_m *VoteManagerUtils) GetEpochLastCommitted(_a0 *ethclient.Client, _a1 uin
 	return r0, r1
 }
 
-// GetEpochLastRevealed provides a mock function with given fields: _a0, _a1
-func (_m *VoteManagerUtils) GetEpochLastRevealed(_a0 *ethclient.Client, _a1 uint32) (uint32, error) {
-	ret := _m.Called(_a0, _a1)
+// GetEpochLastRevealed provides a mock function with given fields: client, stakerId
+func (_m *VoteManagerUtils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	ret := _m.Called(client, stakerId)
 
 	var r0 uint32
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(client, stakerId)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(client, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,13 +79,13 @@ func (_m *VoteManagerUtils) GetEpochLastRevealed(_a0 *ethclient.Client, _a1 uint
 	return r0, r1
 }
 
-// GetInfluenceSnapshot provides a mock function with given fields: _a0, _a1, _a2
-func (_m *VoteManagerUtils) GetInfluenceSnapshot(_a0 *ethclient.Client, _a1 uint32, _a2 uint32) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetInfluenceSnapshot provides a mock function with given fields: client, epoch, stakerId
+func (_m *VoteManagerUtils) GetInfluenceSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error) {
+	ret := _m.Called(client, epoch, stakerId)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) *big.Int); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(client, epoch, stakerId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -94,7 +94,7 @@ func (_m *VoteManagerUtils) GetInfluenceSnapshot(_a0 *ethclient.Client, _a1 uint
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(client, epoch, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -125,13 +125,13 @@ func (_m *VoteManagerUtils) GetSaltFromBlockchain(client *ethclient.Client) ([32
 	return r0, r1
 }
 
-// GetStakeSnapshot provides a mock function with given fields: _a0, _a1, _a2
-func (_m *VoteManagerUtils) GetStakeSnapshot(_a0 *ethclient.Client, _a1 uint32, _a2 uint32) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetStakeSnapshot provides a mock function with given fields: client, epoch, stakerId
+func (_m *VoteManagerUtils) GetStakeSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error) {
+	ret := _m.Called(client, epoch, stakerId)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) *big.Int); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(client, epoch, stakerId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -140,7 +140,7 @@ func (_m *VoteManagerUtils) GetStakeSnapshot(_a0 *ethclient.Client, _a1 uint32, 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(client, epoch, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -9,13 +9,13 @@ type ViperInterface struct {
 	mock.Mock
 }
 
-// ViperWriteConfigAs provides a mock function with given fields: _a0
-func (_m *ViperInterface) ViperWriteConfigAs(_a0 string) error {
-	ret := _m.Called(_a0)
+// ViperWriteConfigAs provides a mock function with given fields: path
+func (_m *ViperInterface) ViperWriteConfigAs(path string) error {
+	ret := _m.Called(path)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(_a0)
+		r0 = rf(path)
 	} else {
 		r0 = ret.Error(0)
 	}

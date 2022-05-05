@@ -14,15 +14,15 @@ import (
 var AccountUtilsInterface AccountInterface
 
 type AccountInterface interface {
-	CreateAccount(string, string) accounts.Account
-	GetPrivateKeyFromKeystore(string, string) *ecdsa.PrivateKey
-	GetPrivateKey(string, string, string) *ecdsa.PrivateKey
-	SignData([]byte, types.Account, string) ([]byte, error)
-	Accounts(string) []accounts.Account
-	NewAccount(string, string) (accounts.Account, error)
-	DecryptKey([]byte, string) (*keystore.Key, error)
-	Sign([]byte, *ecdsa.PrivateKey) ([]byte, error)
-	ReadFile(string) ([]byte, error)
+	CreateAccount(path string, password string) accounts.Account
+	GetPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey
+	GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey
+	SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error)
+	Accounts(path string) []accounts.Account
+	NewAccount(path string, passphrase string) (accounts.Account, error)
+	DecryptKey(jsonBytes []byte, password string) (*keystore.Key, error)
+	Sign(digestHash []byte, prv *ecdsa.PrivateKey) ([]byte, error)
+	ReadFile(filename string) ([]byte, error)
 }
 
 type AccountUtils struct{}

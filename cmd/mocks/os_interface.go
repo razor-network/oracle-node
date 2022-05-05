@@ -9,7 +9,7 @@ type OSInterface struct {
 	mock.Mock
 }
 
-// Exit provides a mock function with given fields: _a0
-func (_m *OSInterface) Exit(_a0 int) {
-	_m.Called(_a0)
+// Exit provides a mock function with given fields: code
+func (_m *OSInterface) Exit(code int) {
+	_m.Called(code)
 }

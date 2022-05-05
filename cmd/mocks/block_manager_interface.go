@@ -20,13 +20,13 @@ type BlockManagerInterface struct {
 	mock.Mock
 }
 
-// ClaimBlockReward provides a mock function with given fields: _a0, _a1
-func (_m *BlockManagerInterface) ClaimBlockReward(_a0 *ethclient.Client, _a1 *bind.TransactOpts) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1)
+// ClaimBlockReward provides a mock function with given fields: client, opts
+func (_m *BlockManagerInterface) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(client, opts)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts) *types.Transaction); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(client, opts)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -35,7 +35,7 @@ func (_m *BlockManagerInterface) ClaimBlockReward(_a0 *ethclient.Client, _a1 *bi
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(client, opts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -43,13 +43,13 @@ func (_m *BlockManagerInterface) ClaimBlockReward(_a0 *ethclient.Client, _a1 *bi
 	return r0, r1
 }
 
-// DisputeBiggestStakeProposed provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
-func (_m *BlockManagerInterface) DisputeBiggestStakeProposed(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint8, _a4 uint32) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+// DisputeBiggestStakeProposed provides a mock function with given fields: client, opts, epoch, blockIndex, correctBiggestStakerId
+func (_m *BlockManagerInterface) DisputeBiggestStakeProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestStakerId uint32) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, epoch, blockIndex, correctBiggestStakerId)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+		r0 = rf(client, opts, epoch, blockIndex, correctBiggestStakerId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -58,7 +58,7 @@ func (_m *BlockManagerInterface) DisputeBiggestStakeProposed(_a0 *ethclient.Clie
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4)
+		r1 = rf(client, opts, epoch, blockIndex, correctBiggestStakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -158,13 +158,13 @@ func (_m *BlockManagerInterface) FinalizeDispute(client *ethclient.Client, opts 
 	return r0, r1
 }
 
-// GiveSorted provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
-func (_m *BlockManagerInterface) GiveSorted(_a0 *bindings.BlockManager, _a1 *bind.TransactOpts, _a2 uint32, _a3 uint16, _a4 []uint32) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+// GiveSorted provides a mock function with given fields: blockManager, opts, epoch, leafId, sortedValues
+func (_m *BlockManagerInterface) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) (*types.Transaction, error) {
+	ret := _m.Called(blockManager, opts, epoch, leafId, sortedValues)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+		r0 = rf(blockManager, opts, epoch, leafId, sortedValues)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -173,7 +173,7 @@ func (_m *BlockManagerInterface) GiveSorted(_a0 *bindings.BlockManager, _a1 *bin
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4)
+		r1 = rf(blockManager, opts, epoch, leafId, sortedValues)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -181,13 +181,13 @@ func (_m *BlockManagerInterface) GiveSorted(_a0 *bindings.BlockManager, _a1 *bin
 	return r0, r1
 }
 
-// Propose provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5, _a6
-func (_m *BlockManagerInterface) Propose(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 []uint16, _a4 []uint32, _a5 *big.Int, _a6 uint32) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+// Propose provides a mock function with given fields: client, opts, epoch, ids, medians, iteration, biggestInfluencerId
+func (_m *BlockManagerInterface) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, epoch, ids, medians, iteration, biggestInfluencerId)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+		r0 = rf(client, opts, epoch, ids, medians, iteration, biggestInfluencerId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -196,7 +196,7 @@ func (_m *BlockManagerInterface) Propose(_a0 *ethclient.Client, _a1 *bind.Transa
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+		r1 = rf(client, opts, epoch, ids, medians, iteration, biggestInfluencerId)
 	} else {
 		r1 = ret.Error(1)
 	}
