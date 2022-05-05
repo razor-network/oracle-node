@@ -393,7 +393,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 		numActiveCollections uint16
 		assignedCollections  map[int]bool
 	}{
-		{numActiveCollections: 5, assignedCollections: map[int]bool{1: true, 2: true}},
+		{numActiveCollections: 5, assignedCollections: map[int]bool{1: true, 2: true, 3: true}},
 		{numActiveCollections: 10, assignedCollections: map[int]bool{1: true, 2: true, 3: true, 4: true}},
 		{numActiveCollections: 20, assignedCollections: map[int]bool{1: true, 2: true, 3: true, 4: true, 5: true, 6: true}},
 	}
