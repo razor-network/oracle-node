@@ -931,50 +931,6 @@ func Test_pseudoRandomNumberGenerator(t *testing.T) {
 	}
 }
 
-func BenchmarkGetIteration(b *testing.B) {
-	var client *ethclient.Client
-	var bufferPercent int32
-
-	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
-	saltBytes32 := [32]byte{}
-	copy(saltBytes32[:], salt)
-
-	proposer := types.ElectedProposer{
-		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
-		StakerId:        2,
-		NumberOfStakers: 5,
-		Salt:            saltBytes32,
-	}
-
-	var table = []struct {
-		stakeSnapshot *big.Int
-	}{
-		{stakeSnapshot: big.NewInt(1000)},
-		{stakeSnapshot: big.NewInt(10000)},
-		{stakeSnapshot: big.NewInt(100000)},
-		{stakeSnapshot: big.NewInt(1000000)},
-		{stakeSnapshot: big.NewInt(10000000)},
-	}
-
-	for _, v := range table {
-		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				utilsMock := new(mocks.UtilsInterface)
-				utilsPkgMock := new(Mocks.Utils)
-
-				razorUtils = utilsMock
-				cmdUtils = &UtilsStruct{}
-				utilsInterface = utilsPkgMock
-
-				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
-				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
-
-				cmdUtils.GetIteration(client, proposer, bufferPercent)
-			}
-		})
-	}
-}
-
 func TestMakeBlock(t *testing.T) {
 	var (
 		client      *ethclient.Client
@@ -1194,5 +1150,226 @@ func TestGetSortedRevealedValues(t *testing.T) {
 				t.Errorf("GetSortedRevealedValues() got = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkGetIteration(b *testing.B) {
+	var client *ethclient.Client
+	var bufferPercent int32
+
+	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	saltBytes32 := [32]byte{}
+	copy(saltBytes32[:], salt)
+
+	proposer := types.ElectedProposer{
+		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
+		StakerId:        2,
+		NumberOfStakers: 5,
+		Salt:            saltBytes32,
+	}
+
+	var table = []struct {
+		stakeSnapshot *big.Int
+	}{
+		{stakeSnapshot: big.NewInt(1000)},
+		{stakeSnapshot: big.NewInt(10000)},
+		{stakeSnapshot: big.NewInt(100000)},
+		{stakeSnapshot: big.NewInt(1000000)},
+		{stakeSnapshot: big.NewInt(10000000)},
+	}
+
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsMock := new(mocks.UtilsInterface)
+				utilsPkgMock := new(Mocks.Utils)
+
+				razorUtils = utilsMock
+				cmdUtils = &UtilsStruct{}
+				utilsInterface = utilsPkgMock
+
+				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
+				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
+
+				cmdUtils.GetIteration(client, proposer, bufferPercent)
+			}
+		})
+	}
+}
+
+func BenchmarkGetBiggestStakeAndId(b *testing.B) {
+	var client *ethclient.Client
+	var address string
+	var epoch uint32
+
+	var table = []struct {
+		numOfStakers uint32
+	}{
+		{numOfStakers: 10},
+		{numOfStakers: 1000},
+		{numOfStakers: 100000},
+		{numOfStakers: 1000000},
+	}
+
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.numOfStakers), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsMock := new(mocks.UtilsInterface)
+				cmdUtilsMock := new(mocks.UtilsCmdInterface)
+				utilsPkgMock := new(Mocks.Utils)
+
+				razorUtils = utilsMock
+				utilsInterface = utilsPkgMock
+				cmdUtils = cmdUtilsMock
+
+				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
+				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
+				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
+				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
+
+				ut := &UtilsStruct{}
+				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkInfluencedMedian(b *testing.B) {
+	var table = []struct {
+		numOfSortedVotes       int
+		totalInfluenceRevealed *big.Int
+	}{
+		{numOfSortedVotes: 10, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18))},
+		{numOfSortedVotes: 100, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
+		{numOfSortedVotes: 500, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
+		{numOfSortedVotes: 1000, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(420000), big.NewInt(1e18))},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Sorted_Votes_%d", v.numOfSortedVotes), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utils := &UtilsStruct{}
+				sortedVotes := GetDummyVotes(v.numOfSortedVotes)
+				utils.InfluencedMedian(sortedVotes, v.totalInfluenceRevealed)
+			}
+		})
+	}
+}
+
+func BenchmarkGetSortedRevealedValues(b *testing.B) {
+	var (
+		client      *ethclient.Client
+		blockNumber *big.Int
+		epoch       uint32
+	)
+	table := []struct {
+		numOfAssignedAssets int
+		numOfRevealedValues uint16
+	}{
+		{numOfAssignedAssets: 1, numOfRevealedValues: 10},
+		{numOfAssignedAssets: 10, numOfRevealedValues: 100},
+		{numOfAssignedAssets: 100, numOfRevealedValues: 1000},
+		{numOfAssignedAssets: 1000, numOfRevealedValues: 10000},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Assigned_Assets_%d, Number_Of_Revealed_Votes_%d", v.numOfAssignedAssets, v.numOfRevealedValues), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+				cmdUtils = cmdUtilsMock
+				asset := GetDummyRevealedValues(v.numOfRevealedValues)
+
+				cmdUtilsMock.On("IndexRevealEventsOfCurrentEpoch", mock.Anything, mock.Anything, mock.Anything).Return(GetDummyAssignedAssets(asset, v.numOfAssignedAssets), nil)
+				ut := &UtilsStruct{}
+				_, err := ut.GetSortedRevealedValues(client, blockNumber, epoch)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkMakeBlock(b *testing.B) {
+	var (
+		client      *ethclient.Client
+		blockNumber *big.Int
+		epoch       uint32
+	)
+
+	table := []struct {
+		numOfVotes int
+	}{
+		{numOfVotes: 1},
+		{numOfVotes: 100},
+		{numOfVotes: 1000},
+		{numOfVotes: 10000},
+		{numOfVotes: 100000},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Votes_%d", v.numOfVotes), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsMock := new(mocks.UtilsInterface)
+				cmdUtilsMock := new(mocks.UtilsCmdInterface)
+
+				razorUtils = utilsMock
+				cmdUtils = cmdUtilsMock
+
+				votes := GetUint32DummyVotes(v.numOfVotes)
+
+				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(&types.RevealedDataMaps{
+					SortedRevealedValues: map[uint16][]uint32{0: votes},
+					VoteWeights:          map[uint32]*big.Int{100: big.NewInt(100)},
+					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
+				}, nil)
+				utilsMock.On("GetActiveCollections", mock.Anything).Return([]uint16{1}, nil)
+				ut := &UtilsStruct{}
+				_, _, _, err := ut.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+func GetDummyVotes(numOfVotes int) []*big.Int {
+	var result []*big.Int
+	for i := 0; i < numOfVotes; i++ {
+		result = append(result, big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18)))
+	}
+	return result
+}
+
+func GetUint32DummyVotes(numOfVotes int) []uint32 {
+	var result []uint32
+	for i := 0; i < numOfVotes; i++ {
+		result = append(result, 100)
+	}
+	return result
+}
+
+func GetDummyAssignedAssets(asset types.RevealedStruct, numOfAssignedAssets int) []types.RevealedStruct {
+	var assignedAssets []types.RevealedStruct
+	for i := 1; i <= numOfAssignedAssets; i++ {
+		assignedAssets = append(assignedAssets, asset)
+	}
+	return assignedAssets
+}
+
+func GetDummyRevealedValues(numOfRevealedValues uint16) types.RevealedStruct {
+	var revealedValues []types.AssignedAsset
+	var i uint16
+	for i = 1; i < numOfRevealedValues; i++ {
+		revealedValues = append(revealedValues, types.AssignedAsset{
+			LeafId: i,
+			Value:  1000,
+		})
+	}
+	return types.RevealedStruct{
+		RevealedValues: revealedValues,
+		Influence:      big.NewInt(1000),
 	}
 }

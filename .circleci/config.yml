@@ -65,10 +65,131 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:$CIRCLE_TAG .
+  build-amd:
+    machine:
+      image: ubuntu-2004:202101-01
+    steps:
+      - checkout
+      - run:
+          name: "Installing Go" 
+          command: | 
+            sudo apt-get update
+            sudo rm -rf /usr/local/go  
+            wget https://dl.google.com/go/go1.17.7.linux-amd64.tar.gz 
+            sudo tar -xvf go1.17.7.linux-amd64.tar.gz   
+            sudo mv go /usr/local  
+      - run:
+          name: "Check Version" 
+          command: | 
+            go version
+            node -v
+      - run:
+          name: "Installing abigen" 
+          command: |             
+            sudo add-apt-repository -y ppa:ethereum/ethereum
+            sudo apt-get update -y
+            sudo apt-get install ethereum -y
+      - run:
+          name: "Start building" 
+          command: |         
+            npm i
+            npm run build-noargs
+      - run:
+          name: "Creating Zip"
+          command: |
+            cd build/bin
+            tar -czvf razor_go.linux-amd64.tar.gz razor
+            mv razor_go.linux-amd64.tar.gz ../../
+      - persist_to_workspace:
+          root: .
+          paths:
+            - razor_go.linux-amd64.tar.gz
+  build-arm:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: "Installing Go" 
+          command: | 
+            sudo apt-get update
+            sudo rm -rf /usr/local/go  
+            wget https://dl.google.com/go/go1.17.7.linux-arm64.tar.gz 
+            sudo tar -xvf go1.17.7.linux-arm64.tar.gz   
+            sudo mv go /usr/local  
+      - run:
+          name: "Check Version" 
+          command: | 
+            go version
+            node -v
+      - run:
+          name: "Installing abigen" 
+          command: |             
+            sudo add-apt-repository -y ppa:ethereum/ethereum
+            sudo apt-get update -y
+            sudo apt-get install ethereum -y
+      - run:
+          name: "Start building" 
+          command: |         
+            npm i
+            npm run build-noargs
+      - run:
+          name: "Creating Zip"
+          command: |
+            cd build/bin
+            tar -czvf razor_go.linux-arm64.tar.gz razor
+            mv razor_go.linux-arm64.tar.gz ../../
+      - persist_to_workspace:
+          root: .
+          paths:
+            - razor_go.linux-arm64.tar.gz
+
+  publish-github-release:
+    docker:
+      - image: cimg/go:1.17
+    steps:
+      - checkout
+      - attach_workspace:
+          at: razor_go.linux-amd64.tar.gz
+      - attach_workspace:
+          at: razor_go.linux-arm64.tar.gz
+      - run:
+          name: "Publish Release on GitHub"
+          command: | 
+            go get -u github.com/tcnksm/ghr
+            VERSION=$(git describe --tags --abbrev=0)
+            mv razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz && mv razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
+            echo "Pushing artifacts echo  razor_go.${VERSION}.linux-amd64.tar.gz and razor_go.${VERSION}.linux-arm64.tar.gz"
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} razor_go.${VERSION}.linux-amd64.tar.gz
+
 workflows:
   tests:
     jobs:
       - test
+  publish-github:
+    jobs:
+      - build-amd:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/      
+      - build-arm:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/  
+      - publish-github-release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+          requires:
+            - build-arm
+            - build-amd
   publish:
     jobs:
       - push-docker-build:
