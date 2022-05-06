@@ -13,13 +13,13 @@ type CryptoInterface struct {
 	mock.Mock
 }
 
-// HexToECDSA provides a mock function with given fields: _a0
-func (_m *CryptoInterface) HexToECDSA(_a0 string) (*ecdsa.PrivateKey, error) {
-	ret := _m.Called(_a0)
+// HexToECDSA provides a mock function with given fields: hexKey
+func (_m *CryptoInterface) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
+	ret := _m.Called(hexKey)
 
 	var r0 *ecdsa.PrivateKey
 	if rf, ok := ret.Get(0).(func(string) *ecdsa.PrivateKey); ok {
-		r0 = rf(_a0)
+		r0 = rf(hexKey)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ecdsa.PrivateKey)
@@ -28,7 +28,7 @@ func (_m *CryptoInterface) HexToECDSA(_a0 string) (*ecdsa.PrivateKey, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(hexKey)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -19,13 +19,13 @@ type AccountInterface struct {
 	mock.Mock
 }
 
-// Accounts provides a mock function with given fields: _a0
-func (_m *AccountInterface) Accounts(_a0 string) []accounts.Account {
-	ret := _m.Called(_a0)
+// Accounts provides a mock function with given fields: path
+func (_m *AccountInterface) Accounts(path string) []accounts.Account {
+	ret := _m.Called(path)
 
 	var r0 []accounts.Account
 	if rf, ok := ret.Get(0).(func(string) []accounts.Account); ok {
-		r0 = rf(_a0)
+		r0 = rf(path)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]accounts.Account)
@@ -35,13 +35,13 @@ func (_m *AccountInterface) Accounts(_a0 string) []accounts.Account {
 	return r0
 }
 
-// CreateAccount provides a mock function with given fields: _a0, _a1
-func (_m *AccountInterface) CreateAccount(_a0 string, _a1 string) accounts.Account {
-	ret := _m.Called(_a0, _a1)
+// CreateAccount provides a mock function with given fields: path, password
+func (_m *AccountInterface) CreateAccount(path string, password string) accounts.Account {
+	ret := _m.Called(path, password)
 
 	var r0 accounts.Account
 	if rf, ok := ret.Get(0).(func(string, string) accounts.Account); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(path, password)
 	} else {
 		r0 = ret.Get(0).(accounts.Account)
 	}
@@ -49,13 +49,13 @@ func (_m *AccountInterface) CreateAccount(_a0 string, _a1 string) accounts.Accou
 	return r0
 }
 
-// DecryptKey provides a mock function with given fields: _a0, _a1
-func (_m *AccountInterface) DecryptKey(_a0 []byte, _a1 string) (*keystore.Key, error) {
-	ret := _m.Called(_a0, _a1)
+// DecryptKey provides a mock function with given fields: jsonBytes, password
+func (_m *AccountInterface) DecryptKey(jsonBytes []byte, password string) (*keystore.Key, error) {
+	ret := _m.Called(jsonBytes, password)
 
 	var r0 *keystore.Key
 	if rf, ok := ret.Get(0).(func([]byte, string) *keystore.Key); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(jsonBytes, password)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*keystore.Key)
@@ -64,7 +64,7 @@ func (_m *AccountInterface) DecryptKey(_a0 []byte, _a1 string) (*keystore.Key, e
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]byte, string) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(jsonBytes, password)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -72,13 +72,13 @@ func (_m *AccountInterface) DecryptKey(_a0 []byte, _a1 string) (*keystore.Key, e
 	return r0, r1
 }
 
-// GetPrivateKey provides a mock function with given fields: _a0, _a1, _a2
-func (_m *AccountInterface) GetPrivateKey(_a0 string, _a1 string, _a2 string) *ecdsa.PrivateKey {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetPrivateKey provides a mock function with given fields: address, password, keystorePath
+func (_m *AccountInterface) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
+	ret := _m.Called(address, password, keystorePath)
 
 	var r0 *ecdsa.PrivateKey
 	if rf, ok := ret.Get(0).(func(string, string, string) *ecdsa.PrivateKey); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(address, password, keystorePath)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ecdsa.PrivateKey)
@@ -88,13 +88,13 @@ func (_m *AccountInterface) GetPrivateKey(_a0 string, _a1 string, _a2 string) *e
 	return r0
 }
 
-// GetPrivateKeyFromKeystore provides a mock function with given fields: _a0, _a1
-func (_m *AccountInterface) GetPrivateKeyFromKeystore(_a0 string, _a1 string) *ecdsa.PrivateKey {
-	ret := _m.Called(_a0, _a1)
+// GetPrivateKeyFromKeystore provides a mock function with given fields: keystorePath, password
+func (_m *AccountInterface) GetPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey {
+	ret := _m.Called(keystorePath, password)
 
 	var r0 *ecdsa.PrivateKey
 	if rf, ok := ret.Get(0).(func(string, string) *ecdsa.PrivateKey); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(keystorePath, password)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ecdsa.PrivateKey)
@@ -104,20 +104,20 @@ func (_m *AccountInterface) GetPrivateKeyFromKeystore(_a0 string, _a1 string) *e
 	return r0
 }
 
-// NewAccount provides a mock function with given fields: _a0, _a1
-func (_m *AccountInterface) NewAccount(_a0 string, _a1 string) (accounts.Account, error) {
-	ret := _m.Called(_a0, _a1)
+// NewAccount provides a mock function with given fields: path, passphrase
+func (_m *AccountInterface) NewAccount(path string, passphrase string) (accounts.Account, error) {
+	ret := _m.Called(path, passphrase)
 
 	var r0 accounts.Account
 	if rf, ok := ret.Get(0).(func(string, string) accounts.Account); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(path, passphrase)
 	} else {
 		r0 = ret.Get(0).(accounts.Account)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(path, passphrase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -125,13 +125,13 @@ func (_m *AccountInterface) NewAccount(_a0 string, _a1 string) (accounts.Account
 	return r0, r1
 }
 
-// ReadFile provides a mock function with given fields: _a0
-func (_m *AccountInterface) ReadFile(_a0 string) ([]byte, error) {
-	ret := _m.Called(_a0)
+// ReadFile provides a mock function with given fields: filename
+func (_m *AccountInterface) ReadFile(filename string) ([]byte, error) {
+	ret := _m.Called(filename)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(_a0)
+		r0 = rf(filename)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -140,7 +140,7 @@ func (_m *AccountInterface) ReadFile(_a0 string) ([]byte, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(filename)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -148,13 +148,13 @@ func (_m *AccountInterface) ReadFile(_a0 string) ([]byte, error) {
 	return r0, r1
 }
 
-// Sign provides a mock function with given fields: _a0, _a1
-func (_m *AccountInterface) Sign(_a0 []byte, _a1 *ecdsa.PrivateKey) ([]byte, error) {
-	ret := _m.Called(_a0, _a1)
+// Sign provides a mock function with given fields: digestHash, prv
+func (_m *AccountInterface) Sign(digestHash []byte, prv *ecdsa.PrivateKey) ([]byte, error) {
+	ret := _m.Called(digestHash, prv)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func([]byte, *ecdsa.PrivateKey) []byte); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(digestHash, prv)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -163,7 +163,7 @@ func (_m *AccountInterface) Sign(_a0 []byte, _a1 *ecdsa.PrivateKey) ([]byte, err
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]byte, *ecdsa.PrivateKey) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(digestHash, prv)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -171,13 +171,13 @@ func (_m *AccountInterface) Sign(_a0 []byte, _a1 *ecdsa.PrivateKey) ([]byte, err
 	return r0, r1
 }
 
-// SignData provides a mock function with given fields: _a0, _a1, _a2
-func (_m *AccountInterface) SignData(_a0 []byte, _a1 types.Account, _a2 string) ([]byte, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// SignData provides a mock function with given fields: hash, account, defaultPath
+func (_m *AccountInterface) SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
+	ret := _m.Called(hash, account, defaultPath)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func([]byte, types.Account, string) []byte); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(hash, account, defaultPath)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -186,7 +186,7 @@ func (_m *AccountInterface) SignData(_a0 []byte, _a1 types.Account, _a2 string) 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]byte, types.Account, string) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(hash, account, defaultPath)
 	} else {
 		r1 = ret.Error(1)
 	}
