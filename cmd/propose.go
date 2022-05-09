@@ -23,6 +23,7 @@ var (
 	_revealedCollectionIds []uint16
 	_revealedDataMaps      *types.RevealedDataMaps
 	iterations             []int
+	loopNumber             int
 )
 
 // Index reveal events of staker's
@@ -223,35 +224,37 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	}
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 	var wg sync.WaitGroup
-	wg.Add(11)
+	wg.Add(10)
 loop:
-	for i := 0; i <= 10; i++ {
+	for i := 0; i < 10; i++ {
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
 			break loop
 		default:
 			go func(i int) {
+				getIterationConcurrently(proposer, currentStakerStake, i)
 				defer wg.Done()
-				getIterationConcurrently(proposer, currentStakerStake, i*1000000, &wg)
 			}(i)
 		}
 	}
 	log.Debug("Waiting for goroutines to finish...")
 	wg.Wait()
 	log.Debug("Done!")
-	if iterations == nil {
-		return -1
-	}
+
 	sort.Ints(iterations)
 	return iterations[0]
 }
 
-func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int, wg *sync.WaitGroup) {
-	for i := iteration; i < iteration+1000000; i++ {
+func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int) {
+	for i := iteration * 1000000; i < (iteration*1000000)+1000000; i++ {
+		if iteration > loopNumber && loopNumber != 0 {
+			break
+		}
 		proposer.Iteration = i
 		isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
 		if isElected {
+			loopNumber = iteration
 			iterations = append(iterations, i)
 			break
 		}
