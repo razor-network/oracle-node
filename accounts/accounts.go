@@ -1,3 +1,4 @@
+//Package account provides all account related functions
 package accounts
 
 import (
@@ -10,6 +11,7 @@ import (
 
 var log = logger.NewLogger()
 
+//This function takes path and password as input and returns new account
 func (AccountUtils) CreateAccount(path string, password string) accounts.Account {
 	newAcc, err := AccountUtilsInterface.NewAccount(path, password)
 	if err != nil {
@@ -18,6 +20,7 @@ func (AccountUtils) CreateAccount(path string, password string) accounts.Account
 	return newAcc
 }
 
+//This function takes and path of keystore and password as input and returns private key of account
 func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey {
 	jsonBytes, err := AccountUtilsInterface.ReadFile(keystorePath)
 	if err != nil {
@@ -30,6 +33,7 @@ func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password stri
 	return key.PrivateKey
 }
 
+//This function takes address of account, password and keystore path as input and returns private key of account
 func (AccountUtils) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
 	allAccounts := AccountUtilsInterface.Accounts(keystorePath)
 	for _, account := range allAccounts {
@@ -40,6 +44,7 @@ func (AccountUtils) GetPrivateKey(address string, password string, keystorePath 
 	return nil
 }
 
+//This function takes hash, account and path as input and returns the signed data as array of byte
 func (AccountUtils) SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
 	privateKey := AccountUtilsInterface.GetPrivateKey(account.Address, account.Password, defaultPath)
 	return AccountUtilsInterface.Sign(hash, privateKey)
