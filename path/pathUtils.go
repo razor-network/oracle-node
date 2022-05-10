@@ -39,7 +39,7 @@ func (o OSUtils) UserHomeDir() (string, error) {
 	return os.UserHomeDir()
 }
 
-//This function is used to get status of the specified path
+//This function is used to get status of the specified file path
 func (o OSUtils) Stat(name string) (fs.FileInfo, error) {
 	return os.Stat(name)
 }
