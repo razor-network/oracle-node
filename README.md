@@ -97,7 +97,7 @@ Docker
 ```
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest razor create
+    razornetwork/razor-go:latest create
 ```
 
 Docker providing password file
@@ -107,7 +107,7 @@ docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     -v /path/of/password-file:/root/.razor/password-file \
     razornetwork/razor-go:latest \
-   razor create --password /root/.razor/password-file
+    create --password /root/.razor/password-file
 ```
 
 Example:
@@ -198,7 +198,7 @@ $ ./razor stakerInfo --stakerId <staker_id_of_the_staker>
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     stakerInfo --stakerId <staker_id_of_the_staker>
@@ -223,10 +223,10 @@ $ ./razor setDelegation --address <address> --status <true_or_false> --commissio
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    setDelegation --address <address> --status <true_or_false>
+    setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
 ```
 
 Example:
@@ -249,7 +249,7 @@ $ ./razor updateCommission --address <address> --commission <commission_percent>
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     updateCommission --address <address> --commission <commission_percent>
@@ -274,7 +274,7 @@ $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId 
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
@@ -299,7 +299,7 @@ $ ./razor claimCommission --address <address>
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     claimCommission --address <address> 
@@ -324,7 +324,7 @@ $ ./razor vote --address <address>
 docker
 
 ```
-docker run -it  -d --name razor-go \
+docker run -it --name razor-go \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     vote --address <address>
