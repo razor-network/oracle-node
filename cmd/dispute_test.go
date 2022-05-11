@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -923,4 +924,117 @@ func TestGetBountyIdFromEvents(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkGetCollectionIdPositionInBlock(b *testing.B) {
+	var client *ethclient.Client
+	var leafId uint16
+	var table = []struct {
+		numOfIds       uint16
+		idToBeDisputed uint16
+	}{
+		{numOfIds: 10, idToBeDisputed: 9},
+		{numOfIds: 100, idToBeDisputed: 99},
+		{numOfIds: 1000, idToBeDisputed: 999},
+		{numOfIds: 10000, idToBeDisputed: 9999},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Ids_In_ProposedBlock_%d", v.numOfIds), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsPkgMock := new(mocks2.Utils)
+
+				utils.UtilsInterface = utilsPkgMock
+
+				utilsPkgMock.On("GetCollectionIdFromLeafId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(v.idToBeDisputed, nil)
+				ut := &UtilsStruct{}
+				ut.GetCollectionIdPositionInBlock(client, leafId, bindings.StructsBlock{Ids: getDummyIds(v.numOfIds)})
+			}
+		})
+	}
+}
+
+func BenchmarkHandleDispute(b *testing.B) {
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
+
+	var client *ethclient.Client
+	var config types.Configurations
+	var account types.Account
+	var epoch uint32
+	var blockNumber *big.Int
+	var rogueData types.Rogue
+
+	table := []struct {
+		numOfSortedBlocks uint32
+	}{
+		{numOfSortedBlocks: 5},
+		{numOfSortedBlocks: 50},
+		{numOfSortedBlocks: 500},
+		{numOfSortedBlocks: 5000},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Sorted_Blocks_Proposed%d", v.numOfSortedBlocks), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				utilsMock := new(mocks.UtilsInterface)
+				cmdUtilsMock := new(mocks.UtilsCmdInterface)
+				blockManagerUtilsMock := new(mocks.BlockManagerInterface)
+				transactionUtilsMock := new(mocks.TransactionInterface)
+				utilsPkgMock := new(mocks2.Utils)
+
+				razorUtils = utilsMock
+				cmdUtils = cmdUtilsMock
+				blockManagerUtils = blockManagerUtilsMock
+				transactionUtils = transactionUtilsMock
+
+				utils.UtilsInterface = utilsPkgMock
+
+				medians := []uint32{6901548, 498307}
+				revealedCollectionIds := []uint16{1}
+				revealedDataMaps := &types.RevealedDataMaps{
+					SortedRevealedValues: nil,
+					VoteWeights:          nil,
+					InfluenceSum:         nil}
+				proposedBlock := bindings.StructsBlock{
+					Medians:      []uint32{6901548, 498307},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))}
+
+				utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
+				cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
+				cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(medians, revealedCollectionIds, revealedDataMaps, nil)
+				utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(proposedBlock, nil)
+				utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+				blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
+				transactionUtilsMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
+				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+				cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
+				utilsPkgMock.On("IsEqualUint32", mock.Anything, mock.Anything).Return(true, 0)
+				utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
+				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+				utils := &UtilsStruct{}
+				err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		})
+	}
+
+}
+
+func getDummyIds(numOfIds uint16) []uint16 {
+	var result []uint16
+	for i := uint16(1); i <= numOfIds; i++ {
+		result = append(result, i)
+	}
+	return result
+}
+
+func getUint32DummyIds(numOfIds uint32) []uint32 {
+	var result []uint32
+	for i := uint32(1); i < numOfIds; i++ {
+		result = append(result, i)
+	}
+	return result
 }

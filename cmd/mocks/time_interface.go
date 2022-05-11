@@ -13,7 +13,7 @@ type TimeInterface struct {
 	mock.Mock
 }
 
-// Sleep provides a mock function with given fields: _a0
-func (_m *TimeInterface) Sleep(_a0 time.Duration) {
-	_m.Called(_a0)
+// Sleep provides a mock function with given fields: duration
+func (_m *TimeInterface) Sleep(duration time.Duration) {
+	_m.Called(duration)
 }

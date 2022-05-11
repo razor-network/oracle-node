@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -338,4 +339,41 @@ func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkGenerateTreeRevealData(b *testing.B) {
+	table := []struct {
+		numOfAllottedCollections int
+	}{
+		{numOfAllottedCollections: 5},
+		{numOfAllottedCollections: 50},
+		{numOfAllottedCollections: 500},
+		{numOfAllottedCollections: 5000},
+		{numOfAllottedCollections: 10000},
+	}
+	for _, v := range table {
+		b.Run(fmt.Sprintf("Number_Of_Allotted_Collections%d", v.numOfAllottedCollections), func(b *testing.B) {
+			merkleTree := [][][]byte{{{byte(1)}, {byte(2)}}, {{byte(3)}, {byte(4)}}, {{byte(5)}, {byte(6)}}}
+			merkleInterface := new(mocks2.MerkleTreeInterface)
+			utils2.MerkleInterface = merkleInterface
+
+			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return([][32]byte{[32]byte{1, 2, 3}, {4, 5, 6}})
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return([32]byte{100})
+
+			ut := &UtilsStruct{}
+			seqAllottedCollections := getDummySeqAllottedCollection(v.numOfAllottedCollections)
+			ut.GenerateTreeRevealData(merkleTree, types.CommitData{
+				SeqAllottedCollections: seqAllottedCollections,
+				Leaves:                 GetDummyVotes(v.numOfAllottedCollections),
+			})
+		})
+	}
+}
+
+func getDummySeqAllottedCollection(numOfAllottedCollections int) []*big.Int {
+	var result []*big.Int
+	for i := 1; i <= numOfAllottedCollections; i++ {
+		result = append(result, big.NewInt(1))
+	}
+	return result
 }

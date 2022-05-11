@@ -14,13 +14,13 @@ type IoutilUtils struct {
 	mock.Mock
 }
 
-// ReadAll provides a mock function with given fields: _a0
-func (_m *IoutilUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
-	ret := _m.Called(_a0)
+// ReadAll provides a mock function with given fields: body
+func (_m *IoutilUtils) ReadAll(body io.ReadCloser) ([]byte, error) {
+	ret := _m.Called(body)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(io.ReadCloser) []byte); ok {
-		r0 = rf(_a0)
+		r0 = rf(body)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -29,7 +29,7 @@ func (_m *IoutilUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(io.ReadCloser) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(body)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -37,13 +37,13 @@ func (_m *IoutilUtils) ReadAll(_a0 io.ReadCloser) ([]byte, error) {
 	return r0, r1
 }
 
-// ReadFile provides a mock function with given fields: _a0
-func (_m *IoutilUtils) ReadFile(_a0 string) ([]byte, error) {
-	ret := _m.Called(_a0)
+// ReadFile provides a mock function with given fields: filename
+func (_m *IoutilUtils) ReadFile(filename string) ([]byte, error) {
+	ret := _m.Called(filename)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(_a0)
+		r0 = rf(filename)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -52,7 +52,7 @@ func (_m *IoutilUtils) ReadFile(_a0 string) ([]byte, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(filename)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -60,13 +60,13 @@ func (_m *IoutilUtils) ReadFile(_a0 string) ([]byte, error) {
 	return r0, r1
 }
 
-// WriteFile provides a mock function with given fields: _a0, _a1, _a2
-func (_m *IoutilUtils) WriteFile(_a0 string, _a1 []byte, _a2 fs.FileMode) error {
-	ret := _m.Called(_a0, _a1, _a2)
+// WriteFile provides a mock function with given fields: filename, data, perm
+func (_m *IoutilUtils) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+	ret := _m.Called(filename, data, perm)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, []byte, fs.FileMode) error); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(filename, data, perm)
 	} else {
 		r0 = ret.Error(0)
 	}

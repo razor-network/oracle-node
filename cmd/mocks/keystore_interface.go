@@ -15,13 +15,13 @@ type KeystoreInterface struct {
 	mock.Mock
 }
 
-// Accounts provides a mock function with given fields: _a0
-func (_m *KeystoreInterface) Accounts(_a0 string) []accounts.Account {
-	ret := _m.Called(_a0)
+// Accounts provides a mock function with given fields: path
+func (_m *KeystoreInterface) Accounts(path string) []accounts.Account {
+	ret := _m.Called(path)
 
 	var r0 []accounts.Account
 	if rf, ok := ret.Get(0).(func(string) []accounts.Account); ok {
-		r0 = rf(_a0)
+		r0 = rf(path)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]accounts.Account)
@@ -31,20 +31,20 @@ func (_m *KeystoreInterface) Accounts(_a0 string) []accounts.Account {
 	return r0
 }
 
-// ImportECDSA provides a mock function with given fields: _a0, _a1, _a2
-func (_m *KeystoreInterface) ImportECDSA(_a0 string, _a1 *ecdsa.PrivateKey, _a2 string) (accounts.Account, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// ImportECDSA provides a mock function with given fields: path, priv, passphrase
+func (_m *KeystoreInterface) ImportECDSA(path string, priv *ecdsa.PrivateKey, passphrase string) (accounts.Account, error) {
+	ret := _m.Called(path, priv, passphrase)
 
 	var r0 accounts.Account
 	if rf, ok := ret.Get(0).(func(string, *ecdsa.PrivateKey, string) accounts.Account); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(path, priv, passphrase)
 	} else {
 		r0 = ret.Get(0).(accounts.Account)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string, *ecdsa.PrivateKey, string) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(path, priv, passphrase)
 	} else {
 		r1 = ret.Error(1)
 	}

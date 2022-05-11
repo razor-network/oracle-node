@@ -14,13 +14,13 @@ type OSUtils struct {
 	mock.Mock
 }
 
-// Open provides a mock function with given fields: _a0
-func (_m *OSUtils) Open(_a0 string) (*os.File, error) {
-	ret := _m.Called(_a0)
+// Open provides a mock function with given fields: name
+func (_m *OSUtils) Open(name string) (*os.File, error) {
+	ret := _m.Called(name)
 
 	var r0 *os.File
 	if rf, ok := ret.Get(0).(func(string) *os.File); ok {
-		r0 = rf(_a0)
+		r0 = rf(name)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*os.File)
@@ -29,7 +29,7 @@ func (_m *OSUtils) Open(_a0 string) (*os.File, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(name)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -37,13 +37,13 @@ func (_m *OSUtils) Open(_a0 string) (*os.File, error) {
 	return r0, r1
 }
 
-// OpenFile provides a mock function with given fields: _a0, _a1, _a2
-func (_m *OSUtils) OpenFile(_a0 string, _a1 int, _a2 fs.FileMode) (*os.File, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// OpenFile provides a mock function with given fields: name, flag, perm
+func (_m *OSUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
+	ret := _m.Called(name, flag, perm)
 
 	var r0 *os.File
 	if rf, ok := ret.Get(0).(func(string, int, fs.FileMode) *os.File); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(name, flag, perm)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*os.File)
@@ -52,7 +52,7 @@ func (_m *OSUtils) OpenFile(_a0 string, _a1 int, _a2 fs.FileMode) (*os.File, err
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string, int, fs.FileMode) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(name, flag, perm)
 	} else {
 		r1 = ret.Error(1)
 	}

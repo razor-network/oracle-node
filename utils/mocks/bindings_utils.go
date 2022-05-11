@@ -16,13 +16,13 @@ type BindingsUtils struct {
 	mock.Mock
 }
 
-// NewBlockManager provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.BlockManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewBlockManager provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.BlockManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.BlockManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.BlockManager)
@@ -31,7 +31,7 @@ func (_m *BindingsUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Clie
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -39,13 +39,13 @@ func (_m *BindingsUtils) NewBlockManager(_a0 common.Address, _a1 *ethclient.Clie
 	return r0, r1
 }
 
-// NewCollectionManager provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewCollectionManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.CollectionManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewCollectionManager provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewCollectionManager(address common.Address, client *ethclient.Client) (*bindings.CollectionManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.CollectionManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.CollectionManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.CollectionManager)
@@ -54,7 +54,7 @@ func (_m *BindingsUtils) NewCollectionManager(_a0 common.Address, _a1 *ethclient
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -62,13 +62,13 @@ func (_m *BindingsUtils) NewCollectionManager(_a0 common.Address, _a1 *ethclient
 	return r0, r1
 }
 
-// NewRAZOR provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*bindings.RAZOR, error) {
-	ret := _m.Called(_a0, _a1)
+// NewRAZOR provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewRAZOR(address common.Address, client *ethclient.Client) (*bindings.RAZOR, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.RAZOR
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.RAZOR); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.RAZOR)
@@ -77,7 +77,7 @@ func (_m *BindingsUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*b
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -85,13 +85,13 @@ func (_m *BindingsUtils) NewRAZOR(_a0 common.Address, _a1 *ethclient.Client) (*b
 	return r0, r1
 }
 
-// NewStakeManager provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.StakeManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewStakeManager provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.StakeManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.StakeManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.StakeManager)
@@ -100,7 +100,7 @@ func (_m *BindingsUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Clie
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -108,13 +108,13 @@ func (_m *BindingsUtils) NewStakeManager(_a0 common.Address, _a1 *ethclient.Clie
 	return r0, r1
 }
 
-// NewStakedToken provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Client) (*bindings.StakedToken, error) {
-	ret := _m.Called(_a0, _a1)
+// NewStakedToken provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.StakedToken
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.StakedToken); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.StakedToken)
@@ -123,7 +123,7 @@ func (_m *BindingsUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Clien
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -131,13 +131,13 @@ func (_m *BindingsUtils) NewStakedToken(_a0 common.Address, _a1 *ethclient.Clien
 	return r0, r1
 }
 
-// NewVoteManager provides a mock function with given fields: _a0, _a1
-func (_m *BindingsUtils) NewVoteManager(_a0 common.Address, _a1 *ethclient.Client) (*bindings.VoteManager, error) {
-	ret := _m.Called(_a0, _a1)
+// NewVoteManager provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error) {
+	ret := _m.Called(address, client)
 
 	var r0 *bindings.VoteManager
 	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.VoteManager); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(address, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bindings.VoteManager)
@@ -146,7 +146,7 @@ func (_m *BindingsUtils) NewVoteManager(_a0 common.Address, _a1 *ethclient.Clien
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(address, client)
 	} else {
 		r1 = ret.Error(1)
 	}

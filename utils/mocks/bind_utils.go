@@ -16,13 +16,13 @@ type BindUtils struct {
 	mock.Mock
 }
 
-// NewKeyedTransactorWithChainID provides a mock function with given fields: _a0, _a1
-func (_m *BindUtils) NewKeyedTransactorWithChainID(_a0 *ecdsa.PrivateKey, _a1 *big.Int) (*bind.TransactOpts, error) {
-	ret := _m.Called(_a0, _a1)
+// NewKeyedTransactorWithChainID provides a mock function with given fields: key, chainID
+func (_m *BindUtils) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
+	ret := _m.Called(key, chainID)
 
 	var r0 *bind.TransactOpts
 	if rf, ok := ret.Get(0).(func(*ecdsa.PrivateKey, *big.Int) *bind.TransactOpts); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(key, chainID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bind.TransactOpts)
@@ -31,7 +31,7 @@ func (_m *BindUtils) NewKeyedTransactorWithChainID(_a0 *ecdsa.PrivateKey, _a1 *b
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ecdsa.PrivateKey, *big.Int) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(key, chainID)
 	} else {
 		r1 = ret.Error(1)
 	}

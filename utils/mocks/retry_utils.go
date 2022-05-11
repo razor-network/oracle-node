@@ -12,13 +12,13 @@ type RetryUtils struct {
 	mock.Mock
 }
 
-// RetryAttempts provides a mock function with given fields: _a0
-func (_m *RetryUtils) RetryAttempts(_a0 uint) retry.Option {
-	ret := _m.Called(_a0)
+// RetryAttempts provides a mock function with given fields: numberOfAttempts
+func (_m *RetryUtils) RetryAttempts(numberOfAttempts uint) retry.Option {
+	ret := _m.Called(numberOfAttempts)
 
 	var r0 retry.Option
 	if rf, ok := ret.Get(0).(func(uint) retry.Option); ok {
-		r0 = rf(_a0)
+		r0 = rf(numberOfAttempts)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(retry.Option)

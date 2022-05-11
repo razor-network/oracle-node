@@ -14,13 +14,13 @@ type TransactionInterface struct {
 	mock.Mock
 }
 
-// Hash provides a mock function with given fields: _a0
-func (_m *TransactionInterface) Hash(_a0 *types.Transaction) common.Hash {
-	ret := _m.Called(_a0)
+// Hash provides a mock function with given fields: txn
+func (_m *TransactionInterface) Hash(txn *types.Transaction) common.Hash {
+	ret := _m.Called(txn)
 
 	var r0 common.Hash
 	if rf, ok := ret.Get(0).(func(*types.Transaction) common.Hash); ok {
-		r0 = rf(_a0)
+		r0 = rf(txn)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
