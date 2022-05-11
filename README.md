@@ -32,7 +32,7 @@ You can now execute razor-go cli commands by running:
 docker exec -it razor-go razor <command>
 ```
 
-### Setting up dev environment with docker-compose
+### Setting up razor-go with docker-compose
 
 You can build razor-go docker image by running:
 
@@ -226,7 +226,7 @@ docker
 docker run -it --rm \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    setDelegation --address <address> --status <true_or_false>
+    setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
 ```
 
 Example:
@@ -821,11 +821,7 @@ _The logs for above command will be stored at "home/.razor/delegationLogs.log" p
 
 _Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
 
-### Contribute to razor-go
-
-We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
-
-## Setting up development environment
+### Setting up razor-go and commands using docker-compose
 
 1. Must have `docker` and `docker-compose` installed
 2. Building the source `docker-compose build`
@@ -903,3 +899,7 @@ We would really appreciate your contribution. To see our [contribution guideline
     #provide password through file
     docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10 --password /root/.razor/pass
     ```
+
+### Contribute to razor-go
+
+We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
