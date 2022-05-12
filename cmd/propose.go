@@ -23,7 +23,7 @@ var (
 	_revealedCollectionIds []uint16
 	_revealedDataMaps      *types.RevealedDataMaps
 	iterations             []int
-	loopNumber             int
+	endLoop                bool
 )
 
 // Index reveal events of staker's
@@ -81,7 +81,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		NumberOfStakers: numStakers,
 		Salt:            salt,
 		Epoch:           epoch,
-	}, bufferPercent)
+	}, bufferPercent, core.BatchSize)
 
 	log.Debug("Iteration: ", iteration)
 
@@ -211,7 +211,7 @@ loop:
 	return biggestStake, biggestStakerId, nil
 }
 
-func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
+func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32, batchSize int) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
@@ -233,7 +233,7 @@ loop:
 			break loop
 		default:
 			go func(i int) {
-				getIterationConcurrently(proposer, currentStakerStake, i)
+				getIterationConcurrently(proposer, currentStakerStake, i, batchSize)
 				defer wg.Done()
 			}(i)
 		}
@@ -243,20 +243,63 @@ loop:
 	log.Debug("Done!")
 
 	sort.Ints(iterations)
-	return iterations[0]
+	result := iterations[0]
+	iterations = nil
+	endLoop = false
+	return result
 }
 
-func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int) {
-	for i := iteration * 1000000; i < (iteration*1000000)+1000000; i++ {
-		if iteration > loopNumber && loopNumber != 0 {
-			break
-		}
-		proposer.Iteration = i
-		isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
-		if isElected {
-			loopNumber = iteration
-			iterations = append(iterations, i)
-			break
+func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int, batchSize int) {
+	//SEQUENTIAL IMPLEMENTATION WITHOUT BATCHES – 10 GoRoutines
+
+	//for i := iteration * 1000000; i < (iteration*1000000)+1000000; i++ { // N/T = 1000000
+	//	if iteration > loopNumber && loopNumber != 0 {
+	//		break
+	//	}
+	//	proposer.Iteration = i
+	//	isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
+	//	if isElected {
+	//		loopNumber = iteration
+	//		iterations = append(iterations, i)
+	//		break
+	//	}
+	//}
+
+	//SEQUENTIAL IMPLEMENTATION WITH BATCHES – 10 GoRoutines
+
+	//loop:
+	//	for i := iteration * 1000000; i < (iteration*1000000)+1000000; { // N/T = 1000000
+	//		for j := i; j < i+batchSize; j++ {
+	//			if iteration > loopNumber && loopNumber != 0 {
+	//				break loop
+	//			}
+	//			proposer.Iteration = j
+	//			isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
+	//			if isElected {
+	//				loopNumber = iteration
+	//				iterations = append(iterations, j)
+	//				break loop
+	//			}
+	//		}
+	//		i = i + batchSize
+	//	}
+
+	//PARALLEL IMPLEMENTATION WITH BATCHES
+
+	totalBatches := 10000000 / batchSize
+loop:
+	for i := 0; i < totalBatches; i++ {
+		for j := (i * batchSize) + iteration; j < (i*batchSize)+batchSize; j = j + 10 {
+			if endLoop {
+				break loop
+			}
+			proposer.Iteration = j
+			isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
+			if isElected {
+				endLoop = true
+				iterations = append(iterations, j)
+				break loop
+			}
 		}
 	}
 }
