@@ -15,7 +15,9 @@ import (
 	"razor/utils"
 	Mocks "razor/utils/mocks"
 	"reflect"
+	"sort"
 	"testing"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -473,10 +475,9 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		utilsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.randaoHash, tt.args.randaoHashErr)
-		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
+		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
 		utilsMock.On("GetMaxAltBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.maxAltBlocks, tt.args.maxAltBlocksErr)
 		cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
-		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything).Return(tt.args.iteration)
 		utilsMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr)
 		utilsMock.On("GetMaxAltBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.maxAltBlocks, tt.args.maxAltBlocksErr)
 		utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr)
@@ -724,7 +725,7 @@ func TestGetIteration(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			if got := utils.GetIteration(client, proposer, bufferPercent); got != tt.want {
+			if got := utils.GetIteration(client, proposer, bufferPercent, core.BatchSize); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -942,23 +943,29 @@ func BenchmarkGetIteration(b *testing.B) {
 	proposer := types.ElectedProposer{
 		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
 		StakerId:        2,
-		NumberOfStakers: 5,
+		NumberOfStakers: 10,
 		Salt:            saltBytes32,
 	}
 
 	var table = []struct {
 		stakeSnapshot *big.Int
+		batchSize     int
 	}{
-		{stakeSnapshot: big.NewInt(1000)},
-		{stakeSnapshot: big.NewInt(10000)},
-		{stakeSnapshot: big.NewInt(100000)},
-		{stakeSnapshot: big.NewInt(1000000)},
-		{stakeSnapshot: big.NewInt(10000000)},
+		{stakeSnapshot: big.NewInt(1000), batchSize: 10000},
+		{stakeSnapshot: big.NewInt(1000), batchSize: 1000},
+		{stakeSnapshot: big.NewInt(1000), batchSize: 100},
+		{stakeSnapshot: big.NewInt(1000), batchSize: 10},
+		{stakeSnapshot: big.NewInt(10000), batchSize: 1000},
+		{stakeSnapshot: big.NewInt(100000), batchSize: 1000},
+		{stakeSnapshot: big.NewInt(1000000), batchSize: 1000},
+		{stakeSnapshot: big.NewInt(10000000), batchSize: 1000},
 	}
 
 	for _, v := range table {
-		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
+		var timeRecorded []int64
+		b.Run(fmt.Sprintf("Stakers_Stake_%d, BatchSize_%d", v.stakeSnapshot, v.batchSize), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
+				start := time.Now()
 				utilsMock := new(mocks.UtilsInterface)
 				utilsPkgMock := new(Mocks.Utils)
 
@@ -969,10 +976,31 @@ func BenchmarkGetIteration(b *testing.B) {
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
 				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
 
-				cmdUtils.GetIteration(client, proposer, bufferPercent)
+				cmdUtils.GetIteration(client, proposer, bufferPercent, v.batchSize)
+
+				timeElapsed := time.Since(start).Microseconds()
+				timeRecorded = append(timeRecorded, timeElapsed)
 			}
 		})
+		fmt.Println("Median time taken: ", CalculateMedian(timeRecorded))
+		fmt.Println()
 	}
+}
+
+func CalculateMedian(arr []int64) int64 {
+	var median int64
+
+	sort.Slice(arr, func(i, j int) bool { return arr[i] < arr[j] }) // sort the numbers
+	l := len(arr)
+	if l == 0 {
+		return 0
+	} else if l%2 == 0 {
+		median = (arr[l/2-1] + arr[l/2]) / 2
+	} else {
+		median = arr[l/2]
+	}
+
+	return median
 }
 
 func TestMakeBlock(t *testing.T) {
