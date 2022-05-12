@@ -13,13 +13,13 @@ type AbiInterface struct {
 	mock.Mock
 }
 
-// Unpack provides a mock function with given fields: _a0, _a1, _a2
-func (_m *AbiInterface) Unpack(_a0 abi.ABI, _a1 string, _a2 []byte) ([]interface{}, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// Unpack provides a mock function with given fields: _a0, name, data
+func (_m *AbiInterface) Unpack(_a0 abi.ABI, name string, data []byte) ([]interface{}, error) {
+	ret := _m.Called(_a0, name, data)
 
 	var r0 []interface{}
 	if rf, ok := ret.Get(0).(func(abi.ABI, string, []byte) []interface{}); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(_a0, name, data)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]interface{})
@@ -28,7 +28,7 @@ func (_m *AbiInterface) Unpack(_a0 abi.ABI, _a1 string, _a2 []byte) ([]interface
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(abi.ABI, string, []byte) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(_a0, name, data)
 	} else {
 		r1 = ret.Error(1)
 	}

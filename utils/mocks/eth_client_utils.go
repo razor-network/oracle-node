@@ -12,13 +12,13 @@ type EthClientUtils struct {
 	mock.Mock
 }
 
-// Dial provides a mock function with given fields: _a0
-func (_m *EthClientUtils) Dial(_a0 string) (*ethclient.Client, error) {
-	ret := _m.Called(_a0)
+// Dial provides a mock function with given fields: rawurl
+func (_m *EthClientUtils) Dial(rawurl string) (*ethclient.Client, error) {
+	ret := _m.Called(rawurl)
 
 	var r0 *ethclient.Client
 	if rf, ok := ret.Get(0).(func(string) *ethclient.Client); ok {
-		r0 = rf(_a0)
+		r0 = rf(rawurl)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ethclient.Client)
@@ -27,7 +27,7 @@ func (_m *EthClientUtils) Dial(_a0 string) (*ethclient.Client, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(rawurl)
 	} else {
 		r1 = ret.Error(1)
 	}

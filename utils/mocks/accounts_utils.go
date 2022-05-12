@@ -13,13 +13,13 @@ type AccountsUtils struct {
 	mock.Mock
 }
 
-// GetPrivateKey provides a mock function with given fields: _a0, _a1, _a2
-func (_m *AccountsUtils) GetPrivateKey(_a0 string, _a1 string, _a2 string) *ecdsa.PrivateKey {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetPrivateKey provides a mock function with given fields: address, password, keystorePath
+func (_m *AccountsUtils) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
+	ret := _m.Called(address, password, keystorePath)
 
 	var r0 *ecdsa.PrivateKey
 	if rf, ok := ret.Get(0).(func(string, string, string) *ecdsa.PrivateKey); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(address, password, keystorePath)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ecdsa.PrivateKey)

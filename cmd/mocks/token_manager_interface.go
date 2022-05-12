@@ -21,13 +21,13 @@ type TokenManagerInterface struct {
 	mock.Mock
 }
 
-// Allowance provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *TokenManagerInterface) Allowance(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 common.Address, _a3 common.Address) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// Allowance provides a mock function with given fields: client, opts, owner, spender
+func (_m *TokenManagerInterface) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
+	ret := _m.Called(client, opts, owner, spender)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) *big.Int); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(client, opts, owner, spender)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -36,7 +36,7 @@ func (_m *TokenManagerInterface) Allowance(_a0 *ethclient.Client, _a1 *bind.Call
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, common.Address, common.Address) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(client, opts, owner, spender)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -44,13 +44,13 @@ func (_m *TokenManagerInterface) Allowance(_a0 *ethclient.Client, _a1 *bind.Call
 	return r0, r1
 }
 
-// Approve provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *TokenManagerInterface) Approve(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 common.Address, _a3 *big.Int) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// Approve provides a mock function with given fields: client, opts, spender, amount
+func (_m *TokenManagerInterface) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, spender, amount)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(client, opts, spender, amount)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -59,7 +59,7 @@ func (_m *TokenManagerInterface) Approve(_a0 *ethclient.Client, _a1 *bind.Transa
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(client, opts, spender, amount)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -67,13 +67,13 @@ func (_m *TokenManagerInterface) Approve(_a0 *ethclient.Client, _a1 *bind.Transa
 	return r0, r1
 }
 
-// Transfer provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *TokenManagerInterface) Transfer(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 common.Address, _a3 *big.Int) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// Transfer provides a mock function with given fields: client, opts, recipient, amount
+func (_m *TokenManagerInterface) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, recipient, amount)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(client, opts, recipient, amount)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -82,7 +82,7 @@ func (_m *TokenManagerInterface) Transfer(_a0 *ethclient.Client, _a1 *bind.Trans
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(client, opts, recipient, amount)
 	} else {
 		r1 = ret.Error(1)
 	}

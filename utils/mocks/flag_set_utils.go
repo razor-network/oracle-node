@@ -12,20 +12,20 @@ type FlagSetUtils struct {
 	mock.Mock
 }
 
-// GetLogFileName provides a mock function with given fields: _a0
-func (_m *FlagSetUtils) GetLogFileName(_a0 *pflag.FlagSet) (string, error) {
-	ret := _m.Called(_a0)
+// GetLogFileName provides a mock function with given fields: flagSet
+func (_m *FlagSetUtils) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
+	ret := _m.Called(flagSet)
 
 	var r0 string
 	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
-		r0 = rf(_a0)
+		r0 = rf(flagSet)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(flagSet)
 	} else {
 		r1 = ret.Error(1)
 	}

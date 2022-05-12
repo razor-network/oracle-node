@@ -17,13 +17,13 @@ type AssetManagerInterface struct {
 	mock.Mock
 }
 
-// CreateCollection provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5, _a6
-func (_m *AssetManagerInterface) CreateCollection(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint32, _a3 int8, _a4 uint32, _a5 []uint16, _a6 string) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+// CreateCollection provides a mock function with given fields: client, opts, tolerance, power, aggregationMethod, jobIDs, name
+func (_m *AssetManagerInterface) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint32, []uint16, string) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+		r0 = rf(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -32,7 +32,7 @@ func (_m *AssetManagerInterface) CreateCollection(_a0 *ethclient.Client, _a1 *bi
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint32, []uint16, string) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+		r1 = rf(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -40,13 +40,13 @@ func (_m *AssetManagerInterface) CreateCollection(_a0 *ethclient.Client, _a1 *bi
 	return r0, r1
 }
 
-// CreateJob provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7
-func (_m *AssetManagerInterface) CreateJob(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint8, _a3 int8, _a4 uint8, _a5 string, _a6 string, _a7 string) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7)
+// CreateJob provides a mock function with given fields: client, opts, weight, power, selectorType, name, selector, url
+func (_m *AssetManagerInterface) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, weight, power, selectorType, name, selector, url)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7)
+		r0 = rf(client, opts, weight, power, selectorType, name, selector, url)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -55,7 +55,7 @@ func (_m *AssetManagerInterface) CreateJob(_a0 *ethclient.Client, _a1 *bind.Tran
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7)
+		r1 = rf(client, opts, weight, power, selectorType, name, selector, url)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -63,20 +63,20 @@ func (_m *AssetManagerInterface) CreateJob(_a0 *ethclient.Client, _a1 *bind.Tran
 	return r0, r1
 }
 
-// GetActiveStatus provides a mock function with given fields: _a0, _a1, _a2
-func (_m *AssetManagerInterface) GetActiveStatus(_a0 *ethclient.Client, _a1 *bind.CallOpts, _a2 uint16) (bool, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// GetActiveStatus provides a mock function with given fields: client, opts, id
+func (_m *AssetManagerInterface) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
+	ret := _m.Called(client, opts, id)
 
 	var r0 bool
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint16) bool); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(client, opts, id)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint16) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(client, opts, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -84,13 +84,13 @@ func (_m *AssetManagerInterface) GetActiveStatus(_a0 *ethclient.Client, _a1 *bin
 	return r0, r1
 }
 
-// SetCollectionStatus provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *AssetManagerInterface) SetCollectionStatus(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 bool, _a3 uint16) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// SetCollectionStatus provides a mock function with given fields: client, opts, assetStatus, id
+func (_m *AssetManagerInterface) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, assetStatus, id)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, bool, uint16) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(client, opts, assetStatus, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -99,7 +99,7 @@ func (_m *AssetManagerInterface) SetCollectionStatus(_a0 *ethclient.Client, _a1 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, bool, uint16) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(client, opts, assetStatus, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -107,13 +107,13 @@ func (_m *AssetManagerInterface) SetCollectionStatus(_a0 *ethclient.Client, _a1 
 	return r0, r1
 }
 
-// UpdateCollection provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5, _a6
-func (_m *AssetManagerInterface) UpdateCollection(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint16, _a3 uint32, _a4 uint32, _a5 int8, _a6 []uint16) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+// UpdateCollection provides a mock function with given fields: client, opts, collectionId, tolerance, aggregationMethod, power, jobIds
+func (_m *AssetManagerInterface) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint32, aggregationMethod uint32, power int8, jobIds []uint16) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint16, uint32, uint32, int8, []uint16) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+		r0 = rf(client, opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -122,7 +122,7 @@ func (_m *AssetManagerInterface) UpdateCollection(_a0 *ethclient.Client, _a1 *bi
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint16, uint32, uint32, int8, []uint16) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6)
+		r1 = rf(client, opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -130,13 +130,13 @@ func (_m *AssetManagerInterface) UpdateCollection(_a0 *ethclient.Client, _a1 *bi
 	return r0, r1
 }
 
-// UpdateJob provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7
-func (_m *AssetManagerInterface) UpdateJob(_a0 *ethclient.Client, _a1 *bind.TransactOpts, _a2 uint16, _a3 uint8, _a4 int8, _a5 uint8, _a6 string, _a7 string) (*types.Transaction, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7)
+// UpdateJob provides a mock function with given fields: client, opts, jobId, weight, power, selectorType, selector, url
+func (_m *AssetManagerInterface) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, jobId, weight, power, selectorType, selector, url)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) *types.Transaction); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7)
+		r0 = rf(client, opts, jobId, weight, power, selectorType, selector, url)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -145,7 +145,7 @@ func (_m *AssetManagerInterface) UpdateJob(_a0 *ethclient.Client, _a1 *bind.Tran
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint16, uint8, int8, uint8, string, string) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7)
+		r1 = rf(client, opts, jobId, weight, power, selectorType, selector, url)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -1,3 +1,4 @@
+//Package path provides all path related functions
 package path
 
 import (
@@ -13,46 +14,52 @@ var OSUtilsInterface OSInterface
 
 type PathInterface interface {
 	GetDefaultPath() (string, error)
-	GetLogFilePath(string) (string, error)
+	GetLogFilePath(fileName string) (string, error)
 	GetConfigFilePath() (string, error)
 	GetJobFilePath() (string, error)
-	GetCommitDataFileName(string) (string, error)
-	GetProposeDataFileName(string) (string, error)
+	GetCommitDataFileName(address string) (string, error)
+	GetProposeDataFileName(address string) (string, error)
 	GetDisputeDataFileName(address string) (string, error)
 }
 
 type OSInterface interface {
 	UserHomeDir() (string, error)
-	Stat(string) (fs.FileInfo, error)
-	IsNotExist(error) bool
-	Mkdir(string, fs.FileMode) error
-	OpenFile(string, int, fs.FileMode) (*os.File, error)
-	Open(string) (*os.File, error)
+	Stat(name string) (fs.FileInfo, error)
+	IsNotExist(err error) bool
+	Mkdir(name string, perm fs.FileMode) error
+	OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error)
+	Open(name string) (*os.File, error)
 }
 
 type PathUtils struct{}
 type OSUtils struct{}
 
+//This function returns the home directory of user
 func (o OSUtils) UserHomeDir() (string, error) {
 	return os.UserHomeDir()
 }
 
+//This function is used to get status of the specified file path
 func (o OSUtils) Stat(name string) (fs.FileInfo, error) {
 	return os.Stat(name)
 }
 
+//This function returns the bool which shows the particular file exists or not
 func (o OSUtils) IsNotExist(err error) bool {
 	return os.IsNotExist(err)
 }
 
+//This function is used to make a new directory
 func (o OSUtils) Mkdir(name string, perm fs.FileMode) error {
 	return os.Mkdir(name, perm)
 }
 
+//This function is used to open the file and this is generalized open call
 func (o OSUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
 	return os.OpenFile(name, flag, perm)
 }
 
+//This function is used to open the file
 func (o OSUtils) Open(name string) (*os.File, error) {
 	return os.Open(name)
 }

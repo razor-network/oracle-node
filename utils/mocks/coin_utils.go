@@ -18,13 +18,13 @@ type CoinUtils struct {
 	mock.Mock
 }
 
-// BalanceOf provides a mock function with given fields: _a0, _a1, _a2
-func (_m *CoinUtils) BalanceOf(_a0 *bindings.RAZOR, _a1 *bind.CallOpts, _a2 common.Address) (*big.Int, error) {
-	ret := _m.Called(_a0, _a1, _a2)
+// BalanceOf provides a mock function with given fields: coinContract, opts, account
+func (_m *CoinUtils) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
+	ret := _m.Called(coinContract, opts, account)
 
 	var r0 *big.Int
 	if rf, ok := ret.Get(0).(func(*bindings.RAZOR, *bind.CallOpts, common.Address) *big.Int); ok {
-		r0 = rf(_a0, _a1, _a2)
+		r0 = rf(coinContract, opts, account)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -33,7 +33,7 @@ func (_m *CoinUtils) BalanceOf(_a0 *bindings.RAZOR, _a1 *bind.CallOpts, _a2 comm
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bindings.RAZOR, *bind.CallOpts, common.Address) error); ok {
-		r1 = rf(_a0, _a1, _a2)
+		r1 = rf(coinContract, opts, account)
 	} else {
 		r1 = ret.Error(1)
 	}

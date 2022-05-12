@@ -9,13 +9,13 @@ type JsonUtils struct {
 	mock.Mock
 }
 
-// Marshal provides a mock function with given fields: _a0
-func (_m *JsonUtils) Marshal(_a0 interface{}) ([]byte, error) {
-	ret := _m.Called(_a0)
+// Marshal provides a mock function with given fields: v
+func (_m *JsonUtils) Marshal(v interface{}) ([]byte, error) {
+	ret := _m.Called(v)
 
 	var r0 []byte
 	if rf, ok := ret.Get(0).(func(interface{}) []byte); ok {
-		r0 = rf(_a0)
+		r0 = rf(v)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -24,7 +24,7 @@ func (_m *JsonUtils) Marshal(_a0 interface{}) ([]byte, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
-		r1 = rf(_a0)
+		r1 = rf(v)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -32,13 +32,13 @@ func (_m *JsonUtils) Marshal(_a0 interface{}) ([]byte, error) {
 	return r0, r1
 }
 
-// Unmarshal provides a mock function with given fields: _a0, _a1
-func (_m *JsonUtils) Unmarshal(_a0 []byte, _a1 interface{}) error {
-	ret := _m.Called(_a0, _a1)
+// Unmarshal provides a mock function with given fields: data, v
+func (_m *JsonUtils) Unmarshal(data []byte, v interface{}) error {
+	ret := _m.Called(data, v)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func([]byte, interface{}) error); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(data, v)
 	} else {
 		r0 = ret.Error(0)
 	}
