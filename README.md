@@ -12,14 +12,14 @@ Install `razor-go` pre build binary directly from github and configure into host
 
   For linux-amd64
   ```
-  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | sh 
+  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
   ```
 
   For linux-arm64
   ```
   export PLATFORM=arm64
 
-  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | sh 
+  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
   ```
 
 Check installation
