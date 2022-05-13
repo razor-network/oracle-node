@@ -12,7 +12,7 @@ else
 fi
 echo "Installing linux-$platform:$version at path $bin_dir."
 
-wget -q "https://github.com/razor-network/razor-go/releases/download/$version/razor_go.linux-$platform.tar.gz" \
+wget "https://github.com/razor-network/razor-go/releases/download/$version/razor_go.linux-$platform.tar.gz" \
     -O /tmp/razor_go.tar.gz
 echo "Downloaded linux-$platform:$version at path $bin_dir."
 mkdir -p /tmp/razor_go
