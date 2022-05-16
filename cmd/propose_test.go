@@ -688,13 +688,14 @@ func TestGetIteration(t *testing.T) {
 			name: "Test 1: When getIteration returns a valid iteration",
 			args: args{
 				stakeSnapshot: big.NewInt(1000),
-				remainingTime: 100,
+				remainingTime: 10,
 			},
 			want: 70183,
 		},
 		{
 			name: "Test 2: When there is an error in getting stakeSnapshotValue",
 			args: args{
+				stakeSnapshot:    big.NewInt(0),
 				stakeSnapshotErr: errors.New("error in getting stakeSnapshotValue"),
 			},
 			want: -1,
@@ -702,7 +703,7 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 3: When getIteration returns an invalid iteration",
 			args: args{
-				stakeSnapshot: stakeSnapshotValue("1"),
+				stakeSnapshot: big.NewInt(1),
 				remainingTime: 2,
 			},
 			want: -1,
