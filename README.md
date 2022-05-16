@@ -6,6 +6,28 @@ Official node for running stakers in Golang.
 
 ## Installation
 
+### Linux quick start
+
+Install `razor-go` pre build binary directly from github and configure into host.
+
+  For linux-amd64
+  ```
+  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
+  ```
+
+  For linux-arm64
+  ```
+  export PLATFORM=arm64
+
+  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
+  ```
+
+Check installation
+
+```
+razor -v
+```
+>**_NOTE:_** To install the version you want, you can set VERSION:<git-tag> environment variable before running above command.
 ### Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
@@ -32,7 +54,7 @@ You can now execute razor-go cli commands by running:
 docker exec -it razor-go razor <command>
 ```
 
-### Setting up dev environment with docker-compose
+### Setting up razor-go with docker-compose
 
 You can build razor-go docker image by running:
 
@@ -97,7 +119,7 @@ Docker
 ```
 docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest razor create
+    razornetwork/razor-go:latest create
 ```
 
 Docker providing password file
@@ -107,7 +129,7 @@ docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     -v /path/of/password-file:/root/.razor/password-file \
     razornetwork/razor-go:latest \
-   razor create --password /root/.razor/password-file
+    create --password /root/.razor/password-file
 ```
 
 Example:
@@ -122,9 +144,22 @@ Password:
 If you already have an account created, and have it's private key, that account can be imported into the `razor-go` client.
 To do that, you can use the `import` command. You'll be asked the private key first and then the password which you want to encrypt your keystore file with.
 
+razor cli
+
 ```
 $ ./razor import
 ```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    import
+```
+
+
 
 Example:
 
@@ -198,7 +233,7 @@ $ ./razor stakerInfo --stakerId <staker_id_of_the_staker>
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     stakerInfo --stakerId <staker_id_of_the_staker>
@@ -223,10 +258,10 @@ $ ./razor setDelegation --address <address> --status <true_or_false> --commissio
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
-    setDelegation --address <address> --status <true_or_false>
+    setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
 ```
 
 Example:
@@ -249,7 +284,7 @@ $ ./razor updateCommission --address <address> --commission <commission_percent>
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     updateCommission --address <address> --commission <commission_percent>
@@ -274,7 +309,7 @@ $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId 
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
@@ -299,7 +334,7 @@ $ ./razor claimCommission --address <address>
 docker
 
 ```
-docker run -it --rm \
+docker run -it  \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     claimCommission --address <address> 
@@ -324,7 +359,7 @@ $ ./razor vote --address <address>
 docker
 
 ```
-docker run -it  -d --name razor-go \
+docker run -it --name razor-go \
     -v "$(echo $HOME)"/.razor:/root/.razor \
     razornetwork/razor-go:latest \
     vote --address <address>
@@ -821,11 +856,7 @@ _The logs for above command will be stored at "home/.razor/delegationLogs.log" p
 
 _Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
 
-### Contribute to razor-go
-
-We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
-
-## Setting up development environment
+### Setting up razor-go and commands using docker-compose
 
 1. Must have `docker` and `docker-compose` installed
 2. Building the source `docker-compose build`
@@ -903,3 +934,7 @@ We would really appreciate your contribution. To see our [contribution guideline
     #provide password through file
     docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10 --password /root/.razor/pass
     ```
+
+### Contribute to razor-go
+
+We would really appreciate your contribution. To see our [contribution guideline](https://github.com/razor-network/razor-go/blob/main/.github/CONTRIBUTING.md)
