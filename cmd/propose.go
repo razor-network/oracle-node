@@ -117,7 +117,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		return core.NilHash, err
 	}
 
-	_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+	_mediansData = medians
 	_revealedCollectionIds = ids
 	_revealedDataMaps = revealedDataMaps
 
@@ -264,13 +264,13 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	if err != nil {
 		return nil, err
 	}
-	revealedValuesWithIndex := make(map[uint16][]uint32)
-	voteWeights := make(map[uint32]*big.Int)
+	revealedValuesWithIndex := make(map[uint16][]*big.Int)
+	voteWeights := make(map[*big.Int]*big.Int)
 	influenceSum := make(map[uint16]*big.Int)
 	for _, asset := range assignedAsset {
 		for _, assetValue := range asset.RevealedValues {
 			if revealedValuesWithIndex[assetValue.LeafId] == nil {
-				revealedValuesWithIndex[assetValue.LeafId] = []uint32{assetValue.Value}
+				revealedValuesWithIndex[assetValue.LeafId] = []*big.Int{assetValue.Value}
 			} else {
 				if !utils.Contains(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
 					revealedValuesWithIndex[assetValue.LeafId] = append(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value)
@@ -292,7 +292,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	//sort revealed values
 	for _, element := range revealedValuesWithIndex {
 		sort.Slice(element, func(i, j int) bool {
-			return element[i] < element[j]
+			return element[i].Cmp(element[j]) == -1
 		})
 	}
 	return &types.RevealedDataMaps{
@@ -302,7 +302,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	}, nil
 }
 
-func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
 	if err != nil {
 		return nil, nil, nil, err
@@ -314,7 +314,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 
 	var (
-		medians                []uint32
+		medians                []*big.Int
 		idsRevealedInThisEpoch []uint16
 	)
 
@@ -323,7 +323,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
 			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
-				medians = append(medians, razorUtils.GetRogueRandomMedianValue())
+				medians = append(medians, razorUtils.GetRogueRandomValue(10000000))
 				continue
 			}
 			accWeight := big.NewInt(0)
@@ -343,7 +343,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "extraIds") {
 		//Adding a dummy median and appending extra id to idsRevealed array if rogueMode == extraIds
-		medians = append(medians, razorUtils.GetRogueRandomMedianValue())
+		medians = append(medians, razorUtils.GetRogueRandomValue(10000000))
 		idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1]+1)
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "unsortedIds") && len(idsRevealedInThisEpoch) > 1 {

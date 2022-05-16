@@ -234,7 +234,7 @@ func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (
 	return utilsInterface.GetEpochLastRevealed(client, stakerId)
 }
 
-func (u Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
+func (u Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	return utilsInterface.GetVoteValue(client, epoch, stakerId, medianIndex)
 }
 
@@ -534,7 +534,7 @@ func (blockManagerUtils BlockManagerUtils) DisputeOnOrderOfIds(client *ethclient
 	return txn, nil
 }
 
-func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
+func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []*big.Int, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
 	blockManager := utilsInterface.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
@@ -554,7 +554,7 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 	return txn, nil
 }
 
-func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) (*Types.Transaction, error) {
+func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error) {
 	return blockManager.GiveSorted(opts, epoch, leafId, sortedValues)
 }
 
@@ -813,7 +813,7 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 	return crypto.HexToECDSA(hexKey)
 }
 
-func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
+func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) {
 	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 

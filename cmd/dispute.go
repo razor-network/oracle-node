@@ -176,7 +176,7 @@ CalculateMedian:
 			log.Error("Error in calculating block medians")
 			return nil, nil, nil, err
 		}
-		_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+		_mediansData = medians
 		_revealedCollectionIds = revealedCollectionIds
 		_revealedDataMaps = revealedDataMaps
 	}
@@ -249,7 +249,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	return nil, nil
 }
 
-func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []uint32) error {
+func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	blockManager := razorUtils.GetBlockManager(client)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -285,7 +285,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	return nil
 }
 
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) {
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) {
 	if len(sortedValues) == 0 {
 		return
 	}
