@@ -22,8 +22,7 @@ var (
 	_mediansData           []*big.Int
 	_revealedCollectionIds []uint16
 	_revealedDataMaps      *types.RevealedDataMaps
-	iterations             []int
-	endLoop                bool
+	//iterations             []int
 )
 
 // Index reveal events of staker's
@@ -81,7 +80,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		NumberOfStakers: numStakers,
 		Salt:            salt,
 		Epoch:           epoch,
-	}, bufferPercent, core.BatchSize)
+	}, bufferPercent)
 
 	log.Debug("Iteration: ", iteration)
 
@@ -211,7 +210,7 @@ loop:
 	return biggestStake, biggestStakerId, nil
 }
 
-func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32, batchSize int) int {
+func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
@@ -223,85 +222,62 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 		return -1
 	}
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
-	var wg sync.WaitGroup
-	wg.Add(10)
+	wg := &sync.WaitGroup{}
+	wg.Add(core.NumRoutines)
+	done := make(chan bool, 10)
+	iterationResult := make(chan int, 10)
 loop:
-	for i := 0; i < 10; i++ {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			break loop
-		default:
-			go func(i int) {
-				getIterationConcurrently(proposer, currentStakerStake, i, batchSize)
-				defer wg.Done()
-			}(i)
+	select {
+	case <-stateTimeout.C:
+		log.Error("State timeout!")
+		break loop
+	default:
+		for routine := 0; routine < core.NumRoutines; routine++ {
+			go getIterationConcurrently(proposer, currentStakerStake, routine, wg, done, iterationResult)
 		}
 	}
-	log.Debug("Waiting for goroutines to finish...")
-	wg.Wait()
-	log.Debug("Done!")
 
+	log.Debug("Waiting for all the goroutines to finish")
+	wg.Wait()
+	log.Debug("Done")
+
+	close(done)
+	close(iterationResult)
+
+	var iterations []int
+
+	for iteration := range iterationResult {
+		iterations = append(iterations, iteration)
+	}
 	sort.Ints(iterations)
-	result := iterations[0]
-	iterations = nil
-	endLoop = false
-	return result
+	return iterations[0]
 }
 
-func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, iteration int, batchSize int) {
-	//SEQUENTIAL IMPLEMENTATION WITHOUT BATCHES – 10 GoRoutines
-
-	//for i := iteration * 1000000; i < (iteration*1000000)+1000000; i++ { // N/T = 1000000
-	//	if iteration > loopNumber && loopNumber != 0 {
-	//		break
-	//	}
-	//	proposer.Iteration = i
-	//	isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
-	//	if isElected {
-	//		loopNumber = iteration
-	//		iterations = append(iterations, i)
-	//		break
-	//	}
-	//}
-
-	//SEQUENTIAL IMPLEMENTATION WITH BATCHES – 10 GoRoutines
-
-	//loop:
-	//	for i := iteration * 1000000; i < (iteration*1000000)+1000000; { // N/T = 1000000
-	//		for j := i; j < i+batchSize; j++ {
-	//			if iteration > loopNumber && loopNumber != 0 {
-	//				break loop
-	//			}
-	//			proposer.Iteration = j
-	//			isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
-	//			if isElected {
-	//				loopNumber = iteration
-	//				iterations = append(iterations, j)
-	//				break loop
-	//			}
-	//		}
-	//		i = i + batchSize
-	//	}
-
+func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, routine int, wg *sync.WaitGroup, done chan bool, iterationResult chan int) {
 	//PARALLEL IMPLEMENTATION WITH BATCHES
 
-	totalBatches := 10000000 / batchSize
-loop:
-	for i := 0; i < totalBatches; i++ {
-		for j := (i * batchSize) + iteration; j < (i*batchSize)+batchSize; j = j + 10 {
-			if endLoop {
-				break loop
+	defer wg.Done()
+	batchSize := core.BatchSize                  //1000
+	NumBatches := core.MaxIterations / batchSize //10000000/1000 = 10000
+	// Batch 0th - [0,1000)
+	// Batch 1th - [1000,2000)
+
+	for batch := 0; batch < NumBatches; batch++ {
+		for iteration := (batch * batchSize) + routine; iteration < (batch*batchSize)+batchSize; iteration = iteration + core.NumRoutines {
+			proposer.Iteration = iteration
+			if len(done) >= 1 {
+				return
 			}
-			proposer.Iteration = j
 			isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
 			if isElected {
-				endLoop = true
-				iterations = append(iterations, j)
-				break loop
+				iterationResult <- iteration
+				done <- true
+				return
 			}
 		}
 	}
+	iterationResult <- -1
+	log.Debug("IsElected is never true for this batch")
 }
 
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {

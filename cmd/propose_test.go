@@ -660,15 +660,24 @@ func stakeSnapshotValue(stake string) *big.Int {
 
 func TestGetIteration(t *testing.T) {
 	var client *ethclient.Client
-	var proposer types.ElectedProposer
 	var bufferPercent int32
 
+	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	saltBytes32 := [32]byte{}
+	copy(saltBytes32[:], salt)
+
+	proposer := types.ElectedProposer{
+		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
+		StakerId:        2,
+		NumberOfStakers: 10,
+		Salt:            saltBytes32,
+	}
+
 	type args struct {
-		stakeSnapshot     *big.Int
-		stakeSnapshotErr  error
-		isElectedProposer bool
-		remainingTime     int64
-		remainingTimeErr  error
+		stakeSnapshot    *big.Int
+		stakeSnapshotErr error
+		remainingTime    int64
+		remainingTimeErr error
 	}
 	tests := []struct {
 		name string
@@ -678,11 +687,10 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 1: When getIteration returns a valid iteration",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: true,
-				remainingTime:     100,
+				stakeSnapshot: big.NewInt(1000),
+				remainingTime: 100,
 			},
-			want: 0,
+			want: 70183,
 		},
 		{
 			name: "Test 2: When there is an error in getting stakeSnapshotValue",
@@ -691,41 +699,36 @@ func TestGetIteration(t *testing.T) {
 			},
 			want: -1,
 		},
-		//{
-		//	name: "Test 3: When getIteration returns an invalid iteration",
-		//	args: args{
-		//		stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-		//		isElectedProposer: false,
-		//		remainingTime:     2,
-		//	},
-		//	want: -1,
-		//},
+		{
+			name: "Test 3: When getIteration returns an invalid iteration",
+			args: args{
+				stakeSnapshot: stakeSnapshotValue("1"),
+				remainingTime: 2,
+			},
+			want: -1,
+		},
 		{
 			name: "Test 4: When there is an error in getting remaining time for the state",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: true,
-				remainingTimeErr:  errors.New("remaining time error"),
+				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
+				remainingTimeErr: errors.New("remaining time error"),
 			},
 			want: -1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsMock := new(mocks.UtilsInterface)
 			utilsPkgMock := new(Mocks.Utils)
+
 			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
+			cmdUtils = &UtilsStruct{}
 			utilsInterface = utilsPkgMock
 
-			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
-			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
+			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(tt.args.stakeSnapshot, big.NewInt(1e18)), tt.args.stakeSnapshotErr)
 			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 
-			utils := &UtilsStruct{}
-
-			if got := utils.GetIteration(client, proposer, bufferPercent, core.BatchSize); got != tt.want {
+			if got := cmdUtils.GetIteration(client, proposer, bufferPercent); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -951,7 +954,6 @@ func BenchmarkGetIteration(b *testing.B) {
 		stakeSnapshot *big.Int
 		batchSize     int
 	}{
-		{stakeSnapshot: big.NewInt(1000), batchSize: 10000},
 		{stakeSnapshot: big.NewInt(1000), batchSize: 1000},
 		{stakeSnapshot: big.NewInt(1000), batchSize: 100},
 		{stakeSnapshot: big.NewInt(1000), batchSize: 10},
@@ -959,6 +961,8 @@ func BenchmarkGetIteration(b *testing.B) {
 		{stakeSnapshot: big.NewInt(100000), batchSize: 1000},
 		{stakeSnapshot: big.NewInt(1000000), batchSize: 1000},
 		{stakeSnapshot: big.NewInt(10000000), batchSize: 1000},
+		{stakeSnapshot: big.NewInt(10000000), batchSize: 100},
+		{stakeSnapshot: big.NewInt(10000000), batchSize: 10},
 	}
 
 	for _, v := range table {
@@ -976,7 +980,8 @@ func BenchmarkGetIteration(b *testing.B) {
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
 				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
 
-				cmdUtils.GetIteration(client, proposer, bufferPercent, v.batchSize)
+				core.BatchSize = v.batchSize
+				cmdUtils.GetIteration(client, proposer, bufferPercent)
 
 				timeElapsed := time.Since(start).Microseconds()
 				timeRecorded = append(timeRecorded, timeElapsed)

@@ -695,13 +695,13 @@ func (_m *UtilsCmdInterface) GetGasPrice() (int32, error) {
 	return r0, r1
 }
 
-// GetIteration provides a mock function with given fields: client, proposer, bufferPercent, batchSize
-func (_m *UtilsCmdInterface) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32, batchSize int) int {
-	ret := _m.Called(client, proposer, bufferPercent, batchSize)
+// GetIteration provides a mock function with given fields: client, proposer, bufferPercent
+func (_m *UtilsCmdInterface) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
+	ret := _m.Called(client, proposer, bufferPercent)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer, int32, int) int); ok {
-		r0 = rf(client, proposer, bufferPercent, batchSize)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.ElectedProposer, int32) int); ok {
+		r0 = rf(client, proposer, bufferPercent)
 	} else {
 		r0 = ret.Get(0).(int)
 	}

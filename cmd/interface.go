@@ -283,7 +283,7 @@ type UtilsCmdInterface interface {
 	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
-	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32, batchSize int) int
+	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
 	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
 	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32)
 	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
