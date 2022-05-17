@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -24,10 +25,12 @@ Example:
 	Run: initialiseDelegate,
 }
 
+//This function initialises the ExecuteDelegate function
 func initialiseDelegate(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteDelegate(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the Delegate function
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -76,6 +79,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
 }
 
+//This function allows the delegator to stake coins without setting up a node
 func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	txnArgs.ContractAddress = core.StakeManagerAddress
@@ -92,6 +96,7 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(delegateCmd)
 	var (

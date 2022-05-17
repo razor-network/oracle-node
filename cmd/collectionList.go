@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -22,10 +23,12 @@ Example:
 	Run: initialiseCollectionList,
 }
 
+//This function initialises the ExecuteCollectionList function
 func initialiseCollectionList(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteCollectionList(cmd.Flags())
 }
 
+//This function sets the flags appropriately and and executes the GetCollectionList function
 func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	config, err := cmdUtils.GetConfigData()
@@ -37,6 +40,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting collection list: ", err)
 }
 
+//This function provides the list of all collections with their name, power, ID etc.
 func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
 	collections, err := razorUtils.GetCollections(client)
 
@@ -66,6 +70,7 @@ func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
 
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(collectionListCmd)
 

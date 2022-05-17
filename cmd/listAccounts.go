@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -16,10 +17,12 @@ Example:
 	Run: initialiseListAccounts,
 }
 
+//This function initialises the ExecuteListAccounts function
 func initialiseListAccounts(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteListAccounts(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the ListAccounts function
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	allAccounts, err := cmdUtils.ListAccounts()
@@ -30,6 +33,7 @@ func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function is used to list all accessible accounts
 func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 	path, err := razorUtils.GetDefaultPath()
 	if err != nil {
@@ -40,6 +44,7 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 	return keystoreUtils.Accounts(path), nil
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(listAccountsCmd)
 }

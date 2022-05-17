@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -19,10 +20,12 @@ Example:
 	Run: initialiseCreate,
 }
 
+//This function initialises the ExecuteCreate function
 func initialiseCreate(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteCreate(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the Create function
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	password := razorUtils.AssignPassword(flagSet)
@@ -32,6 +35,7 @@ func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 	log.Info("Keystore Path: ", account.URL)
 }
 
+//This function is used to create the new account
 func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 	path, err := razorUtils.GetDefaultPath()
 	if err != nil {
@@ -42,6 +46,7 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 	return account, nil
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(createCmd)
 

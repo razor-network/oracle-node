@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,10 +27,12 @@ Note:
 	Run: initialiseUpdateJob,
 }
 
+//This function initialises the ExecuteUpdateJob function
 func initialiseUpdateJob(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUpdateJob(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the UpdateJob function
 func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -77,6 +80,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
+//This function allows the admin to update an existing job
 func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
 
 	_, err := cmdUtils.WaitIfCommitState(client, "update job")
@@ -102,6 +106,7 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(updateJobCmd)
 

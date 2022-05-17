@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -25,10 +26,12 @@ Example:
 	Run: initialiseStake,
 }
 
+//This function initialises the ExecuteStake function
 func initialiseStake(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteStake(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the StakeCoins function
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -98,6 +101,8 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 		}
 	}
 }
+
+//This function allows the user to stake razors in the razor network and returns the hash
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
@@ -118,6 +123,7 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	return transactionUtils.Hash(tx), nil
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (

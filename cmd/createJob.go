@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -27,10 +28,12 @@ Note:
 	Run: initialiseCreateJob,
 }
 
+//This function initialises the ExecuteCreateJob function
 func initialiseCreateJob(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteCreateJob(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the CreateJob function
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -79,6 +82,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
+//This function allows the admin to create the job
 func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
@@ -102,6 +106,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(createJobCmd)
 

@@ -1,3 +1,4 @@
+//This function add the following command to the root command
 package cmd
 
 import (
@@ -22,6 +23,7 @@ Example:
 	},
 }
 
+//This function allows the staker to claim the rewards earned from delegator's pool share as commission
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -59,6 +61,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(claimCommissionCmd)
 

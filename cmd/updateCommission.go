@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -23,10 +24,12 @@ Example:
 	Run: initialiseUpdateCommission,
 }
 
+//This function initialises the ExecuteUpdateCommission function
 func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUpdateCommission(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the UpdateCommission function
 func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -55,6 +58,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("SetDelegation error: ", err)
 }
 
+//This function allows a staker to add/update the commission value
 func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
 	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.StakerId)
 	if err != nil {
@@ -116,6 +120,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	return nil
 }
 
+//This function add the following command to the root command
 func init() {
 	var (
 		Address    string

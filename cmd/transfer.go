@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -24,10 +25,12 @@ Example:
 	Run: initialiseTransfer,
 }
 
+//This function initialises the ExecuteTransfer function
 func initialiseTransfer(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteTransfer(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the Transfer function
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
@@ -64,6 +67,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
+//This function transfers the razors from your account to others account
 func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
@@ -90,6 +94,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 	return transactionUtils.Hash(txn), err
 }
 
+//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (
