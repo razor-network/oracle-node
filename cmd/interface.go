@@ -323,6 +323,8 @@ type UtilsCmdInterface interface {
 	InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error
 	GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
 	AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
+	ExecuteContractAddresses(flagSet *pflag.FlagSet)
+	ContractAddresses()
 }
 
 type TransactionInterface interface {

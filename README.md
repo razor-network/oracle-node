@@ -12,14 +12,14 @@ Install `razor-go` pre build binary directly from github and configure into host
 
   For linux-amd64
   ```
-  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | sh 
+  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
   ```
 
   For linux-arm64
   ```
   export PLATFORM=arm64
 
-  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | sh 
+  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
   ```
 
 Check installation
@@ -31,27 +31,30 @@ razor -v
 ### Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
-
 ```
-  docker run -d \
-  -it \
-  --name razor-go \
-  -v "$(echo $HOME)"/.razor:/root/.razor \
-  razornetwork/razor-go
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    <command>
 ```
-
 Note that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
 
 ```
-docker exec -it razor-go razor setConfig -p <provider_url>
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    setConfig -p <provider_url>
 ```
 
 You can now execute razor-go cli commands by running:
 
 ```
-docker exec -it razor-go razor <command>
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    <command>
 ```
 
 ### Setting up razor-go with docker-compose
@@ -855,6 +858,33 @@ $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId 
 _The logs for above command will be stored at "home/.razor/delegationLogs.log" path_
 
 _Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
+
+
+### Contract Addresses
+
+This command provides the list of contract addresses.
+
+razor cli
+
+```
+$ ./razor contractAddresses
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    contractAddresses
+```
+
+Example:
+
+```
+$ ./razor contractAddresses
+```
+
 
 ### Setting up razor-go and commands using docker-compose
 
