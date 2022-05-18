@@ -36,14 +36,14 @@ func Contains(slice interface{}, val interface{}) bool {
 	return false
 }
 
-func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
+func IsEqual(arr1 []*big.Int, arr2 []*big.Int) (bool, int) {
 	if len(arr1) > len(arr2) {
 		return false, len(arr2)
 	} else if len(arr1) < len(arr2) {
 		return false, len(arr1)
 	}
 	for i := 0; i < len(arr1); i++ {
-		if arr2[i] != arr1[i] {
+		if arr2[i].Cmp(arr1[i]) != 0 {
 			return false, i
 		}
 	}
@@ -108,14 +108,6 @@ func GetDataInBytes(data []*big.Int) [][]byte {
 		dataInBytes = append(dataInBytes, math2.U256Bytes(datum))
 	}
 	return dataInBytes
-}
-
-func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
-	var arr []uint32
-	for _, datum := range bigIntArray {
-		arr = append(arr, uint32(datum.Int64()))
-	}
-	return arr
 }
 
 func ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {

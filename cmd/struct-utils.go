@@ -242,10 +242,6 @@ func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32,
 	return utilsInterface.GetTotalInfluenceRevealed(client, epoch, medianIndex)
 }
 
-func (u Utils) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
-	return utils.ConvertBigIntArrayToUint32Array(bigIntArray)
-}
-
 func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
 	return utils.ConvertUint32ArrayToBigIntArray(uint32Array)
 }

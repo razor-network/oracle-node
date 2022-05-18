@@ -84,7 +84,7 @@ type Utils interface {
 	GetOptions() bind.CallOpts
 	GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error)
 	GetSortedProposedBlockId(client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error)
-	FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (uint32, error)
+	FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error)
 	GetBlock(client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error)
 	GetMaxAltBlocks(client *ethclient.Client) (uint8, error)
 	GetMinSafeRazor(client *ethclient.Client) (*big.Int, error)
@@ -158,7 +158,7 @@ type Utils interface {
 	DeleteJobFromJSON(fileName string, jobId string) error
 	AddJobToJSON(fileName string, job *types.StructsJob) error
 	CheckTransactionReceipt(client *ethclient.Client, _txHash string) int
-	CalculateSalt(epoch uint32, medians []uint32) [32]byte
+	CalculateSalt(epoch uint32, medians []*big.Int) [32]byte
 	ToAssign(client *ethclient.Client) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)

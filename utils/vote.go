@@ -42,7 +42,7 @@ func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([3
 
 func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	var (
-		voteValue    uint32
+		voteValue    *big.Int
 		voteValueErr error
 	)
 	voteValueErr = retry.Do(

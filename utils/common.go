@@ -166,8 +166,8 @@ func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, buf
 	return int64(timeRemaining - upperLimit), nil
 }
 
-func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
-	salt := solsha3.SoliditySHA3([]string{"uint32", "uint32[]"}, []interface{}{epoch, medians})
+func (*UtilsStruct) CalculateSalt(epoch uint32, medians []*big.Int) [32]byte {
+	salt := solsha3.SoliditySHA3([]string{"uint32", "uint256"}, []interface{}{epoch, medians})
 	var saltInBytes32 [32]byte
 	copy(saltInBytes32[:], salt)
 	return saltInBytes32

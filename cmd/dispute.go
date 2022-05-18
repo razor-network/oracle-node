@@ -109,7 +109,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		}
 
 		// Median Value dispute
-		isEqual, mismatchIndex := utils.IsEqualUint32(proposedBlock.Medians, medians)
+		isEqual, mismatchIndex := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -148,7 +148,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	return nil
 }
 
-func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 
 	if _mediansData == nil && !rogueData.IsRogue {
 		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
@@ -181,10 +181,9 @@ CalculateMedian:
 		_revealedDataMaps = revealedDataMaps
 	}
 
-	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(_mediansData)
 	log.Debug("Locally calculated data:")
-	log.Debugf("Medians: %d", mediansInUint32)
-	return mediansInUint32, _revealedCollectionIds, _revealedDataMaps, nil
+	log.Debugf("Medians: %d", _mediansData)
+	return _mediansData, _revealedCollectionIds, _revealedDataMaps, nil
 }
 
 func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*types2.Transaction, error) {
