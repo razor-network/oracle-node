@@ -38,7 +38,6 @@ func (*UtilsStruct) ContractAddresses() {
 	fmt.Println("BlockManagerAddress :", core.BlockManagerAddress)
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(contractAddressesCmd)
 }

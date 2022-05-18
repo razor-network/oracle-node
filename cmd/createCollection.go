@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,10 +27,12 @@ Note:
 	Run: initialiseCreateCollection,
 }
 
+//This function initialises the ExecuteCreateCollction function
 func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteCreateCollection(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the CreateCollection function
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -73,6 +76,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
+//This function allows the admin to create collction if existing jobs are present
 func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
 	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)

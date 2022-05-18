@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -21,10 +22,12 @@ Example:
 	Run: initialiseJobList,
 }
 
+//This function initialises the ExecuteJobList function
 func initialiseJobList(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteJobList(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the GetJobList function
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 
@@ -36,6 +39,8 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	err = cmdUtils.GetJobList(client)
 	utils.CheckError("Error in getting job list: ", err)
 }
+
+//This function provides the list of all jobs
 func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
 	jobs, err := razorUtils.GetJobs(client)
 
