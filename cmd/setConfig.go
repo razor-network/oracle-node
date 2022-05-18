@@ -123,7 +123,6 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	return nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(setConfig)
 

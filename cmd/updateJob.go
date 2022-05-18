@@ -106,7 +106,6 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 	return transactionUtils.Hash(txn), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(updateJobCmd)
 

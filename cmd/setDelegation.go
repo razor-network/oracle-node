@@ -119,7 +119,6 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 	return transactionUtils.Hash(delegationAcceptanceTxn), nil
 }
 
-//This function add the following command to the root command
 func init() {
 
 	rootCmd.AddCommand(setDelegationCmd)

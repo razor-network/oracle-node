@@ -46,7 +46,6 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 	return account, nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(createCmd)
 

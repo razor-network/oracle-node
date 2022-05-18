@@ -44,7 +44,6 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 	return keystoreUtils.Accounts(path), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(listAccountsCmd)
 }

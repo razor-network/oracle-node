@@ -594,7 +594,6 @@ func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account typ
 	utils.CheckError("Error in AutoWithdraw: ", err)
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(voteCmd)
 

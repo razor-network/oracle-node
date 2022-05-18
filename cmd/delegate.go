@@ -96,7 +96,6 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	return transactionUtils.Hash(txn), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(delegateCmd)
 	var (

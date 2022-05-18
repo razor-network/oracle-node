@@ -68,7 +68,6 @@ func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
 
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(jobListCmd)
 

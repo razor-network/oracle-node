@@ -105,7 +105,6 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 	return transactionUtils.Hash(txn), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(createCollectionCmd)
 

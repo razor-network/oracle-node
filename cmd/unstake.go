@@ -163,7 +163,6 @@ func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint
 	return nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(unstakeCmd)
 

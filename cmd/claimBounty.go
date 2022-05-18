@@ -128,7 +128,6 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	return core.NilHash, err
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(claimBountyCmd)
 	var (

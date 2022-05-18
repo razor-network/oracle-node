@@ -123,7 +123,6 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	return transactionUtils.Hash(tx), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (

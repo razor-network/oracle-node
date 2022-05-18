@@ -59,7 +59,6 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	return account, nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(importCmd)
 

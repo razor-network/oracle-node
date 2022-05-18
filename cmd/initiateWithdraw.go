@@ -143,7 +143,6 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 	return transactionUtils.Hash(txn), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(initiateWithdrawCmd)
 

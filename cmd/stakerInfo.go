@@ -76,7 +76,6 @@ func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) err
 	return nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(stakerInfoCmd)
 

@@ -120,7 +120,6 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	return nil
 }
 
-//This function add the following command to the root command
 func init() {
 	var (
 		Address    string

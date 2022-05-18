@@ -94,7 +94,6 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 	return transactionUtils.Hash(txn), err
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(transferCmd)
 	var (

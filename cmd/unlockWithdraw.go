@@ -111,7 +111,6 @@ func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.Trans
 	return transactionUtils.Hash(txn), nil
 }
 
-//This function add the following command to the root command
 func init() {
 	rootCmd.AddCommand(unlockWithdrawCmd)
 	var (
