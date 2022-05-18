@@ -859,6 +859,33 @@ _The logs for above command will be stored at "home/.razor/delegationLogs.log" p
 
 _Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
 
+
+### Contract Addresses
+
+This command provides the list of contract addresses.
+
+razor cli
+
+```
+$ ./razor contractAddresses
+```
+
+docker
+
+```
+docker run -it  \
+    -v "$(echo $HOME)"/.razor:/root/.razor \
+    razornetwork/razor-go:latest \
+    contractAddresses
+```
+
+Example:
+
+```
+$ ./razor contractAddresses
+```
+
+
 ### Setting up razor-go and commands using docker-compose
 
 1. Must have `docker` and `docker-compose` installed
