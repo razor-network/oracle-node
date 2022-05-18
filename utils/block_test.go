@@ -26,7 +26,7 @@ func TestFetchPreviousValue(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    uint32
+		want    *big.Int
 		wantErr bool
 	}{
 		{
@@ -34,10 +34,10 @@ func TestFetchPreviousValue(t *testing.T) {
 			args: args{
 				assetId: 3,
 				block: bindings.StructsBlock{
-					Medians: []uint32{2000, 1500, 4000, 6500},
+					Medians: []*big.Int{big.NewInt(2000), big.NewInt(1500), big.NewInt(4000), big.NewInt(6500)},
 				},
 			},
-			want:    4000,
+			want:    big.NewInt(4000),
 			wantErr: false,
 		},
 		{
@@ -46,7 +46,7 @@ func TestFetchPreviousValue(t *testing.T) {
 				assetId:  3,
 				blockErr: errors.New("block error"),
 			},
-			want:    0,
+			want:    big.NewInt(0),
 			wantErr: true,
 		},
 	}
@@ -266,7 +266,7 @@ func TestGetProposedBlock(t *testing.T) {
 	var callOpts bind.CallOpts
 
 	block := bindings.StructsBlock{
-		Medians: []uint32{2000, 1500, 4000, 6500},
+		Medians: []*big.Int{big.NewInt(2000), big.NewInt(1500), big.NewInt(4000), big.NewInt(6500)},
 	}
 
 	type args struct {

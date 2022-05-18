@@ -889,7 +889,7 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 func TestCalculateSalt(t *testing.T) {
 	type args struct {
 		epoch   uint32
-		medians []uint32
+		medians []*big.Int
 	}
 	tests := []struct {
 		name string
@@ -900,9 +900,9 @@ func TestCalculateSalt(t *testing.T) {
 			name: "When CalculateSalt() is executed successfully",
 			args: args{
 				epoch:   1,
-				medians: []uint32{},
+				medians: []*big.Int{},
 			},
-			want: [32]byte{81, 248, 27, 205, 252, 50, 74, 13, 255, 43, 91, 236, 157, 146, 226, 28, 190, 188, 77, 94, 41, 211, 163, 211, 13, 227, 224, 63, 190, 171, 141, 127},
+			want: [32]byte{3, 188, 235, 65, 42, 140, 151, 61, 187, 150, 15, 19, 83, 186, 145, 207, 108, 161, 13, 253, 226, 28, 145, 16, 84, 207, 30, 97, 240, 210, 142, 11},
 		},
 	}
 	for _, tt := range tests {
