@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -10,10 +11,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+//This function returns the block manager with opts
 func (*UtilsStruct) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.BlockManager, bind.CallOpts) {
 	return UtilsInterface.GetBlockManager(client), UtilsInterface.GetOptions()
 }
 
+//This function returns the number of proposed blocks
 func (*UtilsStruct) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
 	var (
 		numProposedBlocks uint8
@@ -34,6 +37,7 @@ func (*UtilsStruct) GetNumberOfProposedBlocks(client *ethclient.Client, epoch ui
 	return numProposedBlocks, nil
 }
 
+//This function returns the proposed block
 func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
 	var (
 		proposedBlock bindings.StructsBlock
@@ -54,6 +58,7 @@ func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, pro
 	return proposedBlock, nil
 }
 
+//This function fetches the previous value
 func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (uint32, error) {
 	block, err := UtilsInterface.GetBlock(client, epoch)
 	if err != nil {
@@ -62,6 +67,7 @@ func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, a
 	return block.Medians[assetId-1], nil
 }
 
+//This function returns the block
 func (*UtilsStruct) GetBlock(client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error) {
 	var (
 		block bindings.StructsBlock
@@ -82,6 +88,7 @@ func (*UtilsStruct) GetBlock(client *ethclient.Client, epoch uint32) (bindings.S
 	return block, nil
 }
 
+//This function returns the minimum stake amount
 func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error) {
 	var (
 		minStake *big.Int
@@ -102,6 +109,7 @@ func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error
 	return minStake, nil
 }
 
+//This function returns the maximum alt blocks
 func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	var (
 		maxAltBlocks uint8
@@ -122,6 +130,7 @@ func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	return maxAltBlocks, nil
 }
 
+//This function returns the sorted proposed block Id
 func (*UtilsStruct) GetSortedProposedBlockId(client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error) {
 	var (
 		sortedProposedBlockId uint32
@@ -142,6 +151,7 @@ func (*UtilsStruct) GetSortedProposedBlockId(client *ethclient.Client, epoch uin
 	return sortedProposedBlockId, nil
 }
 
+//This function returns the sorted proposed block Ids
 func (*UtilsStruct) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
 	numberOfProposedBlocks, err := UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
 	if err != nil {
@@ -160,6 +170,7 @@ func (*UtilsStruct) GetSortedProposedBlockIds(client *ethclient.Client, epoch ui
 	return sortedProposedBlockIds, nil
 }
 
+//This function returns the block index which has to be confirmed
 func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
 	var (
 		blockIndex int8

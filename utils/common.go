@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -15,6 +16,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
+//This function helps in connecting with client
 func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 	client, err := EthClient.Dial(provider)
 	if err != nil {
@@ -24,6 +26,7 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 	return client
 }
 
+//This function helps in fetching the balance
 func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
 	coinContract := UtilsInterface.GetTokenManager(client)
@@ -31,6 +34,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	return CoinInterface.BalanceOf(coinContract, &opts, address)
 }
 
+//This function returns the delayed state
 func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
@@ -46,6 +50,7 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	return int64(state) % core.NumberOfStates, nil
 }
 
+//This function checks the transaction receipt
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
 	tx, err := ClientInterface.TransactionReceipt(client, context.Background(), txHash)
@@ -55,6 +60,7 @@ func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash st
 	return int(tx.Status)
 }
 
+//This function waits for the block completion
 func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
 	timeout := core.BlockCompletionTimeout
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
@@ -73,6 +79,7 @@ func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead 
 	return 0
 }
 
+//This function wait for next N seconds
 func (*UtilsStruct) WaitTillNextNSecs(waitTime int32) {
 	if waitTime <= 0 {
 		waitTime = 1
@@ -80,12 +87,14 @@ func (*UtilsStruct) WaitTillNextNSecs(waitTime int32) {
 	Time.Sleep(time.Duration(waitTime) * time.Second)
 }
 
+//This function checks the error
 func CheckError(msg string, err error) {
 	if err != nil {
 		log.Fatal(msg + err.Error())
 	}
 }
 
+//This function checks if the flag is passed or not
 func (*UtilsStruct) IsFlagPassed(name string) bool {
 	found := false
 	for _, arg := range os.Args {
@@ -96,6 +105,7 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 	return found
 }
 
+//This function checks if the eth balance is zero or not
 func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	ethBalance, err := ClientInterface.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
 	if err != nil {
@@ -106,6 +116,7 @@ func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address stri
 	}
 }
 
+//This function returns the state name
 func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
@@ -125,6 +136,7 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	return stateName
 }
 
+//This function assigns the staker Id
 func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
 	if UtilsInterface.IsFlagPassed("stakerId") {
 		return UtilsInterface.GetUint32(flagSet, "stakerId")
@@ -132,6 +144,7 @@ func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Cli
 	return UtilsInterface.GetStakerId(client, address)
 }
 
+//This function returns the epoch
 func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 	latestHeader, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
@@ -142,6 +155,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return uint32(epoch), nil
 }
 
+//This function calculates the block time
 func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
@@ -155,6 +169,7 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
 
+//This function returns the remaining time of current state
 func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
@@ -166,6 +181,7 @@ func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, buf
 	return int64(timeRemaining - upperLimit), nil
 }
 
+//This function calculates the salt
 func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
 	salt := solsha3.SoliditySHA3([]string{"uint32", "uint32[]"}, []interface{}{epoch, medians})
 	var saltInBytes32 [32]byte
@@ -173,12 +189,14 @@ func (*UtilsStruct) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
 	return saltInBytes32
 }
 
+//This function returns the prng
 func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	sum := big.NewInt(0).SetBytes(prngHashes)
 	maxBigInt := big.NewInt(int64(max))
 	return sum.Mod(sum, maxBigInt)
 }
 
+//This function calculates the block number at epoch beginning
 func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
@@ -204,6 +222,7 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 
 }
 
+//This function saves data to commit JSON file
 func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
 
 	var data types.CommitFileData
@@ -224,6 +243,7 @@ func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, comm
 	return nil
 }
 
+//This function reads from commit JSON file
 func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
@@ -245,6 +265,7 @@ func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileDat
 	return commitedData, nil
 }
 
+//This function assigns the log file
 func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
@@ -255,6 +276,7 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function saves data to propose JSON file
 func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
 
 	var data types.ProposeFileData
@@ -275,6 +297,7 @@ func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, epoch uint32, pro
 	return nil
 }
 
+//This function reads from propose JSON file
 func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
@@ -296,6 +319,7 @@ func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileD
 	return proposedData, nil
 }
 
+//This function saves data to Dispute JSON file
 func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
 	var data types.DisputeFileData
 
@@ -312,6 +336,7 @@ func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []u
 	return nil
 }
 
+//This function reads from dispute JSON file
 func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {

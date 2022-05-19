@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -13,10 +14,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+//This function returns the stake manager with opts
 func (*UtilsStruct) GetStakeManagerWithOpts(client *ethclient.Client) (*bindings.StakeManager, bind.CallOpts) {
 	return UtilsInterface.GetStakeManager(client), UtilsInterface.GetOptions()
 }
 
+//This function returns the staker Id
 func (*UtilsStruct) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
 	var (
 		stakerId  uint32
@@ -37,6 +40,7 @@ func (*UtilsStruct) GetStakerId(client *ethclient.Client, address string) (uint3
 	return stakerId, nil
 }
 
+//This function returns the stake
 func (*UtilsStruct) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
 	var (
 		staker    bindings.StructsStaker
@@ -57,6 +61,7 @@ func (*UtilsStruct) GetStake(client *ethclient.Client, stakerId uint32) (*big.In
 	return staker.Stake, nil
 }
 
+//This function returns the staker
 func (*UtilsStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
 	var (
 		staker    bindings.StructsStaker
@@ -77,6 +82,7 @@ func (*UtilsStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindin
 	return staker, nil
 }
 
+//This function returns the number of stakers
 func (*UtilsStruct) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
 	var (
 		numStakers uint32
@@ -97,6 +103,7 @@ func (*UtilsStruct) GetNumberOfStakers(client *ethclient.Client) (uint32, error)
 	return numStakers, nil
 }
 
+//This function returns the lock
 func (*UtilsStruct) GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error) {
 	staker, err := UtilsInterface.GetStaker(client, stakerId)
 	if err != nil {
@@ -121,6 +128,7 @@ func (*UtilsStruct) GetLock(client *ethclient.Client, address string, stakerId u
 	return locks, nil
 }
 
+//This function returns the withdraw initiation period
 func (*UtilsStruct) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
 	var (
 		withdrawReleasePeriod uint8
@@ -141,6 +149,7 @@ func (*UtilsStruct) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8
 	return withdrawReleasePeriod, nil
 }
 
+//This function returns the maximum commission
 func (*UtilsStruct) GetMaxCommission(client *ethclient.Client) (uint8, error) {
 	var (
 		maxCommission uint8
@@ -160,6 +169,7 @@ func (*UtilsStruct) GetMaxCommission(client *ethclient.Client) (uint8, error) {
 	return maxCommission, nil
 }
 
+//This function returns the epoch limit for update commission
 func (*UtilsStruct) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
 	var (
 		epochLimitForUpdateCommission uint16
@@ -179,6 +189,7 @@ func (*UtilsStruct) GetEpochLimitForUpdateCommission(client *ethclient.Client) (
 	return epochLimitForUpdateCommission, nil
 }
 
+//This function returns the staker SRZR Balance
 func (*UtilsStruct) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
 	stakedToken := UtilsInterface.GetStakedToken(client, staker.TokenAddress)
 	callOpts := UtilsInterface.GetOptions()
@@ -191,6 +202,7 @@ func (*UtilsStruct) GetStakerSRZRBalance(client *ethclient.Client, staker bindin
 	return sRZRBalance, nil
 }
 
+//This function returns the minimum safe razor
 func (*UtilsStruct) GetMinSafeRazor(client *ethclient.Client) (*big.Int, error) {
 	var (
 		minSafeRazor *big.Int

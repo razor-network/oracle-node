@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -6,6 +7,7 @@ import (
 	"strings"
 )
 
+//This function checks if particular value is present or not
 func Contains(slice interface{}, val interface{}) bool {
 	switch slice := slice.(type) {
 	case []int:
@@ -36,6 +38,7 @@ func Contains(slice interface{}, val interface{}) bool {
 	return false
 }
 
+//This function checks if two arrays of uint32 are equal or not
 func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
 	if len(arr1) > len(arr2) {
 		return false, len(arr2)
@@ -50,6 +53,7 @@ func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
 	return true, -1
 }
 
+//This function checks if two arrays of byte are equal or not
 func IsEqualByte(arr1 []byte, arr2 []byte) (bool, int) {
 	if len(arr1) > len(arr2) {
 		return false, len(arr2)
@@ -64,7 +68,7 @@ func IsEqualByte(arr1 []byte, arr2 []byte) (bool, int) {
 	return true, -1
 }
 
-// IsMissing checks for elements present in 1st array but not in second
+//IsMissing checks for elements present in 1st array but not in second
 func IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
 	arrayMap := make(map[uint16]bool)
 	for i := 0; i < len(arr2); i++ {
@@ -78,6 +82,7 @@ func IsMissing(arr1 []uint16, arr2 []uint16) (bool, int, uint16) {
 	return false, -1, 0
 }
 
+//This function checks if the array is sorted or not
 func IsSorted(values []uint16) (bool, int, int) {
 	if values == nil {
 		return true, -1, -1
@@ -90,6 +95,7 @@ func IsSorted(values []uint16) (bool, int, int) {
 	return true, -1, -1
 }
 
+//This function returns the index of particular value in array
 func IndexOf(array []uint32, value uint32) int {
 	for arrayIndex, arrayVal := range array {
 		if arrayVal == value {
@@ -99,6 +105,7 @@ func IndexOf(array []uint32, value uint32) int {
 	return -1
 }
 
+//This function returns data in bytes
 func GetDataInBytes(data []*big.Int) [][]byte {
 	if len(data) == 0 {
 		return nil
@@ -110,6 +117,7 @@ func GetDataInBytes(data []*big.Int) [][]byte {
 	return dataInBytes
 }
 
+//This function converts big Int array to Uint32 array
 func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
 	var arr []uint32
 	for _, datum := range bigIntArray {
@@ -118,6 +126,7 @@ func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
 	return arr
 }
 
+//This function converts Uint32 array to big Int array
 func ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
 	var arr []*big.Int
 	for _, datum := range uint32Array {
@@ -126,6 +135,7 @@ func ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
 	return arr
 }
 
+//This function calculates the weighted sum
 func CalculateWeightedSum(data []*big.Int, weight []uint8) *big.Int {
 	sum := big.NewInt(0)
 	for index, datum := range data {
@@ -135,6 +145,7 @@ func CalculateWeightedSum(data []*big.Int, weight []uint8) *big.Int {
 	return sum
 }
 
+//This function calculates the sum of Uint8 array
 func CalculateSumOfUint8Array(data []uint8) uint {
 	sum := uint(0)
 	if len(data) == 0 {
@@ -146,6 +157,7 @@ func CalculateSumOfUint8Array(data []uint8) uint {
 	return sum
 }
 
+//This function converts the Uint array to Uint16 array
 func ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	var arr []uint16
 	for _, datum := range uintArr {
@@ -154,6 +166,7 @@ func ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	return arr
 }
 
+//This function checks if the string is present in array or not
 func ContainsStringFromArray(source string, subStringArray []string) bool {
 	for i := 0; i < len(subStringArray); i++ {
 		if strings.Contains(source, subStringArray[i]) {
