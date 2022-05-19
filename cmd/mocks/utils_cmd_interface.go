@@ -365,11 +365,11 @@ func (_m *UtilsCmdInterface) Delegate(txnArgs types.TransactionOptions, stakerId
 }
 
 // Dispute provides a mock function with given fields: client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues
-func (_m *UtilsCmdInterface) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []uint32) error {
+func (_m *UtilsCmdInterface) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	ret := _m.Called(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, bindings.StructsBlock, uint16, []uint32) error); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, bindings.StructsBlock, uint16, []*big.Int) error); ok {
 		r0 = rf(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues)
 	} else {
 		r0 = ret.Error(0)
@@ -745,15 +745,15 @@ func (_m *UtilsCmdInterface) GetLastProposedEpoch(client *ethclient.Client, bloc
 }
 
 // GetLocalMediansData provides a mock function with given fields: client, account, epoch, blockNumber, rogueData
-func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	ret := _m.Called(client, account, epoch, blockNumber, rogueData)
 
-	var r0 []uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) []uint32); ok {
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) []*big.Int); ok {
 		r0 = rf(client, account, epoch, blockNumber, rogueData)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]uint32)
+			r0 = ret.Get(0).([]*big.Int)
 		}
 	}
 
@@ -930,7 +930,7 @@ func (_m *UtilsCmdInterface) GetWaitTime() (int32, error) {
 }
 
 // GiveSorted provides a mock function with given fields: client, blockManager, txnOpts, epoch, assetId, sortedStakers
-func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32) {
+func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) {
 	_m.Called(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
@@ -1202,15 +1202,15 @@ func (_m *UtilsCmdInterface) ListAccounts() ([]accounts.Account, error) {
 }
 
 // MakeBlock provides a mock function with given fields: client, blockNumber, epoch, rogueData
-func (_m *UtilsCmdInterface) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+func (_m *UtilsCmdInterface) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	ret := _m.Called(client, blockNumber, epoch, rogueData)
 
-	var r0 []uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, uint32, types.Rogue) []uint32); ok {
+	var r0 []*big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, uint32, types.Rogue) []*big.Int); ok {
 		r0 = rf(client, blockNumber, epoch, rogueData)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]uint32)
+			r0 = ret.Get(0).([]*big.Int)
 		}
 	}
 

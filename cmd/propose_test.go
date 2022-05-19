@@ -65,7 +65,7 @@ func TestPropose(t *testing.T) {
 		lastIteration              *big.Int
 		lastProposedBlockStruct    bindings.StructsBlock
 		lastProposedBlockStructErr error
-		medians                    []uint32
+		medians                    []*big.Int
 		ids                        []uint16
 		revealDataMaps             *types.RevealedDataMaps
 		mediansErr                 error
@@ -98,7 +98,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -120,7 +120,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -142,7 +142,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -163,7 +163,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -185,7 +185,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -207,7 +207,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -229,7 +229,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -251,7 +251,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocksErr:         errors.New("maxAltBlocks error"),
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -273,7 +273,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:               2,
 				lastIteration:              big.NewInt(5),
 				lastProposedBlockStructErr: errors.New("lastProposedBlockStruct error"),
-				medians:                    []uint32{6701548, 478307},
+				medians:                    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                    txnOpts,
 				proposeTxn:                 &Types.Transaction{},
 				hash:                       common.BigToHash(big.NewInt(1)),
@@ -297,7 +297,7 @@ func TestPropose(t *testing.T) {
 				lastProposedBlockStruct: bindings.StructsBlock{
 					Iteration: big.NewInt(1),
 				},
-				medians:    []uint32{6701548, 478307},
+				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
@@ -321,7 +321,7 @@ func TestPropose(t *testing.T) {
 				lastProposedBlockStruct: bindings.StructsBlock{
 					Iteration: big.NewInt(2),
 				},
-				medians:    []uint32{6701548, 478307},
+				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
@@ -365,7 +365,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeErr:              errors.New("propose error"),
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -387,7 +387,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				fileNameErr:             errors.New("fileName error"),
@@ -409,7 +409,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				saveDataErr:             errors.New("error in saving data"),
@@ -448,7 +448,7 @@ func TestPropose(t *testing.T) {
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
-				medians:                 []uint32{6701548, 478307},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
@@ -938,7 +938,7 @@ func TestMakeBlock(t *testing.T) {
 		epoch       uint32
 	)
 
-	randomValue := utils.GetRogueRandomMedianValue()
+	randomValue := utils.GetRogueRandomValue(10000000)
 
 	type args struct {
 		revealedDataMaps     *types.RevealedDataMaps
@@ -950,7 +950,7 @@ func TestMakeBlock(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []uint32
+		want    []*big.Int
 		want1   []uint16
 		want2   *types.RevealedDataMaps
 		wantErr bool
@@ -959,18 +959,18 @@ func TestMakeBlock(t *testing.T) {
 			name: "Test 1: When MakeBlock executes successfully and there is no rogue mode",
 			args: args{
 				revealedDataMaps: &types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
-					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+					SortedRevealedValues: map[uint16][]*big.Int{0: {big.NewInt(1), big.NewInt(1)}, 1: {big.NewInt(100), big.NewInt(100)}, 2: {big.NewInt(200), big.NewInt(200)}},
+					VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(1000), big.NewInt(1).String(): big.NewInt(1000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(200).String(): big.NewInt(3000), big.NewInt(200).String(): big.NewInt(3000)},
+					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(500), 1: big.NewInt(10000), 2: big.NewInt(10000), 3: big.NewInt(10000)},
 				},
-				activeCollections: []uint16{1, 2},
+				activeCollections: []uint16{0, 1, 2},
 			},
-			want:  []uint32{1},
-			want1: []uint16{2},
+			want:  []*big.Int{big.NewInt(1), big.NewInt(100), big.NewInt(200)},
+			want1: []uint16{0, 1, 2},
 			want2: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
-				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(50)},
+				SortedRevealedValues: map[uint16][]*big.Int{0: {big.NewInt(1), big.NewInt(1)}, 1: {big.NewInt(100), big.NewInt(100)}, 2: {big.NewInt(200), big.NewInt(200)}},
+				VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(1000), big.NewInt(1).String(): big.NewInt(1000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(200).String(): big.NewInt(3000), big.NewInt(200).String(): big.NewInt(3000)},
+				InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(250), 1: big.NewInt(2500), 2: big.NewInt(2500), 3: big.NewInt(10000)},
 			},
 			wantErr: false,
 		},
@@ -999,8 +999,8 @@ func TestMakeBlock(t *testing.T) {
 			name: "Test 4: When MakeBlock executes successfully and there is missingIds rogue mode",
 			args: args{
 				revealedDataMaps: &types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(1), big.NewInt(2), big.NewInt(3)}},
+					VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
 				},
 				activeCollections: []uint16{1, 2},
@@ -1009,11 +1009,11 @@ func TestMakeBlock(t *testing.T) {
 					RogueMode: []string{"missingIds"},
 				},
 			},
-			want:  []uint32{1},
+			want:  []*big.Int{big.NewInt(1)},
 			want1: []uint16{3},
 			want2: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(1), big.NewInt(2), big.NewInt(3)}},
+				VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(100)},
 				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(50)},
 			},
 			wantErr: false,
@@ -1022,8 +1022,8 @@ func TestMakeBlock(t *testing.T) {
 			name: "Test 5: When MakeBlock executes successfully and there is extraIds rogue mode",
 			args: args{
 				revealedDataMaps: &types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(1), big.NewInt(2), big.NewInt(3)}},
+					VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
 				},
 				activeCollections: []uint16{1, 2},
@@ -1032,11 +1032,11 @@ func TestMakeBlock(t *testing.T) {
 					RogueMode: []string{"extraIds"},
 				},
 			},
-			want:  []uint32{1, randomValue},
+			want:  []*big.Int{big.NewInt(1), randomValue},
 			want1: []uint16{2, 3},
 			want2: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(1), big.NewInt(2), big.NewInt(3)}},
+				VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(100)},
 				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(50)},
 			},
 			wantErr: false,
@@ -1045,8 +1045,8 @@ func TestMakeBlock(t *testing.T) {
 			name: "Test 5: When MakeBlock executes successfully and there is medians rogue mode",
 			args: args{
 				revealedDataMaps: &types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-					VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+					SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(1), big.NewInt(2), big.NewInt(3)}},
+					VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
 				},
 				activeCollections: []uint16{1, 2},
@@ -1055,11 +1055,11 @@ func TestMakeBlock(t *testing.T) {
 					RogueMode: []string{"medians"},
 				},
 			},
-			want:  []uint32{randomValue},
+			want:  []*big.Int{randomValue},
 			want1: []uint16{2},
 			want2: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]uint32{1: {1, 2, 3}},
-				VoteWeights:          map[uint32]*big.Int{1: big.NewInt(100)},
+				SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(1), big.NewInt(2), big.NewInt(3)}},
+				VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(100)},
 				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
 			},
 			wantErr: false,
@@ -1075,7 +1075,7 @@ func TestMakeBlock(t *testing.T) {
 
 			cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealedDataMaps, tt.args.revealedDataMapsErr)
 			utilsMock.On("GetActiveCollections", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
-			utilsMock.On("GetRogueRandomMedianValue").Return(randomValue)
+			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(randomValue)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.MakeBlock(client, blockNumber, epoch, tt.args.rogueData)
 			if (err != nil) != tt.wantErr {
@@ -1115,11 +1115,11 @@ func TestGetSortedRevealedValues(t *testing.T) {
 		{
 			name: "Test 1: When GetSortedRevealedValues executes successfully",
 			args: args{
-				assignedAssets: []types.RevealedStruct{{RevealedValues: []types.AssignedAsset{{LeafId: 1, Value: 100}}, Influence: big.NewInt(100)}},
+				assignedAssets: []types.RevealedStruct{{RevealedValues: []types.AssignedAsset{{LeafId: 1, Value: big.NewInt(100)}}, Influence: big.NewInt(100)}},
 			},
 			want: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]uint32{1: {100}},
-				VoteWeights:          map[uint32]*big.Int{100: big.NewInt(100)},
+				SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(100)}},
+				VoteWeights:          map[string]*big.Int{big.NewInt(100).String(): big.NewInt(100)},
 				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
 			},
 			wantErr: false,
@@ -1317,11 +1317,11 @@ func BenchmarkMakeBlock(b *testing.B) {
 				razorUtils = utilsMock
 				cmdUtils = cmdUtilsMock
 
-				votes := GetUint32DummyVotes(v.numOfVotes)
+				votes := GetDummyVotes(v.numOfVotes)
 
 				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(&types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]uint32{0: votes},
-					VoteWeights:          map[uint32]*big.Int{100: big.NewInt(100)},
+					SortedRevealedValues: map[uint16][]*big.Int{0: votes},
+					VoteWeights:          map[string]*big.Int{big.NewInt(100).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
 				}, nil)
 				utilsMock.On("GetActiveCollections", mock.Anything).Return([]uint16{1}, nil)
@@ -1343,14 +1343,6 @@ func GetDummyVotes(numOfVotes int) []*big.Int {
 	return result
 }
 
-func GetUint32DummyVotes(numOfVotes int) []uint32 {
-	var result []uint32
-	for i := 0; i < numOfVotes; i++ {
-		result = append(result, 100)
-	}
-	return result
-}
-
 func GetDummyAssignedAssets(asset types.RevealedStruct, numOfAssignedAssets int) []types.RevealedStruct {
 	var assignedAssets []types.RevealedStruct
 	for i := 1; i <= numOfAssignedAssets; i++ {
@@ -1365,7 +1357,7 @@ func GetDummyRevealedValues(numOfRevealedValues uint16) types.RevealedStruct {
 	for i = 1; i < numOfRevealedValues; i++ {
 		revealedValues = append(revealedValues, types.AssignedAsset{
 			LeafId: i,
-			Value:  1000,
+			Value:  big.NewInt(1000),
 		})
 	}
 	return types.RevealedStruct{

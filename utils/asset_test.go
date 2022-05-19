@@ -45,7 +45,7 @@ func TestAggregate(t *testing.T) {
 		dataToCommit          []*big.Int
 		dataToCommitErr       error
 		weight                []uint8
-		prevCommitmentData    uint32
+		prevCommitmentData    *big.Int
 		prevCommitmentDataErr error
 		assetFilePath         string
 		assetFilePathErr      error
@@ -70,7 +70,7 @@ func TestAggregate(t *testing.T) {
 				activeJob:          job,
 				dataToCommit:       []*big.Int{big.NewInt(2)},
 				weight:             []uint8{100},
-				prevCommitmentData: 1,
+				prevCommitmentData: big.NewInt(1),
 				assetFilePath:      "",
 				statErr:            nil,
 			},
@@ -84,7 +84,7 @@ func TestAggregate(t *testing.T) {
 				activeJobErr:       errors.New("activeJob error"),
 				dataToCommit:       []*big.Int{big.NewInt(2)},
 				weight:             []uint8{100},
-				prevCommitmentData: 1,
+				prevCommitmentData: big.NewInt(1),
 				assetFilePath:      "",
 				statErr:            errors.New(""),
 			},
@@ -98,7 +98,7 @@ func TestAggregate(t *testing.T) {
 				activeJob:          job,
 				dataToCommitErr:    errors.New("dataToCommit error"),
 				weight:             []uint8{100},
-				prevCommitmentData: 1,
+				prevCommitmentData: big.NewInt(1),
 			},
 			want:    big.NewInt(1),
 			wantErr: false,

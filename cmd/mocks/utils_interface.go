@@ -1174,14 +1174,16 @@ func (_m *UtilsInterface) GetUpdatedStaker(client *ethclient.Client, stakerId ui
 }
 
 // GetVoteValue provides a mock function with given fields: client, epoch, stakerId, medianIndex
-func (_m *UtilsInterface) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
+func (_m *UtilsInterface) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	ret := _m.Called(client, epoch, stakerId, medianIndex)
 
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32, uint16) uint32); ok {
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32, uint16) *big.Int); ok {
 		r0 = rf(client, epoch, stakerId, medianIndex)
 	} else {
-		r0 = ret.Get(0).(uint32)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
 	}
 
 	var r1 error
