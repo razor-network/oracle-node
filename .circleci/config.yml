@@ -177,8 +177,6 @@ jobs:
       - run:
           name: "Updating GCP txt file"
           command: |
-            echo "${GCP_BUCKET_SERVICE_ACCOUNT_KEY}" > gcp_service_accout.json
-            cat  gcp_service_accout.json
             gcloud config set account ${GCP_BUCKET_SERVICE_ACCOUNT}
             gcloud auth activate-service-account --key-file=gcp_service_accout.json --project=${GCP_PROJECT_ID}
             gsutil cp test.txt ${GS_URL}/test.txt
