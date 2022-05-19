@@ -152,11 +152,11 @@ func (_m *Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 // CalculateSalt provides a mock function with given fields: epoch, medians
-func (_m *Utils) CalculateSalt(epoch uint32, medians []uint32) [32]byte {
+func (_m *Utils) CalculateSalt(epoch uint32, medians []*big.Int) [32]byte {
 	ret := _m.Called(epoch, medians)
 
 	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(uint32, []uint32) [32]byte); ok {
+	if rf, ok := ret.Get(0).(func(uint32, []*big.Int) [32]byte); ok {
 		r0 = rf(epoch, medians)
 	} else {
 		if ret.Get(0) != nil {
@@ -284,14 +284,16 @@ func (_m *Utils) FetchBalance(client *ethclient.Client, accountAddress string) (
 }
 
 // FetchPreviousValue provides a mock function with given fields: client, epoch, assetId
-func (_m *Utils) FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (uint32, error) {
+func (_m *Utils) FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error) {
 	ret := _m.Called(client, epoch, assetId)
 
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint16) uint32); ok {
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint16) *big.Int); ok {
 		r0 = rf(client, epoch, assetId)
 	} else {
-		r0 = ret.Get(0).(uint32)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
 	}
 
 	var r1 error
@@ -1663,14 +1665,16 @@ func (_m *Utils) GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.Vot
 }
 
 // GetVoteValue provides a mock function with given fields: client, epoch, stakerId, medianIndex
-func (_m *Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
+func (_m *Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	ret := _m.Called(client, epoch, stakerId, medianIndex)
 
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32, uint16) uint32); ok {
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32, uint16) *big.Int); ok {
 		r0 = rf(client, epoch, stakerId, medianIndex)
 	} else {
-		r0 = ret.Get(0).(uint32)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
 	}
 
 	var r1 error

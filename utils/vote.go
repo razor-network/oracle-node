@@ -44,9 +44,9 @@ func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([3
 }
 
 //This function returns the vote value
-func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
+func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	var (
-		voteValue    uint32
+		voteValue    *big.Int
 		voteValueErr error
 	)
 	voteValueErr = retry.Do(
@@ -59,7 +59,7 @@ func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerI
 			return nil
 		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if voteValueErr != nil {
-		return 0, voteValueErr
+		return big.NewInt(0), voteValueErr
 	}
 	return voteValue, nil
 }

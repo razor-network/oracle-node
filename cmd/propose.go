@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -31,6 +32,7 @@ var (
 
 // Find iteration using salt as seed
 
+//This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
@@ -117,7 +119,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		return core.NilHash, err
 	}
 
-	_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+	_mediansData = medians
 	_revealedCollectionIds = ids
 	_revealedDataMaps = revealedDataMaps
 
@@ -165,6 +167,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function returns the biggest stake and Id of it
 func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
@@ -208,6 +211,7 @@ loop:
 	return biggestStake, biggestStakerId, nil
 }
 
+//This function returns the iteration of the proposer if he is elected
 func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
@@ -237,6 +241,7 @@ loop:
 	return -1
 }
 
+//This function returns if the elected staker is proposer or not
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.Salt[:])
@@ -253,34 +258,36 @@ func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentSta
 	return biggestStake.Cmp(currentStakerStake) <= 0
 }
 
+//This function returns the pseudo random number
 func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
 	hash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(blockHashes), "0x" + hex.EncodeToString(seed)})
 	sum := big.NewInt(0).SetBytes(hash)
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
+//This function returns the sorted revealed values
 func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
 	if err != nil {
 		return nil, err
 	}
-	revealedValuesWithIndex := make(map[uint16][]uint32)
-	voteWeights := make(map[uint32]*big.Int)
+	revealedValuesWithIndex := make(map[uint16][]*big.Int)
+	voteWeights := make(map[string]*big.Int)
 	influenceSum := make(map[uint16]*big.Int)
 	for _, asset := range assignedAsset {
 		for _, assetValue := range asset.RevealedValues {
 			if revealedValuesWithIndex[assetValue.LeafId] == nil {
-				revealedValuesWithIndex[assetValue.LeafId] = []uint32{assetValue.Value}
+				revealedValuesWithIndex[assetValue.LeafId] = []*big.Int{assetValue.Value}
 			} else {
 				if !utils.Contains(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
 					revealedValuesWithIndex[assetValue.LeafId] = append(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value)
 				}
 			}
 			//Calculate vote weights
-			if voteWeights[assetValue.Value] == nil {
-				voteWeights[assetValue.Value] = big.NewInt(0)
+			if voteWeights[assetValue.Value.String()] == nil {
+				voteWeights[assetValue.Value.String()] = big.NewInt(0)
 			}
-			voteWeights[assetValue.Value] = big.NewInt(0).Add(voteWeights[assetValue.Value], asset.Influence)
+			voteWeights[assetValue.Value.String()] = big.NewInt(0).Add(voteWeights[assetValue.Value.String()], asset.Influence)
 
 			//Calculate influence sum
 			if influenceSum[assetValue.LeafId] == nil {
@@ -292,7 +299,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	//sort revealed values
 	for _, element := range revealedValuesWithIndex {
 		sort.Slice(element, func(i, j int) bool {
-			return element[i] < element[j]
+			return element[i].Cmp(element[j]) == -1
 		})
 	}
 	return &types.RevealedDataMaps{
@@ -302,7 +309,8 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	}, nil
 }
 
-func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+//This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
+func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
 	if err != nil {
 		return nil, nil, nil, err
@@ -314,7 +322,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 
 	var (
-		medians                []uint32
+		medians                []*big.Int
 		idsRevealedInThisEpoch []uint16
 	)
 
@@ -323,13 +331,13 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
 			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
-				medians = append(medians, razorUtils.GetRogueRandomMedianValue())
+				medians = append(medians, razorUtils.GetRogueRandomValue(10000000))
 				continue
 			}
 			accWeight := big.NewInt(0)
 			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
 				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
-				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue])
+				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
 				if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
 					medians = append(medians, revealedValue)
 					break
@@ -343,7 +351,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "extraIds") {
 		//Adding a dummy median and appending extra id to idsRevealed array if rogueMode == extraIds
-		medians = append(medians, razorUtils.GetRogueRandomMedianValue())
+		medians = append(medians, razorUtils.GetRogueRandomValue(10000000))
 		idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, idsRevealedInThisEpoch[len(idsRevealedInThisEpoch)-1]+1)
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "unsortedIds") && len(idsRevealedInThisEpoch) > 1 {
@@ -355,6 +363,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
+//This function returns the influenced median
 func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
 	accProd := big.NewInt(0)
 

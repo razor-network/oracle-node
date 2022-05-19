@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,10 +27,12 @@ Example:
 	Run: initialiseClaimBounty,
 }
 
+//This function initialises the ExecuteClaimBounty function
 func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteClaimBounty(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the ClaimBounty function
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -61,6 +64,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function allows the users who are bountyHunter to redeem their bounty in razor network
 func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,

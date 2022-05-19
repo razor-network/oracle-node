@@ -221,7 +221,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		if err != nil {
 			return nil, err
 		}
-		return big.NewInt(int64(prevCommitmentData)), nil
+		return prevCommitmentData, nil
 	}
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }

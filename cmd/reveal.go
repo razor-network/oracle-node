@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -14,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+//This function handles the reveal state
 func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
@@ -26,6 +28,7 @@ func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.
 	return nil
 }
 
+//This function checks if the state is reveal or not and then reveals the votes
 func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
@@ -67,6 +70,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function generates the tree reveal data
 func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree {
 	if merkleTree == nil || commitData.SeqAllottedCollections == nil || commitData.Leaves == nil {
 		log.Error("No data present for construction of StructsMerkleTree")
@@ -80,7 +84,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	for i := 0; i < len(commitData.SeqAllottedCollections); i++ {
 		value := bindings.StructsAssignedAsset{
 			LeafId: uint16(commitData.SeqAllottedCollections[i].Uint64()),
-			Value:  uint32(commitData.Leaves[commitData.SeqAllottedCollections[i].Uint64()].Uint64()),
+			Value:  big.NewInt(commitData.Leaves[commitData.SeqAllottedCollections[i].Uint64()].Int64()),
 		}
 		proof := utils.MerkleInterface.GetProofPath(merkleTree, value.LeafId)
 		values = append(values, value)
@@ -94,6 +98,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	}
 }
 
+//This function indexes the reveal events of current epoch
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
 	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
@@ -123,8 +128,8 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 		}
 		if epoch == data[0].(uint32) {
 			treeValues := data[3].([]struct {
-				LeafId uint16 `json:"leafId"`
-				Value  uint32 `json:"value"`
+				LeafId uint16   `json:"leafId"`
+				Value  *big.Int `json:"value"`
 			})
 			var revealedValues []types.AssignedAsset
 			for _, value := range treeValues {

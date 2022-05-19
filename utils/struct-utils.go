@@ -234,7 +234,7 @@ func (v VoteManagerStruct) Commitments(client *ethclient.Client, stakerId uint32
 }
 
 //This function returns the vote value
-func (v VoteManagerStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error) {
+func (v VoteManagerStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
 	return voteManager.GetVoteValue(&opts, epoch, stakerId, medianIndex)
 }

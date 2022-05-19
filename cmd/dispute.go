@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -25,6 +26,7 @@ var (
 
 //blockId is id of the block
 
+//This function handles the dispute and if there is any error it returns the error
 func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
 	disputedFlag = false
 
@@ -109,7 +111,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		}
 
 		// Median Value dispute
-		isEqual, mismatchIndex := utils.IsEqualUint32(proposedBlock.Medians, medians)
+		isEqual, mismatchIndex := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -148,7 +150,8 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	return nil
 }
 
-func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+//This function returns the local median data
+func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 
 	if _mediansData == nil && !rogueData.IsRogue {
 		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
@@ -176,17 +179,17 @@ CalculateMedian:
 			log.Error("Error in calculating block medians")
 			return nil, nil, nil, err
 		}
-		_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+		_mediansData = medians
 		_revealedCollectionIds = revealedCollectionIds
 		_revealedDataMaps = revealedDataMaps
 	}
 
-	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(_mediansData)
 	log.Debug("Locally calculated data:")
-	log.Debugf("Medians: %d", mediansInUint32)
-	return mediansInUint32, _revealedCollectionIds, _revealedDataMaps, nil
+	log.Debugf("Medians: %d", _mediansData)
+	return _mediansData, _revealedCollectionIds, _revealedDataMaps, nil
 }
 
+//This function check for the dispute in different type of Id's
 func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*types2.Transaction, error) {
 	//checking for hashing whether there is any dispute or not
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
@@ -249,7 +252,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	return nil, nil
 }
 
-func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []uint32) error {
+//This function finalizes the dispute and return the error if there is any
+func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	blockManager := razorUtils.GetBlockManager(client)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -285,7 +289,8 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	return nil
 }
 
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) {
+//This function sorts the Id's recursively
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) {
 	if len(sortedValues) == 0 {
 		return
 	}
@@ -306,6 +311,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
 }
 
+//This function returns the collection Id position in block
 func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ids := proposedBlock.Ids
 	idToBeDisputed, err := utils.UtilsInterface.GetCollectionIdFromLeafId(client, leafId)
@@ -321,6 +327,7 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 	return nil
 }
 
+//This function returns the bountyId from events
 func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
 	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {

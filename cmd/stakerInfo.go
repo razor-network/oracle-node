@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -20,10 +21,12 @@ Example:
 	Run: initialiseStakerInfo,
 }
 
+//This function initialises the ExecuteStakerInfo function
 func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteStakerinfo(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the GetStakerInfo function
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 
@@ -40,6 +43,7 @@ func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 
 }
 
+//This function provides the staker details like age, stake, maturity etc.
 func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
 	callOpts := razorUtils.GetOptions()
 	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)

@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -22,10 +23,12 @@ Example:
 	Run: initialiseModifyCollectionStatus,
 }
 
+//This function initialises the ExecuteModifyCollectionStatus function
 func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteModifyCollectionStatus(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the ModifyCollectionStatus function
 func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -63,11 +66,13 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function checks the current status of particular collectionId
 func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, collectionId uint16) (bool, error) {
 	callOpts := razorUtils.GetOptions()
 	return assetManagerUtils.GetActiveStatus(client, &callOpts, collectionId)
 }
 
+//This function allows the admin to modify the active status of collection
 func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
 	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyCollectionInput.CollectionId)
 	if err != nil {

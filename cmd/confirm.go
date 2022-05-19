@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+//This function allows the user to claim the block reward and returns the hash
 func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(options.Client)
 	if err != nil {

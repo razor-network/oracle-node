@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -29,10 +30,12 @@ Example:
 	Run: initialiseUnstake,
 }
 
+//This function initialises the ExecuteUnstake function
 func initialiseUnstake(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUnstake(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the Unstake function
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -69,6 +72,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function allows user to unstake their sRZRs in the razor network
 func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
@@ -128,6 +132,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function approves the unstake
 func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
@@ -140,6 +145,7 @@ func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.Str
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function helps the user to auto withdraw the razors after unstaking
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
 	timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)

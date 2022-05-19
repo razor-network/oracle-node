@@ -38,15 +38,15 @@ func Contains(slice interface{}, val interface{}) bool {
 	return false
 }
 
-//This function checks if two arrays of uint32 are equal or not
-func IsEqualUint32(arr1 []uint32, arr2 []uint32) (bool, int) {
+//This function checks if two arrays of bigInt are equal or not
+func IsEqual(arr1 []*big.Int, arr2 []*big.Int) (bool, int) {
 	if len(arr1) > len(arr2) {
 		return false, len(arr2)
 	} else if len(arr1) < len(arr2) {
 		return false, len(arr1)
 	}
 	for i := 0; i < len(arr1); i++ {
-		if arr2[i] != arr1[i] {
+		if arr2[i].Cmp(arr1[i]) != 0 {
 			return false, i
 		}
 	}

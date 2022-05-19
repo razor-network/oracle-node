@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -37,10 +38,12 @@ Example:
 	Run: initializeVote,
 }
 
+//This function initialises the ExecuteVote function
 func initializeVote(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteVote(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the Vote function
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -74,6 +77,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function handles the exit and listens for CTRL+C
 func (*UtilsStruct) HandleExit() {
 	// listen for CTRL+C
 	ctx := context.Background()
@@ -96,6 +100,7 @@ func (*UtilsStruct) HandleExit() {
 	}()
 }
 
+//This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
 	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
@@ -124,6 +129,7 @@ var (
 	disputeData      types.DisputeFileData
 )
 
+//This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
 	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
@@ -281,6 +287,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	fmt.Println()
 }
 
+//This function initiates the commit
 func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
 	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
 	if err != nil {
@@ -338,6 +345,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	return nil
 }
 
+//This function initiates the reveal
 func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
 	lastReveal, err := razorUtils.GetEpochLastRevealed(client, staker.Id)
 	if err != nil {
@@ -395,6 +403,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	return nil
 }
 
+//This function initiates the propose
 func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
 	lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, staker.Id)
 	if err != nil {
@@ -423,6 +432,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 	return nil
 }
 
+//This function helps the staker to claim the bounty automatically
 func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
 	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
@@ -485,6 +495,7 @@ func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Confi
 	return nil
 }
 
+//This function returns the last proposed epoch
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
 	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
@@ -542,6 +553,7 @@ loop:
 	return epochLastProposed, nil
 }
 
+//This function calculates the secret
 func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, error) {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
 	razorPath, err := razorUtils.GetDefaultPath()
@@ -556,6 +568,7 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte
 	return secret, nil
 }
 
+//This function allows the staker to automatically unstake and withdraw
 func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
