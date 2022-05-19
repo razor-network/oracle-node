@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -25,10 +26,12 @@ Example:
 	Run: initialiseExtendLock,
 }
 
+//This function initialises the ExtendLock function
 func initialiseExtendLock(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteExtendLock(cmd.Flags())
 }
 
+//This function sets the flags appropriately and executes the ResetUnstakeLock function
 func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -56,6 +59,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
+//This function is used to reset the lock once the withdraw lock period is over
 func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,

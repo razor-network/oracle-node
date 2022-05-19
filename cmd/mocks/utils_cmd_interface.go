@@ -274,6 +274,11 @@ func (_m *UtilsCmdInterface) Commit(client *ethclient.Client, config types.Confi
 	return r0, r1
 }
 
+// ContractAddresses provides a mock function with given fields:
+func (_m *UtilsCmdInterface) ContractAddresses() {
+	_m.Called()
+}
+
 // Create provides a mock function with given fields: password
 func (_m *UtilsCmdInterface) Create(password string) (accounts.Account, error) {
 	ret := _m.Called(password)
@@ -385,6 +390,11 @@ func (_m *UtilsCmdInterface) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 // ExecuteCollectionList provides a mock function with given fields: flagSet
 func (_m *UtilsCmdInterface) ExecuteCollectionList(flagSet *pflag.FlagSet) {
+	_m.Called(flagSet)
+}
+
+// ExecuteContractAddresses provides a mock function with given fields: flagSet
+func (_m *UtilsCmdInterface) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 

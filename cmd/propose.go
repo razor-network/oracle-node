@@ -1,9 +1,9 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -32,6 +32,7 @@ var (
 
 // Find iteration using salt as seed
 
+//This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
@@ -166,6 +167,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	return transactionUtils.Hash(txn), nil
 }
 
+//This function returns the biggest stake and Id of it
 func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
@@ -209,6 +211,7 @@ loop:
 	return biggestStake, biggestStakerId, nil
 }
 
+//This function returns the iteration of the proposer if he is elected
 func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
@@ -238,6 +241,7 @@ loop:
 	return -1
 }
 
+//This function returns if the elected staker is proposer or not
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.Salt[:])
@@ -254,12 +258,14 @@ func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentSta
 	return biggestStake.Cmp(currentStakerStake) <= 0
 }
 
+//This function returns the pseudo random number
 func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
 	hash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(blockHashes), "0x" + hex.EncodeToString(seed)})
 	sum := big.NewInt(0).SetBytes(hash)
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
+//This function returns the sorted revealed values
 func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
 	if err != nil {
@@ -303,6 +309,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	}, nil
 }
 
+//This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
 func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
 	if err != nil {
@@ -328,13 +335,8 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 				continue
 			}
 			accWeight := big.NewInt(0)
-			fmt.Println("Here:", revealedDataMaps.SortedRevealedValues[leafId])
 			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
 				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
-				fmt.Println("SortedRevealedValues: ", revealedDataMaps.SortedRevealedValues)
-				fmt.Println("revealValue: ", revealedValue)
-				fmt.Println("weights: ", revealedDataMaps.VoteWeights)
-				fmt.Println("valueWeight: ", revealedDataMaps.VoteWeights[revealedValue.String()])
 				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
 				if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
 					medians = append(medians, revealedValue)
@@ -361,6 +363,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
+//This function returns the influenced median
 func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
 	accProd := big.NewInt(0)
 

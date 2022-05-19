@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -6,6 +7,7 @@ import (
 	"strings"
 )
 
+//This function returns the config data
 func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
@@ -55,6 +57,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	return config, nil
 }
 
+//This function returns the provider
 func (*UtilsStruct) GetProvider() (string, error) {
 	provider, err := flagSetUtils.GetRootStringProvider()
 	if err != nil {
@@ -69,6 +72,7 @@ func (*UtilsStruct) GetProvider() (string, error) {
 	return provider, nil
 }
 
+//This function returns the multiplier
 func (*UtilsStruct) GetMultiplier() (float32, error) {
 	gasMultiplier, err := flagSetUtils.GetRootFloat32GasMultiplier()
 	if err != nil {
@@ -80,6 +84,7 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 	return gasMultiplier, nil
 }
 
+//This function returns the buffer percent
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	bufferPercent, err := flagSetUtils.GetRootInt32Buffer()
 	if err != nil {
@@ -91,6 +96,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	return bufferPercent, nil
 }
 
+//This function returns the wait time
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	waitTime, err := flagSetUtils.GetRootInt32Wait()
 	if err != nil {
@@ -102,6 +108,7 @@ func (*UtilsStruct) GetWaitTime() (int32, error) {
 	return waitTime, nil
 }
 
+//This function returns the gas price
 func (*UtilsStruct) GetGasPrice() (int32, error) {
 	gasPrice, err := flagSetUtils.GetRootInt32GasPrice()
 	if err != nil {
@@ -113,6 +120,7 @@ func (*UtilsStruct) GetGasPrice() (int32, error) {
 	return gasPrice, nil
 }
 
+//This function returns the log level
 func (*UtilsStruct) GetLogLevel() (string, error) {
 	logLevel, err := flagSetUtils.GetRootStringLogLevel()
 	if err != nil {
@@ -124,6 +132,7 @@ func (*UtilsStruct) GetLogLevel() (string, error) {
 	return logLevel, nil
 }
 
+//This function returns the gas limit
 func (*UtilsStruct) GetGasLimit() (float32, error) {
 	gasLimit, err := flagSetUtils.GetRootFloat32GasLimit()
 	if err != nil {

@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,10 +27,12 @@ Note:
 	Run: initialiseUpdateCollection,
 }
 
+//This function initialises the ExecuteUpdateCollection function
 func initialiseUpdateCollection(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUpdateCollection(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the UpdateCollection function
 func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -72,6 +75,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	razorUtils.WaitForBlockCompletion(client, txn.String())
 }
 
+//This function allows the admin to update an existing collection
 func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
 	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	_, err := cmdUtils.WaitIfCommitState(client, "update collection")

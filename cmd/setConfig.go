@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -25,6 +26,7 @@ Example:
 	},
 }
 
+//This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	razorUtils.AssignLogFile(flagSet)
 	provider, err := flagSetUtils.GetStringProvider(flagSet)

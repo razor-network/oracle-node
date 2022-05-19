@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -23,10 +24,12 @@ var unlockWithdrawCmd = &cobra.Command{
 	Run:   initializeUnlockWithdraw,
 }
 
+//This function initialises the ExecuteUnlockWithdraw function
 func initializeUnlockWithdraw(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUnlockWithdraw(cmd.Flags())
 }
 
+//This function sets the flag appropriately and executes the UnlockWithdraw function
 func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -57,6 +60,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	}
 }
 
+//This function handles the Withdraw lock
 func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 	withdrawLock, err := razorUtils.GetLock(client, account.Address, stakerId, 1)
 	if err != nil {
@@ -92,6 +96,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 	return core.NilHash, errors.New("withdrawLock period not over yet! Please try after some time")
 }
 
+//This function withdraws your razor once withdraw lock has passed
 func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
 	log.Info("Unlocking funds...")
 

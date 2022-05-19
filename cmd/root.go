@@ -1,3 +1,4 @@
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -48,6 +49,7 @@ func Execute() {
 	}
 }
 
+//This function add the following command to the root command
 func init() {
 	cobra.OnInitialize(initConfig)
 
@@ -87,6 +89,7 @@ func initConfig() {
 	setLogLevel()
 }
 
+//This function sets the log level
 func setLogLevel() {
 	config, err := cmdUtils.GetConfigData()
 	if err != nil {
