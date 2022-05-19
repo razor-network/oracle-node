@@ -111,7 +111,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		}
 
 		// Median Value dispute
-		isEqual, mismatchIndex := utils.IsEqualUint32(proposedBlock.Medians, medians)
+		isEqual, mismatchIndex := utils.IsEqual(proposedBlock.Medians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -151,7 +151,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 }
 
 //This function returns the local median data
-func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error) {
+func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 
 	if _mediansData == nil && !rogueData.IsRogue {
 		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
@@ -179,15 +179,14 @@ CalculateMedian:
 			log.Error("Error in calculating block medians")
 			return nil, nil, nil, err
 		}
-		_mediansData = razorUtils.ConvertUint32ArrayToBigIntArray(medians)
+		_mediansData = medians
 		_revealedCollectionIds = revealedCollectionIds
 		_revealedDataMaps = revealedDataMaps
 	}
 
-	mediansInUint32 := razorUtils.ConvertBigIntArrayToUint32Array(_mediansData)
 	log.Debug("Locally calculated data:")
-	log.Debugf("Medians: %d", mediansInUint32)
-	return mediansInUint32, _revealedCollectionIds, _revealedDataMaps, nil
+	log.Debugf("Medians: %d", _mediansData)
+	return _mediansData, _revealedCollectionIds, _revealedDataMaps, nil
 }
 
 //This function check for the dispute in different type of Id's
@@ -254,7 +253,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 }
 
 //This function finalizes the dispute and return the error if there is any
-func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []uint32) error {
+func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	blockManager := razorUtils.GetBlockManager(client)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -291,7 +290,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 }
 
 //This function sorts the Id's recursively
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) {
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) {
 	if len(sortedValues) == 0 {
 		return
 	}

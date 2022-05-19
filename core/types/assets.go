@@ -45,8 +45,8 @@ type StructsJob struct {
 }
 
 type AssignedAsset struct {
-	LeafId uint16 `json:"leafId"`
-	Value  uint32 `json:"value"`
+	LeafId uint16   `json:"leafId"`
+	Value  *big.Int `json:"value"`
 }
 
 type CustomJob struct {

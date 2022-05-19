@@ -84,7 +84,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	for i := 0; i < len(commitData.SeqAllottedCollections); i++ {
 		value := bindings.StructsAssignedAsset{
 			LeafId: uint16(commitData.SeqAllottedCollections[i].Uint64()),
-			Value:  uint32(commitData.Leaves[commitData.SeqAllottedCollections[i].Uint64()].Uint64()),
+			Value:  big.NewInt(commitData.Leaves[commitData.SeqAllottedCollections[i].Uint64()].Int64()),
 		}
 		proof := utils.MerkleInterface.GetProofPath(merkleTree, value.LeafId)
 		values = append(values, value)
@@ -128,8 +128,8 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 		}
 		if epoch == data[0].(uint32) {
 			treeValues := data[3].([]struct {
-				LeafId uint16 `json:"leafId"`
-				Value  uint32 `json:"value"`
+				LeafId uint16   `json:"leafId"`
+				Value  *big.Int `json:"value"`
 			})
 			var revealedValues []types.AssignedAsset
 			for _, value := range treeValues {

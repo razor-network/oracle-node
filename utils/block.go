@@ -54,10 +54,10 @@ func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, pro
 	return proposedBlock, nil
 }
 
-func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (uint32, error) {
+func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error) {
 	block, err := UtilsInterface.GetBlock(client, epoch)
 	if err != nil {
-		return 0, err
+		return big.NewInt(0), err
 	}
 	return block.Medians[assetId-1], nil
 }

@@ -410,21 +410,21 @@ func TestGetVoteValue(t *testing.T) {
 	)
 
 	type args struct {
-		voteValue    uint32
+		voteValue    *big.Int
 		voteValueErr error
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    uint32
+		want    *big.Int
 		wantErr bool
 	}{
 		{
 			name: "Test 1: When GetVoteValue() executes successfully",
 			args: args{
-				voteValue: 50000,
+				voteValue: big.NewInt(50000),
 			},
-			want:    50000,
+			want:    big.NewInt(50000),
 			wantErr: false,
 		},
 		{
@@ -432,7 +432,7 @@ func TestGetVoteValue(t *testing.T) {
 			args: args{
 				voteValueErr: errors.New("voteValue error"),
 			},
-			want:    0,
+			want:    big.NewInt(0),
 			wantErr: true,
 		},
 	}
@@ -458,7 +458,7 @@ func TestGetVoteValue(t *testing.T) {
 				t.Errorf("GetVoteValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if got.Cmp(tt.want) != 0 {
 				t.Errorf("GetVoteValue() got = %v, want %v", got, tt.want)
 			}
 		})
