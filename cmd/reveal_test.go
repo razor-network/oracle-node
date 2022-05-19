@@ -232,7 +232,7 @@ func TestGenerateTreeRevealData(t *testing.T) {
 				root:  [32]byte{},
 			},
 			want: bindings.StructsMerkleTree{
-				Values: []bindings.StructsAssignedAsset{{LeafId: 1, Value: 2}},
+				Values: []bindings.StructsAssignedAsset{{LeafId: 1, Value: big.NewInt(2)}},
 				Proofs: [][][32]byte{{}},
 				Root:   [32]byte{},
 			},

@@ -34,7 +34,7 @@ func TestDispute(t *testing.T) {
 		blockIndex    uint8
 		proposedBlock bindings.StructsBlock
 		leafId        uint16
-		sortedValues  []uint32
+		sortedValues  []*big.Int
 		blockManager  *bindings.BlockManager
 	)
 
@@ -131,7 +131,7 @@ func TestHandleDispute(t *testing.T) {
 		biggestStake              *big.Int
 		biggestStakeId            uint32
 		biggestStakeErr           error
-		medians                   []uint32
+		medians                   []*big.Int
 		revealedCollectionIds     []uint16
 		revealedDataMaps          *types.RevealedDataMaps
 		mediansErr                error
@@ -160,7 +160,7 @@ func TestHandleDispute(t *testing.T) {
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
-				medians:                []uint32{6901548, 498307},
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 				revealedCollectionIds:  []uint16{1},
 				revealedDataMaps: &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
@@ -168,7 +168,7 @@ func TestHandleDispute(t *testing.T) {
 					InfluenceSum:         nil,
 				},
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6901548, 498307},
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
@@ -184,7 +184,7 @@ func TestHandleDispute(t *testing.T) {
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6701548, 478307},
+					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
 				isEqual:    true,
@@ -197,7 +197,7 @@ func TestHandleDispute(t *testing.T) {
 			args: args{
 				sortedProposedBlockIdsErr: errors.New("sortedProposedBlockIds error"),
 				proposedBlock: bindings.StructsBlock{
-					Medians: []uint32{6701548, 478307},
+					Medians: []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				},
 				isEqual:    true,
 				disputeErr: nil,
@@ -221,7 +221,7 @@ func TestHandleDispute(t *testing.T) {
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6701548, 478307},
+					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
 				isEqual: false,
@@ -235,7 +235,7 @@ func TestHandleDispute(t *testing.T) {
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6701548, 478307},
+					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
 				},
@@ -253,7 +253,7 @@ func TestHandleDispute(t *testing.T) {
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStakeErr:        errors.New("biggestInfluenceAndIdErr"),
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6701548, 478307},
+					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
 				},
@@ -272,7 +272,7 @@ func TestHandleDispute(t *testing.T) {
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6701548, 478307},
+					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
 				},
@@ -299,7 +299,7 @@ func TestHandleDispute(t *testing.T) {
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
-				medians:                []uint32{6901548, 498307},
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 				revealedCollectionIds:  []uint16{1},
 				revealedDataMaps: &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
@@ -307,7 +307,7 @@ func TestHandleDispute(t *testing.T) {
 					InfluenceSum:         nil,
 				},
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6901548, 498307},
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
@@ -323,7 +323,7 @@ func TestHandleDispute(t *testing.T) {
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
-				medians:                []uint32{6901548, 498307},
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 				revealedCollectionIds:  []uint16{1},
 				revealedDataMaps: &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
@@ -331,7 +331,7 @@ func TestHandleDispute(t *testing.T) {
 					InfluenceSum:         nil,
 				},
 				proposedBlock: bindings.StructsBlock{
-					Medians:      []uint32{6901548, 498307},
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
@@ -348,7 +348,7 @@ func TestHandleDispute(t *testing.T) {
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
-				medians:                []uint32{69015, 498307},
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 				revealedCollectionIds:  []uint16{1},
 				revealedDataMaps: &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
@@ -357,7 +357,7 @@ func TestHandleDispute(t *testing.T) {
 				},
 				proposedBlock: bindings.StructsBlock{
 					Ids:          []uint16{1, 2},
-					Medians:      []uint32{6901548, 498307},
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
@@ -374,7 +374,7 @@ func TestHandleDispute(t *testing.T) {
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:         2,
-				medians:                []uint32{69015, 498307},
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 				revealedCollectionIds:  []uint16{1},
 				revealedDataMaps: &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
@@ -383,7 +383,7 @@ func TestHandleDispute(t *testing.T) {
 				},
 				proposedBlock: bindings.StructsBlock{
 					Ids:          []uint16{1, 2},
-					Medians:      []uint32{6901548, 498307},
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
@@ -447,7 +447,7 @@ func TestGiveSorted(t *testing.T) {
 	var epoch uint32
 	var assetId uint16
 	type args struct {
-		sortedStakers []uint32
+		sortedValues  []*big.Int
 		giveSorted    *Types.Transaction
 		giveSortedErr error
 		hash          common.Hash
@@ -459,28 +459,28 @@ func TestGiveSorted(t *testing.T) {
 		{
 			name: "Test 1: When Give Sorted executes successfully",
 			args: args{
-				sortedStakers: []uint32{2, 1, 3, 5},
-				giveSorted:    &Types.Transaction{},
-				hash:          common.BigToHash(big.NewInt(1)),
+				sortedValues: []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
+				giveSorted:   &Types.Transaction{},
+				hash:         common.BigToHash(big.NewInt(1)),
 			},
 		},
 		{
 			name: "Test 2: When there is an error from GiveSorted",
 			args: args{
-				sortedStakers: []uint32{2, 1, 3, 5},
+				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
 				giveSortedErr: errors.New("giveSorted error"),
 			},
 		},
 		{
 			name: "Test 3: When sortedStakers is nil",
 			args: args{
-				sortedStakers: nil,
+				sortedValues: nil,
 			},
 		},
 		{
 			name: "Test 4: When error is gas limit reached",
 			args: args{
-				sortedStakers: []uint32{2, 1, 3, 5},
+				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
 				giveSortedErr: errors.New("gas limit reached"),
 				giveSorted:    &Types.Transaction{},
 				hash:          common.BigToHash(big.NewInt(1)),
@@ -489,7 +489,7 @@ func TestGiveSorted(t *testing.T) {
 		{
 			name: "Test 5: When error is gas limit reached with higher number of stakers",
 			args: args{
-				sortedStakers: []uint32{2, 1, 3, 5, 7, 8, 9, 10, 6, 11, 13, 12, 14, 15, 4, 20, 19, 18, 17, 16},
+				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5), big.NewInt(7), big.NewInt(8), big.NewInt(9), big.NewInt(10), big.NewInt(6), big.NewInt(11), big.NewInt(13), big.NewInt(12), big.NewInt(14), big.NewInt(15), big.NewInt(4), big.NewInt(20), big.NewInt(19), big.NewInt(18), big.NewInt(17), big.NewInt(16)},
 				giveSortedErr: errors.New("gas limit reached"),
 				giveSorted:    &Types.Transaction{},
 				hash:          common.BigToHash(big.NewInt(1)),
@@ -511,7 +511,7 @@ func TestGiveSorted(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
 
-			GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedStakers)
+			GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedValues)
 		})
 	}
 }
@@ -529,17 +529,15 @@ func TestGetLocalMediansData(t *testing.T) {
 		fileNameErr           error
 		proposedData          types.ProposeFileData
 		proposeDataErr        error
-		medians               []uint32
+		medians               []*big.Int
 		revealedCollectionIds []uint16
 		revealedDataMaps      *types.RevealedDataMaps
 		mediansErr            error
-		mediansBigInt         []*big.Int
-		mediansInUint32       []uint32
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    []uint32
+		want    []*big.Int
 		want1   []uint16
 		want2   *types.RevealedDataMaps
 		wantErr bool
@@ -590,13 +588,11 @@ func TestGetLocalMediansData(t *testing.T) {
 		{
 			name: "Test 5: When GetLocalMediansData executes successfully",
 			args: args{
-				medians:               []uint32{100, 200, 300},
+				medians:               []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
 				revealedCollectionIds: []uint16{1, 2, 3},
 				revealedDataMaps:      &types.RevealedDataMaps{},
-				mediansBigInt:         []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
-				mediansInUint32:       []uint32{100, 200, 300},
 			},
-			want:    []uint32{100, 200, 300},
+			want:    []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
 			want1:   []uint16{1, 2, 3},
 			want2:   &types.RevealedDataMaps{},
 			wantErr: false,
@@ -613,8 +609,6 @@ func TestGetLocalMediansData(t *testing.T) {
 			utilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
-			utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
-			utilsMock.On("ConvertBigIntArrayToUint32Array", mock.Anything).Return(tt.args.mediansInUint32)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
 			if (err != nil) != tt.wantErr {
@@ -988,14 +982,14 @@ func BenchmarkHandleDispute(b *testing.B) {
 
 				utils.UtilsInterface = utilsPkgMock
 
-				medians := []uint32{6901548, 498307}
+				medians := []*big.Int{big.NewInt(6901548), big.NewInt(498307)}
 				revealedCollectionIds := []uint16{1}
 				revealedDataMaps := &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
 					VoteWeights:          nil,
 					InfluenceSum:         nil}
 				proposedBlock := bindings.StructsBlock{
-					Medians:      []uint32{6901548, 498307},
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))}
 

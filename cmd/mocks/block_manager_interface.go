@@ -159,11 +159,11 @@ func (_m *BlockManagerInterface) FinalizeDispute(client *ethclient.Client, opts 
 }
 
 // GiveSorted provides a mock function with given fields: blockManager, opts, epoch, leafId, sortedValues
-func (_m *BlockManagerInterface) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) (*types.Transaction, error) {
+func (_m *BlockManagerInterface) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*types.Transaction, error) {
 	ret := _m.Called(blockManager, opts, epoch, leafId, sortedValues)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []*big.Int) *types.Transaction); ok {
 		r0 = rf(blockManager, opts, epoch, leafId, sortedValues)
 	} else {
 		if ret.Get(0) != nil {
@@ -172,7 +172,7 @@ func (_m *BlockManagerInterface) GiveSorted(blockManager *bindings.BlockManager,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []uint32) error); ok {
+	if rf, ok := ret.Get(1).(func(*bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []*big.Int) error); ok {
 		r1 = rf(blockManager, opts, epoch, leafId, sortedValues)
 	} else {
 		r1 = ret.Error(1)
@@ -182,11 +182,11 @@ func (_m *BlockManagerInterface) GiveSorted(blockManager *bindings.BlockManager,
 }
 
 // Propose provides a mock function with given fields: client, opts, epoch, ids, medians, iteration, biggestInfluencerId
-func (_m *BlockManagerInterface) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*types.Transaction, error) {
+func (_m *BlockManagerInterface) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []*big.Int, iteration *big.Int, biggestInfluencerId uint32) (*types.Transaction, error) {
 	ret := _m.Called(client, opts, epoch, ids, medians, iteration, biggestInfluencerId)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []*big.Int, *big.Int, uint32) *types.Transaction); ok {
 		r0 = rf(client, opts, epoch, ids, medians, iteration, biggestInfluencerId)
 	} else {
 		if ret.Get(0) != nil {
@@ -195,7 +195,7 @@ func (_m *BlockManagerInterface) Propose(client *ethclient.Client, opts *bind.Tr
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []uint32, *big.Int, uint32) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, []uint16, []*big.Int, *big.Int, uint32) error); ok {
 		r1 = rf(client, opts, epoch, ids, medians, iteration, biggestInfluencerId)
 	} else {
 		r1 = ret.Error(1)

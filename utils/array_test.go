@@ -137,8 +137,8 @@ func TestGetDataInBytes(t *testing.T) {
 
 func TestIsEqual(t *testing.T) {
 	type args struct {
-		arr1 []uint32
-		arr2 []uint32
+		arr1 []*big.Int
+		arr2 []*big.Int
 	}
 	tests := []struct {
 		name  string
@@ -149,8 +149,8 @@ func TestIsEqual(t *testing.T) {
 		{
 			name: "Test when both arrays have same values but at different positions",
 			args: args{
-				arr1: []uint32{1, 1234, 2321},
-				arr2: []uint32{1234, 1, 2321},
+				arr1: []*big.Int{big.NewInt(1), big.NewInt(1234), big.NewInt(2321)},
+				arr2: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
 			},
 			want:  false,
 			want1: 0,
@@ -158,8 +158,8 @@ func TestIsEqual(t *testing.T) {
 		{
 			name: "Test when both arrays have different length and len(arr1) < len(arr2)",
 			args: args{
-				arr1: []uint32{1, 1234},
-				arr2: []uint32{1234, 1, 2321},
+				arr1: []*big.Int{big.NewInt(1), big.NewInt(1234)},
+				arr2: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
 			},
 			want:  false,
 			want1: 2,
@@ -167,8 +167,8 @@ func TestIsEqual(t *testing.T) {
 		{
 			name: "Test when both arrays have different length and len(arr1) > len(arr2)",
 			args: args{
-				arr1: []uint32{1234, 1, 2321},
-				arr2: []uint32{1, 1234},
+				arr1: []*big.Int{big.NewInt(1234), big.NewInt(1), big.NewInt(2321)},
+				arr2: []*big.Int{big.NewInt(1), big.NewInt(1234)},
 			},
 			want:  false,
 			want1: 2,
@@ -176,8 +176,8 @@ func TestIsEqual(t *testing.T) {
 		{
 			name: "Test when both arrays are empty",
 			args: args{
-				arr1: []uint32{},
-				arr2: []uint32{},
+				arr1: []*big.Int{},
+				arr2: []*big.Int{},
 			},
 			want:  true,
 			want1: -1,
@@ -185,8 +185,8 @@ func TestIsEqual(t *testing.T) {
 		{
 			name: "Test when both arrays are exactly identical",
 			args: args{
-				arr1: []uint32{1, 1232, 12423},
-				arr2: []uint32{1, 1232, 12423},
+				arr1: []*big.Int{big.NewInt(1), big.NewInt(1232), big.NewInt(12423)},
+				arr2: []*big.Int{big.NewInt(1), big.NewInt(1232), big.NewInt(12423)},
 			},
 			want:  true,
 			want1: -1,
@@ -195,7 +195,7 @@ func TestIsEqual(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got, got1 := IsEqualUint32(tt.args.arr1, tt.args.arr2)
+			got, got1 := IsEqual(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
 				t.Errorf("IsEqualUint32() got = %v, want %v", got, tt.want)
 			}
@@ -241,46 +241,6 @@ func TestCalculateSumOfUint8Array(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := CalculateSumOfUint8Array(tt.args.data); got != tt.want {
 				t.Errorf("CalculateSumOfUint8Array() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestConvertBigIntArrayToUint32Array(t *testing.T) {
-	type args struct {
-		data []*big.Int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []uint32
-	}{
-		{
-			name: "Test when array has length more than 1",
-			args: args{
-				data: []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
-			},
-			want: []uint32{100, 200, 300},
-		},
-		{
-			name: "Test when array has length 1",
-			args: args{
-				data: []*big.Int{big.NewInt(100)},
-			},
-			want: []uint32{100},
-		},
-		{
-			name: "Test when array is nil",
-			args: args{
-				data: nil,
-			},
-			want: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := ConvertBigIntArrayToUint32Array(tt.args.data); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ConvertBigIntArrayToUint32Array() = %v, want %v", got, tt.want)
 			}
 		})
 	}

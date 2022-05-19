@@ -1,8 +1,11 @@
 package types
 
-import "razor/pkg/bindings"
+import (
+	"math/big"
+	"razor/pkg/bindings"
+)
 
 type Block struct {
 	Block        bindings.StructsBlock
-	BlockMedians []uint32
+	BlockMedians []*big.Int
 }

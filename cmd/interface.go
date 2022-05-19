@@ -100,9 +100,8 @@ type UtilsInterface interface {
 	GetMaxAltBlocks(client *ethclient.Client) (uint8, error)
 	GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error)
 	GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (uint32, error)
+	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
 	GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error)
-	ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32
 	GetActiveCollections(client *ethclient.Client) ([]uint16, error)
 	GetBlockManager(client *ethclient.Client) *bindings.BlockManager
 	GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error)
@@ -156,13 +155,13 @@ type KeystoreInterface interface {
 
 type BlockManagerInterface interface {
 	ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
-	Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []uint32, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error)
+	Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []*big.Int, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error)
 	FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
 	DisputeBiggestStakeProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestStakerId uint32) (*Types.Transaction, error)
 	DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*Types.Transaction, error)
 	DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
 	DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error)
-	GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []uint32) (*Types.Transaction, error)
+	GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error)
 }
 
 type VoteManagerInterface interface {
@@ -281,15 +280,15 @@ type UtilsCmdInterface interface {
 	ExecuteUpdateCollection(flagSet *pflag.FlagSet)
 	UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error)
 	InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int
-	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
+	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
 	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
 	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
-	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []uint32)
-	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]uint32, []uint16, *types.RevealedDataMaps, error)
+	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int)
+	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
 	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
-	Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []uint32) error
+	Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
 	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
 	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
 	ExecuteExtendLock(flagSet *pflag.FlagSet)
