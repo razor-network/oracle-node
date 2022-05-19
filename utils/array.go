@@ -117,15 +117,6 @@ func GetDataInBytes(data []*big.Int) [][]byte {
 	return dataInBytes
 }
 
-//This function converts big Int array to Uint32 array
-func ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
-	var arr []uint32
-	for _, datum := range bigIntArray {
-		arr = append(arr, uint32(datum.Int64()))
-	}
-	return arr
-}
-
 //This function converts Uint32 array to big Int array
 func ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
 	var arr []*big.Int
