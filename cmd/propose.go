@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -265,7 +266,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 		return nil, err
 	}
 	revealedValuesWithIndex := make(map[uint16][]*big.Int)
-	voteWeights := make(map[*big.Int]*big.Int)
+	voteWeights := make(map[string]*big.Int)
 	influenceSum := make(map[uint16]*big.Int)
 	for _, asset := range assignedAsset {
 		for _, assetValue := range asset.RevealedValues {
@@ -277,10 +278,10 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 				}
 			}
 			//Calculate vote weights
-			if voteWeights[assetValue.Value] == nil {
-				voteWeights[assetValue.Value] = big.NewInt(0)
+			if voteWeights[assetValue.Value.String()] == nil {
+				voteWeights[assetValue.Value.String()] = big.NewInt(0)
 			}
-			voteWeights[assetValue.Value] = big.NewInt(0).Add(voteWeights[assetValue.Value], asset.Influence)
+			voteWeights[assetValue.Value.String()] = big.NewInt(0).Add(voteWeights[assetValue.Value.String()], asset.Influence)
 
 			//Calculate influence sum
 			if influenceSum[assetValue.LeafId] == nil {
@@ -327,9 +328,14 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 				continue
 			}
 			accWeight := big.NewInt(0)
+			fmt.Println("Here:", revealedDataMaps.SortedRevealedValues[leafId])
 			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
 				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
-				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue])
+				fmt.Println("SortedRevealedValues: ", revealedDataMaps.SortedRevealedValues)
+				fmt.Println("revealValue: ", revealedValue)
+				fmt.Println("weights: ", revealedDataMaps.VoteWeights)
+				fmt.Println("valueWeight: ", revealedDataMaps.VoteWeights[revealedValue.String()])
+				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
 				if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
 					medians = append(medians, revealedValue)
 					break

@@ -35,7 +35,7 @@ type RevealedStruct struct {
 
 type RevealedDataMaps struct {
 	SortedRevealedValues map[uint16][]*big.Int
-	VoteWeights          map[*big.Int]*big.Int
+	VoteWeights          map[string]*big.Int
 	InfluenceSum         map[uint16]*big.Int
 }
 
