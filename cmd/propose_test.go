@@ -960,7 +960,7 @@ func TestMakeBlock(t *testing.T) {
 			args: args{
 				revealedDataMaps: &types.RevealedDataMaps{
 					SortedRevealedValues: map[uint16][]*big.Int{0: {big.NewInt(1), big.NewInt(1)}, 1: {big.NewInt(100), big.NewInt(100)}, 2: {big.NewInt(200), big.NewInt(200)}},
-					VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(1000), big.NewInt(1).String(): big.NewInt(1000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(200).String(): big.NewInt(3000), big.NewInt(200).String(): big.NewInt(3000)},
+					VoteWeights:          map[string]*big.Int{big.NewInt(1).String(): big.NewInt(1000), big.NewInt(100).String(): big.NewInt(2000), big.NewInt(200).String(): big.NewInt(3000)},
 					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(500), 1: big.NewInt(10000), 2: big.NewInt(10000), 3: big.NewInt(10000)},
 				},
 				activeCollections: []uint16{0, 1, 2},
@@ -1321,7 +1321,7 @@ func BenchmarkMakeBlock(b *testing.B) {
 
 				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(&types.RevealedDataMaps{
 					SortedRevealedValues: map[uint16][]*big.Int{0: votes},
-					VoteWeights:          map[string]*big.Int{big.NewInt(100).String(): big.NewInt(100)},
+					VoteWeights:          map[string]*big.Int{(big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
 				}, nil)
 				utilsMock.On("GetActiveCollections", mock.Anything).Return([]uint16{1}, nil)

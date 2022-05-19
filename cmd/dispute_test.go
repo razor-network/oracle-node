@@ -982,7 +982,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 
 				utils.UtilsInterface = utilsPkgMock
 
-				medians := []uint32{6901548, 498307}
+				medians := []*big.Int{big.NewInt(6901548), big.NewInt(498307)}
 				revealedCollectionIds := []uint16{1}
 				revealedDataMaps := &types.RevealedDataMaps{
 					SortedRevealedValues: nil,
