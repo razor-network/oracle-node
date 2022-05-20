@@ -120,8 +120,7 @@ This will cause this particular vote command to run with a gas price of 10.
 
 
 
-
-
+## Razor commands
 
 ### Create Account
 
