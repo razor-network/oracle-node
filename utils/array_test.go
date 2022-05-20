@@ -99,6 +99,42 @@ func TestContains(t *testing.T) {
 	}
 }
 
+func TestContainsBigInteger(t *testing.T) {
+	type args struct {
+		arr []*big.Int
+		num *big.Int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When the big integer is present in array",
+			args: args{
+				arr: []*big.Int{big.NewInt(10), big.NewInt(12), big.NewInt(7), big.NewInt(18)},
+				num: big.NewInt(7),
+			},
+			want: true,
+		},
+		{
+			name: "Test 1: When the big integer is not present in array",
+			args: args{
+				arr: []*big.Int{big.NewInt(10), big.NewInt(12), big.NewInt(7), big.NewInt(18)},
+				num: big.NewInt(8),
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsBigInteger(tt.args.arr, tt.args.num); got != tt.want {
+				t.Errorf("containsBigInteger() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetDataInBytes(t *testing.T) {
 	type args struct {
 		data []*big.Int
