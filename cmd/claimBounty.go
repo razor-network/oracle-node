@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
@@ -12,9 +13,6 @@ import (
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
-	"time"
-
-	"github.com/spf13/cobra"
 )
 
 var claimBountyCmd = &cobra.Command{
@@ -112,20 +110,11 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	for retry := 1; retry <= int(core.MaxRetries); retry++ {
-		tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
-		if err == nil {
-			log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
-			return transactionUtils.Hash(tx), nil
-		}
-		log.Error("Error while claiming bounty: ", err)
-		if retry != int(core.MaxRetries) {
-			log.Info("Retrying again...")
-			log.Info("Waiting for 1 more epoch...")
-			timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
-		}
+	tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
+	if err != nil {
+		return core.NilHash, err
 	}
-	return core.NilHash, err
+	return transactionUtils.Hash(tx), nil
 }
 
 func init() {
