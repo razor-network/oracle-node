@@ -28,7 +28,7 @@ Check installation
 razor -v
 ```
 >**_NOTE:_** To install the version you want, you can set VERSION:<git-tag> environment variable before running above command.
-##Docker quick start
+## Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
 ```
