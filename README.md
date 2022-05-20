@@ -28,65 +28,35 @@ Check installation
 razor -v
 ```
 >**_NOTE:_** To install the version you want, you can set VERSION:<git-tag> environment variable before running above command.
-### Docker quick start
+##Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    <command>
+docker run -d -it--entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
 ```
-Note that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
+
+>**_NOTE:_** that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    setConfig -p <provider_url>
+docker exec -it razor-go razor setConfig -p <provider_url>
 ```
 
 You can now execute razor-go cli commands by running:
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    <command>
+docker exec -it razor-go razor <command>
 ```
+To run 
 
-### Setting up razor-go with docker-compose
-
-You can build razor-go docker image by running:
-
-```
-docker-compose build
-```
-
-> **_NOTE:_** Add platform: linux/x86_64 for Silicon based MAC in docker-compose.yml.
-
-Run razor-go locally with:
-
-```
-docker-compose up -d
-```
-
-You can interact with razor:
-
-```
-docker exec -it razor-go razor ...
-```
-
-### Prerequisites
+### Prerequisites to building the source
 
 - Golang 1.15 or later must be installed.
 - Latest stable version of node is required.
 - Silicon chip based Mac users must go for node 15.3.0+
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
 - `solc` and `jq` must be installed.
-
 ### Building the source
 
 1. Run `npm install` to install the node dependencies.
@@ -120,21 +90,8 @@ $ ./razor create
 Docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest create
+docker exec -it razor-go razor create
 ```
-
-Docker providing password file
-
-```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    -v /path/of/password-file:/root/.razor/password-file \
-    razornetwork/razor-go:latest \
-    create --password /root/.razor/password-file
-```
-
 Example:
 
 ```
@@ -156,13 +113,8 @@ $ ./razor import
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    import
+docker exec -it razor-go razor import
 ```
-
-
 
 Example:
 
@@ -187,10 +139,7 @@ $ ./razor addStake --address <address> --value <value>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    addStake --address <address> --value <value>
+docker exec -it razor-go razor addStake --address <address> --value <value>
 ```
 
 Example:
@@ -210,7 +159,7 @@ If you have a 1000.25 razors in your account, you can stake those using the stak
 Example:
 
 ```
-$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
+$ razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
 ```
 
 If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
@@ -236,10 +185,7 @@ $ ./razor stakerInfo --stakerId <staker_id_of_the_staker>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    stakerInfo --stakerId <staker_id_of_the_staker>
+docker exec -it razor-go razor stakerInfo --stakerId <staker_id_of_the_staker>
 ```
 
 Example:
@@ -261,10 +207,7 @@ $ ./razor setDelegation --address <address> --status <true_or_false> --commissio
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
+docker exec -it razor-go razor setDelegation --address <address> --status <true_or_false> --commission <commission_percent>
 ```
 
 Example:
@@ -287,10 +230,7 @@ $ ./razor updateCommission --address <address> --commission <commission_percent>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    updateCommission --address <address> --commission <commission_percent>
+docker exec -it razor-go razor updateCommission --address <address> --commission <commission_percent>
 ```
 
 Example:
@@ -312,10 +252,7 @@ $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId 
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
+docker exec -it razor-go razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
 ```
 
 Example:
@@ -337,10 +274,7 @@ $ ./razor claimCommission --address <address>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    claimCommission --address <address> 
+docker exec -it razor-go razor claimCommission --address <address> 
 ```
 
 Example:
@@ -362,11 +296,11 @@ $ ./razor vote --address <address>
 docker
 
 ```
-docker run -it --name razor-go \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    vote --address <address>
+docker exec -it razor-go razor vote --address <address>
+
+
 ```
+
 
 Example:
 
@@ -397,10 +331,7 @@ $ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --p
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    unstake --address <address> --stakerId <staker_id> --value <value> --pow <power>
+docker exec -it razor-go razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power>
 ```
 
 Example:
@@ -427,17 +358,11 @@ $ ./razor unlockWithdraw --address <address> --stakerId <staker_id>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    initiateWithdraw --address <address> --stakerId <staker_id>
+docker exec -it razor-go razor initiateWithdraw --address <address> --stakerId <staker_id>
 ```
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    unlockWithdraw --address <address> --stakerId <staker_id>
+docker exec -it razor-go razor unlockWithdraw --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -462,10 +387,7 @@ $ ./razor extendLock --address <address> --stakerId <staker_id>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    extendLock --address <address> --stakerId <staker_id>
+docker exec -it razor-go razor extendLock --address <address> --stakerId <staker_id>
 ```
 
 Example:
@@ -487,10 +409,7 @@ $ ./razor claimBounty --address <address> --bountyId <bounty_id>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    claimBounty --address <address> --bountyId <bounty_id>
+docker exec -it razor-go razor claimBounty --address <address> --bountyId <bounty_id>
 ```
 
 Example:
@@ -512,10 +431,7 @@ $ ./razor transfer --value <value> --to <transfer_to_address> --from <transfer_f
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
+docker exec -it razor-go razor transfer --value <value> --to <transfer_to_address> --from <transfer_from_address>
 ```
 
 Example:
@@ -547,10 +463,7 @@ $ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value>
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
 ```
 
 Example:
@@ -584,10 +497,7 @@ $ ./razor createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_f
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
+docker exec -it razor-go razor createJob --url <URL> --selector <selector_in_json_or_XHTML_selector_format> --selectorType <0_for_XHTML_or_1_for_JSON> --name <name> --address <address> --power <power> --weight <weight>
 ```
 
 Example:
@@ -617,10 +527,7 @@ $ ./razor createCollection --name <collection_name> --address <address> --jobIds
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
+docker exec -it razor-go razor createCollection --name <collection_name> --address <address> --jobIds <list_of_job_ids> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
@@ -644,10 +551,7 @@ $ ./razor modifyCollectionStatus --collectionId <collectionId> --address <addres
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    modifyCollectionStatus --collectionId <collectionId> --address <address> --status <true_or_false>
+docker exec -it razor-go razor modifyCollectionStatus --collectionId <collectionId> --address <address> --status <true_or_false>
 ```
 
 Example:
@@ -671,10 +575,7 @@ $ ./razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
+docker exec -it razor-go razor updateCollection --collectionId <collection_id> --jobIds <list_of_jobs> --address <address> --aggregation <aggregation_method> --power <power> --tolerance <tolerance>
 ```
 
 Example:
@@ -698,10 +599,7 @@ razor cli
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
+docker exec -it razor-go razor updateJob --address <address> --jobID <job_Id> -s <selector> --selectorType <selectorType> -u <job_url> --power <power> --weight <weight>
 ```
 
 Example:
@@ -725,10 +623,7 @@ $ ./razor jobList
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    jobList
+docker exec -it razor-go razor jobList
 ```
 
 ### Collection details
@@ -746,10 +641,7 @@ $ ./razor collectionList
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    collectionList
+docker exec -it razor-go razorcollectionList
 ```
 
 Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
@@ -775,10 +667,7 @@ docker
 docker network create razor_network
 
 # Expose Metrics
-docker run -it  --network razor_network\
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    setConfig --exposeMetrics 2112
+docker exec -it razor-go razor setConfig --exposeMetrics 2112
 ```
 
 ### Override Job and Adding Your Custom Jobs
@@ -847,13 +736,23 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
 
 User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor``` directory.
 
+razor cli
 ```
 $ ./razor addStake --address <address> --value <value> --logFile stakingLogs
 ```
+docker
+```
+docker exec -it razor-go razo addStake --address <address> --value <value> --logFile stakingLogs
+```
 _The logs for above command will be stored at "home/.razor/stakingLogs.log" path_
 
+razor cli
 ```
 $ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id> --logFile delegationLogs
+```
+docker
+```
+docker exec -it razor-go razo delegate --address <address> --value <value> --pow <power> --stakerId <staker_id> --logFile delegationLogs
 ```
 _The logs for above command will be stored at "home/.razor/delegationLogs.log" path_
 
@@ -873,10 +772,7 @@ $ ./razor contractAddresses
 docker
 
 ```
-docker run -it  \
-    -v "$(echo $HOME)"/.razor:/root/.razor \
-    razornetwork/razor-go:latest \
-    contractAddresses
+docker exec -it razor-go razor contractAddresses
 ```
 
 Example:
