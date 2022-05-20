@@ -343,10 +343,13 @@ docker
 
 ```
 docker exec -it razor-go razor vote --address <address>
-
-
 ```
 
+run vote command in background
+```
+docker exec -it -d razor-go razor vote --address <address> --password /root/.razor/<file_name>
+```
+>**_NOTE:_**  To run command with password flag, password file should present in $HOME/.razor/ directory
 
 Example:
 
