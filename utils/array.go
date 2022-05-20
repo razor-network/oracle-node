@@ -38,6 +38,19 @@ func Contains(slice interface{}, val interface{}) bool {
 	return false
 }
 
+//This function checks if array of big Int contains a specific big Int number
+func ContainsBigInteger(arr []*big.Int, num *big.Int) bool {
+	if num == nil {
+		return false
+	}
+	for _, value := range arr {
+		if value.Cmp(num) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
 //This function checks if two arrays of bigInt are equal or not
 func IsEqual(arr1 []*big.Int, arr2 []*big.Int) (bool, int) {
 	if len(arr1) > len(arr2) {

@@ -279,7 +279,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 			if revealedValuesWithIndex[assetValue.LeafId] == nil {
 				revealedValuesWithIndex[assetValue.LeafId] = []*big.Int{assetValue.Value}
 			} else {
-				if !utils.Contains(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
+				if !utils.ContainsBigInteger(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
 					revealedValuesWithIndex[assetValue.LeafId] = append(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value)
 				}
 			}

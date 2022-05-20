@@ -65,7 +65,6 @@ func InitializeLogger(fileName string) {
 	}
 }
 
-//This function returns the new logger
 func NewLogger() *StandardLogger {
 	return standardLogger
 }
@@ -114,7 +113,7 @@ func (logger *StandardLogger) Fatal(args ...interface{}) {
 	logger.WithFields(addressLogField).Fatalln(err)
 }
 
-//This function allow us use formatting features to create descriptive error messages
+//This function allows us to use formatting features to create descriptive error messages
 func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
 		"address": Address,
@@ -122,7 +121,7 @@ func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
 	logger.WithFields(addressLogField).Errorf(format, args...)
 }
 
-//This function allow us use formatting features to create descriptive info messages
+//This function allows us to use formatting features to create descriptive info messages
 func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
 		"address": Address,
@@ -130,7 +129,7 @@ func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 	logger.WithFields(addressLogField).Infof(format, args...)
 }
 
-//This function allow us use formatting features to create descriptive debug messages
+//This function allows us to use formatting features to create descriptive debug messages
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
 		"address": Address,
@@ -138,7 +137,7 @@ func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 	logger.WithFields(addressLogField).Debugf(format, args...)
 }
 
-//This function allow us use formatting features to create descriptive fatal messages
+//This function allows us to use formatting features to create descriptive fatal messages
 func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
 	var addressLogField = logrus.Fields{
 		"address": Address,
