@@ -1,8 +1,8 @@
 //Package core contains the most important values of project
 package core
 
-var StakeManagerAddress = "0xaa95236294661AB21E753AC68D816605A968DEc8"
-var RAZORAddress = "0x254EEeac877b7EA3d79c17144d9f2611f28486db"
-var CollectionManagerAddress = "0x5471A788c1D31CacAbeeEfA28dF2e0c6b279542C"
-var VoteManagerAddress = "0xdd3baA3Ae01e14833e049aB7DDDD87f43DAddFcC"
-var BlockManagerAddress = "0xd53A336F07dd93Da46b709B3f3594039A5557867"
+var StakeManagerAddress = "0x49e6c8F7AC2659F95d718d04C055D2672662B9bc"
+var RAZORAddress = "0x8093C9190388Fb327B92434D32D1e41F999244Ed"
+var CollectionManagerAddress = "0x854a0114e932B82a2c37A489c0010de86D9092b4"
+var VoteManagerAddress = "0xA124649df32e12abEb8EFBbc09A59E4deb73486c"
+var BlockManagerAddress = "0x59125303FDbA7Ff3EF14c94D728946581dac6A31"
