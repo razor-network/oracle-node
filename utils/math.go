@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -9,6 +10,7 @@ import (
 	"strconv"
 )
 
+//This function converts interface to number
 func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	if num == nil {
 		return big.NewFloat(0), errors.New("no data provided")
@@ -29,6 +31,7 @@ func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return big.NewFloat(0), nil
 }
 
+//This function helps in multiplying with power
 func MultiplyWithPower(num *big.Float, power int8) *big.Int {
 	if num == nil {
 		return big.NewInt(0)
@@ -40,6 +43,7 @@ func MultiplyWithPower(num *big.Float, power int8) *big.Int {
 	return result
 }
 
+//This function multiplies float and big int
 func (*UtilsStruct) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int {
 	if bigIntVal == nil || floatingVal == 0 {
 		return big.NewInt(0)
@@ -54,6 +58,7 @@ func (*UtilsStruct) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float
 	return result
 }
 
+//This function checks if the all values are zero or not in byte value array
 func AllZero(bytesValue [32]byte) bool {
 	for _, value := range bytesValue {
 		if value != 0 {
@@ -63,6 +68,7 @@ func AllZero(bytesValue [32]byte) bool {
 	return true
 }
 
+//This function checks the amount and balance
 func CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	if amountInWei.Cmp(balance) > 0 {
 		log.Fatal("Not enough balance")
@@ -70,11 +76,13 @@ func CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	return amountInWei
 }
 
+//This function returns the amount in wei
 func GetAmountInWei(amount *big.Int) *big.Int {
 	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1e18))
 	return amountInWei
 }
 
+//This function returns the fractional amount in wei
 func GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
 	_power, err := new(big.Int).SetString(power, 10)
 	if !err {
@@ -84,10 +92,12 @@ func GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
 	return amountInWei, nil
 }
 
+//This function returns amount in decimal
 func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
 
+//This function performs the aggregation
 func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint32) (*big.Int, error) {
 	if len(data) == 0 {
 		return nil, errors.New("aggregation cannot be performed for nil data")
@@ -104,6 +114,8 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 	}
 	return nil, errors.New("invalid aggregation method")
 }
+
+//This function calculates the weighted median
 func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) *big.Int {
 	if len(data) == 0 || len(weight) == 0 || totalWeight == 0 {
 		return nil
@@ -131,6 +143,7 @@ func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) 
 	return nil
 }
 
+//This function returns the fractional weight
 func getFractionalWeight(weights []uint8, totalWeight uint) []float32 {
 	if len(weights) == 0 || totalWeight == 0 {
 		return nil
@@ -142,6 +155,7 @@ func getFractionalWeight(weights []uint8, totalWeight uint) []float32 {
 	return fractionalWeight
 }
 
+//This function converts wei to eth
 func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 	if data.Cmp(big.NewInt(0)) == 0 {
 		return big.NewFloat(0), errors.New("cannot divide by 0")
@@ -150,6 +164,7 @@ func ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 	return dataInFloat.Quo(dataInFloat, big.NewFloat(1e18)).SetPrec(32), nil
 }
 
+//This function converts RZR to SRZR
 func ConvertRZRToSRZR(amount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
 	if currentStake.Cmp(big.NewInt(0)) == 0 {
 		return big.NewInt(0), errors.New("current stake is 0")
@@ -157,10 +172,12 @@ func ConvertRZRToSRZR(amount *big.Int, currentStake *big.Int, totalSupply *big.I
 	return big.NewInt(1).Div(big.NewInt(1).Mul(amount, totalSupply), currentStake), nil
 }
 
+//This function converts SRZR to RZR
 func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
 	return big.NewInt(1).Div(big.NewInt(1).Mul(sAmount, currentStake), totalSupply)
 }
 
+//This function returns the rogue random value
 func GetRogueRandomValue(value int) *big.Int {
 	if value <= 0 {
 		return big.NewInt(0)
@@ -168,6 +185,7 @@ func GetRogueRandomValue(value int) *big.Int {
 	return big.NewInt(int64(rand.Intn(value)))
 }
 
+//This function returns the rogue random median value
 func GetRogueRandomMedianValue() uint32 {
 	return rand.Uint32()
 }

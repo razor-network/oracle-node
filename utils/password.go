@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -8,6 +9,7 @@ import (
 	"os"
 )
 
+//This function prompts the password
 func PasswordPrompt() string {
 	prompt := promptui.Prompt{
 		Label:    "Password",
@@ -21,6 +23,7 @@ func PasswordPrompt() string {
 	return password
 }
 
+//This function prompts the private key
 func PrivateKeyPrompt() string {
 	prompt := promptui.Prompt{
 		Label:    "🔑 Private Key",
@@ -34,6 +37,7 @@ func PrivateKeyPrompt() string {
 	return privateKey
 }
 
+//This function validates the password
 func validate(input string) error {
 	if input == "" {
 		return errors.New("enter a valid password")
@@ -41,6 +45,7 @@ func validate(input string) error {
 	return nil
 }
 
+//This function validates the private key
 func validatePrivateKey(input string) error {
 	if input == "" {
 		return errors.New("enter a valid private key")
@@ -48,6 +53,7 @@ func validatePrivateKey(input string) error {
 	return nil
 }
 
+//This functon returns password from file
 func GetPasswordFromFile(path string) string {
 	file, err := os.Open(path)
 	if err != nil {
@@ -66,6 +72,7 @@ func GetPasswordFromFile(path string) string {
 	return ""
 }
 
+//This function assigns the password
 func AssignPassword(flagset *pflag.FlagSet) string {
 	if UtilsInterface.IsFlagPassed("password") {
 		log.Warn("Password flag is passed")

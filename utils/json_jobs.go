@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -6,6 +7,7 @@ import (
 	"strconv"
 )
 
+//This function helps in reading JSON data
 func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob, error) {
 	var data = map[string]*types.StructsJob{}
 	file, err := IoutilInterface.ReadFile(fileName)
@@ -23,6 +25,7 @@ func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob,
 	return data, nil
 }
 
+//This function helps in writing data to JSON
 func (*UtilsStruct) WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error {
 	jsonString, err := JsonInterface.Marshal(data)
 	if err != nil {
@@ -35,6 +38,7 @@ func (*UtilsStruct) WriteDataToJSON(fileName string, data map[string]*types.Stru
 	return nil
 }
 
+//This function deletes job from JSON
 func (*UtilsStruct) DeleteJobFromJSON(fileName string, jobId string) error {
 	data, err := UtilsInterface.ReadJSONData(fileName)
 	if err != nil {
@@ -48,6 +52,7 @@ func (*UtilsStruct) DeleteJobFromJSON(fileName string, jobId string) error {
 	return UtilsInterface.WriteDataToJSON(fileName, data)
 }
 
+//This function adds job to JSON
 func (*UtilsStruct) AddJobToJSON(fileName string, job *types.StructsJob) error {
 	data, err := UtilsInterface.ReadJSONData(fileName)
 	if err != nil {
