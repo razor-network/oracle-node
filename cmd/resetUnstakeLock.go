@@ -68,7 +68,7 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "extendLock",
+		MethodName:      "resetUnstakeLock",
 		Parameters:      []interface{}{extendLockInput.StakerId},
 		ABI:             bindings.StakeManagerABI,
 	})
