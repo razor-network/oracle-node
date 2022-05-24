@@ -15,6 +15,7 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sort"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,7 @@ var (
 	_mediansData           []*big.Int
 	_revealedCollectionIds []uint16
 	_revealedDataMaps      *types.RevealedDataMaps
+	//iterations             []int
 )
 
 // Index reveal events of staker's
@@ -224,21 +226,66 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 		return -1
 	}
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
-loop:
-	for i := 0; i < 10000000; i++ {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			break loop
-		default:
-			proposer.Iteration = i
-			isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
-			if isElected {
-				return i
+	wg := &sync.WaitGroup{}
+	wg.Add(core.NumRoutines)
+	done := make(chan bool, 10)
+	iterationResult := make(chan int, 10)
+	quit := make(chan bool, 10)
+
+	for routine := 0; routine < core.NumRoutines; routine++ {
+		go getIterationConcurrently(proposer, currentStakerStake, routine, wg, done, iterationResult, quit, stateTimeout)
+	}
+
+	log.Debug("Waiting for all the goroutines to finish")
+	wg.Wait()
+	log.Debug("Done")
+
+	close(done)
+	close(quit)
+	close(iterationResult)
+
+	var iterations []int
+
+	for iteration := range iterationResult {
+		iterations = append(iterations, iteration)
+	}
+
+	sort.Ints(iterations)
+	return iterations[0]
+}
+
+func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, routine int, wg *sync.WaitGroup, done chan bool, iterationResult chan int, quit chan bool, stateTimeout *time.Timer) {
+	//PARALLEL IMPLEMENTATION WITH BATCHES
+
+	defer wg.Done()
+	batchSize := core.BatchSize                  //1000
+	NumBatches := core.MaxIterations / batchSize //10000000/1000 = 10000
+	// Batch 0th - [0,1000)
+	// Batch 1th - [1000,2000)
+	for batch := 0; batch < NumBatches; batch++ {
+		for iteration := (batch * batchSize) + routine; iteration < (batch*batchSize)+batchSize; iteration = iteration + core.NumRoutines {
+			select {
+			case <-stateTimeout.C:
+				log.Error("State timeout!")
+				iterationResult <- -1
+				quit <- true
+				return
+			default:
+				proposer.Iteration = iteration
+				if len(done) >= 1 || len(quit) >= 1 {
+					return
+				}
+				isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
+				if isElected {
+					iterationResult <- iteration
+					done <- true
+					return
+				}
 			}
 		}
 	}
-	return -1
+	iterationResult <- -1
+	log.Debug("IsElected is never true for this batch")
 }
 
 //This function returns if the elected staker is proposer or not
