@@ -15,6 +15,8 @@ func TestSetConfig(t *testing.T) {
 	type args struct {
 		provider              string
 		providerErr           error
+		chainId               int64
+		chainIdErr            error
 		gasmultiplier         float32
 		gasmultiplierErr      error
 		buffer                int32
@@ -43,6 +45,7 @@ func TestSetConfig(t *testing.T) {
 			name: "Test 1: When values are passed to all flags and setConfig returns no error",
 			args: args{
 				provider:              "http://127.0.0.1",
+				chainId:               137,
 				gasmultiplier:         2,
 				buffer:                20,
 				waitTime:              2,
@@ -59,6 +62,7 @@ func TestSetConfig(t *testing.T) {
 			name: "Test 2: When parameters are set to default values and setConfig returns no error",
 			args: args{
 				provider:              "",
+				chainId:               0,
 				gasmultiplier:         -1,
 				buffer:                0,
 				waitTime:              -1,
@@ -257,6 +261,23 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("error in getting port"),
 		},
+		{
+			name: "Test 16: When there is an error in getting chainId",
+			args: args{
+				provider:              "http://127.0.0.1",
+				chainIdErr:            errors.New("error in getting chainId"),
+				gasmultiplier:         2,
+				buffer:                20,
+				waitTime:              2,
+				gasPrice:              1,
+				logLevel:              "debug",
+				path:                  "/home/config",
+				configErr:             nil,
+				gasLimitMultiplier:    10,
+				gasLimitMultiplierErr: nil,
+			},
+			wantErr: errors.New("error in getting chainId"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -273,6 +294,7 @@ func TestSetConfig(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
+			flagSetUtilsMock.On("GetInt64ChainId", flagSet).Return(tt.args.chainId, tt.args.chainIdErr)
 			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
 			flagSetUtilsMock.On("GetInt32Buffer", flagSet).Return(tt.args.buffer, tt.args.bufferErr)
 			flagSetUtilsMock.On("GetInt32Wait", flagSet).Return(tt.args.waitTime, tt.args.waitTimeErr)

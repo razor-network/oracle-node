@@ -53,7 +53,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
+		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
 	}
 
@@ -77,7 +77,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				Client:         client,
 				Password:       account.Password,
 				AccountAddress: account.Address,
-				ChainId:        core.ChainId,
+				ChainId:        big.NewInt(config.ChainId),
 				Config:         config,
 			})
 			disputeBiggestStakeProposedTxn, err := blockManagerUtils.DisputeBiggestStakeProposed(client, txnOpts, epoch, uint8(blockIndex), biggestStakerId)
@@ -260,7 +260,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
+		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
 	})
 
@@ -273,7 +273,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
+		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
 	})
 	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)

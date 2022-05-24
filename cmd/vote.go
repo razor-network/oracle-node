@@ -261,7 +261,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
-				ChainId:         core.ChainId,
+				ChainId:         big.NewInt(config.ChainId),
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
@@ -555,7 +555,8 @@ loop:
 
 //This function calculates the secret
 func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, error) {
-	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
+	config := types.Configurations{}
+	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, big.NewInt(config.ChainId).String(), "razororacle"})
 	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		return nil, errors.New("Error in fetching .razor directory: " + err.Error())
@@ -575,7 +576,7 @@ func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account typ
 		AccountAddress: account.Address,
 		Password:       account.Password,
 		Amount:         amount,
-		ChainId:        core.ChainId,
+		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
 	}
 

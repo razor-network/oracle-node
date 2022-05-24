@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -76,7 +77,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		Client:          client,
 		Password:        transferInput.Password,
 		AccountAddress:  transferInput.FromAddress,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",

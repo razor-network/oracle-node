@@ -11,6 +11,12 @@ then
   PROVIDER="http://127.0.0.1:8545"
 fi
 
+read -rp "ChainId: (0x785B4B9847B9) " CHAIN_ID
+if [ -z "$CHAIN_ID" ];
+then
+  CHAIN_ID=0x785B4B9847B9
+fi
+
 read -rp "Gas Multiplier: (1.0) " GAS_MULTIPLIER
 if [ -z "$GAS_MULTIPLIER" ];
 then
@@ -37,4 +43,4 @@ read -rp "Gas Limit Increment : (2) " GAS_LIMIT
 if [ -z "$GAS_LIMIT" ]; then
    GAS_LIMIT=2
 fi
-$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT
+$RAZOR setConfig -p $PROVIDER -c $CHAIN_ID -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT

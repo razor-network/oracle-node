@@ -79,7 +79,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		Password:       input.Password,
 		AccountAddress: input.Address,
 		Amount:         input.ValueInWei,
-		ChainId:        core.ChainId,
+		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
 	}
 	stakerId := input.StakerId

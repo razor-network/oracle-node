@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -65,7 +66,7 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 		Client:          client,
 		Password:        extendLockInput.Password,
 		AccountAddress:  extendLockInput.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "resetUnstakeLock",

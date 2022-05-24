@@ -103,7 +103,7 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerABI,

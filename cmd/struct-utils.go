@@ -754,6 +754,11 @@ func (flagSetUtils FLagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("provider")
 }
 
+//This function returns the chainId in int64
+func (FLagSetUtils FLagSetUtils) GetInt64ChainId(flagSet *pflag.FlagSet) (int64, error) {
+	return flagSet.GetInt64("chainId")
+}
+
 //This function returns gas multiplier in float 32
 func (flagSetUtils FLagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
 	return flagSet.GetFloat32("gasmultiplier")
@@ -792,6 +797,11 @@ func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint
 //This function returns the provider of root in string
 func (flagSetUtils FLagSetUtils) GetRootStringProvider() (string, error) {
 	return rootCmd.PersistentFlags().GetString("provider")
+}
+
+//This function returns the chainId of root in int64
+func (flagSetUtils FLagSetUtils) GetRootInt64ChainId() (int64, error) {
+	return rootCmd.PersistentFlags().GetInt64("chainId")
 }
 
 //This function returns the gas multiplier of root in float32
