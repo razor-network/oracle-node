@@ -53,6 +53,7 @@ func InitializeLogger(fileName string) {
 			MaxSize:    5,
 			MaxBackups: 10,
 			MaxAge:     30,
+			Compress:   true,
 		}
 
 		out := os.Stderr
