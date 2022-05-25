@@ -95,12 +95,17 @@ func TestGetDefaultPath(t *testing.T) {
 }
 
 func TestGetLogFilePath(t *testing.T) {
-	var fileName string
+	var fileInfo fs.FileInfo
+
 	type args struct {
-		path    string
-		pathErr error
-		file    *os.File
-		fileErr error
+		fileName   string
+		path       string
+		pathErr    error
+		file       *os.File
+		fileErr    error
+		statErr    error
+		isNotExist bool
+		mkdirErr   error
 	}
 	tests := []struct {
 		name    string
@@ -111,9 +116,10 @@ func TestGetLogFilePath(t *testing.T) {
 		{
 			name: "Test 1: When GetLogFilePath() executes successfully",
 			args: args{
-				path: "./home/.razor",
+				fileName: "xyz",
+				path:     "./home/.razor",
 			},
-			want:    "./home/.razor/.log",
+			want:    "./home/.razor/logFiles/xyz.log",
 			wantErr: nil,
 		},
 		{
@@ -133,6 +139,28 @@ func TestGetLogFilePath(t *testing.T) {
 			want:    "",
 			wantErr: errors.New("error in getting file"),
 		},
+		{
+			name: "Test 4: When there is stat error but not mkdir error",
+			args: args{
+				fileName:   "xyz",
+				path:       "./home/.razor",
+				statErr:    errors.New("file not exists"),
+				isNotExist: true,
+			},
+			want:    "./home/.razor/logFiles/xyz.log",
+			wantErr: nil,
+		},
+		{
+			name: "Test 5: When there is stat error and mkdir error",
+			args: args{
+				path:       "./home/.razor",
+				statErr:    errors.New("file not exists"),
+				isNotExist: true,
+				mkdirErr:   errors.New("mkdir error"),
+			},
+			want:    "",
+			wantErr: errors.New("mkdir error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -144,8 +172,12 @@ func TestGetLogFilePath(t *testing.T) {
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			osMock.On("OpenFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.file, tt.args.fileErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
+
 			pa := PathUtils{}
-			got, err := pa.GetLogFilePath(fileName)
+			got, err := pa.GetLogFilePath(tt.args.fileName)
 			if got != tt.want {
 				t.Errorf("GetLogFilePath(), got = %v, want = %v", got, tt.want)
 			}

@@ -25,13 +25,21 @@ func (PathUtils) GetLogFilePath(fileName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filePath := home + "/" + fileName + ".log"
-	f, err := OSUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	fileDir := home + "/logFiles"
+	if _, err := OSUtilsInterface.Stat(fileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(fileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+
+	logFilepath := fileDir + "/" + fileName + ".log"
+	f, err := OSUtilsInterface.OpenFile(logFilepath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return "", err
 	}
 	defer f.Close()
-	return filePath, nil
+	return logFilepath, nil
 }
 
 //This function returns the config file path
