@@ -11,6 +11,7 @@ import (
 func TestGetConfigData(t *testing.T) {
 	config := types.Configurations{
 		Provider:           "",
+		ChainId:            0,
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -20,6 +21,7 @@ func TestGetConfigData(t *testing.T) {
 
 	configData := types.Configurations{
 		Provider:           "",
+		ChainId:            137,
 		GasMultiplier:      1,
 		BufferPercent:      20,
 		WaitTime:           1,
@@ -30,6 +32,8 @@ func TestGetConfigData(t *testing.T) {
 	type args struct {
 		provider         string
 		providerErr      error
+		chainId          int64
+		chainIdErr       error
 		gasMultiplier    float32
 		gasMultiplierErr error
 		bufferPercent    int32
@@ -53,6 +57,7 @@ func TestGetConfigData(t *testing.T) {
 			name: "Test 1: When GetConfigData function executes successfully",
 			args: args{
 				provider:      "",
+				chainId:       137,
 				gasMultiplier: 1,
 				bufferPercent: 20,
 				waitTime:      1,
@@ -118,6 +123,14 @@ func TestGetConfigData(t *testing.T) {
 			want:    config,
 			wantErr: errors.New("gasLimit error"),
 		},
+		{
+			name: "Test 9: When there is an error in getting chainId",
+			args: args{
+				chainIdErr: errors.New("chainId error"),
+			},
+			want:    config,
+			wantErr: errors.New("chainId error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -125,6 +138,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetProvider").Return(tt.args.provider, tt.args.providerErr)
+			cmdUtilsMock.On("GetChainId").Return(tt.args.chainId, tt.args.chainIdErr)
 			cmdUtilsMock.On("GetMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
 			cmdUtilsMock.On("GetWaitTime").Return(tt.args.waitTime, tt.args.waitTimeErr)
 			cmdUtilsMock.On("GetGasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
@@ -206,6 +220,66 @@ func TestGetBufferPercent(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for getBufferPercent function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetChainId(t *testing.T) {
+	type args struct {
+		chainId    int64
+		chainIdErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getChainId function executes successfully",
+			args: args{
+				chainId: 137,
+			},
+			want:    137,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When chainId is 0",
+			args: args{
+				chainId: 0,
+			},
+			want:    0,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in getting chainId",
+			args: args{
+				chainIdErr: errors.New("chainId error"),
+			},
+			want:    0,
+			wantErr: errors.New("chainId error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
+
+			flagSetUtilsMock.On("GetRootInt64ChainId").Return(tt.args.chainId, tt.args.chainIdErr)
+			utils := &UtilsStruct{}
+			got, err := utils.GetChainId()
+			if got != tt.want {
+				t.Errorf("getChainId() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getChainId() function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getChainId() function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

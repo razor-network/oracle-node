@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -63,7 +64,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 		Password:       password,
 		Amount:         valueInWei,
 		AccountAddress: address,
-		ChainId:        core.ChainId,
+		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
 	}
 

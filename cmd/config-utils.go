@@ -11,6 +11,7 @@ import (
 func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
+		ChainId:            0,
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -19,6 +20,10 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	}
 
 	provider, err := cmdUtils.GetProvider()
+	if err != nil {
+		return config, err
+	}
+	chainId, err := cmdUtils.GetChainId()
 	if err != nil {
 		return config, err
 	}
@@ -47,6 +52,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.Provider = provider
+	config.ChainId = chainId
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
@@ -70,6 +76,18 @@ func (*UtilsStruct) GetProvider() (string, error) {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
 	return provider, nil
+}
+
+//This function returns the chainId
+func (*UtilsStruct) GetChainId() (int64, error) {
+	chainId, err := flagSetUtils.GetRootInt64ChainId()
+	if err != nil {
+		return 0, err
+	}
+	if chainId == 0 {
+		chainId = viper.GetInt64("chainId")
+	}
+	return chainId, nil
 }
 
 //This function returns the multiplier

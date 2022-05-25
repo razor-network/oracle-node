@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -92,7 +93,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		Client:          client,
 		Password:        modifyCollectionInput.Password,
 		AccountAddress:  modifyCollectionInput.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "setCollectionStatus",

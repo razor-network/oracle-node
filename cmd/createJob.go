@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -88,7 +89,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		Client:          client,
 		Password:        jobInput.Password,
 		AccountAddress:  jobInput.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createJob",

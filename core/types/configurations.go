@@ -3,6 +3,7 @@ package types
 
 type Configurations struct {
 	Provider           string
+	ChainId            int64
 	GasMultiplier      float32
 	BufferPercent      int32
 	WaitTime           int32

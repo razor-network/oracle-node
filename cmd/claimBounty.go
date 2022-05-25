@@ -68,7 +68,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		Client:          client,
 		AccountAddress:  redeemBountyInput.Address,
 		Password:        redeemBountyInput.Password,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerABI,
