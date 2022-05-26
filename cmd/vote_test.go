@@ -319,6 +319,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Data: []byte{4, 2},
 					},
 				},
+				time:        10,
 				contractAbi: abi.ABI{},
 				unpackErr:   errors.New("unpack error"),
 			},
