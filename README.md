@@ -741,7 +741,7 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
 
 ### Logs
 
-User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor/logFiles``` directory.
+User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor/logs``` directory.
 
 razor cli
 ```

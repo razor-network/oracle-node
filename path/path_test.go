@@ -119,7 +119,7 @@ func TestGetLogFilePath(t *testing.T) {
 				fileName: "xyz",
 				path:     "./home/.razor",
 			},
-			want:    "./home/.razor/logFiles/xyz.log",
+			want:    "./home/.razor/logs/xyz.log",
 			wantErr: nil,
 		},
 		{
@@ -147,7 +147,7 @@ func TestGetLogFilePath(t *testing.T) {
 				statErr:    errors.New("file not exists"),
 				isNotExist: true,
 			},
-			want:    "./home/.razor/logFiles/xyz.log",
+			want:    "./home/.razor/logs/xyz.log",
 			wantErr: nil,
 		},
 		{

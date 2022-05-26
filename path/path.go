@@ -25,7 +25,7 @@ func (PathUtils) GetLogFilePath(fileName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fileDir := home + "/logFiles"
+	fileDir := home + "/logs"
 	if _, err := OSUtilsInterface.Stat(fileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(fileDir, 0700)
 		if mkdirErr != nil {
