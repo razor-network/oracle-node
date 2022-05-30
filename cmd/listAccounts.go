@@ -41,7 +41,7 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 		return nil, err
 	}
 
-	return keystoreUtils.Accounts(path), nil
+	return keystoreUtils.Accounts(path + "/keystoreFiles"), nil
 }
 
 func init() {

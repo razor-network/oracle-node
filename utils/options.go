@@ -31,7 +31,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	privateKey := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath)
+	privateKey := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, defaultPath+"/keystoreFiles")
 	if privateKey == nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}

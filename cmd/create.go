@@ -42,7 +42,7 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account := razorAccounts.AccountUtilsInterface.CreateAccount(path, password)
+	account := razorAccounts.AccountUtilsInterface.CreateAccount(path+"/keystoreFiles", password)
 	return account, nil
 }
 
