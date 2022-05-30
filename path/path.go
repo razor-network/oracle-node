@@ -59,7 +59,15 @@ func (PathUtils) GetCommitDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_CommitData.json", nil
+	dataFileDir := homeDir + "/dataFiles"
+	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+
+	return dataFileDir + "/" + address + "_CommitData.json", nil
 }
 
 //This function returns the file name of propose data file
@@ -68,7 +76,14 @@ func (PathUtils) GetProposeDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_proposedData.json", nil
+	dataFileDir := homeDir + "/dataFiles"
+	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+	return dataFileDir + "/" + address + "_proposedData.json", nil
 }
 
 //This function returns the file name of dispute data file
@@ -77,5 +92,12 @@ func (PathUtils) GetDisputeDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_disputeData.json", nil
+	dataFileDir := homeDir + "/dataFiles"
+	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+	return dataFileDir + "/" + address + "_disputeData.json", nil
 }
