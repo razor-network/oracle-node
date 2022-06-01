@@ -111,9 +111,9 @@ func TestGetLogFilePath(t *testing.T) {
 		{
 			name: "Test 1: When GetLogFilePath() executes successfully",
 			args: args{
-				path: "./home/.razor",
+				path: "/home/.razor",
 			},
-			want:    "./home/.razor/.log",
+			want:    "/home/.razor/.log",
 			wantErr: nil,
 		},
 		{
@@ -127,7 +127,7 @@ func TestGetLogFilePath(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting file",
 			args: args{
-				path:    "./home/.razor",
+				path:    "/home/.razor",
 				fileErr: errors.New("error in getting file"),
 			},
 			want:    "",
@@ -176,9 +176,9 @@ func TestGetConfigFilePath(t *testing.T) {
 		{
 			name: "Test 1: When GetConfigFilePath() executes successfully",
 			args: args{
-				path: "./home/.razor",
+				path: "/home/.razor",
 			},
-			want:    "./home/.razor/razor.yaml",
+			want:    "/home/.razor/razor.yaml",
 			wantErr: nil,
 		},
 		{

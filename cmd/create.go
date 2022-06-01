@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"path"
 	razorAccounts "razor/accounts"
 	"razor/utils"
 )
@@ -37,12 +38,13 @@ func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 
 //This function is used to create the new account
 func (*UtilsStruct) Create(password string) (accounts.Account, error) {
-	path, err := razorUtils.GetDefaultPath()
+	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account := razorAccounts.AccountUtilsInterface.CreateAccount(path+"/keystoreFiles", password)
+	keystorePath := path.Join(razorPath, "keystoreFiles")
+	account := razorAccounts.AccountUtilsInterface.CreateAccount(keystorePath, password)
 	return account, nil
 }
 

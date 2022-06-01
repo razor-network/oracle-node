@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	pathPkg "path"
 	"razor/path"
 	"razor/utils"
 	"strings"
@@ -47,7 +48,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 
-	keystoreDir := razorPath + "/keystoreFiles"
+	keystoreDir := pathPkg.Join(razorPath, "keystoreFiles")
 	if _, err := path.OSUtilsInterface.Stat(keystoreDir); path.OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := path.OSUtilsInterface.Mkdir(keystoreDir, 0700)
 		if mkdirErr != nil {
