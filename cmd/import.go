@@ -48,7 +48,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 
-	keystoreDir := pathPkg.Join(razorPath, "keystoreFiles")
+	keystoreDir := pathPkg.Join(razorPath, "keystore_files")
 	if _, err := path.OSUtilsInterface.Stat(keystoreDir); path.OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := path.OSUtilsInterface.Mkdir(keystoreDir, 0700)
 		if mkdirErr != nil {

@@ -42,7 +42,7 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 		return nil, err
 	}
 
-	keystorePath := pathPkg.Join(path, "keystoreFiles")
+	keystorePath := pathPkg.Join(path, "keystore_files")
 	return keystoreUtils.Accounts(keystorePath), nil
 }
 

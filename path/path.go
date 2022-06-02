@@ -62,7 +62,7 @@ func (PathUtils) GetCommitDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dataFileDir := pathPkg.Join(razorDir, "dataFiles")
+	dataFileDir := pathPkg.Join(razorDir, "data_files")
 	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
 		if mkdirErr != nil {
@@ -79,7 +79,7 @@ func (PathUtils) GetProposeDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dataFileDir := pathPkg.Join(razorDir, "dataFiles")
+	dataFileDir := pathPkg.Join(razorDir, "data_files")
 	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
 		if mkdirErr != nil {
@@ -95,7 +95,7 @@ func (PathUtils) GetDisputeDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dataFileDir := pathPkg.Join(razorDir, "dataFiles")
+	dataFileDir := pathPkg.Join(razorDir, "data_files")
 	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
 		if mkdirErr != nil {

@@ -291,7 +291,7 @@ func TestGetCommitDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/dataFiles/0x000000000000000000000000000000000000dead_CommitData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_CommitData.json",
 			wantErr: nil,
 		},
 		{
@@ -304,18 +304,18 @@ func TestGetCommitDataFileName(t *testing.T) {
 			wantErr: errors.New("path error"),
 		},
 		{
-			name: "Test 3: When dataFiles directory is not present and mkdir creates it",
+			name: "Test 3: When data_files directory is not present and mkdir creates it",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dead",
 				path:       "/home",
 				statErr:    errors.New("not exists"),
 				isNotExist: true,
 			},
-			want:    "/home/dataFiles/0x000000000000000000000000000000000000dead_CommitData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_CommitData.json",
 			wantErr: nil,
 		},
 		{
-			name: "Test 4: When dataFiles directory is not present and there is an error in creating new one",
+			name: "Test 4: When data_files directory is not present and there is an error in creating new one",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dead",
 				path:       "/home",
@@ -382,7 +382,7 @@ func TestGetProposeDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/dataFiles/0x000000000000000000000000000000000000dead_proposedData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposedData.json",
 			wantErr: nil,
 		},
 		{
@@ -395,18 +395,18 @@ func TestGetProposeDataFileName(t *testing.T) {
 			wantErr: errors.New("path error"),
 		},
 		{
-			name: "Test 3: When dataFiles directory is not present and mkdir creates it",
+			name: "Test 3: When data_files directory is not present and mkdir creates it",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dead",
 				path:       "/home",
 				statErr:    errors.New("not exists"),
 				isNotExist: true,
 			},
-			want:    "/home/dataFiles/0x000000000000000000000000000000000000dead_proposedData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposedData.json",
 			wantErr: nil,
 		},
 		{
-			name: "Test 4: When dataFiles directory is not present and there is an error in creating new one",
+			name: "Test 4: When data_files directory is not present and there is an error in creating new one",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dead",
 				path:       "/home",
@@ -473,7 +473,7 @@ func TestGetDisputeDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/dataFiles/0x000000000000000000000000000000000000dead_disputeData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_disputeData.json",
 			wantErr: nil,
 		},
 		{
@@ -486,18 +486,18 @@ func TestGetDisputeDataFileName(t *testing.T) {
 			wantErr: errors.New("path error"),
 		},
 		{
-			name: "Test 3: When dataFiles directory is not present and mkdir creates it",
+			name: "Test 3: When data_files directory is not present and mkdir creates it",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dead",
 				path:       "/home",
 				statErr:    errors.New("not exists"),
 				isNotExist: true,
 			},
-			want:    "/home/dataFiles/0x000000000000000000000000000000000000dead_disputeData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_disputeData.json",
 			wantErr: nil,
 		},
 		{
-			name: "Test 4: When dataFiles directory is not present and there is an error in creating new one",
+			name: "Test 4: When data_files directory is not present and there is an error in creating new one",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dead",
 				path:       "/home",

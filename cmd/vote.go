@@ -498,7 +498,7 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte
 	if err != nil {
 		return nil, errors.New("Error in fetching .razor directory: " + err.Error())
 	}
-	keystorePath := path.Join(razorPath, "keystoreFiles")
+	keystorePath := path.Join(razorPath, "keystore_files")
 	signedData, err := accounts.AccountUtilsInterface.SignData(hash, account, keystorePath)
 	if err != nil {
 		return nil, errors.New("Error in signing the data: " + err.Error())
