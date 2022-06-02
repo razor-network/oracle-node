@@ -184,7 +184,10 @@ CalculateMedian:
 		return nil, nil, nil, err
 	}
 
-	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil || rogueData.IsRogue || epoch != lastProposedEpoch {
+	nilProposedData := _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil
+	epochCheck := epoch != lastProposedEpoch
+
+	if nilProposedData || rogueData.IsRogue || epochCheck {
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
 			log.Error("Error in calculating block medians")
