@@ -173,7 +173,21 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 		_revealedCollectionIds = proposedata.RevealedCollectionIds
 	}
 CalculateMedian:
-	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil || rogueData.IsRogue {
+	stakerId, err := razorUtils.GetStakerId(client, account.Address)
+	if err != nil {
+		log.Error("Error in getting stakerId: ", err)
+		return nil, nil, nil, err
+	}
+	lastProposedEpoch, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, stakerId)
+	if err != nil {
+		log.Error("Error in getting last proposed epoch: ", err)
+		return nil, nil, nil, err
+	}
+
+	nilProposedData := _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil
+	epochCheck := epoch != lastProposedEpoch
+
+	if nilProposedData || rogueData.IsRogue || epochCheck {
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
 			log.Error("Error in calculating block medians")

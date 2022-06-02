@@ -533,6 +533,10 @@ func TestGetLocalMediansData(t *testing.T) {
 		revealedCollectionIds []uint16
 		revealedDataMaps      *types.RevealedDataMaps
 		mediansErr            error
+		stakerId              uint32
+		stakerIdErr           error
+		lastProposedEpoch     uint32
+		lastProposedEpochErr  error
 	}
 	tests := []struct {
 		name    string
@@ -597,6 +601,34 @@ func TestGetLocalMediansData(t *testing.T) {
 			want2:   &types.RevealedDataMaps{},
 			wantErr: false,
 		},
+		{
+			name: "Test 6: When there is an error in getting stakerId",
+			args: args{
+				medians:               []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				revealedDataMaps:      &types.RevealedDataMaps{},
+				stakerIdErr:           errors.New("stakerId error"),
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 7: When there is an error in getting last proposed epoch",
+			args: args{
+				medians:               []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				revealedDataMaps:      &types.RevealedDataMaps{},
+				stakerId:              2,
+				epoch:                 5,
+				lastProposedEpochErr:  errors.New("lastProposedEpoch error"),
+			},
+			want:    nil,
+			want1:   nil,
+			want2:   nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -609,6 +641,9 @@ func TestGetLocalMediansData(t *testing.T) {
 			utilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedEpoch, tt.args.lastProposedEpochErr)
+
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
 			if (err != nil) != tt.wantErr {
