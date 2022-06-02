@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	pathPkg "path"
 	"razor/utils"
 )
 
@@ -41,7 +42,8 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 		return nil, err
 	}
 
-	return keystoreUtils.Accounts(path), nil
+	keystorePath := pathPkg.Join(path, "keystore_files")
+	return keystoreUtils.Accounts(keystorePath), nil
 }
 
 func init() {

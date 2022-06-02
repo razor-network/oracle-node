@@ -6,14 +6,21 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"razor/core/types"
 	"razor/logger"
+	"razor/path"
 	"strings"
 )
 
 var log = logger.NewLogger()
 
 //This function takes path and password as input and returns new account
-func (AccountUtils) CreateAccount(path string, password string) accounts.Account {
-	newAcc, err := AccountUtilsInterface.NewAccount(path, password)
+func (AccountUtils) CreateAccount(keystorePath string, password string) accounts.Account {
+	if _, err := path.OSUtilsInterface.Stat(keystorePath); path.OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := path.OSUtilsInterface.Mkdir(keystorePath, 0700)
+		if mkdirErr != nil {
+			log.Fatal("Error in creating directory: ", mkdirErr)
+		}
+	}
+	newAcc, err := AccountUtilsInterface.NewAccount(keystorePath, password)
 	if err != nil {
 		log.Fatal("Error in creating account: ", err)
 	}

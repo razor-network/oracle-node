@@ -9,13 +9,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
+	"io/fs"
 	"razor/cmd/mocks"
+	"razor/path"
+	mocks1 "razor/path/mocks"
 	"testing"
 )
 
 func TestImportAccount(t *testing.T) {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	var fileInfo fs.FileInfo
 
 	account := accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
 		URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
@@ -30,6 +34,9 @@ func TestImportAccount(t *testing.T) {
 		ecdsaPrivateKeyErr error
 		importAccount      accounts.Account
 		importAccountErr   error
+		statErr            error
+		isNotExist         bool
+		mkdirErr           error
 	}
 	tests := []struct {
 		name    string
@@ -102,6 +109,43 @@ func TestImportAccount(t *testing.T) {
 			},
 			wantErr: errors.New("import error"),
 		},
+		{
+			name: "Test 5: When keystore directory is not present and mkdir creates it",
+			args: args{
+				privateKey:         "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d",
+				password:           "test",
+				path:               "/home/local",
+				pathErr:            nil,
+				ecdsaPrivateKey:    privateKey,
+				ecdsaPrivateKeyErr: nil,
+				importAccount:      account,
+				importAccountErr:   nil,
+				statErr:            errors.New("not exists"),
+				isNotExist:         true,
+			},
+			want:    account,
+			wantErr: nil,
+		},
+		{
+			name: "Test 5: When keystore directory is not present and there is an error creating new one",
+			args: args{
+				privateKey:         "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d",
+				password:           "test",
+				path:               "/home/local",
+				pathErr:            nil,
+				ecdsaPrivateKey:    privateKey,
+				ecdsaPrivateKeyErr: nil,
+				importAccount:      account,
+				importAccountErr:   nil,
+				statErr:            errors.New("not exists"),
+				isNotExist:         true,
+				mkdirErr:           errors.New("mkdir error"),
+			},
+			want: accounts.Account{
+				Address: common.Address{0x00},
+			},
+			wantErr: errors.New("mkdir error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -109,7 +153,9 @@ func TestImportAccount(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			keystoreUtilsMock := new(mocks.KeystoreInterface)
 			cryptoUtilsMock := new(mocks.CryptoInterface)
+			osMock := new(mocks1.OSInterface)
 
+			path.OSUtilsInterface = osMock
 			razorUtils = utilsMock
 			keystoreUtils = keystoreUtilsMock
 			cryptoUtils = cryptoUtilsMock
@@ -119,6 +165,9 @@ func TestImportAccount(t *testing.T) {
 			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cryptoUtilsMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
 			keystoreUtilsMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			utils := &UtilsStruct{}
 

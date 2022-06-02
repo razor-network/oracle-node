@@ -8,19 +8,26 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
+	"io/fs"
 	"razor/accounts/mocks"
 	"razor/core/types"
+	"razor/path"
+	mocks1 "razor/path/mocks"
 	"reflect"
 	"testing"
 )
 
 func TestCreateAccount(t *testing.T) {
-	var path string
+	var keystorePath string
 	var password string
+	var fileInfo fs.FileInfo
 
 	type args struct {
 		account    accounts.Account
 		accountErr error
+		statErr    error
+		isNotExist bool
+		mkdirErr   error
 	}
 	tests := []struct {
 		name          string
@@ -48,6 +55,35 @@ func TestCreateAccount(t *testing.T) {
 			want:          accounts.Account{Address: common.HexToAddress("0x00")},
 			expectedFatal: true,
 		},
+		{
+			name: "Test 3: When keystore directory does not exists and mkdir creates it",
+			args: args{
+				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+				},
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+			},
+			want: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+				URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 4: When keystore directory does not exists and there an error creating new one",
+			args: args{
+				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+				},
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+				mkdirErr:   errors.New("mkdir error"),
+			},
+			want: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+				URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+			},
+			expectedFatal: true,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -57,13 +93,19 @@ func TestCreateAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			accountsMock := new(mocks.AccountInterface)
+			osMock := new(mocks1.OSInterface)
+
+			path.OSUtilsInterface = osMock
 			AccountUtilsInterface = accountsMock
 
 			accountsMock.On("NewAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			accountUtils := AccountUtils{}
 			fatal = false
-			got := accountUtils.CreateAccount(path, password)
+			got := accountUtils.CreateAccount(keystorePath, password)
 			if tt.expectedFatal {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
