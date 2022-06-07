@@ -180,7 +180,7 @@ func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, 
 		func() error {
 			blockIndex, err = BlockManagerInterface.GetBlockIndexToBeConfirmed(client)
 			if err != nil {
-				log.Error("Error in fetching salt....Retrying")
+				log.Error("Error in fetching blockIndexToBeConfirmed....Retrying")
 				return err
 			}
 			return nil
@@ -189,4 +189,23 @@ func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, 
 		return 0, err
 	}
 	return blockIndex, nil
+}
+
+func (*UtilsStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	var (
+		isConfirmed bool
+		err         error
+	)
+	err = retry.Do(
+		func() error {
+			isConfirmed, err = BlockManagerInterface.IsBlockConfirmed(client, epoch)
+			if err != nil {
+				log.Error("Error in fetching isBlockConfirmed!")
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return false, err
+	}
+	return isConfirmed, nil
 }

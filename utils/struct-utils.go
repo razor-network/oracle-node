@@ -44,6 +44,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	BlockManagerInterface = optionsPackageStruct.BlockManagerInterface
 	StakeManagerInterface = optionsPackageStruct.StakeManagerInterface
 	AssetManagerInterface = optionsPackageStruct.AssetManagerInterface
+	BondManagerInterface = optionsPackageStruct.BondManagerInterface
 	VoteManagerInterface = optionsPackageStruct.VoteManagerInterface
 	BindingsInterface = optionsPackageStruct.BindingsInterface
 	JsonInterface = optionsPackageStruct.JsonInterface
@@ -437,4 +438,9 @@ func (r RetryStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 //This function returns the log file name
 func (f FlagSetStruct) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("logFile")
+}
+
+func (b BlockManagerStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.IsBlockConfirmed(&opts, epoch)
 }

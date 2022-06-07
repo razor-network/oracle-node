@@ -328,6 +328,7 @@ type UtilsCmdInterface interface {
 	ExecuteContractAddresses(flagSet *pflag.FlagSet)
 	ContractAddresses()
 	StoreBountyId(client *ethclient.Client, account types.Account) error
+	ModifyCollections(client *ethclient.Client, epoch uint32) (uint16, []bindings.StructsCollection, error)
 }
 
 type TransactionInterface interface {
