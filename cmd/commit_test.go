@@ -131,16 +131,21 @@ func TestHandleCommitState(t *testing.T) {
 	rogueValue := utils.GetRogueRandomValue(100000)
 
 	type args struct {
-		numActiveCollections    uint16
-		numActiveCollectionsErr error
-		assignedCollections     map[int]bool
-		seqAllottedCollections  []*big.Int
-		assignedCollectionsErr  error
-		collectionId            uint16
-		collectionIdErr         error
-		collectionData          *big.Int
-		collectionDataErr       error
-		rogueData               types.Rogue
+		isPreviousBlockConfirmed    bool
+		isPreviousBlockConfirmedErr error
+		numActiveCollections        uint16
+		numActiveCollectionsErr     error
+		updatedActiveCollections    uint16
+		updatedCollections          []bindings.StructsCollection
+		updatedActiveCollectionsErr error
+		assignedCollections         map[int]bool
+		seqAllottedCollections      []*big.Int
+		assignedCollectionsErr      error
+		collectionId                uint16
+		collectionIdErr             error
+		collectionData              *big.Int
+		collectionDataErr           error
+		rogueData                   types.Rogue
 	}
 	tests := []struct {
 		name    string
@@ -151,11 +156,12 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 1: When HandleCommitState executes successfully",
 			args: args{
-				numActiveCollections:   3,
-				assignedCollections:    map[int]bool{1: true, 2: true},
-				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
-				collectionId:           1,
-				collectionData:         big.NewInt(1),
+				isPreviousBlockConfirmed: true,
+				numActiveCollections:     3,
+				assignedCollections:      map[int]bool{1: true, 2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionId:             1,
+				collectionData:           big.NewInt(1),
 			},
 			want: types.CommitData{
 				AssignedCollections:    map[int]bool{1: true, 2: true},
@@ -175,8 +181,9 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting assignedCollections",
 			args: args{
-				numActiveCollections:   1,
-				assignedCollectionsErr: errors.New("error in getting assignedCollections"),
+				numActiveCollections:     1,
+				isPreviousBlockConfirmed: true,
+				assignedCollectionsErr:   errors.New("error in getting assignedCollections"),
 			},
 			want:    types.CommitData{},
 			wantErr: errors.New("error in getting assignedCollections"),
@@ -184,10 +191,11 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting collectionId",
 			args: args{
-				numActiveCollections:   3,
-				assignedCollections:    map[int]bool{1: true, 2: true},
-				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
-				collectionIdErr:        errors.New("error in getting collectionId"),
+				isPreviousBlockConfirmed: true,
+				numActiveCollections:     3,
+				assignedCollections:      map[int]bool{1: true, 2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionIdErr:          errors.New("error in getting collectionId"),
 			},
 			want:    types.CommitData{},
 			wantErr: errors.New("error in getting collectionId"),
@@ -195,11 +203,12 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting collectionData",
 			args: args{
-				numActiveCollections:   3,
-				assignedCollections:    map[int]bool{1: true, 2: true},
-				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
-				collectionId:           1,
-				collectionDataErr:      errors.New("error in getting collectionData"),
+				isPreviousBlockConfirmed: true,
+				numActiveCollections:     3,
+				assignedCollections:      map[int]bool{1: true, 2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionId:             1,
+				collectionDataErr:        errors.New("error in getting collectionData"),
 			},
 			want:    types.CommitData{},
 			wantErr: errors.New("error in getting collectionData"),
@@ -207,11 +216,12 @@ func TestHandleCommitState(t *testing.T) {
 		{
 			name: "Test 6: When rogue mode is on for commit state",
 			args: args{
-				numActiveCollections:   3,
-				assignedCollections:    map[int]bool{1: true, 2: true},
-				seqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
-				collectionId:           1,
-				collectionData:         big.NewInt(1),
+				isPreviousBlockConfirmed: true,
+				numActiveCollections:     3,
+				assignedCollections:      map[int]bool{1: true, 2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1), big.NewInt(2)},
+				collectionId:             1,
+				collectionData:           big.NewInt(1),
 				rogueData: types.Rogue{
 					IsRogue:   true,
 					RogueMode: []string{"commit"},
@@ -224,16 +234,256 @@ func TestHandleCommitState(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 7: When previousBlock is not confirmed and HandleCommitState executes successfully ",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     4,
+				updatedActiveCollections: 3,
+				assignedCollections:      map[int]bool{0: true, 1: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(0), big.NewInt(1)},
+				updatedCollections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                1,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+					{Active: true,
+						Id:                2,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean",
+					},
+					{Active: true,
+						Id:                3,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean1",
+					},
+				},
+				collectionData: big.NewInt(1),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{0: true, 1: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(0), big.NewInt(1)},
+				Leaves:                 []*big.Int{big.NewInt(1), big.NewInt(1), big.NewInt(0)},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When updatedActiveCollections is greater than numActiveCollections",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     0,
+				updatedActiveCollections: 1,
+				assignedCollections:      map[int]bool{1: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1)},
+				updatedCollections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                1,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+					{Active: true,
+						Id:                2,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean",
+					},
+					{Active: true,
+						Id:                3,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean1",
+					},
+				},
+				collectionData: big.NewInt(1),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{1: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(1)},
+				Leaves:                 []*big.Int{big.NewInt(0), big.NewInt(1), big.NewInt(0)},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When previousBlock is confirmed",
+			args: args{
+				isPreviousBlockConfirmed: true,
+				numActiveCollections:     1,
+				assignedCollections:      map[int]bool{0: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(0)},
+				collectionId:             0,
+				collectionData:           big.NewInt(1),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{0: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(0)},
+				Leaves:                 []*big.Int{big.NewInt(1)},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When previouBlock is not confirmed and only single collection is present in updatedCollections",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     0,
+				updatedActiveCollections: 1,
+				assignedCollections:      map[int]bool{1: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1)},
+				updatedCollections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                1,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+				},
+				collectionData: big.NewInt(1),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{1: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(1)},
+				Leaves:                 []*big.Int{big.NewInt(0)},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When more than one collection is present in updatedCollection",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     0,
+				updatedActiveCollections: 1,
+				assignedCollections:      map[int]bool{1: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1)},
+				updatedCollections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                1,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+					{Active: true,
+						Id:                2,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean",
+					},
+				},
+				collectionData: big.NewInt(1),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{1: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(1)},
+				Leaves:                 []*big.Int{big.NewInt(0), big.NewInt(1)},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: Different scenario in updatedCollections",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     4,
+				updatedActiveCollections: 3,
+				assignedCollections:      map[int]bool{0: true, 1: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(0), big.NewInt(1)},
+				updatedCollections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                1,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+					{Active: false,
+						Id:                2,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean",
+					},
+					{Active: true,
+						Id:                3,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean1",
+					},
+				},
+				collectionData: big.NewInt(5),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{0: true, 1: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(0), big.NewInt(1)},
+				Leaves:                 []*big.Int{big.NewInt(5), big.NewInt(5), big.NewInt(0)},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 8: When collectionData is different and only one active collection is there",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     5,
+				updatedActiveCollections: 1,
+				assignedCollections:      map[int]bool{2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(2)},
+				updatedCollections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                1,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+					{Active: true,
+						Id:                2,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean",
+					},
+					{Active: true,
+						Id:                3,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{4, 5, 6},
+						Name:              "btcCollectionMean1",
+					},
+				},
+				collectionData: big.NewInt(5),
+			},
+			want: types.CommitData{
+				AssignedCollections:    map[int]bool{2: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(2)},
+				Leaves:                 []*big.Int{big.NewInt(0), big.NewInt(0), big.NewInt(5)},
+			},
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsPkgMock := new(mocks2.Utils)
 			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			utils.UtilsInterface = utilsPkgMock
 			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
 
+			utilsPkgMock.On("IsBlockConfirmed", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.isPreviousBlockConfirmed, tt.args.isPreviousBlockConfirmedErr)
 			utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
+			cmdUtilsMock.On("ModifyCollections", mock.Anything, mock.Anything).Return(tt.args.updatedActiveCollections, tt.args.updatedCollections, tt.args.updatedActiveCollectionsErr)
 			utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
 			utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
