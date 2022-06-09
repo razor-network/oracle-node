@@ -176,10 +176,10 @@ type TokenManagerInterface interface {
 }
 
 type AssetManagerInterface interface {
-	CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error)
+	//CreateMulJob(client *ethclient.Client, opts *bind.TransactOpts, mulJobs []bindings.StructsJob) (*Types.Transaction, error)
 	SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error)
 	GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error)
-	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error)
+	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, occurrence uint16, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error)
 	UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error)
 	UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint32, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error)
 }
@@ -226,6 +226,7 @@ type FlagSetInterface interface {
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
+	GetUint16Occurrence(flagSet *pflag.FlagSet) (uint16, error)
 }
 
 type UtilsCmdInterface interface {
@@ -253,8 +254,8 @@ type UtilsCmdInterface interface {
 	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error)
 	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
 	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
-	ExecuteCreateJob(flagSet *pflag.FlagSet)
-	CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error)
+	//ExecuteCreateJob(flagSet *pflag.FlagSet)
+	//CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error)
 	ExecuteCreateCollection(flagSet *pflag.FlagSet)
 	CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error)
 	GetEpochAndState(client *ethclient.Client) (uint32, int64, error)
@@ -329,6 +330,7 @@ type UtilsCmdInterface interface {
 	ContractAddresses()
 	StoreBountyId(client *ethclient.Client, account types.Account) error
 	ModifyCollections(client *ethclient.Client, epoch uint32) (uint16, []bindings.StructsCollection, error)
+	LeafIdToCollectionIdRegistry(client *ethclient.Client) map[uint16]uint16
 }
 
 type TransactionInterface interface {

@@ -80,6 +80,18 @@ func (*UtilsStruct) ModifyCollections(client *ethclient.Client, epoch uint32) (u
 	return numActiveCollections, collections, nil
 }
 
+func (*UtilsStruct) LeafIdToCollectionIdRegistry(client *ethclient.Client) map[uint16]uint16 {
+	collections, _ := utils.UtilsInterface.GetAllCollections(client)
+	var leafIdToCollectionId map[uint16]uint16
+	for i := 0; i < len(collections); i++ {
+		collectionId, _ := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
+		leafId, _ := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionId)
+		leafIdToCollectionId[leafId] = collectionId
+	}
+	return leafIdToCollectionId
+
+}
+
 /*
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
@@ -109,51 +121,32 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 		return types.CommitData{}, err
 	}
 	var leavesOfTree []*big.Int
-	if !isPreviousBlockConfirmed {
-		_, updatedCollections, err := cmdUtils.ModifyCollections(client, epoch-1)
-		if err != nil {
-			return types.CommitData{}, err
-		}
-
-		for i := 0; i < len(updatedCollections); i++ {
-			if assignedCollections[i] {
-				collectionId := updatedCollections[i].Id
-				collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
-				if err != nil {
-					return types.CommitData{}, err
-				}
-				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-					collectionData = razorUtils.GetRogueRandomValue(100000)
-				}
-				log.Debugf("Data of collection %d:%s", collectionId, collectionData)
-				leavesOfTree = append(leavesOfTree, collectionData)
-
+	for i := 0; i < int(numActiveCollections); i++ {
+		if assignedCollections[i] {
+			var collectionId uint16
+			if !isPreviousBlockConfirmed {
+				collectionId = cmdUtils.LeafIdToCollectionIdRegistry(client)[uint16(i)]
 			} else {
-				leavesOfTree = append(leavesOfTree, big.NewInt(0))
+				collectionId, err = utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
+				if err != nil {
+					return types.CommitData{}, err
+				}
 			}
-		}
-	} else {
-		for i := 0; i < int(numActiveCollections); i++ {
-			if assignedCollections[i] {
-				collectionId, err := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
-				if err != nil {
-					return types.CommitData{}, err
-				}
-				collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
-				if err != nil {
-					return types.CommitData{}, err
-				}
-				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-					collectionData = razorUtils.GetRogueRandomValue(100000)
-				}
-				log.Debugf("Data of collection %d:%s", collectionId, collectionData)
-				leavesOfTree = append(leavesOfTree, collectionData)
+			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			if err != nil {
+				return types.CommitData{}, err
+			}
+			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
+				collectionData = razorUtils.GetRogueRandomValue(100000)
+			}
+			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
+			leavesOfTree = append(leavesOfTree, collectionData)
 
-			} else {
-				leavesOfTree = append(leavesOfTree, big.NewInt(0))
-			}
+		} else {
+			leavesOfTree = append(leavesOfTree, big.NewInt(0))
 		}
 	}
+
 	log.Debug("Assigned Collections: ", assignedCollections)
 	log.Debug("SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("Leaves: ", leavesOfTree)
