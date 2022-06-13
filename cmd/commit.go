@@ -53,6 +53,9 @@ func (*UtilsStruct) ModifyCollections(client *ethclient.Client, epoch uint32) (u
 	}
 	collectionIdsInTheBlock := proposedBlockToBeConfirmed.Ids
 	collections, err := utils.UtilsInterface.GetAllCollections(client)
+	if err != nil {
+		return 0, nil, err
+	}
 
 	numActiveCollections, err := utils.UtilsInterface.GetNumCollections(client)
 	if err != nil {
@@ -80,15 +83,24 @@ func (*UtilsStruct) ModifyCollections(client *ethclient.Client, epoch uint32) (u
 	return numActiveCollections, collections, nil
 }
 
-func (*UtilsStruct) LeafIdToCollectionIdRegistry(client *ethclient.Client) map[uint16]uint16 {
-	collections, _ := utils.UtilsInterface.GetAllCollections(client)
-	var leafIdToCollectionId map[uint16]uint16
+func (*UtilsStruct) LeafIdToCollectionIdRegistry(client *ethclient.Client) (map[uint16]uint16, error) {
+	collections, collectionsErr := utils.UtilsInterface.GetAllCollections(client)
+	if collectionsErr != nil {
+		return nil, collectionsErr
+	}
+	leafIdToCollectionId := make(map[uint16]uint16)
 	for i := 0; i < len(collections); i++ {
-		collectionId, _ := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
-		leafId, _ := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionId)
+		collectionId, collectionIdErr := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
+		if collectionIdErr != nil {
+			return nil, collectionIdErr
+		}
+		leafId, leafIdErr := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionId)
+		if leafIdErr != nil {
+			return nil, leafIdErr
+		}
 		leafIdToCollectionId[leafId] = collectionId
 	}
-	return leafIdToCollectionId
+	return leafIdToCollectionId, nil
 
 }
 
@@ -125,7 +137,12 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 		if assignedCollections[i] {
 			var collectionId uint16
 			if !isPreviousBlockConfirmed {
-				collectionId = cmdUtils.LeafIdToCollectionIdRegistry(client)[uint16(i)]
+				collectionIdRegistry, err := cmdUtils.LeafIdToCollectionIdRegistry(client)
+				if err != nil {
+					return types.CommitData{}, err
+				}
+				collectionId = collectionIdRegistry[uint16(i)]
+
 			} else {
 				collectionId, err = utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
 				if err != nil {

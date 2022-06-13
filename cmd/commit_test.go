@@ -142,6 +142,7 @@ func TestHandleCommitState(t *testing.T) {
 		seqAllottedCollections      []*big.Int
 		assignedCollectionsErr      error
 		LeafIdToCollectionId        map[uint16]uint16
+		leafIdToCollectionIdErr     error
 		collectionId                uint16
 		collectionIdErr             error
 		collectionData              *big.Int
@@ -236,25 +237,25 @@ func TestHandleCommitState(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test X",
+			name: "Test 7: When the previous block is not confirmed and collectionId is fetched from registry",
 			args: args{
 				isPreviousBlockConfirmed: false,
-				numActiveCollections:     5,
-				updatedActiveCollections: 1,
-				assignedCollections:      map[int]bool{2: true},
-				seqAllottedCollections:   []*big.Int{big.NewInt(2)},
+				numActiveCollections:     3,
+				updatedActiveCollections: 2,
+				assignedCollections:      map[int]bool{1: true, 2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1), big.NewInt(2)},
 				LeafIdToCollectionId:     map[uint16]uint16{3: 2, 2: 1, 0: 6},
 				collectionData:           big.NewInt(5),
 			},
 			want: types.CommitData{
-				AssignedCollections:    map[int]bool{2: true},
-				SeqAllottedCollections: []*big.Int{big.NewInt(2)},
-				Leaves:                 []*big.Int{big.NewInt(0)},
+				AssignedCollections:    map[int]bool{1: true, 2: true},
+				SeqAllottedCollections: []*big.Int{big.NewInt(1), big.NewInt(2)},
+				Leaves:                 []*big.Int{big.NewInt(0), big.NewInt(5)},
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Test Y",
+			name: "Test 8: When the previous block is confirmed and collectionId is fetched from Index",
 			args: args{
 				isPreviousBlockConfirmed: true,
 				numActiveCollections:     1,
@@ -270,6 +271,37 @@ func TestHandleCommitState(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 9: When there is an error in getting isPreviousBlockConfirmed",
+			args: args{
+				isPreviousBlockConfirmedErr: errors.New("error in getting isPreviousBlockConfirmed"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting isPreviousBlockConfirmed"),
+		},
+		{
+			name: "Test 10: When there is an error in getting modifyCollections",
+			args: args{
+				isPreviousBlockConfirmed:    false,
+				numActiveCollections:        3,
+				updatedActiveCollectionsErr: errors.New("error in getting modifyCollections"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting modifyCollections"),
+		},
+		{
+			name: "Test 11: When there is an error in getting collectionIdRegistry",
+			args: args{
+				isPreviousBlockConfirmed: false,
+				numActiveCollections:     3,
+				updatedActiveCollections: 2,
+				assignedCollections:      map[int]bool{1: true, 2: true},
+				seqAllottedCollections:   []*big.Int{big.NewInt(1), big.NewInt(2)},
+				leafIdToCollectionIdErr:  errors.New("error in getting collectionIdRegistry"),
+			},
+			want:    types.CommitData{},
+			wantErr: errors.New("error in getting collectionIdRegistry"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -284,7 +316,7 @@ func TestHandleCommitState(t *testing.T) {
 			utilsPkgMock.On("IsBlockConfirmed", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.isPreviousBlockConfirmed, tt.args.isPreviousBlockConfirmedErr)
 			utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
 			cmdUtilsMock.On("ModifyCollections", mock.Anything, mock.Anything).Return(tt.args.updatedActiveCollections, tt.args.updatedCollections, tt.args.updatedActiveCollectionsErr)
-			cmdUtilsMock.On("LeafIdToCollectionIdRegistry", mock.Anything).Return(tt.args.LeafIdToCollectionId)
+			cmdUtilsMock.On("LeafIdToCollectionIdRegistry", mock.Anything).Return(tt.args.LeafIdToCollectionId, tt.args.leafIdToCollectionIdErr)
 			utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
 			utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
@@ -426,6 +458,224 @@ func TestGetSalt(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error from GetSalt function, got = %v, want = %v", err, tt.wantErr)
 				}
+			}
+		})
+	}
+}
+
+func TestLeafIdToCollectionIdRegistry(t *testing.T) {
+	var client *ethclient.Client
+	type args struct {
+		collections     []bindings.StructsCollection
+		collectionsErr  error
+		collectionId    uint16
+		collectionIdErr error
+		leafId          uint16
+		leafIdErr       error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[uint16]uint16
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When LeafIdToCollectionIdRegistry() executes successfully",
+			args: args{
+				collections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                7,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+				},
+				collectionId: 7,
+				leafId:       1,
+			},
+			want: map[uint16]uint16{1: 7},
+		},
+		{
+			name: "Test 2: When there is an error in getting collections",
+			args: args{
+				collectionsErr: errors.New("error in getting collections"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting collectionID",
+			args: args{
+				collections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                7,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+				},
+				collectionIdErr: errors.New("error in getting collectionId"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting leafId",
+			args: args{
+				collections: []bindings.StructsCollection{
+					{Active: true,
+						Id:                7,
+						Power:             2,
+						AggregationMethod: 2,
+						JobIDs:            []uint16{1, 2, 3},
+						Name:              "ethCollectionMean",
+					},
+				},
+				collectionId: 7,
+				leafIdErr:    errors.New("error in getting leafId"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsPkgMock := new(mocks2.Utils)
+
+			utils.UtilsInterface = utilsPkgMock
+
+			utilsPkgMock.On("GetAllCollections", mock.Anything).Return(tt.args.collections, tt.args.collectionsErr)
+			utilsPkgMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			utilsPkgMock.On("GetLeafIdOfACollection", mock.Anything, mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
+			ut := &UtilsStruct{}
+			got, err := ut.LeafIdToCollectionIdRegistry(client)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("LeafIdToCollectionIdRegistry() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LeafIdToCollectionIdRegistry() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestModifyCollections(t *testing.T) {
+	var client *ethclient.Client
+	type args struct {
+		sortedProposedBlockIds        []uint32
+		sortedProposedBlockIdsErr     error
+		proposedBlockToBeConfirmed    bindings.StructsBlock
+		proposedBlockToBeConfirmedErr error
+		collections                   []bindings.StructsCollection
+		collectionsErr                error
+		numActiveCollections          uint16
+		numActiveCollectionsErr       error
+		dataBondCollectionIds         []uint16
+		dataBondCollectionIdsErr      error
+		epoch                         uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint16
+		want1   []bindings.StructsCollection
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When ModifyCollections() executes successfully",
+			args: args{
+				sortedProposedBlockIds:     []uint32{1},
+				proposedBlockToBeConfirmed: bindings.StructsBlock{},
+				collections:                []bindings.StructsCollection{},
+				numActiveCollections:       1,
+				dataBondCollectionIds:      []uint16{},
+			},
+			want:    1,
+			want1:   []bindings.StructsCollection{},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting sortedProposedBlockIds",
+			args: args{
+				sortedProposedBlockIdsErr: errors.New("error in getting sortedProposedBlockIds"),
+			},
+			want:    0,
+			want1:   nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting proposedBlockToBeConfirmed",
+			args: args{
+				sortedProposedBlockIds:        []uint32{1},
+				proposedBlockToBeConfirmedErr: errors.New("error in getting proposedBlockToBeConfirmed"),
+			},
+			want:    0,
+			want1:   nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting collections",
+			args: args{
+				sortedProposedBlockIds:     []uint32{1},
+				proposedBlockToBeConfirmed: bindings.StructsBlock{},
+				collectionsErr:             errors.New("error in getting collections"),
+			},
+			want:    0,
+			want1:   nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in getting numActiveCollections",
+			args: args{
+				sortedProposedBlockIds:     []uint32{1},
+				proposedBlockToBeConfirmed: bindings.StructsBlock{},
+				collections:                []bindings.StructsCollection{},
+				numActiveCollectionsErr:    errors.New("error in getting numActiveCollections"),
+			},
+			want:    0,
+			want1:   nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting dataBondCollectionIds",
+			args: args{
+				sortedProposedBlockIds:     []uint32{1},
+				proposedBlockToBeConfirmed: bindings.StructsBlock{},
+				collections:                []bindings.StructsCollection{},
+				numActiveCollections:       1,
+				dataBondCollectionIdsErr:   errors.New("error in getting dataBondCollectionIds"),
+			},
+			want:    0,
+			want1:   nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsPkgMock := new(mocks2.Utils)
+
+			utils.UtilsInterface = utilsPkgMock
+
+			utilsPkgMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
+			utilsPkgMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.proposedBlockToBeConfirmed, tt.args.proposedBlockToBeConfirmedErr)
+			utilsPkgMock.On("GetAllCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collections, tt.args.collectionsErr)
+			utilsPkgMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
+			utilsPkgMock.On("GetDataBondCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.dataBondCollectionIds, tt.args.dataBondCollectionIdsErr)
+
+			ut := &UtilsStruct{}
+			got, got1, err := ut.ModifyCollections(client, tt.args.epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ModifyCollections() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ModifyCollections() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("ModifyCollections() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
