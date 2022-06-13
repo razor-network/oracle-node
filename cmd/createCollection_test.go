@@ -94,7 +94,7 @@ func TestCreateCollection(t *testing.T) {
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
-			assetManagerUtilsMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
+			assetManagerUtilsMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
@@ -136,6 +136,8 @@ func TestExecuteCreateCollection(t *testing.T) {
 		powerErr             error
 		tolerance            uint32
 		toleranceErr         error
+		occurrence           uint16
+		occurrenceErr        error
 		createCollectionErr  error
 		createCollectionHash common.Hash
 	}
@@ -155,6 +157,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
@@ -171,6 +174,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -187,6 +191,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -202,6 +207,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -217,6 +223,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregationErr:       errors.New("aggregation error"),
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -232,6 +239,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				powerErr:             errors.New("power error"),
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -247,6 +255,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionErr:  errors.New("createCollection error"),
 				createCollectionHash: core.NilHash,
 			},
@@ -264,6 +273,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				tolerance:            20,
+				occurrence:           1,
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -279,6 +289,23 @@ func TestExecuteCreateCollection(t *testing.T) {
 				aggregation:          1,
 				power:                0,
 				toleranceErr:         errors.New("tolerance error"),
+				occurrence:           1,
+				createCollectionHash: common.BigToHash(big.NewInt(1)),
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 10: When there is an error in getting occurrence",
+			args: args{
+				config:               config,
+				password:             "test",
+				name:                 "ETH-Collection",
+				address:              "0x000000000000000000000000000000000000dead",
+				jobId:                []uint{1, 2},
+				aggregation:          1,
+				power:                0,
+				tolerance:            20,
+				occurrenceErr:        errors.New("error in getting occurrence"),
 				createCollectionHash: common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: true,
@@ -309,6 +336,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 			flagsetUtilsMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
 			flagsetUtilsMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
 			flagsetUtilsMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
+			flagsetUtilsMock.On("GetUint16Occurrence", flagSet).Return(tt.args.occurrence, tt.args.occurrenceErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)

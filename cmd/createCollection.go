@@ -57,6 +57,9 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
+	occurrence, err := flagSetUtils.GetUint16Occurrence(flagSet)
+	utils.CheckError("Error in getting occurrence: ", err)
+
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	tolerance, err := flagSetUtils.GetUint32Tolerance(flagSet)
@@ -66,6 +69,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 		Address:     address,
 		Password:    password,
 		Power:       power,
+		Occurrence:  occurrence,
 		Name:        name,
 		Aggregation: aggregation,
 		JobIds:      jobIdInUint,
@@ -96,7 +100,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
 		ABI:             bindings.CollectionManagerABI,
 	})
-	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
+	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Occurrence, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	if err != nil {
 		log.Error("Error in creating collection")
 		return core.NilHash, err
@@ -116,6 +120,7 @@ func init() {
 		AggregationMethod uint32
 		Password          string
 		Power             int8
+		Occurrence        uint16
 		Tolerance         uint32
 	)
 
@@ -125,6 +130,7 @@ func init() {
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	createCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
+	createCollectionCmd.Flags().Uint16VarP(&Occurrence, "occurrence", "", 1, "occurrence of the collection")
 	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
@@ -135,6 +141,8 @@ func init() {
 	utils.CheckError("Job Id Error: ", jobIdErr)
 	powerErr := createCollectionCmd.MarkFlagRequired("power")
 	utils.CheckError("Power Error: ", powerErr)
+	occurrenceErr := createCollectionCmd.MarkFlagRequired("occurrence")
+	utils.CheckError("Occurrence Error: ", occurrenceErr)
 	toleranceErr := createCollectionCmd.MarkFlagRequired("tolerance")
 	utils.CheckError("Tolerance Error: ", toleranceErr)
 }
