@@ -191,6 +191,7 @@ func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, 
 	return blockIndex, nil
 }
 
+//This function returns if the block is confirmed or not
 func (*UtilsStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
 	var (
 		isConfirmed bool

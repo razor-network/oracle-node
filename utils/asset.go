@@ -103,6 +103,7 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 	return collections, nil
 }
 
+//This function returns the collectionIds of data-bond
 func (*UtilsStruct) GetDataBondCollections(client *ethclient.Client) ([]uint16, error) {
 	var (
 		dataBondCollections []uint16

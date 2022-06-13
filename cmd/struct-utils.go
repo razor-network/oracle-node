@@ -929,6 +929,7 @@ func (flagSetUtils FLagSetUtils) GetStringPow(flagSet *pflag.FlagSet) (string, e
 	return flagSet.GetString("pow")
 }
 
+//This function returns the Occurrence in Uint16
 func (flagSetUtils FLagSetUtils) GetUint16Occurrence(flagSet *pflag.FlagSet) (uint16, error) {
 	return flagSet.GetUint16("occurrence")
 }

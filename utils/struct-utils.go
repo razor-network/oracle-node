@@ -440,6 +440,7 @@ func (f FlagSetStruct) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("logFile")
 }
 
+//This function returns if the block is confirmed or not
 func (b BlockManagerStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
 	return blockManager.IsBlockConfirmed(&opts, epoch)

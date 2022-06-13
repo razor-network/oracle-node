@@ -42,6 +42,7 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 	return utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians), nil
 }
 
+// ModifyCollections function modifies the collections according to data bond collections and returns the number of active collections and collections array
 func (*UtilsStruct) ModifyCollections(client *ethclient.Client, epoch uint32) (uint16, []bindings.StructsCollection, error) {
 	sortedProposedBlockIds, err := utils.UtilsInterface.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
@@ -83,6 +84,7 @@ func (*UtilsStruct) ModifyCollections(client *ethclient.Client, epoch uint32) (u
 	return numActiveCollections, collections, nil
 }
 
+// LeafIdToCollectionIdRegistry function maintains the registry from leafIdToCollectionId and returns the registry
 func (*UtilsStruct) LeafIdToCollectionIdRegistry(client *ethclient.Client) (map[uint16]uint16, error) {
 	collections, collectionsErr := utils.UtilsInterface.GetAllCollections(client)
 	if collectionsErr != nil {
