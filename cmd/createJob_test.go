@@ -15,6 +15,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"testing"
 )
 
@@ -22,6 +23,12 @@ func TestCreateJob(t *testing.T) {
 	var client *ethclient.Client
 	var jobInput types.CreateJobInput
 	var config types.Configurations
+	jobListArray := []bindings.StructsJob{
+		{SelectorType: 1, Weight: 100,
+			Power: 2, Name: "ethusd_gemini", Selector: "last",
+			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+		},
+	}
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
@@ -29,6 +36,7 @@ func TestCreateJob(t *testing.T) {
 	type args struct {
 		txnOpts      *bind.TransactOpts
 		createJobTxn *Types.Transaction
+		job          []bindings.StructsJob
 		createJobErr error
 		hash         common.Hash
 	}
@@ -43,6 +51,7 @@ func TestCreateJob(t *testing.T) {
 			args: args{
 				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
+				job:          jobListArray,
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
@@ -72,7 +81,7 @@ func TestCreateJob(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			assetManagerUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
+			assetManagerUtilsMock.On("CreateMulJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}

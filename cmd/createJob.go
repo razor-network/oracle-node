@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+////Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -21,10 +21,10 @@ var createJobCmd = &cobra.Command{
 	Long: `A job consists of a URL and a selector to fetch the exact data from the URL. The createJob command can be used to create a job that the stakers can vote upon.
 
 Example:
-  ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -p 2 -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd
+ ./razor createJob -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btcusd_gemini -p 2 -s last --selectorType 1 -u https://api.gemini.com/v1/pubticker/btcusd
 
-Note: 
-  This command only works for the admin.
+Note:
+ This command only works for the admin.
 `,
 	Run: initialiseCreateJob,
 }
@@ -99,7 +99,16 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
+	job := make([]bindings.StructsJob, 1)
+	job[0] = bindings.StructsJob{
+		SelectorType: jobInput.SelectorType,
+		Weight:       jobInput.Weight,
+		Power:        jobInput.Power,
+		Name:         jobInput.Name,
+		Selector:     jobInput.Selector,
+		Url:          jobInput.Url,
+	}
+	txn, err := assetManagerUtils.CreateMulJob(txnArgs.Client, txnOpts, job)
 	if err != nil {
 		return core.NilHash, err
 	}
