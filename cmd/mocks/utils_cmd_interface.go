@@ -1209,6 +1209,29 @@ func (_m *UtilsCmdInterface) IsElectedProposer(proposer types.ElectedProposer, c
 	return r0
 }
 
+// LeafIdToCollectionIdRegistry provides a mock function with given fields: client
+func (_m *UtilsCmdInterface) LeafIdToCollectionIdRegistry(client *ethclient.Client) (map[uint16]uint16, error) {
+	ret := _m.Called(client)
+
+	var r0 map[uint16]uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) map[uint16]uint16); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uint16]uint16)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListAccounts provides a mock function with given fields:
 func (_m *UtilsCmdInterface) ListAccounts() ([]accounts.Account, error) {
 	ret := _m.Called()
@@ -1294,6 +1317,36 @@ func (_m *UtilsCmdInterface) ModifyCollectionStatus(client *ethclient.Client, co
 	}
 
 	return r0, r1
+}
+
+// ModifyCollections provides a mock function with given fields: client, epoch
+func (_m *UtilsCmdInterface) ModifyCollections(client *ethclient.Client, epoch uint32) (uint16, []bindings.StructsCollection, error) {
+	ret := _m.Called(client, epoch)
+
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint16); ok {
+		r0 = rf(client, epoch)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	var r1 []bindings.StructsCollection
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) []bindings.StructsCollection); ok {
+		r1 = rf(client, epoch)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]bindings.StructsCollection)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, uint32) error); ok {
+		r2 = rf(client, epoch)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Propose provides a mock function with given fields: client, config, account, staker, epoch, blockNumber, rogueData

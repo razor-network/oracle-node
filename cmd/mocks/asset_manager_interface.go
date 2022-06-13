@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	bindings "razor/pkg/bindings"
+
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
@@ -17,13 +19,13 @@ type AssetManagerInterface struct {
 	mock.Mock
 }
 
-// CreateCollection provides a mock function with given fields: client, opts, tolerance, power, aggregationMethod, jobIDs, name
-func (_m *AssetManagerInterface) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*types.Transaction, error) {
-	ret := _m.Called(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
+// CreateCollection provides a mock function with given fields: client, opts, tolerance, power, occurrence, aggregationMethod, jobIDs, name
+func (_m *AssetManagerInterface) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, occurrence uint16, aggregationMethod uint32, jobIDs []uint16, name string) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, tolerance, power, occurrence, aggregationMethod, jobIDs, name)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint32, []uint16, string) *types.Transaction); ok {
-		r0 = rf(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint16, uint32, []uint16, string) *types.Transaction); ok {
+		r0 = rf(client, opts, tolerance, power, occurrence, aggregationMethod, jobIDs, name)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -31,8 +33,8 @@ func (_m *AssetManagerInterface) CreateCollection(client *ethclient.Client, opts
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint32, []uint16, string) error); ok {
-		r1 = rf(client, opts, tolerance, power, aggregationMethod, jobIDs, name)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, int8, uint16, uint32, []uint16, string) error); ok {
+		r1 = rf(client, opts, tolerance, power, occurrence, aggregationMethod, jobIDs, name)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -40,13 +42,13 @@ func (_m *AssetManagerInterface) CreateCollection(client *ethclient.Client, opts
 	return r0, r1
 }
 
-// CreateJob provides a mock function with given fields: client, opts, weight, power, selectorType, name, selector, url
-func (_m *AssetManagerInterface) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*types.Transaction, error) {
-	ret := _m.Called(client, opts, weight, power, selectorType, name, selector, url)
+// CreateMulJob provides a mock function with given fields: client, opts, mulJobs
+func (_m *AssetManagerInterface) CreateMulJob(client *ethclient.Client, opts *bind.TransactOpts, mulJobs []bindings.StructsJob) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, mulJobs)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) *types.Transaction); ok {
-		r0 = rf(client, opts, weight, power, selectorType, name, selector, url)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, []bindings.StructsJob) *types.Transaction); ok {
+		r0 = rf(client, opts, mulJobs)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -54,8 +56,8 @@ func (_m *AssetManagerInterface) CreateJob(client *ethclient.Client, opts *bind.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint8, int8, uint8, string, string, string) error); ok {
-		r1 = rf(client, opts, weight, power, selectorType, name, selector, url)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, []bindings.StructsJob) error); ok {
+		r1 = rf(client, opts, mulJobs)
 	} else {
 		r1 = ret.Error(1)
 	}

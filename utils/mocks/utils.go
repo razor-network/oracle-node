@@ -678,6 +678,29 @@ func (_m *Utils) GetCommitments(client *ethclient.Client, address string) ([32]b
 	return r0, r1
 }
 
+// GetDataBondCollections provides a mock function with given fields: client
+func (_m *Utils) GetDataBondCollections(client *ethclient.Client) ([]uint16, error) {
+	ret := _m.Called(client)
+
+	var r0 []uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) []uint16); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint16)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDataFromAPI provides a mock function with given fields: url
 func (_m *Utils) GetDataFromAPI(url string) ([]byte, error) {
 	ret := _m.Called(url)
@@ -1747,6 +1770,27 @@ func (_m *Utils) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint64, float32) error); ok {
 		r1 = rf(client, gasLimit, gasLimitMultiplier)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// IsBlockConfirmed provides a mock function with given fields: client, epoch
+func (_m *Utils) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	ret := _m.Called(client, epoch)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bool); ok {
+		r0 = rf(client, epoch)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
