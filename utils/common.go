@@ -250,7 +250,7 @@ func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileDat
 		log.Error("Error in opening json file: ", err)
 		return types.CommitFileData{}, err
 	}
-	byteValue, err := IoutilInterface.ReadAll(jsonFile)
+	byteValue, err := IOInterface.ReadAll(jsonFile)
 	if err != nil {
 		log.Error("Error in reading data from json file: ", err)
 		return types.CommitFileData{}, err
@@ -304,7 +304,7 @@ func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileD
 		log.Error("Error in opening json file: ", err)
 		return types.ProposeFileData{}, err
 	}
-	byteValue, err := IoutilInterface.ReadAll(jsonFile)
+	byteValue, err := IOInterface.ReadAll(jsonFile)
 	if err != nil {
 		log.Error("Error in reading data from json file: ", err)
 		return types.ProposeFileData{}, err
@@ -343,7 +343,7 @@ func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileD
 		log.Error("Error in opening json file: ", err)
 		return types.DisputeFileData{}, err
 	}
-	byteValue, err := IoutilInterface.ReadAll(jsonFile)
+	byteValue, err := IOInterface.ReadAll(jsonFile)
 	if err != nil {
 		log.Error("Error in reading data from json file: ", err)
 		return types.DisputeFileData{}, err

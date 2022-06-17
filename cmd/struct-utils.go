@@ -39,7 +39,7 @@ func InitializeUtils() {
 	utils.Bufio = &utils.BufioStruct{}
 	utils.CoinInterface = &utils.CoinStruct{}
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
-	utils.IoutilInterface = &utils.IoutilStruct{}
+	utils.IOInterface = &utils.IOStruct{}
 	utils.ABIInterface = &utils.ABIStruct{}
 	utils.PathInterface = &utils.PathStruct{}
 	utils.BindInterface = &utils.BindStruct{}
