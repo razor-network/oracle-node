@@ -3,6 +3,8 @@ package utils
 
 import (
 	"context"
+	"fmt"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"os"
 	"razor/core"
@@ -356,4 +358,33 @@ func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileD
 		return types.DisputeFileData{}, err
 	}
 	return disputeData, nil
+}
+
+func (*UtilsStruct) InterruptAndPurge() {
+	// Safely terminate in case of an interrupt signal
+	memguard.CatchInterrupt()
+	// Purge the session when we return
+	defer memguard.Purge()
+}
+
+func (*UtilsStruct) KeyBuffer(enclave *memguard.Enclave) *memguard.LockedBuffer {
+	// Passing the key off to another function
+	key := UtilsInterface.Invert(enclave)
+	// Decrypt the result returned from invert
+	keyBuf, err := key.Open()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	keyBuf.Melt()
+	return keyBuf
+}
+
+func (*UtilsStruct) KeyBufferBytes(keyBuf *memguard.LockedBuffer) []byte {
+	return keyBuf.Bytes()
+}
+
+func (*UtilsStruct) DestroyKeyBuffer(keyBuf *memguard.LockedBuffer) {
+	keyBuf.Seal()
+	defer keyBuf.Destroy()
 }

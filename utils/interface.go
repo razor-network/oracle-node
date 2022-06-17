@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/ecdsa"
+	"github.com/awnumar/memguard"
 	"io"
 	"io/fs"
 	"math/big"
@@ -170,6 +171,12 @@ type Utils interface {
 	AssignLogFile(flagSet *pflag.FlagSet)
 	CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error)
 	GetStateName(stateNumber int64) string
+	Decrypt(bytes []byte) []byte
+	Invert(key *memguard.Enclave) *memguard.Enclave
+	InterruptAndPurge()
+	KeyBuffer(enclave *memguard.Enclave) *memguard.LockedBuffer
+	KeyBufferBytes(keyBuf *memguard.LockedBuffer) []byte
+	DestroyKeyBuffer(keyBuf *memguard.LockedBuffer)
 }
 
 type EthClientUtils interface {

@@ -16,6 +16,8 @@ import (
 
 	ethereum "github.com/ethereum/go-ethereum"
 
+	memguard "github.com/awnumar/memguard"
+
 	mock "github.com/stretchr/testify/mock"
 
 	pflag "github.com/spf13/pflag"
@@ -225,6 +227,22 @@ func (_m *Utils) ConvertToNumber(num interface{}) (*big.Float, error) {
 	return r0, r1
 }
 
+// Decrypt provides a mock function with given fields: bytes
+func (_m *Utils) Decrypt(bytes []byte) []byte {
+	ret := _m.Called(bytes)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func([]byte) []byte); ok {
+		r0 = rf(bytes)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	return r0
+}
+
 // DeleteJobFromJSON provides a mock function with given fields: fileName, jobId
 func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
 	ret := _m.Called(fileName, jobId)
@@ -237,6 +255,11 @@ func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
 	}
 
 	return r0
+}
+
+// DestroyKeyBuffer provides a mock function with given fields: keyBuf
+func (_m *Utils) DestroyKeyBuffer(keyBuf *memguard.LockedBuffer) {
+	_m.Called(keyBuf)
 }
 
 // EstimateGasWithRetry provides a mock function with given fields: client, message
@@ -1754,6 +1777,27 @@ func (_m *Utils) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64
 	return r0, r1
 }
 
+// InterruptAndPurge provides a mock function with given fields:
+func (_m *Utils) InterruptAndPurge() {
+	_m.Called()
+}
+
+// Invert provides a mock function with given fields: key
+func (_m *Utils) Invert(key *memguard.Enclave) *memguard.Enclave {
+	ret := _m.Called(key)
+
+	var r0 *memguard.Enclave
+	if rf, ok := ret.Get(0).(func(*memguard.Enclave) *memguard.Enclave); ok {
+		r0 = rf(key)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*memguard.Enclave)
+		}
+	}
+
+	return r0
+}
+
 // IsFlagPassed provides a mock function with given fields: name
 func (_m *Utils) IsFlagPassed(name string) bool {
 	ret := _m.Called(name)
@@ -1763,6 +1807,38 @@ func (_m *Utils) IsFlagPassed(name string) bool {
 		r0 = rf(name)
 	} else {
 		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// KeyBuffer provides a mock function with given fields: enclave
+func (_m *Utils) KeyBuffer(enclave *memguard.Enclave) *memguard.LockedBuffer {
+	ret := _m.Called(enclave)
+
+	var r0 *memguard.LockedBuffer
+	if rf, ok := ret.Get(0).(func(*memguard.Enclave) *memguard.LockedBuffer); ok {
+		r0 = rf(enclave)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*memguard.LockedBuffer)
+		}
+	}
+
+	return r0
+}
+
+// KeyBufferBytes provides a mock function with given fields: keyBuf
+func (_m *Utils) KeyBufferBytes(keyBuf *memguard.LockedBuffer) []byte {
+	ret := _m.Called(keyBuf)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(*memguard.LockedBuffer) []byte); ok {
+		r0 = rf(keyBuf)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
 	}
 
 	return r0
