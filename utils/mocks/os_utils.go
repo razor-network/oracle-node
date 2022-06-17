@@ -60,6 +60,29 @@ func (_m *OSUtils) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, 
 	return r0, r1
 }
 
+// ReadFile provides a mock function with given fields: filename
+func (_m *OSUtils) ReadFile(filename string) ([]byte, error) {
+	ret := _m.Called(filename)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(string) []byte); ok {
+		r0 = rf(filename)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(filename)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // WriteFile provides a mock function with given fields: name, data, perm
 func (_m *OSUtils) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	ret := _m.Called(name, data, perm)

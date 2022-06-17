@@ -1239,16 +1239,16 @@ func TestReadFromCommitJsonFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			jsonMock := new(mocks.JsonUtils)
 			osMock := new(mocks.OSUtils)
-			ioutilMock := new(mocks.IoutilUtils)
+			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				JsonInterface:   jsonMock,
-				OS:              osMock,
-				IoutilInterface: ioutilMock,
+				JsonInterface: jsonMock,
+				OS:            osMock,
+				IOInterface:   ioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
-			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
+			ioMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
 			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
 			got, err := utils.ReadFromCommitJsonFile(filePath)
 			if (err != nil) != tt.wantErr {
@@ -1318,16 +1318,16 @@ func TestReadFromProposeJsonFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			jsonMock := new(mocks.JsonUtils)
 			osMock := new(mocks.OSUtils)
-			ioutilMock := new(mocks.IoutilUtils)
+			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				JsonInterface:   jsonMock,
-				OS:              osMock,
-				IoutilInterface: ioutilMock,
+				JsonInterface: jsonMock,
+				OS:            osMock,
+				IOInterface:   ioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
-			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
+			ioMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
 			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
 
 			got, err := utils.ReadFromProposeJsonFile(filePath)
@@ -1398,16 +1398,16 @@ func TestReadFromDisputeJsonFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			jsonMock := new(mocks.JsonUtils)
 			osMock := new(mocks.OSUtils)
-			ioutilMock := new(mocks.IoutilUtils)
+			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				JsonInterface:   jsonMock,
-				OS:              osMock,
-				IoutilInterface: ioutilMock,
+				JsonInterface: jsonMock,
+				OS:            osMock,
+				IOInterface:   ioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
-			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
+			ioMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
 			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
 
 			got, err := utils.ReadFromDisputeJsonFile(filePath)

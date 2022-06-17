@@ -90,16 +90,16 @@ func TestGetDataFromAPI(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
-			ioutilMock := new(mocks.IoutilUtils)
+			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				RetryInterface:  retryMock,
-				UtilsInterface:  utilsMock,
-				IoutilInterface: ioutilMock,
+				RetryInterface: retryMock,
+				UtilsInterface: utilsMock,
+				IOInterface:    ioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			ioutilMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
+			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetDataFromAPI(tt.args.url)

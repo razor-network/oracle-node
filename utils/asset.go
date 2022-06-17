@@ -177,7 +177,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		}
 		defer jsonFile.Close()
 
-		data, err := IoutilInterface.ReadAll(jsonFile)
+		data, err := IOInterface.ReadAll(jsonFile)
 		if err != nil {
 			return nil, err
 		}

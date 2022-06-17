@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
-	"io/ioutil"
+	"os"
 	"razor/core/types"
 )
 
@@ -53,5 +53,5 @@ func (accountUtils AccountUtils) Sign(digestHash []byte, prv *ecdsa.PrivateKey) 
 
 //This function takes name of the file as input and returns the file data as byte array
 func (accountUtils AccountUtils) ReadFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filename)
+	return os.ReadFile(filename)
 }

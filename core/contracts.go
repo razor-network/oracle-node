@@ -1,4 +1,3 @@
-//Package core contains the most important values of project
 package core
 
 var StakeManagerAddress = "0xaa95236294661AB21E753AC68D816605A968DEc8"
