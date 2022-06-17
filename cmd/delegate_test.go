@@ -5,10 +5,12 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	mocks2 "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -104,21 +106,24 @@ func TestExecuteDelegate(t *testing.T) {
 	var client *ethclient.Client
 	var flagSet *pflag.FlagSet
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		address      string
-		addressErr   error
-		password     string
-		stakerId     uint32
-		stakerIdErr  error
-		balance      *big.Int
-		balanceErr   error
-		amount       *big.Int
-		amountErr    error
-		approveTxn   common.Hash
-		approveErr   error
-		delegateHash common.Hash
-		delegateErr  error
+		config         types.Configurations
+		configErr      error
+		address        string
+		addressErr     error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		stakerId       uint32
+		stakerIdErr    error
+		balance        *big.Int
+		balanceErr     error
+		amount         *big.Int
+		amountErr      error
+		approveTxn     common.Hash
+		approveErr     error
+		delegateHash   common.Hash
+		delegateErr    error
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -133,14 +138,15 @@ func TestExecuteDelegate(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteDelegate() executes successfully",
 			args: args{
-				config:       config,
-				address:      "0x000000000000000000000000000000000000dead",
-				password:     "test",
-				stakerId:     2,
-				balance:      big.NewInt(10000),
-				amount:       big.NewInt(2000),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				delegateHash: common.BigToHash(big.NewInt(2)),
+				config:         config,
+				address:        "0x000000000000000000000000000000000000dead",
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				stakerId:       2,
+				balance:        big.NewInt(10000),
+				amount:         big.NewInt(2000),
+				approveTxn:     common.BigToHash(big.NewInt(1)),
+				delegateHash:   common.BigToHash(big.NewInt(2)),
 			},
 			expectedFatal: false,
 		},
@@ -257,15 +263,21 @@ func TestExecuteDelegate(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			flagSetUtils = flagSetUtilsMock
 			transactionUtils = transactionUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
@@ -276,6 +288,7 @@ func TestExecuteDelegate(t *testing.T) {
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("Delegate", mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.delegateHash, tt.args.delegateErr)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

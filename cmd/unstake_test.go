@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -16,6 +17,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	mocks2 "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -181,19 +183,22 @@ func TestExecuteUnstake(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		config      types.Configurations
-		configErr   error
-		password    string
-		address     string
-		addressErr  error
-		value       *big.Int
-		valueErr    error
-		stakerId    uint32
-		stakerIdErr error
-		lock        types.Locks
-		lockErr     error
-		unstakeHash common.Hash
-		unstakeErr  error
+		config         types.Configurations
+		configErr      error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		address        string
+		addressErr     error
+		value          *big.Int
+		valueErr       error
+		stakerId       uint32
+		stakerIdErr    error
+		lock           types.Locks
+		lockErr        error
+		unstakeHash    common.Hash
+		unstakeErr     error
 	}
 	tests := []struct {
 		name          string
@@ -203,11 +208,12 @@ func TestExecuteUnstake(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteUnstake function executes successfully",
 			args: args{
-				config:   types.Configurations{},
-				password: "test",
-				address:  "0x000000000000000000000000000000000000dead",
-				value:    big.NewInt(10000),
-				stakerId: 1,
+				config:         types.Configurations{},
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				address:        "0x000000000000000000000000000000000000dead",
+				value:          big.NewInt(10000),
+				stakerId:       1,
 				lock: types.Locks{
 					Amount: big.NewInt(0),
 				},
@@ -319,16 +325,22 @@ func TestExecuteUnstake(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			cmdUtils = cmdUtilsMock
 			transactionUtils = transactionUtilsMock
 			flagSetUtils = flagSetUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
@@ -337,6 +349,7 @@ func TestExecuteUnstake(t *testing.T) {
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeHash, tt.args.unstakeErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

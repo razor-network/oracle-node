@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -15,6 +16,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -124,6 +126,9 @@ func TestExecuteCreateCollection(t *testing.T) {
 		config               types.Configurations
 		configErr            error
 		password             string
+		keyBuffer            *memguard.LockedBuffer
+		keyBufferBytes       []byte
+		decryptData          []byte
 		name                 string
 		nameErr              error
 		address              string
@@ -149,6 +154,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 			args: args{
 				config:               config,
 				password:             "test",
+				keyBufferBytes:       []byte("test"),
 				name:                 "ETH-Collection",
 				address:              "0x000000000000000000000000000000000000dead",
 				jobId:                []uint{1, 2},
@@ -295,14 +301,20 @@ func TestExecuteCreateCollection(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagsetUtilsMock
 			cmdUtils = cmdUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagsetUtilsMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagsetUtilsMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
@@ -312,6 +324,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

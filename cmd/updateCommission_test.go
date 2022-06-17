@@ -5,10 +5,12 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	mocks2 "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -247,6 +249,9 @@ func TestExecuteUpdateCommission(t *testing.T) {
 		config              types.Configurations
 		configErr           error
 		password            string
+		keyBuffer           *memguard.LockedBuffer
+		keyBufferBytes      []byte
+		decryptData         []byte
 		address             string
 		addressErr          error
 		commission          uint8
@@ -264,11 +269,12 @@ func TestExecuteUpdateCommission(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteUpdateCommission() executes successfully",
 			args: args{
-				config:     config,
-				password:   "test",
-				address:    "0x000000000000000000000000000000000000dea1",
-				commission: 10,
-				stakerId:   1,
+				config:         config,
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				address:        "0x000000000000000000000000000000000000dea1",
+				commission:     10,
+				stakerId:       1,
 			},
 			expectedFatal: false,
 		},
@@ -348,19 +354,26 @@ func TestExecuteUpdateCommission(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagsetUtilsMock
 			cmdUtils = cmdUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagsetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

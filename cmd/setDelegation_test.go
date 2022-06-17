@@ -5,11 +5,13 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	mocks2 "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -198,6 +200,9 @@ func TestExecuteSetDelegation(t *testing.T) {
 		config                       types.Configurations
 		configErr                    error
 		password                     string
+		keyBuffer                    *memguard.LockedBuffer
+		keyBufferBytes               []byte
+		decryptData                  []byte
 		address                      string
 		addressErr                   error
 		status                       string
@@ -226,6 +231,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 				config:                       config,
 				configErr:                    nil,
 				password:                     "test",
+				keyBufferBytes:               []byte("test"),
 				address:                      "0x000000000000000000000000000000000000dea1",
 				addressErr:                   nil,
 				status:                       "true",
@@ -405,16 +411,22 @@ func TestExecuteSetDelegation(t *testing.T) {
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			stringMock := new(mocks.StringInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			flagSetUtils = flagSetUtilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			stringUtils = stringMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
@@ -423,6 +435,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

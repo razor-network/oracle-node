@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -14,6 +15,8 @@ import (
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core/types"
+	"razor/utils"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -25,14 +28,17 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	type args struct {
-		config     types.Configurations
-		configErr  error
-		password   string
-		address    string
-		addressErr error
-		txn        *Types.Transaction
-		err        error
-		hash       common.Hash
+		config         types.Configurations
+		configErr      error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		address        string
+		addressErr     error
+		txn            *Types.Transaction
+		err            error
+		hash           common.Hash
 	}
 	tests := []struct {
 		name          string
@@ -42,10 +48,11 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 		{
 			name: "Test 1: When ClaimStakeReward runs successfully",
 			args: args{
-				config:   types.Configurations{},
-				password: "test",
-				address:  "0x000000000000000000000000000000000000dead",
-				txn:      &Types.Transaction{},
+				config:         types.Configurations{},
+				password:       "test",
+				address:        "0x000000000000000000000000000000000000dead",
+				keyBufferBytes: []byte("test"),
+				txn:            &Types.Transaction{},
 			},
 			expectedFatal: false,
 		},
@@ -85,23 +92,30 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			transactionUtils = transactionUtilsMock
+			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("ClaimStakeReward", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.txn, tt.args.err)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(1)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			utils.ClaimCommission(flagSet)

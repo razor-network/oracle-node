@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -15,6 +16,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	mocks2 "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -24,15 +26,18 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		config      types.Configurations
-		configErr   error
-		password    string
-		address     string
-		addressErr  error
-		stakerId    uint32
-		stakerIdErr error
-		txn         common.Hash
-		err         error
+		config         types.Configurations
+		configErr      error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		address        string
+		addressErr     error
+		stakerId       uint32
+		stakerIdErr    error
+		txn            common.Hash
+		err            error
 	}
 	tests := []struct {
 		name          string
@@ -42,11 +47,12 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteUnlockWithdraw executes successfully",
 			args: args{
-				config:   types.Configurations{},
-				password: "test",
-				address:  "0x000000000000000000000000000000000000dead",
-				stakerId: 1,
-				txn:      common.BigToHash(big.NewInt(1)),
+				config:         types.Configurations{},
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				address:        "0x000000000000000000000000000000000000dead",
+				stakerId:       1,
+				txn:            common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
 		},
@@ -99,22 +105,29 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
 			stakeManagerUtils = stakeManagerUtilsMock
 			transactionUtils = transactionUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("HandleWithdrawLock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(1)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 			utils := &UtilsStruct{}
 			utils.ExecuteUnlockWithdraw(flagSet)
 			if fatal != tt.expectedFatal {

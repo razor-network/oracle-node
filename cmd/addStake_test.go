@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -137,6 +138,9 @@ func TestExecuteStake(t *testing.T) {
 		config          types.Configurations
 		configErr       error
 		password        string
+		keyBuffer       *memguard.LockedBuffer
+		keyBufferBytes  []byte
+		decryptData     []byte
 		address         string
 		addressErr      error
 		balance         *big.Int
@@ -166,15 +170,16 @@ func TestExecuteStake(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteStake() executes successfully",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				amount:       big.NewInt(2000),
-				balance:      big.NewInt(10000),
-				minSafeRazor: big.NewInt(0),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
+				config:         config,
+				password:       "test",
+				address:        "0x000000000000000000000000000000000000dead",
+				keyBufferBytes: []byte("test"),
+				amount:         big.NewInt(2000),
+				balance:        big.NewInt(10000),
+				minSafeRazor:   big.NewInt(0),
+				approveTxn:     common.BigToHash(big.NewInt(1)),
+				stakeTxn:       common.BigToHash(big.NewInt(2)),
+				isFlagPassed:   false,
 			},
 			expectedFatal: false,
 		},
@@ -379,7 +384,11 @@ func TestExecuteStake(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
@@ -395,6 +404,7 @@ func TestExecuteStake(t *testing.T) {
 			flagSetUtilsMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.isRogue, tt.args.isRogueErr)
 			flagSetUtilsMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

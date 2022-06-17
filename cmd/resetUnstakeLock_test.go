@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -15,6 +16,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -104,15 +106,18 @@ func TestExecuteExtendLock(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		password     string
-		address      string
-		addressErr   error
-		stakerId     uint32
-		stakerIdErr  error
-		resetLockTxn common.Hash
-		resetLockErr error
+		config         types.Configurations
+		configErr      error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		address        string
+		addressErr     error
+		stakerId       uint32
+		stakerIdErr    error
+		resetLockTxn   common.Hash
+		resetLockErr   error
 	}
 	tests := []struct {
 		name          string
@@ -122,11 +127,12 @@ func TestExecuteExtendLock(t *testing.T) {
 		{
 			name: "Test 1: When resetLock function executes successfully",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dea1",
-				stakerId:     1,
-				resetLockTxn: common.BigToHash(big.NewInt(1)),
+				config:         config,
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				address:        "0x000000000000000000000000000000000000dea1",
+				stakerId:       1,
+				resetLockTxn:   common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
 		},
@@ -189,19 +195,26 @@ func TestExecuteExtendLock(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagSetUtilsMock
 			cmdUtils = cmdUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			cmdUtilsMock.On("ResetUnstakeLock", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false
