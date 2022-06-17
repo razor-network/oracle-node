@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
@@ -45,7 +46,10 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -69,7 +73,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 
 	jobInput := types.CreateJobInput{
 		Address:      address,
-		Password:     password,
+		Password:     string(utilsInterface.Decrypt(keyBufferBytes)),
 		Url:          url,
 		Name:         name,
 		Selector:     selector,
@@ -81,6 +85,8 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
 	razorUtils.WaitForBlockCompletion(client, txn.String())
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function allows the admin to create the job

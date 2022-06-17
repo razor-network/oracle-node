@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"math/big"
@@ -42,7 +43,11 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting config", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
-	password := razorUtils.AssignPassword(flagSet)
+
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
@@ -53,10 +58,12 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	err = cmdUtils.UpdateCommission(config, client, types.UpdateCommissionInput{
 		Commission: commission,
 		Address:    address,
-		Password:   password,
+		Password:   string(utilsInterface.Decrypt(keyBufferBytes)),
 		StakerId:   stakerId,
 	})
 	utils.CheckError("SetDelegation error: ", err)
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function allows a staker to add/update the commission value

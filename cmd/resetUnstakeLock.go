@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -43,7 +44,10 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config data: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -52,12 +56,14 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 
 	extendLockInput := types.ExtendLockInput{
 		Address:  address,
-		Password: password,
+		Password: string(utilsInterface.Decrypt(keyBufferBytes)),
 		StakerId: stakerId,
 	}
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
 	razorUtils.WaitForBlockCompletion(client, txn.String())
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function is used to reset the lock once the withdraw lock period is over

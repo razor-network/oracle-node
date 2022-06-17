@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"os"
 	"os/signal"
@@ -54,7 +55,11 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
+
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
 	utils.CheckError("Error in getting rogue status: ", err)
 
@@ -67,7 +72,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	account := types.Account{Address: address, Password: password}
+	account := types.Account{Address: address, Password: string(utilsInterface.Decrypt(keyBufferBytes))}
 
 	cmdUtils.HandleExit()
 
@@ -75,6 +80,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		log.Errorf("%s\n", err)
 		osUtils.Exit(1)
 	}
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function handles the exit and listens for CTRL+C

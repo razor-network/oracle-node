@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -49,13 +50,16 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	modifyCollectionInput := types.ModifyCollectionInput{
 		Address:      address,
-		Password:     password,
+		Password:     string(utilsInterface.Decrypt(keyBufferBytes)),
 		Status:       status,
 		CollectionId: collectionId,
 	}
@@ -65,6 +69,8 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	if txn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function checks the current status of particular collectionId

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -42,7 +43,10 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
@@ -61,7 +65,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 
 	txnArgs := types.TransactionOptions{
 		Client:         client,
-		Password:       password,
+		Password:       string(utilsInterface.Decrypt(keyBufferBytes)),
 		Amount:         valueInWei,
 		AccountAddress: address,
 		ChainId:        big.NewInt(config.ChainId),
@@ -78,6 +82,8 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
 	razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function allows the delegator to stake coins without setting up a node

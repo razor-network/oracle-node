@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
@@ -41,7 +42,12 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	// Remove 0x from the private key
 	privateKey = strings.TrimPrefix(privateKey, "0x")
 	log.Info("Enter password to protect keystore file")
-	password := razorUtils.PasswordPrompt()
+
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.PasswordPrompt()))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
+
 	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
@@ -61,12 +67,13 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		log.Error("Error in parsing private key")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account, err := keystoreUtils.ImportECDSA(keystoreDir, priv, password)
+	account, err := keystoreUtils.ImportECDSA(keystoreDir, priv, string(utilsInterface.Decrypt(keyBufferBytes)))
 	if err != nil {
 		log.Error("Error in importing account")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 	log.Info("Account imported...")
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 	return account, nil
 }
 

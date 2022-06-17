@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
@@ -29,11 +30,18 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 //This function sets the flags appropriately and executes the Create function
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
-	password := razorUtils.AssignPassword(flagSet)
-	account, err := cmdUtils.Create(password)
+
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
+
+	account, err := cmdUtils.Create(string(utilsInterface.Decrypt(keyBufferBytes)))
 	utils.CheckError("Create error: ", err)
 	log.Info("Account address: ", account.Address)
 	log.Info("Keystore Path: ", account.URL)
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function is used to create the new account

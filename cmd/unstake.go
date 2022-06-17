@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -46,7 +47,10 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -60,7 +64,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 
 	unstakeInput := types.UnstakeInput{
 		Address:    address,
-		Password:   password,
+		Password:   string(utilsInterface.Decrypt(keyBufferBytes)),
 		ValueInWei: valueInWei,
 		StakerId:   stakerId,
 	}
@@ -70,6 +74,8 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	if txnHash != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txnHash.String())
 	}
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function allows user to unstake their sRZRs in the razor network
