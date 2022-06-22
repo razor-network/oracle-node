@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -9,7 +10,6 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
 	"math/big"
-	"math/rand"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -55,7 +55,8 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "biggestStakerId") {
 		biggestStake = utils.GetRogueRandomValue(1000000)
-		biggestStakerId = uint32(rand.Intn(int(numStakers)))
+		biggestStakerIdInBigInt, _ := rand.Int(rand.Reader, big.NewInt(int64(numStakers)))
+		biggestStakerId = uint32(biggestStakerIdInBigInt.Int64())
 	} else {
 		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
 		if biggestStakerErr != nil {
