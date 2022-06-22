@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
@@ -34,7 +35,12 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtils.AssignPassword(flagSet)
+
+	utils.UtilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utils.UtilsInterface.KeyBuffer(key)
+	keyBufferBytes := utils.UtilsInterface.KeyBufferBytes(keyBuf)
+
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
@@ -42,7 +48,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		AccountAddress:  address,
-		Password:        password,
+		Password:        string(utils.UtilsInterface.Decrypt(keyBufferBytes)),
 		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
@@ -59,6 +65,8 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	}
 
 	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+
+	utils.UtilsInterface.DestroyKeyBuffer(keyBuf)
 
 }
 

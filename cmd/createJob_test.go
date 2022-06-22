@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -15,6 +16,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -103,6 +105,9 @@ func TestExecuteCreateJob(t *testing.T) {
 		config          types.Configurations
 		configErr       error
 		password        string
+		keyBuffer       *memguard.LockedBuffer
+		keyBufferBytes  []byte
+		decryptData     []byte
 		address         string
 		addressErr      error
 		name            string
@@ -128,16 +133,17 @@ func TestExecuteCreateJob(t *testing.T) {
 		{
 			name: "Test 1:  When ExecuteCreateJob function executes successfully",
 			args: args{
-				config:        config,
-				password:      "test",
-				address:       "0x000000000000000000000000000000000000dead",
-				name:          "ETH-1",
-				url:           "https://api.gemini.com/v1/pubticker/ethusd",
-				selector:      "last",
-				selectorType:  1,
-				power:         1,
-				weight:        10,
-				createJobHash: common.BigToHash(big.NewInt(1)),
+				config:         config,
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				address:        "0x000000000000000000000000000000000000dead",
+				name:           "ETH-1",
+				url:            "https://api.gemini.com/v1/pubticker/ethusd",
+				selector:       "last",
+				selectorType:   1,
+				power:          1,
+				weight:         10,
+				createJobHash:  common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
 		},
@@ -313,14 +319,20 @@ func TestExecuteCreateJob(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagsetUtilsMock
 			cmdUtils = cmdUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagsetUtilsMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagsetUtilsMock.On("GetStringUrl", flagSet).Return(tt.args.url, tt.args.urlErr)
@@ -331,6 +343,7 @@ func TestExecuteCreateJob(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createJobHash, tt.args.createJobErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

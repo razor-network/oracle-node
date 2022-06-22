@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -28,16 +29,19 @@ func TestExecuteVote(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		password     string
-		rogueStatus  bool
-		rogueErr     error
-		rogueMode    []string
-		rogueModeErr error
-		address      string
-		addressErr   error
-		voteErr      error
+		config         types.Configurations
+		configErr      error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		rogueStatus    bool
+		rogueErr       error
+		rogueMode      []string
+		rogueModeErr   error
+		address        string
+		addressErr     error
+		voteErr        error
 	}
 	tests := []struct {
 		name          string
@@ -47,12 +51,13 @@ func TestExecuteVote(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteVote() executes successfully",
 			args: args{
-				config:      config,
-				password:    "test",
-				address:     "0x000000000000000000000000000000000000dea1",
-				rogueStatus: true,
-				rogueMode:   []string{"propose", "commit"},
-				voteErr:     nil,
+				config:         config,
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				address:        "0x000000000000000000000000000000000000dea1",
+				rogueStatus:    true,
+				rogueMode:      []string{"propose", "commit"},
+				voteErr:        nil,
 			},
 			expectedFatal: false,
 		},
@@ -131,15 +136,21 @@ func TestExecuteVote(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			osMock := new(mocks.OSInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			flagSetUtils = flagSetUtilsMock
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			osUtils = osMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetUtilsMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueStatus, tt.args.rogueErr)
@@ -147,6 +158,7 @@ func TestExecuteVote(t *testing.T) {
 			cmdUtilsMock.On("HandleExit").Return()
 			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

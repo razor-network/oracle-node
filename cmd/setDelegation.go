@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -43,7 +44,10 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
@@ -61,7 +65,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 
 	delegationInput := types.SetDelegationInput{
 		Address:      address,
-		Password:     password,
+		Password:     string(utilsInterface.Decrypt(keyBufferBytes)),
 		Status:       status,
 		StatusString: statusString,
 		StakerId:     stakerId,
@@ -73,6 +77,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	if txn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function allows the staker to start accepting/rejecting delegation requests

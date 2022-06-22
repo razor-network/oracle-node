@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/awnumar/memguard"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -37,12 +38,15 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
-
 	logger.Address = address
-
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtils.AssignPassword(flagSet)
+
+	utils.UtilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utils.UtilsInterface.KeyBuffer(key)
+	keyBufferBytes := utils.UtilsInterface.KeyBufferBytes(keyBuf)
+
 	client := razorUtils.ConnectToClient(config.Provider)
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching balance for account: "+address, err)
@@ -59,11 +63,10 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	if valueInWei.Cmp(minSafeRazor) < 0 {
 		log.Fatal("The amount of razors entered is below min safe value.")
 	}
-
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: address,
-		Password:       password,
+		Password:       string(utils.UtilsInterface.Decrypt(keyBufferBytes)),
 		Amount:         valueInWei,
 		ChainId:        big.NewInt(config.ChainId),
 		Config:         config,
@@ -86,7 +89,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 		if isAutoVote {
 			log.Info("Staked!...Starting to vote now.")
-			account := types.Account{Address: address, Password: password}
+			account := types.Account{Address: address, Password: string(utils.UtilsInterface.Decrypt(keyBufferBytes))}
 			isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
 			utils.CheckError("Error in getting rogue status: ", err)
 
@@ -101,6 +104,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 			utils.CheckError("Error in auto vote: ", err)
 		}
 	}
+	utils.UtilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function allows the user to stake razors in the razor network and returns the hash

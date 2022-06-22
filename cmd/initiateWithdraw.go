@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -40,7 +41,10 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -51,13 +55,15 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.HandleUnstakeLock(client, types.Account{
 		Address:  address,
-		Password: password,
+		Password: string(utilsInterface.Decrypt(keyBufferBytes)),
 	}, config, stakerId)
 
 	utils.CheckError("InitiateWithdraw error: ", err)
 	if txn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, txn.String())
 	}
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function handles the unstake lock

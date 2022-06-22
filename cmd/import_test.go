@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
@@ -13,6 +14,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/path"
 	mocks1 "razor/path/mocks"
+	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -28,6 +30,9 @@ func TestImportAccount(t *testing.T) {
 	type args struct {
 		privateKey         string
 		password           string
+		keyBuffer          *memguard.LockedBuffer
+		keyBufferBytes     []byte
+		decryptData        []byte
 		path               string
 		pathErr            error
 		ecdsaPrivateKey    *ecdsa.PrivateKey
@@ -49,6 +54,7 @@ func TestImportAccount(t *testing.T) {
 			args: args{
 				privateKey:         "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d",
 				password:           "test",
+				keyBufferBytes:     []byte("test"),
 				path:               "/home/local",
 				pathErr:            nil,
 				ecdsaPrivateKey:    privateKey,
@@ -154,20 +160,27 @@ func TestImportAccount(t *testing.T) {
 			keystoreUtilsMock := new(mocks.KeystoreInterface)
 			cryptoUtilsMock := new(mocks.CryptoInterface)
 			osMock := new(mocks1.OSInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			path.OSUtilsInterface = osMock
 			razorUtils = utilsMock
 			keystoreUtils = keystoreUtilsMock
 			cryptoUtils = cryptoUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("PrivateKeyPrompt").Return(tt.args.privateKey)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("PasswordPrompt").Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cryptoUtilsMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
 			keystoreUtilsMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
 			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
 			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
 			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 

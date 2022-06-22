@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
@@ -43,7 +44,10 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -53,7 +57,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 		redeemBountyInput := types.RedeemBountyInput{
 			Address:  address,
-			Password: password,
+			Password: string(utilsInterface.Decrypt(keyBufferBytes)),
 			BountyId: bountyId,
 		}
 
@@ -66,10 +70,11 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	} else {
 		err := cmdUtils.HandleClaimBounty(client, config, types.Account{
 			Address:  address,
-			Password: password,
+			Password: string(utilsInterface.Decrypt(keyBufferBytes)),
 		})
 		utils.CheckError("HandleClaimBounty error: ", err)
 	}
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error

@@ -3,6 +3,7 @@ package utils
 
 import (
 	"errors"
+	"github.com/awnumar/memguard"
 	"math"
 	"math/big"
 	"math/rand"
@@ -188,4 +189,31 @@ func GetRogueRandomValue(value int) *big.Int {
 //This function returns the rogue random median value
 func GetRogueRandomMedianValue() uint32 {
 	return rand.Uint32()
+}
+
+func (*UtilsStruct) Invert(key *memguard.Enclave) *memguard.Enclave {
+	// Decrypt the key into a local copy
+	b, err := key.Open()
+	if err != nil {
+		memguard.SafePanic(err)
+	}
+	defer b.Destroy() // Destroy the copy when we return
+
+	// Open returns the data in an immutable buffer, so make it mutable
+	b.Melt()
+
+	// Set every element to its complement
+	for i := range b.Bytes() {
+		b.Bytes()[i] = ^b.Bytes()[i]
+	}
+
+	// Return the new data in encrypted form
+	return b.Seal() // <- sealing also destroys b
+}
+
+func (*UtilsStruct) Decrypt(bytes []byte) []byte {
+	for i := 0; i < len(bytes); i++ {
+		bytes[i] = ^bytes[i]
+	}
+	return bytes
 }

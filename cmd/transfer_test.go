@@ -5,11 +5,13 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	mocks2 "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -111,19 +113,22 @@ func TestExecuteTransfer(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		from         string
-		fromErr      error
-		to           string
-		toErr        error
-		password     string
-		balance      *big.Int
-		balanceErr   error
-		amount       *big.Int
-		amountErr    error
-		transferErr  error
-		transferHash common.Hash
+		config         types.Configurations
+		configErr      error
+		from           string
+		fromErr        error
+		to             string
+		toErr          error
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		password       string
+		balance        *big.Int
+		balanceErr     error
+		amount         *big.Int
+		amountErr      error
+		transferErr    error
+		transferHash   common.Hash
 	}
 	tests := []struct {
 		name          string
@@ -133,17 +138,18 @@ func TestExecuteTransfer(t *testing.T) {
 		{
 			name: "Test1: When ExecuteTransfer function executes successfully",
 			args: args{
-				config:       config,
-				password:     "test",
-				from:         "0x000000000000000000000000000000000000dea1",
-				fromErr:      nil,
-				to:           "0x000000000000000000000000000000000000dea2",
-				toErr:        nil,
-				balance:      big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
-				balanceErr:   nil,
-				amount:       big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
-				transferErr:  nil,
-				transferHash: common.BigToHash(big.NewInt(1)),
+				config:         config,
+				password:       "test",
+				keyBufferBytes: []byte("test"),
+				from:           "0x000000000000000000000000000000000000dea1",
+				fromErr:        nil,
+				to:             "0x000000000000000000000000000000000000dea2",
+				toErr:          nil,
+				balance:        big.NewInt(1).Mul(big.NewInt(10000), big.NewInt(1e18)),
+				balanceErr:     nil,
+				amount:         big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+				transferErr:    nil,
+				transferHash:   common.BigToHash(big.NewInt(1)),
 			},
 			expectedFatal: false,
 		},
@@ -260,14 +266,20 @@ func TestExecuteTransfer(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagsetUtilsMock
 			cmdUtils = cmdUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			flagsetUtilsMock.On("GetStringFrom", flagSet).Return(tt.args.from, tt.args.fromErr)
 			flagsetUtilsMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
@@ -276,6 +288,7 @@ func TestExecuteTransfer(t *testing.T) {
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), config, mock.AnythingOfType("types.TransferInput")).Return(tt.args.transferHash, tt.args.transferErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false

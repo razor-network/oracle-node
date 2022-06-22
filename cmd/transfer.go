@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/core"
@@ -41,7 +42,11 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtils.AssignPassword(flagSet)
+
+	utilsInterface.InterruptAndPurge()
+	key := memguard.NewEnclave([]byte(razorUtils.AssignPassword(flagSet)))
+	keyBuf := utilsInterface.KeyBuffer(key)
+	keyBufferBytes := utilsInterface.KeyBufferBytes(keyBuf)
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
@@ -57,7 +62,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	transferInput := types.TransferInput{
 		FromAddress: fromAddress,
 		ToAddress:   toAddress,
-		Password:    password,
+		Password:    string(utilsInterface.Decrypt(keyBufferBytes)),
 		ValueInWei:  valueInWei,
 		Balance:     balance,
 	}
@@ -66,6 +71,8 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	utils.CheckError("Transfer error: ", err)
 	log.Info("Transaction Hash: ", txn)
 	razorUtils.WaitForBlockCompletion(client, txn.String())
+
+	utilsInterface.DestroyKeyBuffer(keyBuf)
 }
 
 //This function transfers the razors from your account to others account

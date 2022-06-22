@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"errors"
+	"github.com/awnumar/memguard"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	razorAccounts "razor/accounts"
+	mocks2 "razor/utils/mocks"
 
 	//"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
@@ -97,9 +99,12 @@ func TestExecuteCreate(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		password   string
-		account    accounts.Account
-		accountErr error
+		password       string
+		keyBuffer      *memguard.LockedBuffer
+		keyBufferBytes []byte
+		decryptData    []byte
+		account        accounts.Account
+		accountErr     error
 	}
 
 	tests := []struct {
@@ -110,7 +115,8 @@ func TestExecuteCreate(t *testing.T) {
 		{
 			name: "Test 1: When executeCreate executes successfully",
 			args: args{
-				password: "test",
+				password:       "test",
+				keyBufferBytes: []byte("test"),
 				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
 					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 				},
@@ -139,13 +145,20 @@ func TestExecuteCreate(t *testing.T) {
 
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			utilsInterface = utilsPkgMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsPkgMock.On("InterruptAndPurge")
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsPkgMock.On("KeyBuffer", mock.Anything).Return(tt.args.keyBuffer)
+			utilsPkgMock.On("KeyBufferBytes", mock.Anything).Return(tt.args.keyBufferBytes)
+			utilsPkgMock.On("Decrypt", mock.Anything).Return(tt.args.decryptData)
 			cmdUtilsMock.On("Create", mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
+			utilsPkgMock.On("DestroyKeyBuffer", mock.Anything)
 
 			utils := &UtilsStruct{}
 			fatal = false
