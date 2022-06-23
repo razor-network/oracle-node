@@ -17,7 +17,7 @@ fetch_bindings:
 
 install_razor:
 	@echo "Installing razor node...."
-	${GO} build -o ./build/bin/razor main.go
+	${GO} build -ldflags "-s -w" -o ./build/bin/razor main.go
 	@echo "Razor node installed."
 	@echo ""
 
