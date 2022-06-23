@@ -954,6 +954,16 @@ func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) 
 	return flagSet.GetString("exposeMetrics")
 }
 
+//This function is used to check if CertFile  is passed or not
+func (flagSetUtils FLagSetUtils) GetStringCertFile(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("certFile")
+}
+
+//This function is used to check if CertFile  is passed or not
+func (flagSetUtils FLagSetUtils) GetStringCertKey(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("certKey")
+}
+
 //This function returns the accounts
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)

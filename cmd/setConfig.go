@@ -73,7 +73,15 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		if err != nil {
 			return err
 		}
-
+		
+		certKey, err := flagSetUtils.GetStringCertKey(flagSet)
+		if err != nil {
+			return err
+		}
+		certFile, err := flagSetUtils.GetStringCertFile(flagSet)
+		if err != nil {
+			return err
+		}
 		viper.Set("exposeMetricsPort", port)
 
 		configErr := viperUtils.ViperWriteConfigAs(path)
@@ -81,7 +89,8 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 			log.Error("Error in writing config")
 			return configErr
 		}
-		err = metrics.Run(port)
+
+		err = metrics.Run(port, certFile, certKey)
 		if err != nil {
 			logrus.Errorf("failed to start metrics http server: %s", err)
 		}
@@ -144,6 +153,8 @@ func init() {
 		LogLevel           string
 		GasLimitMultiplier float32
 		ExposeMetrics      string
+		CertFile	   	   string
+		CertKey	   		   string
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Int64VarP(&ChainId, "chainId", "c", 0, "chainId")
@@ -154,5 +165,7 @@ func init() {
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
+	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
+	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")
 
 }
