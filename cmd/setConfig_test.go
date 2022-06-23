@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"errors"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
 	"testing"
+
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestSetConfig(t *testing.T) {
@@ -35,6 +36,10 @@ func TestSetConfig(t *testing.T) {
 		isFlagPassed          bool
 		port                  string
 		portErr               error
+		certFile			  string
+		certFileErr			  error
+		certKey 			  string
+		certKeyErr			  error
 	}
 	tests := []struct {
 		name    string
@@ -302,6 +307,8 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
 			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return(tt.args.port, tt.args.portErr)
+			flagSetUtilsMock.On("GetStringCertFile", flagSet).Return(tt.args.certFile, tt.args.certFileErr)
+			flagSetUtilsMock.On("GetStringCertKey", flagSet).Return(tt.args.certKey, tt.args.certKeyErr)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
