@@ -129,7 +129,7 @@ func TestUnstake(t *testing.T) {
 				amount:   big.NewInt(1000),
 				stateErr: errors.New("error in getting epoch"),
 			},
-			wantErr: errors.New("error in getting epoch"),
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
