@@ -115,10 +115,6 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		return core.NilHash, err
 	}
 
-	if err != nil {
-		log.Error("Error in fetching epoch: ", err)
-		return core.NilHash, err
-	}
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
