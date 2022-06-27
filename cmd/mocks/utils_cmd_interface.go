@@ -1319,6 +1319,11 @@ func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Conf
 	return r0, r1
 }
 
+// ResetDispute provides a mock function with given fields: client, blockManager, txnOpts, epoch
+func (_m *UtilsCmdInterface) ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32) {
+	_m.Called(client, blockManager, txnOpts, epoch)
+}
+
 // ResetUnstakeLock provides a mock function with given fields: client, config, extendLockInput
 func (_m *UtilsCmdInterface) ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
 	ret := _m.Called(client, config, extendLockInput)
