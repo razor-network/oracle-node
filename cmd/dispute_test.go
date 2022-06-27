@@ -163,6 +163,7 @@ func TestHandleDispute(t *testing.T) {
 		leafIdErr                 error
 		disputeErr                error
 		storeBountyIdErr          error
+		blockManager              *bindings.BlockManager
 	}
 	tests := []struct {
 		name string
@@ -471,6 +472,8 @@ func TestHandleDispute(t *testing.T) {
 			utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
+			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockManager)
+			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 			utils := &UtilsStruct{}
 			err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
@@ -1206,6 +1209,56 @@ func TestStoreBountyId(t *testing.T) {
 			if err := ut.StoreBountyId(client, account); (err != nil) != tt.wantErr {
 				t.Errorf("AutoClaimBounty() error = %v, wantErr %v", err, tt.wantErr)
 			}
+		})
+	}
+}
+
+func TestResetDispute(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		blockManager *bindings.BlockManager
+		txnOpts      *bind.TransactOpts
+		epoch        uint32
+	)
+	type args struct {
+		ResetDisputeTxn    *Types.Transaction
+		ResetDisputeTxnErr error
+		hash               common.Hash
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Test 1: When ResetDispute() executes successfully",
+			args: args{
+				ResetDisputeTxn: &Types.Transaction{},
+				hash:            common.Hash{1},
+			},
+		},
+		{
+			name: "Test 2: When there is an error in executing ResetDispute()",
+			args: args{
+				ResetDisputeTxnErr: errors.New("error in resetting dispute"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			blockManagerMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			blockManagerUtils = blockManagerMock
+			transactionUtils = transactionUtilsMock
+
+			blockManagerMock.On("ResetDispute", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ResetDisputeTxn, tt.args.ResetDisputeTxnErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			ut := &UtilsStruct{}
+			ut.ResetDispute(client, blockManager, txnOpts, epoch)
 		})
 	}
 }
