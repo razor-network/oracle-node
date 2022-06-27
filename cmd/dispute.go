@@ -23,13 +23,14 @@ import (
 
 var (
 	giveSortedLeafIds []int
+	disputedFlag      bool
 )
 
 //blockId is id of the block
 
 //This function handles the dispute and if there is any error it returns the error
 func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-
+	disputedFlag = false
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
 		log.Error("Error in fetching sorted proposed block id: ", err)
@@ -90,6 +91,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if status == 1 {
+				disputedFlag = true
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
@@ -113,6 +115,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if status == 1 {
+				disputedFlag = true
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
@@ -157,6 +160,17 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Info("Proposed median matches with local calculations. Will not open dispute.")
 			continue
 		}
+	}
+	blockManager := razorUtils.GetBlockManager(client)
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        big.NewInt(config.ChainId),
+		Config:         config,
+	})
+	if disputedFlag {
+		cmdUtils.ResetDispute(client, blockManager, txnOpts, epoch)
 	}
 	giveSortedLeafIds = []int{}
 	return nil
@@ -298,6 +312,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 
 	//If dispute happens, then storing the bountyId into disputeData file
 	if status == 1 {
+		disputedFlag = true
 		err = cmdUtils.StoreBountyId(client, account)
 		if err != nil {
 			return err
@@ -326,6 +341,18 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
 	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+}
+
+func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32) {
+	log.Info("Resetting the dispute ...")
+	txn, err := blockManagerUtils.ResetDispute(blockManager, txnOpts, epoch)
+	if err != nil {
+		log.Error("error in resetting dispute", err)
+	}
+	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
+	log.Info("Dispute has been reset")
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+
 }
 
 //This function returns the collection Id position in block
