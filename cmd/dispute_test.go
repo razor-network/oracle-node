@@ -1007,6 +1007,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 	var epoch uint32
 	var blockNumber *big.Int
 	var rogueData types.Rogue
+	var blockManager *bindings.BlockManager
 
 	table := []struct {
 		numOfSortedBlocks uint32
@@ -1055,6 +1056,8 @@ func BenchmarkHandleDispute(b *testing.B) {
 				utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(nil)
+				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
+				cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 				utils := &UtilsStruct{}
 				err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
