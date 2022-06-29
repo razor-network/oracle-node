@@ -12,9 +12,12 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
+	"io/fs"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core/types"
+	"razor/path"
+	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
@@ -44,6 +47,7 @@ func TestDispute(t *testing.T) {
 		finalizeDisputeTxn          *Types.Transaction
 		finalizeDisputeErr          error
 		hash                        common.Hash
+		storeBountyIdErr            error
 	}
 	tests := []struct {
 		name string
@@ -76,6 +80,16 @@ func TestDispute(t *testing.T) {
 			},
 			want: errors.New("finalizeDispute error"),
 		},
+		{
+			name: "Test 4: When Dispute function executes successfully but there is an error in storing bountyId",
+			args: args{
+				containsStatus:     false,
+				finalizeDisputeTxn: &Types.Transaction{},
+				hash:               common.BigToHash(big.NewInt(1)),
+				storeBountyIdErr:   errors.New("storeBountyId error"),
+			},
+			want: errors.New("storeBountyId error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -96,6 +110,7 @@ func TestDispute(t *testing.T) {
 			cmdUtilsMock.On("GetCollectionIdPositionInBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.positionOfCollectionInBlock)
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 
 			utils := &UtilsStruct{}
@@ -144,11 +159,11 @@ func TestHandleDispute(t *testing.T) {
 		idDisputeTxn              *Types.Transaction
 		idDisputeTxnErr           error
 		status                    int
-		isEqual                   bool
 		misMatchIndex             int
 		leafId                    uint16
 		leafIdErr                 error
 		disputeErr                error
+		storeBountyIdErr          error
 	}
 	tests := []struct {
 		name string
@@ -173,7 +188,6 @@ func TestHandleDispute(t *testing.T) {
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				isEqual:    true,
 				disputeErr: nil,
 			},
 			want: nil,
@@ -188,7 +202,6 @@ func TestHandleDispute(t *testing.T) {
 					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				isEqual:    true,
 				disputeErr: nil,
 			},
 			want: nil,
@@ -200,7 +213,6 @@ func TestHandleDispute(t *testing.T) {
 				proposedBlock: bindings.StructsBlock{
 					Medians: []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				},
-				isEqual:    true,
 				disputeErr: nil,
 			},
 			want: errors.New("sortedProposedBlockIds error"),
@@ -210,7 +222,6 @@ func TestHandleDispute(t *testing.T) {
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				proposedBlockErr:       errors.New("proposedBlock error"),
-				isEqual:                true,
 				disputeErr:             nil,
 			},
 			want: nil,
@@ -225,7 +236,6 @@ func TestHandleDispute(t *testing.T) {
 					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				isEqual: false,
 			},
 			want: nil,
 		},
@@ -242,7 +252,6 @@ func TestHandleDispute(t *testing.T) {
 				},
 				disputeBiggestStakeTxn: &Types.Transaction{},
 				Hash:                   common.BigToHash(big.NewInt(1)),
-				isEqual:                false,
 				disputeErr:             nil,
 				status:                 1,
 			},
@@ -260,7 +269,6 @@ func TestHandleDispute(t *testing.T) {
 				},
 				disputeBiggestStakeTxn: &Types.Transaction{},
 				Hash:                   common.BigToHash(big.NewInt(1)),
-				isEqual:                false,
 				disputeErr:             nil,
 			},
 			want: errors.New("biggestInfluenceAndIdErr"),
@@ -279,7 +287,6 @@ func TestHandleDispute(t *testing.T) {
 				},
 				disputeBiggestStakeErr: errors.New("disputeBiggestStake error"),
 				Hash:                   common.BigToHash(big.NewInt(1)),
-				isEqual:                false,
 				disputeErr:             nil,
 			},
 			want: nil,
@@ -313,7 +320,6 @@ func TestHandleDispute(t *testing.T) {
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
 				idDisputeTxnErr: errors.New("error in fetching Ids from CheckDisputeForIds"),
-				isEqual:         true,
 				disputeErr:      nil,
 			},
 			want: nil,
@@ -338,7 +344,6 @@ func TestHandleDispute(t *testing.T) {
 				},
 				idDisputeTxn: &Types.Transaction{},
 				status:       1,
-				isEqual:      false,
 				disputeErr:   nil,
 			},
 			want: nil,
@@ -362,7 +367,6 @@ func TestHandleDispute(t *testing.T) {
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				isEqual:       false,
 				misMatchIndex: 0,
 				leafIdErr:     errors.New("error in getting leafId"),
 				disputeErr:    nil,
@@ -388,10 +392,53 @@ func TestHandleDispute(t *testing.T) {
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
-				isEqual:       false,
 				misMatchIndex: 0,
 				leafId:        1,
 				disputeErr:    errors.New("error in dispute"),
+			},
+			want: nil,
+		},
+		{
+			name: "Test 14: When there is a biggest influence dispute case but there is an error in storing bountyId",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(4356), big.NewInt(1e18)),
+				},
+				disputeBiggestStakeTxn: &Types.Transaction{},
+				Hash:                   common.BigToHash(big.NewInt(1)),
+				disputeErr:             nil,
+				status:                 1,
+				storeBountyIdErr:       errors.New("storeBountyId error"),
+			},
+			want: nil,
+		},
+		{
+			name: "Test 15: When there is a idsDispute case but there is an error in storing bountyId",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
+				revealedCollectionIds:  []uint16{1},
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: nil,
+					VoteWeights:          nil,
+					InfluenceSum:         nil,
+				},
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				idDisputeTxn:     &Types.Transaction{},
+				status:           1,
+				storeBountyIdErr: errors.New("storeBountyId error"),
+				disputeErr:       nil,
 			},
 			want: nil,
 		},
@@ -422,10 +469,10 @@ func TestHandleDispute(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.Hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.status)
 			cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.idDisputeTxn, tt.args.idDisputeTxnErr)
-			utilsPkgMock.On("IsEqualUint32", mock.Anything, mock.Anything).Return(tt.args.isEqual, tt.args.misMatchIndex)
 			utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
+			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
 			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 			utils := &UtilsStruct{}
@@ -1094,6 +1141,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 				utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
+				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(nil)
 				cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 				utils := &UtilsStruct{}
@@ -1105,6 +1153,136 @@ func BenchmarkHandleDispute(b *testing.B) {
 		})
 	}
 
+}
+
+func TestStoreBountyId(t *testing.T) {
+	var (
+		client   *ethclient.Client
+		account  types.Account
+		fileInfo fs.FileInfo
+	)
+	type args struct {
+		disputeFilePath    string
+		disputeFilePathErr error
+		disputedFlag       bool
+		latestHeader       *Types.Header
+		latestHeaderErr    error
+		latestBountyId     uint32
+		latestBountyIdErr  error
+		statErr            error
+		disputeData        types.DisputeFileData
+		disputeDataErr     error
+		saveDataErr        error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When StoreBountyId() executes successfully",
+			args: args{
+				disputeFilePath: "",
+				disputedFlag:    true,
+				latestHeader:    &Types.Header{Number: big.NewInt(1)},
+				latestBountyId:  1,
+				statErr:         nil,
+				disputeData:     types.DisputeFileData{BountyIdQueue: []uint32{1}},
+				saveDataErr:     nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When StoreBountyId() executes successfully and there are more than one bountyId in queue",
+			args: args{
+				disputeFilePath: "",
+				disputedFlag:    true,
+				latestHeader:    &Types.Header{Number: big.NewInt(1)},
+				latestBountyId:  1,
+				statErr:         nil,
+				disputeData:     types.DisputeFileData{BountyIdQueue: []uint32{1, 2}},
+				saveDataErr:     nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 3: When there is an error in getting disputeFilePath",
+			args: args{
+				disputeFilePathErr: errors.New("error in getting disputeFilePath"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is an error in getting latest header",
+			args: args{
+				disputeFilePath: "",
+				disputedFlag:    true,
+				latestHeaderErr: errors.New("error in getting latest header"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in not getting latest bountyId",
+			args: args{
+				disputeFilePath:   "",
+				disputedFlag:      true,
+				latestHeader:      &Types.Header{Number: big.NewInt(1)},
+				latestBountyIdErr: errors.New("error in getting latest bountyId"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting disputeData",
+			args: args{
+				disputeFilePath: "",
+				disputedFlag:    true,
+				latestHeader:    &Types.Header{Number: big.NewInt(1)},
+				latestBountyId:  1,
+				statErr:         nil,
+				disputeDataErr:  errors.New("error in getting diapute data"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "When there is an error in saving data to file",
+			args: args{
+				disputeFilePath: "",
+				disputedFlag:    true,
+				latestHeader:    &Types.Header{Number: big.NewInt(1)},
+				latestBountyId:  1,
+				statErr:         nil,
+				disputeData:     types.DisputeFileData{BountyIdQueue: []uint32{1}},
+				saveDataErr:     errors.New("error in saving data to file"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(mocks2.Utils)
+			osUtilsMock := new(pathMocks.OSInterface)
+
+			razorUtils = utilsMock
+			cmdUtils = cmdUtilsMock
+			utils.UtilsInterface = utilsPkgMock
+			utilsInterface = utilsPkgMock
+			path.OSUtilsInterface = osUtilsMock
+
+			utilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
+			utilsPkgMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			cmdUtilsMock.On("GetBountyIdFromEvents", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.latestBountyId, tt.args.latestBountyIdErr)
+			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
+			utilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
+			utilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
+
+			ut := &UtilsStruct{}
+			if err := ut.StoreBountyId(client, account); (err != nil) != tt.wantErr {
+				t.Errorf("AutoClaimBounty() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
 
 func getDummyIds(numOfIds uint16) []uint16 {

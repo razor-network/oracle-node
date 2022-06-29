@@ -100,20 +100,6 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 	return r0, r1
 }
 
-// AutoClaimBounty provides a mock function with given fields: client, config, account
-func (_m *UtilsCmdInterface) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
-	ret := _m.Called(client, config, account)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account) error); ok {
-		r0 = rf(client, config, account)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // AutoUnstakeAndWithdraw provides a mock function with given fields: client, account, amount, config
 func (_m *UtilsCmdInterface) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
 	_m.Called(client, account, amount, config)
@@ -949,6 +935,20 @@ func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types
 	_m.Called(client, account, blockNumber, config, rogueData)
 }
 
+// HandleClaimBounty provides a mock function with given fields: client, config, account
+func (_m *UtilsCmdInterface) HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+	ret := _m.Called(client, config, account)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account) error); ok {
+		r0 = rf(client, config, account)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // HandleCommitState provides a mock function with given fields: client, epoch, seed, rogueData
 func (_m *UtilsCmdInterface) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
 	ret := _m.Called(client, epoch, seed, rogueData)
@@ -1407,6 +1407,20 @@ func (_m *UtilsCmdInterface) StakeCoins(txnArgs types.TransactionOptions) (commo
 	}
 
 	return r0, r1
+}
+
+// StoreBountyId provides a mock function with given fields: client, account
+func (_m *UtilsCmdInterface) StoreBountyId(client *ethclient.Client, account types.Account) error {
+	ret := _m.Called(client, account)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account) error); ok {
+		r0 = rf(client, account)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Transfer provides a mock function with given fields: client, config, transferInput
