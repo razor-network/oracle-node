@@ -224,7 +224,7 @@ func TestClaimBounty(t *testing.T) {
 				redeemBountyErr: errors.New("redeemBounty error"),
 			},
 			want:    core.NilHash,
-			wantErr: nil,
+			wantErr: errors.New("redeemBounty error"),
 		},
 		{
 			name: "Test 7: When claimBounty function exits successfully if lock is not reached",
