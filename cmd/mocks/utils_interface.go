@@ -143,22 +143,6 @@ func (_m *UtilsInterface) ConnectToClient(provider string) *ethclient.Client {
 	return r0
 }
 
-// ConvertBigIntArrayToUint32Array provides a mock function with given fields: bigIntArray
-func (_m *UtilsInterface) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
-	ret := _m.Called(bigIntArray)
-
-	var r0 []uint32
-	if rf, ok := ret.Get(0).(func([]*big.Int) []uint32); ok {
-		r0 = rf(bigIntArray)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]uint32)
-		}
-	}
-
-	return r0
-}
-
 // ConvertRZRToSRZR provides a mock function with given fields: sAmount, currentStake, totalSupply
 func (_m *UtilsInterface) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
 	ret := _m.Called(sAmount, currentStake, totalSupply)

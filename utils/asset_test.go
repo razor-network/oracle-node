@@ -170,11 +170,11 @@ func TestAggregate(t *testing.T) {
 			utilsMock := new(mocks.Utils)
 			pathUtilsMock := new(pathMocks.PathInterface)
 			osUtilsMock := new(pathMocks.OSInterface)
-			ioUtilsMock := new(mocks.IoutilUtils)
+			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface:  utilsMock,
-				IoutilInterface: ioUtilsMock,
+				UtilsInterface: utilsMock,
+				IOInterface:    ioMock,
 			}
 			path.PathUtilsInterface = pathUtilsMock
 			path.OSUtilsInterface = osUtilsMock
@@ -186,7 +186,7 @@ func TestAggregate(t *testing.T) {
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			osUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
-			ioUtilsMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
+			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
 			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
 			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection)

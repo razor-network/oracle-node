@@ -29,7 +29,7 @@ import (
 //go:generate mockery --name OSUtils --output ./mocks --case=underscore
 //go:generate mockery --name BufioUtils --output ./mocks --case=underscore
 //go:generate mockery --name CoinUtils --output ./mocks --case=underscore
-//go:generate mockery --name IoutilUtils --output ./mocks --case=underscore
+//go:generate mockery --name IOUtils --output ./mocks --case=underscore
 //go:generate mockery --name ABIUtils --output ./mocks --case=underscore
 //go:generate mockery --name PathUtils --output ./mocks --case=underscore
 //go:generate mockery --name BindUtils --output ./mocks --case=underscore
@@ -52,7 +52,7 @@ var Time TimeUtils
 var OS OSUtils
 var Bufio BufioUtils
 var CoinInterface CoinUtils
-var IoutilInterface IoutilUtils
+var IOInterface IOUtils
 var ABIInterface ABIUtils
 var PathInterface PathUtils
 var BindInterface BindUtils
@@ -193,6 +193,7 @@ type OSUtils interface {
 	OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error)
 	Open(name string) (*os.File, error)
 	WriteFile(name string, data []byte, perm fs.FileMode) error
+	ReadFile(filename string) ([]byte, error)
 }
 
 type BufioUtils interface {
@@ -208,10 +209,8 @@ type MerkleTreeInterface interface {
 	GetProofPath(tree [][][]byte, assetId uint16) [][32]byte
 	GetMerkleRoot(tree [][][]byte) [32]byte
 }
-type IoutilUtils interface {
+type IOUtils interface {
 	ReadAll(body io.ReadCloser) ([]byte, error)
-	ReadFile(filename string) ([]byte, error)
-	WriteFile(filename string, data []byte, perm fs.FileMode) error
 }
 
 type ABIUtils interface {
@@ -312,7 +311,7 @@ type TimeStruct struct{}
 type OSStruct struct{}
 type BufioStruct struct{}
 type CoinStruct struct{}
-type IoutilStruct struct{}
+type IOStruct struct{}
 type ABIStruct struct{}
 type PathStruct struct{}
 type BindStruct struct{}
@@ -336,7 +335,7 @@ type OptionsPackageStruct struct {
 	OS                    OSUtils
 	Bufio                 BufioUtils
 	CoinInterface         CoinUtils
-	IoutilInterface       IoutilUtils
+	IOInterface           IOUtils
 	ABIInterface          ABIUtils
 	PathInterface         PathUtils
 	BindInterface         BindUtils

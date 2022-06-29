@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"math/big"
 	"os"
 	"razor/accounts"
@@ -34,7 +33,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	OS = optionsPackageStruct.OS
 	Bufio = optionsPackageStruct.Bufio
 	CoinInterface = optionsPackageStruct.CoinInterface
-	IoutilInterface = optionsPackageStruct.IoutilInterface
+	IOInterface = optionsPackageStruct.IOInterface
 	ABIInterface = optionsPackageStruct.ABIInterface
 	PathInterface = optionsPackageStruct.PathInterface
 	BindInterface = optionsPackageStruct.BindInterface
@@ -287,6 +286,14 @@ func (o OSStruct) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	return os.WriteFile(name, data, perm)
 }
 
+func (o OSStruct) ReadFile(filename string) ([]byte, error) {
+	return os.ReadFile(filename)
+}
+
+func (i IOStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
+	return io.ReadAll(body)
+}
+
 func (c ClientStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
 	return client.TransactionReceipt(ctx, txHash)
 }
@@ -329,18 +336,6 @@ func (a ABIStruct) Parse(reader io.Reader) (abi.ABI, error) {
 
 func (a ABIStruct) Pack(parsedData abi.ABI, name string, args ...interface{}) ([]byte, error) {
 	return parsedData.Pack(name, args...)
-}
-
-func (i IoutilStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
-	return ioutil.ReadAll(body)
-}
-
-func (i IoutilStruct) ReadFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filename)
-}
-
-func (i IoutilStruct) WriteFile(filename string, data []byte, perm fs.FileMode) error {
-	return ioutil.WriteFile(filename, data, perm)
 }
 
 func (p PathStruct) GetDefaultPath() (string, error) {

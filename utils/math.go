@@ -1,10 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
 	"errors"
 	"math"
 	"math/big"
-	"math/rand"
 	"sort"
 	"strconv"
 )
@@ -165,9 +165,11 @@ func GetRogueRandomValue(value int) *big.Int {
 	if value <= 0 {
 		return big.NewInt(0)
 	}
-	return big.NewInt(int64(rand.Intn(value)))
+	rogueRandomValue, _ := rand.Int(rand.Reader, big.NewInt(int64(value)))
+	return rogueRandomValue
 }
 
 func GetRogueRandomMedianValue() uint32 {
-	return rand.Uint32()
+	rogueRandomMedianValue, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt32))
+	return uint32(rogueRandomMedianValue.Int64())
 }
