@@ -653,6 +653,11 @@ func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.Blo
 	return blockManager.GiveSorted(opts, epoch, leafId, sortedValues)
 }
 
+//This function resets the dispute
+func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32) (*Types.Transaction, error) {
+	return blockManager.ResetDispute(opts, epoch)
+}
+
 //This function is used to reveal the values
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error) {
 	voteManager := utilsInterface.GetVoteManager(client)

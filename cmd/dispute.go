@@ -146,6 +146,19 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			continue
 		}
 	}
+
+	blockManager := razorUtils.GetBlockManager(client)
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	})
+	if disputedFlag {
+		cmdUtils.ResetDispute(client, blockManager, txnOpts, epoch)
+	}
+
 	giveSortedLeafIds = []int{}
 	return nil
 }
@@ -325,6 +338,19 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 		}
 	}
 	return nil
+}
+
+//This function resets the dispute
+func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32) {
+	log.Info("Resetting the dispute ...")
+	txn, err := blockManagerUtils.ResetDispute(blockManager, txnOpts, epoch)
+	if err != nil {
+		log.Error("error in resetting dispute", err)
+	}
+	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
+	log.Info("Dispute has been reset")
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+
 }
 
 //This function returns the bountyId from events

@@ -124,6 +124,7 @@ func TestHandleDispute(t *testing.T) {
 	var epoch uint32
 	var blockNumber *big.Int
 	var rogueData types.Rogue
+	var blockManager *bindings.BlockManager
 
 	type args struct {
 		sortedProposedBlockIds    []uint32
@@ -424,6 +425,8 @@ func TestHandleDispute(t *testing.T) {
 			utilsPkgMock.On("IsEqualUint32", mock.Anything, mock.Anything).Return(tt.args.isEqual, tt.args.misMatchIndex)
 			utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
+			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
+			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 			utils := &UtilsStruct{}
 			err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
@@ -920,6 +923,56 @@ func TestGetBountyIdFromEvents(t *testing.T) {
 	}
 }
 
+func TestResetDispute(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		blockManager *bindings.BlockManager
+		txnOpts      *bind.TransactOpts
+		epoch        uint32
+	)
+	type args struct {
+		ResetDisputeTxn    *Types.Transaction
+		ResetDisputeTxnErr error
+		hash               common.Hash
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "Test 1: When ResetDispute() executes successfully",
+			args: args{
+				ResetDisputeTxn: &Types.Transaction{},
+				hash:            common.Hash{1},
+			},
+		},
+		{
+			name: "Test 2: When there is an error in executing ResetDispute()",
+			args: args{
+				ResetDisputeTxnErr: errors.New("error in resetting dispute"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.UtilsInterface)
+			blockManagerMock := new(mocks.BlockManagerInterface)
+			transactionUtilsMock := new(mocks.TransactionInterface)
+
+			razorUtils = utilsMock
+			blockManagerUtils = blockManagerMock
+			transactionUtils = transactionUtilsMock
+
+			blockManagerMock.On("ResetDispute", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ResetDisputeTxn, tt.args.ResetDisputeTxnErr)
+			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+
+			ut := &UtilsStruct{}
+			ut.ResetDispute(client, blockManager, txnOpts, epoch)
+		})
+	}
+}
+
 func BenchmarkGetCollectionIdPositionInBlock(b *testing.B) {
 	var client *ethclient.Client
 	var leafId uint16
@@ -957,6 +1010,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 	var epoch uint32
 	var blockNumber *big.Int
 	var rogueData types.Rogue
+	var blockManager *bindings.BlockManager
 
 	table := []struct {
 		numOfSortedBlocks uint32
@@ -1005,6 +1059,8 @@ func BenchmarkHandleDispute(b *testing.B) {
 				utilsPkgMock.On("IsEqualUint32", mock.Anything, mock.Anything).Return(true, 0)
 				utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
+				cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 				utils := &UtilsStruct{}
 				err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)

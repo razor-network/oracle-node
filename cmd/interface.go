@@ -162,6 +162,7 @@ type BlockManagerInterface interface {
 	DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error)
 	DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error)
 	GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error)
+	ResetDispute(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32) (*Types.Transaction, error)
 }
 
 type VoteManagerInterface interface {
@@ -324,6 +325,7 @@ type UtilsCmdInterface interface {
 	AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
 	ExecuteContractAddresses(flagSet *pflag.FlagSet)
 	ContractAddresses()
+	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 }
 
 type TransactionInterface interface {
