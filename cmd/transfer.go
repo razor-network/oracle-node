@@ -101,14 +101,14 @@ func init() {
 		From     string
 		To       string
 		Password string
-		Power    string
+		WeiRazor bool
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
 	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
-	transferCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	transferCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 
 	amountErr := transferCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

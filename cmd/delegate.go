@@ -103,14 +103,14 @@ func init() {
 		Address  string
 		StakerId uint32
 		Password string
-		Power    string
+		WeiRazor bool
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
 	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	delegateCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
-	delegateCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	delegateCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", valueErr)

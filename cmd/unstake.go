@@ -170,14 +170,14 @@ func init() {
 		Address         string
 		AmountToUnStake string
 		Password        string
-		Power           string
+		WeiRazor        bool
 		StakerId        uint32
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
 	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
-	unstakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	unstakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 	unstakeCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 
 	addrErr := unstakeCmd.MarkFlagRequired("address")

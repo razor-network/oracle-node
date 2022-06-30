@@ -143,22 +143,6 @@ func (_m *UtilsInterface) ConnectToClient(provider string) *ethclient.Client {
 	return r0
 }
 
-// ConvertBigIntArrayToUint32Array provides a mock function with given fields: bigIntArray
-func (_m *UtilsInterface) ConvertBigIntArrayToUint32Array(bigIntArray []*big.Int) []uint32 {
-	ret := _m.Called(bigIntArray)
-
-	var r0 []uint32
-	if rf, ok := ret.Get(0).(func([]*big.Int) []uint32); ok {
-		r0 = rf(bigIntArray)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]uint32)
-		}
-	}
-
-	return r0
-}
-
 // ConvertRZRToSRZR provides a mock function with given fields: sAmount, currentStake, totalSupply
 func (_m *UtilsInterface) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
 	ret := _m.Called(sAmount, currentStake, totalSupply)
@@ -612,29 +596,6 @@ func (_m *UtilsInterface) GetEpochLimitForUpdateCommission(client *ethclient.Cli
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetFractionalAmountInWei provides a mock function with given fields: amount, power
-func (_m *UtilsInterface) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
-	ret := _m.Called(amount, power)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*big.Int, string) *big.Int); ok {
-		r0 = rf(amount, power)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*big.Int, string) error); ok {
-		r1 = rf(amount, power)
 	} else {
 		r1 = ret.Error(1)
 	}
