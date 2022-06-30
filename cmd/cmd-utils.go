@@ -75,19 +75,19 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 		return nil, err
 	}
 	_amount, ok := new(big.Int).SetString(amount, 10)
+
 	if !ok {
 		return nil, errors.New("SetString: error")
 	}
 	var amountInWei *big.Int
-	if razorUtils.IsFlagPassed("pow") {
-		power, err := flagSetUtils.GetStringPow(flagSet)
+	if razorUtils.IsFlagPassed("weiRazor") {
+		weiRazorPassed, err := flagSetUtils.GetBoolWeiRazor(flagSet)
 		if err != nil {
-			log.Error("Error in getting power: ", err)
+			log.Error("Error in getting weiRazorBool Value: ", err)
 			return nil, err
 		}
-		amountInWei, err = razorUtils.GetFractionalAmountInWei(_amount, power)
-		if err != nil {
-			return nil, err
+		if weiRazorPassed {
+			amountInWei = _amount
 		}
 	} else {
 		amountInWei = razorUtils.GetAmountInWei(_amount)

@@ -274,16 +274,14 @@ func TestAssignAmountInWei1(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		amount                   string
-		amountErr                error
-		_amount                  *big.Int
-		_amountErr               bool
-		isFlagPassed             bool
-		power                    string
-		powerErr                 error
-		fractionalAmountInWei    *big.Int
-		fractionalAmountInWeiErr error
-		amountInWei              *big.Int
+		amount       string
+		amountErr    error
+		_amount      *big.Int
+		_amountErr   bool
+		isFlagPassed bool
+		weiRazor     bool
+		weiRazorErr  error
+		amountInWei  *big.Int
 	}
 	tests := []struct {
 		name    string
@@ -303,13 +301,12 @@ func TestAssignAmountInWei1(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When AssignAmountInWei executes successfully and power flag is passed",
+			name: "Test 2: When AssignAmountInWei executes successfully and weiRazor flag is passed",
 			args: args{
-				amount:                "10001",
-				_amount:               big.NewInt(10001),
-				isFlagPassed:          true,
-				power:                 "17",
-				fractionalAmountInWei: big.NewInt(1).Mul(big.NewInt(10001), big.NewInt(1e17)),
+				amount:       "1000100000000000000000",
+				_amount:      big.NewInt(1).Mul(big.NewInt(10001), big.NewInt(1e17)),
+				isFlagPassed: true,
+				weiRazor:     true,
 			},
 			want:    big.NewInt(1).Mul(big.NewInt(10001), big.NewInt(1e17)),
 			wantErr: nil,
@@ -334,27 +331,15 @@ func TestAssignAmountInWei1(t *testing.T) {
 			wantErr: errors.New("SetString: error"),
 		},
 		{
-			name: "Test 5: When there is an error in getting power",
+			name: "Test 5: When there is an error in getting if weiRazor is passed or not",
 			args: args{
 				amount:       "10001",
 				_amount:      big.NewInt(10001),
 				isFlagPassed: true,
-				powerErr:     errors.New("power error"),
+				weiRazorErr:  errors.New("weiRazor error"),
 			},
 			want:    nil,
-			wantErr: errors.New("power error"),
-		},
-		{
-			name: "Test 6: When there is an error in getting fractionalAmountInWei",
-			args: args{
-				amount:                   "10001",
-				_amount:                  big.NewInt(10001),
-				isFlagPassed:             true,
-				power:                    "17",
-				fractionalAmountInWeiErr: errors.New("fractionalAmountInWei error"),
-			},
-			want:    nil,
-			wantErr: errors.New("fractionalAmountInWei error"),
+			wantErr: errors.New("weiRazor error"),
 		},
 	}
 	for _, tt := range tests {
@@ -366,9 +351,8 @@ func TestAssignAmountInWei1(t *testing.T) {
 			flagSetUtils = flagsetUtilsMock
 
 			flagsetUtilsMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
-			flagsetUtilsMock.On("GetStringPow", flagSet).Return(tt.args.power, tt.args.powerErr)
+			flagsetUtilsMock.On("GetBoolWeiRazor", flagSet).Return(tt.args.weiRazor, tt.args.weiRazorErr)
 			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
-			utilsMock.On("GetFractionalAmountInWei", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("string")).Return(tt.args.fractionalAmountInWei, tt.args.fractionalAmountInWeiErr)
 			utilsMock.On("GetAmountInWei", mock.AnythingOfType("*big.Int")).Return(tt.args.amountInWei)
 
 			utils := &UtilsStruct{}
