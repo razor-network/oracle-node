@@ -75,15 +75,6 @@ func GetAmountInWei(amount *big.Int) *big.Int {
 	return amountInWei
 }
 
-func GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
-	_power, err := new(big.Int).SetString(power, 10)
-	if !err {
-		return nil, errors.New("SetString: error")
-	}
-	amountInWei := big.NewInt(1).Mul(amount, big.NewInt(1).Exp(big.NewInt(10), _power, nil))
-	return amountInWei, nil
-}
-
 func GetAmountInDecimal(amountInWei *big.Int) *big.Float {
 	return new(big.Float).Quo(new(big.Float).SetInt(amountInWei), new(big.Float).SetInt(big.NewInt(1e18)))
 }
