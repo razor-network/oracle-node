@@ -102,6 +102,27 @@ func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error
 	return minStake, nil
 }
 
+func (*UtilsStruct) GetStateBuffer(client *ethclient.Client) (uint64, error) {
+	var (
+		stateBuffer uint64
+		err         error
+	)
+	err = retry.Do(
+		func() error {
+			stateBufferUint8, err := BlockManagerInterface.StateBuffer(client)
+			stateBuffer = uint64(stateBufferUint8)
+			if err != nil {
+				log.Error("Error in fetching state buffer.... Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return stateBuffer, nil
+}
+
 func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	var (
 		maxAltBlocks uint8

@@ -591,3 +591,58 @@ func TestGetBlockIndexToBeConfirmed(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStateBuffer(t *testing.T) {
+	var client *ethclient.Client
+	type args struct {
+		stateBuffer    uint8
+		stateBufferErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint64
+		wantErr bool
+	}{
+		{
+			name: "When GetStateBuffer() executes successfully",
+			args: args{
+				stateBuffer: 5,
+			},
+			want:    5,
+			wantErr: false,
+		},
+		{
+			name: "When there is an error in getting stateBuffer",
+			args: args{
+				stateBufferErr: errors.New("error in getting stateBuffer"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			blockManagerMock := new(mocks.BlockManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				BlockManagerInterface: blockManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			blockManagerMock.On("StateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetStateBuffer(client)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetStateBuffer() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetStateBuffer() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

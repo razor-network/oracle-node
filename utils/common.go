@@ -36,10 +36,14 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	if err != nil {
 		return -1, err
 	}
+	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
+	if err != nil {
+		return -1, err
+	}
 	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit+core.StateBuffer || blockTime%(core.StateLength) < lowerLimit+core.StateBuffer {
+	if blockTime%(core.StateLength) > upperLimit+stateBuffer || blockTime%(core.StateLength) < lowerLimit+stateBuffer {
 		return -1, nil
 	}
 	state := blockTime / core.StateLength
@@ -160,8 +164,12 @@ func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, buf
 	if err != nil {
 		return 0, err
 	}
+	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
+	if err != nil {
+		return 0, err
+	}
 	timeRemaining := core.StateLength - (block.Time % core.StateLength)
-	upperLimit := ((core.StateLength * uint64(bufferPercent)) / 100) + core.StateBuffer
+	upperLimit := ((core.StateLength * uint64(bufferPercent)) / 100) + stateBuffer
 
 	return int64(timeRemaining - upperLimit), nil
 }

@@ -365,9 +365,11 @@ func TestGetDelayedState(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		block    *types.Header
-		blockErr error
-		buffer   int32
+		block          *types.Header
+		blockErr       error
+		buffer         int32
+		stateBuffer    uint64
+		stateBufferErr error
 	}
 	tests := []struct {
 		name    string
@@ -381,7 +383,8 @@ func TestGetDelayedState(t *testing.T) {
 				block: &types.Header{
 					Time: 100,
 				},
-				buffer: 2,
+				buffer:      2,
+				stateBuffer: 5,
 			},
 
 			want:    0,
@@ -404,7 +407,8 @@ func TestGetDelayedState(t *testing.T) {
 				block: &types.Header{
 					Time: 1080,
 				},
-				buffer: 2,
+				buffer:      2,
+				stateBuffer: 5,
 			},
 			want:    -1,
 			wantErr: false,
@@ -415,11 +419,25 @@ func TestGetDelayedState(t *testing.T) {
 				block: &types.Header{
 					Time: 900,
 				},
-				buffer: 2,
+				buffer:      2,
+				stateBuffer: 5,
 			},
 
 			want:    2,
 			wantErr: false,
+		},
+		{
+			name: "Test 5: When there is an error in getting stateBuffer",
+			args: args{
+				block: &types.Header{
+					Time: 100,
+				},
+				buffer:         2,
+				stateBufferErr: errors.New("error in getting stateBuffer"),
+			},
+
+			want:    -1,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -433,6 +451,7 @@ func TestGetDelayedState(t *testing.T) {
 
 			utils := StartRazor(optionsPackageStruct)
 
+			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
 			got, err := utils.GetDelayedState(client, tt.args.buffer)
@@ -838,8 +857,10 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 		bufferPercent int32
 	)
 	type args struct {
-		block    *types.Header
-		blockErr error
+		block          *types.Header
+		blockErr       error
+		stateBuffer    uint64
+		stateBufferErr error
 	}
 	tests := []struct {
 		name    string
@@ -850,13 +871,23 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 		{
 			name: "Test 1: When GetRemainingTimeOfCurrentState() executes successfully",
 			args: args{
-				block: &types.Header{},
+				block:       &types.Header{},
+				stateBuffer: 5,
 			},
 			want:    355,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting block",
+			name: "Test 2: When there is an error in getting stateBuffer",
+			args: args{
+				block:          &types.Header{},
+				stateBufferErr: errors.New("error in getting stateBuffer"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting block",
 			args: args{
 				blockErr: errors.New("error in getting block"),
 			},
@@ -873,6 +904,7 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
+			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 			got, err := utils.GetRemainingTimeOfCurrentState(client, bufferPercent)
 			if (err != nil) != tt.wantErr {
