@@ -164,3 +164,24 @@ func (_m *BlockManagerUtils) SortedProposedBlockIds(client *ethclient.Client, ar
 
 	return r0, r1
 }
+
+// StateBuffer provides a mock function with given fields: client
+func (_m *BlockManagerUtils) StateBuffer(client *ethclient.Client) (uint8, error) {
+	ret := _m.Called(client)
+
+	var r0 uint8
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+		r0 = rf(client)
+	} else {
+		r0 = ret.Get(0).(uint8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

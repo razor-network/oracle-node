@@ -131,6 +131,11 @@ func (b BlockManagerStruct) MinStake(client *ethclient.Client) (*big.Int, error)
 	return blockManager.MinStake(&opts)
 }
 
+func (b BlockManagerStruct) StateBuffer(client *ethclient.Client) (uint8, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.Buffer(&opts)
+}
+
 func (b BlockManagerStruct) MaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
 	return blockManager.MaxAltBlocks(&opts)
