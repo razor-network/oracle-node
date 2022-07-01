@@ -93,6 +93,7 @@ func (*UtilsStruct) HandleExit() {
 		select {
 		case <-signalChan:
 			log.Warn("If you don't unstake and withdraw your coins, you may get inactivity penalty!")
+			log.Info("Press CTRL+C again to terminate.")
 		case <-ctx.Done():
 		}
 		<-signalChan // second signal, hard exit

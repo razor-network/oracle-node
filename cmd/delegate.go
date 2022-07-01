@@ -49,7 +49,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	balance, err := razorUtils.FetchBalance(client, address)
-	utils.CheckError("Error in fetching balance for account "+address+": ", err)
+	utils.CheckError("Error in fetching razor balance for account "+address+": ", err)
 
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
