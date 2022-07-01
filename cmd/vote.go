@@ -547,9 +547,8 @@ loop:
 			// topics[1] gives staker id in data type common.Hash
 			// Converting uint32 staker id to common.Hash to compare with staker id from topics
 			stakerIdInHash := common.BigToHash(big.NewInt(int64(stakerId)))
-			if stakerIdInHash == topics[1] {
+			if stakerIdInHash == topics[1] && len(topics) > 1 {
 				epochLastProposed = data[0].(uint32)
-				break
 			}
 		}
 	}
