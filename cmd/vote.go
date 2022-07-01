@@ -303,8 +303,6 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return err
 	}
 
-	log.Debugf("Secret: %s", hex.EncodeToString(secret))
-
 	salt, err := cmdUtils.GetSalt(client, epoch)
 	if err != nil {
 		return err
