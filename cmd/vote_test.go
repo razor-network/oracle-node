@@ -278,7 +278,8 @@ func TestGetLastProposedEpoch(t *testing.T) {
 				stakerId:  2,
 				logs: []Types.Log{
 					{
-						Data: []byte{4, 2},
+						Data:   []byte{4, 2},
+						Topics: []common.Hash{common.BigToHash(big.NewInt(1000)), common.BigToHash(big.NewInt(2))},
 					},
 				},
 				contractAbi:   abi.ABI{},
