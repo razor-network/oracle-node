@@ -298,7 +298,7 @@ docker exec -it razor-go razor delegate --address <address> --value <value> --we
 Example:
 
 ```
-$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --weiRazor --false --stakerId 1
+$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --weiRazor false --stakerId 1
 ```
 
 ### Claim Commission 
