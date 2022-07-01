@@ -65,7 +65,7 @@ func AllZero(bytesValue [32]byte) bool {
 
 func CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	if amountInWei.Cmp(balance) > 0 {
-		log.Fatal("Not enough balance")
+		log.Fatal("Not enough razor balance")
 	}
 	return amountInWei
 }

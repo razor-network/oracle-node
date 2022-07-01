@@ -48,7 +48,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	balance, err := razorUtils.FetchBalance(client, fromAddress)
-	utils.CheckError("Error in fetching balance: ", err)
+	utils.CheckError("Error in fetching razor balance: ", err)
 
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
