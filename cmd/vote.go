@@ -479,7 +479,11 @@ loop:
 				log.Error(unpackErr)
 				continue
 			}
-			if stakerId == data[1].(uint32) {
+			topics := vLog.Topics
+			// topics[1] gives staker id in data type common.Hash
+			// Converting uint32 staker id to common.Hash to compare with staker id from topics
+			stakerIdInHash := common.BigToHash(big.NewInt(int64(stakerId)))
+			if stakerIdInHash == topics[1] && len(topics) > 1 {
 				epochLastProposed = data[0].(uint32)
 			}
 		}
