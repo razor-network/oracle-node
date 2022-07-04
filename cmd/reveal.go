@@ -126,7 +126,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			continue
 		}
 		if epoch == data[0].(uint32) {
-			treeValues := data[3].([]struct {
+			treeValues := data[2].([]struct {
 				LeafId uint16   `json:"leafId"`
 				Value  *big.Int `json:"value"`
 			})
@@ -139,7 +139,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			}
 			consolidatedRevealedData := types.RevealedStruct{
 				RevealedValues: revealedValues,
-				Influence:      data[2].(*big.Int),
+				Influence:      data[1].(*big.Int),
 			}
 			revealedData = append(revealedData, consolidatedRevealedData)
 		}
