@@ -10,14 +10,11 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"io/fs"
 	"math/big"
 	"razor/accounts"
 	accountMocks "razor/accounts/mocks"
 	"razor/cmd/mocks"
 	"razor/core/types"
-	"razor/path"
-	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
@@ -944,35 +941,35 @@ func TestHandleBlock(t *testing.T) {
 	)
 
 	type args struct {
-		config              types.Configurations
-		state               int64
-		stateErr            error
-		epoch               uint32
-		epochErr            error
-		stateName           string
-		stakerId            uint32
-		stakerIdErr         error
-		staker              bindings.StructsStaker
-		stakerErr           error
-		ethBalance          *big.Int
-		ethBalanceErr       error
-		minStakeAmount      *big.Int
-		minStakeAmountErr   error
-		actualStake         *big.Float
-		actualStakeErr      error
-		actualBalance       *big.Float
-		sRZRBalance         *big.Int
-		sRZRBalanceErr      error
-		sRZRInEth           *big.Float
-		initiateCommitErr   error
-		initiateRevealErr   error
-		initiateProposeErr  error
-		handleDisputeErr    error
-		claimBlockRewardTxn common.Hash
-		claimBlockRewardErr error
-		lastVerification    uint32
-		isFlagPassed        bool
-		autoClaimBountyErr  error
+		config               types.Configurations
+		state                int64
+		stateErr             error
+		epoch                uint32
+		epochErr             error
+		stateName            string
+		stakerId             uint32
+		stakerIdErr          error
+		staker               bindings.StructsStaker
+		stakerErr            error
+		ethBalance           *big.Int
+		ethBalanceErr        error
+		minStakeAmount       *big.Int
+		minStakeAmountErr    error
+		actualStake          *big.Float
+		actualStakeErr       error
+		actualBalance        *big.Float
+		sRZRBalance          *big.Int
+		sRZRBalanceErr       error
+		sRZRInEth            *big.Float
+		initiateCommitErr    error
+		initiateRevealErr    error
+		initiateProposeErr   error
+		handleDisputeErr     error
+		claimBlockRewardTxn  common.Hash
+		claimBlockRewardErr  error
+		lastVerification     uint32
+		isFlagPassed         bool
+		handleClaimBountyErr error
 	}
 	tests := []struct {
 		name string
@@ -1203,7 +1200,7 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 18: When there is no error in dispute and autoClaimBounty flag is passed",
+			name: "Test 18: When there is no error in dispute and HandleClaimBounty flag is passed",
 			args: args{
 				state:          3,
 				epoch:          1,
@@ -1220,21 +1217,21 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 19: When there is no error in dispute but autoClaimBounty throws error",
+			name: "Test 19: When there is no error in dispute but HandleClaimBounty throws error",
 			args: args{
-				state:              3,
-				epoch:              1,
-				stateName:          "dispute",
-				stakerId:           1,
-				staker:             bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
-				ethBalance:         big.NewInt(1000),
-				minStakeAmount:     big.NewInt(100),
-				actualStake:        big.NewFloat(10000),
-				actualBalance:      big.NewFloat(1000),
-				sRZRBalance:        big.NewInt(10000),
-				sRZRInEth:          big.NewFloat(100),
-				isFlagPassed:       true,
-				autoClaimBountyErr: errors.New("error in autoClaimBounty"),
+				state:                3,
+				epoch:                1,
+				stateName:            "dispute",
+				stakerId:             1,
+				staker:               bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:           big.NewInt(1000),
+				minStakeAmount:       big.NewInt(100),
+				actualStake:          big.NewFloat(10000),
+				actualBalance:        big.NewFloat(1000),
+				sRZRBalance:          big.NewInt(10000),
+				sRZRInEth:            big.NewFloat(100),
+				isFlagPassed:         true,
+				handleClaimBountyErr: errors.New("error in handleClaimBounty"),
 			},
 		},
 		{
@@ -1340,7 +1337,7 @@ func TestHandleBlock(t *testing.T) {
 			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
 			utilsPkgMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
-			cmdUtilsMock.On("AutoClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoClaimBountyErr)
+			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(1)
 			timeMock.On("Sleep", mock.Anything).Return()
@@ -1348,162 +1345,6 @@ func TestHandleBlock(t *testing.T) {
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
 			ut.HandleBlock(client, account, blockNumber, tt.args.config, rogueData)
-		})
-	}
-}
-
-func TestAutoClaimBounty(t *testing.T) {
-	var (
-		client   *ethclient.Client
-		config   types.Configurations
-		account  types.Account
-		fileInfo fs.FileInfo
-	)
-	type args struct {
-		disputeFilePath    string
-		disputeFilePathErr error
-		disputedFlag       bool
-		latestHeader       *Types.Header
-		latestHeaderErr    error
-		latestBountyId     uint32
-		latestBountyIdErr  error
-		statErr            error
-		disputeData        types.DisputeFileData
-		disputeDataErr     error
-		claimBountyTxn     common.Hash
-		claimBountyTxnErr  error
-		claimBountyStatus  int
-		saveDataErr        error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Test 1: When AutoClaimBounty() executes successfully",
-			args: args{
-				disputeFilePath:   "",
-				disputedFlag:      true,
-				latestHeader:      &Types.Header{Number: big.NewInt(1)},
-				latestBountyId:    1,
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1}},
-				claimBountyTxn:    common.BigToHash(big.NewInt(1)),
-				claimBountyStatus: 1,
-				saveDataErr:       nil,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test 2: When AutoClaimBounty() executes successfully and there are more than one bountyId in queue",
-			args: args{
-				disputeFilePath:   "",
-				disputedFlag:      true,
-				latestHeader:      &Types.Header{Number: big.NewInt(1)},
-				latestBountyId:    1,
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1, 2}},
-				claimBountyTxn:    common.BigToHash(big.NewInt(1)),
-				claimBountyStatus: 1,
-				saveDataErr:       nil,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test 3: When there is an error in getting disputeFilePath",
-			args: args{
-				disputeFilePathErr: errors.New("error in getting disputeFilePath"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 4: When there is an error in getting latest header",
-			args: args{
-				disputeFilePath: "",
-				disputedFlag:    true,
-				latestHeaderErr: errors.New("error in getting latest header"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 5: When there is an error in not getting latest bountyId",
-			args: args{
-				disputeFilePath:   "",
-				disputedFlag:      true,
-				latestHeader:      &Types.Header{Number: big.NewInt(1)},
-				latestBountyIdErr: errors.New("error in getting latest bountyId"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 6: When there is an error in getting disputeData",
-			args: args{
-				disputeFilePath: "",
-				disputedFlag:    true,
-				latestHeader:    &Types.Header{Number: big.NewInt(1)},
-				latestBountyId:  1,
-				statErr:         nil,
-				disputeDataErr:  errors.New("error in getting diapute data"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "When there is an error in claimBounty",
-			args: args{
-				disputeFilePath:   "",
-				disputedFlag:      true,
-				latestHeader:      &Types.Header{Number: big.NewInt(1)},
-				latestBountyId:    1,
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1}},
-				claimBountyTxnErr: errors.New("error in claimBounty"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "When there is an error in saving data to file",
-			args: args{
-				disputeFilePath:   "",
-				disputedFlag:      true,
-				latestHeader:      &Types.Header{Number: big.NewInt(1)},
-				latestBountyId:    1,
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1}},
-				claimBountyTxn:    common.BigToHash(big.NewInt(1)),
-				claimBountyStatus: 1,
-				saveDataErr:       errors.New("error in saving data to file"),
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
-			osUtilsMock := new(pathMocks.OSInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
-			utilsInterface = utilsPkgMock
-			path.OSUtilsInterface = osUtilsMock
-
-			utilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
-			utilsPkgMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
-			cmdUtilsMock.On("GetBountyIdFromEvents", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.latestBountyId, tt.args.latestBountyIdErr)
-			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
-			utilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
-			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyTxnErr)
-			utilsPkgMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.claimBountyStatus)
-			utilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
-			disputedFlag = tt.args.disputedFlag
-
-			ut := &UtilsStruct{}
-			if err := ut.AutoClaimBounty(client, config, account); (err != nil) != tt.wantErr {
-				t.Errorf("AutoClaimBounty() error = %v, wantErr %v", err, tt.wantErr)
-			}
 		})
 	}
 }

@@ -8,7 +8,7 @@ import (
 
 func (*UtilsStruct) ReadJSONData(fileName string) (map[string]*types.StructsJob, error) {
 	var data = map[string]*types.StructsJob{}
-	file, err := IoutilInterface.ReadFile(fileName)
+	file, err := OS.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (*UtilsStruct) WriteDataToJSON(fileName string, data map[string]*types.Stru
 	if err != nil {
 		return err
 	}
-	err = IoutilInterface.WriteFile(fileName, jsonString, 0600)
+	err = OS.WriteFile(fileName, jsonString, 0600)
 	if err != nil {
 		return err
 	}

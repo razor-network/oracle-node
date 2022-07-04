@@ -6,6 +6,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/pflag"
 	"os"
+	"unicode"
 )
 
 func PasswordPrompt() string {
@@ -35,7 +36,7 @@ func PrivateKeyPrompt() string {
 }
 
 func validate(input string) error {
-	if input == "" {
+	if input == "" || !strongPassword(input) {
 		return errors.New("enter a valid password")
 	}
 	return nil
@@ -73,4 +74,24 @@ func AssignPassword(flagset *pflag.FlagSet) string {
 		return GetPasswordFromFile(passwordPath)
 	}
 	return PasswordPrompt()
+}
+
+//This function checks if the password is strong enough or not
+func strongPassword(input string) bool {
+	l, u, p, d := 0, 0, 0, 0
+	if len(input) >= 8 {
+		for _, char := range input {
+			switch {
+			case unicode.IsUpper(char):
+				u += 1
+			case unicode.IsLower(char):
+				l += 1
+			case unicode.IsNumber(char):
+				d += 1
+			case unicode.IsPunct(char) || unicode.IsSymbol(char):
+				p += 1
+			}
+		}
+	}
+	return (l >= 1 && u >= 1 && p >= 1 && d >= 1) && (l+u+p+d == len(input))
 }

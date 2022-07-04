@@ -13,7 +13,6 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
-	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -249,7 +248,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		lastVerification = epoch
 
 		if utilsInterface.IsFlagPassed("autoClaimBounty") {
-			err = cmdUtils.AutoClaimBounty(client, config, account)
+			err = cmdUtils.HandleClaimBounty(client, config, account)
 			if err != nil {
 				log.Error(err)
 				break
@@ -429,69 +428,6 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 	}
 	if proposeTxn != core.NilHash {
 		razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
-	}
-	return nil
-}
-
-//This function helps the staker to claim the bounty automatically
-func (*UtilsStruct) AutoClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
-	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
-	if err != nil {
-		return err
-	}
-
-	var latestBountyId uint32
-
-	//Checking if dispute happens, if yes than getting the bountyId from events
-	if disputedFlag {
-		latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
-		if err != nil {
-			log.Error("Error in fetching block: ", err)
-			return err
-		}
-
-		latestBountyId, err = cmdUtils.GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
-		if err != nil {
-			return err
-		}
-	}
-
-	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
-		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
-		if err != nil {
-			return err
-		}
-	}
-	if disputeData.BountyIdQueue != nil {
-		length := len(disputeData.BountyIdQueue)
-		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
-			BountyId: disputeData.BountyIdQueue[length-1],
-			Address:  account.Address,
-			Password: account.Password,
-		})
-		if err != nil {
-			return err
-		}
-		if claimBountyTxn != core.NilHash {
-			claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
-			if claimBountyStatus == 1 {
-				if len(disputeData.BountyIdQueue) > 1 {
-					//Removing the bountyId from the queue as the bounty is being claimed
-					disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
-				} else {
-					disputeData.BountyIdQueue = nil
-				}
-			}
-		}
-	}
-
-	if latestBountyId != 0 {
-		//prepending the latestBountyId to the queue
-		disputeData.BountyIdQueue = append([]uint32{latestBountyId}, disputeData.BountyIdQueue...)
-	}
-	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
-	if err != nil {
-		return err
 	}
 	return nil
 }

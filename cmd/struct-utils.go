@@ -39,7 +39,7 @@ func InitializeUtils() {
 	utils.Bufio = &utils.BufioStruct{}
 	utils.CoinInterface = &utils.CoinStruct{}
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
-	utils.IoutilInterface = &utils.IoutilStruct{}
+	utils.IOInterface = &utils.IOStruct{}
 	utils.ABIInterface = &utils.ABIStruct{}
 	utils.PathInterface = &utils.PathStruct{}
 	utils.BindInterface = &utils.BindStruct{}
@@ -651,6 +651,11 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 //This function returns the sorted Ids
 func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error) {
 	return blockManager.GiveSorted(opts, epoch, leafId, sortedValues)
+}
+
+//This function resets the dispute
+func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32) (*Types.Transaction, error) {
+	return blockManager.ResetDispute(opts, epoch)
 }
 
 //This function is used to reveal the values

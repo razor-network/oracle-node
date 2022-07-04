@@ -120,17 +120,6 @@ func TestUnstake(t *testing.T) {
 			},
 			wantErr: nil,
 		},
-		{
-			name: "Test 9: When there is an error in getting epoch",
-			args: args{
-				lock: types.Locks{
-					Amount: big.NewInt(0),
-				},
-				amount:   big.NewInt(1000),
-				stateErr: errors.New("error in getting epoch"),
-			},
-			wantErr: errors.New("error in getting epoch"),
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

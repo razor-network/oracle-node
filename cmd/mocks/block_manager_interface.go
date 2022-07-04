@@ -203,3 +203,26 @@ func (_m *BlockManagerInterface) Propose(client *ethclient.Client, opts *bind.Tr
 
 	return r0, r1
 }
+
+// ResetDispute provides a mock function with given fields: blockManager, opts, epoch
+func (_m *BlockManagerInterface) ResetDispute(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32) (*types.Transaction, error) {
+	ret := _m.Called(blockManager, opts, epoch)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bindings.BlockManager, *bind.TransactOpts, uint32) *types.Transaction); ok {
+		r0 = rf(blockManager, opts, epoch)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bindings.BlockManager, *bind.TransactOpts, uint32) error); ok {
+		r1 = rf(blockManager, opts, epoch)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

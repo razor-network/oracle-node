@@ -5,16 +5,16 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"math/big"
+	"os"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
+	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
-	"time"
-
-	"github.com/spf13/cobra"
 )
 
 var claimBountyCmd = &cobra.Command{
@@ -45,23 +45,82 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 
-	bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
-	utils.CheckError("Error in getting bountyId: ", err)
-
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	redeemBountyInput := types.RedeemBountyInput{
-		Address:  address,
-		Password: password,
-		BountyId: bountyId,
+	if utilsInterface.IsFlagPassed("bountyId") {
+		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
+		utils.CheckError("Error in getting bountyId: ", err)
+
+		redeemBountyInput := types.RedeemBountyInput{
+			Address:  address,
+			Password: password,
+			BountyId: bountyId,
+		}
+
+		txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
+		utils.CheckError("ClaimBounty error: ", err)
+
+		if txn != core.NilHash {
+			razorUtils.WaitForBlockCompletion(client, txn.String())
+		}
+	} else {
+		err := cmdUtils.HandleClaimBounty(client, config, types.Account{
+			Address:  address,
+			Password: password,
+		})
+		utils.CheckError("HandleClaimBounty error: ", err)
 	}
 
-	txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
-	utils.CheckError("ClaimBounty error: ", err)
+}
 
-	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, txn.String())
+//This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
+func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
+	if err != nil {
+		return err
 	}
+	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
+		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		if err != nil {
+			return err
+		}
+	}
+
+	if disputeData.BountyIdQueue == nil {
+		log.Error("No bounty id's present")
+		return errors.New("no bounty earned")
+	}
+
+	if disputeData.BountyIdQueue != nil {
+		log.Info("Bounty ids that needs be claimed: ", disputeData.BountyIdQueue)
+		length := len(disputeData.BountyIdQueue)
+		log.Info("Claiming bounty for bountyId ", disputeData.BountyIdQueue[length-1])
+		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
+			BountyId: disputeData.BountyIdQueue[length-1],
+			Address:  account.Address,
+			Password: account.Password,
+		})
+		if err != nil {
+			return err
+		}
+		if claimBountyTxn != core.NilHash {
+			claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			if claimBountyStatus == 1 {
+				if len(disputeData.BountyIdQueue) > 1 {
+					//Removing the bountyId from the queue as the bounty is being claimed
+					disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
+				} else {
+					disputeData.BountyIdQueue = nil
+				}
+			}
+		}
+	}
+
+	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //This function allows the users who are bountyHunter to redeem their bounty in razor network
@@ -112,20 +171,11 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	for retry := 1; retry <= int(core.MaxRetries); retry++ {
-		tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
-		if err == nil {
-			log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
-			return transactionUtils.Hash(tx), nil
-		}
-		log.Error("Error while claiming bounty: ", err)
-		if retry != int(core.MaxRetries) {
-			log.Info("Retrying again...")
-			log.Info("Waiting for 1 more epoch...")
-			timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
-		}
+	tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
+	if err != nil {
+		return core.NilHash, err
 	}
-	return core.NilHash, err
+	return transactionUtils.Hash(tx), nil
 }
 
 func init() {
@@ -142,7 +192,5 @@ func init() {
 
 	addrErr := claimBountyCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
-	bountyIdErr := claimBountyCmd.MarkFlagRequired("bountyId")
-	utils.CheckError("BountyId error: ", bountyIdErr)
 
 }

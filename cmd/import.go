@@ -39,6 +39,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	// Remove 0x from the private key
 	privateKey = strings.TrimPrefix(privateKey, "0x")
 	log.Info("Enter password to protect keystore file")
+	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.PasswordPrompt()
 	path, err := razorUtils.GetDefaultPath()
 	if err != nil {

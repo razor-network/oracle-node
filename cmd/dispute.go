@@ -12,8 +12,10 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"math/rand"
+	"os"
 	"razor/core"
 	"razor/core/types"
+	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
@@ -87,8 +89,15 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			}
 			log.Info("Txn Hash: ", transactionUtils.Hash(disputeBiggestStakeProposedTxn))
 			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(disputeBiggestStakeProposedTxn).String())
+
+			//If dispute happens, then storing the bountyId into disputeData file
 			if status == 1 {
 				disputedFlag = true
+				err = cmdUtils.StoreBountyId(client, account)
+				if err != nil {
+					log.Error(err)
+					break
+				}
 				continue
 			}
 		}
@@ -104,8 +113,15 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		if idDisputeTxn != nil {
 			log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
 			status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
+
+			//If dispute happens, then storing the bountyId into disputeData file
 			if status == 1 {
 				disputedFlag = true
+				err = cmdUtils.StoreBountyId(client, account)
+				if err != nil {
+					log.Error(err)
+					break
+				}
 				continue
 			}
 		}
@@ -146,6 +162,19 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			continue
 		}
 	}
+
+	blockManager := razorUtils.GetBlockManager(client)
+	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        core.ChainId,
+		Config:         config,
+	})
+	if disputedFlag {
+		cmdUtils.ResetDispute(client, blockManager, txnOpts, epoch)
+	}
+
 	giveSortedLeafIds = []int{}
 	return nil
 }
@@ -173,7 +202,21 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 		_revealedCollectionIds = proposedata.RevealedCollectionIds
 	}
 CalculateMedian:
-	if _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil || rogueData.IsRogue {
+	stakerId, err := razorUtils.GetStakerId(client, account.Address)
+	if err != nil {
+		log.Error("Error in getting stakerId: ", err)
+		return nil, nil, nil, err
+	}
+	lastProposedEpoch, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, stakerId)
+	if err != nil {
+		log.Error("Error in getting last proposed epoch: ", err)
+		return nil, nil, nil, err
+	}
+
+	nilProposedData := _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil
+	epochCheck := epoch != lastProposedEpoch
+
+	if nilProposedData || rogueData.IsRogue || epochCheck {
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
 			log.Error("Error in calculating block medians")
@@ -283,8 +326,14 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
 	status := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+
+	//If dispute happens, then storing the bountyId into disputeData file
 	if status == 1 {
 		disputedFlag = true
+		err = cmdUtils.StoreBountyId(client, account)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -325,6 +374,59 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 		}
 	}
 	return nil
+}
+
+//This function saves the bountyId in disputeData file and return the error if there is any
+func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Account) error {
+	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
+	if err != nil {
+		return err
+	}
+
+	var latestBountyId uint32
+
+	latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+	if err != nil {
+		log.Error("Error in fetching block: ", err)
+		return err
+	}
+
+	latestBountyId, err = cmdUtils.GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
+	if err != nil {
+		return err
+	}
+
+	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
+		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		if err != nil {
+			return err
+		}
+	}
+
+	if latestBountyId != 0 {
+		//prepending the latestBountyId to the queue
+		disputeData.BountyIdQueue = append([]uint32{latestBountyId}, disputeData.BountyIdQueue...)
+	}
+
+	//saving the updated bountyIds to disputeData file
+	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//This function resets the dispute
+func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32) {
+	log.Info("Resetting the dispute ...")
+	txn, err := blockManagerUtils.ResetDispute(blockManager, txnOpts, epoch)
+	if err != nil {
+		log.Error("error in resetting dispute", err)
+	}
+	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
+	log.Info("Dispute has been reset")
+	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+
 }
 
 //This function returns the bountyId from events
