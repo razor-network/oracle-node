@@ -40,9 +40,8 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 	secretBytes32 := [32]byte{}
 	copy(secretBytes32[:], secret)
 
-	log.Debugf("Revealing vote for epoch: %d secret: %s  commitAccount: %s, treeRevealData: %v, root: %v",
+	log.Debugf("Revealing vote for epoch: %d, commitAccount: %s, treeRevealData: %v, root: %v",
 		epoch,
-		"0x"+common.Bytes2Hex(secret),
 		account.Address,
 		treeRevealData.Values,
 		common.Bytes2Hex(treeRevealData.Root[:]),
