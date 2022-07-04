@@ -681,8 +681,13 @@ Example:
 
 razor cli
 
+Without TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112
+```
+With TLS
+```
+$ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
 docker
@@ -692,8 +697,11 @@ docker
 
 docker network create razor_network
 
-# Expose Metrics
+# Expose Metrics without TLS
 docker exec -it razor-go razor setConfig --exposeMetrics 2112
+
+# Expose Metrics with TLS
+docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
 ### Override Job and Adding Your Custom Jobs

@@ -4,6 +4,13 @@ package cmd
 import (
 	"context"
 	"crypto/ecdsa"
+	"math/big"
+	Accounts "razor/accounts"
+	"razor/core/types"
+	"razor/path"
+	"razor/pkg/bindings"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -11,12 +18,6 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
-	"math/big"
-	Accounts "razor/accounts"
-	"razor/core/types"
-	"razor/path"
-	"razor/pkg/bindings"
-	"time"
 )
 
 //go:generate mockery --name UtilsInterface --output ./mocks/ --case=underscore
@@ -225,6 +226,8 @@ type FlagSetInterface interface {
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
+	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
+	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)	
 }
 
 type UtilsCmdInterface interface {
