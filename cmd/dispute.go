@@ -358,7 +358,9 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
 	giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
 	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
-	log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
+	if err != nil {
+		log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
+	}
 }
 
 //This function returns the collection Id position in block
