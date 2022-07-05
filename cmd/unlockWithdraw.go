@@ -56,7 +56,8 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("UnlockWithdraw error: ", err)
 	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		utils.CheckError("Error in WaitForBlockCompletion for unlockWithdraw: ", err)
 	}
 }
 

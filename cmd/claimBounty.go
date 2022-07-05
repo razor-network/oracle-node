@@ -61,7 +61,8 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		utils.CheckError("ClaimBounty error: ", err)
 
 		if txn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, txn.String())
+			err = razorUtils.WaitForBlockCompletion(client, txn.String())
+			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
 		err := cmdUtils.HandleClaimBounty(client, config, types.Account{
@@ -104,8 +105,8 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
-			if claimBountyStatus == 1 {
+			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed
 					disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]

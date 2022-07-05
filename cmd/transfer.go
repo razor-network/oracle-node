@@ -64,7 +64,8 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 	log.Info("Transaction Hash: ", txn)
-	razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	utils.CheckError("Error in WaitForBlockCompletion for transfer: ", err)
 }
 
 //This function transfers the razors from your account to others account

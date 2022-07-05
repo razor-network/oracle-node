@@ -57,7 +57,8 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 		log.Fatal("Error in claiming stake reward: ", err)
 	}
 
-	razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
 
 }
 

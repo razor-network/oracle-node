@@ -68,7 +68,8 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, txnHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+		utils.CheckError("Error in WaitForBlockCompletion for unstake: ", err)
 	}
 }
 
@@ -94,7 +95,10 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	}
 
 	if approveHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, approveHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, approveHash.String())
+		if err != nil {
+			return core.NilHash, err
+		}
 	}
 
 	log.Info("Approved for unstake!")
@@ -153,7 +157,10 @@ func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint
 		return err
 	}
 	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

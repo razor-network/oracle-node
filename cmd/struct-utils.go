@@ -107,7 +107,7 @@ func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 }
 
 //This function waits for the block completion
-func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
 	return utilsInterface.WaitForBlockCompletion(client, hashToRead)
 }
 
