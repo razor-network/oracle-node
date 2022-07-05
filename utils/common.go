@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"math/big"
 	"os"
 	"razor/core"
@@ -59,22 +60,23 @@ func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash st
 	return int(tx.Status)
 }
 
-func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
 	timeout := core.BlockCompletionTimeout
 	for start := time.Now(); time.Since(start) < time.Duration(timeout)*time.Second; {
 		log.Debug("Checking if transaction is mined....")
 		transactionStatus := UtilsInterface.CheckTransactionReceipt(client, hashToRead)
 		if transactionStatus == 0 {
-			log.Error("Transaction mining unsuccessful")
-			return 0
+			err := errors.New("transaction mining unsuccessful")
+			log.Error(err)
+			return err
 		} else if transactionStatus == 1 {
 			log.Info("Transaction mined successfully")
-			return 1
+			return nil
 		}
 		Time.Sleep(3 * time.Second)
 	}
 	log.Info("Timeout Passed")
-	return 0
+	return errors.New("timeout passed for transaction mining")
 }
 
 func (*UtilsStruct) WaitTillNextNSecs(waitTime int32) {
