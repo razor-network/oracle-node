@@ -227,7 +227,7 @@ type FlagSetInterface interface {
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
-	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)	
+	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
 }
 
 type UtilsCmdInterface interface {
