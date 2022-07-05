@@ -422,7 +422,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

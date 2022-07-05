@@ -330,7 +330,7 @@ func TestExecuteCreateJob(t *testing.T) {
 			flagsetUtilsMock.On("GetUint8SelectorType", flagSet).Return(tt.args.selectorType, tt.args.selectorTypeErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createJobHash, tt.args.createJobErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

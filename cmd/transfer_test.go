@@ -275,7 +275,7 @@ func TestExecuteTransfer(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), config, mock.AnythingOfType("types.TransferInput")).Return(tt.args.transferHash, tt.args.transferErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false
