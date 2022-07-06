@@ -919,7 +919,8 @@ func TestGetBountyIdFromEvents(t *testing.T) {
 				fromBlock: big.NewInt(0),
 				logs: []Types.Log{
 					{
-						Data: []byte{4, 2},
+						Data:   []byte{2},
+						Topics: []common.Hash{common.BigToHash(big.NewInt(1)), common.HexToHash("0x000000000000000000000000000000000000dead")},
 					},
 				},
 				contractABI: abi.ABI{},

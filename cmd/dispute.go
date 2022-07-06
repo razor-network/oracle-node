@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -458,8 +457,12 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 			log.Error(unpackErr)
 			continue
 		}
-		addressFromLogs := fmt.Sprint(data[1])
-		if bountyHunter == addressFromLogs {
+		topics := vLog.Topics
+		// topics[1] gives bounty hunter address in data type common.Hash
+		// Converting address to common.Hash to compare with bounty hunter address from topics
+		addressFromEvents := topics[1]
+		bountyHunterInHash := common.HexToHash(bountyHunter)
+		if bountyHunterInHash == addressFromEvents {
 			bountyId = data[0].(uint32)
 		}
 	}
