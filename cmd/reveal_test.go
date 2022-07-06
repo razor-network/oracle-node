@@ -96,6 +96,7 @@ func TestReveal(t *testing.T) {
 	var client *ethclient.Client
 	var commitData types.CommitData
 	var secret []byte
+	var signature []byte
 	var account types.Account
 	var config types.Configurations
 	var epoch uint32
@@ -177,12 +178,12 @@ func TestReveal(t *testing.T) {
 			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
-			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
+			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(client, config, account, epoch, commitData, secret)
+			got, err := utils.Reveal(client, config, account, epoch, commitData, secret, signature)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}

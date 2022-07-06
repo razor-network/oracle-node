@@ -469,7 +469,7 @@ func TestCalculateSecret(t *testing.T) {
 			accountUtilsMock.On("SignData", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signedData, tt.args.signDataErr)
 
 			utils := &UtilsStruct{}
-			if got, _ := utils.CalculateSecret(account, epoch); !reflect.DeepEqual(got, tt.want) {
+			if _, got, _ := utils.CalculateSecret(account, epoch); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("CalculateSecret() = %v, want %v", got, tt.want)
 			}
 		})
@@ -488,6 +488,7 @@ func TestInitiateCommit(t *testing.T) {
 		epoch         uint32
 		lastCommit    uint32
 		lastCommitErr error
+		signature     []byte
 		secret        []byte
 		secretErr     error
 		salt          [32]byte
@@ -513,6 +514,7 @@ func TestInitiateCommit(t *testing.T) {
 			args: args{
 				epoch:      5,
 				lastCommit: 2,
+				signature:  []byte{2},
 				secret:     []byte{1},
 				salt:       [32]byte{},
 				commitData: types.CommitData{
@@ -656,7 +658,7 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastCommit, tt.args.lastCommitErr)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
 			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
@@ -692,6 +694,7 @@ func TestInitiateReveal(t *testing.T) {
 		fileNameErr              error
 		committedDataFromFile    types.CommitFileData
 		committedDataFromFileErr error
+		signature                []byte
 		secret                   []byte
 		secretErr                error
 		revealTxn                common.Hash
@@ -710,6 +713,7 @@ func TestInitiateReveal(t *testing.T) {
 				lastReveal:            2,
 				fileName:              "",
 				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				signature:             []byte{1},
 				secret:                []byte{},
 				revealTxn:             common.BigToHash(big.NewInt(1)),
 			},
@@ -825,8 +829,8 @@ func TestInitiateReveal(t *testing.T) {
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
-			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
 			ut := &UtilsStruct{}
 			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, staker, tt.args.rogueData); (err != nil) != tt.wantErr {
