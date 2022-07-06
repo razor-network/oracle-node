@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
@@ -117,7 +117,6 @@ func init() {
 		Power        int8
 		Weight       uint8
 		Account      string
-		Password     string
 	)
 
 	updateJobCmd.Flags().Uint16VarP(&JobId, "jobId", "", 0, "job id")
@@ -127,7 +126,6 @@ func init() {
 	updateJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	updateJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight")
 	updateJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
-	updateJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	jobIdErr := updateJobCmd.MarkFlagRequired("jobId")
 	utils.CheckError("Job Id error: ", jobIdErr)

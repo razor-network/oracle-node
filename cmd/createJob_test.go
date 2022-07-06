@@ -320,7 +320,7 @@ func TestExecuteCreateJob(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagsetUtilsMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagsetUtilsMock.On("GetStringUrl", flagSet).Return(tt.args.url, tt.args.urlErr)

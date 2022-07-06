@@ -60,7 +60,7 @@ type UtilsInterface interface {
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(client *ethclient.Client) int64
 	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
-	AssignPassword(flagSet *pflag.FlagSet) string
+	AssignPassword() string
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	ConnectToClient(provider string) *ethclient.Client
@@ -226,7 +226,7 @@ type FlagSetInterface interface {
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
-	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)	
+	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
 }
 
 type UtilsCmdInterface interface {

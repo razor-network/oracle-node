@@ -46,7 +46,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -164,14 +164,12 @@ func init() {
 	var (
 		Address         string
 		AmountToUnStake string
-		Password        string
 		WeiRazor        bool
 		StakerId        uint32
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
-	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	unstakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 	unstakeCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 

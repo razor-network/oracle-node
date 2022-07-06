@@ -144,7 +144,7 @@ func TestExecuteCreate(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
-			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			cmdUtilsMock.On("Create", mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
 
 			utils := &UtilsStruct{}

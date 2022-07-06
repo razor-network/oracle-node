@@ -29,7 +29,7 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 	account, err := cmdUtils.Create(password)
 	utils.CheckError("Create error: ", err)
 	log.Info("Account address: ", account.Address)
@@ -49,10 +49,4 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-
-	var (
-		Password string
-	)
-
-	createCmd.Flags().StringVarP(&Password, "password", "", "", "password file path to protect the keystore")
 }

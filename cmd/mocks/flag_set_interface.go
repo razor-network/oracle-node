@@ -369,8 +369,8 @@ func (_m *FlagSetInterface) GetStringAddress(flagSet *pflag.FlagSet) (string, er
 	return r0, r1
 }
 
-// GetStringExposeMetrics provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
+// GetStringCertFile provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetStringCertFile(flagSet *pflag.FlagSet) (string, error) {
 	ret := _m.Called(flagSet)
 
 	var r0 string
@@ -411,8 +411,8 @@ func (_m *FlagSetInterface) GetStringCertKey(flagSet *pflag.FlagSet) (string, er
 	return r0, r1
 }
 
-// GetStringCertFile provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetStringCertFile(flagSet *pflag.FlagSet) (string, error) {
+// GetStringExposeMetrics provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
 	ret := _m.Called(flagSet)
 
 	var r0 string
