@@ -298,7 +298,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	secret, err := cmdUtils.CalculateSecret(account, epoch)
+	_, secret, err := cmdUtils.CalculateSecret(account, epoch)
 	if err != nil {
 		return err
 	}
@@ -387,11 +387,11 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		_commitData.Leaves = rogueCommittedData
 	}
 
-	secret, err := cmdUtils.CalculateSecret(account, epoch)
+	signature, secret, err := cmdUtils.CalculateSecret(account, epoch)
 	if err != nil {
 		return err
 	}
-	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, secret)
+	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, secret, signature)
 	if err != nil {
 		return errors.New("Reveal error: " + err.Error())
 	}
@@ -493,18 +493,18 @@ loop:
 }
 
 //This function calculates the secret
-func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, error) {
+func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, []byte, error) {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
 	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
-		return nil, errors.New("Error in fetching .razor directory: " + err.Error())
+		return nil, nil, errors.New("Error in fetching .razor directory: " + err.Error())
 	}
 	signedData, err := accounts.AccountUtilsInterface.SignData(hash, account, razorPath)
 	if err != nil {
-		return nil, errors.New("Error in signing the data: " + err.Error())
+		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
-	return secret, nil
+	return signedData, secret, nil
 }
 
 //This function allows the staker to automatically unstake and withdraw

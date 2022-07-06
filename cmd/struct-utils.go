@@ -654,14 +654,14 @@ func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.B
 }
 
 //This function is used to reveal the values
-func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error) {
+func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte, signature []byte) (*Types.Transaction, error) {
 	voteManager := utilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
 	)
 	err = retry.Do(func() error {
-		txn, err = voteManager.Reveal(opts, epoch, tree, secret)
+		txn, err = voteManager.Reveal(opts, epoch, tree, secret, signature)
 		if err != nil {
 			log.Error("Error in revealing... Retrying")
 			return err

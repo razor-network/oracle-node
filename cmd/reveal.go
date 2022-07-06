@@ -29,7 +29,7 @@ func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.
 }
 
 //This function checks if the state is reveal or not and then reveals the votes
-func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error) {
+func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte, signature []byte) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
@@ -60,7 +60,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, treeRevealData, secretBytes32},
 	})
-	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secretBytes32)
+	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secretBytes32, signature)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
