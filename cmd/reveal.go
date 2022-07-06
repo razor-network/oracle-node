@@ -58,7 +58,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerABI,
 		MethodName:      "reveal",
-		Parameters:      []interface{}{epoch, treeRevealData, secretBytes32},
+		Parameters:      []interface{}{epoch, treeRevealData, secretBytes32, signature},
 	})
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secretBytes32, signature)
 	if err != nil {

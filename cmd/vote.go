@@ -494,7 +494,7 @@ loop:
 
 //This function calculates the secret
 func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, []byte, error) {
-	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
+	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, core.ChainId, "razororacle"})
 	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		return nil, nil, errors.New("Error in fetching .razor directory: " + err.Error())
