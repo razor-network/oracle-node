@@ -149,14 +149,6 @@ func TestExecuteStake(t *testing.T) {
 		minSafeRazorErr error
 		stakeTxn        common.Hash
 		stakeErr        error
-		isFlagPassed    bool
-		autoVote        bool
-		autoVoteErr     error
-		isRogue         bool
-		isRogueErr      error
-		rogueMode       []string
-		rogueModeErr    error
-		voteErr         error
 	}
 	tests := []struct {
 		name          string
@@ -174,31 +166,11 @@ func TestExecuteStake(t *testing.T) {
 				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
 			},
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2: When autoVote flag is passed and ExecuteStake() executes successfully",
-			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				amount:       big.NewInt(2000),
-				balance:      big.NewInt(10000),
-				minSafeRazor: big.NewInt(0),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: true,
-				autoVote:     true,
-				isRogue:      true,
-				rogueMode:    []string{"propose"},
-				voteErr:      nil,
-			},
-			expectedFatal: false,
-		},
-		{
-			name: "Test 3: When there is an error in getting config",
+			name: "Test 2: When there is an error in getting config",
 			args: args{
 				config:       config,
 				configErr:    errors.New("config error"),
@@ -209,12 +181,11 @@ func TestExecuteStake(t *testing.T) {
 				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 4: When there is an error in getting address",
+			name: "Test 3: When there is an error in getting address",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -225,27 +196,25 @@ func TestExecuteStake(t *testing.T) {
 				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 5: When there is an error in getting amount",
+			name: "Test 4: When there is an error in getting amount",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				amount:       nil,
-				amountErr:    errors.New("amount error"),
-				balance:      big.NewInt(10000),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
+				config:     config,
+				password:   "test",
+				address:    "0x000000000000000000000000000000000000dead",
+				amount:     nil,
+				amountErr:  errors.New("amount error"),
+				balance:    big.NewInt(10000),
+				approveTxn: common.BigToHash(big.NewInt(1)),
+				stakeTxn:   common.BigToHash(big.NewInt(2)),
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 6: When there is an error from Approve",
+			name: "Test 5: When there is an error from Approve",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -256,12 +225,11 @@ func TestExecuteStake(t *testing.T) {
 				approveTxn:   core.NilHash,
 				approveErr:   errors.New("approve error"),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 7: When there is an error from StakeCoins()",
+			name: "Test 6: When there is an error from StakeCoins()",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -272,67 +240,11 @@ func TestExecuteStake(t *testing.T) {
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     core.NilHash,
 				stakeErr:     errors.New("stake error"),
-				isFlagPassed: false,
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 8: When there is an error in getting autoVote status",
-			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				amount:       big.NewInt(2000),
-				balance:      big.NewInt(10000),
-				minSafeRazor: big.NewInt(0),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: true,
-				autoVoteErr:  errors.New("autoVote error"),
-			},
-			expectedFatal: true,
-		},
-		{
-			name: "Test 9: When there is an error in getting rogue status",
-			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				amount:       big.NewInt(2000),
-				balance:      big.NewInt(10000),
-				minSafeRazor: big.NewInt(0),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: true,
-				autoVote:     true,
-				isRogueErr:   errors.New("rogue error"),
-				rogueMode:    []string{"propose"},
-				voteErr:      nil,
-			},
-			expectedFatal: true,
-		},
-		{
-			name: "Test 10: When there is an error in getting rogue modes",
-			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				amount:       big.NewInt(2000),
-				balance:      big.NewInt(10000),
-				minSafeRazor: big.NewInt(0),
-				approveTxn:   common.BigToHash(big.NewInt(1)),
-				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: true,
-				autoVote:     true,
-				isRogue:      true,
-				rogueMode:    nil,
-				rogueModeErr: errors.New("rogueModes error"),
-				voteErr:      nil,
-			},
-			expectedFatal: true,
-		},
-		{
-			name: "Test 11: When there is an error in getting balance",
+			name: "Test 7: When there is an error in getting balance",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -343,12 +255,11 @@ func TestExecuteStake(t *testing.T) {
 				balanceErr:   errors.New("balance error"),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
-				isFlagPassed: false,
 			},
 			expectedFatal: true,
 		},
 		{
-			name: "Test 12: When stake value is less than minSafeRazor",
+			name: "Test 8: When stake value is less than minSafeRazor",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -390,11 +301,6 @@ func TestExecuteStake(t *testing.T) {
 			utilsPkgMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
-			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
-			flagSetUtilsMock.On("GetBoolAutoVote", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.autoVote, tt.args.autoVoteErr)
-			flagSetUtilsMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.isRogue, tt.args.isRogueErr)
-			flagSetUtilsMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
-			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

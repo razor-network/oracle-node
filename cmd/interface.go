@@ -221,7 +221,6 @@ type FlagSetInterface interface {
 	GetStringValue(flagSet *pflag.FlagSet) (string, error)
 	GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error)
 	GetUint32Tolerance(flagSet *pflag.FlagSet) (uint32, error)
-	GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error)
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)

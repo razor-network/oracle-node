@@ -924,11 +924,6 @@ func (flagSetUtils FLagSetUtils) GetUint32Tolerance(flagSet *pflag.FlagSet) (uin
 	return flagSet.GetUint32("tolerance")
 }
 
-//This function is used to check if autoVote is passed or not
-func (flagSetUtils FLagSetUtils) GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error) {
-	return flagSet.GetBool("autoVote")
-}
-
 //This function is used to check if rogue is passed or not
 func (flagSetUtils FLagSetUtils) GetBoolRogue(flagSet *pflag.FlagSet) (bool, error) {
 	return flagSet.GetBool("rogue")
