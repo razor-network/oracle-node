@@ -54,6 +54,27 @@ func (_m *FlagSetInterface) GetBoolRogue(flagSet *pflag.FlagSet) (bool, error) {
 	return r0, r1
 }
 
+// GetBoolWeiRazor provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) bool); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetFloat32GasLimit provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error) {
 	ret := _m.Called(flagSet)
@@ -455,27 +476,6 @@ func (_m *FlagSetInterface) GetStringLogLevel(flagSet *pflag.FlagSet) (string, e
 
 // GetStringName provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetStringName(flagSet *pflag.FlagSet) (string, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetStringPow provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
 	ret := _m.Called(flagSet)
 
 	var r0 string

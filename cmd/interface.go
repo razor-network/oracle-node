@@ -74,7 +74,6 @@ type UtilsInterface interface {
 	GetJobFilePath() (string, error)
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	IsFlagPassed(name string) bool
-	GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error)
 	GetAmountInWei(amount *big.Int) *big.Int
 	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
 	GetAmountInDecimal(amountInWei *big.Int) *big.Float
@@ -220,7 +219,7 @@ type FlagSetInterface interface {
 	GetUint16JobId(flagSet *pflag.FlagSet) (uint16, error)
 	GetUint16CollectionId(flagSet *pflag.FlagSet) (uint16, error)
 	GetStringValue(flagSet *pflag.FlagSet) (string, error)
-	GetStringPow(flagSet *pflag.FlagSet) (string, error)
+	GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error)
 	GetUint32Tolerance(flagSet *pflag.FlagSet) (uint32, error)
 	GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error)
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)

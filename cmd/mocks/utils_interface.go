@@ -603,29 +603,6 @@ func (_m *UtilsInterface) GetEpochLimitForUpdateCommission(client *ethclient.Cli
 	return r0, r1
 }
 
-// GetFractionalAmountInWei provides a mock function with given fields: amount, power
-func (_m *UtilsInterface) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
-	ret := _m.Called(amount, power)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*big.Int, string) *big.Int); ok {
-		r0 = rf(amount, power)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*big.Int, string) error); ok {
-		r1 = rf(amount, power)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetInfluenceSnapshot provides a mock function with given fields: client, stakerId, epoch
 func (_m *UtilsInterface) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	ret := _m.Called(client, stakerId, epoch)

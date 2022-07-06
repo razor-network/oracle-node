@@ -194,28 +194,22 @@ Example:
 $ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000
 ```
 
-_Note: --pow flag is used to stake floating number stake_
+_Note: --weiRazor flag can be passed to provide values in wei_
 
-_Note: Formula for calculating pow: (value \* (10**18)) / (10**x) where x is no of decimal places and value is integer_
-
-_The value of pow is : 18 - x here_
-
-If you have a 1000.25 razors in your account, you can stake those using the stake command with pow flag.
+If you have a 1000.25 razors in your account, you can stake those using the stake command with weiRazor flag.
 
 Example:
 
 ```
-$ razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 100025 --pow 16
+$ razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000250000000000000000 --weiRazor true
 ```
 
-If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
-
-If you have a 5678.1001 razors in your account, you can stake those using the stake command with pow flag.
+If you have a 5678.1001 razors in your account, you can stake those using the stake command with weiRazor flag.
 
 Example:
 
 ```
-$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 56781001 --pow 14
+$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 5678100100000000000000 --weiRazor true
 ```
 
 ### Staker Info
@@ -292,19 +286,19 @@ If you want to become a delegator use the `delegate` command. The staker whose `
 razor cli
 
 ```
-$ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
+$ ./razor delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id>
 ```
 
 docker
 
 ```
-docker exec -it razor-go razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id>
+docker exec -it razor-go razor delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id>
 ```
 
 Example:
 
 ```
-$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --pow 10 --stakerId 1
+$ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --weiRazor false --stakerId 1
 ```
 
 ### Claim Commission 
@@ -374,19 +368,19 @@ If you wish to unstake your funds, you can run the `unstake` command.
 razor cli
 
 ```
-$ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power>
+$ ./razor unstake --address <address> --stakerId <staker_id> --value <value> --weiRazor <bool>
 ```
 
 docker
 
 ```
-docker exec -it razor-go razor unstake --address <address> --stakerId <staker_id> --value <value> --pow <power>
+docker exec -it razor-go razor unstake --address <address> --stakerId <staker_id> --value <value> --weiRazor <bool>
 ```
 
 Example:
 
 ```
-$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --amount --pow 10 1000
+$ ./razor unstake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1 --value 1000 --weiRazor false
 ```
 
 ### Withdraw
@@ -782,11 +776,11 @@ _The logs for above command will be stored at "home/.razor/stakingLogs.log" path
 
 razor cli
 ```
-$ ./razor delegate --address <address> --value <value> --pow <power> --stakerId <staker_id> --logFile delegationLogs
+$ ./razor delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id> --logFile delegationLogs
 ```
 docker
 ```
-docker exec -it razor-go razo delegate --address <address> --value <value> --pow <power> --stakerId <staker_id> --logFile delegationLogs
+docker exec -it razor-go razo delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id> --logFile delegationLogs
 ```
 _The logs for above command will be stored at "home/.razor/delegationLogs.log" path_
 

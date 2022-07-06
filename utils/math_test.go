@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"math/big"
 	"razor/utils/mocks"
 	"reflect"
@@ -295,94 +294,6 @@ func TestGetAmountInWei(t *testing.T) {
 			got := GetAmountInWei(tt.args.amount)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAmountInWei() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetFractionalAmountInWei(t *testing.T) {
-	type args struct {
-		amount *big.Int
-		power  string
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		want    *big.Int
-		wantErr error
-	}{
-		{
-			name: "Test when amount is non-zero and power is non-zero",
-			args: args{
-				amount: big.NewInt(1000),
-				power:  "17",
-			},
-			want:    big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(17), nil)),
-			wantErr: nil,
-		},
-		{
-			name: "Test when amount is zero and power is non-zero",
-			args: args{
-				amount: big.NewInt(0),
-				power:  "15",
-			},
-			want:    big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(15), nil)),
-			wantErr: nil,
-		},
-		{
-			name: "Test when amount is non-zero and power is zero",
-			args: args{
-				amount: big.NewInt(1000),
-				power:  "0",
-			},
-			want:    big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
-			wantErr: nil,
-		},
-		{
-			name: "Test when amount is zero and power is also zero",
-			args: args{
-				amount: big.NewInt(0),
-				power:  "0",
-			},
-			want:    big.NewInt(1).Mul(big.NewInt(0), big.NewInt(1).Exp(big.NewInt(10), big.NewInt(0), nil)),
-			wantErr: nil,
-		},
-		{
-			name: "Test when there is an incorrect input type for power",
-			args: args{
-				amount: big.NewInt(0),
-				power:  "A",
-			},
-			want:    nil,
-			wantErr: errors.New("SetString: error"),
-		},
-		{
-			name: "Test when there is a decimal input type for power",
-			args: args{
-				amount: big.NewInt(0),
-				power:  "11.5",
-			},
-			want:    nil,
-			wantErr: errors.New("SetString: error"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetFractionalAmountInWei(tt.args.amount, tt.args.power)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetFractionalAmountInWei() = %v, want %v", got, tt.want)
-			}
-
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for GetFractionalAmountInWei function, got = %v, want %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for GetFractionalAmountInWei function, got = %v, want %v", err, tt.wantErr)
-				}
 			}
 		})
 	}

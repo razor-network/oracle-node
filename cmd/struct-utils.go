@@ -156,11 +156,6 @@ func (u Utils) IsFlagPassed(name string) bool {
 	return utilsInterface.IsFlagPassed(name)
 }
 
-//This function returns the fraction amount in wei
-func (u Utils) GetFractionalAmountInWei(amount *big.Int, power string) (*big.Int, error) {
-	return utils.GetFractionalAmountInWei(amount, power)
-}
-
 //This function returns the amount in wei
 func (u Utils) GetAmountInWei(amount *big.Int) *big.Int {
 	return utils.GetAmountInWei(amount)
@@ -919,9 +914,9 @@ func (flagSetUtils FLagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string,
 	return flagSet.GetString("value")
 }
 
-//This function returns the pow in string
-func (flagSetUtils FLagSetUtils) GetStringPow(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("pow")
+//This function is used to check if weiRazor is passed or not
+func (flagSetUtils FLagSetUtils) GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error) {
+	return flagSet.GetBool("weiRazor")
 }
 
 //This function returns the tolerance in Uint32

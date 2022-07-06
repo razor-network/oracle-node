@@ -129,7 +129,7 @@ func init() {
 		Amount            string
 		Address           string
 		Password          string
-		Power             string
+		WeiRazor          bool
 		VoteAutomatically bool
 		Rogue             bool
 		RogueMode         []string
@@ -138,7 +138,7 @@ func init() {
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
-	stakeCmd.Flags().StringVarP(&Power, "pow", "", "", "power of 10")
+	stakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 	stakeCmd.Flags().BoolVarP(&VoteAutomatically, "autoVote", "", false, "vote after stake automatically")
 	stakeCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	stakeCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
