@@ -100,11 +100,6 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 	return r0, r1
 }
 
-// AutoUnstakeAndWithdraw provides a mock function with given fields: client, account, amount, config
-func (_m *UtilsCmdInterface) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
-	_m.Called(client, account, amount, config)
-}
-
 // AutoWithdraw provides a mock function with given fields: txnArgs, stakerId
 func (_m *UtilsCmdInterface) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	ret := _m.Called(txnArgs, stakerId)

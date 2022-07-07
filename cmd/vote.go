@@ -199,16 +199,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
-		log.Error("Stake is below minimum required. Cannot vote.")
-		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
-			log.Error("Stopped voting as total stake is already withdrawn.")
-		} else {
-			log.Debug("Auto starting Unstake followed by InitiateWithdraw")
-			cmdUtils.AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
-			log.Error("Stopped voting as total stake is withdrawn now")
-		}
-		osUtils.Exit(0)
-
+		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
 	}
 
 	if staker.IsSlashed {
@@ -520,32 +511,6 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return secret, nil
-}
-
-//This function allows the staker to automatically unstake and withdraw
-func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
-	txnArgs := types.TransactionOptions{
-		Client:         client,
-		AccountAddress: account.Address,
-		Password:       account.Password,
-		Amount:         amount,
-		ChainId:        core.ChainId,
-		Config:         config,
-	}
-
-	stakerId, err := razorUtils.GetStakerId(client, account.Address)
-	utils.CheckError("Error in getting staker id: ", err)
-
-	_, err = cmdUtils.Unstake(config, client,
-		types.UnstakeInput{
-			Address:    account.Address,
-			Password:   account.Password,
-			ValueInWei: amount,
-			StakerId:   stakerId,
-		})
-	utils.CheckError("Error in Unstake: ", err)
-	err = cmdUtils.AutoWithdraw(txnArgs, stakerId)
-	utils.CheckError("Error in AutoWithdraw: ", err)
 }
 
 func init() {

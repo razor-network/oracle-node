@@ -159,90 +159,6 @@ func TestExecuteVote(t *testing.T) {
 	}
 }
 
-func TestAutoUnstakeAndWithdraw(t *testing.T) {
-	var client *ethclient.Client
-	var account types.Account
-	var amount *big.Int
-	var config types.Configurations
-	var hash common.Hash
-
-	type args struct {
-		stakerId        uint32
-		stakerIdErr     error
-		unstakeErr      error
-		autoWithdrawErr error
-	}
-	tests := []struct {
-		name          string
-		args          args
-		expectedFatal bool
-	}{
-		{
-			name: "Test 1: When AutoUnstakeAndWithdraw() executes successfully",
-			args: args{
-				stakerId:        2,
-				unstakeErr:      nil,
-				autoWithdrawErr: nil,
-			},
-			expectedFatal: false,
-		},
-		{
-			name: "Test 2: When there is an error in gettin stakerId",
-			args: args{
-				stakerIdErr:     errors.New("stakerId error"),
-				unstakeErr:      nil,
-				autoWithdrawErr: nil,
-			},
-			expectedFatal: true,
-		},
-		{
-			name: "Test 3: When there is an error from Unstake()",
-			args: args{
-				stakerId:        2,
-				unstakeErr:      errors.New("unstake error"),
-				autoWithdrawErr: nil,
-			},
-			expectedFatal: true,
-		},
-		{
-			name: "Test 4: When there is an error from AutoWithdraw()",
-			args: args{
-				stakerId:        2,
-				unstakeErr:      nil,
-				autoWithdrawErr: errors.New("autoWithdraw error"),
-			},
-			expectedFatal: true,
-		},
-	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsMock := new(mocks.UtilsInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(hash, tt.args.unstakeErr)
-			cmdUtilsMock.On("AutoWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoWithdrawErr)
-
-			utils := &UtilsStruct{}
-			fatal = false
-
-			utils.AutoUnstakeAndWithdraw(client, account, amount, config)
-			if fatal != tt.expectedFatal {
-				t.Error("The AutoUnstakeAndWithdraw function didn't execute as expected")
-			}
-		})
-	}
-}
-
 func TestGetLastProposedEpoch(t *testing.T) {
 	var client *ethclient.Client
 	blockNumber := big.NewInt(20)
@@ -1329,7 +1245,6 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("ConvertWeiToEth", mock.AnythingOfType("*big.Int")).Return(tt.args.actualStake, tt.args.actualStakeErr)
 			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZRBalance, tt.args.sRZRBalanceErr)
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-			cmdUtilsMock.On("AutoUnstakeAndWithdraw", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
 			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
