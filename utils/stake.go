@@ -121,9 +121,9 @@ func (*UtilsStruct) GetLock(client *ethclient.Client, address string, stakerId u
 	return locks, nil
 }
 
-func (*UtilsStruct) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+func (*UtilsStruct) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
 	var (
-		withdrawReleasePeriod uint8
+		withdrawReleasePeriod uint16
 		err                   error
 	)
 	err = retry.Do(

@@ -1709,14 +1709,14 @@ func (_m *Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId u
 }
 
 // GetWithdrawInitiationPeriod provides a mock function with given fields: client
-func (_m *Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+func (_m *Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
 	ret := _m.Called(client)
 
-	var r0 uint8
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint8); ok {
+	var r0 uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) uint16); ok {
 		r0 = rf(client)
 	} else {
-		r0 = ret.Get(0).(uint8)
+		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 error
