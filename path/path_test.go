@@ -116,9 +116,9 @@ func TestGetLogFilePath(t *testing.T) {
 			name: "Test 1: When GetLogFilePath() executes successfully",
 			args: args{
 				fileName: "xyz",
-				path:     "./home/.razor",
+				path:     "/home/.razor",
 			},
-			want:    "./home/.razor/logs/xyz.log",
+			want:    "/home/.razor/logs/xyz.log",
 			wantErr: nil,
 		},
 		{
@@ -132,7 +132,7 @@ func TestGetLogFilePath(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting file",
 			args: args{
-				path:    "./home/.razor",
+				path:    "/home/.razor",
 				fileErr: errors.New("error in getting file"),
 			},
 			want:    "",
@@ -142,17 +142,17 @@ func TestGetLogFilePath(t *testing.T) {
 			name: "Test 4: When there is stat error but not mkdir error",
 			args: args{
 				fileName:   "xyz",
-				path:       "./home/.razor",
+				path:       "/home/.razor",
 				statErr:    errors.New("file not exists"),
 				isNotExist: true,
 			},
-			want:    "./home/.razor/logs/xyz.log",
+			want:    "/home/.razor/logs/xyz.log",
 			wantErr: nil,
 		},
 		{
 			name: "Test 5: When there is stat error and mkdir error",
 			args: args{
-				path:       "./home/.razor",
+				path:       "/home/.razor",
 				statErr:    errors.New("file not exists"),
 				isNotExist: true,
 				mkdirErr:   errors.New("mkdir error"),
@@ -207,9 +207,9 @@ func TestGetConfigFilePath(t *testing.T) {
 		{
 			name: "Test 1: When GetConfigFilePath() executes successfully",
 			args: args{
-				path: "./home/.razor",
+				path: "/home/.razor",
 			},
-			want:    "./home/.razor/razor.yaml",
+			want:    "/home/.razor/razor.yaml",
 			wantErr: nil,
 		},
 		{
@@ -300,10 +300,14 @@ func TestGetJobFilePath(t *testing.T) {
 }
 
 func TestGetCommitDataFileName(t *testing.T) {
+	var fileInfo fs.FileInfo
 	type args struct {
-		address string
-		path    string
-		pathErr error
+		address    string
+		path       string
+		pathErr    error
+		statErr    error
+		isNotExist bool
+		mkdirErr   error
 	}
 	tests := []struct {
 		name    string
@@ -317,7 +321,7 @@ func TestGetCommitDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/0x000000000000000000000000000000000000dead_CommitData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_CommitData.json",
 			wantErr: nil,
 		},
 		{
@@ -329,14 +333,43 @@ func TestGetCommitDataFileName(t *testing.T) {
 			want:    "",
 			wantErr: errors.New("path error"),
 		},
+		{
+			name: "Test 3: When data_files directory is not present and mkdir creates it",
+			args: args{
+				address:    "0x000000000000000000000000000000000000dead",
+				path:       "/home",
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+			},
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_CommitData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 4: When data_files directory is not present and there is an error in creating new one",
+			args: args{
+				address:    "0x000000000000000000000000000000000000dead",
+				path:       "/home",
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+				mkdirErr:   errors.New("mkdir error"),
+			},
+			want:    "",
+			wantErr: errors.New("mkdir error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			pathMock := new(mocks.PathInterface)
+			osMock := new(mocks.OSInterface)
+
+			OSUtilsInterface = osMock
 			PathUtilsInterface = pathMock
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			pa := &PathUtils{}
 			got, err := pa.GetCommitDataFileName(tt.args.address)
@@ -357,10 +390,14 @@ func TestGetCommitDataFileName(t *testing.T) {
 }
 
 func TestGetProposeDataFileName(t *testing.T) {
+	var fileInfo fs.FileInfo
 	type args struct {
-		address string
-		path    string
-		pathErr error
+		address    string
+		path       string
+		pathErr    error
+		statErr    error
+		isNotExist bool
+		mkdirErr   error
 	}
 	tests := []struct {
 		name    string
@@ -374,7 +411,7 @@ func TestGetProposeDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/0x000000000000000000000000000000000000dead_proposedData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposedData.json",
 			wantErr: nil,
 		},
 		{
@@ -386,14 +423,43 @@ func TestGetProposeDataFileName(t *testing.T) {
 			want:    "",
 			wantErr: errors.New("path error"),
 		},
+		{
+			name: "Test 3: When data_files directory is not present and mkdir creates it",
+			args: args{
+				address:    "0x000000000000000000000000000000000000dead",
+				path:       "/home",
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+			},
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposedData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 4: When data_files directory is not present and there is an error in creating new one",
+			args: args{
+				address:    "0x000000000000000000000000000000000000dead",
+				path:       "/home",
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+				mkdirErr:   errors.New("mkdir error"),
+			},
+			want:    "",
+			wantErr: errors.New("mkdir error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			pathMock := new(mocks.PathInterface)
+			osMock := new(mocks.OSInterface)
+
+			OSUtilsInterface = osMock
 			PathUtilsInterface = pathMock
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			pa := &PathUtils{}
 			got, err := pa.GetProposeDataFileName(tt.args.address)
@@ -414,10 +480,14 @@ func TestGetProposeDataFileName(t *testing.T) {
 }
 
 func TestGetDisputeDataFileName(t *testing.T) {
+	var fileInfo fs.FileInfo
 	type args struct {
-		address string
-		path    string
-		pathErr error
+		address    string
+		path       string
+		pathErr    error
+		statErr    error
+		isNotExist bool
+		mkdirErr   error
 	}
 	tests := []struct {
 		name    string
@@ -431,7 +501,7 @@ func TestGetDisputeDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/0x000000000000000000000000000000000000dead_disputeData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_disputeData.json",
 			wantErr: nil,
 		},
 		{
@@ -443,14 +513,43 @@ func TestGetDisputeDataFileName(t *testing.T) {
 			want:    "",
 			wantErr: errors.New("path error"),
 		},
+		{
+			name: "Test 3: When data_files directory is not present and mkdir creates it",
+			args: args{
+				address:    "0x000000000000000000000000000000000000dead",
+				path:       "/home",
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+			},
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_disputeData.json",
+			wantErr: nil,
+		},
+		{
+			name: "Test 4: When data_files directory is not present and there is an error in creating new one",
+			args: args{
+				address:    "0x000000000000000000000000000000000000dead",
+				path:       "/home",
+				statErr:    errors.New("not exists"),
+				isNotExist: true,
+				mkdirErr:   errors.New("mkdir error"),
+			},
+			want:    "",
+			wantErr: errors.New("mkdir error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			pathMock := new(mocks.PathInterface)
+			osMock := new(mocks.OSInterface)
+
+			OSUtilsInterface = osMock
 			PathUtilsInterface = pathMock
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			pa := &PathUtils{}
 			got, err := pa.GetDisputeDataFileName(tt.args.address)
