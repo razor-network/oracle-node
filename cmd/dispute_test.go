@@ -111,7 +111,7 @@ func TestDispute(t *testing.T) {
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}
 
@@ -158,7 +158,6 @@ func TestHandleDispute(t *testing.T) {
 		Hash                      common.Hash
 		idDisputeTxn              *Types.Transaction
 		idDisputeTxnErr           error
-		status                    int
 		misMatchIndex             int
 		leafId                    uint16
 		leafIdErr                 error
@@ -253,7 +252,6 @@ func TestHandleDispute(t *testing.T) {
 				disputeBiggestStakeTxn: &Types.Transaction{},
 				Hash:                   common.BigToHash(big.NewInt(1)),
 				disputeErr:             nil,
-				status:                 1,
 			},
 			want: nil,
 		},
@@ -325,7 +323,7 @@ func TestHandleDispute(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "Test 11: When idDisputeTxn is not nil and status is 1",
+			name: "Test 11: When idDisputeTxn is not nil",
 			args: args{
 				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
 				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
@@ -343,7 +341,6 @@ func TestHandleDispute(t *testing.T) {
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
 				idDisputeTxn: &Types.Transaction{},
-				status:       1,
 				disputeErr:   nil,
 			},
 			want: nil,
@@ -412,7 +409,6 @@ func TestHandleDispute(t *testing.T) {
 				disputeBiggestStakeTxn: &Types.Transaction{},
 				Hash:                   common.BigToHash(big.NewInt(1)),
 				disputeErr:             nil,
-				status:                 1,
 				storeBountyIdErr:       errors.New("storeBountyId error"),
 			},
 			want: nil,
@@ -436,7 +432,6 @@ func TestHandleDispute(t *testing.T) {
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				},
 				idDisputeTxn:     &Types.Transaction{},
-				status:           1,
 				storeBountyIdErr: errors.New("storeBountyId error"),
 				disputeErr:       nil,
 			},
@@ -467,7 +462,7 @@ func TestHandleDispute(t *testing.T) {
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeBiggestStakeTxn, tt.args.disputeBiggestStakeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.Hash)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.status)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.idDisputeTxn, tt.args.idDisputeTxnErr)
 			utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
 			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
@@ -558,7 +553,7 @@ func TestGiveSorted(t *testing.T) {
 
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr).Once()
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
 
 			GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedValues)
@@ -1047,7 +1042,7 @@ func TestResetDispute(t *testing.T) {
 
 			blockManagerMock.On("ResetDispute", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ResetDisputeTxn, tt.args.ResetDisputeTxnErr)
 			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 
 			ut := &UtilsStruct{}
 			ut.ResetDispute(client, blockManager, txnOpts, epoch)
@@ -1136,7 +1131,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 				utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 				blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				transactionUtilsMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
-				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 				cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				utilsPkgMock.On("IsEqualUint32", mock.Anything, mock.Anything).Return(true, 0)
 				utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)

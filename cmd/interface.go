@@ -64,7 +64,7 @@ type UtilsInterface interface {
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	ConnectToClient(provider string) *ethclient.Client
-	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int
+	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
 	GetRogueRandomValue(value int) *big.Int
 	GetRogueRandomMedianValue() uint32
@@ -226,7 +226,7 @@ type FlagSetInterface interface {
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
-	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)	
+	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
 }
 
 type UtilsCmdInterface interface {

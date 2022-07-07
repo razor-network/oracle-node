@@ -273,7 +273,11 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				break
 			}
 			if txn != core.NilHash {
-				razorUtils.WaitForBlockCompletion(client, txn.Hex())
+				waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, txn.Hex())
+				if waitForBlockCompletionErr != nil {
+					log.Error("Error in WaitForBlockCompletion for claimBlockReward: ", err)
+					break
+				}
 				blockConfirmed = epoch
 			}
 		}
@@ -323,8 +327,9 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		status := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
-		if status != 1 {
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletion for commit: ", err)
 			return errors.New("error in sending commit transaction")
 		}
 	}
@@ -396,7 +401,11 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return errors.New("Reveal error: " + err.Error())
 	}
 	if revealTxn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -425,7 +434,11 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return errors.New("Propose error: " + err.Error())
 	}
 	if proposeTxn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletionErr for propose: ", err)
+			return err
+		}
 	}
 	return nil
 }

@@ -485,23 +485,23 @@ func TestInitiateCommit(t *testing.T) {
 		rogueData types.Rogue
 	)
 	type args struct {
-		epoch         uint32
-		lastCommit    uint32
-		lastCommitErr error
-		secret        []byte
-		secretErr     error
-		salt          [32]byte
-		saltErr       error
-		commitData    types.CommitData
-		commitDataErr error
-		merkleTree    [][][]byte
-		merkleRoot    [32]byte
-		commitTxn     common.Hash
-		commitTxnErr  error
-		status        int
-		fileName      string
-		fileNameErr   error
-		saveErr       error
+		epoch                     uint32
+		lastCommit                uint32
+		lastCommitErr             error
+		secret                    []byte
+		secretErr                 error
+		salt                      [32]byte
+		saltErr                   error
+		commitData                types.CommitData
+		commitDataErr             error
+		merkleTree                [][][]byte
+		merkleRoot                [32]byte
+		commitTxn                 common.Hash
+		commitTxnErr              error
+		waitForBlockCompletionErr error
+		fileName                  string
+		fileNameErr               error
+		saveErr                   error
 	}
 	tests := []struct {
 		name    string
@@ -522,7 +522,6 @@ func TestInitiateCommit(t *testing.T) {
 				},
 				merkleTree: [][][]byte{},
 				commitTxn:  common.BigToHash(big.NewInt(1)),
-				status:     1,
 				fileName:   "",
 			},
 			wantErr: false,
@@ -618,9 +617,9 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
-				merkleTree: [][][]byte{},
-				commitTxn:  common.BigToHash(big.NewInt(1)),
-				status:     2,
+				merkleTree:                [][][]byte{},
+				commitTxn:                 common.BigToHash(big.NewInt(1)),
+				waitForBlockCompletionErr: errors.New("transaction mining unsuccessful"),
 			},
 			wantErr: true,
 		},
@@ -638,7 +637,6 @@ func TestInitiateCommit(t *testing.T) {
 				},
 				merkleTree: [][][]byte{},
 				commitTxn:  common.BigToHash(big.NewInt(1)),
-				status:     1,
 				fileName:   "",
 				saveErr:    errors.New("error in saving data to file"),
 			},
@@ -662,7 +660,7 @@ func TestInitiateCommit(t *testing.T) {
 			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
 			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.status)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
 			ut := &UtilsStruct{}
@@ -827,7 +825,7 @@ func TestInitiateReveal(t *testing.T) {
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
 			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, staker, tt.args.rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiateReveal() error = %v, wantErr %v", err, tt.wantErr)
@@ -924,7 +922,7 @@ func TestInitiatePropose(t *testing.T) {
 			cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
 			if err := ut.InitiatePropose(client, config, account, tt.args.epoch, staker, blockNumber, rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiatePropose() error = %v, wantErr %v", err, tt.wantErr)
@@ -1340,7 +1338,7 @@ func TestHandleBlock(t *testing.T) {
 			utilsPkgMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
 			timeMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
 			lastVerification = tt.args.lastVerification

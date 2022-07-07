@@ -34,10 +34,10 @@ func TestSetConfig(t *testing.T) {
 		isFlagPassed          bool
 		port                  string
 		portErr               error
-		certFile			  string
-		certFileErr			  error
-		certKey 			  string
-		certKeyErr			  error
+		certFile              string
+		certFileErr           error
+		certKey               string
+		certKeyErr            error
 	}
 	tests := []struct {
 		name    string
