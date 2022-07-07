@@ -71,12 +71,15 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
-	razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+
+	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+	utils.CheckError("Error in WaitForBlockCompletion for stake: ", err)
 }
 
 //This function allows the user to stake razors in the razor network and returns the hash

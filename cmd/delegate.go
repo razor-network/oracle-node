@@ -71,12 +71,14 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
-	razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+	utils.CheckError("Error in WaitForBlockCompletion for delegate: ", err)
 }
 
 //This function allows the delegator to stake coins without setting up a node

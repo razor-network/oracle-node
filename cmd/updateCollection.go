@@ -72,7 +72,8 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
-	razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	utils.CheckError("Error in WaitForBlockCompletion for updateCollection: ", err)
 }
 
 //This function allows the admin to update an existing collection

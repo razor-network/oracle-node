@@ -56,7 +56,8 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	utils.CheckError("Error in WaitForBlockCompletion for resetUnstakeLock: ", err)
 }
 
 //This function is used to reset the lock once the withdraw lock period is over

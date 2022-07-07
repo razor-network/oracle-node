@@ -601,28 +601,28 @@ func TestWaitForBlockCompletion(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want int
+		want error
 	}{
 		{
 			name: "Test 1: When WaitForBlockCompletion() executes successfully",
 			args: args{
 				transactionStatus: 0,
 			},
-			want: 0,
+			want: errors.New("transaction mining unsuccessful"),
 		},
 		{
 			name: "Test 2: When transactionStatus is 1",
 			args: args{
 				transactionStatus: 1,
 			},
-			want: 1,
+			want: nil,
 		},
 		{
 			name: "Test 3: When transactionStatus is neither 1 nor 0",
 			args: args{
 				transactionStatus: 2,
 			},
-			want: 0,
+			want: errors.New("timeout passed for transaction mining"),
 		},
 	}
 	for _, tt := range tests {
@@ -639,8 +639,15 @@ func TestWaitForBlockCompletion(t *testing.T) {
 			utilsMock.On("CheckTransactionReceipt", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.transactionStatus)
 			timeMock.On("Sleep", mock.Anything).Return()
 
-			if got := utils.WaitForBlockCompletion(client, hashToRead); got != tt.want {
-				t.Errorf("WaitForBlockCompletion() = %v, want %v", got, tt.want)
+			gotErr := utils.WaitForBlockCompletion(client, hashToRead)
+			if gotErr == nil || tt.want == nil {
+				if gotErr != tt.want {
+					t.Errorf("Error for stake function, got = %v, want %v", gotErr, tt.want)
+				}
+			} else {
+				if gotErr.Error() != tt.want.Error() {
+					t.Errorf("Error for stake function, got = %v, want %v", gotErr, tt.want)
+				}
 			}
 		})
 	}
