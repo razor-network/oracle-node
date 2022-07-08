@@ -60,7 +60,7 @@ type UtilsInterface interface {
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(client *ethclient.Client) int64
 	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
-	AssignPassword(flagSet *pflag.FlagSet) string
+	AssignPassword() string
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	ConnectToClient(provider string) *ethclient.Client
@@ -221,7 +221,6 @@ type FlagSetInterface interface {
 	GetStringValue(flagSet *pflag.FlagSet) (string, error)
 	GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error)
 	GetUint32Tolerance(flagSet *pflag.FlagSet) (uint32, error)
-	GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error)
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
@@ -264,7 +263,6 @@ type UtilsCmdInterface interface {
 	ExecuteUnstake(flagSet *pflag.FlagSet)
 	Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
 	ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error)
-	AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
 	InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)

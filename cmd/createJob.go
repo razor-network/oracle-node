@@ -44,7 +44,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -117,7 +117,6 @@ func init() {
 		Name         string
 		Power        int8
 		Account      string
-		Password     string
 		Weight       uint8
 	)
 
@@ -128,7 +127,6 @@ func init() {
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")
 	createJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
-	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	urlErr := createJobCmd.MarkFlagRequired("url")
 	utils.CheckError("URL error: ", urlErr)

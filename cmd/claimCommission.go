@@ -33,7 +33,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
@@ -66,12 +66,10 @@ func init() {
 	rootCmd.AddCommand(claimCommissionCmd)
 
 	var (
-		Address  string
-		Password string
+		Address string
 	)
 
 	claimCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
-	claimCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 
 	addrErr := claimCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

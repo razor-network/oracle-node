@@ -267,7 +267,7 @@ func TestExecuteTransfer(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			flagsetUtilsMock.On("GetStringFrom", flagSet).Return(tt.args.from, tt.args.fromErr)
 			flagsetUtilsMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)

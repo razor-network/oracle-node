@@ -40,7 +40,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -149,12 +149,10 @@ func init() {
 
 	var (
 		Address  string
-		Password string
 		StakerId uint32
 	)
 
 	initiateWithdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	initiateWithdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 	initiateWithdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
 
 	addrErr := initiateWithdrawCmd.MarkFlagRequired("address")

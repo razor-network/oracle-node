@@ -12,27 +12,6 @@ type FlagSetInterface struct {
 	mock.Mock
 }
 
-// GetBoolAutoVote provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) bool); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetBoolRogue provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetBoolRogue(flagSet *pflag.FlagSet) (bool, error) {
 	ret := _m.Called(flagSet)

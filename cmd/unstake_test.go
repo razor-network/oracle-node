@@ -317,7 +317,7 @@ func TestExecuteUnstake(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
@@ -336,72 +336,6 @@ func TestExecuteUnstake(t *testing.T) {
 				t.Error("The ExecuteUnstake function didn't execute as expected")
 			}
 
-		})
-	}
-}
-
-func TestAutoWithdraw(t *testing.T) {
-
-	var txnArgs types.TransactionOptions
-	var stakerId uint32
-
-	type args struct {
-		withdrawFundsHash common.Hash
-		withdrawFundsErr  error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr error
-	}{
-		{
-			name: "Test 1: When AutoWithdraw function executes successfully",
-			args: args{
-				withdrawFundsHash: common.BigToHash(big.NewInt(1)),
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error from withdrawFunds",
-			args: args{
-				withdrawFundsErr: errors.New("withdrawFunds error"),
-			},
-			wantErr: errors.New("withdrawFunds error"),
-		},
-		{
-			name: "Test 3: When withdrawFundsTxn is 0x00",
-			args: args{
-				withdrawFundsHash: core.NilHash,
-			},
-			wantErr: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			timeMock := new(mocks.TimeInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			timeUtils = timeMock
-
-			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawFundsHash, tt.args.withdrawFundsErr)
-			timeMock.On("Sleep", mock.Anything).Return()
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-
-			utils := &UtilsStruct{}
-			gotErr := utils.AutoWithdraw(txnArgs, stakerId)
-			if gotErr == nil || tt.wantErr == nil {
-				if gotErr != tt.wantErr {
-					t.Errorf("Error for AutoWithdraw function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
-			} else {
-				if gotErr.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for AutoWithdraw function, got = %v, want = %v", gotErr, tt.wantErr)
-				}
-			}
 		})
 	}
 }

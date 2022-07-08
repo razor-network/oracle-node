@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"context"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -41,7 +40,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 	client := razorUtils.ConnectToClient(config.Provider)
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account: "+address, err)
@@ -78,30 +77,9 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
+
 	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
 	utils.CheckError("Error in WaitForBlockCompletion for stake: ", err)
-
-	if razorUtils.IsFlagPassed("autoVote") {
-		isAutoVote, err := flagSetUtils.GetBoolAutoVote(flagSet)
-		utils.CheckError("Error in getting autoVote status: ", err)
-
-		if isAutoVote {
-			log.Info("Staked!...Starting to vote now.")
-			account := types.Account{Address: address, Password: password}
-			isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
-			utils.CheckError("Error in getting rogue status: ", err)
-
-			rogueMode, err := flagSetUtils.GetStringSliceRogueMode(flagSet)
-			utils.CheckError("Error in getting rogue modes: ", err)
-
-			rogueData := types.Rogue{
-				IsRogue:   isRogue,
-				RogueMode: rogueMode,
-			}
-			err = cmdUtils.Vote(context.Background(), config, client, rogueData, account)
-			utils.CheckError("Error in auto vote: ", err)
-		}
-	}
 }
 
 //This function allows the user to stake razors in the razor network and returns the hash
@@ -128,22 +106,14 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 func init() {
 	rootCmd.AddCommand(stakeCmd)
 	var (
-		Amount            string
-		Address           string
-		Password          string
-		WeiRazor          bool
-		VoteAutomatically bool
-		Rogue             bool
-		RogueMode         []string
+		Amount   string
+		Address  string
+		WeiRazor bool
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
-	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	stakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
-	stakeCmd.Flags().BoolVarP(&VoteAutomatically, "autoVote", "", false, "vote after stake automatically")
-	stakeCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
-	stakeCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
 	utils.CheckError("Value error: ", amountErr)

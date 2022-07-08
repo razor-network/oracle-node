@@ -66,8 +66,7 @@ docker exec -it razor-go razor <command>
 3. If you already have the `pkg/bindings` you can run `npm run build` instead of `npm run build-all` to directly build the binary.
 4. If you want to build the binary without wanting to set the configurations use `npm run build-noargs`
 5. While building the binary, supply the provider RPC url and the gas multiplier.
-6. To bypass the interactive mode of providing password, create file in `.razor` directory with providing password in it.
-7. The binary will be generated at `build/bin`.
+6. The binary will be generated at `build/bin`.
 
 ## Commands
 
@@ -341,9 +340,9 @@ docker exec -it razor-go razor vote --address <address>
 
 run vote command in background
 ```
-docker exec -it -d razor-go razor vote --address <address> --password /root/.razor/<file_name>
+docker exec -it -d razor-go razor vote --address <address> 
 ```
->**_NOTE:_**  To run command with password flag, password file should present in $HOME/.razor/ directory
+
 
 Example:
 
@@ -664,10 +663,6 @@ docker
 docker exec -it razor-go razorcollectionList
 ```
 
-Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
-
-
-
 ### Expose Metrics
 Expose Prometheus-based metrics for monitoring
 
@@ -850,14 +845,6 @@ $ ./razor contractAddresses
    ```bash
    #Provide password through CLI
    docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000
-
-   #Provide password through File
-
-     #Create file and put password string
-       vi ~/.razor/pass
-     #Start Staking
-       docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000 --password /root/.razor/pass
-
    ```
 
 9. To Start **Voting**,
@@ -867,13 +854,7 @@ $ ./razor contractAddresses
    ```bash
    # Run process in foreground and provide password through cli
    docker-compose run razor-go /usr/local/bin/razor vote --address <address>
-
-   # Run process in background and provide password through file
-   docker-compose run -d razor-go /usr/local/bin/razor vote --address <address> --password /root/.razor/pass
    ```
-
-   1. Provide password through **File** and run in background with compose up
-      1. replace <address> in docker-compose.yml with your address and create file pass and add your password in file
 
    ```bash
    docker-compose up -d
@@ -884,9 +865,6 @@ $ ./razor contractAddresses
     ```bash
     #Provide password with cli
     docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10
-
-    #provide password through file
-    docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10 --password /root/.razor/pass
     ```
 
 ### Contribute to razor-go
