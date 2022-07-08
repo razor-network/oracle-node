@@ -87,8 +87,8 @@ func (u Utils) GetConfigData() (types.Configurations, error) {
 }
 
 //This function assigns the password
-func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
-	return utils.AssignPassword(flagSet)
+func (u Utils) AssignPassword() string {
+	return utils.AssignPassword()
 }
 
 //This function returns the string address
@@ -107,7 +107,7 @@ func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 }
 
 //This function waits for the block completion
-func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int {
+func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
 	return utilsInterface.WaitForBlockCompletion(client, hashToRead)
 }
 
@@ -922,11 +922,6 @@ func (flagSetUtils FLagSetUtils) GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, 
 //This function returns the tolerance in Uint32
 func (flagSetUtils FLagSetUtils) GetUint32Tolerance(flagSet *pflag.FlagSet) (uint32, error) {
 	return flagSet.GetUint32("tolerance")
-}
-
-//This function is used to check if autoVote is passed or not
-func (flagSetUtils FLagSetUtils) GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error) {
-	return flagSet.GetBool("autoVote")
 }
 
 //This function is used to check if rogue is passed or not

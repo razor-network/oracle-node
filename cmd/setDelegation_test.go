@@ -414,7 +414,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
@@ -422,7 +422,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("SetDelegation", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

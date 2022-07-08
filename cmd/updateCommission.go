@@ -41,7 +41,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting config", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
@@ -116,7 +116,11 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 	txnHash := transactionUtils.Hash(txn)
 	log.Infof("Transaction hash: %s", txnHash)
-	razorUtils.WaitForBlockCompletion(client, txnHash.String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+	if err != nil {
+		log.Error("Error in WaitForBlockCompletion for updateCommission: ", err)
+		return err
+	}
 	return nil
 }
 
@@ -124,14 +128,12 @@ func init() {
 	var (
 		Address    string
 		Commission uint8
-		Password   string
 	)
 
 	rootCmd.AddCommand(updateCommissionCmd)
 
 	updateCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	updateCommissionCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
-	updateCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := updateCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

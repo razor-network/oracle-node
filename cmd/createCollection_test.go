@@ -302,7 +302,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagsetUtilsMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagsetUtilsMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
@@ -311,7 +311,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 			flagsetUtilsMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

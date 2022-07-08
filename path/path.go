@@ -1,7 +1,10 @@
 //Package path provides all path related functions
 package path
 
-import "os"
+import (
+	"os"
+	pathPkg "path"
+)
 
 //This function returns the default path
 func (PathUtils) GetDefaultPath() (string, error) {
@@ -9,7 +12,7 @@ func (PathUtils) GetDefaultPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defaultPath := home + "/.razor"
+	defaultPath := pathPkg.Join(home, ".razor")
 	if _, err := OSUtilsInterface.Stat(defaultPath); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(defaultPath, 0700)
 		if mkdirErr != nil {
@@ -21,19 +24,19 @@ func (PathUtils) GetDefaultPath() (string, error) {
 
 //This function returns the log file path
 func (PathUtils) GetLogFilePath(fileName string) (string, error) {
-	home, err := PathUtilsInterface.GetDefaultPath()
+	razorPath, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	fileDir := home + "/logs"
-	if _, err := OSUtilsInterface.Stat(fileDir); OSUtilsInterface.IsNotExist(err) {
-		mkdirErr := OSUtilsInterface.Mkdir(fileDir, 0700)
+	defaultPath := pathPkg.Join(razorPath, "logs")
+	if _, err := OSUtilsInterface.Stat(defaultPath); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(defaultPath, 0700)
 		if mkdirErr != nil {
 			return "", mkdirErr
 		}
 	}
 
-	logFilepath := fileDir + "/" + fileName + ".log"
+	logFilepath := pathPkg.Join(defaultPath, fileName+".log")
 	f, err := OSUtilsInterface.OpenFile(logFilepath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return "", err
@@ -44,46 +47,68 @@ func (PathUtils) GetLogFilePath(fileName string) (string, error) {
 
 //This function returns the config file path
 func (PathUtils) GetConfigFilePath() (string, error) {
-	home, err := PathUtilsInterface.GetDefaultPath()
+	razorPath, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	return home + "/razor.yaml", nil
+	return pathPkg.Join(razorPath, "razor.yaml"), nil
 }
 
 //This function returns the job file path
 func (PathUtils) GetJobFilePath() (string, error) {
-	home, err := PathUtilsInterface.GetDefaultPath()
+	razorPath, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	filePath := home + "/assets.json"
+	filePath := pathPkg.Join(razorPath, "assets.json")
 	return filePath, nil
 }
 
 //This function returns the file name of commit data file
 func (PathUtils) GetCommitDataFileName(address string) (string, error) {
-	homeDir, err := PathUtilsInterface.GetDefaultPath()
+	razorDir, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_CommitData.json", nil
+	dataFileDir := pathPkg.Join(razorDir, "data_files")
+	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+
+	return pathPkg.Join(dataFileDir, address+"_CommitData.json"), nil
 }
 
 //This function returns the file name of propose data file
 func (PathUtils) GetProposeDataFileName(address string) (string, error) {
-	homeDir, err := PathUtilsInterface.GetDefaultPath()
+	razorDir, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_proposedData.json", nil
+	dataFileDir := pathPkg.Join(razorDir, "data_files")
+	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+	return pathPkg.Join(dataFileDir, address+"_proposedData.json"), nil
 }
 
 //This function returns the file name of dispute data file
 func (PathUtils) GetDisputeDataFileName(address string) (string, error) {
-	homeDir, err := PathUtilsInterface.GetDefaultPath()
+	razorDir, err := PathUtilsInterface.GetDefaultPath()
 	if err != nil {
 		return "", err
 	}
-	return homeDir + "/" + address + "_disputeData.json", nil
+	dataFileDir := pathPkg.Join(razorDir, "data_files")
+	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
+		if mkdirErr != nil {
+			return "", mkdirErr
+		}
+	}
+	return pathPkg.Join(dataFileDir, address+"_disputeData.json"), nil
 }

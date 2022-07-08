@@ -3,15 +3,13 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
-	"time"
-
-	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
@@ -46,7 +44,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -68,7 +66,8 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, txnHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+		utils.CheckError("Error in WaitForBlockCompletion for unstake: ", err)
 	}
 }
 
@@ -94,7 +93,10 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	}
 
 	if approveHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, approveHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, approveHash.String())
+		if err != nil {
+			return core.NilHash, err
+		}
 	}
 
 	log.Info("Approved for unstake!")
@@ -140,38 +142,18 @@ func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.Str
 	return transactionUtils.Hash(txn), nil
 }
 
-//This function helps the user to auto withdraw the razors after unstaking
-func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
-	log.Info("Starting withdrawal now...")
-	timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
-	txn, err := cmdUtils.HandleUnstakeLock(txnArgs.Client, types.Account{
-		Address:  txnArgs.AccountAddress,
-		Password: txnArgs.Password,
-	}, txnArgs.Config, stakerId)
-	if err != nil {
-		log.Error("HandleUnstakeLock error ", err)
-		return err
-	}
-	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
-	}
-	return nil
-}
-
 func init() {
 	rootCmd.AddCommand(unstakeCmd)
 
 	var (
 		Address         string
 		AmountToUnStake string
-		Password        string
 		WeiRazor        bool
 		StakerId        uint32
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
-	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	unstakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 	unstakeCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 

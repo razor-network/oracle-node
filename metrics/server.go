@@ -18,11 +18,11 @@ func Run(port string, certFile string, certKey string) error {
 
 	http.Handle(endpoint, promhttp.Handler())
 
-	if certFile != "" && certKey != ""{
+	if certFile != "" && certKey != "" {
 		// start an https server using the mux server
-		return http.ListenAndServeTLS(portNumber, certFile, certKey, nil)	
-	}else{
+		return http.ListenAndServeTLS(portNumber, certFile, certKey, nil)
+	} else {
 		// start an http server using the mux server
 		return http.ListenAndServe(portNumber, nil)
-	}	
+	}
 }

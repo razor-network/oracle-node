@@ -48,7 +48,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -62,7 +62,8 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		utils.CheckError("Error in WaitForBlockCompletion for modifyCollectionStatus: ", err)
 	}
 }
 

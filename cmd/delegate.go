@@ -41,7 +41,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
@@ -71,12 +71,14 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
-	razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+	utils.CheckError("Error in WaitForBlockCompletion for delegate: ", err)
 }
 
 //This function allows the delegator to stake coins without setting up a node
@@ -102,14 +104,12 @@ func init() {
 		Amount   string
 		Address  string
 		StakerId uint32
-		Password string
 		WeiRazor bool
 	)
 
 	delegateCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount to stake (in Wei)")
 	delegateCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	delegateCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
-	delegateCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	delegateCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 
 	valueErr := delegateCmd.MarkFlagRequired("value")

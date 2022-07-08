@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
 
@@ -73,7 +73,8 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
-	razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	utils.CheckError("Error in WaitForBlockCompletion for createCollection: ", err)
 }
 
 //This function allows the admin to create collction if existing jobs are present
@@ -113,7 +114,6 @@ func init() {
 		Account           string
 		JobIds            []uint
 		AggregationMethod uint32
-		Password          string
 		Power             int8
 		Tolerance         uint32
 	)
@@ -124,7 +124,6 @@ func init() {
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	createCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
-	createCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)

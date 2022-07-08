@@ -42,7 +42,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config data: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -56,7 +56,8 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	utils.CheckError("Error in WaitForBlockCompletion for resetUnstakeLock: ", err)
 }
 
 //This function is used to reset the lock once the withdraw lock period is over
@@ -87,12 +88,10 @@ func init() {
 
 	var (
 		Address  string
-		Password string
 		StakerId uint32
 	)
 
 	extendUnstakeLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
-	extendUnstakeLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 	extendUnstakeLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 
 	addrErr := extendUnstakeLockCmd.MarkFlagRequired("address")

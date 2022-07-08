@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -61,7 +61,8 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		utils.CheckError("ClaimBounty error: ", err)
 
 		if txn != core.NilHash {
-			razorUtils.WaitForBlockCompletion(client, txn.String())
+			err = razorUtils.WaitForBlockCompletion(client, txn.String())
+			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
 		err := cmdUtils.HandleClaimBounty(client, config, types.Account{
@@ -104,8 +105,8 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyStatus := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
-			if claimBountyStatus == 1 {
+			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed
 					disputeData.BountyIdQueue = disputeData.BountyIdQueue[:length-1]
@@ -182,12 +183,10 @@ func init() {
 	rootCmd.AddCommand(claimBountyCmd)
 	var (
 		Address  string
-		Password string
 		BountyId uint32
 	)
 
 	claimBountyCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
-	claimBountyCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	claimBountyCmd.Flags().Uint32VarP(&BountyId, "bountyId", "", 0, "bountyId of the bounty hunter")
 
 	addrErr := claimBountyCmd.MarkFlagRequired("address")

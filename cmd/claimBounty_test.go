@@ -136,14 +136,14 @@ func TestExecuteClaimBounty(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
+			utilsMock.On("AssignPassword").Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetUint32BountyId", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.bountyId, tt.args.bountyIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsPkgMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
 			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(1)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 
 			fatal = false
 			utils := &UtilsStruct{}
@@ -321,7 +321,6 @@ func TestHandleClaimBounty(t *testing.T) {
 		disputeDataErr     error
 		claimBountyTxn     common.Hash
 		claimBountyTxnErr  error
-		claimBountyStatus  int
 		saveDataErr        error
 	}
 	tests := []struct {
@@ -332,24 +331,22 @@ func TestHandleClaimBounty(t *testing.T) {
 		{
 			name: "Test 1: When HandleClaimBounty() executes successfully",
 			args: args{
-				disputeFilePath:   "",
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1}},
-				claimBountyTxn:    common.BigToHash(big.NewInt(1)),
-				claimBountyStatus: 1,
-				saveDataErr:       nil,
+				disputeFilePath: "",
+				statErr:         nil,
+				disputeData:     types.DisputeFileData{BountyIdQueue: []uint32{1}},
+				claimBountyTxn:  common.BigToHash(big.NewInt(1)),
+				saveDataErr:     nil,
 			},
 			wantErr: false,
 		},
 		{
 			name: "Test 2: When HandleClaimBounty() executes successfully and there are more than one bountyId in queue",
 			args: args{
-				disputeFilePath:   "",
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1, 2}},
-				claimBountyTxn:    common.BigToHash(big.NewInt(1)),
-				claimBountyStatus: 1,
-				saveDataErr:       nil,
+				disputeFilePath: "",
+				statErr:         nil,
+				disputeData:     types.DisputeFileData{BountyIdQueue: []uint32{1, 2}},
+				claimBountyTxn:  common.BigToHash(big.NewInt(1)),
+				saveDataErr:     nil,
 			},
 			wantErr: false,
 		},
@@ -382,12 +379,11 @@ func TestHandleClaimBounty(t *testing.T) {
 		{
 			name: "When there is an error in saving data to file",
 			args: args{
-				disputeFilePath:   "",
-				statErr:           nil,
-				disputeData:       types.DisputeFileData{BountyIdQueue: []uint32{1}},
-				claimBountyTxn:    common.BigToHash(big.NewInt(1)),
-				claimBountyStatus: 1,
-				saveDataErr:       errors.New("error in saving data to file"),
+				disputeFilePath: "",
+				statErr:         nil,
+				disputeData:     types.DisputeFileData{BountyIdQueue: []uint32{1}},
+				claimBountyTxn:  common.BigToHash(big.NewInt(1)),
+				saveDataErr:     errors.New("error in saving data to file"),
 			},
 			wantErr: true,
 		},
@@ -409,7 +405,7 @@ func TestHandleClaimBounty(t *testing.T) {
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			utilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
 			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyTxnErr)
-			utilsPkgMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.claimBountyStatus)
+			utilsPkgMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			utilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 
 			ut := &UtilsStruct{}

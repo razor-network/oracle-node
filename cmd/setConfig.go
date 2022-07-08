@@ -69,7 +69,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		if err != nil {
 			return err
 		}
-		
+
 		certKey, err := flagSetUtils.GetStringCertKey(flagSet)
 		if err != nil {
 			return err
@@ -144,8 +144,8 @@ func init() {
 		LogLevel           string
 		GasLimitMultiplier float32
 		ExposeMetrics      string
-		CertFile	   	   string
-		CertKey	   		   string
+		CertFile           string
+		CertKey            string
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")

@@ -6,6 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	pathPkg "path"
+	"razor/path"
 	"razor/utils"
 	"strings"
 )
@@ -41,7 +43,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	log.Info("Enter password to protect keystore file")
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.PasswordPrompt()
-	path, err := razorUtils.GetDefaultPath()
+	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
@@ -51,7 +53,14 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		log.Error("Error in parsing private key")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	account, err := keystoreUtils.ImportECDSA(path, priv, password)
+	keystoreDir := pathPkg.Join(razorPath, "keystore_files")
+	if _, err := path.OSUtilsInterface.Stat(keystoreDir); path.OSUtilsInterface.IsNotExist(err) {
+		mkdirErr := path.OSUtilsInterface.Mkdir(keystoreDir, 0700)
+		if mkdirErr != nil {
+			return accounts.Account{Address: common.Address{0x00}}, mkdirErr
+		}
+	}
+	account, err := keystoreUtils.ImportECDSA(keystoreDir, priv, password)
 	if err != nil {
 		log.Error("Error in importing account")
 		return accounts.Account{Address: common.Address{0x00}}, err

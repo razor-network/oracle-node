@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
+	"path"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -53,7 +54,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
-	password := razorUtils.AssignPassword(flagSet)
+	password := razorUtils.AssignPassword()
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
 	utils.CheckError("Error in getting rogue status: ", err)
 
@@ -198,16 +199,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
-		log.Error("Stake is below minimum required. Cannot vote.")
-		if stakedAmount.Cmp(big.NewInt(0)) == 0 {
-			log.Error("Stopped voting as total stake is already withdrawn.")
-		} else {
-			log.Debug("Auto starting Unstake followed by InitiateWithdraw")
-			cmdUtils.AutoUnstakeAndWithdraw(client, account, stakedAmount, config)
-			log.Error("Stopped voting as total stake is withdrawn now")
-		}
-		osUtils.Exit(0)
-
+		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
 	}
 
 	if staker.IsSlashed {
@@ -273,7 +265,11 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				break
 			}
 			if txn != core.NilHash {
-				razorUtils.WaitForBlockCompletion(client, txn.Hex())
+				waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, txn.Hex())
+				if waitForBlockCompletionErr != nil {
+					log.Error("Error in WaitForBlockCompletion for claimBlockReward: ", err)
+					break
+				}
 				blockConfirmed = epoch
 			}
 		}
@@ -323,8 +319,9 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		status := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
-		if status != 1 {
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletion for commit: ", err)
 			return errors.New("error in sending commit transaction")
 		}
 	}
@@ -396,7 +393,11 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return errors.New("Reveal error: " + err.Error())
 	}
 	if revealTxn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -425,7 +426,11 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return errors.New("Propose error: " + err.Error())
 	}
 	if proposeTxn != core.NilHash {
-		razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletionErr for propose: ", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -501,38 +506,13 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte
 	if err != nil {
 		return nil, nil, errors.New("Error in fetching .razor directory: " + err.Error())
 	}
-	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, razorPath)
+	keystorePath := path.Join(razorPath, "keystore_files")
+	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, keystorePath)
 	if err != nil {
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return signedData, secret, nil
-}
-
-//This function allows the staker to automatically unstake and withdraw
-func (*UtilsStruct) AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations) {
-	txnArgs := types.TransactionOptions{
-		Client:         client,
-		AccountAddress: account.Address,
-		Password:       account.Password,
-		Amount:         amount,
-		ChainId:        core.ChainId,
-		Config:         config,
-	}
-
-	stakerId, err := razorUtils.GetStakerId(client, account.Address)
-	utils.CheckError("Error in getting staker id: ", err)
-
-	_, err = cmdUtils.Unstake(config, client,
-		types.UnstakeInput{
-			Address:    account.Address,
-			Password:   account.Password,
-			ValueInWei: amount,
-			StakerId:   stakerId,
-		})
-	utils.CheckError("Error in Unstake: ", err)
-	err = cmdUtils.AutoWithdraw(txnArgs, stakerId)
-	utils.CheckError("Error in AutoWithdraw: ", err)
 }
 
 func init() {
@@ -542,14 +522,12 @@ func init() {
 		Address         string
 		Rogue           bool
 		RogueMode       []string
-		Password        string
 		AutoClaimBounty bool
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
-	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
 	voteCmd.Flags().BoolVarP(&AutoClaimBounty, "autoClaimBounty", "", false, "auto claim bounty")
 
 	addrErr := voteCmd.MarkFlagRequired("address")

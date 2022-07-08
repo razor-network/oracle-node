@@ -60,11 +60,11 @@ type UtilsInterface interface {
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(client *ethclient.Client) int64
 	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
-	AssignPassword(flagSet *pflag.FlagSet) string
+	AssignPassword() string
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	ConnectToClient(provider string) *ethclient.Client
-	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) int
+	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
 	GetRogueRandomValue(value int) *big.Int
 	GetRogueRandomMedianValue() uint32
@@ -221,7 +221,6 @@ type FlagSetInterface interface {
 	GetStringValue(flagSet *pflag.FlagSet) (string, error)
 	GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error)
 	GetUint32Tolerance(flagSet *pflag.FlagSet) (uint32, error)
-	GetBoolAutoVote(flagSet *pflag.FlagSet) (bool, error)
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
@@ -264,7 +263,6 @@ type UtilsCmdInterface interface {
 	ExecuteUnstake(flagSet *pflag.FlagSet)
 	Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
 	ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error)
-	AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
 	InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
@@ -310,7 +308,6 @@ type UtilsCmdInterface interface {
 	UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error
 	GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
-	AutoUnstakeAndWithdraw(client *ethclient.Client, account types.Account, amount *big.Int, config types.Configurations)
 	CalculateSecret(account types.Account, epoch uint32) ([]byte, []byte, error)
 	GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error)
 	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue)
