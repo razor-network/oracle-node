@@ -512,6 +512,9 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}
 	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
+	if signedData[64] == 0 || signedData[64] == 1 {
+		signedData[64] += 27
+	}
 	return signedData, secret, nil
 }
 
