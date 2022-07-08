@@ -495,11 +495,13 @@ loop:
 //This function calculates the secret
 func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, []byte, error) {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, core.ChainId, "razororacle"})
+	ethHash := solsha3.SoliditySHA3([]string{"string", "bytes32"}, []interface{}{"\x19Ethereum Signed Message:\n32", "0x" + hex.EncodeToString(hash)})
+
 	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		return nil, nil, errors.New("Error in fetching .razor directory: " + err.Error())
 	}
-	signedData, err := accounts.AccountUtilsInterface.SignData(hash, account, razorPath)
+	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, razorPath)
 	if err != nil {
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}
