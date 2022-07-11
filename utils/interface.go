@@ -101,7 +101,7 @@ type Utils interface {
 	GetStakerId(client *ethclient.Client, address string) (uint32, error)
 	GetNumberOfStakers(client *ethclient.Client) (uint32, error)
 	GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error)
-	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error)
+	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
@@ -251,8 +251,7 @@ type StakeManagerUtils interface {
 	Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (types.Locks, error)
 	MaxCommission(client *ethclient.Client) (uint8, error)
 	EpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
-	WithdrawInitiationPeriod(client *ethclient.Client) (uint8, error)
-	WithdrawLockPeriod(client *ethclient.Client) (uint8, error)
+	WithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
 }
 
 type AssetManagerUtils interface {

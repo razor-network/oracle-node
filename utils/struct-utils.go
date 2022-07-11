@@ -56,14 +56,9 @@ func (b BlockManagerStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client)
 	return blockManager.BlockIndexToBeConfirmed(&opts)
 }
 
-func (s StakeManagerStruct) WithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+func (s StakeManagerStruct) WithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.WithdrawInitiationPeriod(&opts)
-}
-
-func (s StakeManagerStruct) WithdrawLockPeriod(client *ethclient.Client) (uint8, error) {
-	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.WithdrawLockPeriod(&opts)
 }
 
 func (a AssetManagerStruct) GetNumJobs(client *ethclient.Client) (uint16, error) {

@@ -410,7 +410,7 @@ func TestGetDelayedState(t *testing.T) {
 				buffer:      2,
 				stateBuffer: 5,
 			},
-			want:    -1,
+			want:    4,
 			wantErr: false,
 		},
 		{
@@ -423,7 +423,7 @@ func TestGetDelayedState(t *testing.T) {
 				stateBuffer: 5,
 			},
 
-			want:    2,
+			want:    3,
 			wantErr: false,
 		},
 		{
@@ -881,7 +881,7 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 				block:       &types.Header{},
 				stateBuffer: 5,
 			},
-			want:    355,
+			want:    235,
 			wantErr: false,
 		},
 		{
@@ -1007,7 +1007,7 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
 			},
-			want:    big.NewInt(-359),
+			want:    big.NewInt(-239),
 			wantErr: false,
 		},
 		{
