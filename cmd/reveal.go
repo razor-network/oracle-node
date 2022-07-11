@@ -29,7 +29,7 @@ func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.
 }
 
 //This function checks if the state is reveal or not and then reveals the votes
-func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte, signature []byte) (common.Hash, error) {
+func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
@@ -37,8 +37,6 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
 	treeRevealData := cmdUtils.GenerateTreeRevealData(merkleTree, commitData)
-	secretBytes32 := [32]byte{}
-	copy(secretBytes32[:], secret)
 
 	log.Debugf("Revealing vote for epoch: %d, commitAccount: %s, treeRevealData: %v, root: %v",
 		epoch,
@@ -58,9 +56,9 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerABI,
 		MethodName:      "reveal",
-		Parameters:      []interface{}{epoch, treeRevealData, secretBytes32, signature},
+		Parameters:      []interface{}{epoch, treeRevealData, signature},
 	})
-	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secretBytes32, signature)
+	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err

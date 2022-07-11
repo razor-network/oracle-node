@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"os"
 	"os/signal"
@@ -299,7 +300,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	keystorePath := path.Join(razorPath, "keystore_files")
 
-	_, secret, err := CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return err
 	}
@@ -395,11 +396,11 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 	keystorePath := path.Join(razorPath, "keystore_files")
 
-	signature, secret, err := CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return err
 	}
-	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, secret, signature)
+	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, signature)
 	if err != nil {
 		return errors.New("Reveal error: " + err.Error())
 	}
@@ -509,16 +510,13 @@ loop:
 }
 
 //This function calculates the secret
-func CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
+func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, chainId, "razororacle"})
 	ethHash := utils.SignHash(hash)
 
 	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, keystorePath)
 	if err != nil {
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
-	}
-	if signedData[64] == 0 || signedData[64] == 1 {
-		signedData[64] += 27
 	}
 	recoveredAddress, err := utils.EcRecover(hash, signedData)
 	if err != nil {
@@ -527,7 +525,12 @@ func CalculateSecret(account types.Account, epoch uint32, keystorePath string, c
 	if recoveredAddress != common.HexToAddress(account.Address) {
 		return nil, nil, errors.New("invalid verification")
 	}
-	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
+	if signedData[64] == 0 || signedData[64] == 1 {
+		signedData[64] += 27
+	}
+
+	secret := crypto.Keccak256(signedData)
+	fmt.Println("need: ", hex.EncodeToString(secret))
 	return signedData, secret, nil
 }
 
