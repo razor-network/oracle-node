@@ -339,6 +339,8 @@ func TestCalculateSecret(t *testing.T) {
 
 	type args struct {
 		address string
+		epoch   uint32
+		chainId *big.Int
 	}
 	tests := []struct {
 		name string
@@ -346,25 +348,47 @@ func TestCalculateSecret(t *testing.T) {
 		want string
 	}{
 		{
-			name: "Test 1",
+			name: "Test 1 - Address 1 with SKALE chainId",
 			args: args{
 				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				epoch:   9021,
+				chainId: big.NewInt(0x785B4B9847B9),
 			},
-			want: "499ade3f4e06cc28069ecf744e81f3b103155d45a66ade9fdee7548721afbcec",
+			want: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
 		},
 		{
-			name: "Test 2",
+			name: "Test 2 - Address 2 with SKALE chainId",
 			args: args{
 				address: "0xBd3e0a1d11163934DF10501c9E1a18fbAA9ecAf4",
+				epoch:   9021,
+				chainId: big.NewInt(0x785B4B9847B9),
 			},
-			want: "c35047769f0923c477d0c7b9289c0421c13093aee3de74146107ae9564c5e10c",
+			want: "b3e7edd43fae5b925a33494f75e1d38484c3c0d8be29b7a8ff71ce17f65fc542",
+		},
+		{
+			name: "Test 3 - Address 1 with Hardhat chainId",
+			args: args{
+				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				epoch:   9021,
+				chainId: big.NewInt(31337),
+			},
+			want: "34653d009bf1af9ff85cfd432a1bc6e2128ab307090ff38332ba0909e599c9fa",
+		},
+		{
+			name: "Test 4 - Address 1 with epoch = 0",
+			args: args{
+				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				epoch:   0,
+				chainId: big.NewInt(31337),
+			},
+			want: "a64a7ac998067f775a819dff2adc94c5d6427fbb4759cdc4460e69592c5463d8",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			InitializeInterfaces()
-			_, gotSecret, _ := CalculateSecret(types.Account{Address: tt.args.address,
-				Password: "Test@123"}, 9021, testKeystorePath, big.NewInt(0x785B4B9847B9))
+			_, gotSecret, _ := cmdUtils.CalculateSecret(types.Account{Address: tt.args.address,
+				Password: "Test@123"}, tt.args.epoch, testKeystorePath, tt.args.chainId)
 			gotSecretInHash := hex.EncodeToString(gotSecret)
 			if !reflect.DeepEqual(gotSecretInHash, tt.want) {
 				t.Errorf("CalculateSecret() = %v, want %v", gotSecretInHash, tt.want)
@@ -390,6 +414,8 @@ func TestInitiateCommit(t *testing.T) {
 		signature                 []byte
 		salt                      [32]byte
 		saltErr                   error
+		path                      string
+		pathErr                   error
 		commitData                types.CommitData
 		commitDataErr             error
 		merkleTree                [][][]byte
@@ -523,21 +549,11 @@ func TestInitiateCommit(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 9: When there is an error in saving data to file",
+			name: "Test 9: When there is an error in getting path",
 			args: args{
 				epoch:      5,
 				lastCommit: 2,
-				secret:     []byte{1},
-				salt:       [32]byte{},
-				commitData: types.CommitData{
-					AssignedCollections:    nil,
-					SeqAllottedCollections: nil,
-					Leaves:                 nil,
-				},
-				merkleTree: [][][]byte{},
-				commitTxn:  common.BigToHash(big.NewInt(1)),
-				fileName:   "",
-				saveErr:    errors.New("error in saving data to file"),
+				pathErr:    errors.New("path error"),
 			},
 			wantErr: true,
 		},
@@ -553,11 +569,12 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastCommit, tt.args.lastCommitErr)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
 			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
 			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
@@ -589,6 +606,8 @@ func TestInitiateReveal(t *testing.T) {
 		fileNameErr              error
 		committedDataFromFile    types.CommitFileData
 		committedDataFromFileErr error
+		path                     string
+		pathErr                  error
 		signature                []byte
 		secret                   []byte
 		secretErr                error
@@ -710,6 +729,17 @@ func TestInitiateReveal(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Test 11: When there is an error in getting path",
+			args: args{
+				epoch:                 5,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				pathErr:               errors.New("path error"),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -724,7 +754,8 @@ func TestInitiateReveal(t *testing.T) {
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}

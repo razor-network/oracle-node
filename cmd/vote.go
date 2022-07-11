@@ -530,7 +530,6 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	}
 
 	secret := crypto.Keccak256(signedData)
-	fmt.Println("need: ", hex.EncodeToString(secret))
 	return signedData, secret, nil
 }
 
