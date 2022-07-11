@@ -308,7 +308,6 @@ type UtilsCmdInterface interface {
 	UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error
 	GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
-	CalculateSecret(account types.Account, epoch uint32) ([]byte, []byte, error)
 	GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error)
 	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue)
 	ExecuteVote(flagSet *pflag.FlagSet)

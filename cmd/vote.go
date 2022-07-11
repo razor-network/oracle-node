@@ -293,8 +293,13 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 		return nil
 	}
+	razorPath, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		return err
+	}
+	keystorePath := path.Join(razorPath, "keystore_files")
 
-	_, secret, err := cmdUtils.CalculateSecret(account, epoch)
+	_, secret, err := CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return err
 	}
@@ -384,7 +389,13 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		_commitData.Leaves = rogueCommittedData
 	}
 
-	signature, secret, err := cmdUtils.CalculateSecret(account, epoch)
+	razorPath, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		return err
+	}
+	keystorePath := path.Join(razorPath, "keystore_files")
+
+	signature, secret, err := CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return err
 	}
@@ -498,23 +509,25 @@ loop:
 }
 
 //This function calculates the secret
-func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, []byte, error) {
-	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, core.ChainId, "razororacle"})
-	ethHash := solsha3.SoliditySHA3([]string{"string", "bytes32"}, []interface{}{"\x19Ethereum Signed Message:\n32", "0x" + hex.EncodeToString(hash)})
+func CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
+	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, chainId, "razororacle"})
+	ethHash := utils.SignHash(hash)
 
-	razorPath, err := razorUtils.GetDefaultPath()
-	if err != nil {
-		return nil, nil, errors.New("Error in fetching .razor directory: " + err.Error())
-	}
-	keystorePath := path.Join(razorPath, "keystore_files")
 	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, keystorePath)
 	if err != nil {
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}
-	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	if signedData[64] == 0 || signedData[64] == 1 {
 		signedData[64] += 27
 	}
+	recoveredAddress, err := utils.EcRecover(hash, signedData)
+	if err != nil {
+		return nil, nil, errors.New("Error in verifying: " + err.Error())
+	}
+	if recoveredAddress != common.HexToAddress(account.Address) {
+		return nil, nil, errors.New("invalid verification")
+	}
+	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
 	return signedData, secret, nil
 }
 
