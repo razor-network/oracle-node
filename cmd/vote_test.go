@@ -338,48 +338,54 @@ func TestCalculateSecret(t *testing.T) {
 	testKeystorePath := path.Join(razorPath, "utils/test_accounts")
 
 	type args struct {
-		address string
-		epoch   uint32
-		chainId *big.Int
+		address  string
+		password string
+		epoch    uint32
+		chainId  *big.Int
 	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name          string
+		args          args
+		want          string
+		expectedFatal bool
 	}{
 		{
 			name: "Test 1 - Address 1 with SKALE chainId",
 			args: args{
-				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-				epoch:   9021,
-				chainId: big.NewInt(0x785B4B9847B9),
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test@123",
+				epoch:    9021,
+				chainId:  big.NewInt(0x785B4B9847B9),
 			},
 			want: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
 		},
 		{
 			name: "Test 2 - Address 2 with SKALE chainId",
 			args: args{
-				address: "0xBd3e0a1d11163934DF10501c9E1a18fbAA9ecAf4",
-				epoch:   9021,
-				chainId: big.NewInt(0x785B4B9847B9),
+				address:  "0xBd3e0a1d11163934DF10501c9E1a18fbAA9ecAf4",
+				password: "Test@123",
+				epoch:    9021,
+				chainId:  big.NewInt(0x785B4B9847B9),
 			},
 			want: "b3e7edd43fae5b925a33494f75e1d38484c3c0d8be29b7a8ff71ce17f65fc542",
 		},
 		{
 			name: "Test 3 - Address 1 with Hardhat chainId",
 			args: args{
-				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-				epoch:   9021,
-				chainId: big.NewInt(31337),
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				epoch:    9021,
+				password: "Test@123",
+				chainId:  big.NewInt(31337),
 			},
 			want: "34653d009bf1af9ff85cfd432a1bc6e2128ab307090ff38332ba0909e599c9fa",
 		},
 		{
 			name: "Test 4 - Address 1 with epoch = 0",
 			args: args{
-				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-				epoch:   0,
-				chainId: big.NewInt(31337),
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test@123",
+				epoch:    0,
+				chainId:  big.NewInt(31337),
 			},
 			want: "a64a7ac998067f775a819dff2adc94c5d6427fbb4759cdc4460e69592c5463d8",
 		},
@@ -388,7 +394,7 @@ func TestCalculateSecret(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			InitializeInterfaces()
 			_, gotSecret, _ := cmdUtils.CalculateSecret(types.Account{Address: tt.args.address,
-				Password: "Test@123"}, tt.args.epoch, testKeystorePath, tt.args.chainId)
+				Password: tt.args.password}, tt.args.epoch, testKeystorePath, tt.args.chainId)
 			gotSecretInHash := hex.EncodeToString(gotSecret)
 			if !reflect.DeepEqual(gotSecretInHash, tt.want) {
 				t.Errorf("CalculateSecret() = %v, want %v", gotSecretInHash, tt.want)
