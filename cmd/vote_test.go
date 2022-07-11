@@ -7,12 +7,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/accounts"
-	accountMocks "razor/accounts/mocks"
+	"os"
+	"path"
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -334,59 +333,41 @@ func convertToSliceOfInterface(arr []uint32) []interface{} {
 }
 
 func TestCalculateSecret(t *testing.T) {
-	var account types.Account
-	var epoch uint32
+	dir, _ := os.Getwd()
+	razorPath := path.Dir(dir)
+	testKeystorePath := path.Join(razorPath, "utils/test_accounts")
 
 	type args struct {
-		path        string
-		pathErr     error
-		signedData  []byte
-		signDataErr error
+		address string
 	}
 	tests := []struct {
 		name string
 		args args
-		want []byte
+		want string
 	}{
 		{
-			name: "Test 1: When CalculateSecret executes successfully",
+			name: "Test 1",
 			args: args{
-				path:       "/home/razor",
-				signedData: []byte{234, 211},
+				address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
 			},
-			want: solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString([]byte{234, 211})}),
+			want: "499ade3f4e06cc28069ecf744e81f3b103155d45a66ade9fdee7548721afbcec",
 		},
 		{
-			name: "Test 2: When there is an error in getting path",
+			name: "Test 2",
 			args: args{
-				pathErr:    errors.New("path error"),
-				signedData: []byte{234, 211},
+				address: "0xBd3e0a1d11163934DF10501c9E1a18fbAA9ecAf4",
 			},
-			want: nil,
-		},
-		{
-			name: "Test 3: When there is an error in getting signed data",
-			args: args{
-				path:        "/home/razor",
-				signDataErr: errors.New("sign data error"),
-			},
-			want: nil,
+			want: "c35047769f0923c477d0c7b9289c0421c13093aee3de74146107ae9564c5e10c",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			accountUtilsMock := new(accountMocks.AccountInterface)
-
-			razorUtils = utilsMock
-			accounts.AccountUtilsInterface = accountUtilsMock
-
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountUtilsMock.On("SignData", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signedData, tt.args.signDataErr)
-
-			utils := &UtilsStruct{}
-			if _, got, _ := utils.CalculateSecret(account, epoch); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateSecret() = %v, want %v", got, tt.want)
+			InitializeInterfaces()
+			_, gotSecret, _ := CalculateSecret(types.Account{Address: tt.args.address,
+				Password: "Test@123"}, 9021, testKeystorePath, big.NewInt(0x785B4B9847B9))
+			gotSecretInHash := hex.EncodeToString(gotSecret)
+			if !reflect.DeepEqual(gotSecretInHash, tt.want) {
+				t.Errorf("CalculateSecret() = %v, want %v", gotSecretInHash, tt.want)
 			}
 		})
 	}
