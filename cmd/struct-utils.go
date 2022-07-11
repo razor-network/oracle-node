@@ -237,7 +237,7 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 }
 
 //This function returns the withdraw initiation period
-func (u Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+func (u Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
 	return utilsInterface.GetWithdrawInitiationPeriod(client)
 }
 

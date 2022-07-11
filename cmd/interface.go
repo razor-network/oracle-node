@@ -91,7 +91,7 @@ type UtilsInterface interface {
 	GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken
 	ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int
 	ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error)
-	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error)
+	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
 	GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
 	GetStakerId(client *ethclient.Client, address string) (uint32, error)
