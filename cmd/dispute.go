@@ -131,7 +131,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
 			log.Debug("Local Calculations: ", medians)
-			if proposedBlock.Valid {
+			if proposedBlock.Valid && len(proposedBlock.Ids) != 0 && len(proposedBlock.Medians) != 0 {
 				// median locally calculated: [100, 200, 300, 500]   median proposed: [100, 230, 300, 500]
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
