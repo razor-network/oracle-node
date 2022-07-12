@@ -73,7 +73,7 @@ func (_m *AccountInterface) DecryptKey(jsonBytes []byte, password string) (*keys
 }
 
 // GetPrivateKey provides a mock function with given fields: address, password, keystorePath
-func (_m *AccountInterface) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
+func (_m *AccountInterface) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
 	ret := _m.Called(address, password, keystorePath)
 
 	var r0 *ecdsa.PrivateKey
@@ -85,11 +85,18 @@ func (_m *AccountInterface) GetPrivateKey(address string, password string, keyst
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
+		r1 = rf(address, password, keystorePath)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetPrivateKeyFromKeystore provides a mock function with given fields: keystorePath, password
-func (_m *AccountInterface) GetPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey {
+func (_m *AccountInterface) GetPrivateKeyFromKeystore(keystorePath string, password string) (*ecdsa.PrivateKey, error) {
 	ret := _m.Called(keystorePath, password)
 
 	var r0 *ecdsa.PrivateKey
@@ -101,7 +108,14 @@ func (_m *AccountInterface) GetPrivateKeyFromKeystore(keystorePath string, passw
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(keystorePath, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewAccount provides a mock function with given fields: path, passphrase

@@ -16,8 +16,8 @@ var AccountUtilsInterface AccountInterface
 
 type AccountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
-	GetPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey
-	GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey
+	GetPrivateKeyFromKeystore(keystorePath string, password string) (*ecdsa.PrivateKey, error)
+	GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error)
 	SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error)
 	Accounts(path string) []accounts.Account
 	NewAccount(path string, passphrase string) (accounts.Account, error)

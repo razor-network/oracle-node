@@ -101,7 +101,7 @@ func (v VoteManagerStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]
 	return voteManager.GetSalt(&opts)
 }
 
-func (a AccountsStruct) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
+func (a AccountsStruct) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
 	return accounts.AccountUtilsInterface.GetPrivateKey(address, password, keystorePath)
 }
 

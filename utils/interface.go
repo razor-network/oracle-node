@@ -229,7 +229,7 @@ type BindUtils interface {
 }
 
 type AccountsUtils interface {
-	GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey
+	GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error)
 }
 
 type BlockManagerUtils interface {

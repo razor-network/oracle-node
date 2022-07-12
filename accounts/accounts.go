@@ -3,6 +3,7 @@ package accounts
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"razor/core/types"
 	"razor/logger"
@@ -28,31 +29,36 @@ func (AccountUtils) CreateAccount(keystorePath string, password string) accounts
 }
 
 //This function takes and path of keystore and password as input and returns private key of account
-func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password string) *ecdsa.PrivateKey {
+func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password string) (*ecdsa.PrivateKey, error) {
 	jsonBytes, err := AccountUtilsInterface.ReadFile(keystorePath)
 	if err != nil {
-		log.Fatal("Error in reading keystore: ", err)
+		log.Error("Error in reading keystore: ", err)
+		return nil, err
 	}
 	key, err := AccountUtilsInterface.DecryptKey(jsonBytes, password)
 	if err != nil {
-		log.Fatal("Error in fetching private key: ", err)
+		log.Error("Error in fetching private key: ", err)
+		return nil, err
 	}
-	return key.PrivateKey
+	return key.PrivateKey, nil
 }
 
 //This function takes address of account, password and keystore path as input and returns private key of account
-func (AccountUtils) GetPrivateKey(address string, password string, keystorePath string) *ecdsa.PrivateKey {
+func (AccountUtils) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
 	allAccounts := AccountUtilsInterface.Accounts(keystorePath)
 	for _, account := range allAccounts {
 		if strings.EqualFold(account.Address.Hex(), address) {
 			return AccountUtilsInterface.GetPrivateKeyFromKeystore(account.URL.Path, password)
 		}
 	}
-	return nil
+	return nil, errors.New("no keystore file found")
 }
 
 //This function takes hash, account and path as input and returns the signed data as array of byte
 func (AccountUtils) SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
-	privateKey := AccountUtilsInterface.GetPrivateKey(account.Address, account.Password, defaultPath)
+	privateKey, err := AccountUtilsInterface.GetPrivateKey(account.Address, account.Password, defaultPath)
+	if err != nil {
+		return nil, err
+	}
 	return AccountUtilsInterface.Sign(hash, privateKey)
 }
