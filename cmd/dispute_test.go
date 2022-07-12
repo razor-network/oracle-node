@@ -437,6 +437,28 @@ func TestHandleDispute(t *testing.T) {
 			},
 			want: nil,
 		},
+		{
+			name: "Test 16: When HandleDispute function executes successfully and medians proposed are empty",
+			args: args{
+				sortedProposedBlockIds: []uint32{3, 1, 2, 5, 4},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
+				revealedCollectionIds:  []uint16{1},
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: nil,
+					VoteWeights:          nil,
+					InfluenceSum:         nil,
+				},
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []*big.Int{},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				disputeErr: nil,
+			},
+			want: nil,
+		},
 	}
 
 	for _, tt := range tests {
