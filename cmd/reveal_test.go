@@ -95,7 +95,7 @@ func TestHandleRevealState(t *testing.T) {
 func TestReveal(t *testing.T) {
 	var client *ethclient.Client
 	var commitData types.CommitData
-	var secret []byte
+	var signature []byte
 	var account types.Account
 	var config types.Configurations
 	var epoch uint32
@@ -182,7 +182,7 @@ func TestReveal(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(client, config, account, epoch, commitData, secret)
+			got, err := utils.Reveal(client, config, account, epoch, commitData, signature)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}

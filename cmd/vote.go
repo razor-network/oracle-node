@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"os"
 	"os/signal"
@@ -293,8 +294,13 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 		return nil
 	}
+	razorPath, err := razorUtils.GetDefaultPath()
+	if err != nil {
+		return err
+	}
+	keystorePath := path.Join(razorPath, "keystore_files")
 
-	secret, err := cmdUtils.CalculateSecret(account, epoch)
+	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return err
 	}
@@ -384,11 +390,17 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		_commitData.Leaves = rogueCommittedData
 	}
 
-	secret, err := cmdUtils.CalculateSecret(account, epoch)
+	razorPath, err := razorUtils.GetDefaultPath()
 	if err != nil {
 		return err
 	}
-	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, secret)
+	keystorePath := path.Join(razorPath, "keystore_files")
+
+	signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	if err != nil {
+		return err
+	}
+	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, signature)
 	if err != nil {
 		return errors.New("Reveal error: " + err.Error())
 	}
@@ -498,19 +510,30 @@ loop:
 }
 
 //This function calculates the secret
-func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32) ([]byte, error) {
-	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{account.Address, epoch, core.ChainId.String(), "razororacle"})
-	razorPath, err := razorUtils.GetDefaultPath()
-	if err != nil {
-		return nil, errors.New("Error in fetching .razor directory: " + err.Error())
+func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
+	if chainId == nil {
+		return nil, nil, errors.New("chainId is nil")
 	}
-	keystorePath := path.Join(razorPath, "keystore_files")
-	signedData, err := accounts.AccountUtilsInterface.SignData(hash, account, keystorePath)
+	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, chainId, "razororacle"})
+	ethHash := utils.SignHash(hash)
+
+	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, keystorePath)
 	if err != nil {
-		return nil, errors.New("Error in signing the data: " + err.Error())
+		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}
-	secret := solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString(signedData)})
-	return secret, nil
+	recoveredAddress, err := utils.EcRecover(hash, signedData)
+	if err != nil {
+		return nil, nil, errors.New("Error in verifying: " + err.Error())
+	}
+	if recoveredAddress != common.HexToAddress(account.Address) {
+		return nil, nil, errors.New("invalid verification")
+	}
+	if signedData[64] == 0 || signedData[64] == 1 {
+		signedData[64] += 27
+	}
+
+	secret := crypto.Keccak256(signedData)
+	return signedData, secret, nil
 }
 
 func init() {

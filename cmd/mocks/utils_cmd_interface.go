@@ -100,27 +100,36 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 	return r0, r1
 }
 
-// CalculateSecret provides a mock function with given fields: account, epoch
-func (_m *UtilsCmdInterface) CalculateSecret(account types.Account, epoch uint32) ([]byte, error) {
-	ret := _m.Called(account, epoch)
+// CalculateSecret provides a mock function with given fields: account, epoch, keystorePath, chainId
+func (_m *UtilsCmdInterface) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
+	ret := _m.Called(account, epoch, keystorePath, chainId)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(types.Account, uint32) []byte); ok {
-		r0 = rf(account, epoch)
+	if rf, ok := ret.Get(0).(func(types.Account, uint32, string, *big.Int) []byte); ok {
+		r0 = rf(account, epoch, keystorePath, chainId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.Account, uint32) error); ok {
-		r1 = rf(account, epoch)
+	var r1 []byte
+	if rf, ok := ret.Get(1).(func(types.Account, uint32, string, *big.Int) []byte); ok {
+		r1 = rf(account, epoch, keystorePath, chainId)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]byte)
+		}
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(types.Account, uint32, string, *big.Int) error); ok {
+		r2 = rf(account, epoch, keystorePath, chainId)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // CheckCurrentStatus provides a mock function with given fields: client, collectionId
@@ -1307,13 +1316,13 @@ func (_m *UtilsCmdInterface) ResetUnstakeLock(client *ethclient.Client, config t
 	return r0, r1
 }
 
-// Reveal provides a mock function with given fields: client, config, account, epoch, commitData, secret
-func (_m *UtilsCmdInterface) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, secret []byte) (common.Hash, error) {
-	ret := _m.Called(client, config, account, epoch, commitData, secret)
+// Reveal provides a mock function with given fields: client, config, account, epoch, commitData, signature
+func (_m *UtilsCmdInterface) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
+	ret := _m.Called(client, config, account, epoch, commitData, signature)
 
 	var r0 common.Hash
 	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, types.CommitData, []byte) common.Hash); ok {
-		r0 = rf(client, config, account, epoch, commitData, secret)
+		r0 = rf(client, config, account, epoch, commitData, signature)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
@@ -1322,7 +1331,7 @@ func (_m *UtilsCmdInterface) Reveal(client *ethclient.Client, config types.Confi
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, uint32, types.CommitData, []byte) error); ok {
-		r1 = rf(client, config, account, epoch, commitData, secret)
+		r1 = rf(client, config, account, epoch, commitData, signature)
 	} else {
 		r1 = ret.Error(1)
 	}

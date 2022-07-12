@@ -129,10 +129,10 @@ func TestGetPrivateKeyFromKeystore(t *testing.T) {
 		keyErr       error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		want          *ecdsa.PrivateKey
-		expectedFatal bool
+		name    string
+		args    args
+		want    *ecdsa.PrivateKey
+		wantErr bool
 	}{
 		{
 			name: "Test 1: When GetPrivateKey function executes successfully",
@@ -142,8 +142,8 @@ func TestGetPrivateKeyFromKeystore(t *testing.T) {
 					PrivateKey: privateKey,
 				},
 			},
-			want:          privateKey,
-			expectedFatal: false,
+			want:    privateKey,
+			wantErr: false,
 		},
 		{
 			name: "Test 2: When there is an error in reading data from file",
@@ -153,8 +153,8 @@ func TestGetPrivateKeyFromKeystore(t *testing.T) {
 					PrivateKey: nil,
 				},
 			},
-			want:          nil,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 3: When there is an error in fetching private key",
@@ -165,14 +165,10 @@ func TestGetPrivateKeyFromKeystore(t *testing.T) {
 				},
 				keyErr: errors.New("private key error"),
 			},
-			want:          privateKey,
-			expectedFatal: true,
+			want:    privateKey,
+			wantErr: true,
 		},
 	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -183,13 +179,13 @@ func TestGetPrivateKeyFromKeystore(t *testing.T) {
 			accountsMock.On("DecryptKey", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.key, tt.args.keyErr)
 
 			accountUtils := &AccountUtils{}
-			fatal = false
-			got := accountUtils.GetPrivateKeyFromKeystore(keystorePath, password)
-			if tt.expectedFatal {
-				assert.Equal(t, tt.expectedFatal, fatal)
-			}
+			got, err := accountUtils.GetPrivateKeyFromKeystore(keystorePath, password)
 			if got != tt.want {
 				t.Errorf("Private key from GetPrivateKey, got = %v, want %v", got, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetPrivateKeyFromKeystore() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
@@ -215,9 +211,10 @@ func TestGetPrivateKey(t *testing.T) {
 		privateKey *ecdsa.PrivateKey
 	}
 	tests := []struct {
-		name string
-		args args
-		want *ecdsa.PrivateKey
+		name    string
+		args    args
+		want    *ecdsa.PrivateKey
+		wantErr bool
 	}{
 		{
 			name: "Test 1: When input address is present in accountsList",
@@ -226,16 +223,18 @@ func TestGetPrivateKey(t *testing.T) {
 				accounts:   accountsList,
 				privateKey: privateKey,
 			},
-			want: privateKey,
+			want:    privateKey,
+			wantErr: false,
 		},
 		{
-			name: "Test 2: When input address is npt present in accountsList",
+			name: "Test 2: When input address is not present in accountsList",
 			args: args{
 				address:    "0x000000000000000000000000000000000000dea3",
 				accounts:   accountsList,
 				privateKey: privateKey,
 			},
-			want: nil,
+			want:    nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -244,12 +243,16 @@ func TestGetPrivateKey(t *testing.T) {
 			AccountUtilsInterface = accountsMock
 
 			accountsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
-			accountsMock.On("GetPrivateKeyFromKeystore", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey)
+			accountsMock.On("GetPrivateKeyFromKeystore", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey, nil)
 
 			accountUtils := &AccountUtils{}
-			got := accountUtils.GetPrivateKey(tt.args.address, password, keystorePath)
+			got, err := accountUtils.GetPrivateKey(tt.args.address, password, keystorePath)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetPrivateKey() got = %v, want %v", got, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetPrivateKey() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
@@ -263,15 +266,16 @@ func TestSignData(t *testing.T) {
 	var signature []byte
 
 	type args struct {
-		privateKey   *ecdsa.PrivateKey
-		signature    []byte
-		signatureErr error
+		privateKey    *ecdsa.PrivateKey
+		privateKeyErr error
+		signature     []byte
+		signatureErr  error
 	}
 	tests := []struct {
 		name    string
 		args    args
 		want    []byte
-		wantErr error
+		wantErr bool
 	}{
 		{
 			name: "Test 1: When Sign function returns no error",
@@ -281,16 +285,15 @@ func TestSignData(t *testing.T) {
 				signatureErr: nil,
 			},
 			want:    signature,
-			wantErr: nil,
+			wantErr: false,
 		},
 		{
-			name: "Test 2: When Sign function returns error",
+			name: "Test 2: When there is an error in getting private key",
 			args: args{
-				privateKey:   privateKey,
-				signatureErr: nil,
+				privateKeyErr: errors.New("privateKey"),
 			},
 			want:    nil,
-			wantErr: nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -298,7 +301,7 @@ func TestSignData(t *testing.T) {
 			accountsMock := new(mocks.AccountInterface)
 			AccountUtilsInterface = accountsMock
 
-			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey)
+			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey, tt.args.privateKeyErr)
 			accountsMock.On("Sign", mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.signatureErr)
 
 			accountUtils := &AccountUtils{}
@@ -309,14 +312,9 @@ func TestSignData(t *testing.T) {
 				t.Errorf("Sign() got = %v, want %v", got, tt.want)
 			}
 
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for SignAccounts function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for SignAccounts function, got = %v, want = %v", err, tt.wantErr)
-				}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Sign() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}

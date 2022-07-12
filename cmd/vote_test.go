@@ -7,12 +7,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/accounts"
-	accountMocks "razor/accounts/mocks"
+	"os"
+	"path"
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -334,59 +333,137 @@ func convertToSliceOfInterface(arr []uint32) []interface{} {
 }
 
 func TestCalculateSecret(t *testing.T) {
-	var account types.Account
-	var epoch uint32
+	dir, _ := os.Getwd()
+	razorPath := path.Dir(dir)
+	testKeystorePath := path.Join(razorPath, "utils/test_accounts")
 
 	type args struct {
-		path        string
-		pathErr     error
-		signedData  []byte
-		signDataErr error
+		address  string
+		password string
+		epoch    uint32
+		chainId  *big.Int
 	}
 	tests := []struct {
-		name string
-		args args
-		want []byte
+		name          string
+		args          args
+		wantSignature string
+		wantSecret    string
+		wantErr       bool
 	}{
 		{
-			name: "Test 1: When CalculateSecret executes successfully",
+			name: "Test 1 - Address 1 with SKALE chainId",
 			args: args{
-				path:       "/home/razor",
-				signedData: []byte{234, 211},
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test@123",
+				epoch:    9021,
+				chainId:  big.NewInt(0x785B4B9847B9),
 			},
-			want: solsha3.SoliditySHA3([]string{"string"}, []interface{}{hex.EncodeToString([]byte{234, 211})}),
+			wantSignature: "be151a0d3890dec990ecc47923df44f1f63e7159db9694712836b75e3f48c95802e096c7554f17e865491a7e01aeffee0e6e20f5e31fa573c6e9640efd1f86ee1b",
+			wantSecret:    "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+			wantErr:       false,
 		},
 		{
-			name: "Test 2: When there is an error in getting path",
+			name: "Test 2 - Address 2 with SKALE chainId",
 			args: args{
-				pathErr:    errors.New("path error"),
-				signedData: []byte{234, 211},
+				address:  "0xBd3e0a1d11163934DF10501c9E1a18fbAA9ecAf4",
+				password: "Test@123",
+				epoch:    9021,
+				chainId:  big.NewInt(0x785B4B9847B9),
 			},
-			want: nil,
+			wantSignature: "e89df172968b577ab60192503949bb19751bc5d50f4bd11fc98a5b3089e31a945494ac10874254caec540a3d360179c62ac2a0fe8a380bd77ab113925e37024c1b",
+			wantSecret:    "b3e7edd43fae5b925a33494f75e1d38484c3c0d8be29b7a8ff71ce17f65fc542",
+			wantErr:       false,
 		},
 		{
-			name: "Test 3: When there is an error in getting signed data",
+			name: "Test 3 - Address 1 with Hardhat chainId",
 			args: args{
-				path:        "/home/razor",
-				signDataErr: errors.New("sign data error"),
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				epoch:    9021,
+				password: "Test@123",
+				chainId:  big.NewInt(31337),
 			},
-			want: nil,
+			wantSignature: "a98ef5a1cec4e319580acc579b6e56d49158d2f10b66bd6a573861f17b3640ee3a7f720869c48c1c42b4bcb67c2119f0250f8fad7a70ef2de839564166117af31b",
+			wantSecret:    "34653d009bf1af9ff85cfd432a1bc6e2128ab307090ff38332ba0909e599c9fa",
+			wantErr:       false,
+		},
+		{
+			name: "Test 4 - Address 1 with epoch = 0",
+			args: args{
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test@123",
+				epoch:    0,
+				chainId:  big.NewInt(31337),
+			},
+			wantSignature: "761c52de33ed3ae5185e79d872ff42f38dca720ec7ccbe66df4ec188d03448e234a95571b602247f2245da60baa0605a76d680cbc4921117170c9e2e1e673c3e1c",
+			wantSecret:    "a64a7ac998067f775a819dff2adc94c5d6427fbb4759cdc4460e69592c5463d8",
+			wantErr:       false,
+		},
+		{
+			name: "Test 5 - When address is nil",
+			args: args{
+				address:  "",
+				password: "Test@123",
+				epoch:    0,
+				chainId:  big.NewInt(31337),
+			},
+			wantSignature: "",
+			wantSecret:    "",
+			wantErr:       true,
+		},
+		{
+			name: "Test 6 - When password is wrong",
+			args: args{
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test",
+				epoch:    0,
+				chainId:  big.NewInt(31337),
+			},
+			wantSignature: "",
+			wantSecret:    "",
+			wantErr:       true,
+		},
+		{
+			name: "Test 7 - When ChainId is nil",
+			args: args{
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test@123",
+				epoch:    0,
+				chainId:  nil,
+			},
+			wantSignature: "",
+			wantSecret:    "",
+			wantErr:       true,
+		},
+		{
+			name: "Test 6 - When password is nil",
+			args: args{
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "",
+				epoch:    9021,
+				chainId:  big.NewInt(31337),
+			},
+			wantSignature: "",
+			wantSecret:    "",
+			wantErr:       true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			accountUtilsMock := new(accountMocks.AccountInterface)
+			InitializeInterfaces()
+			gotSignature, gotSecret, err := cmdUtils.CalculateSecret(types.Account{Address: tt.args.address,
+				Password: tt.args.password}, tt.args.epoch, testKeystorePath, tt.args.chainId)
 
-			razorUtils = utilsMock
-			accounts.AccountUtilsInterface = accountUtilsMock
-
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountUtilsMock.On("SignData", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signedData, tt.args.signDataErr)
-
-			utils := &UtilsStruct{}
-			if got, _ := utils.CalculateSecret(account, epoch); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateSecret() = %v, want %v", got, tt.want)
+			gotSignatureInHash := hex.EncodeToString(gotSignature)
+			gotSecretInHash := hex.EncodeToString(gotSecret)
+			if !reflect.DeepEqual(gotSignatureInHash, tt.wantSignature) {
+				t.Errorf("CalculateSecret() Signature = %v, want %v", gotSignatureInHash, tt.wantSignature)
+			}
+			if !reflect.DeepEqual(gotSecretInHash, tt.wantSecret) {
+				t.Errorf("CalculateSecret() Secret = %v, want %v", gotSecretInHash, tt.wantSecret)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateSecret() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
@@ -406,8 +483,11 @@ func TestInitiateCommit(t *testing.T) {
 		lastCommitErr             error
 		secret                    []byte
 		secretErr                 error
+		signature                 []byte
 		salt                      [32]byte
 		saltErr                   error
+		path                      string
+		pathErr                   error
 		commitData                types.CommitData
 		commitDataErr             error
 		merkleTree                [][][]byte
@@ -429,6 +509,7 @@ func TestInitiateCommit(t *testing.T) {
 			args: args{
 				epoch:      5,
 				lastCommit: 2,
+				signature:  []byte{2},
 				secret:     []byte{1},
 				salt:       [32]byte{},
 				commitData: types.CommitData{
@@ -540,21 +621,11 @@ func TestInitiateCommit(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 9: When there is an error in saving data to file",
+			name: "Test 9: When there is an error in getting path",
 			args: args{
 				epoch:      5,
 				lastCommit: 2,
-				secret:     []byte{1},
-				salt:       [32]byte{},
-				commitData: types.CommitData{
-					AssignedCollections:    nil,
-					SeqAllottedCollections: nil,
-					Leaves:                 nil,
-				},
-				merkleTree: [][][]byte{},
-				commitTxn:  common.BigToHash(big.NewInt(1)),
-				fileName:   "",
-				saveErr:    errors.New("error in saving data to file"),
+				pathErr:    errors.New("path error"),
 			},
 			wantErr: true,
 		},
@@ -570,11 +641,12 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastCommit, tt.args.lastCommitErr)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
 			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
 			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
@@ -606,6 +678,9 @@ func TestInitiateReveal(t *testing.T) {
 		fileNameErr              error
 		committedDataFromFile    types.CommitFileData
 		committedDataFromFileErr error
+		path                     string
+		pathErr                  error
+		signature                []byte
 		secret                   []byte
 		secretErr                error
 		revealTxn                common.Hash
@@ -624,6 +699,7 @@ func TestInitiateReveal(t *testing.T) {
 				lastReveal:            2,
 				fileName:              "",
 				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				signature:             []byte{1},
 				secret:                []byte{},
 				revealTxn:             common.BigToHash(big.NewInt(1)),
 			},
@@ -725,6 +801,17 @@ func TestInitiateReveal(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Test 11: When there is an error in getting path",
+			args: args{
+				epoch:                 5,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 5},
+				pathErr:               errors.New("path error"),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -739,8 +826,9 @@ func TestInitiateReveal(t *testing.T) {
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything).Return(tt.args.secret, tt.args.secretErr)
-			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
+			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
 			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, staker, tt.args.rogueData); (err != nil) != tt.wantErr {
