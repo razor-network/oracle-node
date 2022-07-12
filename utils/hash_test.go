@@ -1,31 +1,20 @@
 package utils
 
 import (
+	"encoding/hex"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
-	"math/big"
-	"os"
-	"path"
-	"razor/accounts"
-	"razor/core/types"
 	"reflect"
 	"testing"
 )
 
 func TestEcRecover(t *testing.T) {
-	dir, _ := os.Getwd()
-	razorPath := path.Dir(dir)
-	testKeystorePath := path.Join(razorPath, "utils/test_accounts")
+	hash, _ := hex.DecodeString("a4077fc17f659439ff7d7ce1d0735af97fbc1dcdca28dbe50667830fbffa5f85")
+	signedData, _ := hex.DecodeString("b0150b4852635a700a8207121ccdeab8db2c5be683ee3f786b2e2b24cea826963be63651d8f492414edd0c9cdb8e12117acb74b9fbd3483ca6e0cbc7732e915401")
 
-	accounts.AccountUtilsInterface = accounts.AccountUtils{}
-	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress("0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576"), 9201, big.NewInt(31337), "razororacle"})
-	ethHash := SignHash(hash)
-	signedData, _ := accounts.AccountUtilsInterface.SignData(ethHash, types.Account{Address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-		Password: "Test@123"}, testKeystorePath)
-	modifiedSignedData, _ := accounts.AccountUtilsInterface.SignData(ethHash, types.Account{Address: "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-		Password: "Test@123"}, testKeystorePath)
+	modifiedSignedData, _ := hex.DecodeString("b0150b4852635a700a8207121ccdeab8db2c5be683ee3f786b2e2b24cea826963be63651d8f492414edd0c9cdb8e12117acb74b9fbd3483ca6e0cbc7732e915401")
 	modifiedSignedData[64] = 27
+
 	type args struct {
 		data hexutil.Bytes
 		sig  hexutil.Bytes
