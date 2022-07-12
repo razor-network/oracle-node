@@ -389,6 +389,26 @@ func TestCalculateSecret(t *testing.T) {
 			},
 			want: "a64a7ac998067f775a819dff2adc94c5d6427fbb4759cdc4460e69592c5463d8",
 		},
+		{
+			name: "Test 5 - When address is nil",
+			args: args{
+				address:  "",
+				password: "Test@123",
+				epoch:    0,
+				chainId:  big.NewInt(31337),
+			},
+			want: "",
+		},
+		{
+			name: "Test 6 - When password is wrong",
+			args: args{
+				address:  "2345",
+				password: "Test",
+				epoch:    0,
+				chainId:  big.NewInt(31337),
+			},
+			want: "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
