@@ -413,9 +413,33 @@ func TestCalculateSecret(t *testing.T) {
 		{
 			name: "Test 6 - When password is wrong",
 			args: args{
-				address:  "2345",
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
 				password: "Test",
 				epoch:    0,
+				chainId:  big.NewInt(31337),
+			},
+			wantSignature: "",
+			wantSecret:    "",
+			wantErr:       true,
+		},
+		{
+			name: "Test 7 - When ChainId is nil",
+			args: args{
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "Test@123",
+				epoch:    0,
+				chainId:  nil,
+			},
+			wantSignature: "",
+			wantSecret:    "",
+			wantErr:       true,
+		},
+		{
+			name: "Test 6 - When password is nil",
+			args: args{
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				password: "",
+				epoch:    9021,
 				chainId:  big.NewInt(31337),
 			},
 			wantSignature: "",

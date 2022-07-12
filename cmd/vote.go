@@ -511,6 +511,9 @@ loop:
 
 //This function calculates the secret
 func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
+	if chainId == nil {
+		return nil, nil, errors.New("chainId is nil")
+	}
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, chainId, "razororacle"})
 	ethHash := utils.SignHash(hash)
 
