@@ -344,9 +344,10 @@ func TestCalculateSecret(t *testing.T) {
 		chainId  *big.Int
 	}
 	tests := []struct {
-		name string
-		args args
-		want string
+		name    string
+		args    args
+		want    string
+		wantErr bool
 	}{
 		{
 			name: "Test 1 - Address 1 with SKALE chainId",
@@ -356,7 +357,8 @@ func TestCalculateSecret(t *testing.T) {
 				epoch:    9021,
 				chainId:  big.NewInt(0x785B4B9847B9),
 			},
-			want: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+			want:    "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+			wantErr: false,
 		},
 		{
 			name: "Test 2 - Address 2 with SKALE chainId",
@@ -366,7 +368,8 @@ func TestCalculateSecret(t *testing.T) {
 				epoch:    9021,
 				chainId:  big.NewInt(0x785B4B9847B9),
 			},
-			want: "b3e7edd43fae5b925a33494f75e1d38484c3c0d8be29b7a8ff71ce17f65fc542",
+			want:    "b3e7edd43fae5b925a33494f75e1d38484c3c0d8be29b7a8ff71ce17f65fc542",
+			wantErr: false,
 		},
 		{
 			name: "Test 3 - Address 1 with Hardhat chainId",
@@ -376,7 +379,8 @@ func TestCalculateSecret(t *testing.T) {
 				password: "Test@123",
 				chainId:  big.NewInt(31337),
 			},
-			want: "34653d009bf1af9ff85cfd432a1bc6e2128ab307090ff38332ba0909e599c9fa",
+			want:    "34653d009bf1af9ff85cfd432a1bc6e2128ab307090ff38332ba0909e599c9fa",
+			wantErr: false,
 		},
 		{
 			name: "Test 4 - Address 1 with epoch = 0",
@@ -386,7 +390,8 @@ func TestCalculateSecret(t *testing.T) {
 				epoch:    0,
 				chainId:  big.NewInt(31337),
 			},
-			want: "a64a7ac998067f775a819dff2adc94c5d6427fbb4759cdc4460e69592c5463d8",
+			want:    "a64a7ac998067f775a819dff2adc94c5d6427fbb4759cdc4460e69592c5463d8",
+			wantErr: false,
 		},
 		{
 			name: "Test 5 - When address is nil",
@@ -396,7 +401,8 @@ func TestCalculateSecret(t *testing.T) {
 				epoch:    0,
 				chainId:  big.NewInt(31337),
 			},
-			want: "",
+			want:    "",
+			wantErr: true,
 		},
 		{
 			name: "Test 6 - When password is wrong",
@@ -406,17 +412,22 @@ func TestCalculateSecret(t *testing.T) {
 				epoch:    0,
 				chainId:  big.NewInt(31337),
 			},
-			want: "",
+			want:    "",
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			InitializeInterfaces()
-			_, gotSecret, _ := cmdUtils.CalculateSecret(types.Account{Address: tt.args.address,
+			_, gotSecret, err := cmdUtils.CalculateSecret(types.Account{Address: tt.args.address,
 				Password: tt.args.password}, tt.args.epoch, testKeystorePath, tt.args.chainId)
 			gotSecretInHash := hex.EncodeToString(gotSecret)
 			if !reflect.DeepEqual(gotSecretInHash, tt.want) {
 				t.Errorf("CalculateSecret() = %v, want %v", gotSecretInHash, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateSecret() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
