@@ -68,6 +68,10 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 		//blockIndex is index of blockId in sortedProposedBlock
 		blockIndex := utils.IndexOf(sortedProposedBlockIds, uint32(blockId))
+		if blockIndex == -1 {
+			log.Error("Block is not present in SortedProposedBlockIds array")
+			continue
+		}
 
 		// Biggest staker dispute
 		if proposedBlock.BiggestStake.Cmp(biggestStake) != 0 && proposedBlock.Valid {
