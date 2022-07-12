@@ -344,10 +344,9 @@ func TestCalculateSecret(t *testing.T) {
 		chainId  *big.Int
 	}
 	tests := []struct {
-		name          string
-		args          args
-		want          string
-		expectedFatal bool
+		name string
+		args args
+		want string
 	}{
 		{
 			name: "Test 1 - Address 1 with SKALE chainId",
