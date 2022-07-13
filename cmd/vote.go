@@ -165,11 +165,6 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
-	if err != nil {
-		log.Error("Error in getting minimum stake amount: ", err)
-		return
-	}
 	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
@@ -199,9 +194,6 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 
 	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
-	if stakedAmount.Cmp(minStakeAmount) < 0 {
-		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
-	}
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
@@ -286,6 +278,21 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 //This function initiates the commit
 func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
+	staker, err := razorUtils.GetStaker(client, stakerId)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	stakedAmount := staker.Stake
+	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	if err != nil {
+		log.Error("Error in getting minimum stake amount: ", err)
+		return err
+	}
+	if stakedAmount.Cmp(minStakeAmount) < 0 {
+		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
+		return nil
+	}
 	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
 	if err != nil {
 		return errors.New("Error in fetching last commit: " + err.Error())
@@ -348,6 +355,16 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 
 //This function initiates the reveal
 func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
+	stakedAmount := staker.Stake
+	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	if err != nil {
+		log.Error("Error in getting minimum stake amount: ", err)
+		return err
+	}
+	if stakedAmount.Cmp(minStakeAmount) < 0 {
+		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
+		return nil
+	}
 	lastReveal, err := razorUtils.GetEpochLastRevealed(client, staker.Id)
 	if err != nil {
 		return errors.New("Error in fetching last reveal: " + err.Error())
@@ -416,6 +433,16 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 
 //This function initiates the propose
 func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
+	stakedAmount := staker.Stake
+	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	if err != nil {
+		log.Error("Error in getting minimum stake amount: ", err)
+		return err
+	}
+	if stakedAmount.Cmp(minStakeAmount) < 0 {
+		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
+		return nil
+	}
 	lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, staker.Id)
 	if err != nil {
 		return errors.New("Error in fetching last proposal: " + err.Error())
