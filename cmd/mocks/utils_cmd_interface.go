@@ -857,6 +857,36 @@ func (_m *UtilsCmdInterface) GetSalt(client *ethclient.Client, epoch uint32) ([3
 	return r0, r1
 }
 
+// GetSmallestStakeAndId provides a mock function with given fields: client, epoch
+func (_m *UtilsCmdInterface) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
+	ret := _m.Called(client, epoch)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) *big.Int); ok {
+		r0 = rf(client, epoch)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 uint32
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) uint32); ok {
+		r1 = rf(client, epoch)
+	} else {
+		r1 = ret.Get(1).(uint32)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, uint32) error); ok {
+		r2 = rf(client, epoch)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // GetSortedRevealedValues provides a mock function with given fields: client, blockNumber, epoch
 func (_m *UtilsCmdInterface) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	ret := _m.Called(client, blockNumber, epoch)

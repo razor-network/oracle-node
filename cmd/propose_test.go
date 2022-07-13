@@ -51,6 +51,9 @@ func TestPropose(t *testing.T) {
 		biggestStake               *big.Int
 		biggestStakerId            uint32
 		biggestStakerIdErr         error
+		smallestStake              *big.Int
+		smallestStakerId           uint32
+		smallestStakerIdErr        error
 		randaoHash                 [32]byte
 		randaoHashErr              error
 		bufferPercent              int32
@@ -431,7 +434,7 @@ func TestPropose(t *testing.T) {
 			wantErr: errors.New("buffer error"),
 		},
 		{
-			name: "Test 18: When rogue mode is on for biggestStakerId Propose function executes successfully",
+			name: "Test 18: When rogue mode is on for biggestStakerId and propose exceutes successfully",
 			args: args{
 				rogueData: types.Rogue{
 					IsRogue:   true,
@@ -442,6 +445,8 @@ func TestPropose(t *testing.T) {
 				numStakers:              5,
 				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakerId:         2,
+				smallestStake:           big.NewInt(1000),
+				smallestStakerId:        1,
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
@@ -455,6 +460,33 @@ func TestPropose(t *testing.T) {
 			},
 			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
+		},
+		{
+			name: "Test 19: When rogue mode is on for biggestStakerId and there is an error in getting smallestStakerId",
+			args: args{
+				rogueData: types.Rogue{
+					IsRogue:   true,
+					RogueMode: []string{"biggestStakerId"},
+				},
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              5,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
+				smallestStakerIdErr:     errors.New("smallestStakerId error"),
+				salt:                    saltBytes32,
+				iteration:               1,
+				numOfProposedBlocks:     3,
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: bindings.StructsBlock{},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+				txnOpts:                 txnOpts,
+				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("smallestStakerId error"),
 		},
 	}
 	for _, tt := range tests {
@@ -472,6 +504,7 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
+		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
 		utilsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.randaoHash, tt.args.randaoHashErr)
 		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
 		utilsMock.On("GetMaxAltBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.maxAltBlocks, tt.args.maxAltBlocksErr)
@@ -520,7 +553,7 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		bufferPercentErr error
 		remainingTime    int64
 		remainingTimeErr error
-		stake            []*big.Int
+		stake            *big.Int
 		stakeErr         error
 	}
 	tests := []struct {
@@ -535,29 +568,26 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			args: args{
 				numOfStakers:  2,
 				remainingTime: 10,
-				stake:         []*big.Int{big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))},
+				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			},
 			wantStake: big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			wantId:    1,
 			wantErr:   nil,
 		},
 		{
-			name: "Test 2: When getBiggestStakeAndId function executes successfully with more number of stakers",
+			name: "Test 2: When numOfStakers is 0",
 			args: args{
-				numOfStakers:  5,
-				remainingTime: 10,
-				stake:         []*big.Int{big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(32432), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(32), big.NewInt(1e18)), big.NewInt(1e18), big.NewInt(1e10)},
+				numOfStakers: 0,
 			},
-			wantStake: big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
-			wantId:    1,
-			wantErr:   nil,
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("numberOfStakers is 0"),
 		},
 		{
 			name: "Test 3: When there is an error in getting numOfStakers",
 			args: args{
 				numOfStakersErr: errors.New("numOfStakers error"),
 				remainingTime:   10,
-				stake:           []*big.Int{big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))},
 			},
 			wantStake: nil,
 			wantId:    0,
@@ -589,8 +619,9 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			name: "Test 6: When there is a timeout case",
 			args: args{
 				numOfStakers:  100000,
-				remainingTime: 1,
-				stake:         []*big.Int{big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))},
+				bufferPercent: 10,
+				remainingTime: 0,
+				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			},
 			wantStake: nil,
 			wantId:    0,
@@ -619,12 +650,6 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
-			if tt.args.stake != nil {
-				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake[uint32(0)], tt.args.stakeErr)
-			} else {
-				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(nil, tt.args.stakeErr)
-
-			}
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
 			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
@@ -1149,6 +1174,100 @@ func TestGetSortedRevealedValues(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSortedRevealedValues() got = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestGetSmallestStakeAndId(t *testing.T) {
+	var client *ethclient.Client
+	var epoch uint32
+
+	type args struct {
+		numOfStakers    uint32
+		numOfStakersErr error
+		stake           *big.Int
+		stakeErr        error
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantStake *big.Int
+		wantId    uint32
+		wantErr   error
+	}{
+		{
+			name: "Test 1: When GetSmallestStakeAndId function executes successfully",
+			args: args{
+				numOfStakers: 4,
+				stake:        big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+			},
+			wantStake: big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+			wantId:    1,
+			wantErr:   nil,
+		},
+		{
+			name: "Test 2: When the numberOfStakers is 0",
+			args: args{
+				numOfStakers: 0,
+				stake:        big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+			},
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("numberOfStakers is 0"),
+		},
+		{
+			name: "Test 3: When there is an error in getting numOfStakers",
+			args: args{
+				numOfStakersErr: errors.New("numOfStakers error"),
+			},
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("numOfStakers error"),
+		},
+		{
+			name: "Test 4: When there is an error in getting stake",
+			args: args{
+				numOfStakers: 5,
+				stakeErr:     errors.New("stake error"),
+			},
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("stake error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			utilsMock := new(mocks.UtilsInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			utilsPkgMock := new(Mocks.Utils)
+
+			razorUtils = utilsMock
+			utilsInterface = utilsPkgMock
+			cmdUtils = cmdUtilsMock
+
+			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
+			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
+
+			utils := &UtilsStruct{}
+
+			gotStake, gotId, err := utils.GetSmallestStakeAndId(client, epoch)
+			if gotStake.Cmp(tt.wantStake) != 0 {
+				t.Errorf("Smallest Stake from GetSmallestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
+			}
+			if gotId != tt.wantId {
+				t.Errorf("Staker Id of staker having smallest Influence from GetSmallestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetSmallestStakeAndId function, got = %v, want %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetSmallestStakeAndId function, got = %v, want %v", err, tt.wantErr)
+				}
+			}
+
 		})
 	}
 }

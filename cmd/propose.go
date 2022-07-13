@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -52,9 +51,14 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	)
 
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "biggestStakerId") {
-		biggestStake = utils.GetRogueRandomValue(1000000)
-		biggestStakerIdInBigInt, _ := rand.Int(rand.Reader, big.NewInt(int64(numStakers)))
-		biggestStakerId = uint32(biggestStakerIdInBigInt.Int64())
+		// If staker is going rogue with biggestStakerId than we do biggestStakerId = smallestStakerId
+		smallestStake, smallestStakerId, smallestStakerErr := cmdUtils.GetSmallestStakeAndId(client, epoch)
+		if smallestStakerErr != nil {
+			log.Error("Error in calculating smallest staker: ", smallestStakerErr)
+			return core.NilHash, smallestStakerErr
+		}
+		biggestStake = smallestStake
+		biggestStakerId = smallestStakerId
 	} else {
 		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
 		if biggestStakerErr != nil {
@@ -173,6 +177,9 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		return nil, 0, err
+	}
+	if numberOfStakers == 0 {
+		return nil, 0, errors.New("numberOfStakers is 0")
 	}
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
@@ -375,4 +382,28 @@ func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevea
 		return accProd
 	}
 	return accProd.Div(accProd, totalInfluenceRevealed)
+}
+
+func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
+	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
+	if err != nil {
+		return nil, 0, err
+	}
+	if numberOfStakers == 0 {
+		return nil, 0, errors.New("numberOfStakers is 0")
+	}
+	var smallestStakerId uint32
+	smallestStake := big.NewInt(1).Mul(big.NewInt(1e18), big.NewInt(1e18))
+
+	for i := 1; i <= int(numberOfStakers); i++ {
+		stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
+		if err != nil {
+			return nil, 0, err
+		}
+		if stake.Cmp(smallestStake) < 0 {
+			smallestStake = stake
+			smallestStakerId = uint32(i)
+		}
+	}
+	return smallestStake, smallestStakerId, nil
 }
