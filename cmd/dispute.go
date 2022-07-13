@@ -432,8 +432,9 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
 	log.Info("Dispute has been reset")
 	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
-	log.Error("Error in WaitForBlockCompletion for resetDispute: ", err)
-
+	if err != nil {
+		log.Error("Error in WaitForBlockCompletion for resetDispute: ", err)
+	}
 }
 
 //This function returns the bountyId from events
