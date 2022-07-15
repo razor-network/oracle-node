@@ -890,3 +890,57 @@ func TestGetRogueRandomMedianValue(t *testing.T) {
 		})
 	}
 }
+
+func TestShuffle(t *testing.T) {
+	type args struct {
+		slice []uint32
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test :",
+			args: args{
+				slice: []uint32{12, 20, 6, 45, 32},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ut := &UtilsStruct{}
+			got := ut.Shuffle(tt.args.slice)
+			if !UintArrayEquals(got, tt.args.slice) && !IndexNotEqual(got, tt.args.slice) {
+				t.Errorf("TestShuffle() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func UintArrayEquals(a []uint32, b []uint32) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func IndexNotEqual(a []uint32, b []uint32) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := 0; i < len(a); i++ {
+		if a[i] == b[i] {
+			return false
+		}
+	}
+	return true
+
+}

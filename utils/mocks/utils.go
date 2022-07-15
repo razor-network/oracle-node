@@ -1963,6 +1963,22 @@ func (_m *Utils) SecondsToReadableTime(input int) string {
 	return r0
 }
 
+// Shuffle provides a mock function with given fields: slice
+func (_m *Utils) Shuffle(slice []uint32) []uint32 {
+	ret := _m.Called(slice)
+
+	var r0 []uint32
+	if rf, ok := ret.Get(0).(func([]uint32) []uint32); ok {
+		r0 = rf(slice)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint32)
+		}
+	}
+
+	return r0
+}
+
 // SuggestGasPriceWithRetry provides a mock function with given fields: client
 func (_m *Utils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
 	ret := _m.Called(client)

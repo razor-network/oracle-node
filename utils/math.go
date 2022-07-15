@@ -5,8 +5,10 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	mathRand "math/rand"
 	"sort"
 	"strconv"
+	"time"
 )
 
 func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
@@ -163,4 +165,13 @@ func GetRogueRandomValue(value int) *big.Int {
 func GetRogueRandomMedianValue() uint32 {
 	rogueRandomMedianValue, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt32))
 	return uint32(rogueRandomMedianValue.Int64())
+}
+
+func (*UtilsStruct) Shuffle(slice []uint32) []uint32 {
+	r := mathRand.New(mathRand.NewSource(time.Now().Unix()))
+	for n := len(slice); n > 0; n-- {
+		randIndex := r.Intn(n)
+		slice[n-1], slice[randIndex] = slice[randIndex], slice[n-1]
+	}
+	return slice
 }

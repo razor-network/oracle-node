@@ -170,6 +170,7 @@ type Utils interface {
 	AssignLogFile(flagSet *pflag.FlagSet)
 	CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error)
 	GetStateName(stateNumber int64) string
+	Shuffle(slice []uint32) []uint32
 }
 
 type EthClientUtils interface {
