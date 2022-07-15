@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
-	"math/rand"
 	"os"
 	"razor/core"
 	"razor/core/types"
@@ -49,7 +48,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		return err
 	}
 
-	randomSortedProposedBlockIds := rand.Perm(len(sortedProposedBlockIds)) //returns random permutation of integers from 0 to n-1
+	randomSortedProposedBlockIds := utils.UtilsInterface.Shuffle(sortedProposedBlockIds) //shuffles the sortedProposedBlockIds array
 	transactionOptions := types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
