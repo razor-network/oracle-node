@@ -659,9 +659,10 @@ func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *
 	var (
 		txn *Types.Transaction
 		err error
+		a   [32]byte
 	)
 	err = retry.Do(func() error {
-		txn, err = voteManager.Reveal(opts, epoch, tree, signature)
+		txn, err = voteManager.Reveal(opts, epoch, tree, a, signature)
 		if err != nil {
 			log.Error("Error in revealing... Retrying")
 			return err
