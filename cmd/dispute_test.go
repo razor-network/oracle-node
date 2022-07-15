@@ -1150,6 +1150,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 	var blockNumber *big.Int
 	var rogueData types.Rogue
 	var blockManager *bindings.BlockManager
+	var randomSortedPorposedBlockIds []uint32
 
 	table := []struct {
 		numOfSortedBlocks uint32
@@ -1189,6 +1190,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 				utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
 				cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
 				cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(medians, revealedCollectionIds, revealedDataMaps, nil)
+				utilsPkgMock.On("Shuffle", mock.Anything).Return(randomSortedPorposedBlockIds)
 				utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(proposedBlock, nil)
 				utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 				blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
