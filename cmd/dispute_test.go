@@ -196,8 +196,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 2: When HandleDispute function executes successfully when there is no dispute case",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				proposedBlock: bindings.StructsBlock{
@@ -222,8 +222,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting proposedBlock",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				proposedBlockErr:             errors.New("proposedBlock error"),
 				disputeErr:                   nil,
 			},
@@ -232,8 +232,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 5: When there is a case of Dispute but block is already disputed",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				proposedBlock: bindings.StructsBlock{
@@ -246,8 +246,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 6: When HandleDispute function executes successfully when there is a biggest influence dispute case",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				proposedBlock: bindings.StructsBlock{
@@ -264,8 +264,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 7: When there is an error in getting biggestInfluenceAndId",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStakeErr:              errors.New("biggestInfluenceAndIdErr"),
 				proposedBlock: bindings.StructsBlock{
 					Medians:      []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
@@ -282,8 +282,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 8: When DisputeBiggestStakeProposed transaction fails",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				proposedBlock: bindings.StructsBlock{
@@ -300,8 +300,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 9: When there is an error in getting medians",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				mediansErr:                   errors.New("error in getting medians"),
@@ -311,8 +311,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 10: When there is an error in fetching Ids from CheckDisputeForIds",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
@@ -335,8 +335,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 11: When idDisputeTxn is not nil",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
@@ -359,8 +359,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 12: When it is a median dispute case and error in getting leafId",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
@@ -385,8 +385,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 13: When there is an error in dispute",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
@@ -411,8 +411,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 14: When there is a biggest influence dispute case but there is an error in storing bountyId",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				proposedBlock: bindings.StructsBlock{
@@ -430,8 +430,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 15: When there is a idsDispute case but there is an error in storing bountyId",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
@@ -455,8 +455,8 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 16: When HandleDispute function executes successfully and medians proposed are empty",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 0, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
@@ -478,8 +478,31 @@ func TestHandleDispute(t *testing.T) {
 		{
 			name: "Test 17: When there is a case of blockIndex = -1",
 			args: args{
-				sortedProposedBlockIds:       []uint32{3, 1, 2, 5, 4},
-				randomSortedProposedBlockIds: []uint32{2, 3, 1, 4, 0},
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
+				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:               2,
+				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
+				revealedCollectionIds:        []uint16{1},
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: nil,
+					VoteWeights:          nil,
+					InfluenceSum:         nil,
+				},
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				disputeErr: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Test 18: When HandleDispute function executes successfully and contains different values in sortedProposedBlockIds",
+			args: args{
+				sortedProposedBlockIds:       []uint32{45, 65, 23, 64, 12},
+				randomSortedProposedBlockIds: []uint32{23, 64, 12, 65, 23},
 				biggestStake:                 big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
 				biggestStakeId:               2,
 				medians:                      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},

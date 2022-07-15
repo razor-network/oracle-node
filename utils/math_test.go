@@ -901,11 +901,25 @@ func TestShuffle(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "Test :",
+			name: "Test 1: When shuffle() passed successfully",
 			args: args{
 				slice: []uint32{12, 20, 6, 45, 32},
 			},
 			want: true,
+		},
+		{
+			name: "Test 2: When array is nil",
+			args: args{
+				slice: []uint32{},
+			},
+			want: true,
+		},
+		{
+			name: "Test 3: When array contains single element",
+			args: args{
+				slice: []uint32{12},
+			},
+			want: false,
 		},
 	}
 	for _, tt := range tests {
