@@ -165,15 +165,15 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		}
 	}
 
-	blockManager := razorUtils.GetBlockManager(client)
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
 	if disputedFlag {
+		blockManager := razorUtils.GetBlockManager(client)
+		txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+			Client:         client,
+			Password:       account.Password,
+			AccountAddress: account.Address,
+			ChainId:        core.ChainId,
+			Config:         config,
+		})
 		cmdUtils.ResetDispute(client, blockManager, txnOpts, epoch)
 	}
 
