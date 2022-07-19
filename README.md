@@ -35,6 +35,11 @@ One of the quickest ways to get `razor-go` up and running on your machine is by 
 docker run -d -it--entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
 ```
 
+If you are planing to expose metrics:
+```
+docker run -d -it--entrypoint /bin/sh -p 2112:2112 --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor  
+```
+
 >**_NOTE:_** that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
@@ -338,10 +343,24 @@ docker
 docker exec -it razor-go razor vote --address <address>
 ```
 
-run vote command in background
-```
-docker exec -it -d razor-go razor vote --address <address> 
-```
+To run vote command in background we can use `tmux`, a linux utility for that
+
+1. Create session 
+    
+    ```
+    tmux new -s razor-go
+    ```
+2. Run vote command
+
+    ```
+    docker exec -it razor-go razor vote --address <address>`
+    ```
+3. To exit from tmux session, press `ctrl+b`, release those keys and press `d`
+
+4. Attach that session again 
+    ```
+    tmux a -t razor-go
+    ```
 
 
 Example:

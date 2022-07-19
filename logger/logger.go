@@ -57,12 +57,9 @@ func InitializeLogger(fileName string) {
 		stdin := os.Stdin
 		stdout := os.Stdout
 		mw := io.MultiWriter(stderr, stdin, stdout, lumberJackLogger)
-		standardLogger.Formatter = &logrus.JSONFormatter{}
 		standardLogger.SetOutput(mw)
-
-	} else {
-		standardLogger.Formatter = &logrus.JSONFormatter{}
 	}
+	standardLogger.Formatter = &logrus.JSONFormatter{}
 }
 
 func NewLogger() *StandardLogger {
