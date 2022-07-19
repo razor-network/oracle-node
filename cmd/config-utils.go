@@ -76,6 +76,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	return config, nil
 }
 
+//This function returns the config value in form of string taking configType as input
 func (*UtilsStruct) GetConfig(configType string) (string, error) {
 	switch configType {
 	case "provider":

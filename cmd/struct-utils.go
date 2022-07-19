@@ -749,6 +749,7 @@ func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Cl
 	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 
+//This function returns the config of configType in form of string
 func (flagSetUtils FLagSetUtils) GetRootStringConfig(configType string) (string, error) {
 	return rootCmd.PersistentFlags().GetString(configType)
 }
@@ -955,10 +956,12 @@ func (s StringUtils) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
+//This functon is used to parse the float
 func (s StringUtils) ParseFloat(str string) (float64, error) {
 	return strconv.ParseFloat(str, 32)
 }
 
+//This function is used to parse the int
 func (s StringUtils) ParseInt(str string) (int64, error) {
 	return strconv.ParseInt(str, 10, 32)
 }
