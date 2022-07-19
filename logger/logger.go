@@ -53,8 +53,10 @@ func InitializeLogger(fileName string) {
 			MaxAge:     30,
 		}
 
-		out := os.Stderr
-		mw := io.MultiWriter(out, lumberJackLogger)
+		stderr := os.Stderr
+		stdin := os.Stdin
+		stdout := os.Stdout
+		mw := io.MultiWriter(stderr, stdin, stdout, lumberJackLogger)
 		standardLogger.Formatter = &logrus.JSONFormatter{}
 		standardLogger.SetOutput(mw)
 
