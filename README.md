@@ -344,20 +344,23 @@ docker exec -it razor-go razor vote --address <address>
 ```
 
 To run vote command in background we can use `tmux`, a linux utility for that
-```
-# Create session 
-tmux new -s razor-go
 
-# Run vote command
-docker exec -it razor-go razor vote --address <address>
+1. Create session 
+    
+    ```
+    tmux new -s razor-go
+    ```
+2. Run vote command
 
-# To exit from tmux session: 
-press ctrl+b, release those keys and press d
+    ```
+    docker exec -it razor-go razor vote --address <address>`
+    ```
+3. To exit from tmux session, press `ctrl+b`, release those keys and press `d`
 
-# Attach that session again 
-tmux a -t razor-go
-
-```
+4. Attach that session again 
+    ```
+    tmux a -t razor-go
+    ```
 
 
 Example:
