@@ -1,3 +1,4 @@
+// Contains constants, DO NOT MODIFY.
 package core
 
 import (
