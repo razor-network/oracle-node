@@ -73,7 +73,7 @@ func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead 
 			log.Info("Transaction mined successfully")
 			return nil
 		}
-		Time.Sleep(3 * time.Second)
+		Time.Sleep(time.Second)
 	}
 	log.Info("Timeout Passed")
 	return errors.New("timeout passed for transaction mining")
