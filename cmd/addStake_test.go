@@ -297,7 +297,6 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsPkgMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
