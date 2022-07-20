@@ -194,13 +194,6 @@ type FlagSetInterface interface {
 	GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
-	GetRootStringProvider() (string, error)
-	GetRootFloat32GasMultiplier() (float32, error)
-	GetRootInt32Buffer() (int32, error)
-	GetRootInt32Wait() (int32, error)
-	GetRootInt32GasPrice() (int32, error)
-	GetRootStringLogLevel() (string, error)
-	GetRootFloat32GasLimit() (float32, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
@@ -226,17 +219,11 @@ type FlagSetInterface interface {
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
+	GetRootStringConfig(configType string) (string, error)
 }
 
 type UtilsCmdInterface interface {
 	SetConfig(flagSet *pflag.FlagSet) error
-	GetProvider() (string, error)
-	GetMultiplier() (float32, error)
-	GetWaitTime() (int32, error)
-	GetGasPrice() (int32, error)
-	GetLogLevel() (string, error)
-	GetGasLimit() (float32, error)
-	GetBufferPercent() (int32, error)
 	GetConfigData() (types.Configurations, error)
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
@@ -327,6 +314,7 @@ type UtilsCmdInterface interface {
 	ContractAddresses()
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 	StoreBountyId(client *ethclient.Client, account types.Account) error
+	GetConfig(configType string) (string, error)
 }
 
 type TransactionInterface interface {
@@ -347,6 +335,8 @@ type TimeInterface interface {
 
 type StringInterface interface {
 	ParseBool(str string) (bool, error)
+	ParseFloat(str string) (float64, error)
+	ParseInt(str string) (int64, error)
 }
 
 type AbiInterface interface {

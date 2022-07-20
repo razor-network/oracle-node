@@ -19,11 +19,15 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	if err != nil {
 		return 0, 0, err
 	}
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
 	if err != nil {
 		return 0, 0, err
 	}
-	state, err := razorUtils.GetDelayedState(client, bufferPercent)
+	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	if err != nil {
+		return 0, 0, err
+	}
+	state, err := razorUtils.GetDelayedState(client, int32(bufferPercent))
 	if err != nil {
 		return 0, 0, err
 	}
