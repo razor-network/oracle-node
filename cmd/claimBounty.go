@@ -140,7 +140,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	callOpts := razorUtils.GetOptions()
