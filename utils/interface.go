@@ -203,7 +203,7 @@ type BufioUtils interface {
 }
 
 type CoinUtils interface {
-	BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
+	BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
 }
 
 type MerkleTreeInterface interface {

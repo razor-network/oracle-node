@@ -27,9 +27,9 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 
 func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
-	coinContract := UtilsInterface.GetTokenManager(client)
+	erc20Contract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
-	return CoinInterface.BalanceOf(coinContract, &opts, address)
+	return CoinInterface.BalanceOf(erc20Contract, &opts, address)
 }
 
 func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {

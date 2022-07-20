@@ -2,11 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	Types "razor/core/types"
@@ -14,6 +9,12 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckError(t *testing.T) {
@@ -301,9 +302,9 @@ func TestFetchBalance(t *testing.T) {
 	var callOpts bind.CallOpts
 
 	type args struct {
-		coinContract *bindings.RAZOR
-		balance      *big.Int
-		balanceErr   error
+		erc20Contract *bindings.RAZOR
+		balance       *big.Int
+		balanceErr    error
 	}
 	tests := []struct {
 		name          string
@@ -314,8 +315,8 @@ func TestFetchBalance(t *testing.T) {
 		{
 			name: "When FetchBalance() executes successfully",
 			args: args{
-				coinContract: &bindings.RAZOR{},
-				balance:      big.NewInt(1),
+				erc20Contract: &bindings.RAZOR{},
+				balance:       big.NewInt(1),
 			},
 			expectedFatal: false,
 			wantErr:       nil,
@@ -338,7 +339,7 @@ func TestFetchBalance(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
+			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.erc20Contract)
 			utilsMock.On("GetOptions").Return(callOpts)
 			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 
