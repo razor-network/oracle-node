@@ -307,10 +307,10 @@ func TestFetchBalance(t *testing.T) {
 		balanceErr   error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		expectedFatal bool
-		wantErr       error
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
 	}{
 		{
 			name: "When FetchBalance() executes successfully",
@@ -318,18 +318,21 @@ func TestFetchBalance(t *testing.T) {
 				coinContract: &bindings.RAZOR{},
 				balance:      big.NewInt(1),
 			},
-			expectedFatal: false,
-			wantErr:       nil,
+			want:    big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "When there is an error in fetching balance",
+			args: args{
+				coinContract: &bindings.RAZOR{},
+				balanceErr:   errors.New("error in fetching balance"),
+			},
+			want:    big.NewInt(0),
+			wantErr: true,
 		},
 	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			utilsMock := new(mocks.Utils)
 			coinMock := new(mocks.CoinUtils)
 			retryMock := new(mocks.RetryUtils)
@@ -346,20 +349,13 @@ func TestFetchBalance(t *testing.T) {
 			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			fatal = false
-
-			_, err := utils.FetchBalance(client, accountAddress)
-			if fatal != tt.expectedFatal {
-				t.Error("The FetchBalance function didn't execute as expected")
+			got, err := utils.FetchBalance(client, accountAddress)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchBalance() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for FetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for fetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FetchBalance() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
