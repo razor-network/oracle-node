@@ -226,6 +226,9 @@ type FlagSetInterface interface {
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
+	GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
 }
 
 type UtilsCmdInterface interface {

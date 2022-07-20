@@ -57,6 +57,18 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+	logFileMaxSize, err := flagSetUtils.GetIntLogFileMaxSize(flagSet)
+	if err != nil {
+		return err
+	}
+	logFileMaxBackups, err := flagSetUtils.GetIntLogFileMaxBackups(flagSet)
+	if err != nil {
+		return err
+	}
+	logFileMaxAge, err := flagSetUtils.GetIntLogFileMaxAge(flagSet)
+	if err != nil {
+		return err
+	}
 
 	path, pathErr := razorUtils.GetConfigFilePath()
 	if pathErr != nil {
@@ -112,7 +124,16 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if gasLimit != -1 {
 		viper.Set("gasLimit", gasLimit)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 {
+	if logFileMaxSize != 0 {
+		viper.Set("logFileMaxSize", logFileMaxSize)
+	}
+	if logFileMaxBackups != 0 {
+		viper.Set("logFileMaxBackups", logFileMaxBackups)
+	}
+	if logFileMaxAge != 0 {
+		viper.Set("logFileMaxAge", logFileMaxAge)
+	}
+	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", "http://127.0.0.1:8545")
 		viper.Set("gasmultiplier", 1.0)
 		viper.Set("buffer", 20)
@@ -121,6 +142,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("logLevel", "")
 		viper.Set("gasLimit", 2)
 		//viper.Set("exposeMetricsPort", "")
+		viper.Set("logFileMaxSize", 5)
+		viper.Set("logFileMaxBackups", 10)
+		viper.Set("logFileMaxAge", 30)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 
@@ -146,6 +170,9 @@ func init() {
 		ExposeMetrics      string
 		CertFile           string
 		CertKey            string
+		LogFileMaxSize     int
+		LogFileMaxBackups  int
+		LogFileMaxAge      int
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
@@ -157,5 +184,8 @@ func init() {
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
 	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")
+	setConfig.Flags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "log file maximum size")
+	setConfig.Flags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "log file maximum size")
+	setConfig.Flags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "log file maximum age")
 
 }

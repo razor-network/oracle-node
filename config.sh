@@ -37,4 +37,19 @@ read -rp "Gas Limit Increment : (2) " GAS_LIMIT
 if [ -z "$GAS_LIMIT" ]; then
    GAS_LIMIT=2
 fi
-$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT
+
+read -rp "Log File Max Size: (5) " MAX_SIZE
+if [ -z "$MAX_SIZE" ]; then
+   MAX_SIZE=5
+fi
+
+read -rp "Log Files Max Backups: (10) " MAX_BACKUPS
+if [ -z "$MAX_BACKUPS" ]; then
+   MAX_BACKUPS=10
+fi
+
+read -rp "Log Files Max Age: (30) " MAX_AGE
+if [ -z "$MAX_AGE" ]; then
+   MAX_AGE=30
+fi
+$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE

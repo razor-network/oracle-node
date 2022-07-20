@@ -949,6 +949,21 @@ func (flagSetUtils FLagSetUtils) GetStringCertKey(flagSet *pflag.FlagSet) (strin
 	return flagSet.GetString("certKey")
 }
 
+//This function is used to check if logFileMaxSize is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxSize")
+}
+
+//This function is used to check if logFileMaxBackups is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxBackups")
+}
+
+//This function is used to check if logFileMaxAge is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxAge")
+}
+
 //This function returns the accounts
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
