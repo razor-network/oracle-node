@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -331,16 +332,19 @@ func TestFetchBalance(t *testing.T) {
 
 			utilsMock := new(mocks.Utils)
 			coinMock := new(mocks.CoinUtils)
+			retryMock := new(mocks.RetryUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
 				CoinInterface:  coinMock,
+				RetryInterface: retryMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
 			utilsMock.On("GetOptions").Return(callOpts)
 			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			fatal = false
 
