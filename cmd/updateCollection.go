@@ -2,15 +2,16 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var updateCollectionCmd = &cobra.Command{
@@ -37,6 +38,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	utils.IsValidERC20Address(address)
 
 	logger.Address = address
 

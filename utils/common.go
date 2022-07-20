@@ -92,6 +92,12 @@ func CheckError(msg string, err error) {
 	}
 }
 
+func IsValidERC20Address(address string) {
+	if !common.IsHexAddress(address) {
+		log.Fatal("Invalid ERC20 Address")
+	}
+}
+
 func (*UtilsStruct) IsFlagPassed(name string) bool {
 	found := false
 	for _, arg := range os.Args {
