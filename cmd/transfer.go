@@ -82,7 +82,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",
 		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
-		ABI:             bindings.RAZORABI,
+		ABI:             bindings.RAZORMetaData.ABI,
 	})
 	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 

@@ -94,7 +94,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createCollection",
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
 	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	if err != nil {
