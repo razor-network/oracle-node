@@ -17,129 +17,141 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
 	}
-
-	provider, err := cmdUtils.GetProvider()
+	provider, err := cmdUtils.GetConfig("provider")
 	if err != nil {
 		return config, err
 	}
-	gasMultiplier, err := cmdUtils.GetMultiplier()
+	gasMultiplierString, err := cmdUtils.GetConfig("gasmultiplier")
 	if err != nil {
 		return config, err
 	}
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
 	if err != nil {
 		return config, err
 	}
-	waitTime, err := cmdUtils.GetWaitTime()
+	waitTimeString, err := cmdUtils.GetConfig("wait")
 	if err != nil {
 		return config, err
 	}
-	gasPrice, err := cmdUtils.GetGasPrice()
+	gasPriceString, err := cmdUtils.GetConfig("gasprice")
 	if err != nil {
 		return config, err
 	}
-	logLevel, err := cmdUtils.GetLogLevel()
+	logLevel, err := cmdUtils.GetConfig("logLevel")
 	if err != nil {
 		return config, err
 	}
-	gasLimit, err := cmdUtils.GetGasLimit()
+	gasLimitString, err := cmdUtils.GetConfig("gasLimit")
 	if err != nil {
 		return config, err
 	}
 	config.Provider = provider
-	config.GasMultiplier = gasMultiplier
-	config.BufferPercent = bufferPercent
-	config.WaitTime = waitTime
-	config.GasPrice = gasPrice
+	gasMultiplier, err := stringUtils.ParseFloat(gasMultiplierString)
+	if err != nil {
+		return config, err
+	}
+	config.GasMultiplier = float32(gasMultiplier)
+	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	if err != nil {
+		return config, err
+	}
+	config.BufferPercent = int32(bufferPercent)
+	waitTime, err := stringUtils.ParseInt(waitTimeString)
+	if err != nil {
+		return config, err
+	}
+	config.WaitTime = int32(waitTime)
+	gasPrice, err := stringUtils.ParseInt(gasPriceString)
+	if err != nil {
+		return config, err
+	}
+	config.GasPrice = int32(gasPrice)
 	config.LogLevel = logLevel
-	config.GasLimitMultiplier = gasLimit
+	gasLimit, err := stringUtils.ParseFloat(gasLimitString)
+	if err != nil {
+		return config, err
+	}
+	config.GasLimitMultiplier = float32(gasLimit)
 
 	return config, nil
 }
 
-//This function returns the provider
-func (*UtilsStruct) GetProvider() (string, error) {
-	provider, err := flagSetUtils.GetRootStringProvider()
-	if err != nil {
-		return "", err
-	}
-	if provider == "" {
-		provider = viper.GetString("provider")
-	}
-	if !strings.HasPrefix(provider, "https") {
-		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
-	}
-	return provider, nil
-}
+//This function returns the config value in form of string taking configType as input
+func (*UtilsStruct) GetConfig(configType string) (string, error) {
+	switch configType {
+	case "provider":
+		provider, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "", err
+		}
+		if provider == "" {
+			provider = viper.GetString(configType)
+		}
+		if !strings.HasPrefix(provider, "https") {
+			log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
+		}
+		return provider, nil
 
-//This function returns the multiplier
-func (*UtilsStruct) GetMultiplier() (float32, error) {
-	gasMultiplier, err := flagSetUtils.GetRootFloat32GasMultiplier()
-	if err != nil {
-		return 1, err
-	}
-	if gasMultiplier == -1 {
-		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
-	}
-	return gasMultiplier, nil
-}
+	case "gasmultiplier":
+		gasMultiplier, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "1", err
+		}
+		if gasMultiplier == "-1" {
+			gasMultiplier = viper.GetString(configType)
+		}
+		return gasMultiplier, nil
 
-//This function returns the buffer percent
-func (*UtilsStruct) GetBufferPercent() (int32, error) {
-	bufferPercent, err := flagSetUtils.GetRootInt32Buffer()
-	if err != nil {
-		return 30, err
-	}
-	if bufferPercent == 0 {
-		bufferPercent = viper.GetInt32("buffer")
-	}
-	return bufferPercent, nil
-}
+	case "buffer":
+		bufferPercent, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "30", err
+		}
+		if bufferPercent == "0" {
+			bufferPercent = viper.GetString(configType)
+		}
+		return bufferPercent, nil
 
-//This function returns the wait time
-func (*UtilsStruct) GetWaitTime() (int32, error) {
-	waitTime, err := flagSetUtils.GetRootInt32Wait()
-	if err != nil {
-		return 3, err
-	}
-	if waitTime == -1 {
-		waitTime = viper.GetInt32("wait")
-	}
-	return waitTime, nil
-}
+	case "wait":
+		waitTime, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "3", err
+		}
+		if waitTime == "-1" {
+			waitTime = viper.GetString(configType)
+		}
+		return waitTime, nil
 
-//This function returns the gas price
-func (*UtilsStruct) GetGasPrice() (int32, error) {
-	gasPrice, err := flagSetUtils.GetRootInt32GasPrice()
-	if err != nil {
-		return 0, err
-	}
-	if gasPrice == -1 {
-		gasPrice = viper.GetInt32("gasprice")
-	}
-	return gasPrice, nil
-}
+	case "gasprice":
+		gasPrice, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "0", err
+		}
+		if gasPrice == "-1" {
+			gasPrice = viper.GetString(configType)
+		}
+		return gasPrice, nil
 
-//This function returns the log level
-func (*UtilsStruct) GetLogLevel() (string, error) {
-	logLevel, err := flagSetUtils.GetRootStringLogLevel()
-	if err != nil {
-		return "", err
-	}
-	if logLevel == "" {
-		logLevel = viper.GetString("logLevel")
-	}
-	return logLevel, nil
-}
+	case "logLevel":
+		logLevel, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "", err
+		}
+		if logLevel == "" {
+			logLevel = viper.GetString(configType)
+		}
+		return logLevel, nil
 
-//This function returns the gas limit
-func (*UtilsStruct) GetGasLimit() (float32, error) {
-	gasLimit, err := flagSetUtils.GetRootFloat32GasLimit()
-	if err != nil {
-		return -1, err
+	case "gasLimit":
+		gasLimit, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "-1", err
+		}
+		if gasLimit == "-1" {
+			gasLimit = viper.GetString(configType)
+		}
+		return gasLimit, nil
+
 	}
-	if gasLimit == -1 {
-		gasLimit = float32(viper.GetFloat64("gasLimit"))
-	}
-	return gasLimit, nil
+	return "", nil
 }

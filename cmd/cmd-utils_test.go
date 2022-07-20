@@ -16,13 +16,15 @@ func TestGetEpochAndState(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		epoch            uint32
-		epochErr         error
-		bufferPercent    int32
-		bufferPercentErr error
-		state            int64
-		stateErr         error
-		stateName        string
+		epoch                  uint32
+		epochErr               error
+		bufferPercentString    string
+		bufferPercentStringErr error
+		bufferPercent          int64
+		bufferPercentErr       error
+		state                  int64
+		stateErr               error
+		stateName              string
 	}
 	tests := []struct {
 		name      string
@@ -34,10 +36,11 @@ func TestGetEpochAndState(t *testing.T) {
 		{
 			name: "Test 1: When GetEpochAndState function executes successfully",
 			args: args{
-				epoch:         4,
-				bufferPercent: 20,
-				state:         0,
-				stateName:     "commit",
+				epoch:               4,
+				bufferPercentString: "20",
+				bufferPercent:       20,
+				state:               0,
+				stateName:           "commit",
 			},
 			wantEpoch: 4,
 			wantState: 0,
@@ -46,33 +49,48 @@ func TestGetEpochAndState(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting epoch",
 			args: args{
-				epochErr:      errors.New("epoch error"),
-				bufferPercent: 20,
-				state:         0,
-				stateName:     "commit",
+				epochErr:            errors.New("epoch error"),
+				bufferPercentString: "20",
+				bufferPercent:       20,
+				state:               0,
+				stateName:           "commit",
 			},
 			wantEpoch: 0,
 			wantState: 0,
 			wantErr:   errors.New("epoch error"),
 		},
 		{
-			name: "Test 3: When there is an error in getting bufferPercent",
+			name: "Test 3: When there is an error in getting getConfig",
 			args: args{
-				epoch:            4,
-				bufferPercentErr: errors.New("bufferPercent error"),
-				state:            0,
-				stateName:        "commit",
+				epoch:                  4,
+				bufferPercentStringErr: errors.New("bufferPercentString error"),
+				state:                  0,
+				stateName:              "commit",
+			},
+			wantEpoch: 0,
+			wantState: 0,
+			wantErr:   errors.New("bufferPercentString error"),
+		},
+		{
+			name: "Test 4: When there is an error in parsing int",
+			args: args{
+				epoch:               4,
+				bufferPercentString: "20",
+				bufferPercentErr:    errors.New("bufferPercent error"),
+				state:               0,
+				stateName:           "commit",
 			},
 			wantEpoch: 0,
 			wantState: 0,
 			wantErr:   errors.New("bufferPercent error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting state",
+			name: "Test 5: When there is an error in getting state",
 			args: args{
-				epoch:         4,
-				bufferPercent: 20,
-				stateErr:      errors.New("state error"),
+				epoch:               4,
+				bufferPercentString: "20",
+				bufferPercent:       20,
+				stateErr:            errors.New("state error"),
 			},
 			wantEpoch: 0,
 			wantState: 0,
@@ -85,13 +103,16 @@ func TestGetEpochAndState(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsPkgMock := new(mocks2.Utils)
+			stringMock := new(mocks.StringInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			utils.UtilsInterface = utilsPkgMock
+			stringUtils = stringMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+			stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 

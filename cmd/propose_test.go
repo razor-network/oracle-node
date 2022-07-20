@@ -56,7 +56,9 @@ func TestPropose(t *testing.T) {
 		smallestStakerIdErr        error
 		randaoHash                 [32]byte
 		randaoHashErr              error
-		bufferPercent              int32
+		bufferPercentString        string
+		bufferPercentStringErr     error
+		bufferPercent              int64
 		bufferPercentErr           error
 		salt                       [32]byte
 		saltErr                    error
@@ -495,11 +497,13 @@ func TestPropose(t *testing.T) {
 		cmdUtilsMock := new(mocks.UtilsCmdInterface)
 		blockManagerUtilsMock := new(mocks.BlockManagerInterface)
 		transactionUtilsMock := new(mocks.TransactionInterface)
+		stringMock := new(mocks.StringInterface)
 
 		razorUtils = utilsMock
 		cmdUtils = cmdUtilsMock
 		blockManagerUtils = blockManagerUtilsMock
 		transactionUtils = transactionUtilsMock
+		stringUtils = stringMock
 
 		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
@@ -520,7 +524,8 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
-		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+		cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+		stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
@@ -547,14 +552,16 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 	var epoch uint32
 
 	type args struct {
-		numOfStakers     uint32
-		numOfStakersErr  error
-		bufferPercent    int32
-		bufferPercentErr error
-		remainingTime    int64
-		remainingTimeErr error
-		stake            *big.Int
-		stakeErr         error
+		numOfStakers           uint32
+		numOfStakersErr        error
+		bufferPercentString    string
+		bufferPercentStringErr error
+		bufferPercent          int64
+		bufferPercentErr       error
+		remainingTime          int64
+		remainingTimeErr       error
+		stake                  *big.Int
+		stakeErr               error
 	}
 	tests := []struct {
 		name      string
@@ -618,20 +625,33 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 6: When there is a timeout case",
 			args: args{
-				numOfStakers:  100000,
-				bufferPercent: 10,
-				remainingTime: 0,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+				numOfStakers:        100000,
+				bufferPercentString: "10",
+				bufferPercent:       10,
+				remainingTime:       0,
+				stake:               big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			},
 			wantStake: nil,
 			wantId:    0,
 			wantErr:   errors.New("state timeout error"),
 		},
 		{
-			name: "Test 7: When there is an error in getting buffer percent",
+			name: "Test 7: When there is an error in getting getConfig",
 			args: args{
 				numOfStakers:     2,
 				bufferPercentErr: errors.New("buffer error"),
+			},
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("buffer error"),
+		},
+		{
+			name: "Test 8: When there is an error in parsing int",
+			args: args{
+				numOfStakers:        2,
+				remainingTime:       10,
+				bufferPercentString: "10",
+				bufferPercentErr:    errors.New("buffer error"),
 			},
 			wantStake: nil,
 			wantId:    0,
@@ -644,15 +664,19 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsPkgMock := new(Mocks.Utils)
+			stringMock := new(mocks.StringInterface)
 
 			razorUtils = utilsMock
 			utilsInterface = utilsPkgMock
 			cmdUtils = cmdUtilsMock
+			stringUtils = stringMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
 			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+			stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 
@@ -1336,15 +1360,18 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				utilsMock := new(mocks.UtilsInterface)
 				cmdUtilsMock := new(mocks.UtilsCmdInterface)
 				utilsPkgMock := new(Mocks.Utils)
+				stringMock := new(mocks.StringInterface)
 
 				razorUtils = utilsMock
 				utilsInterface = utilsPkgMock
 				cmdUtils = cmdUtilsMock
+				stringUtils = stringMock
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
 				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
-				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
+				cmdUtilsMock.On("GetConfig", "buffer").Return("60", nil)
+				stringMock.On("ParseInt", "60").Return(int64(60), nil)
 
 				ut := &UtilsStruct{}
 				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)

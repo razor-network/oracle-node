@@ -497,12 +497,15 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	}
 	epochLastProposed := uint32(0)
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
 	if err != nil {
 		return 0, err
 	}
-
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	if err != nil {
+		return 0, err
+	}
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, int32(bufferPercent))
 	if err != nil {
 		return 0, err
 	}
