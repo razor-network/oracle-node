@@ -16,7 +16,7 @@ import (
 )
 
 //This function handles the reveal state
-func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
+func (*UtilsStruct) checkForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
 		return err

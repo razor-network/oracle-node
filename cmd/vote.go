@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"os"
 	"os/signal"
@@ -19,6 +18,8 @@ import (
 	"razor/utils"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/spf13/pflag"
 
@@ -374,7 +375,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+	if err := cmdUtils.checkForLastCommitted(client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}
