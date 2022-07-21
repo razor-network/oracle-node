@@ -302,9 +302,9 @@ func TestFetchBalance(t *testing.T) {
 	var callOpts bind.CallOpts
 
 	type args struct {
-		coinContract *bindings.RAZOR
-		balance      *big.Int
-		balanceErr   error
+		erc20Contract *bindings.RAZOR
+		balance       *big.Int
+		balanceErr    error
 	}
 	tests := []struct {
 		name    string
@@ -315,8 +315,8 @@ func TestFetchBalance(t *testing.T) {
 		{
 			name: "When FetchBalance() executes successfully",
 			args: args{
-				coinContract: &bindings.RAZOR{},
-				balance:      big.NewInt(1),
+				erc20Contract: &bindings.RAZOR{},
+				balance:       big.NewInt(1),
 			},
 			want:    big.NewInt(1),
 			wantErr: false,
@@ -324,8 +324,8 @@ func TestFetchBalance(t *testing.T) {
 		{
 			name: "When there is an error in fetching balance",
 			args: args{
-				coinContract: &bindings.RAZOR{},
-				balanceErr:   errors.New("error in fetching balance"),
+				erc20Contract: &bindings.RAZOR{},
+				balanceErr:    errors.New("error in fetching balance"),
 			},
 			want:    big.NewInt(0),
 			wantErr: true,
@@ -344,7 +344,7 @@ func TestFetchBalance(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
+			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.erc20Contract)
 			utilsMock.On("GetOptions").Return(callOpts)
 			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))

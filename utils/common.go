@@ -34,9 +34,9 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	err = retry.Do(
 		func() error {
 			address := common.HexToAddress(accountAddress)
-			coinContract := UtilsInterface.GetTokenManager(client)
+			erc20Contract := UtilsInterface.GetTokenManager(client)
 			opts := UtilsInterface.GetOptions()
-			balance, err = CoinInterface.BalanceOf(coinContract, &opts, address)
+			balance, err = CoinInterface.BalanceOf(erc20Contract, &opts, address)
 			if err != nil {
 				log.Error("Error in fetching balance....Retrying")
 				return err
