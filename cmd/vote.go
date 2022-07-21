@@ -165,6 +165,12 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
+
+	// Warning the staker if ETH balance is less than 0.1 ETH
+	if ethBalance.Cmp(big.NewInt(1e17)) == -1 {
+		log.Warn("Eth balance is lower than 0.1 ETH, kindly add more ETH to be safe for executing transactions successfully")
+	}
+
 	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
