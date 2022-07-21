@@ -252,7 +252,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
-				ABI:             bindings.BlockManagerABI,
+				ABI:             bindings.BlockManagerMetaData.ABI,
 			})
 
 			if err != nil {
@@ -493,7 +493,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, err
 	}
-	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.BlockManagerABI))
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.BlockManagerMetaData.ABI))
 	if err != nil {
 		return 0, err
 	}

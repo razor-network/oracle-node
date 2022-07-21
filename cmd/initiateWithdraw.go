@@ -120,7 +120,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "initiateWithdraw",
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		Parameters:      []interface{}{stakerId},
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
