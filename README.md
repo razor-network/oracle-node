@@ -693,22 +693,24 @@ Example:
 
 razor cli
 
-Without TLS
+#### Without TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112
 ```
-With TLS
+#### With TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
 docker
 
+#### Expose Metrics without TLS
 ```
-# Expose Metrics without TLS
 docker exec -it razor-go razor setConfig --exposeMetrics 2112
+```
 
-# Expose Metrics with TLS
+#### Expose Metrics with TLS
+```
 docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
