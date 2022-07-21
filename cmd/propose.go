@@ -78,7 +78,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	if err != nil {
 		return core.NilHash, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -192,7 +192,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	if err != nil {
 		return nil, 0, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -8,4 +8,7 @@ type Configurations struct {
 	GasPrice           int32
 	LogLevel           string
 	GasLimitMultiplier float32
+	LogFileMaxSize     int
+	LogFileMaxBackups  int
+	LogFileMaxAge      int
 }

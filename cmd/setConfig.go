@@ -184,8 +184,8 @@ func init() {
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
 	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")
-	setConfig.Flags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "log file maximum size")
-	setConfig.Flags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "log file maximum size")
-	setConfig.Flags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "log file maximum age")
+	setConfig.Flags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "max size of log file in MB")
+	setConfig.Flags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "max number of old log files to retain")
+	setConfig.Flags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "max number of days to retain old log files")
 
 }

@@ -51,8 +51,8 @@ func (_m *StringInterface) ParseFloat(str string) (float64, error) {
 	return r0, r1
 }
 
-// ParseInt provides a mock function with given fields: str
-func (_m *StringInterface) ParseInt(str string) (int64, error) {
+// ParseInt64 provides a mock function with given fields: str
+func (_m *StringInterface) ParseInt64(str string) (int64, error) {
 	ret := _m.Called(str)
 
 	var r0 int64

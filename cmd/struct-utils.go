@@ -976,9 +976,14 @@ func (s StringUtils) ParseFloat(str string) (float64, error) {
 	return strconv.ParseFloat(str, 32)
 }
 
-//This function is used to parse the int
-func (s StringUtils) ParseInt(str string) (int64, error) {
+//This function is used to parse the int64
+func (s StringUtils) ParseInt64(str string) (int64, error) {
 	return strconv.ParseInt(str, 10, 32)
+}
+
+//This function is used to parse the int
+func (s StringUtils) ParseInt(str string) (int, error) {
+	return strconv.Atoi(str)
 }
 
 //This function is used for unpacking

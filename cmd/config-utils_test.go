@@ -172,9 +172,9 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetConfig", "gasLimit").Return(tt.args.gasLimitString, tt.args.gasLimitStringErr)
 			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
 			stringMock.On("ParseFloat", tt.args.gasMultiplierString).Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
-			stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			stringMock.On("ParseInt", tt.args.waitTimeString).Return(tt.args.waitTime, tt.args.waitTimeErr)
-			stringMock.On("ParseInt", tt.args.gasPriceString).Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			stringMock.On("ParseInt64", tt.args.waitTimeString).Return(tt.args.waitTime, tt.args.waitTimeErr)
+			stringMock.On("ParseInt64", tt.args.gasPriceString).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			stringMock.On("ParseFloat", tt.args.gasLimitString).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 
 			utils := &UtilsStruct{}
