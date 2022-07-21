@@ -103,7 +103,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "unstake"
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
 	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
 	if err != nil {

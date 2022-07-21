@@ -539,27 +539,6 @@ func (_m *UtilsCmdInterface) GetBountyIdFromEvents(client *ethclient.Client, blo
 	return r0, r1
 }
 
-// GetBufferPercent provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetBufferPercent() (int32, error) {
-	ret := _m.Called()
-
-	var r0 int32
-	if rf, ok := ret.Get(0).(func() int32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetCollectionIdPositionInBlock provides a mock function with given fields: client, leafId, proposedBlock
 func (_m *UtilsCmdInterface) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ret := _m.Called(client, leafId, proposedBlock)
@@ -588,6 +567,27 @@ func (_m *UtilsCmdInterface) GetCollectionList(client *ethclient.Client) error {
 	}
 
 	return r0
+}
+
+// GetConfig provides a mock function with given fields: configType
+func (_m *UtilsCmdInterface) GetConfig(configType string) (string, error) {
+	ret := _m.Called(configType)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(configType)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(configType)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetConfigData provides a mock function with given fields:
@@ -637,48 +637,6 @@ func (_m *UtilsCmdInterface) GetEpochAndState(client *ethclient.Client) (uint32,
 	}
 
 	return r0, r1, r2
-}
-
-// GetGasLimit provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetGasLimit() (float32, error) {
-	ret := _m.Called()
-
-	var r0 float32
-	if rf, ok := ret.Get(0).(func() float32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(float32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetGasPrice provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetGasPrice() (int32, error) {
-	ret := _m.Called()
-
-	var r0 int32
-	if rf, ok := ret.Get(0).(func() int32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // GetIteration provides a mock function with given fields: client, proposer, bufferPercent
@@ -771,69 +729,6 @@ func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, accou
 	return r0, r1, r2, r3
 }
 
-// GetLogLevel provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetLogLevel() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetMultiplier provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetMultiplier() (float32, error) {
-	ret := _m.Called()
-
-	var r0 float32
-	if rf, ok := ret.Get(0).(func() float32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(float32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetProvider provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetProvider() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetSalt provides a mock function with given fields: client, epoch
 func (_m *UtilsCmdInterface) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	ret := _m.Called(client, epoch)
@@ -922,27 +817,6 @@ func (_m *UtilsCmdInterface) GetStakerInfo(client *ethclient.Client, stakerId ui
 	}
 
 	return r0
-}
-
-// GetWaitTime provides a mock function with given fields:
-func (_m *UtilsCmdInterface) GetWaitTime() (int32, error) {
-	ret := _m.Called()
-
-	var r0 int32
-	if rf, ok := ret.Get(0).(func() int32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // GiveSorted provides a mock function with given fields: client, blockManager, txnOpts, epoch, assetId, sortedStakers

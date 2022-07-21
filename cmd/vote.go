@@ -250,7 +250,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
-				ABI:             bindings.BlockManagerABI,
+				ABI:             bindings.BlockManagerMetaData.ABI,
 			})
 
 			if err != nil {
@@ -491,18 +491,21 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, err
 	}
-	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.BlockManagerABI))
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.BlockManagerMetaData.ABI))
 	if err != nil {
 		return 0, err
 	}
 	epochLastProposed := uint32(0)
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
 	if err != nil {
 		return 0, err
 	}
-
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	if err != nil {
+		return 0, err
+	}
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, int32(bufferPercent))
 	if err != nil {
 		return 0, err
 	}

@@ -28,20 +28,30 @@ func TestGetConfigData(t *testing.T) {
 	}
 
 	type args struct {
-		provider         string
-		providerErr      error
-		gasMultiplier    float32
-		gasMultiplierErr error
-		bufferPercent    int32
-		bufferPercentErr error
-		waitTime         int32
-		waitTimeErr      error
-		gasPrice         int32
-		gasPriceErr      error
-		logLevel         string
-		logLevelErr      error
-		gasLimit         float32
-		gasLimitErr      error
+		provider               string
+		providerErr            error
+		gasMultiplierString    string
+		gasMultiplierStringErr error
+		gasMultiplier          float64
+		gasMultiplierErr       error
+		bufferPercentString    string
+		bufferPercentStringErr error
+		bufferPercent          int64
+		bufferPercentErr       error
+		waitTimeString         string
+		waitTimeStringErr      error
+		waitTime               int64
+		waitTimeErr            error
+		gasPriceString         string
+		gasPriceStringErr      error
+		gasPrice               int64
+		gasPriceErr            error
+		logLevel               string
+		logLevelErr            error
+		gasLimitString         string
+		gasLimitStringErr      error
+		gasLimit               float64
+		gasLimitErr            error
 	}
 	tests := []struct {
 		name    string
@@ -52,12 +62,16 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 1: When GetConfigData function executes successfully",
 			args: args{
-				provider:      "",
-				gasMultiplier: 1,
-				bufferPercent: 20,
-				waitTime:      1,
-				logLevel:      "debug",
-				gasLimit:      3,
+				provider:            "",
+				gasMultiplierString: "1",
+				gasMultiplier:       1,
+				bufferPercentString: "20",
+				bufferPercent:       20,
+				waitTimeString:      "1",
+				waitTime:            1,
+				logLevel:            "debug",
+				gasLimitString:      "3",
+				gasLimit:            3,
 			},
 			want:    configData,
 			wantErr: nil,
@@ -73,7 +87,7 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting gasMultiplier",
 			args: args{
-				gasMultiplierErr: errors.New("gasMultiplier error"),
+				gasMultiplierStringErr: errors.New("gasMultiplier error"),
 			},
 			want:    config,
 			wantErr: errors.New("gasMultiplier error"),
@@ -81,7 +95,7 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting bufferPercent",
 			args: args{
-				bufferPercentErr: errors.New("bufferPercent error"),
+				bufferPercentStringErr: errors.New("bufferPercent error"),
 			},
 			want:    config,
 			wantErr: errors.New("bufferPercent error"),
@@ -89,7 +103,7 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting waitTime",
 			args: args{
-				waitTimeErr: errors.New("waitTime error"),
+				waitTimeStringErr: errors.New("waitTime error"),
 			},
 			want:    config,
 			wantErr: errors.New("waitTime error"),
@@ -97,7 +111,7 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting gasPrice",
 			args: args{
-				gasPriceErr: errors.New("gasPrice error"),
+				gasPriceStringErr: errors.New("gasPrice error"),
 			},
 			want:    config,
 			wantErr: errors.New("gasPrice error"),
@@ -113,24 +127,55 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 8: When there is an error in getting gasLimit",
 			args: args{
-				gasLimitErr: errors.New("gasLimit error"),
+				gasLimitStringErr: errors.New("gasLimit error"),
 			},
 			want:    config,
 			wantErr: errors.New("gasLimit error"),
+		},
+		{
+			name: "Test 9: When there is an error in parsing float for gas multiplier",
+			args: args{
+				gasMultiplierErr: errors.New("error in parsing"),
+			},
+			want:    config,
+			wantErr: errors.New("error in parsing"),
+		},
+		{
+			name: "Test 10: When there is an error in parsing int for buffer",
+			args: args{
+				bufferPercentErr: errors.New("error in parsing"),
+			},
+			want:    config,
+			wantErr: errors.New("error in parsing"),
+		},
+		{
+			name: "Test 11: When there is an error in parsing int for waitTime",
+			args: args{
+				waitTimeErr: errors.New("error in parsing"),
+			},
+			want:    config,
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			stringMock := new(mocks.StringInterface)
 			cmdUtils = cmdUtilsMock
+			stringUtils = stringMock
 
-			cmdUtilsMock.On("GetProvider").Return(tt.args.provider, tt.args.providerErr)
-			cmdUtilsMock.On("GetMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
-			cmdUtilsMock.On("GetWaitTime").Return(tt.args.waitTime, tt.args.waitTimeErr)
-			cmdUtilsMock.On("GetGasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
-			cmdUtilsMock.On("GetLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
-			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetConfig", "provider").Return(tt.args.provider, tt.args.providerErr)
+			cmdUtilsMock.On("GetConfig", "gasmultiplier").Return(tt.args.gasMultiplierString, tt.args.gasMultiplierStringErr)
+			cmdUtilsMock.On("GetConfig", "wait").Return(tt.args.waitTimeString, tt.args.waitTimeStringErr)
+			cmdUtilsMock.On("GetConfig", "gasprice").Return(tt.args.gasPriceString, tt.args.gasPriceStringErr)
+			cmdUtilsMock.On("GetConfig", "logLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
+			cmdUtilsMock.On("GetConfig", "gasLimit").Return(tt.args.gasLimitString, tt.args.gasLimitStringErr)
+			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+			stringMock.On("ParseFloat", tt.args.gasMultiplierString).Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
+			stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			stringMock.On("ParseInt", tt.args.waitTimeString).Return(tt.args.waitTime, tt.args.waitTimeErr)
+			stringMock.On("ParseInt", tt.args.gasPriceString).Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			stringMock.On("ParseFloat", tt.args.gasLimitString).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 
 			utils := &UtilsStruct{}
 
@@ -152,413 +197,235 @@ func TestGetConfigData(t *testing.T) {
 	}
 }
 
-func TestGetBufferPercent(t *testing.T) {
+func TestGetConfig(t *testing.T) {
 	type args struct {
-		bufferPercent    int32
-		bufferPercentErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int32
-		wantErr error
-	}{
-		{
-			name: "Test 1: When getBufferPercent function executes successfully",
-			args: args{
-				bufferPercent: 20,
-			},
-			want:    20,
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When bufferPercent is 0",
-			args: args{
-				bufferPercent: 0,
-			},
-			want:    0,
-			wantErr: nil,
-		},
-		{
-			name: "Test 3: When there is an error in getting bufferPercent",
-			args: args{
-				bufferPercentErr: errors.New("bufferPercent error"),
-			},
-			want:    30,
-			wantErr: errors.New("bufferPercent error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
-
-			flagSetUtilsMock.On("GetRootInt32Buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utils := &UtilsStruct{}
-			got, err := utils.GetBufferPercent()
-			if got != tt.want {
-				t.Errorf("getBufferPercent() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getBufferPercent function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getBufferPercent function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
-func TestGetGasLimit(t *testing.T) {
-	type args struct {
-		gasLimit    float32
-		gasLimitErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    float32
-		wantErr error
-	}{
-		{
-			name: "Test 1: When getGasLimit function executes successfully",
-			args: args{
-				gasLimit: 4,
-			},
-			want:    4,
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When gasLimit is -1",
-			args: args{
-				gasLimit: -1,
-			},
-			want:    0,
-			wantErr: nil,
-		},
-		{
-			name: "Test 3: When there is an error in getting gasLimit",
-			args: args{
-				gasLimitErr: errors.New("gasLimit error"),
-			},
-			want:    -1,
-			wantErr: errors.New("gasLimit error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
-
-			flagSetUtilsMock.On("GetRootFloat32GasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			utils := &UtilsStruct{}
-
-			got, err := utils.GetGasLimit()
-			if got != tt.want {
-				t.Errorf("getGasLimit() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getGasLimit function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getGasLimit function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
-func TestGetGasPrice(t *testing.T) {
-	type args struct {
-		gasPrice    int32
-		gasPriceErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int32
-		wantErr error
-	}{
-		{
-			name: "Test 1: When getGasPrice function executes successfully",
-			args: args{
-				gasPrice: 1,
-			},
-			want:    1,
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When gasPrice is -1",
-			args: args{
-				gasPrice: -1,
-			},
-			want:    0,
-			wantErr: nil,
-		},
-		{
-			name: "Test 3: When there is an error in getting gasPrice",
-			args: args{
-				gasPriceErr: errors.New("gasPrice error"),
-			},
-			want:    0,
-			wantErr: errors.New("gasPrice error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
-
-			flagSetUtilsMock.On("GetRootInt32GasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
-			utils := &UtilsStruct{}
-
-			got, err := utils.GetGasPrice()
-			if got != tt.want {
-				t.Errorf("getGasPrice() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getGasPrice function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getGasPrice function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
-func TestGetLogLevel(t *testing.T) {
-	type args struct {
-		logLevel    string
-		logLevelErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr error
-	}{
-		{
-			name: "Test 1: When getLogLevel function executes successfully",
-			args: args{
-				logLevel: "debug",
-			},
-			want:    "debug",
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When logLevel is nil",
-			args: args{
-				logLevel: "",
-			},
-			want:    "",
-			wantErr: nil,
-		},
-		{
-			name: "Test 3: When there is an error in getting logLevel",
-			args: args{
-				logLevelErr: errors.New("logLevel error"),
-			},
-			want:    "",
-			wantErr: errors.New("logLevel error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
-
-			flagSetUtilsMock.On("GetRootStringLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
-			utils := &UtilsStruct{}
-
-			got, err := utils.GetLogLevel()
-			if got != tt.want {
-				t.Errorf("getLogLevel() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getLogLevel function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getLogLevel function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
-func TestGetMultiplier(t *testing.T) {
-	type args struct {
-		gasMultiplier    float32
+		configType       string
+		provider         string
+		providerErr      error
+		gasMultiplier    string
 		gasMultiplierErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    float32
-		wantErr error
-	}{
-		{
-			name: "Test 1: When getMultiplier function executes successfully",
-			args: args{
-				gasMultiplier: 2,
-			},
-			want:    2,
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When gasMultiplier is -1",
-			args: args{
-				gasMultiplier: -1,
-			},
-			want:    0,
-			wantErr: nil,
-		},
-		{
-			name: "Test 3: When there is an error in getting gasMultiplier",
-			args: args{
-				gasMultiplierErr: errors.New("gasMultiplier error"),
-			},
-			want:    1,
-			wantErr: errors.New("gasMultiplier error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
-
-			flagSetUtilsMock.On("GetRootFloat32GasMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
-			utils := &UtilsStruct{}
-
-			got, err := utils.GetMultiplier()
-			if got != tt.want {
-				t.Errorf("getMultiplier() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getMultiplier function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getMultiplier function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
-func TestGetProvider(t *testing.T) {
-	type args struct {
-		provider    string
-		providerErr error
+		bufferPercent    string
+		bufferPercentErr error
+		waitTime         string
+		waitTimeErr      error
+		gasPrice         string
+		gasPriceErr      error
+		logLevel         string
+		logLevelErr      error
+		gasLimit         string
+		gasLimitErr      error
 	}
 	tests := []struct {
 		name    string
 		args    args
 		want    string
-		wantErr error
+		wantErr bool
 	}{
 		{
-			name: "Test 1: When getProvider function execute successfully",
+			name: "Test 1: When GetConfig executes successfully for provider",
 			args: args{
-				provider: "https://polygon-mumbai.g.alchemy.com/v2/-Re1lE3oDIVTWchuKMfRIECn0I",
+				configType: "provider",
+				provider:   "https://polygon-mumbai.g.alchemy.com/v2/-Re1lE3oDIVTWchuKMfRIECn0I",
 			},
 			want:    "https://polygon-mumbai.g.alchemy.com/v2/-Re1lE3oDIVTWchuKMfRIECn0I",
-			wantErr: nil,
+			wantErr: false,
 		},
 		{
 			name: "Test 2: When provider has prefix https",
 			args: args{
-				provider: "127.0.0.1:8545",
+				configType: "provider",
+				provider:   "127.0.0.1:8545",
 			},
 			want:    "127.0.0.1:8545",
-			wantErr: nil,
+			wantErr: false,
 		},
 		{
 			name: "Test 3: When there is an error in getting provider",
 			args: args{
+				configType:  "provider",
 				providerErr: errors.New("provider error"),
 			},
 			want:    "",
-			wantErr: errors.New("provider error"),
+			wantErr: true,
 		},
 		{
-			name: "Test 2: When provider is nil",
+			name: "Test 4: When provider is nil",
 			args: args{
-				provider: "",
+				configType: "provider",
+				provider:   "",
 			},
 			want:    "",
-			wantErr: nil,
+			wantErr: false,
 		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
-
-			flagSetUtilsMock.On("GetRootStringProvider").Return(tt.args.provider, tt.args.providerErr)
-			utils := &UtilsStruct{}
-
-			got, err := utils.GetProvider()
-			if got != tt.want {
-				t.Errorf("getProvider() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getProvider function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getProvider function, got = %v, want = %v", err, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
-func TestGetWaitTime(t *testing.T) {
-	type args struct {
-		waitTime    int32
-		waitTimeErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int32
-		wantErr error
-	}{
 		{
-			name: "Test 1: When getWaitTime function executes successfully",
+			name: "Test 5: When GetConfig executes successfully for gasmultiplier",
 			args: args{
-				waitTime: 4,
+				configType:    "gasmultiplier",
+				gasMultiplier: "2",
 			},
-			want:    4,
-			wantErr: nil,
+			want:    "2",
+			wantErr: false,
 		},
 		{
-			name: "Test 2: When waitTime is -1",
+			name: "Test 6: When gasMultiplier is -1",
 			args: args{
-				waitTime: -1,
+				configType:    "gasmultiplier",
+				gasMultiplier: "-1",
 			},
-			want:    0,
-			wantErr: nil,
+			want:    "",
+			wantErr: false,
 		},
 		{
-			name: "Test 3: When there is an error in getting waitTime",
+			name: "Test 7: When there is an error in getting gasMultiplier",
 			args: args{
+				configType:       "gasmultiplier",
+				gasMultiplierErr: errors.New("gasMultiplier error"),
+			},
+			want:    "1",
+			wantErr: true,
+		},
+		{
+			name: "Test 8: When GetConfig executes successfully for buffer",
+			args: args{
+				configType:    "buffer",
+				bufferPercent: "20",
+			},
+			want:    "20",
+			wantErr: false,
+		},
+		{
+			name: "Test 9: When bufferPercent is 0",
+			args: args{
+				configType:    "buffer",
+				bufferPercent: "0",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 10: When there is an error in getting bufferPercent",
+			args: args{
+				configType:       "buffer",
+				bufferPercentErr: errors.New("bufferPercent error"),
+			},
+			want:    "30",
+			wantErr: true,
+		},
+		{
+			name: "Test 11: When GetConfig executes successfully for wait",
+			args: args{
+				configType: "wait",
+				waitTime:   "4",
+			},
+			want:    "4",
+			wantErr: false,
+		},
+		{
+			name: "Test 12: When waitTime is -1",
+			args: args{
+				configType: "wait",
+				waitTime:   "-1",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 13: When there is an error in getting waitTime",
+			args: args{
+				configType:  "wait",
 				waitTimeErr: errors.New("waitTime error"),
 			},
-			want:    3,
-			wantErr: errors.New("waitTime error"),
+			want:    "3",
+			wantErr: true,
+		},
+		{
+			name: "Test 14: When GetConfig executes successfully for gasPrice",
+			args: args{
+				configType: "gasprice",
+				gasPrice:   "1",
+			},
+			want:    "1",
+			wantErr: false,
+		},
+		{
+			name: "Test 15: When gasPrice is -1",
+			args: args{
+				configType: "gasprice",
+				gasPrice:   "-1",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 16: When there is an error in getting gasPrice",
+			args: args{
+				configType:  "gasprice",
+				gasPriceErr: errors.New("gasPrice error"),
+			},
+			want:    "0",
+			wantErr: true,
+		},
+		{
+			name: "Test 17: When GetConfig executes successfully for logLevel",
+			args: args{
+				configType: "logLevel",
+				logLevel:   "debug",
+			},
+			want:    "debug",
+			wantErr: false,
+		},
+		{
+			name: "Test 18: When logLevel is nil",
+			args: args{
+				configType: "logLevel",
+				logLevel:   "",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 19: When there is an error in getting logLevel",
+			args: args{
+				configType:  "logLevel",
+				logLevelErr: errors.New("logLevel error"),
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "Test 20: When GetConfig executes successfully for gasLimit",
+			args: args{
+				configType: "gasLimit",
+				gasLimit:   "4",
+			},
+			want:    "4",
+			wantErr: false,
+		},
+		{
+			name: "Test 21: When gasLimit is -1",
+			args: args{
+				configType: "gasLimit",
+				gasLimit:   "-1",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 22: When there is an error in getting gasLimit",
+			args: args{
+				configType:  "gasLimit",
+				gasLimitErr: errors.New("gasLimit error"),
+			},
+			want:    "-1",
+			wantErr: true,
+		},
+		{
+			name: "Test 23: When configType does not match with any case",
+			args: args{
+				configType: "abc",
+			},
+			want:    "",
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -566,20 +433,22 @@ func TestGetWaitTime(t *testing.T) {
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			flagSetUtils = flagSetUtilsMock
 
-			flagSetUtilsMock.On("GetRootInt32Wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
-			utils := &UtilsStruct{}
-			got, err := utils.GetWaitTime()
-			if got != tt.want {
-				t.Errorf("getWaitTime() got = %v, want %v", got, tt.want)
+			flagSetUtilsMock.On("GetRootStringConfig", "provider").Return(tt.args.provider, tt.args.providerErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "gasmultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "gasprice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "logLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "gasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
+
+			ut := &UtilsStruct{}
+			got, err := ut.GetConfig(tt.args.configType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for getWaitTime function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for getWaitTime function, got = %v, want = %v", err, tt.wantErr)
-				}
+			if got != tt.want {
+				t.Errorf("GetConfig() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

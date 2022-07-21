@@ -84,18 +84,18 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	log.Info("Sending stake transactions...")
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
 	return transactionUtils.Hash(tx), nil

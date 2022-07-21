@@ -74,7 +74,11 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 
 	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Salt: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
+	if err != nil {
+		return core.NilHash, err
+	}
+	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -85,7 +89,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		NumberOfStakers: numStakers,
 		Salt:            salt,
 		Epoch:           epoch,
-	}, bufferPercent)
+	}, int32(bufferPercent))
 
 	log.Debug("Iteration: ", iteration)
 
@@ -158,7 +162,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerABI,
+		ABI:             bindings.BlockManagerMetaData.ABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})
@@ -184,12 +188,16 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
+	if err != nil {
+		return nil, 0, err
+	}
+	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, int32(bufferPercent))
 	if err != nil {
 		return nil, 0, err
 	}

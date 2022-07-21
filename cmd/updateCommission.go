@@ -103,7 +103,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "updateCommission",
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 	}

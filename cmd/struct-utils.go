@@ -749,6 +749,11 @@ func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Cl
 	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 
+//This function returns the config of configType in form of string
+func (flagSetUtils FLagSetUtils) GetRootStringConfig(configType string) (string, error) {
+	return rootCmd.PersistentFlags().GetString(configType)
+}
+
 //This function returns the provider in string
 func (flagSetUtils FLagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("provider")
@@ -787,41 +792,6 @@ func (flagSetUtils FLagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (flo
 //This function returns BountyId in Uint32
 func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 	return flagSet.GetUint32("bountyId")
-}
-
-//This function returns the provider of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringProvider() (string, error) {
-	return rootCmd.PersistentFlags().GetString("provider")
-}
-
-//This function returns the gas multiplier of root in float32
-func (flagSetUtils FLagSetUtils) GetRootFloat32GasMultiplier() (float32, error) {
-	return rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
-}
-
-//This function returns the buffer of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32Buffer() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("buffer")
-}
-
-//This function returns the wait of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32Wait() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("wait")
-}
-
-//This function returns the gas price of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32GasPrice() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("gasprice")
-}
-
-//This function returns the log level of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringLogLevel() (string, error) {
-	return rootCmd.PersistentFlags().GetString("logLevel")
-}
-
-//This function returns the gas limit of root in Float32
-func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
-	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
 }
 
 //This function returns the from in string
@@ -984,6 +954,16 @@ func (t TimeUtils) Sleep(duration time.Duration) {
 //This function is used to parse the bool
 func (s StringUtils) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
+}
+
+//This functon is used to parse the float
+func (s StringUtils) ParseFloat(str string) (float64, error) {
+	return strconv.ParseFloat(str, 32)
+}
+
+//This function is used to parse the int
+func (s StringUtils) ParseInt(str string) (int64, error) {
+	return strconv.ParseInt(str, 10, 32)
 }
 
 //This function is used for unpacking
