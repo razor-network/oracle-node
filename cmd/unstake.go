@@ -121,12 +121,13 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
 	txn, err := stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, txnArgs.Amount)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return core.NilHash, err
 	}
-	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Transaction hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function approves the unstake
@@ -134,12 +135,13 @@ func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.Str
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
 	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, staker, txnArgs.Amount)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in approving for unstake")
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", transactionUtils.Hash(txn).String())
-	return transactionUtils.Hash(txn), nil
+	log.Info("Transaction Hash: ", txnHash.String())
+	return txnHash, nil
 }
 
 func init() {

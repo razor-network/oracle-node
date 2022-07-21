@@ -43,12 +43,13 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 		log.Info("Claiming block reward...")
 		txnOpts := razorUtils.GetTxnOpts(options)
 		txn, err := blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
+		txnHash := transactionUtils.Hash(txn)
 		if err != nil {
 			log.Error("Error in claiming block reward: ", err)
 			return core.NilHash, err
 		}
-		log.Info("Txn Hash: ", transactionUtils.Hash(txn).Hex())
-		return transactionUtils.Hash(txn), nil
+		log.Info("Txn Hash: ", txnHash.Hex())
+		return txnHash, nil
 	}
 
 	log.Debug("Only selected block proposer can claim block reward")

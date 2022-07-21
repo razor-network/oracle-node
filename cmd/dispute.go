@@ -323,11 +323,12 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	})
 	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
 	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
+	finalizeTxnHash := transactionUtils.Hash(finalizeTxn)
 	if err != nil {
 		return err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
-	WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+	log.Info("Txn Hash: ", finalizeTxnHash.Hex())
+	WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, finalizeTxnHash.String())
 
 	//If dispute happens, then storing the bountyId into disputeData file
 	if WaitForBlockCompletionErr == nil {
@@ -428,9 +429,10 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 	if err != nil {
 		log.Error("error in resetting dispute", err)
 	}
-	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Transaction hash: ", txnHash.Hex())
 	log.Info("Dispute has been reset")
-	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for resetDispute: ", err)
 	}

@@ -115,9 +115,10 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 
 	log.Info("Commitment sent...")
 	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }

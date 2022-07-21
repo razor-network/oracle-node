@@ -104,11 +104,12 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Changing active status of collection: %d from %t to %t", modifyCollectionInput.CollectionId, !modifyCollectionInput.Status, modifyCollectionInput.Status)
 	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn).String())
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.String())
+	return txnHash, nil
 }
 
 func init() {

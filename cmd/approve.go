@@ -26,10 +26,11 @@ func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, erro
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
 		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
+		txnHash := transactionUtils.Hash(txn)
 		if err != nil {
 			return core.NilHash, err
 		}
-		log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-		return transactionUtils.Hash(txn), nil
+		log.Info("Txn Hash: ", txnHash.Hex())
+		return txnHash, nil
 	}
 }

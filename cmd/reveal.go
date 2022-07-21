@@ -59,12 +59,13 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 	})
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function generates the tree reveal data

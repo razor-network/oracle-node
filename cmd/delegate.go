@@ -91,11 +91,12 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Infof("Transaction hash: %s", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

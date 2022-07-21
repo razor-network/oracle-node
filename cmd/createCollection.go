@@ -97,13 +97,14 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
 	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in creating collection")
 		return core.NilHash, err
 	}
 	log.Info("Creating collection...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {
