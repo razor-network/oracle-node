@@ -984,7 +984,7 @@ func TestPrng(t *testing.T) {
 	}
 }
 
-func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
+func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
 		epochLength        int64
@@ -1003,7 +1003,7 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When CalculateBlockNumberAtEpochBeginning() is executed successfully",
+			name: "Test 1: When EstimateBlockNumberAtEpochBeginning() is executed successfully",
 			args: args{
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
@@ -1033,13 +1033,13 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			got, err := utils.CalculateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
+			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

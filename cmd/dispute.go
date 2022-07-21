@@ -3,12 +3,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"os"
 	"razor/core"
@@ -17,6 +11,13 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 var (
@@ -438,7 +439,7 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 
 //This function returns the bountyId from events
 func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
 		log.Error(err)
 		return 0, err

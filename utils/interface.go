@@ -168,7 +168,7 @@ type Utils interface {
 	ConvertToNumber(num interface{}) (*big.Float, error)
 	SecondsToReadableTime(input int) string
 	AssignLogFile(flagSet *pflag.FlagSet)
-	CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error)
+	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error)
 	GetStateName(stateNumber int64) string
 	Shuffle(slice []uint32) []uint32
 }
