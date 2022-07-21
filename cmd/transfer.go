@@ -36,8 +36,6 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
-	utils.IsValidERC20Address(fromAddress)
-
 	logger.Address = fromAddress
 
 	config, err := cmdUtils.GetConfigData()
@@ -46,7 +44,6 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
-	utils.IsValidERC20Address(fromAddress)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 

@@ -3,13 +3,14 @@ package utils
 import (
 	"context"
 	"errors"
-	"github.com/avast/retry-go"
 	"math/big"
 	"os"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"time"
+
+	"github.com/avast/retry-go"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -109,10 +110,12 @@ func CheckError(msg string, err error) {
 	}
 }
 
-func IsValidERC20Address(address string) {
+func IsValidERC20Address(address string) bool {
 	if !common.IsHexAddress(address) {
-		log.Fatal("Invalid ERC20 Address")
+		log.Error("Invalid ERC20 Address")
+		return false
 	}
+	return true
 }
 
 func (*UtilsStruct) IsFlagPassed(name string) bool {

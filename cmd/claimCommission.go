@@ -29,7 +29,6 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
-	utils.IsValidERC20Address(address)
 
 	logger.Address = address
 

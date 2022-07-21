@@ -2,12 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	Types "razor/core/types"
@@ -15,6 +9,13 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckError(t *testing.T) {
@@ -676,6 +677,46 @@ func TestIsFlagPassed(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 			if got := utils.IsFlagPassed(tt.args.name); got != tt.want {
 				t.Errorf("IsFlagPassed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsValidERC20Address(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When correct erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When incorrect erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			want: false,
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidERC20Address(tt.args.address); got != tt.want {
+				t.Errorf("IsValidERC20Address() = %v, want %v", got, tt.want)
 			}
 		})
 	}
