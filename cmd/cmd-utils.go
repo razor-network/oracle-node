@@ -27,7 +27,7 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	if err != nil {
 		return 0, 0, err
 	}
-	state, err := razorUtils.GetDelayedState(client, int32(bufferPercent))
+	state, err := razorUtils.GetBufferedState(client, int32(bufferPercent))
 	if err != nil {
 		return 0, 0, err
 	}

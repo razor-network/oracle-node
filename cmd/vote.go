@@ -133,7 +133,7 @@ var (
 
 //This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
-	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
+	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
