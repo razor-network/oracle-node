@@ -106,7 +106,7 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
-		ABI:             bindings.VoteManagerABI,
+		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "commit",
 		Parameters:      []interface{}{epoch, commitmentToSend},
 	})

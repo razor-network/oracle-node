@@ -162,7 +162,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerABI,
+		ABI:             bindings.BlockManagerMetaData.ABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})

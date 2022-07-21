@@ -31,14 +31,18 @@ razor -v
 ## Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+
+1. Create docker network
+
 ```
-docker run -d -it--entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
+docker network create razor_network
 ```
 
-If you are planing to expose metrics:
+2. Start razor-go container
 ```
-docker run -d -it--entrypoint /bin/sh -p 2112:2112 --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor  
+docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.1.2-internal-testnet
 ```
+
 
 >**_NOTE:_** that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
@@ -689,28 +693,32 @@ Example:
 
 razor cli
 
-Without TLS
+#### Without TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112
 ```
-With TLS
+#### With TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
 docker
 
+#### Expose Metrics without TLS
 ```
-# Create docker network
-
-docker network create razor_network
-
-# Expose Metrics without TLS
 docker exec -it razor-go razor setConfig --exposeMetrics 2112
+```
 
-# Expose Metrics with TLS
+#### Expose Metrics with TLS
+```
 docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
+
+Can use Prometheus/Grafana for setting up monitoring and alerting 
+
+1. Clone [monitoring-repo](https://github.com/razor-network/monitoring.git)
+2. Start monitoring stack:  `docker-compose up -d`
+3. Check Grafana dashboard at http://host-address:3000
 
 ### Override Job and Adding Your Custom Jobs
 
