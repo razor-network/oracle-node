@@ -14,12 +14,12 @@ import (
 
 var (
 	Provider           string
-	GasMultiplier      float32
-	BufferPercent      int32
-	WaitTime           int32
-	GasPrice           int32
+	GasMultiplier      string
+	BufferPercent      string
+	WaitTime           string
+	GasPrice           string
 	LogLevel           string
-	GasLimitMultiplier float32
+	GasLimitMultiplier string
 	LogFile            string
 )
 
@@ -54,12 +54,12 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
-	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
-	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
-	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
+	rootCmd.PersistentFlags().StringVarP(&GasMultiplier, "gasmultiplier", "g", "-1", "gas multiplier value")
+	rootCmd.PersistentFlags().StringVarP(&BufferPercent, "buffer", "b", "0", "buffer percent")
+	rootCmd.PersistentFlags().StringVarP(&WaitTime, "wait", "w", "-1", "wait time")
+	rootCmd.PersistentFlags().StringVarP(&GasPrice, "gasprice", "", "-1", "gas price")
 	rootCmd.PersistentFlags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
-	rootCmd.PersistentFlags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
+	rootCmd.PersistentFlags().StringVarP(&GasLimitMultiplier, "gasLimit", "", "-1", "gas limit percentage increase")
 	rootCmd.PersistentFlags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

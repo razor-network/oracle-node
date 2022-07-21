@@ -163,19 +163,21 @@ func TestGetLastProposedEpoch(t *testing.T) {
 	blockNumber := big.NewInt(20)
 
 	type args struct {
-		fromBlock        *big.Int
-		fromBlockErr     error
-		stakerId         uint32
-		logs             []Types.Log
-		logsErr          error
-		contractAbi      abi.ABI
-		parseErr         error
-		unpackedData     []interface{}
-		unpackErr        error
-		bufferPercent    int32
-		bufferPercentErr error
-		time             int64
-		timeErr          error
+		fromBlock              *big.Int
+		fromBlockErr           error
+		stakerId               uint32
+		logs                   []Types.Log
+		logsErr                error
+		contractAbi            abi.ABI
+		parseErr               error
+		unpackedData           []interface{}
+		unpackErr              error
+		bufferPercentString    string
+		bufferPercentStringErr error
+		bufferPercent          int64
+		bufferPercentErr       error
+		time                   int64
+		timeErr                error
 	}
 	tests := []struct {
 		name    string
@@ -194,10 +196,11 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Topics: []common.Hash{common.BigToHash(big.NewInt(1000)), common.BigToHash(big.NewInt(2))},
 					},
 				},
-				contractAbi:   abi.ABI{},
-				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercent: 1,
-				time:          0,
+				contractAbi:         abi.ABI{},
+				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentString: "1",
+				bufferPercent:       1,
+				time:                0,
 			},
 			want:    4,
 			wantErr: nil,
@@ -247,7 +250,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			wantErr: errors.New("Not able to Fetch Block: error in fetching blocks"),
 		},
 		{
-			name: "Test 6: When there is an error in getting bufferPercent",
+			name: "Test 6: When there is an error in getting getConfig",
 			args: args{
 				fromBlock: big.NewInt(0),
 				stakerId:  2,
@@ -256,12 +259,12 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Data: []byte{4, 2},
 					},
 				},
-				contractAbi:      abi.ABI{},
-				unpackedData:     convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercentErr: errors.New("error in getting buffer percent"),
+				contractAbi:            abi.ABI{},
+				unpackedData:           convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentStringErr: errors.New("error in getting config"),
 			},
 			want:    0,
-			wantErr: errors.New("error in getting buffer percent"),
+			wantErr: errors.New("error in getting config"),
 		},
 		{
 			name: "Test 7: When there is an error in getting remaining time",
@@ -273,13 +276,34 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Data: []byte{4, 2},
 					},
 				},
-				contractAbi:   abi.ABI{},
-				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercent: 1,
-				timeErr:       errors.New("error in getting time"),
+				contractAbi:         abi.ABI{},
+				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentString: "1",
+				bufferPercent:       1,
+				timeErr:             errors.New("error in getting time"),
 			},
 			want:    0,
 			wantErr: errors.New("error in getting time"),
+		},
+		{
+			name: "Test 8: When there in parsing the int",
+			args: args{
+				fromBlock: big.NewInt(0),
+				stakerId:  2,
+				logs: []Types.Log{
+					{
+						Data:   []byte{4, 2},
+						Topics: []common.Hash{common.BigToHash(big.NewInt(1000)), common.BigToHash(big.NewInt(2))},
+					},
+				},
+				contractAbi:         abi.ABI{},
+				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentString: "1",
+				bufferPercentErr:    errors.New("error in parsing"),
+				time:                0,
+			},
+			want:    0,
+			wantErr: errors.New("error in parsing"),
 		},
 	}
 	for _, tt := range tests {
@@ -291,6 +315,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsMock := new(mocks.UtilsInterface)
 			utilsPkgMock2 := new(mocks2.Utils)
+			stringMock := new(mocks.StringInterface)
 
 			utilsInterface = utilsPkgMock2
 			razorUtils = utilsMock
@@ -298,12 +323,14 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 			utils.ABIInterface = abiUtilsMock
 			cmdUtils = cmdUtilsMock
+			stringUtils = stringMock
 
 			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+			stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utilsPkgMock2.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.time, tt.args.timeErr)
 
 			utils := &UtilsStruct{}

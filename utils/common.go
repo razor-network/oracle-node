@@ -144,7 +144,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
+	epoch := latestHeader.Time / uint64(core.EpochLength)
 	return uint32(epoch), nil
 }
 
