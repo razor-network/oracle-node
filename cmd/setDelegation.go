@@ -100,7 +100,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "setDelegationAcceptance",
 		Parameters:      []interface{}{delegationInput.Status},
 	}

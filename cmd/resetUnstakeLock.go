@@ -71,7 +71,7 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "resetUnstakeLock",
 		Parameters:      []interface{}{extendLockInput.StakerId},
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 	})
 
 	log.Info("Extending lock...")
