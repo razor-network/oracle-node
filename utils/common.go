@@ -3,13 +3,14 @@ package utils
 import (
 	"context"
 	"errors"
-	"github.com/avast/retry-go"
 	"math/big"
 	"os"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"time"
+
+	"github.com/avast/retry-go"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

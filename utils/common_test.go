@@ -2,12 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	Types "razor/core/types"
@@ -15,6 +9,13 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckError(t *testing.T) {

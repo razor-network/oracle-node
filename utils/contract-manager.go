@@ -10,11 +10,11 @@ import (
 )
 
 func (*UtilsStruct) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
-	coinContract, err := BindingsInterface.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
+	erc20Contract, err := BindingsInterface.NewRAZOR(common.HexToAddress(core.RAZORAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return coinContract
+	return erc20Contract
 }
 
 func (*UtilsStruct) GetStakeManager(client *ethclient.Client) *bindings.StakeManager {
