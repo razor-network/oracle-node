@@ -823,11 +823,11 @@ func TestInitiateReveal(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 5: When there is an error in checkForLastCommitted",
+			name: "Test 5: When there is an error in CheckForLastCommitted",
 			args: args{
 				epoch:          5,
 				lastReveal:     2,
-				revealStateErr: errors.New("error in checkForLastCommitted"),
+				revealStateErr: errors.New("error in CheckForLastCommitted"),
 			},
 			wantErr: true,
 		},
@@ -926,7 +926,7 @@ func TestInitiateReveal(t *testing.T) {
 
 			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
-			cmdUtilsMock.On("checkForLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
+			cmdUtilsMock.On("CheckForLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
