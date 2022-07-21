@@ -41,7 +41,7 @@ func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (in
 	if err != nil {
 		return -1, err
 	}
-	blockTime := uint64(block.Time)
+	blockTime := block.Time
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if blockTime%(core.StateLength) > upperLimit-stateBuffer || blockTime%(core.StateLength) < lowerLimit+stateBuffer {
