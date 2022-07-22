@@ -35,7 +35,11 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		return core.NilHash, err
 	}
 
-	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	merkleTree, err := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	if err != nil {
+		log.Error("Error in getting merkle tree: ", err)
+		return core.NilHash, err
+	}
 	treeRevealData := cmdUtils.GenerateTreeRevealData(merkleTree, commitData)
 
 	log.Debugf("Revealing vote for epoch: %d, commitAccount: %s, treeRevealData: %v, root: %v",
