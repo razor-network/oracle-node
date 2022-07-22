@@ -129,7 +129,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		}
 
 		// Median Value dispute
-		isEqual, mismatchIndex := utils.IsEqual(proposedBlock.Medians, medians)
+		isEqual, mismatchIndex := utils.IsBigIntArrayEqual(proposedBlock.Medians, medians)
 		if !isEqual {
 			log.Warn("BLOCK NOT MATCHING WITH LOCAL CALCULATIONS.")
 			log.Debug("Block Values: ", proposedBlock.Medians)
@@ -240,7 +240,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
 	hashRevealedCollectionIds := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{revealedCollectionIds})
 
-	isEqual, _ := utils.IsEqualByte(hashIdsInProposedBlock, hashRevealedCollectionIds)
+	isEqual, _ := utils.IsByteArrayEqual(hashIdsInProposedBlock, hashRevealedCollectionIds)
 
 	if isEqual {
 		return nil, nil
@@ -259,8 +259,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	}
 
 	// Check if the error is collectionIdShouldBePresent
-	isMissing, _, missingCollectionId := utils.IsMissing(revealedCollectionIds, idsInProposedBlock)
-	if isMissing {
+	isValueMissing, _, missingCollectionId := utils.CheckValueMissingInArray(revealedCollectionIds, idsInProposedBlock)
+	if isValueMissing {
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
@@ -277,8 +277,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	}
 
 	// Check if the error is collectionIdShouldBeAbsent
-	isPresent, positionOfPresentValue, presentCollectionId := utils.IsMissing(idsInProposedBlock, revealedCollectionIds)
-	if isPresent {
+	isValuePresent, positionOfPresentValue, presentCollectionId := utils.CheckValueMissingInArray(idsInProposedBlock, revealedCollectionIds)
+	if isValuePresent {
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
