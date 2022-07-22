@@ -21,18 +21,18 @@ If the previous epoch doesn't contain any medians, then the value is fetched fro
 */
 func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
-	numProposedBlock, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
+	numProposedBlocks, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	blockIndexedToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
+	blockIndexToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
+	if numProposedBlocks == 0 || (numProposedBlocks > 0 && blockIndexToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexedToBeConfirmed)))
+	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
