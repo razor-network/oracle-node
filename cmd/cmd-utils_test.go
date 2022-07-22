@@ -395,7 +395,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 }
 
-func TestGetStatesAllowed(t *testing.T) {
+func TestGetFormattedStateNames(t *testing.T) {
 	type args struct {
 		states    []int
 		stateName string
@@ -411,7 +411,7 @@ func TestGetStatesAllowed(t *testing.T) {
 				states:    []int{1},
 				stateName: "Reveal",
 			},
-			want: "1:Reveal",
+			want: "1:Reveal ",
 		},
 		{
 			name: "Test 2: When states has multiple elements",
@@ -419,10 +419,10 @@ func TestGetStatesAllowed(t *testing.T) {
 				states:    []int{1, 1},
 				stateName: "Reveal",
 			},
-			want: "1:Reveal, 1:Reveal",
+			want: "1:Reveal 1:Reveal ",
 		},
 		{
-			name: "Test 2: When states array is nil",
+			name: "Test 3: When states array is nil",
 			args: args{
 				states: []int{},
 			},
@@ -436,8 +436,8 @@ func TestGetStatesAllowed(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-			if got := GetStatesAllowed(tt.args.states); got != tt.want {
-				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
+			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
+				t.Errorf("GetFormattedStateNames() = %v, want %v", got, tt.want)
 			}
 		})
 	}
