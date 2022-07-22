@@ -987,22 +987,6 @@ func (_m *UtilsCmdInterface) IndexRevealEventsOfCurrentEpoch(client *ethclient.C
 	return r0, r1
 }
 
-// InfluencedMedian provides a mock function with given fields: sortedVotes, totalInfluenceRevealed
-func (_m *UtilsCmdInterface) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
-	ret := _m.Called(sortedVotes, totalInfluenceRevealed)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func([]*big.Int, *big.Int) *big.Int); ok {
-		r0 = rf(sortedVotes, totalInfluenceRevealed)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	return r0
-}
-
 // InitiateCommit provides a mock function with given fields: client, config, account, epoch, stakerId, rogueData
 func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
 	ret := _m.Called(client, config, account, epoch, stakerId, rogueData)

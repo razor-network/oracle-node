@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
@@ -31,7 +30,6 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	ClientInterface = optionsPackageStruct.ClientInterface
 	Time = optionsPackageStruct.Time
 	OS = optionsPackageStruct.OS
-	Bufio = optionsPackageStruct.Bufio
 	CoinInterface = optionsPackageStruct.CoinInterface
 	IOInterface = optionsPackageStruct.IOInterface
 	ABIInterface = optionsPackageStruct.ABIInterface
@@ -320,10 +318,6 @@ func (c ClientStruct) EstimateGas(client *ethclient.Client, ctx context.Context,
 
 func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
 	return client.FilterLogs(ctx, q)
-}
-
-func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
-	return bufio.NewScanner(r)
 }
 
 func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
