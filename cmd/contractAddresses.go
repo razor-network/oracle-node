@@ -31,11 +31,11 @@ func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 
 //This function provides the list of all contract addresses
 func (*UtilsStruct) ContractAddresses() {
-	fmt.Println("StakeManagerAddress :", core.StakeManagerAddress)
-	fmt.Println("RAZORAddress :", core.RAZORAddress)
-	fmt.Println("CollectionManagerAddress :", core.CollectionManagerAddress)
-	fmt.Println("VoteManagerAddress :", core.VoteManagerAddress)
-	fmt.Println("BlockManagerAddress :", core.BlockManagerAddress)
+	log.Info("StakeManagerAddress :", core.StakeManagerAddress)
+	log.Info("RAZORAddress :", core.RAZORAddress)
+	log.Info("CollectionManagerAddress :", core.CollectionManagerAddress)
+	log.Info("VoteManagerAddress :", core.VoteManagerAddress)
+	log.Info("BlockManagerAddress :", core.BlockManagerAddress)
 }
 
 func init() {
