@@ -48,7 +48,7 @@ func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (in
 		return -1, nil
 	}
 	state := blockTime / core.StateLength
-	return int64(state) % core.NumberOfStates, nil
+	return int64(state % core.NumberOfStates), nil
 }
 
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
@@ -189,7 +189,7 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength uint64, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Errorf("Error in fetching block : %s", err)

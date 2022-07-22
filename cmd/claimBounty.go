@@ -3,10 +3,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"math/big"
 	"os"
 	"razor/core"
@@ -15,6 +11,11 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var claimBountyCmd = &cobra.Command{
@@ -161,7 +162,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
-		timeRemaining := int64(waitFor) * core.EpochLength
+		timeRemaining := uint64(waitFor) * core.EpochLength
 		if waitFor == 1 {
 			log.Infof("Cannot claim bounty now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {

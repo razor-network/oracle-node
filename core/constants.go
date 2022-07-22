@@ -7,8 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-var EpochLength int64 = 1200
-var NumberOfStates int64 = 5
+var EpochLength uint64 = 1200
+var NumberOfStates uint64 = 5
 var ChainId = big.NewInt(0x785B4B9847B9)
 var StateLength = uint64(EpochLength / NumberOfStates)
 var MaxRetries uint = 8

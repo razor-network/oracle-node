@@ -987,7 +987,7 @@ func TestPrng(t *testing.T) {
 func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
-		epochLength        int64
+		epochLength        uint64
 		currentBlockNumber *big.Int
 	)
 	type args struct {
