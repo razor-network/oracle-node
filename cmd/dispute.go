@@ -347,6 +347,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 		return
 	}
 	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, leafId, sortedValues)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {
 			log.Error("Error in calling GiveSorted: ", err)
@@ -358,9 +359,9 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 		}
 	}
 	log.Info("Calling GiveSorted...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	log.Info("Txn Hash: ", txnHash.Hex())
 	giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
-	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
 	}
