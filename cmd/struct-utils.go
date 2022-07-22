@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 	"os"
 	"razor/core"
@@ -720,17 +721,41 @@ func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint
 
 //This function returns the from in string
 func (flagSetUtils FLagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("from")
+	from, err := flagSet.GetString("from")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(from)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return from, nil
 }
 
 //This function returns the to in string
 func (flagSetUtils FLagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("to")
+	to, err := flagSet.GetString("to")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(to)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return to, nil
 }
 
 //This function returns the address in string
 func (flagSetUtils FLagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("address")
+	address, err := flagSet.GetString("address")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(address)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return address, nil
 }
 
 //This function returns the stakerId in Uint32
