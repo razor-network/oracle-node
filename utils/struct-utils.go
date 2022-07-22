@@ -326,8 +326,8 @@ func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
 	return bufio.NewScanner(r)
 }
 
-func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	return coinContract.BalanceOf(opts, account)
+func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
+	return erc20Contract.BalanceOf(opts, account)
 }
 
 func (a ABIStruct) Parse(reader io.Reader) (abi.ABI, error) {

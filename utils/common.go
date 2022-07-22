@@ -10,6 +10,8 @@ import (
 	"razor/logger"
 	"time"
 
+	"github.com/avast/retry-go"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -26,10 +28,26 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 }
 
 func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	address := common.HexToAddress(accountAddress)
-	coinContract := UtilsInterface.GetTokenManager(client)
-	opts := UtilsInterface.GetOptions()
-	return CoinInterface.BalanceOf(coinContract, &opts, address)
+	var (
+		balance *big.Int
+		err     error
+	)
+	err = retry.Do(
+		func() error {
+			address := common.HexToAddress(accountAddress)
+			erc20Contract := UtilsInterface.GetTokenManager(client)
+			opts := UtilsInterface.GetOptions()
+			balance, err = CoinInterface.BalanceOf(erc20Contract, &opts, address)
+			if err != nil {
+				log.Error("Error in fetching balance....Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return big.NewInt(0), err
+	}
+	return balance, nil
 }
 
 func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
