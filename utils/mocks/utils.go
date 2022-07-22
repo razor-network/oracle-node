@@ -114,13 +114,13 @@ func (_m *Utils) BalanceAtWithRetry(client *ethclient.Client, account common.Add
 	return r0, r1
 }
 
-// CalculateBlockNumberAtEpochBeginning provides a mock function with given fields: client, epochLength, currentBlockNumber
-func (_m *Utils) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
-	ret := _m.Called(client, epochLength, currentBlockNumber)
+// CalculateBlockNumberAtEpochBeginning provides a mock function with given fields: client, currentBlockNumber
+func (_m *Utils) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
+	ret := _m.Called(client, currentBlockNumber)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int64, *big.Int) *big.Int); ok {
-		r0 = rf(client, epochLength, currentBlockNumber)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int) *big.Int); ok {
+		r0 = rf(client, currentBlockNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -128,8 +128,8 @@ func (_m *Utils) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, int64, *big.Int) error); ok {
-		r1 = rf(client, epochLength, currentBlockNumber)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int) error); ok {
+		r1 = rf(client, currentBlockNumber)
 	} else {
 		r1 = ret.Error(1)
 	}
