@@ -62,8 +62,11 @@ func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byt
 	return compactProofPath
 }
 
-func (*MerkleTreeStruct) GetMerkleRoot(tree [][][]byte) [32]byte {
+func (*MerkleTreeStruct) GetMerkleRoot(tree [][][]byte) ([32]byte, error) {
 	var root [32]byte
 	copy(root[:], tree[0][0])
-	return root
+	if root == [32]byte{} {
+		return root, errors.New("root is nil")
+	}
+	return root, nil
 }
