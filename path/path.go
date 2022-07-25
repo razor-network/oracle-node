@@ -3,7 +3,7 @@ package path
 
 import (
 	"os"
-	pathPkg "path"
+	"path/filepath"
 )
 
 //This function returns the default path
@@ -12,7 +12,7 @@ func (PathUtils) GetDefaultPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defaultPath := pathPkg.Join(home, ".razor")
+	defaultPath := filepath.Join(home, ".razor")
 	if _, err := OSUtilsInterface.Stat(defaultPath); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(defaultPath, 0700)
 		if mkdirErr != nil {
@@ -28,7 +28,7 @@ func (PathUtils) GetLogFilePath(fileName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filePath := pathPkg.Join(razorPath, fileName+".log")
+	filePath := filepath.Join(razorPath, fileName+".log")
 	f, err := OSUtilsInterface.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return "", err
@@ -43,7 +43,7 @@ func (PathUtils) GetConfigFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return pathPkg.Join(razorPath, "razor.yaml"), nil
+	return filepath.Join(razorPath, "razor.yaml"), nil
 }
 
 //This function returns the job file path
@@ -52,7 +52,7 @@ func (PathUtils) GetJobFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filePath := pathPkg.Join(razorPath, "assets.json")
+	filePath := filepath.Join(razorPath, "assets.json")
 	return filePath, nil
 }
 
@@ -62,7 +62,7 @@ func (PathUtils) GetCommitDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dataFileDir := pathPkg.Join(razorDir, "data_files")
+	dataFileDir := filepath.Join(razorDir, "data_files")
 	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
 		if mkdirErr != nil {
@@ -70,7 +70,7 @@ func (PathUtils) GetCommitDataFileName(address string) (string, error) {
 		}
 	}
 
-	return pathPkg.Join(dataFileDir, address+"_CommitData.json"), nil
+	return filepath.Join(dataFileDir, address+"_CommitData.json"), nil
 }
 
 //This function returns the file name of propose data file
@@ -79,14 +79,14 @@ func (PathUtils) GetProposeDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dataFileDir := pathPkg.Join(razorDir, "data_files")
+	dataFileDir := filepath.Join(razorDir, "data_files")
 	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
 		if mkdirErr != nil {
 			return "", mkdirErr
 		}
 	}
-	return pathPkg.Join(dataFileDir, address+"_proposedData.json"), nil
+	return filepath.Join(dataFileDir, address+"_proposedData.json"), nil
 }
 
 //This function returns the file name of dispute data file
@@ -95,12 +95,12 @@ func (PathUtils) GetDisputeDataFileName(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dataFileDir := pathPkg.Join(razorDir, "data_files")
+	dataFileDir := filepath.Join(razorDir, "data_files")
 	if _, err := OSUtilsInterface.Stat(dataFileDir); OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := OSUtilsInterface.Mkdir(dataFileDir, 0700)
 		if mkdirErr != nil {
 			return "", mkdirErr
 		}
 	}
-	return pathPkg.Join(dataFileDir, address+"_disputeData.json"), nil
+	return filepath.Join(dataFileDir, address+"_disputeData.json"), nil
 }
