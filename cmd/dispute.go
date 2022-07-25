@@ -344,6 +344,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 //This function sorts the Id's recursively
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) {
 	if len(sortedValues) == 0 {
+		log.Error("SortedValues array does not contain any value")
 		return
 	}
 	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, leafId, sortedValues)
@@ -355,6 +356,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 			GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues[:mid])
 			GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues[mid:])
 		} else {
+			log.Error("Error in giveSorted")
 			return
 		}
 	}

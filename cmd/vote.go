@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"os"
 	"os/signal"
@@ -19,6 +18,8 @@ import (
 	"razor/utils"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/spf13/pflag"
 
@@ -165,6 +166,12 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
+
+	// Warning the staker if ETH balance is less than 0.1 ETH
+	if ethBalance.Cmp(big.NewInt(1e17)) == -1 {
+		log.Warn("sFuel balance is lower than 0.1 SKL, kindly add more SKL to be safe for executing transactions successfully")
+	}
+
 	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
@@ -193,7 +200,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	}
 
-	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f sfuel Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
@@ -501,7 +508,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return 0, err
 	}

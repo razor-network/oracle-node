@@ -178,7 +178,7 @@ $ ./razor import
 Password:
 ```
 
-_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord._
+_Before staking on Razor Network, please ensure your account has sfuel and RAZOR. For testnet RAZOR, please contact us on Discord._
 
 ### Stake
 

@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 	"os"
 	"razor/core"
@@ -796,17 +797,41 @@ func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint
 
 //This function returns the from in string
 func (flagSetUtils FLagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("from")
+	from, err := flagSet.GetString("from")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(from)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return from, nil
 }
 
 //This function returns the to in string
 func (flagSetUtils FLagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("to")
+	to, err := flagSet.GetString("to")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(to)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return to, nil
 }
 
 //This function returns the address in string
 func (flagSetUtils FLagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("address")
+	address, err := flagSet.GetString("address")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(address)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return address, nil
 }
 
 //This function returns the stakerId in Uint32
@@ -919,6 +944,21 @@ func (flagSetUtils FLagSetUtils) GetStringCertKey(flagSet *pflag.FlagSet) (strin
 	return flagSet.GetString("certKey")
 }
 
+//This function is used to check if logFileMaxSize is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxSize")
+}
+
+//This function is used to check if logFileMaxBackups is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxBackups")
+}
+
+//This function is used to check if logFileMaxAge is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxAge")
+}
+
 //This function returns the accounts
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
@@ -961,9 +1001,14 @@ func (s StringUtils) ParseFloat(str string) (float64, error) {
 	return strconv.ParseFloat(str, 32)
 }
 
-//This function is used to parse the int
-func (s StringUtils) ParseInt(str string) (int64, error) {
+//This function is used to parse the int64
+func (s StringUtils) ParseInt64(str string) (int64, error) {
 	return strconv.ParseInt(str, 10, 32)
+}
+
+//This function is used to parse the int
+func (s StringUtils) ParseInt(str string) (int, error) {
+	return strconv.Atoi(str)
 }
 
 //This function is used for unpacking

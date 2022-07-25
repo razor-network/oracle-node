@@ -682,6 +682,46 @@ func TestIsFlagPassed(t *testing.T) {
 	}
 }
 
+func TestIsValidERC20Address(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When correct erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When incorrect erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			want: false,
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidERC20Address(tt.args.address); got != tt.want {
+				t.Errorf("IsValidERC20Address() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestWaitTillNextNSecs(t *testing.T) {
 	type args struct {
 		waitTime int32
