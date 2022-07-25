@@ -266,7 +266,8 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, 5.5)
+		var gasLimitMultiplier float32 = 5.5 //GasLimitMultiplier is used to increase the gas required from the gasLimit for the following function
+		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, gasLimitMultiplier)
 		if err != nil {
 			return nil, err
 		}
