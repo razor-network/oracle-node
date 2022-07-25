@@ -168,7 +168,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 	// Warning the staker if ETH balance is less than 0.1 ETH
 	if ethBalance.Cmp(big.NewInt(1e17)) == -1 {
-		log.Warn("SKALE balance is lower than 0.1 SKL, kindly add more SKL to be safe for executing transactions successfully")
+		log.Warn("sFuel balance is lower than 0.1 SKL, kindly add more SKL to be safe for executing transactions successfully")
 	}
 
 	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
