@@ -57,7 +57,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("InitiateWithdraw error: ", err)
 	if txn != core.NilHash {
-		err := razorUtils.WaitForBlockCompletion(client, txn.String())
+		err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
 	}
 }

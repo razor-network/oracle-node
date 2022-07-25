@@ -62,7 +62,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for modifyCollectionStatus: ", err)
 	}
 }
@@ -108,7 +108,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", txnHash.String())
+	log.Info("Txn Hash: ", txnHash.Hex())
 	return txnHash, nil
 }
 

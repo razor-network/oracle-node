@@ -70,7 +70,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for setDelegation: ", err)
 	}
 }

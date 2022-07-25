@@ -56,7 +56,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for resetUnstakeLock: ", err)
 }
 

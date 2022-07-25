@@ -74,7 +74,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createCollection: ", err)
 }
 

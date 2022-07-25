@@ -73,7 +73,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateCollection: ", err)
 }
 

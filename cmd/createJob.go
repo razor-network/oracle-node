@@ -80,7 +80,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createJob: ", err)
 }
 

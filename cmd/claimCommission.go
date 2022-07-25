@@ -59,7 +59,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	}
 	txnHash := transactionUtils.Hash(txn)
 
-	err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
 
 }
