@@ -180,6 +180,69 @@ func (_m *FlagSetInterface) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return r0, r1
 }
 
+// GetIntLogFileMaxAge provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetIntLogFileMaxBackups provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetIntLogFileMaxSize provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRootStringConfig provides a mock function with given fields: configType
 func (_m *FlagSetInterface) GetRootStringConfig(configType string) (string, error) {
 	ret := _m.Called(configType)

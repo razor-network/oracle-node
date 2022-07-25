@@ -23,7 +23,7 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	if err != nil {
 		return 0, 0, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return 0, 0, err
 	}

@@ -16,6 +16,9 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		WaitTime:           0,
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
+		LogFileMaxSize:     0,
+		LogFileMaxBackups:  0,
+		LogFileMaxAge:      0,
 	}
 	provider, err := cmdUtils.GetConfig("provider")
 	if err != nil {
@@ -45,23 +48,35 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	logFileMaxSizeString, err := cmdUtils.GetConfig("logFileMaxSize")
+	if err != nil {
+		return config, err
+	}
+	logFileMaxBackupsString, err := cmdUtils.GetConfig("logFileMaxBackups")
+	if err != nil {
+		return config, err
+	}
+	logFileMaxAgeString, err := cmdUtils.GetConfig("logFileMaxAge")
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
 	gasMultiplier, err := stringUtils.ParseFloat(gasMultiplierString)
 	if err != nil {
 		return config, err
 	}
 	config.GasMultiplier = float32(gasMultiplier)
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return config, err
 	}
 	config.BufferPercent = int32(bufferPercent)
-	waitTime, err := stringUtils.ParseInt(waitTimeString)
+	waitTime, err := stringUtils.ParseInt64(waitTimeString)
 	if err != nil {
 		return config, err
 	}
 	config.WaitTime = int32(waitTime)
-	gasPrice, err := stringUtils.ParseInt(gasPriceString)
+	gasPrice, err := stringUtils.ParseInt64(gasPriceString)
 	if err != nil {
 		return config, err
 	}
@@ -72,6 +87,21 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.GasLimitMultiplier = float32(gasLimit)
+	logFileMaxSize, err := stringUtils.ParseInt(logFileMaxSizeString)
+	if err != nil {
+		return config, err
+	}
+	config.LogFileMaxSize = logFileMaxSize
+	logFileMaxBackups, err := stringUtils.ParseInt(logFileMaxBackupsString)
+	if err != nil {
+		return config, err
+	}
+	config.LogFileMaxBackups = logFileMaxBackups
+	logFileMaxAge, err := stringUtils.ParseInt(logFileMaxAgeString)
+	if err != nil {
+		return config, err
+	}
+	config.LogFileMaxAge = logFileMaxAge
 
 	return config, nil
 }
@@ -152,6 +182,35 @@ func (*UtilsStruct) GetConfig(configType string) (string, error) {
 		}
 		return gasLimit, nil
 
+	case "logFileMaxSize":
+		logFileMaxSize, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "5", err
+		}
+		if logFileMaxSize == "0" {
+			logFileMaxSize = viper.GetString(configType)
+		}
+		return logFileMaxSize, nil
+
+	case "logFileMaxBackups":
+		logFileMaxBackups, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "10", err
+		}
+		if logFileMaxBackups == "0" {
+			logFileMaxBackups = viper.GetString(configType)
+		}
+		return logFileMaxBackups, nil
+
+	case "logFileMaxAge":
+		logFileMaxAge, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "30", err
+		}
+		if logFileMaxAge == "0" {
+			logFileMaxAge = viper.GetString(configType)
+		}
+		return logFileMaxAge, nil
 	}
 	return "", nil
 }
