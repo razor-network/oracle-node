@@ -57,7 +57,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("InitiateWithdraw error: ", err)
 	if txn != core.NilHash {
-		err := razorUtils.WaitForBlockCompletion(client, txn.String())
+		err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
 	}
 }
@@ -135,14 +135,15 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 	log.Info("Initiating withdrawal of funds...")
 
 	txn, err := stakeManagerUtils.InitiateWithdraw(client, txnOpts, stakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in initiating withdrawal of funds")
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	log.Info("Txn Hash: ", txnHash.Hex())
 
-	return transactionUtils.Hash(txn), nil
+	return txnHash, nil
 }
 
 func init() {

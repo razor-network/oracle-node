@@ -57,7 +57,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("UnlockWithdraw error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unlockWithdraw: ", err)
 	}
 }
@@ -103,14 +103,15 @@ func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.Trans
 	log.Info("Unlocking funds...")
 
 	txn, err := stakeManagerUtils.UnlockWithdraw(client, txnOpts, stakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in unlocking funds")
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	log.Info("Txn Hash: ", txnHash.Hex())
 
-	return transactionUtils.Hash(txn), nil
+	return txnHash, nil
 }
 
 func init() {

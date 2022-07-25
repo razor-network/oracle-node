@@ -89,8 +89,9 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				log.Error(err)
 				continue
 			}
-			log.Info("Txn Hash: ", transactionUtils.Hash(disputeBiggestStakeProposedTxn))
-			WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(disputeBiggestStakeProposedTxn).String())
+			disputeBiggestStakeProposedTxnHash := transactionUtils.Hash(disputeBiggestStakeProposedTxn)
+			log.Info("Txn Hash: ", disputeBiggestStakeProposedTxnHash.Hex())
+			WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, disputeBiggestStakeProposedTxnHash.Hex())
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
@@ -113,8 +114,9 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Error("Error in disputing: ", err)
 		}
 		if idDisputeTxn != nil {
-			log.Debugf("Txn Hash: %s", transactionUtils.Hash(idDisputeTxn).String())
-			WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(idDisputeTxn).String())
+			idDisputeTxnHash := transactionUtils.Hash(idDisputeTxn)
+			log.Debugf("Txn Hash: %s", idDisputeTxnHash.Hex())
+			WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, idDisputeTxnHash.Hex())
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
@@ -323,11 +325,12 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	})
 	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
 	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
+	finalizeTxnHash := transactionUtils.Hash(finalizeTxn)
 	if err != nil {
 		return err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
-	WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+	log.Info("Txn Hash: ", finalizeTxnHash.Hex())
+	WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, finalizeTxnHash.Hex())
 
 	//If dispute happens, then storing the bountyId into disputeData file
 	if WaitForBlockCompletionErr == nil {
@@ -347,6 +350,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 		return
 	}
 	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, leafId, sortedValues)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		if err.Error() == errors.New("gas limit reached").Error() {
 			log.Error("Error in calling GiveSorted: ", err)
@@ -359,9 +363,9 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 		}
 	}
 	log.Info("Calling GiveSorted...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	log.Info("Txn Hash: ", txnHash.Hex())
 	giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
-	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
 	}
@@ -430,9 +434,10 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 	if err != nil {
 		log.Error("error in resetting dispute", err)
 	}
-	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Transaction hash: ", txnHash.Hex())
 	log.Info("Dispute has been reset")
-	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for resetDispute: ", err)
 	}

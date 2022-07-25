@@ -168,12 +168,13 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	})
 
 	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function returns the biggest stake and Id of it

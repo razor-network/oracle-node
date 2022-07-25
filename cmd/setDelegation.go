@@ -70,7 +70,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for setDelegation: ", err)
 	}
 }
@@ -112,12 +112,13 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
 	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
+	txnHash := transactionUtils.Hash(delegationAcceptanceTxn)
 	if err != nil {
 		log.Error("Error in setting delegation acceptance")
 		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
-	return transactionUtils.Hash(delegationAcceptanceTxn), nil
+	log.Infof("Transaction hash: %s", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

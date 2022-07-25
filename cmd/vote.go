@@ -339,7 +339,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletion for commit: ", err)
 			return errors.New("error in sending commit transaction")
@@ -429,7 +429,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return errors.New("Reveal error: " + err.Error())
 	}
 	if revealTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
 			return err
@@ -472,7 +472,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return errors.New("Propose error: " + err.Error())
 	}
 	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for propose: ", err)
 			return err
