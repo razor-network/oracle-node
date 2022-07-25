@@ -176,6 +176,20 @@ func (_m *UtilsCmdInterface) CheckDisputeForIds(client *ethclient.Client, transa
 	return r0, r1
 }
 
+// CheckForLastCommitted provides a mock function with given fields: client, staker, epoch
+func (_m *UtilsCmdInterface) CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
+	ret := _m.Called(client, staker, epoch)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsStaker, uint32) error); ok {
+		r0 = rf(client, staker, epoch)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ClaimBlockReward provides a mock function with given fields: options
 func (_m *UtilsCmdInterface) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	ret := _m.Called(options)
@@ -881,20 +895,6 @@ func (_m *UtilsCmdInterface) HandleDispute(client *ethclient.Client, config type
 // HandleExit provides a mock function with given fields:
 func (_m *UtilsCmdInterface) HandleExit() {
 	_m.Called()
-}
-
-// HandleRevealState provides a mock function with given fields: client, staker, epoch
-func (_m *UtilsCmdInterface) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
-	ret := _m.Called(client, staker, epoch)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsStaker, uint32) error); ok {
-		r0 = rf(client, staker, epoch)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // HandleUnstakeLock provides a mock function with given fields: client, account, configurations, stakerId

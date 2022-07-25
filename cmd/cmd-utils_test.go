@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetEpochAndState(t *testing.T) {
@@ -113,7 +114,7 @@ func TestGetEpochAndState(t *testing.T) {
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
 			stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 
 			utils := &UtilsStruct{}
@@ -394,7 +395,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 }
 
-func TestGetStatesAllowed(t *testing.T) {
+func TestGetFormattedStateNames(t *testing.T) {
 	type args struct {
 		states    []int
 		stateName string
@@ -410,7 +411,7 @@ func TestGetStatesAllowed(t *testing.T) {
 				states:    []int{1},
 				stateName: "Reveal",
 			},
-			want: "1:Reveal",
+			want: "1:Reveal ",
 		},
 		{
 			name: "Test 2: When states has multiple elements",
@@ -418,10 +419,10 @@ func TestGetStatesAllowed(t *testing.T) {
 				states:    []int{1, 1},
 				stateName: "Reveal",
 			},
-			want: "1:Reveal, 1:Reveal",
+			want: "1:Reveal 1:Reveal ",
 		},
 		{
-			name: "Test 2: When states array is nil",
+			name: "Test 3: When states array is nil",
 			args: args{
 				states: []int{},
 			},
@@ -435,8 +436,8 @@ func TestGetStatesAllowed(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-			if got := GetStatesAllowed(tt.args.states); got != tt.want {
-				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
+			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
+				t.Errorf("GetFormattedStateNames() = %v, want %v", got, tt.want)
 			}
 		})
 	}

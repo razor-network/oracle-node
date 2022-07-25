@@ -4,9 +4,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
 	"math/big"
 	"razor/core"
@@ -15,6 +12,10 @@ import (
 	"razor/utils"
 	"sort"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 var (
@@ -33,7 +34,7 @@ var (
 
 //This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
 	}

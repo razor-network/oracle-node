@@ -134,7 +134,7 @@ var (
 
 //This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
-	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
+	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
@@ -381,7 +381,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+	if err := cmdUtils.CheckForLastCommitted(client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}
@@ -483,7 +483,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 
 //This function returns the last proposed epoch
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}

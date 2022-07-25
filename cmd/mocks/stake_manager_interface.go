@@ -45,8 +45,8 @@ func (_m *StakeManagerInterface) ApproveUnstake(client *ethclient.Client, opts *
 	return r0, r1
 }
 
-// ClaimStakeReward provides a mock function with given fields: client, opts
-func (_m *StakeManagerInterface) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*types.Transaction, error) {
+// ClaimStakerReward provides a mock function with given fields: client, opts
+func (_m *StakeManagerInterface) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(client, opts)
 
 	var r0 *types.Transaction

@@ -3,12 +3,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	"path"
@@ -19,6 +13,13 @@ import (
 	mocks2 "razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestExecuteVote(t *testing.T) {
@@ -325,7 +326,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 			stringUtils = stringMock
 
-			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
+			utilsPkgMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
@@ -822,11 +823,11 @@ func TestInitiateReveal(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 5: When there is an error in handleRevealState",
+			name: "Test 5: When there is an error in CheckForLastCommitted",
 			args: args{
 				epoch:          5,
 				lastReveal:     2,
-				revealStateErr: errors.New("error in handleRevealState"),
+				revealStateErr: errors.New("error in CheckForLastCommitted"),
 			},
 			wantErr: true,
 		},
@@ -925,7 +926,7 @@ func TestInitiateReveal(t *testing.T) {
 
 			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
-			cmdUtilsMock.On("HandleRevealState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
+			cmdUtilsMock.On("CheckForLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
@@ -1425,7 +1426,7 @@ func TestHandleBlock(t *testing.T) {
 			osUtils = osMock
 			timeUtils = timeMock
 
-			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)

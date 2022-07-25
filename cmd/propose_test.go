@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
@@ -16,6 +15,8 @@ import (
 	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -505,7 +506,7 @@ func TestPropose(t *testing.T) {
 		transactionUtils = transactionUtilsMock
 		stringUtils = stringMock
 
-		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)

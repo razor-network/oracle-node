@@ -102,7 +102,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 
 	waitFor := big.NewInt(0).Sub(unstakeLock.UnlockAfter, big.NewInt(int64(epoch)))
 	if waitFor.Cmp(big.NewInt(0)) > 0 {
-		timeRemaining := int64(uint32(waitFor.Int64())) * core.EpochLength
+		timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
 		if waitFor.Cmp(big.NewInt(1)) == 0 {
 			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {
