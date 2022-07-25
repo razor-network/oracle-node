@@ -219,6 +219,9 @@ type FlagSetInterface interface {
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
+	GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
 	GetRootStringConfig(configType string) (string, error)
 }
 
@@ -336,7 +339,8 @@ type TimeInterface interface {
 type StringInterface interface {
 	ParseBool(str string) (bool, error)
 	ParseFloat(str string) (float64, error)
-	ParseInt(str string) (int64, error)
+	ParseInt64(str string) (int64, error)
+	ParseInt(str string) (int, error)
 }
 
 type AbiInterface interface {
