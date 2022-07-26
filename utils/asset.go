@@ -301,7 +301,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 			return nil, err
 		}
 		// remove "," and currency symbols
-		parsedData = regexp.MustCompile(`[\p{Sc},]`).ReplaceAllString(dataPoint, "")
+		parsedData = regexp.MustCompile(`[\p{Sc}, ]`).ReplaceAllString(dataPoint, "")
 	}
 
 	datum, err := UtilsInterface.ConvertToNumber(parsedData)
