@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"os"
 	"razor/core"
@@ -301,7 +302,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 			return nil, err
 		}
 		// remove "," and currency symbols
-		parsedData = regexp.MustCompile(`[\p{Sc},]`).ReplaceAllString(dataPoint, "")
+		parsedData = regexp.MustCompile(`[\p{Sc}, ]`).ReplaceAllString(dataPoint, "")
 	}
 
 	datum, err := UtilsInterface.ConvertToNumber(parsedData)
@@ -309,6 +310,10 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		log.Error("Result is not a number")
 		return nil, err
 	}
+	fmt.Println("JobId: ", job.Id)
+	fmt.Println("value from job: ", MultiplyWithPower(datum, job.Power))
+	fmt.Println("Error from job: ", err)
+	fmt.Println("///////////////////////////////////")
 
 	return MultiplyWithPower(datum, job.Power), err
 }
