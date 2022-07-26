@@ -112,8 +112,8 @@ func (u Utils) GetRogueRandomMedianValue() uint32 {
 }
 
 //This function returns the delayed state
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utilsInterface.GetDelayedState(client, buffer)
+func (u Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utilsInterface.GetBufferedState(client, buffer)
 }
 
 //This function returns the default path
@@ -431,7 +431,7 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 }
 
 //This function is used to claim the staker reward
-func (stakeManagerUtils StakeManagerUtils) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.ClaimStakerReward(opts)
 }
@@ -863,6 +863,21 @@ func (flagSetUtils FLagSetUtils) GetStringCertKey(flagSet *pflag.FlagSet) (strin
 	return flagSet.GetString("certKey")
 }
 
+//This function is used to check if logFileMaxSize is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxSize")
+}
+
+//This function is used to check if logFileMaxBackups is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxBackups")
+}
+
+//This function is used to check if logFileMaxAge is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxAge")
+}
+
 //This function returns the accounts
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
@@ -905,9 +920,14 @@ func (s StringUtils) ParseFloat(str string) (float64, error) {
 	return strconv.ParseFloat(str, 32)
 }
 
-//This function is used to parse the int
-func (s StringUtils) ParseInt(str string) (int64, error) {
+//This function is used to parse the int64
+func (s StringUtils) ParseInt64(str string) (int64, error) {
 	return strconv.ParseInt(str, 10, 32)
+}
+
+//This function is used to parse the int
+func (s StringUtils) ParseInt(str string) (int, error) {
+	return strconv.Atoi(str)
 }
 
 //This function is used for unpacking

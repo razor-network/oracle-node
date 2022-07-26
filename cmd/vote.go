@@ -134,7 +134,7 @@ var (
 
 //This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
-	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
+	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
@@ -166,6 +166,12 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
+
+	// Warning the staker if ETH balance is less than 0.1 ETH
+	if ethBalance.Cmp(big.NewInt(1e17)) == -1 {
+		log.Warn("sFuel balance is lower than 0.1 SKL, kindly add more SKL to be safe for executing transactions successfully")
+	}
+
 	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
@@ -340,7 +346,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletion for commit: ", err)
 			return errors.New("error in sending commit transaction")
@@ -382,7 +388,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+	if err := cmdUtils.CheckForLastCommitted(client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}
@@ -430,7 +436,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return errors.New("Reveal error: " + err.Error())
 	}
 	if revealTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
 			return err
@@ -473,7 +479,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return errors.New("Propose error: " + err.Error())
 	}
 	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for propose: ", err)
 			return err
@@ -484,7 +490,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 
 //This function returns the last proposed epoch
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}
@@ -509,7 +515,7 @@ func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *
 	if err != nil {
 		return 0, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return 0, err
 	}

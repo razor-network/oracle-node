@@ -16,7 +16,7 @@ import (
 )
 
 //This function handles the reveal state
-func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
+func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.
 
 //This function checks if the state is reveal or not and then reveals the votes
 func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 1 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}
@@ -63,12 +63,13 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 	})
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function generates the tree reveal data
@@ -107,7 +108,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 
 //This function indexes the reveal events of current epoch
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
-	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		return nil, errors.New("Not able to Fetch Block: " + err.Error())
 	}

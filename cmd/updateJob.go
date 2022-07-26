@@ -78,7 +78,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateJob: ", err)
 }
 

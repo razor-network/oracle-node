@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
@@ -16,6 +15,8 @@ import (
 	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -505,7 +506,7 @@ func TestPropose(t *testing.T) {
 		transactionUtils = transactionUtilsMock
 		stringUtils = stringMock
 
-		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
@@ -525,7 +526,7 @@ func TestPropose(t *testing.T) {
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
-		stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+		stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
@@ -676,7 +677,7 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
-			stringMock.On("ParseInt", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 
@@ -1326,7 +1327,7 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
 				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
 				cmdUtilsMock.On("GetConfig", "buffer").Return("60", nil)
-				stringMock.On("ParseInt", "60").Return(int64(60), nil)
+				stringMock.On("ParseInt64", "60").Return(int64(60), nil)
 
 				ut := &UtilsStruct{}
 				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)

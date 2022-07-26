@@ -73,7 +73,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateCollection: ", err)
 }
 
@@ -97,13 +97,14 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
 	}
 	log.Info("Updating collection...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

@@ -4,9 +4,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
 	"math/big"
 	"razor/core"
@@ -15,6 +12,10 @@ import (
 	"razor/utils"
 	"sort"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 var (
@@ -33,7 +34,7 @@ var (
 
 //This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
 	}
@@ -78,7 +79,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	if err != nil {
 		return core.NilHash, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -168,12 +169,13 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	})
 
 	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function returns the biggest stake and Id of it
@@ -192,7 +194,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	if err != nil {
 		return nil, 0, err
 	}
-	bufferPercent, err := stringUtils.ParseInt(bufferPercentString)
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return nil, 0, err
 	}

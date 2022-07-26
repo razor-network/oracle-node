@@ -66,7 +66,7 @@ type UtilsInterface interface {
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
 	GetRogueRandomValue(value int) *big.Int
 	GetRogueRandomMedianValue() uint32
-	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
+	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
 	GetDefaultPath() (string, error)
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	IsFlagPassed(name string) bool
@@ -126,7 +126,7 @@ type StakeManagerInterface interface {
 	RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error)
 	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
 	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, stakerTokenAddress common.Address, amount *big.Int) (*Types.Transaction, error)
-	ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
+	ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error)
@@ -204,6 +204,9 @@ type FlagSetInterface interface {
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
+	GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
 	GetRootStringConfig(configType string) (string, error)
 }
 
@@ -220,7 +223,7 @@ type UtilsCmdInterface interface {
 	AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(flagSet *pflag.FlagSet)
 	Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error)
-	HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
+	CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
 	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error)
 	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
 	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
@@ -320,7 +323,8 @@ type TimeInterface interface {
 type StringInterface interface {
 	ParseBool(str string) (bool, error)
 	ParseFloat(str string) (float64, error)
-	ParseInt(str string) (int64, error)
+	ParseInt64(str string) (int64, error)
+	ParseInt(str string) (int, error)
 }
 
 type AbiInterface interface {

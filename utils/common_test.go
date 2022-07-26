@@ -362,7 +362,7 @@ func TestFetchBalance(t *testing.T) {
 	}
 }
 
-func TestGetDelayedState(t *testing.T) {
+func TestGetBufferedState(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
@@ -379,7 +379,7 @@ func TestGetDelayedState(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetDelayedState() executes successfully",
+			name: "Test 1: When GetBufferedState() executes successfully",
 			args: args{
 				block: &types.Header{
 					Time: 100,
@@ -415,7 +415,7 @@ func TestGetDelayedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 4: When GetDelayedState() executes successfully and state we get is other than 0",
+			name: "Test 4: When GetBufferedState() executes successfully and state we get is other than 0",
 			args: args{
 				block: &types.Header{
 					Time: 900,
@@ -455,13 +455,13 @@ func TestGetDelayedState(t *testing.T) {
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetDelayedState(client, tt.args.buffer)
+			got, err := utils.GetBufferedState(client, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetDelayedState() got = %v, want %v", got, tt.want)
+				t.Errorf("GetBufferedState() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1024,7 +1024,7 @@ func TestPrng(t *testing.T) {
 	}
 }
 
-func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
+func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
 		currentBlockNumber *big.Int
@@ -1042,7 +1042,7 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When CalculateBlockNumberAtEpochBeginning() is executed successfully",
+			name: "Test 1: When EstimateBlockNumberAtEpochBeginning() is executed successfully",
 			args: args{
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
@@ -1072,13 +1072,13 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			got, err := utils.CalculateBlockNumberAtEpochBeginning(client, currentBlockNumber)
+			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, currentBlockNumber)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
