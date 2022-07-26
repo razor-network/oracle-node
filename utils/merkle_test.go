@@ -106,9 +106,17 @@ func TestMerkleTreeStructGetMerkleRoot(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "When tree is nil or it does not contain any element",
+			name: "When tree does not contain any element",
 			args: args{
 				tree: [][][]byte{{{}, {}, {}}},
+			},
+			want:    [32]byte{},
+			wantErr: true,
+		},
+		{
+			name: "When tree is nil",
+			args: args{
+				tree: nil,
 			},
 			want:    [32]byte{},
 			wantErr: true,

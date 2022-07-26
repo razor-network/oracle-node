@@ -275,7 +275,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	if job.SelectorType == 0 {
 		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
 		if apiErr != nil {
-			log.Error("Error in fe    tching data from API: ", apiErr)
+			log.Error("Error in fetching data from API: ", apiErr)
 			return nil, apiErr
 		}
 		err := json.Unmarshal(response, &parsedJSON)
