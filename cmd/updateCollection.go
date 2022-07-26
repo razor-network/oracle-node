@@ -116,7 +116,7 @@ func init() {
 		AggregationMethod uint32
 		Power             int8
 		JobIds            []uint
-		Tolerance         uint16
+		Tolerance         uint32
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
@@ -124,7 +124,7 @@ func init() {
 	updateCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
-	updateCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
+	updateCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 
 	collectionIdErr := updateCollectionCmd.MarkFlagRequired("collectionId")
 	utils.CheckError("Collection Id error: ", collectionIdErr)
