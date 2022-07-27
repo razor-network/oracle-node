@@ -216,13 +216,13 @@ func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
 	return r0
 }
 
-// EstimateBlockNumberAtEpochBeginning provides a mock function with given fields: client, epochLength, currentBlockNumber
-func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength uint64, currentBlockNumber *big.Int) (*big.Int, error) {
-	ret := _m.Called(client, epochLength, currentBlockNumber)
+// EstimateBlockNumberAtEpochBeginning provides a mock function with given fields: client, currentBlockNumber
+func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
+	ret := _m.Called(client, currentBlockNumber)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint64, *big.Int) *big.Int); ok {
-		r0 = rf(client, epochLength, currentBlockNumber)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int) *big.Int); ok {
+		r0 = rf(client, currentBlockNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -230,8 +230,8 @@ func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, e
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint64, *big.Int) error); ok {
-		r1 = rf(client, epochLength, currentBlockNumber)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int) error); ok {
+		r1 = rf(client, currentBlockNumber)
 	} else {
 		r1 = ret.Error(1)
 	}

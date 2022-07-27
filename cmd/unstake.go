@@ -88,7 +88,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in getting staker: ", err)
 		return core.NilHash, err
 	}
-	approveHash, err := cmdUtils.ApproveUnstake(client, staker, txnArgs)
+	approveHash, err := cmdUtils.ApproveUnstake(client, staker.TokenAddress, txnArgs)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -132,10 +132,10 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 }
 
 //This function approves the unstake
-func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
-	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, staker, txnArgs.Amount)
+	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, stakerTokenAddress, txnArgs.Amount)
 	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in approving for unstake")

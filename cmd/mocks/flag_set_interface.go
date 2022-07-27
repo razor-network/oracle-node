@@ -560,27 +560,6 @@ func (_m *FlagSetInterface) GetStringValue(flagSet *pflag.FlagSet) (string, erro
 	return r0, r1
 }
 
-// GetUint16AssetId provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 uint16
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(uint16)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetUint16CollectionId provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetUint16CollectionId(flagSet *pflag.FlagSet) (uint16, error) {
 	ret := _m.Called(flagSet)

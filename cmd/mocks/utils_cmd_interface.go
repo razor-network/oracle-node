@@ -54,13 +54,13 @@ func (_m *UtilsCmdInterface) Approve(txnArgs types.TransactionOptions) (common.H
 	return r0, r1
 }
 
-// ApproveUnstake provides a mock function with given fields: client, staker, txnArgs
-func (_m *UtilsCmdInterface) ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error) {
-	ret := _m.Called(client, staker, txnArgs)
+// ApproveUnstake provides a mock function with given fields: client, stakerTokenAddress, txnArgs
+func (_m *UtilsCmdInterface) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
+	ret := _m.Called(client, stakerTokenAddress, txnArgs)
 
 	var r0 common.Hash
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsStaker, types.TransactionOptions) common.Hash); ok {
-		r0 = rf(client, staker, txnArgs)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address, types.TransactionOptions) common.Hash); ok {
+		r0 = rf(client, stakerTokenAddress, txnArgs)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
@@ -68,8 +68,8 @@ func (_m *UtilsCmdInterface) ApproveUnstake(client *ethclient.Client, staker bin
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsStaker, types.TransactionOptions) error); ok {
-		r1 = rf(client, staker, txnArgs)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address, types.TransactionOptions) error); ok {
+		r1 = rf(client, stakerTokenAddress, txnArgs)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -985,22 +985,6 @@ func (_m *UtilsCmdInterface) IndexRevealEventsOfCurrentEpoch(client *ethclient.C
 	}
 
 	return r0, r1
-}
-
-// InfluencedMedian provides a mock function with given fields: sortedVotes, totalInfluenceRevealed
-func (_m *UtilsCmdInterface) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
-	ret := _m.Called(sortedVotes, totalInfluenceRevealed)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func([]*big.Int, *big.Int) *big.Int); ok {
-		r0 = rf(sortedVotes, totalInfluenceRevealed)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	return r0
 }
 
 // InitiateCommit provides a mock function with given fields: client, config, account, epoch, stakerId, rogueData

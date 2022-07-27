@@ -574,7 +574,7 @@ func TestGetStateName(t *testing.T) {
 			args: args{
 				stateNumber: 5,
 			},
-			want: "-1",
+			want: "Buffer",
 		},
 	}
 	for _, tt := range tests {
@@ -1027,7 +1027,6 @@ func TestPrng(t *testing.T) {
 func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
-		epochLength        uint64
 		currentBlockNumber *big.Int
 	)
 	type args struct {
@@ -1073,7 +1072,7 @@ func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
+			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, currentBlockNumber)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EstimateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
 				return

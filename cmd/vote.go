@@ -333,8 +333,15 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 
 	_commitData = commitData
 
-	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
+	merkleTree, err := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	if err != nil {
+		return errors.New("Error in getting merkle tree: " + err.Error())
+	}
+	merkleRoot, err := utils.MerkleInterface.GetMerkleRoot(merkleTree)
+	if err != nil {
+		return errors.New("Error in getting root: " + err.Error())
+	}
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, merkleRoot)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
@@ -483,7 +490,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 
 //This function returns the last proposed epoch
 func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		return 0, errors.New("Not able to Fetch Block: " + err.Error())
 	}

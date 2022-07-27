@@ -151,7 +151,7 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	case 4:
 		stateName = "Confirm"
 	default:
-		stateName = "-1"
+		stateName = "Buffer"
 	}
 	return stateName
 }
@@ -214,13 +214,13 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength uint64, currentBlockNumber *big.Int) (*big.Int, error) {
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Errorf("Error in fetching block : %s", err)
 		return nil, err
 	}
-	current_epoch := block.Time / uint64(core.EpochLength)
+	currentEpoch := block.Time / uint64(core.EpochLength)
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
@@ -230,10 +230,9 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 	}
 	previousBlockActualTimestamp := previousBlock.Time
 	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
-	previous_epoch := previousBlockActualTimestamp / uint64(core.EpochLength)
-	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previous_epoch != current_epoch-1 {
-		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
-
+	previousEpoch := previousBlockActualTimestamp / uint64(core.EpochLength)
+	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previousEpoch != currentEpoch-1 {
+		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil
 

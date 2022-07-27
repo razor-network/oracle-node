@@ -273,16 +273,11 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 0 {
-		apiErr = retry.Do(
-			func() error {
-				response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
-				if apiErr != nil {
-					log.Error("Error in fetching data from API: ", apiErr)
-					return apiErr
-				}
-				return nil
-			}, RetryInterface.RetryAttempts(core.MaxRetries))
-
+		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
+		if apiErr != nil {
+			log.Error("Error in fetching data from API: ", apiErr)
+			return nil, apiErr
+		}
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Error("Error in parsing data from API: ", err)

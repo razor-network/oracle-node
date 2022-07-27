@@ -108,6 +108,7 @@ func TestReveal(t *testing.T) {
 		state          int64
 		stateErr       error
 		merkleTree     [][][]byte
+		merkleTreeErr  error
 		treeRevealData bindings.StructsMerkleTree
 		txnOpts        *bind.TransactOpts
 		revealTxn      *Types.Transaction
@@ -158,6 +159,15 @@ func TestReveal(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("reveal error"),
 		},
+		{
+			name: "Test 7: When there is an error in getting merkle tree",
+			args: args{
+				state:         1,
+				merkleTreeErr: errors.New("merkle tree error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("merkle tree error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -175,7 +185,7 @@ func TestReveal(t *testing.T) {
 			utils2.MerkleInterface = merkleInterface
 
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
+			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
 			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
@@ -206,6 +216,7 @@ func TestGenerateTreeRevealData(t *testing.T) {
 		commitData types.CommitData
 		proof      [][32]byte
 		root       [32]byte
+		rootErr    error
 	}
 	tests := []struct {
 		name string
@@ -238,6 +249,19 @@ func TestGenerateTreeRevealData(t *testing.T) {
 				Root:   [32]byte{},
 			},
 		},
+		{
+			name: "Test 3: When there is an error in getting root",
+			args: args{
+				merkleTree: [][][]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    map[int]bool{1: true},
+					SeqAllottedCollections: []*big.Int{big.NewInt(1)},
+					Leaves:                 []*big.Int{big.NewInt(1), big.NewInt(2)},
+				},
+				rootErr: errors.New("root error"),
+			},
+			want: bindings.StructsMerkleTree{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -246,7 +270,7 @@ func TestGenerateTreeRevealData(t *testing.T) {
 			utils2.MerkleInterface = merkleInterface
 
 			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return(tt.args.proof)
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.root)
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.root, tt.args.rootErr)
 			ut := &UtilsStruct{}
 			if got := ut.GenerateTreeRevealData(tt.args.merkleTree, tt.args.commitData); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GenerateTreeRevealData() = %v, want %v", got, tt.want)
@@ -325,7 +349,7 @@ func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 			utils2.UtilsInterface = utilsPkgMock
 			utils2.ABIInterface = abiUtilsMock
 
-			utilsPkgMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
+			utilsPkgMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.contractAbiErr)
 			abiUtilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
@@ -359,7 +383,7 @@ func BenchmarkGenerateTreeRevealData(b *testing.B) {
 			utils2.MerkleInterface = merkleInterface
 
 			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return([][32]byte{[32]byte{1, 2, 3}, {4, 5, 6}})
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return([32]byte{100})
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return([32]byte{100}, nil)
 
 			ut := &UtilsStruct{}
 			seqAllottedCollections := getDummySeqAllottedCollection(v.numOfAllottedCollections)
