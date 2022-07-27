@@ -14,7 +14,9 @@ var StateLength = uint64(EpochLength / NumberOfStates)
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
-var GasLimitMultiplier float32 = 5.5 //GasLimitMultiplier is used to increase the gas required from the gasLimit for the following function
+
+//DisputeGasMultiplier is used to increase the gas required from the gasLimit for the following function
+var DisputeGasMultiplier float32 = 5.5
 var DataFileDirectory string = "data_files"
 var CommitDataFile string = "_commitData.json"
 var ProposeDataFile string = "_proposeData.json"
