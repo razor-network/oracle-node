@@ -833,13 +833,13 @@ func (_m *UtilsCmdInterface) GetStakerInfo(client *ethclient.Client, stakerId ui
 	return r0
 }
 
-// GetVoteConcurrently provides a mock function with given fields: ctx, config, client, rogueData, account, done, quit
-func (_m *UtilsCmdInterface) GetVoteConcurrently(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, done chan bool, quit chan bool) error {
-	ret := _m.Called(ctx, config, client, rogueData, account, done, quit)
+// GetVoteConcurrently provides a mock function with given fields: ctx, config, client, rogueData, account, quit
+func (_m *UtilsCmdInterface) GetVoteConcurrently(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, quit chan bool) error {
+	ret := _m.Called(ctx, config, client, rogueData, account, quit)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, chan bool, chan bool) error); ok {
-		r0 = rf(ctx, config, client, rogueData, account, done, quit)
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, chan bool) error); ok {
+		r0 = rf(ctx, config, client, rogueData, account, quit)
 	} else {
 		r0 = ret.Error(0)
 	}
