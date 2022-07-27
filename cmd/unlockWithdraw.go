@@ -80,19 +80,31 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 		return core.NilHash, err
 	}
 
-	if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 {
-		txnArgs := types.TransactionOptions{
-			Client:          client,
-			Password:        account.Password,
-			AccountAddress:  account.Address,
-			ChainId:         core.ChainId,
-			Config:          configurations,
-			ContractAddress: core.StakeManagerAddress,
-			MethodName:      "unlockWithdraw",
-			ABI:             bindings.StakeManagerMetaData.ABI,
-			Parameters:      []interface{}{stakerId},
+	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
+	if waitFor.Cmp(big.NewInt(0)) > 0 {
+		timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
+		if waitFor.Cmp(big.NewInt(1)) == 0 {
+			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
+		} else {
+			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		}
-		txnOpts := razorUtils.GetTxnOpts(txnArgs)
+		return core.NilHash, nil
+	}
+
+	txnArgs := types.TransactionOptions{
+		Client:          client,
+		Password:        account.Password,
+		AccountAddress:  account.Address,
+		ChainId:         core.ChainId,
+		Config:          configurations,
+		ContractAddress: core.StakeManagerAddress,
+		MethodName:      "unlockWithdraw",
+		ABI:             bindings.StakeManagerMetaData.ABI,
+		Parameters:      []interface{}{stakerId},
+	}
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+
+	if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 {
 		return cmdUtils.UnlockWithdraw(client, txnOpts, stakerId)
 	}
 	return core.NilHash, errors.New("withdrawLock period not over yet! Please try after some time")
