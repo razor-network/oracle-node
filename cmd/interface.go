@@ -304,6 +304,7 @@ type UtilsCmdInterface interface {
 	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue)
 	ExecuteVote(flagSet *pflag.FlagSet)
 	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error
+	GetVoteConcurrently(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, done chan bool, quit chan bool) error
 	HandleExit()
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
