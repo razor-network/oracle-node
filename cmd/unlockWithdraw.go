@@ -3,17 +3,18 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // unlockWithdrawCmd represents the unlockWithdraw command
@@ -56,7 +57,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("UnlockWithdraw error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unlockWithdraw: ", err)
 	}
 }
@@ -88,7 +89,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 			Config:          configurations,
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "unlockWithdraw",
-			ABI:             bindings.StakeManagerABI,
+			ABI:             bindings.StakeManagerMetaData.ABI,
 			Parameters:      []interface{}{stakerId},
 		}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -102,14 +103,15 @@ func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.Trans
 	log.Info("Unlocking funds...")
 
 	txn, err := stakeManagerUtils.UnlockWithdraw(client, txnOpts, stakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in unlocking funds")
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	log.Info("Txn Hash: ", txnHash.Hex())
 
-	return transactionUtils.Hash(txn), nil
+	return txnHash, nil
 }
 
 func init() {

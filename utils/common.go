@@ -10,6 +10,8 @@ import (
 	"razor/logger"
 	"time"
 
+	"github.com/avast/retry-go"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -26,13 +28,29 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 }
 
 func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	address := common.HexToAddress(accountAddress)
-	coinContract := UtilsInterface.GetTokenManager(client)
-	opts := UtilsInterface.GetOptions()
-	return CoinInterface.BalanceOf(coinContract, &opts, address)
+	var (
+		balance *big.Int
+		err     error
+	)
+	err = retry.Do(
+		func() error {
+			address := common.HexToAddress(accountAddress)
+			erc20Contract := UtilsInterface.GetTokenManager(client)
+			opts := UtilsInterface.GetOptions()
+			balance, err = CoinInterface.BalanceOf(erc20Contract, &opts, address)
+			if err != nil {
+				log.Error("Error in fetching balance....Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return big.NewInt(0), err
+	}
+	return balance, nil
 }
 
-func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
@@ -41,14 +59,13 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	if err != nil {
 		return -1, err
 	}
-	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit-stateBuffer || blockTime%(core.StateLength) < lowerLimit+stateBuffer {
+	if block.Time%(core.StateLength) > upperLimit-stateBuffer || block.Time%(core.StateLength) < lowerLimit+stateBuffer {
 		return -1, nil
 	}
-	state := blockTime / core.StateLength
-	return int64(state) % core.NumberOfStates, nil
+	state := block.Time / core.StateLength
+	return int64(state % core.NumberOfStates), nil
 }
 
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
@@ -73,7 +90,7 @@ func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead 
 			log.Info("Transaction mined successfully")
 			return nil
 		}
-		Time.Sleep(3 * time.Second)
+		Time.Sleep(time.Second)
 	}
 	log.Info("Timeout Passed")
 	return errors.New("timeout passed for transaction mining")
@@ -92,6 +109,14 @@ func CheckError(msg string, err error) {
 	}
 }
 
+func IsValidERC20Address(address string) bool {
+	if !common.IsHexAddress(address) {
+		log.Error("Invalid ERC20 Address")
+		return false
+	}
+	return true
+}
+
 func (*UtilsStruct) IsFlagPassed(name string) bool {
 	found := false
 	for _, arg := range os.Args {
@@ -105,10 +130,10 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	ethBalance, err := ClientInterface.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
 	if err != nil {
-		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
+		log.Fatalf("Error in fetching sfuel balance of the account: %s\n%s", address, err)
 	}
 	if ethBalance.Cmp(big.NewInt(0)) == 0 {
-		log.Fatal("Eth balance is 0, Aborting...")
+		log.Fatal("Sfuel balance is 0, Aborting...")
 	}
 }
 
@@ -126,7 +151,7 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	case 4:
 		stateName = "Confirm"
 	default:
-		stateName = "-1"
+		stateName = "Buffer"
 	}
 	return stateName
 }
@@ -144,7 +169,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
+	epoch := latestHeader.Time / uint64(core.EpochLength)
 	return uint32(epoch), nil
 }
 
@@ -189,13 +214,13 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Errorf("Error in fetching block : %s", err)
 		return nil, err
 	}
-	current_epoch := block.Time / uint64(core.EpochLength)
+	currentEpoch := block.Time / uint64(core.EpochLength)
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
@@ -205,10 +230,9 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 	}
 	previousBlockActualTimestamp := previousBlock.Time
 	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
-	previous_epoch := previousBlockActualTimestamp / uint64(core.EpochLength)
-	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previous_epoch != current_epoch-1 {
-		return UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
-
+	previousEpoch := previousBlockActualTimestamp / uint64(core.EpochLength)
+	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previousEpoch != currentEpoch-1 {
+		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil
 

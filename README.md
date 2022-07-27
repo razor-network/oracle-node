@@ -31,9 +31,18 @@ razor -v
 ## Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+
+1. Create docker network
+
 ```
-docker run -d -it--entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
+docker network create razor_network
 ```
+
+2. Start razor-go container
+```
+docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.1.2-internal-testnet
+```
+
 
 >**_NOTE:_** that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
@@ -169,7 +178,7 @@ $ ./razor import
 Password:
 ```
 
-_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord._
+_Before staking on Razor Network, please ensure your account has sfuel and RAZOR. For testnet RAZOR, please contact us on Discord._
 
 ### Stake
 
@@ -338,10 +347,24 @@ docker
 docker exec -it razor-go razor vote --address <address>
 ```
 
-run vote command in background
-```
-docker exec -it -d razor-go razor vote --address <address> 
-```
+To run vote command in background we can use `tmux`, a linux utility for that
+
+1. Create session 
+    
+    ```
+    tmux new -s razor-go
+    ```
+2. Run vote command
+
+    ```
+    docker exec -it razor-go razor vote --address <address>`
+    ```
+3. To exit from tmux session, press `ctrl+b`, release those keys and press `d`
+
+4. Attach that session again 
+    ```
+    tmux a -t razor-go
+    ```
 
 
 Example:
@@ -670,28 +693,32 @@ Example:
 
 razor cli
 
-Without TLS
+#### Without TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112
 ```
-With TLS
+#### With TLS
 ```
 $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
 docker
 
+#### Expose Metrics without TLS
 ```
-# Create docker network
-
-docker network create razor_network
-
-# Expose Metrics without TLS
 docker exec -it razor-go razor setConfig --exposeMetrics 2112
+```
 
-# Expose Metrics with TLS
+#### Expose Metrics with TLS
+```
 docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
+
+Can use Prometheus/Grafana for setting up monitoring and alerting 
+
+1. Clone [monitoring-repo](https://github.com/razor-network/monitoring.git)
+2. Start monitoring stack:  `docker-compose up -d`
+3. Check Grafana dashboard at http://host-address:3000
 
 ### Override Job and Adding Your Custom Jobs
 

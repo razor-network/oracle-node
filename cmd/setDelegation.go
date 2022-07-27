@@ -21,7 +21,7 @@ var setDelegationCmd = &cobra.Command{
 	Long: `Using setDelegation, a staker can accept delegation from delegators and charge a commission from them.
 
 Example:
-  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true
+  ./razor setDelegation --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --status true --commission 10
 `,
 	Run: initialiseSetDelegation,
 }
@@ -70,7 +70,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for setDelegation: ", err)
 	}
 }
@@ -100,7 +100,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "setDelegationAcceptance",
 		Parameters:      []interface{}{delegationInput.Status},
 	}
@@ -112,12 +112,13 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
 	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
+	txnHash := transactionUtils.Hash(delegationAcceptanceTxn)
 	if err != nil {
 		log.Error("Error in setting delegation acceptance")
 		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
-	return transactionUtils.Hash(delegationAcceptanceTxn), nil
+	log.Infof("Transaction hash: %s", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

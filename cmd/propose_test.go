@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
@@ -16,6 +15,8 @@ import (
 	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -56,7 +57,9 @@ func TestPropose(t *testing.T) {
 		smallestStakerIdErr        error
 		randaoHash                 [32]byte
 		randaoHashErr              error
-		bufferPercent              int32
+		bufferPercentString        string
+		bufferPercentStringErr     error
+		bufferPercent              int64
 		bufferPercentErr           error
 		salt                       [32]byte
 		saltErr                    error
@@ -495,13 +498,15 @@ func TestPropose(t *testing.T) {
 		cmdUtilsMock := new(mocks.UtilsCmdInterface)
 		blockManagerUtilsMock := new(mocks.BlockManagerInterface)
 		transactionUtilsMock := new(mocks.TransactionInterface)
+		stringMock := new(mocks.StringInterface)
 
 		razorUtils = utilsMock
 		cmdUtils = cmdUtilsMock
 		blockManagerUtils = blockManagerUtilsMock
 		transactionUtils = transactionUtilsMock
+		stringUtils = stringMock
 
-		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
@@ -520,7 +525,8 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
-		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+		cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+		stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
@@ -547,14 +553,16 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 	var epoch uint32
 
 	type args struct {
-		numOfStakers     uint32
-		numOfStakersErr  error
-		bufferPercent    int32
-		bufferPercentErr error
-		remainingTime    int64
-		remainingTimeErr error
-		stake            *big.Int
-		stakeErr         error
+		numOfStakers           uint32
+		numOfStakersErr        error
+		bufferPercentString    string
+		bufferPercentStringErr error
+		bufferPercent          int64
+		bufferPercentErr       error
+		remainingTime          int64
+		remainingTimeErr       error
+		stake                  *big.Int
+		stakeErr               error
 	}
 	tests := []struct {
 		name      string
@@ -618,20 +626,33 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 6: When there is a timeout case",
 			args: args{
-				numOfStakers:  100000,
-				bufferPercent: 10,
-				remainingTime: 0,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+				numOfStakers:        100000,
+				bufferPercentString: "10",
+				bufferPercent:       10,
+				remainingTime:       0,
+				stake:               big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			},
 			wantStake: nil,
 			wantId:    0,
 			wantErr:   errors.New("state timeout error"),
 		},
 		{
-			name: "Test 7: When there is an error in getting buffer percent",
+			name: "Test 7: When there is an error in getting getConfig",
 			args: args{
 				numOfStakers:     2,
 				bufferPercentErr: errors.New("buffer error"),
+			},
+			wantStake: nil,
+			wantId:    0,
+			wantErr:   errors.New("buffer error"),
+		},
+		{
+			name: "Test 8: When there is an error in parsing int",
+			args: args{
+				numOfStakers:        2,
+				remainingTime:       10,
+				bufferPercentString: "10",
+				bufferPercentErr:    errors.New("buffer error"),
 			},
 			wantStake: nil,
 			wantId:    0,
@@ -644,15 +665,19 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsPkgMock := new(Mocks.Utils)
+			stringMock := new(mocks.StringInterface)
 
 			razorUtils = utilsMock
 			utilsInterface = utilsPkgMock
 			cmdUtils = cmdUtilsMock
+			stringUtils = stringMock
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
 			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+			stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 
@@ -751,51 +776,6 @@ func TestGetIteration(t *testing.T) {
 
 			if got := utils.GetIteration(client, proposer, bufferPercent); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestInfluencedMedian(t *testing.T) {
-	type args struct {
-		sortedVotes            []*big.Int
-		totalInfluenceRevealed *big.Int
-	}
-	tests := []struct {
-		name string
-		args args
-		want *big.Int
-	}{
-		{
-			name: "Test if sortedVotes is empty",
-			args: args{
-				sortedVotes:            []*big.Int{},
-				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test if totalInfluenceRevealed is 0",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-				totalInfluenceRevealed: big.NewInt(0),
-			},
-			want: big.NewInt(1).Mul(big.NewInt(2093037800), big.NewInt(1e18)),
-		},
-		{
-			name: "Test if all the values are present",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-			},
-			want: big.NewInt(498342),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utils := &UtilsStruct{}
-			if got := utils.InfluencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1336,42 +1316,24 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				utilsMock := new(mocks.UtilsInterface)
 				cmdUtilsMock := new(mocks.UtilsCmdInterface)
 				utilsPkgMock := new(Mocks.Utils)
+				stringMock := new(mocks.StringInterface)
 
 				razorUtils = utilsMock
 				utilsInterface = utilsPkgMock
 				cmdUtils = cmdUtilsMock
+				stringUtils = stringMock
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
 				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
-				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
+				cmdUtilsMock.On("GetConfig", "buffer").Return("60", nil)
+				stringMock.On("ParseInt64", "60").Return(int64(60), nil)
 
 				ut := &UtilsStruct{}
 				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)
 				if err != nil {
 					log.Fatal(err)
 				}
-			}
-		})
-	}
-}
-
-func BenchmarkInfluencedMedian(b *testing.B) {
-	var table = []struct {
-		numOfSortedVotes       int
-		totalInfluenceRevealed *big.Int
-	}{
-		{numOfSortedVotes: 10, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18))},
-		{numOfSortedVotes: 100, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
-		{numOfSortedVotes: 500, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
-		{numOfSortedVotes: 1000, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(420000), big.NewInt(1e18))},
-	}
-	for _, v := range table {
-		b.Run(fmt.Sprintf("Number_Of_Sorted_Votes_%d", v.numOfSortedVotes), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				utils := &UtilsStruct{}
-				sortedVotes := GetDummyVotes(v.numOfSortedVotes)
-				utils.InfluencedMedian(sortedVotes, v.totalInfluenceRevealed)
 			}
 		})
 	}

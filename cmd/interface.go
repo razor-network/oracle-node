@@ -61,36 +61,26 @@ type UtilsInterface interface {
 	CalculateBlockTime(client *ethclient.Client) int64
 	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
 	AssignPassword() string
-	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
-	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	ConnectToClient(provider string) *ethclient.Client
 	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
 	GetRogueRandomValue(value int) *big.Int
 	GetRogueRandomMedianValue() uint32
-	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
-	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
+	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
 	GetDefaultPath() (string, error)
-	GetJobFilePath() (string, error)
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	IsFlagPassed(name string) bool
 	GetAmountInWei(amount *big.Int) *big.Int
 	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
 	GetAmountInDecimal(amountInWei *big.Int) *big.Float
 	GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetCommitments(client *ethclient.Client, address string) ([32]byte, error)
-	AllZero(bytesValue [32]byte) bool
 	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
-	ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	CheckEthBalanceIsZero(client *ethclient.Client, address string)
 	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
 	GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error)
 	GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error)
-	GetUpdatedStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error)
 	GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken
-	ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int
-	ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error)
 	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
 	GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
@@ -100,8 +90,6 @@ type UtilsInterface interface {
 	GetMaxAltBlocks(client *ethclient.Client) (uint8, error)
 	GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error)
 	GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
-	GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error)
 	GetActiveCollections(client *ethclient.Client) ([]uint16, error)
 	GetBlockManager(client *ethclient.Client) *bindings.BlockManager
 	GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error)
@@ -113,8 +101,6 @@ type UtilsInterface interface {
 	GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error)
 	ConvertWeiToEth(data *big.Int) (*big.Float, error)
 	WaitTillNextNSecs(seconds int32)
-	DeleteJobFromJSON(s string, jobId string) error
-	AddJobToJSON(s string, job *types.StructsJob) error
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	SecondsToReadableTime(time int) string
 	SaveDataToCommitJsonFile(flePath string, epoch uint32, commitFileData types.CommitData) error
@@ -139,8 +125,8 @@ type StakeManagerInterface interface {
 	Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error)
 	RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error)
 	UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error)
-	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error)
-	ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
+	ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, stakerTokenAddress common.Address, amount *big.Int) (*Types.Transaction, error)
+	ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error)
 
 	//Getter methods
 	StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error)
@@ -194,13 +180,6 @@ type FlagSetInterface interface {
 	GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
-	GetRootStringProvider() (string, error)
-	GetRootFloat32GasMultiplier() (float32, error)
-	GetRootInt32Buffer() (int32, error)
-	GetRootInt32Wait() (int32, error)
-	GetRootInt32GasPrice() (int32, error)
-	GetRootStringLogLevel() (string, error)
-	GetRootFloat32GasLimit() (float32, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
@@ -210,7 +189,6 @@ type FlagSetInterface interface {
 	GetStringSelector(flagSet *pflag.FlagSet) (string, error)
 	GetInt8Power(flagSet *pflag.FlagSet) (int8, error)
 	GetUint8Weight(flagSet *pflag.FlagSet) (uint8, error)
-	GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error)
 	GetUint8SelectorType(flagSet *pflag.FlagSet) (uint8, error)
 	GetStringStatus(flagSet *pflag.FlagSet) (string, error)
 	GetUint8Commission(flagSet *pflag.FlagSet) (uint8, error)
@@ -226,17 +204,14 @@ type FlagSetInterface interface {
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
+	GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
+	GetRootStringConfig(configType string) (string, error)
 }
 
 type UtilsCmdInterface interface {
 	SetConfig(flagSet *pflag.FlagSet) error
-	GetProvider() (string, error)
-	GetMultiplier() (float32, error)
-	GetWaitTime() (int32, error)
-	GetGasPrice() (int32, error)
-	GetLogLevel() (string, error)
-	GetGasLimit() (float32, error)
-	GetBufferPercent() (int32, error)
 	GetConfigData() (types.Configurations, error)
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
@@ -248,7 +223,7 @@ type UtilsCmdInterface interface {
 	AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(flagSet *pflag.FlagSet)
 	Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error)
-	HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
+	CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
 	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error)
 	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
 	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
@@ -262,7 +237,7 @@ type UtilsCmdInterface interface {
 	GetJobList(client *ethclient.Client) error
 	ExecuteUnstake(flagSet *pflag.FlagSet)
 	Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
-	ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error)
+	ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error)
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
 	InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
@@ -280,7 +255,6 @@ type UtilsCmdInterface interface {
 	GetStakerInfo(client *ethclient.Client, stakerId uint32) error
 	ExecuteUpdateCollection(flagSet *pflag.FlagSet)
 	UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error)
-	InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int
 	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
@@ -327,6 +301,7 @@ type UtilsCmdInterface interface {
 	ContractAddresses()
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 	StoreBountyId(client *ethclient.Client, account types.Account) error
+	GetConfig(configType string) (string, error)
 }
 
 type TransactionInterface interface {
@@ -347,6 +322,9 @@ type TimeInterface interface {
 
 type StringInterface interface {
 	ParseBool(str string) (bool, error)
+	ParseFloat(str string) (float64, error)
+	ParseInt64(str string) (int64, error)
+	ParseInt(str string) (int, error)
 }
 
 type AbiInterface interface {

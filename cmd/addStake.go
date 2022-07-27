@@ -35,7 +35,6 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
-
 	logger.Address = address
 
 	config, err := cmdUtils.GetConfigData()
@@ -49,13 +48,23 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 
 	if valueInWei.Cmp(minSafeRazor) < 0 {
 		log.Fatal("The amount of razors entered is below min safe value.")
+	}
+
+	stakerId, err := razorUtils.GetStakerId(client, address)
+	utils.CheckError("Error in getting staker id: ", err)
+
+	if stakerId != 0 {
+		staker, err := razorUtils.GetStaker(client, stakerId)
+		utils.CheckError("Error in getting staker: ", err)
+
+		if staker.IsSlashed {
+			log.Fatal("Staker is slashed, cannot stake")
+		}
 	}
 
 	txnArgs := types.TransactionOptions{
@@ -71,14 +80,14 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
 
-	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for stake: ", err)
 }
 
@@ -86,21 +95,22 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	log.Info("Sending stake transactions...")
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txHash := transactionUtils.Hash(tx)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
-	return transactionUtils.Hash(tx), nil
+	log.Info("Txn Hash: ", txHash.Hex())
+	return txHash, nil
 }
 
 func init() {

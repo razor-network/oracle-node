@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"os"
@@ -46,21 +47,33 @@ func InitializeLogger(fileName string) {
 			standardLogger.Fatal("Error in fetching log file path: ", err)
 		}
 
-		lumberJackLogger := &lumberjack.Logger{
-			Filename:   logFilePath,
-			MaxSize:    5,
-			MaxBackups: 10,
-			MaxAge:     30,
+		logFileMaxSize := viper.GetInt("logFileMaxSize")
+		if logFileMaxSize == 0 {
+			logFileMaxSize = 5
+		}
+		logFileMaxBackups := viper.GetInt("logFileMaxBackups")
+		if logFileMaxBackups == 0 {
+			logFileMaxBackups = 10
+		}
+		logFileMaxAge := viper.GetInt("logFileMaxAge")
+		if logFileMaxAge == 0 {
+			logFileMaxAge = 30
 		}
 
-		out := os.Stderr
-		mw := io.MultiWriter(out, lumberJackLogger)
-		standardLogger.Formatter = &logrus.JSONFormatter{}
-		standardLogger.SetOutput(mw)
+		lumberJackLogger := &lumberjack.Logger{
+			Filename:   logFilePath,
+			MaxSize:    logFileMaxSize,
+			MaxBackups: logFileMaxBackups,
+			MaxAge:     logFileMaxAge,
+		}
 
-	} else {
-		standardLogger.Formatter = &logrus.JSONFormatter{}
+		stderr := os.Stderr
+		stdin := os.Stdin
+		stdout := os.Stdout
+		mw := io.MultiWriter(stderr, stdin, stdout, lumberJackLogger)
+		standardLogger.SetOutput(mw)
 	}
+	standardLogger.Formatter = &logrus.JSONFormatter{}
 }
 
 func NewLogger() *StandardLogger {

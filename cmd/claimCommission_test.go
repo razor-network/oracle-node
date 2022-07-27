@@ -5,16 +5,17 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/cmd/mocks"
+	"razor/core/types"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/cmd/mocks"
-	"razor/core/types"
-	"testing"
 )
 
 func TestUtilsStruct_ClaimCommission(t *testing.T) {
@@ -40,7 +41,7 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When ClaimStakeReward runs successfully",
+			name: "Test 1: When ClaimStakerReward runs successfully",
 			args: args{
 				config:   types.Configurations{},
 				password: "test",
@@ -50,7 +51,7 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2: When ClaimStakeReward fails",
+			name: "Test 2: When ClaimStakerReward fails",
 			args: args{
 				config:   types.Configurations{},
 				password: "test",
@@ -99,7 +100,7 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			stakeManagerUtilsMock.On("ClaimStakeReward", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.txn, tt.args.err)
+			stakeManagerUtilsMock.On("ClaimStakerReward", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.txn, tt.args.err)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

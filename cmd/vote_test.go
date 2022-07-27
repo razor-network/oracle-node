@@ -3,12 +3,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	"path"
@@ -19,6 +13,13 @@ import (
 	mocks2 "razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestExecuteVote(t *testing.T) {
@@ -163,19 +164,21 @@ func TestGetLastProposedEpoch(t *testing.T) {
 	blockNumber := big.NewInt(20)
 
 	type args struct {
-		fromBlock        *big.Int
-		fromBlockErr     error
-		stakerId         uint32
-		logs             []Types.Log
-		logsErr          error
-		contractAbi      abi.ABI
-		parseErr         error
-		unpackedData     []interface{}
-		unpackErr        error
-		bufferPercent    int32
-		bufferPercentErr error
-		time             int64
-		timeErr          error
+		fromBlock              *big.Int
+		fromBlockErr           error
+		stakerId               uint32
+		logs                   []Types.Log
+		logsErr                error
+		contractAbi            abi.ABI
+		parseErr               error
+		unpackedData           []interface{}
+		unpackErr              error
+		bufferPercentString    string
+		bufferPercentStringErr error
+		bufferPercent          int64
+		bufferPercentErr       error
+		time                   int64
+		timeErr                error
 	}
 	tests := []struct {
 		name    string
@@ -194,10 +197,11 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Topics: []common.Hash{common.BigToHash(big.NewInt(1000)), common.BigToHash(big.NewInt(2))},
 					},
 				},
-				contractAbi:   abi.ABI{},
-				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercent: 1,
-				time:          0,
+				contractAbi:         abi.ABI{},
+				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentString: "1",
+				bufferPercent:       1,
+				time:                0,
 			},
 			want:    4,
 			wantErr: nil,
@@ -247,7 +251,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			wantErr: errors.New("Not able to Fetch Block: error in fetching blocks"),
 		},
 		{
-			name: "Test 6: When there is an error in getting bufferPercent",
+			name: "Test 6: When there is an error in getting getConfig",
 			args: args{
 				fromBlock: big.NewInt(0),
 				stakerId:  2,
@@ -256,12 +260,12 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Data: []byte{4, 2},
 					},
 				},
-				contractAbi:      abi.ABI{},
-				unpackedData:     convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercentErr: errors.New("error in getting buffer percent"),
+				contractAbi:            abi.ABI{},
+				unpackedData:           convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentStringErr: errors.New("error in getting config"),
 			},
 			want:    0,
-			wantErr: errors.New("error in getting buffer percent"),
+			wantErr: errors.New("error in getting config"),
 		},
 		{
 			name: "Test 7: When there is an error in getting remaining time",
@@ -273,13 +277,34 @@ func TestGetLastProposedEpoch(t *testing.T) {
 						Data: []byte{4, 2},
 					},
 				},
-				contractAbi:   abi.ABI{},
-				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercent: 1,
-				timeErr:       errors.New("error in getting time"),
+				contractAbi:         abi.ABI{},
+				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentString: "1",
+				bufferPercent:       1,
+				timeErr:             errors.New("error in getting time"),
 			},
 			want:    0,
 			wantErr: errors.New("error in getting time"),
+		},
+		{
+			name: "Test 8: When there in parsing the int",
+			args: args{
+				fromBlock: big.NewInt(0),
+				stakerId:  2,
+				logs: []Types.Log{
+					{
+						Data:   []byte{4, 2},
+						Topics: []common.Hash{common.BigToHash(big.NewInt(1000)), common.BigToHash(big.NewInt(2))},
+					},
+				},
+				contractAbi:         abi.ABI{},
+				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
+				bufferPercentString: "1",
+				bufferPercentErr:    errors.New("error in parsing"),
+				time:                0,
+			},
+			want:    0,
+			wantErr: errors.New("error in parsing"),
 		},
 	}
 	for _, tt := range tests {
@@ -291,6 +316,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			utilsMock := new(mocks.UtilsInterface)
 			utilsPkgMock2 := new(mocks2.Utils)
+			stringMock := new(mocks.StringInterface)
 
 			utilsInterface = utilsPkgMock2
 			razorUtils = utilsMock
@@ -298,12 +324,14 @@ func TestGetLastProposedEpoch(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 			utils.ABIInterface = abiUtilsMock
 			cmdUtils = cmdUtilsMock
+			stringUtils = stringMock
 
-			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
+			utilsPkgMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
 			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetConfig", "buffer").Return(tt.args.bufferPercentString, tt.args.bufferPercentStringErr)
+			stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utilsPkgMock2.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.time, tt.args.timeErr)
 
 			utils := &UtilsStruct{}
@@ -495,7 +523,9 @@ func TestInitiateCommit(t *testing.T) {
 		commitData                types.CommitData
 		commitDataErr             error
 		merkleTree                [][][]byte
+		merkleTreeErr             error
 		merkleRoot                [32]byte
+		merkleRootErr             error
 		commitTxn                 common.Hash
 		commitTxnErr              error
 		waitForBlockCompletionErr error
@@ -671,6 +701,39 @@ func TestInitiateCommit(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Test 14: When there is an error in getting merkle tree",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTreeErr: errors.New("merkle tree error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 15: When there is an error in getting merkle root",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTree:    [][][]byte{},
+				merkleRootErr: errors.New("root error"),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -690,8 +753,8 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
-			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
+			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot, tt.args.merkleRootErr)
 			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
@@ -795,11 +858,11 @@ func TestInitiateReveal(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 5: When there is an error in handleRevealState",
+			name: "Test 5: When there is an error in CheckForLastCommitted",
 			args: args{
 				epoch:          5,
 				lastReveal:     2,
-				revealStateErr: errors.New("error in handleRevealState"),
+				revealStateErr: errors.New("error in CheckForLastCommitted"),
 			},
 			wantErr: true,
 		},
@@ -898,7 +961,7 @@ func TestInitiateReveal(t *testing.T) {
 
 			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
-			cmdUtilsMock.On("HandleRevealState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
+			cmdUtilsMock.On("CheckForLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
@@ -1398,7 +1461,7 @@ func TestHandleBlock(t *testing.T) {
 			osUtils = osMock
 			timeUtils = timeMock
 
-			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)

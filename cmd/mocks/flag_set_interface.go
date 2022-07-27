@@ -180,20 +180,20 @@ func (_m *FlagSetInterface) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 	return r0, r1
 }
 
-// GetRootFloat32GasLimit provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootFloat32GasLimit() (float32, error) {
-	ret := _m.Called()
+// GetIntLogFileMaxAge provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
 
-	var r0 float32
-	if rf, ok := ret.Get(0).(func() float32); ok {
-		r0 = rf()
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
 	} else {
-		r0 = ret.Get(0).(float32)
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -201,20 +201,20 @@ func (_m *FlagSetInterface) GetRootFloat32GasLimit() (float32, error) {
 	return r0, r1
 }
 
-// GetRootFloat32GasMultiplier provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootFloat32GasMultiplier() (float32, error) {
-	ret := _m.Called()
+// GetIntLogFileMaxBackups provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
 
-	var r0 float32
-	if rf, ok := ret.Get(0).(func() float32); ok {
-		r0 = rf()
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
 	} else {
-		r0 = ret.Get(0).(float32)
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -222,20 +222,20 @@ func (_m *FlagSetInterface) GetRootFloat32GasMultiplier() (float32, error) {
 	return r0, r1
 }
 
-// GetRootInt32Buffer provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootInt32Buffer() (int32, error) {
-	ret := _m.Called()
+// GetIntLogFileMaxSize provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
 
-	var r0 int32
-	if rf, ok := ret.Get(0).(func() int32); ok {
-		r0 = rf()
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
 	} else {
-		r0 = ret.Get(0).(int32)
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -243,83 +243,20 @@ func (_m *FlagSetInterface) GetRootInt32Buffer() (int32, error) {
 	return r0, r1
 }
 
-// GetRootInt32GasPrice provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootInt32GasPrice() (int32, error) {
-	ret := _m.Called()
-
-	var r0 int32
-	if rf, ok := ret.Get(0).(func() int32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetRootInt32Wait provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootInt32Wait() (int32, error) {
-	ret := _m.Called()
-
-	var r0 int32
-	if rf, ok := ret.Get(0).(func() int32); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetRootStringLogLevel provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootStringLogLevel() (string, error) {
-	ret := _m.Called()
+// GetRootStringConfig provides a mock function with given fields: configType
+func (_m *FlagSetInterface) GetRootStringConfig(configType string) (string, error) {
+	ret := _m.Called(configType)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(configType)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetRootStringProvider provides a mock function with given fields:
-func (_m *FlagSetInterface) GetRootStringProvider() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(configType)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -611,27 +548,6 @@ func (_m *FlagSetInterface) GetStringValue(flagSet *pflag.FlagSet) (string, erro
 		r0 = rf(flagSet)
 	} else {
 		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetUint16AssetId provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 uint16
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 error

@@ -2,12 +2,13 @@
 package cmd
 
 import (
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -47,17 +48,18 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "claimStakerReward",
 		Parameters:      []interface{}{},
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 	})
 
 	log.Info("Claiming commission")
 
-	txn, err := stakeManagerUtils.ClaimStakeReward(client, txnOpts)
+	txn, err := stakeManagerUtils.ClaimStakerReward(client, txnOpts)
 	if err != nil {
 		log.Fatal("Error in claiming stake reward: ", err)
 	}
+	txnHash := transactionUtils.Hash(txn)
 
-	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
 
 }

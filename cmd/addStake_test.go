@@ -15,6 +15,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
 	"testing"
@@ -143,6 +144,10 @@ func TestExecuteStake(t *testing.T) {
 		balanceErr      error
 		amount          *big.Int
 		amountErr       error
+		stakerId        uint32
+		stakerIdErr     error
+		staker          bindings.StructsStaker
+		stakerErr       error
 		approveTxn      common.Hash
 		approveErr      error
 		minSafeRazor    *big.Int
@@ -166,6 +171,8 @@ func TestExecuteStake(t *testing.T) {
 				minSafeRazor: big.NewInt(0),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
+				stakerId:     2,
+				staker:       bindings.StructsStaker{IsSlashed: false},
 			},
 			expectedFatal: false,
 		},
@@ -270,6 +277,20 @@ func TestExecuteStake(t *testing.T) {
 			},
 			expectedFatal: true,
 		},
+		{
+			name: "Test 9: When the staker is slashed before",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(20),
+				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(100),
+				stakerId:     2,
+				staker:       bindings.StructsStaker{IsSlashed: true},
+			},
+			expectedFatal: true,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -297,8 +318,9 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsPkgMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 

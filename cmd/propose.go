@@ -4,9 +4,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
 	"math/big"
 	"razor/core"
@@ -15,6 +12,10 @@ import (
 	"razor/utils"
 	"sort"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 var (
@@ -33,7 +34,7 @@ var (
 
 //This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return core.NilHash, err
 	}
@@ -74,7 +75,11 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 
 	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Salt: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
+	if err != nil {
+		return core.NilHash, err
+	}
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -85,7 +90,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		NumberOfStakers: numStakers,
 		Salt:            salt,
 		Epoch:           epoch,
-	}, bufferPercent)
+	}, int32(bufferPercent))
 
 	log.Debug("Iteration: ", iteration)
 
@@ -158,18 +163,19 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerABI,
+		ABI:             bindings.BlockManagerMetaData.ABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})
 
 	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function returns the biggest stake and Id of it
@@ -184,12 +190,16 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	bufferPercentString, err := cmdUtils.GetConfig("buffer")
+	if err != nil {
+		return nil, 0, err
+	}
+	bufferPercent, err := stringUtils.ParseInt64(bufferPercentString)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, int32(bufferPercent))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -369,19 +379,6 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		idsRevealedInThisEpoch[1] = temp
 	}
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
-}
-
-//This function returns the influenced median
-func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
-	accProd := big.NewInt(0)
-
-	for _, vote := range sortedVotes {
-		accProd = accProd.Add(accProd, vote)
-	}
-	if totalInfluenceRevealed.Cmp(big.NewInt(0)) == 0 {
-		return accProd
-	}
-	return accProd.Div(accProd, totalInfluenceRevealed)
 }
 
 func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {

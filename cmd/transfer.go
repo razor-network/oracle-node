@@ -2,12 +2,13 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/spf13/pflag"
 
@@ -35,7 +36,6 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	razorUtils.AssignLogFile(flagSet)
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
-
 	logger.Address = fromAddress
 
 	config, err := cmdUtils.GetConfigData()
@@ -64,7 +64,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 	log.Info("Transaction Hash: ", txn)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for transfer: ", err)
 }
 
@@ -82,7 +82,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",
 		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
-		ABI:             bindings.RAZORABI,
+		ABI:             bindings.RAZORMetaData.ABI,
 	})
 	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 

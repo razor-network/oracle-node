@@ -3,13 +3,14 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
@@ -66,7 +67,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unstake: ", err)
 	}
 }
@@ -87,13 +88,13 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in getting staker: ", err)
 		return core.NilHash, err
 	}
-	approveHash, err := cmdUtils.ApproveUnstake(client, staker, txnArgs)
+	approveHash, err := cmdUtils.ApproveUnstake(client, staker.TokenAddress, txnArgs)
 	if err != nil {
 		return core.NilHash, err
 	}
 
 	if approveHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, approveHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, approveHash.Hex())
 		if err != nil {
 			return core.NilHash, err
 		}
@@ -103,7 +104,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "unstake"
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
 	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
 	if err != nil {
@@ -121,25 +122,27 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
 	txn, err := stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, txnArgs.Amount)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return core.NilHash, err
 	}
-	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Transaction hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function approves the unstake
-func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
-	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, staker, txnArgs.Amount)
+	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, stakerTokenAddress, txnArgs.Amount)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in approving for unstake")
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", transactionUtils.Hash(txn).String())
-	return transactionUtils.Hash(txn), nil
+	log.Info("Transaction Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

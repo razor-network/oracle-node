@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 	"os"
 	"razor/core"
@@ -36,7 +37,6 @@ func InitializeUtils() {
 	utils.ClientInterface = &utils.ClientStruct{}
 	utils.Time = &utils.TimeStruct{}
 	utils.OS = &utils.OSStruct{}
-	utils.Bufio = &utils.BufioStruct{}
 	utils.CoinInterface = &utils.CoinStruct{}
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 	utils.IOInterface = &utils.IOStruct{}
@@ -81,24 +81,9 @@ func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.Transa
 	return utilsInterface.GetTxnOpts(transactionData)
 }
 
-//This function returns the config data
-func (u Utils) GetConfigData() (types.Configurations, error) {
-	return cmdUtils.GetConfigData()
-}
-
 //This function assigns the password
 func (u Utils) AssignPassword() string {
 	return utils.AssignPassword()
-}
-
-//This function returns the string address
-func (u Utils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("address")
-}
-
-//This function returns the Uint32 bountyId
-func (u Utils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
-	return flagSet.GetUint32("bountyId")
 }
 
 //This function connects to the client
@@ -126,24 +111,14 @@ func (u Utils) GetRogueRandomMedianValue() uint32 {
 	return utils.GetRogueRandomMedianValue()
 }
 
-//This function returns the aggregated data of collection
-func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
-	return utilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
-}
-
 //This function returns the delayed state
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utilsInterface.GetDelayedState(client, buffer)
+func (u Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utilsInterface.GetBufferedState(client, buffer)
 }
 
 //This function returns the default path
 func (u Utils) GetDefaultPath() (string, error) {
 	return path.PathUtilsInterface.GetDefaultPath()
-}
-
-//This function returns the job file path
-func (u Utils) GetJobFilePath() (string, error) {
-	return path.PathUtilsInterface.GetJobFilePath()
 }
 
 //This function fetches the balance
@@ -176,16 +151,6 @@ func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) 
 	return utilsInterface.GetEpochLastCommitted(client, stakerId)
 }
 
-//This function returns the commitments
-func (u Utils) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
-	return utilsInterface.GetCommitments(client, address)
-}
-
-//This function returns if all the values in bytesValue is zero
-func (u Utils) AllZero(bytesValue [32]byte) bool {
-	return utils.AllZero(bytesValue)
-}
-
 //This function converts the Uint array to Uint16 array
 func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	return utils.ConvertUintArrayToUint16Array(uintArr)
@@ -216,24 +181,9 @@ func (u Utils) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.St
 	return utilsInterface.GetStaker(client, stakerId)
 }
 
-//This function returns the updated staker
-func (u Utils) GetUpdatedStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
-	return utilsInterface.GetStaker(client, stakerId)
-}
-
 //This function returns the staked token
 func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
 	return utilsInterface.GetStakedToken(client, address)
-}
-
-//This function converts the SRazor to Razor
-func (u Utils) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
-	return utils.ConvertSRZRToRZR(sAmount, currentStake, totalSupply)
-}
-
-//This function converts the Razor to SRazors
-func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
-	return utils.ConvertRZRToSRZR(sAmount, currentStake, totalSupply)
 }
 
 //This function returns the withdraw initiation period
@@ -274,21 +224,6 @@ func (u Utils) GetProposedBlock(client *ethclient.Client, epoch uint32, proposed
 //This function returns the epoch which is last revealed
 func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	return utilsInterface.GetEpochLastRevealed(client, stakerId)
-}
-
-//This function returns the vote value
-func (u Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
-	return utilsInterface.GetVoteValue(client, epoch, stakerId, medianIndex)
-}
-
-//This function returns the total influence revealed
-func (u Utils) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
-	return utilsInterface.GetTotalInfluenceRevealed(client, epoch, medianIndex)
-}
-
-//This function returns the Uint32 Array to BigInt array
-func (u Utils) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
-	return utils.ConvertUint32ArrayToBigIntArray(uint32Array)
 }
 
 //This function returns the active collections
@@ -349,16 +284,6 @@ func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 //This function wait till next N seconds
 func (u Utils) WaitTillNextNSecs(seconds int32) {
 	utilsInterface.WaitTillNextNSecs(seconds)
-}
-
-//This function deletes the job from JSON
-func (u Utils) DeleteJobFromJSON(s string, jobId string) error {
-	return utilsInterface.DeleteJobFromJSON(s, jobId)
-}
-
-//This function adds the job to JSON
-func (u Utils) AddJobToJSON(s string, job *types.StructsJob) error {
-	return utilsInterface.AddJobToJSON(s, job)
 }
 
 //This function converts seconds into readable time
@@ -475,8 +400,8 @@ func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opt
 }
 
 //This function approves the unstake your razor
-func (stakeManagerUtils StakeManagerUtils) ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*Types.Transaction, error) {
-	stakedToken := razorUtils.GetStakedToken(client, staker.TokenAddress)
+func (stakeManagerUtils StakeManagerUtils) ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, stakerTokenAddress common.Address, amount *big.Int) (*Types.Transaction, error) {
+	stakedToken := razorUtils.GetStakedToken(client, stakerTokenAddress)
 	return stakedToken.Approve(opts, common.HexToAddress(core.StakeManagerAddress), amount)
 }
 
@@ -506,7 +431,7 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 }
 
 //This function is used to claim the staker reward
-func (stakeManagerUtils StakeManagerUtils) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return stakeManager.ClaimStakerReward(opts)
 }
@@ -749,6 +674,11 @@ func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Cl
 	return assetManager.UpdateCollection(opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 
+//This function returns the config of configType in form of string
+func (flagSetUtils FLagSetUtils) GetRootStringConfig(configType string) (string, error) {
+	return rootCmd.PersistentFlags().GetString(configType)
+}
+
 //This function returns the provider in string
 func (flagSetUtils FLagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("provider")
@@ -789,54 +719,43 @@ func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint
 	return flagSet.GetUint32("bountyId")
 }
 
-//This function returns the provider of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringProvider() (string, error) {
-	return rootCmd.PersistentFlags().GetString("provider")
-}
-
-//This function returns the gas multiplier of root in float32
-func (flagSetUtils FLagSetUtils) GetRootFloat32GasMultiplier() (float32, error) {
-	return rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
-}
-
-//This function returns the buffer of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32Buffer() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("buffer")
-}
-
-//This function returns the wait of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32Wait() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("wait")
-}
-
-//This function returns the gas price of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32GasPrice() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("gasprice")
-}
-
-//This function returns the log level of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringLogLevel() (string, error) {
-	return rootCmd.PersistentFlags().GetString("logLevel")
-}
-
-//This function returns the gas limit of root in Float32
-func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
-	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
-}
-
 //This function returns the from in string
 func (flagSetUtils FLagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("from")
+	from, err := flagSet.GetString("from")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(from)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return from, nil
 }
 
 //This function returns the to in string
 func (flagSetUtils FLagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("to")
+	to, err := flagSet.GetString("to")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(to)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return to, nil
 }
 
 //This function returns the address in string
 func (flagSetUtils FLagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("address")
+	address, err := flagSet.GetString("address")
+	if err != nil {
+		return "", err
+	}
+	IsValidAddress := utils.IsValidERC20Address(address)
+	if !IsValidAddress {
+		return "", errors.New("failed, invalid erc20 address")
+	}
+	return address, nil
 }
 
 //This function returns the stakerId in Uint32
@@ -867,11 +786,6 @@ func (flagSetUtils FLagSetUtils) GetInt8Power(flagSet *pflag.FlagSet) (int8, err
 //This function returns the weight in Uint8
 func (flagSetUtils FLagSetUtils) GetUint8Weight(flagSet *pflag.FlagSet) (uint8, error) {
 	return flagSet.GetUint8("weight")
-}
-
-//This function returns the AssetId in Uint16
-func (flagSetUtils FLagSetUtils) GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error) {
-	return flagSet.GetUint16("assetId")
 }
 
 //This function returns the selectorType in Uint8
@@ -949,6 +863,21 @@ func (flagSetUtils FLagSetUtils) GetStringCertKey(flagSet *pflag.FlagSet) (strin
 	return flagSet.GetString("certKey")
 }
 
+//This function is used to check if logFileMaxSize is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxSize")
+}
+
+//This function is used to check if logFileMaxBackups is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxBackups")
+}
+
+//This function is used to check if logFileMaxAge is passed or not
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxAge")
+}
+
 //This function returns the accounts
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
@@ -984,6 +913,21 @@ func (t TimeUtils) Sleep(duration time.Duration) {
 //This function is used to parse the bool
 func (s StringUtils) ParseBool(str string) (bool, error) {
 	return strconv.ParseBool(str)
+}
+
+//This functon is used to parse the float
+func (s StringUtils) ParseFloat(str string) (float64, error) {
+	return strconv.ParseFloat(str, 32)
+}
+
+//This function is used to parse the int64
+func (s StringUtils) ParseInt64(str string) (int64, error) {
+	return strconv.ParseInt(str, 10, 32)
+}
+
+//This function is used to parse the int
+func (s StringUtils) ParseInt(str string) (int, error) {
+	return strconv.Atoi(str)
 }
 
 //This function is used for unpacking

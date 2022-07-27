@@ -2,11 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	Types "razor/core/types"
@@ -14,6 +9,13 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckError(t *testing.T) {
@@ -301,67 +303,66 @@ func TestFetchBalance(t *testing.T) {
 	var callOpts bind.CallOpts
 
 	type args struct {
-		coinContract *bindings.RAZOR
-		balance      *big.Int
-		balanceErr   error
+		erc20Contract *bindings.RAZOR
+		balance       *big.Int
+		balanceErr    error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		expectedFatal bool
-		wantErr       error
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
 	}{
 		{
 			name: "When FetchBalance() executes successfully",
 			args: args{
-				coinContract: &bindings.RAZOR{},
-				balance:      big.NewInt(1),
+				erc20Contract: &bindings.RAZOR{},
+				balance:       big.NewInt(1),
 			},
-			expectedFatal: false,
-			wantErr:       nil,
+			want:    big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "When there is an error in fetching balance",
+			args: args{
+				erc20Contract: &bindings.RAZOR{},
+				balanceErr:    errors.New("error in fetching balance"),
+			},
+			want:    big.NewInt(0),
+			wantErr: true,
 		},
 	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			utilsMock := new(mocks.Utils)
 			coinMock := new(mocks.CoinUtils)
+			retryMock := new(mocks.RetryUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
 				CoinInterface:  coinMock,
+				RetryInterface: retryMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
+			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.erc20Contract)
 			utilsMock.On("GetOptions").Return(callOpts)
 			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			fatal = false
-
-			_, err := utils.FetchBalance(client, accountAddress)
-			if fatal != tt.expectedFatal {
-				t.Error("The FetchBalance function didn't execute as expected")
+			got, err := utils.FetchBalance(client, accountAddress)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchBalance() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for FetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for fetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FetchBalance() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGetDelayedState(t *testing.T) {
+func TestGetBufferedState(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
@@ -378,7 +379,7 @@ func TestGetDelayedState(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetDelayedState() executes successfully",
+			name: "Test 1: When GetBufferedState() executes successfully",
 			args: args{
 				block: &types.Header{
 					Time: 100,
@@ -414,7 +415,7 @@ func TestGetDelayedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 4: When GetDelayedState() executes successfully and state we get is other than 0",
+			name: "Test 4: When GetBufferedState() executes successfully and state we get is other than 0",
 			args: args{
 				block: &types.Header{
 					Time: 900,
@@ -454,13 +455,13 @@ func TestGetDelayedState(t *testing.T) {
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetDelayedState(client, tt.args.buffer)
+			got, err := utils.GetBufferedState(client, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetDelayedState() got = %v, want %v", got, tt.want)
+				t.Errorf("GetBufferedState() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -573,7 +574,7 @@ func TestGetStateName(t *testing.T) {
 			args: args{
 				stateNumber: 5,
 			},
-			want: "-1",
+			want: "Buffer",
 		},
 	}
 	for _, tt := range tests {
@@ -676,6 +677,46 @@ func TestIsFlagPassed(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 			if got := utils.IsFlagPassed(tt.args.name); got != tt.want {
 				t.Errorf("IsFlagPassed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsValidERC20Address(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When correct erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When incorrect erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			want: false,
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidERC20Address(tt.args.address); got != tt.want {
+				t.Errorf("IsValidERC20Address() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -983,10 +1024,9 @@ func TestPrng(t *testing.T) {
 	}
 }
 
-func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
+func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
-		epochLength        int64
 		currentBlockNumber *big.Int
 	)
 	type args struct {
@@ -1002,7 +1042,7 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When CalculateBlockNumberAtEpochBeginning() is executed successfully",
+			name: "Test 1: When EstimateBlockNumberAtEpochBeginning() is executed successfully",
 			args: args{
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
@@ -1032,13 +1072,13 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			got, err := utils.CalculateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
+			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, currentBlockNumber)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

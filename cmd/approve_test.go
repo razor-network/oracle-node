@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
+	"razor/core"
 	"razor/core/types"
 	"testing"
 )
@@ -79,7 +80,7 @@ func TestApprove(t *testing.T) {
 				approveError:    nil,
 				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.Hash{0x00},
+			want:    core.NilHash,
 			wantErr: nil,
 		},
 		{
@@ -101,7 +102,7 @@ func TestApprove(t *testing.T) {
 				approveError:    nil,
 				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.Hash{0x00},
+			want:    core.NilHash,
 			wantErr: errors.New("allowance error"),
 		},
 
@@ -124,7 +125,7 @@ func TestApprove(t *testing.T) {
 				approveError:    errors.New("approve error"),
 				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.Hash{0},
+			want:    core.NilHash,
 			wantErr: errors.New("approve error"),
 		},
 	}

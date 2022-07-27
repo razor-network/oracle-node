@@ -3,10 +3,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"math/big"
 	"os"
 	"razor/core"
@@ -15,6 +11,11 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var claimBountyCmd = &cobra.Command{
@@ -61,7 +62,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		utils.CheckError("ClaimBounty error: ", err)
 
 		if txn != core.NilHash {
-			err = razorUtils.WaitForBlockCompletion(client, txn.String())
+			err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
@@ -105,7 +106,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.Hex())
 			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed
@@ -133,14 +134,14 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	callOpts := razorUtils.GetOptions()
@@ -161,7 +162,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
-		timeRemaining := int64(waitFor) * core.EpochLength
+		timeRemaining := uint64(waitFor) * core.EpochLength
 		if waitFor == 1 {
 			log.Infof("Cannot claim bounty now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {

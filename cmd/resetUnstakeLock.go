@@ -56,7 +56,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	}
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for resetUnstakeLock: ", err)
 }
 
@@ -71,16 +71,17 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "resetUnstakeLock",
 		Parameters:      []interface{}{extendLockInput.StakerId},
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 	})
 
 	log.Info("Extending lock...")
 	txn, err := stakeManagerUtils.ResetUnstakeLock(client, txnOpts, extendLockInput.StakerId)
+	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {
