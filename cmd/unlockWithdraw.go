@@ -91,20 +91,19 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 		return core.NilHash, nil
 	}
 
-	txnArgs := types.TransactionOptions{
-		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
-		ChainId:         core.ChainId,
-		Config:          configurations,
-		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "unlockWithdraw",
-		ABI:             bindings.StakeManagerMetaData.ABI,
-		Parameters:      []interface{}{stakerId},
-	}
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-
 	if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 {
+		txnArgs := types.TransactionOptions{
+			Client:          client,
+			Password:        account.Password,
+			AccountAddress:  account.Address,
+			ChainId:         core.ChainId,
+			Config:          configurations,
+			ContractAddress: core.StakeManagerAddress,
+			MethodName:      "unlockWithdraw",
+			ABI:             bindings.StakeManagerMetaData.ABI,
+			Parameters:      []interface{}{stakerId},
+		}
+		txnOpts := razorUtils.GetTxnOpts(txnArgs)
 		return cmdUtils.UnlockWithdraw(client, txnOpts, stakerId)
 	}
 	return core.NilHash, errors.New("withdrawLock period not over yet! Please try after some time")
