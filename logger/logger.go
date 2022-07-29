@@ -65,6 +65,7 @@ func InitializeLogger(fileName string) {
 			MaxSize:    logFileMaxSize,
 			MaxBackups: logFileMaxBackups,
 			MaxAge:     logFileMaxAge,
+			Compress:   true,
 		}
 
 		stderr := os.Stderr
