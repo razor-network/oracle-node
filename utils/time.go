@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -5,6 +6,7 @@ import (
 	"strconv"
 )
 
+// plural function returns string in singular or plural depends on the counts
 func plural(count int, singular string) string {
 	var result string
 	if (count == 1) || (count == 0) {
@@ -15,6 +17,7 @@ func plural(count int, singular string) string {
 	return result
 }
 
+// SecondsToReadableTime function converts seconds into the readable time
 func (*UtilsStruct) SecondsToReadableTime(input int) string {
 	var result string
 	years := math.Floor(float64(input) / 60 / 60 / 24 / 7 / 30 / 12)

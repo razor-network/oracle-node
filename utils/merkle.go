@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -6,6 +7,7 @@ import (
 	"math/big"
 )
 
+// CreateMerkle function helps in creating merkle
 func (*MerkleTreeStruct) CreateMerkle(values []*big.Int) ([][][]byte, error) {
 	if len(values) == 0 {
 		return [][][]byte{}, errors.New("values are nil, cannot create merkle tree")
@@ -41,6 +43,7 @@ func (*MerkleTreeStruct) CreateMerkle(values []*big.Int) ([][][]byte, error) {
 	return tree, nil
 }
 
+// GetProofPath function returns the proof path
 func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byte {
 	var compactProofPath [][32]byte
 	for currentLevel := len(tree) - 1; currentLevel > 0; currentLevel-- {
@@ -62,6 +65,7 @@ func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byt
 	return compactProofPath
 }
 
+// GetMerkleRoot function returns the merkle root
 func (*MerkleTreeStruct) GetMerkleRoot(tree [][][]byte) ([32]byte, error) {
 	var root [32]byte
 	if tree == nil {

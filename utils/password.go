@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -6,6 +7,7 @@ import (
 	"unicode"
 )
 
+// PasswordPrompt function prompts the password
 func PasswordPrompt() string {
 	prompt := promptui.Prompt{
 		Label:    "Password",
@@ -19,6 +21,7 @@ func PasswordPrompt() string {
 	return password
 }
 
+// PrivateKeyPrompt function prompts the private key
 func PrivateKeyPrompt() string {
 	prompt := promptui.Prompt{
 		Label:    "🔑 Private Key",
@@ -32,6 +35,7 @@ func PrivateKeyPrompt() string {
 	return privateKey
 }
 
+// validate function validates the password
 func validate(input string) error {
 	if input == "" || !strongPassword(input) {
 		return errors.New("enter a valid password")
@@ -39,6 +43,7 @@ func validate(input string) error {
 	return nil
 }
 
+// validatePrivateKey function validates the private key
 func validatePrivateKey(input string) error {
 	if input == "" {
 		return errors.New("enter a valid private key")
@@ -46,11 +51,12 @@ func validatePrivateKey(input string) error {
 	return nil
 }
 
+// AssignPassword function assigns the password
 func AssignPassword() string {
 	return PasswordPrompt()
 }
 
-//This function checks if the password is strong enough or not
+// strongPassword function checks if the password is strong enough or not
 func strongPassword(input string) bool {
 	l, u, p, d := 0, 0, 0, 0
 	if len(input) >= 8 {

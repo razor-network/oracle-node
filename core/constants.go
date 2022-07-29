@@ -1,3 +1,4 @@
+//Package core contains the most important values of project
 // This file contains constants, DO NOT MODIFY.
 package core
 

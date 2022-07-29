@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -21,10 +22,12 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
+// GetCollectionManagerWithOpts function returns the collection manager with opts
 func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bindings.CollectionManager, bind.CallOpts) {
 	return UtilsInterface.GetCollectionManager(client), UtilsInterface.GetOptions()
 }
 
+// GetNumCollections function returns the number of collections
 func (*UtilsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
 	var (
 		numCollections uint16
@@ -45,6 +48,7 @@ func (*UtilsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) 
 	return numCollections, nil
 }
 
+// GetJobs function returns the jobs array
 func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
 	var jobs []bindings.StructsJob
 	numJobs, err := AssetManagerInterface.GetNumJobs(client)
@@ -61,6 +65,7 @@ func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, er
 	return jobs, nil
 }
 
+// GetNumActiveCollections function returns the number of active collections
 func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
 	var (
 		numActiveAssets uint16
@@ -81,6 +86,7 @@ func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, e
 	return numActiveAssets, nil
 }
 
+// GetAllCollections function returns the array of all collections
 func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
 	var collections []bindings.StructsCollection
 	numCollections, err := UtilsInterface.GetNumCollections(client)
@@ -97,6 +103,7 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 	return collections, nil
 }
 
+// GetCollection function returns the particular collection
 func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	var (
 		collection bindings.StructsCollection
@@ -117,6 +124,7 @@ func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16)
 	return collection, nil
 }
 
+// GetActiveCollectionIds function returns the active collectionIds
 func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
 	var (
 		activeCollectionIds []uint16
@@ -137,6 +145,7 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
+// GetAggregatedDataOfCollection function returns the aggregate data of collection
 func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(client, collectionId)
 	if err != nil {
@@ -151,6 +160,7 @@ func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, coll
 	return collectionData, nil
 }
 
+// Aggregate function aggregates the override jobs
 func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
@@ -216,6 +226,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
+// GetActiveJob function returns the active job
 func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
 	var (
 		job bindings.StructsJob
@@ -236,6 +247,7 @@ func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindin
 	return job, nil
 }
 
+// GetActiveCollection function returns the active collection
 func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	collection, err := UtilsInterface.GetCollection(client, collectionId)
 	if err != nil {
@@ -247,6 +259,7 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 	return collection, nil
 }
 
+// GetDataToCommitFromJobs function returns the data which is used for commit from jobs
 func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
 	var (
 		data   []*big.Int
@@ -263,6 +276,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.
 	return data, weight, nil
 }
 
+// GetDataToCommitFromJob function returns the data which is used for commit from job
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
 	var (
@@ -308,6 +322,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	return MultiplyWithPower(datum, job.Power), err
 }
 
+// GetAssignedCollections function returns the assigned collection
 func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
 	assignedCollections := make(map[int]bool)
 	var seqAllottedCollections []*big.Int
@@ -323,6 +338,7 @@ func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCo
 	return assignedCollections, seqAllottedCollections, nil
 }
 
+// GetLeafIdOfACollection function returns the leaf Id of a collection
 func (*UtilsStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
 	var (
 		leafId uint16
@@ -343,6 +359,7 @@ func (*UtilsStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionI
 	return leafId, nil
 }
 
+// GetCollectionIdFromIndex function returns the collection Id from index
 func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error) {
 	var (
 		collectionId uint16
@@ -363,6 +380,7 @@ func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianInd
 	return collectionId, nil
 }
 
+// GetCollectionIdFromLeafId function returns the collectionId from Leaf Id
 func (*UtilsStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
 	var (
 		collectionId uint16
@@ -383,6 +401,7 @@ func (*UtilsStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId u
 	return collectionId, nil
 }
 
+// GetCustomJobsFromJSONFile function returns the custom jobs from JSON file
 func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []bindings.StructsJob {
 	var collectionCustomJobs []bindings.StructsJob
 
@@ -410,6 +429,7 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 	return collectionCustomJobs
 }
 
+// ConvertCustomJobToStructJob function converts custom Job to struct job
 func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob {
 	return bindings.StructsJob{
 		Url:      customJob.URL,
@@ -419,6 +439,7 @@ func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob 
 	}
 }
 
+// HandleOfficialJobsFromJSONFile function handles official jobs from JSON file
 func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16) {
 	var overrideJobs []bindings.StructsJob
 	var overriddenJobIds []uint16

@@ -1,3 +1,4 @@
+//Package core contains the most important values of project
 package core
 
 import "fmt"

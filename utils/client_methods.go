@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -11,6 +12,7 @@ import (
 	"razor/core"
 )
 
+// GetPendingNonceAtWithRetry function returns the pending nonce with retry mechanism
 func (*UtilsStruct) GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
 	var (
 		nonce uint64
@@ -31,6 +33,7 @@ func (*UtilsStruct) GetPendingNonceAtWithRetry(client *ethclient.Client, account
 	return nonce, nil
 }
 
+// GetLatestBlockWithRetry function returns the latest block with retry mechanism
 func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
 	var (
 		latestHeader *types.Header
@@ -51,6 +54,7 @@ func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.He
 	return latestHeader, nil
 }
 
+// SuggestGasPriceWithRetry function suggests the gas price with retry mechanism
 func (o *UtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
 	var (
 		gasPrice *big.Int
@@ -71,6 +75,7 @@ func (o *UtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.I
 	return gasPrice, nil
 }
 
+// EstimateGasWithRetry function estimates the gas with retry mechanism
 func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
 	var (
 		gasLimit uint64
@@ -91,6 +96,7 @@ func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ether
 	return gasLimit, nil
 }
 
+// FilterLogsWithRetry function filter logs with retry mechanism
 func (*UtilsStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
 	var (
 		logs []types.Log
@@ -111,6 +117,7 @@ func (*UtilsStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum
 	return logs, nil
 }
 
+// BalanceAtWithRetry function returns the balance of account with retry mechanism
 func (*UtilsStruct) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
 	var (
 		balance *big.Int

@@ -1,3 +1,4 @@
+//Package metrics provides measures of quantitative assessment commonly used for comparing, and tracking performance or production
 package metrics
 
 import (
