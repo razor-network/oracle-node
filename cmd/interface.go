@@ -173,6 +173,7 @@ type AssetManagerInterface interface {
 
 type FlagSetInterface interface {
 	GetStringProvider(flagSet *pflag.FlagSet) (string, error)
+	GetInt64ChainId(flagSet *pflag.FlagSet) (int64, error)
 	GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error)
 	GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error)
 	GetInt32Wait(flagSet *pflag.FlagSet) (int32, error)
@@ -325,6 +326,7 @@ type StringInterface interface {
 	ParseFloat(str string) (float64, error)
 	ParseInt64(str string) (int64, error)
 	ParseInt(str string) (int, error)
+	ParseChainId(str string) (int64, error)
 }
 
 type AbiInterface interface {

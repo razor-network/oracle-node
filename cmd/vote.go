@@ -253,7 +253,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Client:          client,
 				Password:        account.Password,
 				AccountAddress:  account.Address,
-				ChainId:         core.ChainId,
+				ChainId:         big.NewInt(config.ChainId),
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
@@ -314,7 +314,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	keystorePath := filepath.Join(razorPath, "keystore_files")
 
-	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, big.NewInt(config.ChainId))
 	if err != nil {
 		return err
 	}
@@ -427,7 +427,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 	keystorePath := filepath.Join(razorPath, "keystore_files")
 
-	signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, big.NewInt(config.ChainId))
 	if err != nil {
 		return err
 	}

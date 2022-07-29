@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -101,7 +102,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		Client:          client,
 		Password:        updateCommissionInput.Password,
 		AccountAddress:  updateCommissionInput.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerMetaData.ABI,

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -90,7 +91,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		Client:          client,
 		Password:        jobInput.Password,
 		AccountAddress:  jobInput.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createJob",

@@ -85,7 +85,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 			Client:          client,
 			Password:        account.Password,
 			AccountAddress:  account.Address,
-			ChainId:         core.ChainId,
+			ChainId:         big.NewInt(configurations.ChainId),
 			Config:          configurations,
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "unlockWithdraw",

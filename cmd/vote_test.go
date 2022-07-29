@@ -201,7 +201,7 @@ func TestGetLastProposedEpoch(t *testing.T) {
 				unpackedData:        convertToSliceOfInterface([]uint32{4, 2}),
 				bufferPercentString: "1",
 				bufferPercent:       1,
-				time:                0,
+				time:                5,
 			},
 			want:    4,
 			wantErr: nil,

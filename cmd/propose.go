@@ -161,7 +161,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
 		ABI:             bindings.BlockManagerMetaData.ABI,

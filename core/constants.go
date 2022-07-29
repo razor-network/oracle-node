@@ -2,14 +2,11 @@
 package core
 
 import (
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
 )
 
 var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
-var ChainId = big.NewInt(0x785B4B9847B9)
 var StateLength = EpochLength / NumberOfStates
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}

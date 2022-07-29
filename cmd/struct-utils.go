@@ -684,6 +684,11 @@ func (flagSetUtils FLagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("provider")
 }
 
+//This function returns the chainId in int64
+func (FLagSetUtils FLagSetUtils) GetInt64ChainId(flagSet *pflag.FlagSet) (int64, error) {
+	return flagSet.GetInt64("chainId")
+}
+
 //This function returns gas multiplier in float 32
 func (flagSetUtils FLagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
 	return flagSet.GetFloat32("gasmultiplier")
@@ -923,6 +928,11 @@ func (s StringUtils) ParseFloat(str string) (float64, error) {
 //This function is used to parse the int64
 func (s StringUtils) ParseInt64(str string) (int64, error) {
 	return strconv.ParseInt(str, 10, 32)
+}
+
+//This function is used to parse the chainId
+func (s StringUtils) ParseChainId(str string) (int64, error) {
+	return strconv.ParseInt(str, 10, 64)
 }
 
 //This function is used to parse the int

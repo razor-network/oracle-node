@@ -15,6 +15,7 @@ import (
 
 var (
 	Provider           string
+	ChainId            string
 	GasMultiplier      string
 	BufferPercent      string
 	WaitTime           string
@@ -58,6 +59,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
+	rootCmd.PersistentFlags().StringVarP(&ChainId, "chainId", "c", "0", "chainId")
 	rootCmd.PersistentFlags().StringVarP(&GasMultiplier, "gasmultiplier", "g", "-1", "gas multiplier value")
 	rootCmd.PersistentFlags().StringVarP(&BufferPercent, "buffer", "b", "0", "buffer percent")
 	rootCmd.PersistentFlags().StringVarP(&WaitTime, "wait", "w", "-1", "wait time")
@@ -109,6 +111,7 @@ func setLogLevel() {
 
 	log.Debug("Config details: ")
 	log.Debugf("Provider: %s", config.Provider)
+	log.Debugf("ChainId: %d", config.ChainId)
 	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
 	log.Debugf("Buffer Percent: %d", config.BufferPercent)
 	log.Debugf("Wait Time: %d", config.WaitTime)

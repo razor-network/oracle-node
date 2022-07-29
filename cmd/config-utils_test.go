@@ -11,6 +11,7 @@ import (
 func TestGetConfigData(t *testing.T) {
 	config := types.Configurations{
 		Provider:           "",
+		ChainId:            0,
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -20,6 +21,7 @@ func TestGetConfigData(t *testing.T) {
 
 	configData := types.Configurations{
 		Provider:           "",
+		ChainId:            137,
 		GasMultiplier:      1,
 		BufferPercent:      20,
 		WaitTime:           1,
@@ -33,6 +35,10 @@ func TestGetConfigData(t *testing.T) {
 	type args struct {
 		provider                   string
 		providerErr                error
+		chainIdString              string
+		chainIdStringErr           error
+		chainId                    int64
+		chainIdErr                 error
 		gasMultiplierString        string
 		gasMultiplierStringErr     error
 		gasMultiplier              float64
@@ -78,6 +84,8 @@ func TestGetConfigData(t *testing.T) {
 			name: "Test 1: When GetConfigData function executes successfully",
 			args: args{
 				provider:                "",
+				chainIdString:           "137",
+				chainId:                 137,
 				gasMultiplierString:     "1",
 				gasMultiplier:           1,
 				bufferPercentString:     "20",
@@ -106,7 +114,24 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("provider error"),
 		},
 		{
-			name: "Test 3: When there is an error in getting gasMultiplier",
+			name: "Test 3: When ChainId is 0",
+			args: args{
+				chainIdString: "0",
+				chainId:       0,
+			},
+			want:    types.Configurations{ChainId: 0},
+			wantErr: nil,
+		},
+		{
+			name: "test 4: When there is an error in getting chainId",
+			args: args{
+				chainIdStringErr: errors.New("chainId error"),
+			},
+			want:    config,
+			wantErr: errors.New("chainId error"),
+		},
+		{
+			name: "Test 5: When there is an error in getting gasMultiplier",
 			args: args{
 				gasMultiplierStringErr: errors.New("gasMultiplier error"),
 			},
@@ -114,7 +139,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("gasMultiplier error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting bufferPercent",
+			name: "Test 6: When there is an error in getting bufferPercent",
 			args: args{
 				bufferPercentStringErr: errors.New("bufferPercent error"),
 			},
@@ -122,7 +147,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("bufferPercent error"),
 		},
 		{
-			name: "Test 5: When there is an error in getting waitTime",
+			name: "Test 7: When there is an error in getting waitTime",
 			args: args{
 				waitTimeStringErr: errors.New("waitTime error"),
 			},
@@ -130,7 +155,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("waitTime error"),
 		},
 		{
-			name: "Test 6: When there is an error in getting gasPrice",
+			name: "Test 8: When there is an error in getting gasPrice",
 			args: args{
 				gasPriceStringErr: errors.New("gasPrice error"),
 			},
@@ -138,7 +163,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("gasPrice error"),
 		},
 		{
-			name: "Test 7: When there is an error in getting logLevel",
+			name: "Test 9: When there is an error in getting logLevel",
 			args: args{
 				logLevelErr: errors.New("logLevel error"),
 			},
@@ -146,7 +171,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("logLevel error"),
 		},
 		{
-			name: "Test 8: When there is an error in getting gasLimit",
+			name: "Test 10: When there is an error in getting gasLimit",
 			args: args{
 				gasLimitStringErr: errors.New("gasLimit error"),
 			},
@@ -154,7 +179,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("gasLimit error"),
 		},
 		{
-			name: "Test 9: When there is an error in getting logFileMaxSize",
+			name: "Test 11: When there is an error in getting logFileMaxSize",
 			args: args{
 				logFileMaxSizeStringErr: errors.New("logFileMaxSize error"),
 			},
@@ -162,7 +187,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("logFileMaxSize error"),
 		},
 		{
-			name: "Test 10: When there is an error in getting logFileMaxBackups",
+			name: "Test 12: When there is an error in getting logFileMaxBackups",
 			args: args{
 				logFileMaxBackupsStringErr: errors.New("logFileMaxBackups error"),
 			},
@@ -170,7 +195,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("logFileMaxBackups error"),
 		},
 		{
-			name: "Test 11: When there is an error in getting logFileMaxAge",
+			name: "Test 13: When there is an error in getting logFileMaxAge",
 			args: args{
 				logFileMaxAgeStringErr: errors.New("logFileMaxAge error"),
 			},
@@ -178,7 +203,15 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("logFileMaxAge error"),
 		},
 		{
-			name: "Test 12: When there is an error in parsing float for gas multiplier",
+			name: "Test 14: When there is an error in parsing int for chainID",
+			args: args{
+				chainIdErr: errors.New("error in parsing"),
+			},
+			want:    config,
+			wantErr: errors.New("error in parsing"),
+		},
+		{
+			name: "Test 15: When there is an error in parsing float for gas multiplier",
 			args: args{
 				gasMultiplierErr: errors.New("error in parsing"),
 			},
@@ -186,37 +219,53 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("error in parsing"),
 		},
 		{
-			name: "Test 13: When there is an error in parsing int for buffer",
+			name: "Test 16: When there is an error in parsing int for buffer",
 			args: args{
+				chainIdString:    "137",
+				chainId:          137,
 				bufferPercentErr: errors.New("error in parsing"),
 			},
-			want:    config,
+			want:    types.Configurations{ChainId: 137},
 			wantErr: errors.New("error in parsing"),
 		},
 		{
-			name: "Test 14: When there is an error in parsing int for waitTime",
+			name: "Test 17: When there is an error in parsing int for waitTime",
 			args: args{
+				chainIdString:       "137",
+				chainId:             137,
 				bufferPercentString: "20",
 				bufferPercent:       20,
 				waitTimeErr:         errors.New("error in parsing"),
 			},
-			want:    types.Configurations{BufferPercent: 20},
+			want:    types.Configurations{ChainId: 137, BufferPercent: 20},
 			wantErr: errors.New("error in parsing"),
 		},
 		{
-			name: "Test 15: When there is an error in parsing int for gasPrice",
+			name: "Test 18: When there is an error in parsing int for gasPrice",
 			args: args{
+				chainIdString:       "137",
+				chainId:             137,
 				bufferPercentString: "20",
 				waitTimeString:      "5",
 				bufferPercent:       20,
 				waitTime:            5,
 				gasPriceErr:         errors.New("error in parsing"),
 			},
-			want:    types.Configurations{BufferPercent: 20, WaitTime: 5},
+			want:    types.Configurations{ChainId: 137, BufferPercent: 20, WaitTime: 5},
 			wantErr: errors.New("error in parsing"),
 		},
 		{
-			name: "Test 16: When there is an error in parsing int for logFileMaxSize",
+			name: "Test 19: When there is an error in parsing float for gasLimit",
+			args: args{
+				gasMultiplierString: "1",
+				gasMultiplier:       1,
+				gasLimitErr:         errors.New("error in parsing"),
+			},
+			want:    types.Configurations{GasMultiplier: 1},
+			wantErr: errors.New("error in parsing"),
+		},
+		{
+			name: "Test 20: When there is an error in parsing int for logFileMaxSize",
 			args: args{
 				logFileMaxSizeErr: errors.New("error in parsing"),
 			},
@@ -224,7 +273,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("error in parsing"),
 		},
 		{
-			name: "Test 17: When there is an error in parsing int for logFileMaxBackups",
+			name: "Test 21: When there is an error in parsing int for logFileMaxBackups",
 			args: args{
 				logFileMaxSizeString: "10",
 				logFileMaxSize:       10,
@@ -234,7 +283,7 @@ func TestGetConfigData(t *testing.T) {
 			wantErr: errors.New("error in parsing"),
 		},
 		{
-			name: "Test 18: When there is an error in parsing int for logFileAge",
+			name: "Test 22: When there is an error in parsing int for logFileAge",
 			args: args{
 				logFileMaxSizeString:    "10",
 				logFileMaxBackupsString: "20",
@@ -255,6 +304,7 @@ func TestGetConfigData(t *testing.T) {
 			stringUtils = stringMock
 
 			cmdUtilsMock.On("GetConfig", "provider").Return(tt.args.provider, tt.args.providerErr)
+			cmdUtilsMock.On("GetConfig", "chainId").Return(tt.args.chainIdString, tt.args.chainIdStringErr)
 			cmdUtilsMock.On("GetConfig", "gasmultiplier").Return(tt.args.gasMultiplierString, tt.args.gasMultiplierStringErr)
 			cmdUtilsMock.On("GetConfig", "wait").Return(tt.args.waitTimeString, tt.args.waitTimeStringErr)
 			cmdUtilsMock.On("GetConfig", "gasprice").Return(tt.args.gasPriceString, tt.args.gasPriceStringErr)
@@ -265,6 +315,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetConfig", "logFileMaxBackups").Return(tt.args.logFileMaxBackupsString, tt.args.logFileMaxBackupsStringErr)
 			cmdUtilsMock.On("GetConfig", "logFileMaxAge").Return(tt.args.logFileMaxAgeString, tt.args.logFileMaxAgeStringErr)
 
+			stringMock.On("ParseChainId", tt.args.chainIdString).Return(tt.args.chainId, tt.args.chainIdErr)
 			stringMock.On("ParseFloat", tt.args.gasMultiplierString).Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
 			stringMock.On("ParseInt64", tt.args.bufferPercentString).Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			stringMock.On("ParseInt64", tt.args.waitTimeString).Return(tt.args.waitTime, tt.args.waitTimeErr)
@@ -296,21 +347,29 @@ func TestGetConfigData(t *testing.T) {
 
 func TestGetConfig(t *testing.T) {
 	type args struct {
-		configType       string
-		provider         string
-		providerErr      error
-		gasMultiplier    string
-		gasMultiplierErr error
-		bufferPercent    string
-		bufferPercentErr error
-		waitTime         string
-		waitTimeErr      error
-		gasPrice         string
-		gasPriceErr      error
-		logLevel         string
-		logLevelErr      error
-		gasLimit         string
-		gasLimitErr      error
+		configType           string
+		provider             string
+		providerErr          error
+		chainId              string
+		chainIdErr           error
+		gasMultiplier        string
+		gasMultiplierErr     error
+		bufferPercent        string
+		bufferPercentErr     error
+		waitTime             string
+		waitTimeErr          error
+		gasPrice             string
+		gasPriceErr          error
+		logLevel             string
+		logLevelErr          error
+		gasLimit             string
+		gasLimitErr          error
+		logFileMaxSize       string
+		logFileMaxSizeErr    error
+		logFileMaxBackups    string
+		logFileMaxBackupsErr error
+		logFileMaxAge        string
+		logFileMaxAgeErr     error
 	}
 	tests := []struct {
 		name    string
@@ -524,6 +583,114 @@ func TestGetConfig(t *testing.T) {
 			want:    "",
 			wantErr: false,
 		},
+		{
+			name: "Test 24: When GetConfig executes successfully for chainId",
+			args: args{
+				configType: "chainId",
+				chainId:    "137",
+			},
+			want:    "137",
+			wantErr: false,
+		},
+		{
+			name: "Test 25: When there is an error in getting chainId",
+			args: args{
+				configType: "chainId",
+				chainIdErr: errors.New("error in getting chainId"),
+			},
+			want:    "0",
+			wantErr: true,
+		},
+		{
+			name: "Test 26: When chainId is 0",
+			args: args{
+				configType: "chainId",
+				chainId:    "0",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 27: When GetConfig executes successfully for logFileMaxSize",
+			args: args{
+				configType:     "logFileMaxSize",
+				logFileMaxSize: "10",
+			},
+			want:    "10",
+			wantErr: false,
+		},
+		{
+			name: "Test 28: When there is an error in getting logFileMaxSize",
+			args: args{
+				configType:        "logFileMaxSize",
+				logFileMaxSizeErr: errors.New("error in getting logFileMaxSize"),
+			},
+			want:    "5",
+			wantErr: true,
+		},
+		{
+			name: "Test 29: When logFileMaxSize is 0",
+			args: args{
+				configType:     "logFileMaxSize",
+				logFileMaxSize: "0",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 30: When GetConfig executes successfully for logFileMaxBackups",
+			args: args{
+				configType:        "logFileMaxBackups",
+				logFileMaxBackups: "20",
+			},
+			want:    "20",
+			wantErr: false,
+		},
+		{
+			name: "Test 31: When there is an error in getting logFileMaxBackups",
+			args: args{
+				configType:           "logFileMaxBackups",
+				logFileMaxBackupsErr: errors.New("error in getting logFileMaxBackups"),
+			},
+			want:    "10",
+			wantErr: true,
+		},
+		{
+			name: "Test 32: When logFileMaxBackups is 0",
+			args: args{
+				configType:        "logFileMaxBackups",
+				logFileMaxBackups: "0",
+			},
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name: "Test 33: When GetConfig executes successfully for logFileMaxAge",
+			args: args{
+				configType:    "logFileMaxAge",
+				logFileMaxAge: "15",
+			},
+			want:    "15",
+			wantErr: false,
+		},
+		{
+			name: "Test 34: When there is an error in getting logFileMaxAge",
+			args: args{
+				configType:       "logFileMaxAge",
+				logFileMaxAgeErr: errors.New("error in getting logFileMaxAge"),
+			},
+			want:    "30",
+			wantErr: true,
+		},
+		{
+			name: "Test 35: When logFileMaxAge is 0",
+			args: args{
+				configType:    "logFileMaxAge",
+				logFileMaxAge: "0",
+			},
+			want:    "",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -531,12 +698,16 @@ func TestGetConfig(t *testing.T) {
 			flagSetUtils = flagSetUtilsMock
 
 			flagSetUtilsMock.On("GetRootStringConfig", "provider").Return(tt.args.provider, tt.args.providerErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "chainId").Return(tt.args.chainId, tt.args.chainIdErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "gasmultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "gasprice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "logLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "gasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "logFileMaxSize").Return(tt.args.logFileMaxSize, tt.args.logFileMaxSizeErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "logFileMaxBackups").Return(tt.args.logFileMaxBackups, tt.args.logFileMaxBackupsErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "logFileMaxAge").Return(tt.args.logFileMaxAge, tt.args.logFileMaxAgeErr)
 
 			ut := &UtilsStruct{}
 			got, err := ut.GetConfig(tt.args.configType)

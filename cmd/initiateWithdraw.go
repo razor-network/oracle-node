@@ -115,7 +115,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 		Client:          client,
 		Password:        account.Password,
 		AccountAddress:  account.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(configurations.ChainId),
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "initiateWithdraw",
