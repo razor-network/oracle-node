@@ -5,18 +5,19 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestExecuteUnlockWithdraw(t *testing.T) {
@@ -143,6 +144,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 		txnOpts           *bind.TransactOpts
 		unlockWithdraw    common.Hash
 		unlockWithdrawErr error
+		time              string
 	}
 	tests := []struct {
 		name    string
@@ -200,9 +202,10 @@ func TestHandleWithdrawLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				epoch: 3,
+				time:  "20 minutes 0 seconds",
 			},
 			want:    core.NilHash,
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -218,6 +221,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("UnlockWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unlockWithdraw, tt.args.unlockWithdrawErr)
+			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 
 			ut := &UtilsStruct{}
 			got, err := ut.HandleWithdrawLock(client, account, configurations, stakerId)
