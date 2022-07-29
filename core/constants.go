@@ -14,6 +14,9 @@ var StateLength = EpochLength / NumberOfStates
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
+var BatchSize = 1000
+var NumRoutines = 10
+var MaxIterations = 10000000
 
 //DisputeGasMultiplier is used to increase the gas required from the gasLimit for the following function
 var DisputeGasMultiplier float32 = 5.5
