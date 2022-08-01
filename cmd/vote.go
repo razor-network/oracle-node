@@ -105,11 +105,24 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
+	var quit = make(chan bool)
+	go func() {
+		err := cmdUtils.GetVoteConcurrently(ctx, config, client, rogueData, account, quit)
+		if err != nil {
+			return
+		}
+	}()
+	<-quit
+	return nil
+}
+
+func (*UtilsStruct) GetVoteConcurrently(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, quit chan bool) error {
 	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
 		case <-ctx.Done():
+			quit <- true
 			return nil
 		default:
 			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
@@ -121,6 +134,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 				header = latestHeader
 				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData)
 			}
+
 		}
 	}
 }

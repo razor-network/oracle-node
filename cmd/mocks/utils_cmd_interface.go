@@ -833,6 +833,20 @@ func (_m *UtilsCmdInterface) GetStakerInfo(client *ethclient.Client, stakerId ui
 	return r0
 }
 
+// GetVoteConcurrently provides a mock function with given fields: ctx, config, client, rogueData, account, quit
+func (_m *UtilsCmdInterface) GetVoteConcurrently(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, quit chan bool) error {
+	ret := _m.Called(ctx, config, client, rogueData, account, quit)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, chan bool) error); ok {
+		r0 = rf(ctx, config, client, rogueData, account, quit)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GiveSorted provides a mock function with given fields: client, blockManager, txnOpts, epoch, assetId, sortedStakers
 func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) {
 	_m.Called(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
