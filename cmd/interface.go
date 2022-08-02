@@ -208,6 +208,7 @@ type FlagSetInterface interface {
 	GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error)
 	GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error)
 	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
+	GetStringCompress(flagSet *pflag.FlagSet) (string, error)
 	GetRootStringConfig(configType string) (string, error)
 }
 

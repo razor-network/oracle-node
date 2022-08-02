@@ -30,6 +30,7 @@ func TestGetConfigData(t *testing.T) {
 		LogFileMaxSize:     10,
 		LogFileMaxBackups:  20,
 		LogFileMaxAge:      30,
+		Compress:           "true",
 	}
 
 	type args struct {
@@ -73,6 +74,8 @@ func TestGetConfigData(t *testing.T) {
 		logFileMaxAgeStringErr     error
 		logFileMaxAge              int
 		logFileMaxAgeErr           error
+		compress                   string
+		compressErr                error
 	}
 	tests := []struct {
 		name    string
@@ -101,6 +104,7 @@ func TestGetConfigData(t *testing.T) {
 				logFileMaxSize:          10,
 				logFileMaxBackups:       20,
 				logFileMaxAge:           30,
+				compress:                "true",
 			},
 			want:    configData,
 			wantErr: nil,
@@ -295,6 +299,14 @@ func TestGetConfigData(t *testing.T) {
 			want:    types.Configurations{LogFileMaxSize: 10, LogFileMaxBackups: 20},
 			wantErr: errors.New("error in parsing"),
 		},
+		{
+			name: "Test 23: When there is an error in getting compress",
+			args: args{
+				compressErr: errors.New("error in getting compress"),
+			},
+			want:    config,
+			wantErr: errors.New("error in getting compress"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -314,6 +326,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetConfig", "logFileMaxSize").Return(tt.args.logFileMaxSizeString, tt.args.logFileMaxSizeStringErr)
 			cmdUtilsMock.On("GetConfig", "logFileMaxBackups").Return(tt.args.logFileMaxBackupsString, tt.args.logFileMaxBackupsStringErr)
 			cmdUtilsMock.On("GetConfig", "logFileMaxAge").Return(tt.args.logFileMaxAgeString, tt.args.logFileMaxAgeStringErr)
+			cmdUtilsMock.On("GetConfig", "compress").Return(tt.args.compress, tt.args.compressErr)
 
 			stringMock.On("ParseChainId", tt.args.chainIdString).Return(tt.args.chainId, tt.args.chainIdErr)
 			stringMock.On("ParseFloat", tt.args.gasMultiplierString).Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
@@ -370,6 +383,8 @@ func TestGetConfig(t *testing.T) {
 		logFileMaxBackupsErr error
 		logFileMaxAge        string
 		logFileMaxAgeErr     error
+		compress             string
+		compressErr          error
 	}
 	tests := []struct {
 		name    string
@@ -691,6 +706,33 @@ func TestGetConfig(t *testing.T) {
 			want:    "",
 			wantErr: false,
 		},
+		{
+			name: "Test 36: When GetConfig executes successfully",
+			args: args{
+				configType: "compress",
+				compress:   "true",
+			},
+			want:    "true",
+			wantErr: false,
+		},
+		{
+			name: "Test 37: When there is an error in getting compress",
+			args: args{
+				configType:  "compress",
+				compressErr: errors.New("error in getting compress"),
+			},
+			want:    "true",
+			wantErr: true,
+		},
+		{
+			name: "Test 38: When compress value is nil",
+			args: args{
+				configType: "compress",
+				compress:   "",
+			},
+			want:    "",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -708,6 +750,7 @@ func TestGetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetRootStringConfig", "logFileMaxSize").Return(tt.args.logFileMaxSize, tt.args.logFileMaxSizeErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "logFileMaxBackups").Return(tt.args.logFileMaxBackups, tt.args.logFileMaxBackupsErr)
 			flagSetUtilsMock.On("GetRootStringConfig", "logFileMaxAge").Return(tt.args.logFileMaxAge, tt.args.logFileMaxAgeErr)
+			flagSetUtilsMock.On("GetRootStringConfig", "compress").Return(tt.args.compress, tt.args.compressErr)
 
 			ut := &UtilsStruct{}
 			got, err := ut.GetConfig(tt.args.configType)

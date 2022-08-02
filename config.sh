@@ -58,4 +58,9 @@ read -rp "Log Files Max Age: (30) " MAX_AGE
 if [ -z "$MAX_AGE" ]; then
    MAX_AGE=30
 fi
-$RAZOR setConfig -p $PROVIDER -c $CHAIN_ID -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
+
+read -rp "Compress: (true) " COMPRESS
+if [ -z "$COMPRESS" ]; then
+  COMPRESS="true"
+fi
+$RAZOR setConfig -p $PROVIDER -c $CHAIN_ID -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE --compress $COMPRESS

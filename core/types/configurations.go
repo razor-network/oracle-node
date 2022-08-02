@@ -13,4 +13,5 @@ type Configurations struct {
 	LogFileMaxSize     int
 	LogFileMaxBackups  int
 	LogFileMaxAge      int
+	Compress           string
 }

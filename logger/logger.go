@@ -13,6 +13,7 @@ import (
 	"razor/core"
 	"razor/path"
 	"runtime"
+	"strconv"
 )
 
 type StandardLogger struct {
@@ -61,13 +62,21 @@ func InitializeLogger(fileName string) {
 		if logFileMaxAge == 0 {
 			logFileMaxAge = 30
 		}
+		compress := viper.GetString("compress")
+		if compress == "" {
+			compress = "true"
+		}
+		compressBool, err := strconv.ParseBool(compress)
+		if err != nil {
+			return
+		}
 
 		lumberJackLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
 			MaxSize:    logFileMaxSize,
 			MaxBackups: logFileMaxBackups,
 			MaxAge:     logFileMaxAge,
-			Compress:   true,
+			Compress:   compressBool,
 		}
 
 		stderr := os.Stderr

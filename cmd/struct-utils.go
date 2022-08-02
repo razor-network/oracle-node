@@ -883,6 +883,11 @@ func (flagSetUtils FLagSetUtils) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (in
 	return flagSet.GetInt("logFileMaxAge")
 }
 
+//This function is used to check of compress is passed or not
+func (flagSetUtils FLagSetUtils) GetStringCompress(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("compress")
+}
+
 //This function returns the accounts
 func (keystoreUtils KeystoreUtils) Accounts(path string) []ethAccounts.Account {
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)

@@ -20,6 +20,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		LogFileMaxSize:     0,
 		LogFileMaxBackups:  0,
 		LogFileMaxAge:      0,
+		Compress:           "",
 	}
 	provider, err := cmdUtils.GetConfig("provider")
 	if err != nil {
@@ -62,6 +63,10 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	logFileMaxAgeString, err := cmdUtils.GetConfig("logFileMaxAge")
+	if err != nil {
+		return config, err
+	}
+	compress, err := cmdUtils.GetConfig("compress")
 	if err != nil {
 		return config, err
 	}
@@ -112,6 +117,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.LogFileMaxAge = logFileMaxAge
+	config.Compress = compress
 
 	return config, nil
 }
@@ -231,6 +237,17 @@ func (*UtilsStruct) GetConfig(configType string) (string, error) {
 			logFileMaxAge = viper.GetString(configType)
 		}
 		return logFileMaxAge, nil
+
+	case "compress":
+		compress, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "true", err
+		}
+		if compress == "" {
+			compress = viper.GetString(configType)
+		}
+		return compress, nil
+
 	}
 	return "", nil
 }

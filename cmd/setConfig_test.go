@@ -46,6 +46,8 @@ func TestSetConfig(t *testing.T) {
 		logFileMaxBackupsErr  error
 		logFileMaxAge         int
 		logFileMaxAgeErr      error
+		compress              string
+		compressErr           error
 	}
 	tests := []struct {
 		name    string
@@ -67,6 +69,7 @@ func TestSetConfig(t *testing.T) {
 				logFileMaxSize:     10,
 				logFileMaxBackups:  20,
 				logFileMaxAge:      30,
+				compress:           "true",
 			},
 			wantErr: nil,
 		},
@@ -290,6 +293,24 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("error in getting chainId"),
 		},
+		{
+			name: "Test 18: When there is an error in getting compress",
+			args: args{
+				provider:              "http://127.0.0.1",
+				chainId:               137,
+				gasmultiplier:         2,
+				buffer:                20,
+				waitTime:              2,
+				gasPrice:              1,
+				logLevel:              "debug",
+				path:                  "/home/config",
+				configErr:             nil,
+				gasLimitMultiplier:    10,
+				gasLimitMultiplierErr: nil,
+				compressErr:           errors.New("error in getting compress"),
+			},
+			wantErr: errors.New("error in getting compress"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -319,6 +340,7 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetIntLogFileMaxSize", flagSet).Return(tt.args.logFileMaxSize, tt.args.logFileMaxSizeErr)
 			flagSetUtilsMock.On("GetIntLogFileMaxBackups", flagSet).Return(tt.args.logFileMaxBackups, tt.args.logFileMaxBackupsErr)
 			flagSetUtilsMock.On("GetIntLogFileMaxAge", flagSet).Return(tt.args.logFileMaxAge, tt.args.logFileMaxAgeErr)
+			flagSetUtilsMock.On("GetStringCompress", flagSet).Return(tt.args.compress, tt.args.compressErr)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)

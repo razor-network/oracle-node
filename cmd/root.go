@@ -26,6 +26,7 @@ var (
 	LogFileMaxSize     string
 	LogFileMaxBackups  string
 	LogFileMaxAge      string
+	Compress           string
 )
 
 var log = logger.NewLogger()
@@ -70,6 +71,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&LogFileMaxSize, "logFileMaxSize", "", "0", "max size of log file MB")
 	rootCmd.PersistentFlags().StringVarP(&LogFileMaxBackups, "logFileMaxBackups", "", "0", "max number of old log files to retain")
 	rootCmd.PersistentFlags().StringVarP(&LogFileMaxAge, "logFileMaxAge", "", "0", "max number of days to retain old log files")
+	rootCmd.PersistentFlags().StringVarP(&Compress, "compress", "", "true", "compression of logs file is true or false")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -123,5 +125,6 @@ func setLogLevel() {
 		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
 		log.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)
 		log.Debugf("Log File Max Age (max number of days to retain old log files): %d", config.LogFileMaxAge)
+		log.Debugf("Compression for logFile: %s", config.Compress)
 	}
 }
