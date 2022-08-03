@@ -30,6 +30,27 @@ func (_m *StringInterface) ParseBool(str string) (bool, error) {
 	return r0, r1
 }
 
+// ParseChainId provides a mock function with given fields: str
+func (_m *StringInterface) ParseChainId(str string) (int64, error) {
+	ret := _m.Called(str)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(string) int64); ok {
+		r0 = rf(str)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(str)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ParseFloat provides a mock function with given fields: str
 func (_m *StringInterface) ParseFloat(str string) (float64, error) {
 	ret := _m.Called(str)

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -97,7 +98,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 		Client:          client,
 		Password:        delegationInput.Password,
 		AccountAddress:  delegationInput.Address,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerMetaData.ABI,

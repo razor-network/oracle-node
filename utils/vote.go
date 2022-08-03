@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -12,10 +13,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+// GetVoteManagerWithOpts function returns the vote manager with opts
 func (*UtilsStruct) GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts) {
 	return UtilsInterface.GetVoteManager(client), UtilsInterface.GetOptions()
 }
 
+// GetCommitments function returns the commitments
 func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
 	stakerId, err := UtilsInterface.GetStakerId(client, address)
 	if err != nil {
@@ -40,6 +43,7 @@ func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([3
 	return commitments.CommitmentHash, nil
 }
 
+// GetVoteValue function returns the vote value
 func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	var (
 		voteValue    *big.Int
@@ -60,6 +64,7 @@ func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerI
 	return voteValue, nil
 }
 
+// GetInfluenceSnapshot function returns the influence snapshot
 func (*UtilsStruct) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	var (
 		influenceSnapshot *big.Int
@@ -80,6 +85,7 @@ func (*UtilsStruct) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint
 	return influenceSnapshot, nil
 }
 
+// GetStakeSnapshot function returns the stake snapshot
 func (*UtilsStruct) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	var (
 		stakeSnapshot *big.Int
@@ -100,6 +106,7 @@ func (*UtilsStruct) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, 
 	return stakeSnapshot, nil
 }
 
+// GetTotalInfluenceRevealed function returns the total influence revealed
 func (*UtilsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
 	var (
 		totalInfluenceRevealed *big.Int
@@ -120,6 +127,7 @@ func (*UtilsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch ui
 	return totalInfluenceRevealed, nil
 }
 
+// GetEpochLastCommitted function returns the epoch last committed
 func (*UtilsStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	var (
 		epochLastCommitted uint32
@@ -140,6 +148,7 @@ func (*UtilsStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uin
 	return epochLastCommitted, nil
 }
 
+// GetEpochLastRevealed function returns the epoch last revealed
 func (*UtilsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	var (
 		epochLastRevealed uint32
@@ -160,6 +169,7 @@ func (*UtilsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint
 	return epochLastRevealed, nil
 }
 
+// ToAssign function returns where to assign the client
 func (*UtilsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	var (
 		toAssign uint16
@@ -180,6 +190,7 @@ func (*UtilsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	return toAssign, nil
 }
 
+// GetSaltFromBlockchain function returns the salt from blockchain
 func (*UtilsStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
 	var (
 		salt [32]byte

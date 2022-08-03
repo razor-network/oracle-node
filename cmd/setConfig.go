@@ -33,6 +33,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+	chainId, err := flagSetUtils.GetInt64ChainId(flagSet)
+	if err != nil {
+		return err
+	}
 	gasMultiplier, err := flagSetUtils.GetFloat32GasMultiplier(flagSet)
 	if err != nil {
 		return err
@@ -66,6 +70,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		return err
 	}
 	logFileMaxAge, err := flagSetUtils.GetIntLogFileMaxAge(flagSet)
+	if err != nil {
+		return err
+	}
+	compress, err := flagSetUtils.GetStringCompress(flagSet)
 	if err != nil {
 		return err
 	}
@@ -106,6 +114,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if provider != "" {
 		viper.Set("provider", provider)
 	}
+	if chainId != 0 {
+		viper.Set("chainId", chainId)
+	}
 	if gasMultiplier != -1 {
 		viper.Set("gasmultiplier", gasMultiplier)
 	}
@@ -133,8 +144,12 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if logFileMaxAge != 0 {
 		viper.Set("logFileMaxAge", logFileMaxAge)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
+	if compress != "" {
+		viper.Set("compress", compress)
+	}
+	if provider == "" && chainId == 0 && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 && compress == "" {
 		viper.Set("provider", "http://127.0.0.1:8545")
+		viper.Set("chainId", 0x785B4B9847B9)
 		viper.Set("gasmultiplier", 1.0)
 		viper.Set("buffer", 20)
 		viper.Set("wait", 3)
@@ -145,6 +160,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("logFileMaxSize", 5)
 		viper.Set("logFileMaxBackups", 10)
 		viper.Set("logFileMaxAge", 30)
+		viper.Set("compress", "true")
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 
@@ -161,6 +177,7 @@ func init() {
 
 	var (
 		Provider           string
+		ChainId            int64
 		GasMultiplier      float32
 		BufferPercent      int32
 		WaitTime           int32
@@ -173,8 +190,10 @@ func init() {
 		LogFileMaxSize     int
 		LogFileMaxBackups  int
 		LogFileMaxAge      int
+		Compress           string
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
+	setConfig.Flags().Int64VarP(&ChainId, "chainId", "c", 0, "chainId")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
@@ -187,5 +206,6 @@ func init() {
 	setConfig.Flags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "max size of log file in MB")
 	setConfig.Flags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "max number of old log files to retain")
 	setConfig.Flags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "max number of days to retain old log files")
+	setConfig.Flags().StringVarP(&Compress, "compress", "", "true", "compression of log files is true or false")
 
 }

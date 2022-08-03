@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -17,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// GetOptions function returns the options
 func (*UtilsStruct) GetOptions() bind.CallOpts {
 	block, _ := new(big.Int).SetString("", 10)
 	return bind.CallOpts{
@@ -26,6 +28,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 	}
 }
 
+// GetTxnOpts function returns the transaction opts
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
@@ -63,6 +66,7 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	return txnOpts
 }
 
+// GetGasPrice function returns the gas price
 func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
@@ -86,6 +90,7 @@ func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configura
 	return gasPrice
 }
 
+// GetGasLimit function returns the gas limit
 func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
@@ -116,6 +121,7 @@ func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpt
 	return UtilsInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
 }
 
+// IncreaseGasLimitValue function increases the gas limit value
 func (*UtilsStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil

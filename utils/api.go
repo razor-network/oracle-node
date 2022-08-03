@@ -1,3 +1,4 @@
+//Package utils provides the utils functions
 package utils
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
+// GetDataFromAPI function returns the data from API
 func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 	client := http.Client{
 		Timeout: 60 * time.Second,
@@ -38,6 +40,7 @@ func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 	return body, nil
 }
 
+// GetDataFromJSON function returns data from JSON file
 func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
 	if selector[0] == '[' {
 		selector = "$" + selector
@@ -47,6 +50,7 @@ func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector 
 	return jsonpath.Get(selector, jsonObject)
 }
 
+// GetDataFromXHTML function returns data from XHTML
 func (*UtilsStruct) GetDataFromXHTML(url string, selector string) (string, error) {
 	c := colly.NewCollector()
 	var priceData string

@@ -11,6 +11,7 @@ import (
 func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
+		ChainId:            0,
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -19,8 +20,13 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		LogFileMaxSize:     0,
 		LogFileMaxBackups:  0,
 		LogFileMaxAge:      0,
+		Compress:           "",
 	}
 	provider, err := cmdUtils.GetConfig("provider")
+	if err != nil {
+		return config, err
+	}
+	chainIdString, err := cmdUtils.GetConfig("chainId")
 	if err != nil {
 		return config, err
 	}
@@ -60,7 +66,16 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	compress, err := cmdUtils.GetConfig("compress")
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
+	chainId, err := stringUtils.ParseChainId(chainIdString)
+	if err != nil {
+		return config, err
+	}
+	config.ChainId = chainId
 	gasMultiplier, err := stringUtils.ParseFloat(gasMultiplierString)
 	if err != nil {
 		return config, err
@@ -102,6 +117,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.LogFileMaxAge = logFileMaxAge
+	config.Compress = compress
 
 	return config, nil
 }
@@ -121,6 +137,16 @@ func (*UtilsStruct) GetConfig(configType string) (string, error) {
 			log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 		}
 		return provider, nil
+
+	case "chainId":
+		chainId, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "0", err
+		}
+		if chainId == "0" {
+			chainId = viper.GetString(configType)
+		}
+		return chainId, nil
 
 	case "gasmultiplier":
 		gasMultiplier, err := flagSetUtils.GetRootStringConfig(configType)
@@ -211,6 +237,17 @@ func (*UtilsStruct) GetConfig(configType string) (string, error) {
 			logFileMaxAge = viper.GetString(configType)
 		}
 		return logFileMaxAge, nil
+
+	case "compress":
+		compress, err := flagSetUtils.GetRootStringConfig(configType)
+		if err != nil {
+			return "true", err
+		}
+		if compress == "" {
+			compress = viper.GetString(configType)
+		}
+		return compress, nil
+
 	}
 	return "", nil
 }

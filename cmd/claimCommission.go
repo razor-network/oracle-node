@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -43,7 +44,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 		Client:          client,
 		AccountAddress:  address,
 		Password:        password,
-		ChainId:         core.ChainId,
+		ChainId:         big.NewInt(config.ChainId),
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "claimStakerReward",

@@ -11,6 +11,12 @@ then
   PROVIDER="http://127.0.0.1:8545"
 fi
 
+read -rp "ChainId: (0x785B4B9847B9) " CHAIN_ID
+ if [ -z "$CHAIN_ID" ];
+ then
+   CHAIN_ID=0x785B4B9847B9
+ fi
+
 read -rp "Gas Multiplier: (1.0) " GAS_MULTIPLIER
 if [ -z "$GAS_MULTIPLIER" ];
 then
@@ -52,4 +58,9 @@ read -rp "Log Files Max Age: (30) " MAX_AGE
 if [ -z "$MAX_AGE" ]; then
    MAX_AGE=30
 fi
-$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
+
+read -rp "Compress: (true) " COMPRESS
+if [ -z "$COMPRESS" ]; then
+  COMPRESS="true"
+fi
+$RAZOR setConfig -p $PROVIDER -c $CHAIN_ID -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE --compress $COMPRESS
