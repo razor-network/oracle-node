@@ -9,6 +9,7 @@ import (
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -140,6 +141,27 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 	log.Info("Txn Hash: ", txnHash.Hex())
 
 	return txnHash, nil
+}
+
+//This function helps the user to auto withdraw the razors after unstaking
+func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
+	log.Info("Starting withdrawal now...")
+	timeUtils.Sleep(time.Duration(core.EpochLength) * time.Second)
+	txn, err := cmdUtils.HandleWithdrawLock(txnArgs.Client, types.Account{
+		Address:  txnArgs.AccountAddress,
+		Password: txnArgs.Password,
+	}, txnArgs.Config, stakerId)
+	if err != nil {
+		log.Error("HandleWithdrawLock error ", err)
+		return err
+	}
+	if txn != core.NilHash {
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, txn.String())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func init() {
