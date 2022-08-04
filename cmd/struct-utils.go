@@ -927,21 +927,33 @@ func (s StringUtils) ParseBool(str string) (bool, error) {
 
 //This functon is used to parse the float
 func (s StringUtils) ParseFloat(str string) (float64, error) {
+	if str == "" {
+		str = "0"
+	}
 	return strconv.ParseFloat(str, 32)
 }
 
 //This function is used to parse the int64
 func (s StringUtils) ParseInt64(str string) (int64, error) {
+	if str == "" {
+		str = "0"
+	}
 	return strconv.ParseInt(str, 10, 32)
 }
 
 //This function is used to parse the chainId
 func (s StringUtils) ParseChainId(str string) (int64, error) {
+	if str == "" {
+		str = "0"
+	}
 	return strconv.ParseInt(str, 10, 64)
 }
 
 //This function is used to parse the int
 func (s StringUtils) ParseInt(str string) (int, error) {
+	if str == "" {
+		str = "0"
+	}
 	return strconv.Atoi(str)
 }
 
