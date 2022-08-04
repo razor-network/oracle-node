@@ -240,6 +240,7 @@ type UtilsCmdInterface interface {
 	ExecuteUnstake(flagSet *pflag.FlagSet)
 	Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
 	ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error)
+	AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
 	InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
