@@ -110,6 +110,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	}
 
 	if big.NewInt(int64(epoch)).Cmp(withdrawBefore) > 0 {
+		log.Info("Withdraw initiation period has passed. Cannot withdraw now, please reset the unstakeLock!")
 		return txnArgs, errors.New("withdrawal initiation period has passed")
 	}
 
