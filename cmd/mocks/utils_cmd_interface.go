@@ -926,16 +926,14 @@ func (_m *UtilsCmdInterface) HandleExit() {
 }
 
 // HandleUnstakeLock provides a mock function with given fields: client, account, configurations, stakerId
-func (_m *UtilsCmdInterface) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+func (_m *UtilsCmdInterface) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (types.TransactionOptions, error) {
 	ret := _m.Called(client, account, configurations, stakerId)
 
-	var r0 common.Hash
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) common.Hash); ok {
+	var r0 types.TransactionOptions
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) types.TransactionOptions); ok {
 		r0 = rf(client, account, configurations, stakerId)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Hash)
-		}
+		r0 = ret.Get(0).(types.TransactionOptions)
 	}
 
 	var r1 error
