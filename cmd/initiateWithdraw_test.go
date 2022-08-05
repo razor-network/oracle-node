@@ -503,12 +503,13 @@ func TestAutoWithdraw(t *testing.T) {
 	}
 
 	type args struct {
-		withdrawLockErr error
-		lock            types.Locks
-		lockErr         error
-		stakerId        uint32
-		txnArgs         types.TransactionOptions
-		txn             common.Hash
+		withdrawLockErr    error
+		lock               types.Locks
+		lockErr            error
+		stakerId           uint32
+		txnArgs            types.TransactionOptions
+		txn                common.Hash
+		blockCompletionErr error
 	}
 	tests := []struct {
 		name    string
@@ -554,6 +555,21 @@ func TestAutoWithdraw(t *testing.T) {
 			},
 			wantErr: errors.New("error in fetching withdrawLock"),
 		},
+		{
+			name: "Test 4: When there is an error in mining block for AutoWithdraw",
+			args: args{
+				withdrawLockErr: nil,
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:            nil,
+				stakerId:           stakerId,
+				txnArgs:            txnArgs,
+				txn:                common.BigToHash(big.NewInt(1)),
+				blockCompletionErr: errors.New("error in BlockCompletion for AutoWithdraw"),
+			},
+			wantErr: errors.New("error in BlockCompletion for AutoWithdraw"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -568,7 +584,7 @@ func TestAutoWithdraw(t *testing.T) {
 
 			cmdUtilsMock.On("HandleWithdrawLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.withdrawLockErr)
 			timeMock.On("Sleep", mock.Anything).Return()
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.blockCompletionErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 
 			utils := &UtilsStruct{}
