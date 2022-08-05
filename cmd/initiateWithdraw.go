@@ -98,7 +98,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 
 	withdrawInitiationPeriod, err := razorUtils.GetWithdrawInitiationPeriod(txnArgs.Client)
 	if err != nil {
-		log.Error("Error in fetching withdraw release period")
+		log.Error("Error in fetching withdrawal Initiation period")
 		return txnArgs, err
 	}
 
@@ -110,15 +110,18 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	}
 
 	if big.NewInt(int64(epoch)).Cmp(withdrawBefore) > 0 {
+		log.Info("Info 1 : ", epoch, withdrawBefore)
 		log.Info("Withdraw initiation period has passed. Cannot withdraw now, please reset the unstakeLock!")
-		return txnArgs, nil
+		return txnArgs, errors.New("withdrawal initiation period has passed")
 	}
 
 	waitFor := big.NewInt(0).Sub(unstakeLock.UnlockAfter, big.NewInt(int64(epoch)))
+	log.Info("Info 2 : ", unstakeLock.UnlockAfter, epoch)
 	if waitFor.Cmp(big.NewInt(0)) > 0 {
 		timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
+		log.Info("Info 3 : ", waitFor, timeRemaining)
 		log.Infof("Withdrawal Initiation period not reached. Cannot initiate withdraw now, please wait for %d epoch(s)! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
-		return txnArgs, nil
+		return txnArgs, errors.New("withdrawal initiation period not reached")
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -161,7 +164,16 @@ func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint
 		log.Error("Error in fetching withdrawLock")
 		return err
 	}
-	timeUtils.Sleep(time.Duration(core.EpochLength*withdrawLock.UnlockAfter.Uint64()) * time.Second)
+	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
+	if err != nil {
+		log.Error("Error in fetching epoch")
+		return err
+	}
+
+	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
+	timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
+
+	timeUtils.Sleep(time.Duration(timeRemaining) * time.Second)
 	txn, err := cmdUtils.HandleWithdrawLock(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,

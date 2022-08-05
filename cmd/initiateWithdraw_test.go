@@ -37,20 +37,20 @@ func TestHandleUnstakeLock(t *testing.T) {
 	}
 
 	type args struct {
-		state                    uint32
-		stateErr                 error
-		lock                     types.Locks
-		lockErr                  error
-		withdrawReleasePeriod    uint16
-		withdrawReleasePeriodErr error
-		txnOpts                  *bind.TransactOpts
-		txnArgs                  types.TransactionOptions
-		epoch                    uint32
-		epochErr                 error
-		time                     string
-		withdrawHash             common.Hash
-		withdrawErr              error
-		blockCompletionErr       error
+		state                       uint32
+		stateErr                    error
+		lock                        types.Locks
+		lockErr                     error
+		withdrawInitiationPeriod    uint16
+		withdrawInitiationPeriodErr error
+		txnOpts                     *bind.TransactOpts
+		txnArgs                     types.TransactionOptions
+		epoch                       uint32
+		epochErr                    error
+		time                        string
+		withdrawHash                common.Hash
+		withdrawErr                 error
+		blockCompletionErr          error
 	}
 	tests := []struct {
 		name    string
@@ -63,15 +63,15 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				txnArgs:                  txnArgs,
-				epoch:                    5,
-				epochErr:                 nil,
-				withdrawHash:             common.BigToHash(big.NewInt(1)),
-				withdrawErr:              nil,
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				txnArgs:                     txnArgs,
+				epoch:                       5,
+				epochErr:                    nil,
+				withdrawHash:                common.BigToHash(big.NewInt(1)),
+				withdrawErr:                 nil,
 			},
 			wantErr: nil,
 		},
@@ -85,13 +85,13 @@ func TestHandleUnstakeLock(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting locks",
 			args: args{
-				lockErr:                  errors.New("lock error"),
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    5,
-				epochErr:                 nil,
-				withdrawErr:              nil,
+				lockErr:                     errors.New("lock error"),
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				epoch:                       5,
+				epochErr:                    nil,
+				withdrawErr:                 nil,
 			},
 			wantErr: errors.New("lock error"),
 		},
@@ -101,30 +101,30 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(0),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    5,
-				epochErr:                 nil,
-				withdrawErr:              nil,
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				epoch:                       5,
+				epochErr:                    nil,
+				withdrawErr:                 nil,
 			},
 			wantErr: errors.New("unstake Razors before withdrawing"),
 		},
 		{
-			name: "Test 5: When there is an error in getting withdrawReleasePeriod",
+			name: "Test 5: When there is an error in getting withdrawInitiationPeriod",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriodErr: errors.New("withdrawReleasePeriod error"),
-				txnOpts:                  txnOpts,
-				epoch:                    5,
-				epochErr:                 nil,
-				withdrawErr:              nil,
+				lockErr:                     nil,
+				withdrawInitiationPeriodErr: errors.New("withdrawInitiationPeriod error"),
+				txnOpts:                     txnOpts,
+				epoch:                       5,
+				epochErr:                    nil,
+				withdrawErr:                 nil,
 			},
-			wantErr: errors.New("withdrawReleasePeriod error"),
+			wantErr: errors.New("withdrawInitiationPeriod error"),
 		},
 		{
 			name: "Test 6: When there is an error in getting epoch",
@@ -132,12 +132,12 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epochErr:                 errors.New("epoch error"),
-				withdrawErr:              nil,
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				epochErr:                    errors.New("epoch error"),
+				withdrawErr:                 nil,
 			},
 			wantErr: errors.New("epoch error"),
 		},
@@ -147,15 +147,15 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    9,
-				epochErr:                 nil,
-				withdrawErr:              nil,
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				epoch:                       9,
+				epochErr:                    nil,
+				withdrawErr:                 nil,
 			},
-			wantErr: nil,
+			wantErr: errors.New("withdrawal initiation period has passed"),
 		},
 		{
 			name: "Test 8: When staker tries to withdraw when withdraw Initiation period has not reached",
@@ -163,16 +163,16 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    3,
-				epochErr:                 nil,
-				time:                     "10 minutes 0 seconds ",
-				withdrawErr:              nil,
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				epoch:                       3,
+				epochErr:                    nil,
+				time:                        "10 minutes 0 seconds ",
+				withdrawErr:                 nil,
 			},
-			wantErr: nil,
+			wantErr: errors.New("withdrawal initiation period not reached"),
 		},
 		{
 			name: "Test 9: When there is an error in executing withdraw function",
@@ -180,32 +180,15 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    1,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    5,
-				epochErr:                 nil,
-				withdrawErr:              errors.New("withdraw error"),
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    1,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				epoch:                       5,
+				epochErr:                    nil,
+				withdrawErr:                 errors.New("withdraw error"),
 			},
 			wantErr: errors.New("withdraw error"),
-		},
-		{
-			name: "Test 10: When staker tries to withdraw when withdrawal period has not reached",
-			args: args{
-				lock: types.Locks{
-					UnlockAfter: big.NewInt(4),
-				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				epoch:                    2,
-				epochErr:                 nil,
-				time:                     "20 minutes 0 seconds ",
-				withdrawErr:              nil,
-			},
-			wantErr: nil,
 		},
 		{
 			name: "Test 10: When there is error in mining the transaction",
@@ -213,16 +196,16 @@ func TestHandleUnstakeLock(t *testing.T) {
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
 				},
-				lockErr:                  nil,
-				withdrawReleasePeriod:    4,
-				withdrawReleasePeriodErr: nil,
-				txnOpts:                  txnOpts,
-				txnArgs:                  txnArgs,
-				epoch:                    5,
-				epochErr:                 nil,
-				withdrawHash:             common.BigToHash(big.NewInt(1)),
-				withdrawErr:              nil,
-				blockCompletionErr:       errors.New("error in BlockCompletion for initiateWithdraw"),
+				lockErr:                     nil,
+				withdrawInitiationPeriod:    4,
+				withdrawInitiationPeriodErr: nil,
+				txnOpts:                     txnOpts,
+				txnArgs:                     txnArgs,
+				epoch:                       5,
+				epochErr:                    nil,
+				withdrawHash:                common.BigToHash(big.NewInt(1)),
+				withdrawErr:                 nil,
+				blockCompletionErr:          errors.New("error in BlockCompletion for initiateWithdraw"),
 			},
 			wantErr: errors.New("error in BlockCompletion for initiateWithdraw"),
 		},
@@ -241,7 +224,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
-			utilsMock.On("GetWithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			utilsMock.On("GetWithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawInitiationPeriod, tt.args.withdrawInitiationPeriodErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
@@ -510,6 +493,8 @@ func TestAutoWithdraw(t *testing.T) {
 		txnArgs            types.TransactionOptions
 		txn                common.Hash
 		blockCompletionErr error
+		epoch              uint32
+		epochErr           error
 	}
 	tests := []struct {
 		name    string
@@ -570,6 +555,17 @@ func TestAutoWithdraw(t *testing.T) {
 			},
 			wantErr: errors.New("error in BlockCompletion for AutoWithdraw"),
 		},
+		{
+			name: "Test 5: When there is an error in getting epoch",
+			args: args{
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:  nil,
+				epochErr: errors.New("epoch error"),
+			},
+			wantErr: errors.New("epoch error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -586,6 +582,7 @@ func TestAutoWithdraw(t *testing.T) {
 			timeMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.blockCompletionErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
+			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 
 			utils := &UtilsStruct{}
 			gotErr := utils.AutoWithdraw(txnArgs, stakerId)
