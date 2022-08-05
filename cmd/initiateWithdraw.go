@@ -122,23 +122,20 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-
-	if big.NewInt(int64(epoch)).Cmp(unstakeLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-		txn, err := cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
+	txn, err := cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
+	if err != nil {
+		log.Error("Error in initiating withdrawal of funds", err)
+		return txnArgs, err
+	}
+	if txn != core.NilHash {
+		err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		if err != nil {
-			log.Error("Error in initiating withdrawal of funds", err)
+			log.Error("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
 			return txnArgs, err
 		}
-		if txn != core.NilHash {
-			err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
-			if err != nil {
-				log.Error("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
-				return txnArgs, err
-			}
-		}
-		return txnArgs, nil
 	}
-	return txnArgs, errors.New("unstakeLock period not over yet! Please try after some time")
+	return txnArgs, nil
+
 }
 
 //This function initiate withdraw for your razors once you've unstaked
@@ -156,12 +153,12 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 	return txnHash, nil
 }
 
-//This function helps the user to auto withdraw the razors after initiating withdraw
+//	This function helps the user to auto withdraw the razors after initiating withdraw
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
 	log.Info("Starting withdrawal now...")
 	withdrawLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 1)
 	if err != nil {
-		log.Error("Error in fetching unstakeLock")
+		log.Error("Error in fetching withdrawLock")
 		return err
 	}
 	timeUtils.Sleep(time.Duration(core.EpochLength*withdrawLock.UnlockAfter.Uint64()) * time.Second)

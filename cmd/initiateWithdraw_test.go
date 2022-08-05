@@ -50,6 +50,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 		time                     string
 		withdrawHash             common.Hash
 		withdrawErr              error
+		blockCompletionErr       error
 	}
 	tests := []struct {
 		name    string
@@ -75,14 +76,14 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When withdrawFunds function executes successfully",
+			name: "Test 2:When there is an error in getting state",
 			args: args{
-				stateErr: errors.New("error in getting epoch"),
+				stateErr: errors.New("error in getting state"),
 			},
-			wantErr: errors.New("error in getting epoch"),
+			wantErr: errors.New("error in getting state"),
 		},
 		{
-			name: "Test 3: When there is an error in getting epoch",
+			name: "Test 3: When there is an error in getting locks",
 			args: args{
 				lockErr:                  errors.New("lock error"),
 				withdrawReleasePeriod:    4,
@@ -141,7 +142,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: errors.New("epoch error"),
 		},
 		{
-			name: "Test 7: When staker tries to withdraw when withdrawal period has passed",
+			name: "Test 7: When staker tries to withdraw when withdraw Initiation period has passed",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
@@ -157,7 +158,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 8: When staker tries to withdraw when withdrawal period has not reached",
+			name: "Test 8: When staker tries to withdraw when withdraw Initiation period has not reached",
 			args: args{
 				lock: types.Locks{
 					UnlockAfter: big.NewInt(4),
@@ -206,6 +207,25 @@ func TestHandleUnstakeLock(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 10: When there is error in mining the transaction",
+			args: args{
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:                  nil,
+				withdrawReleasePeriod:    4,
+				withdrawReleasePeriodErr: nil,
+				txnOpts:                  txnOpts,
+				txnArgs:                  txnArgs,
+				epoch:                    5,
+				epochErr:                 nil,
+				withdrawHash:             common.BigToHash(big.NewInt(1)),
+				withdrawErr:              nil,
+				blockCompletionErr:       errors.New("error in BlockCompletion for initiateWithdraw"),
+			},
+			wantErr: errors.New("error in BlockCompletion for initiateWithdraw"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -225,7 +245,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.blockCompletionErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 
 			utils := &UtilsStruct{}
@@ -321,17 +341,28 @@ func TestExecuteWithdraw(t *testing.T) {
 	var config types.Configurations
 	var flagSet *pflag.FlagSet
 	var client *ethclient.Client
+	var account types.Account
+
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        big.NewInt(config.ChainId),
+		Config:         config,
+	}
 
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		address      string
-		addressErr   error
-		password     string
-		stakerId     uint32
-		stakerIdErr  error
-		withdrawHash common.Hash
-		withdrawErr  error
+		config          types.Configurations
+		configErr       error
+		address         string
+		addressErr      error
+		password        string
+		stakerId        uint32
+		stakerIdErr     error
+		autoWithdraw    bool
+		autoWithdrawErr error
+		txnArgs         types.TransactionOptions
+		withdrawErr     error
 	}
 	tests := []struct {
 		name          string
@@ -341,59 +372,77 @@ func TestExecuteWithdraw(t *testing.T) {
 		{
 			name: "Test 1: When ExecuteInitiateWithdraw executes successfully",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				stakerId:     1,
-				withdrawHash: common.BigToHash(big.NewInt(1)),
+				config:          config,
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				stakerId:        1,
+				txnArgs:         txnArgs,
+				autoWithdraw:    true,
+				autoWithdrawErr: nil,
 			},
 			expectedFatal: false,
 		},
 		{
 			name: "Test 2: When there is an error in getting config",
 			args: args{
-				config:       config,
-				configErr:    errors.New("config error"),
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				stakerId:     1,
-				withdrawHash: common.BigToHash(big.NewInt(1)),
+				config:          config,
+				configErr:       errors.New("config error"),
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				stakerId:        1,
+				autoWithdraw:    true,
+				autoWithdrawErr: nil,
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 3: When there is an error in getting address",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "",
-				addressErr:   errors.New("address error"),
-				stakerId:     1,
-				withdrawHash: common.BigToHash(big.NewInt(1)),
+				config:          config,
+				password:        "test",
+				address:         "",
+				addressErr:      errors.New("address error"),
+				stakerId:        1,
+				autoWithdraw:    true,
+				autoWithdrawErr: nil,
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 4: When there is an error from withdraw funds",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				stakerId:     1,
-				withdrawHash: core.NilHash,
-				withdrawErr:  errors.New("withdrawFunds error"),
+				config:          config,
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				stakerId:        1,
+				withdrawErr:     errors.New("withdrawFunds error"),
+				autoWithdraw:    true,
+				autoWithdrawErr: nil,
 			},
 			expectedFatal: true,
 		},
 		{
 			name: "Test 5: When there is an error in getting stakerId",
 			args: args{
-				config:       config,
-				password:     "test",
-				address:      "0x000000000000000000000000000000000000dead",
-				stakerId:     1,
-				stakerIdErr:  errors.New("stakerId error"),
-				withdrawHash: common.BigToHash(big.NewInt(1)),
+				config:          config,
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				stakerId:        1,
+				stakerIdErr:     errors.New("stakerId error"),
+				autoWithdraw:    true,
+				autoWithdrawErr: nil,
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 6: When there is an error in getting autoWithdraw status",
+			args: args{
+				config:          types.Configurations{},
+				password:        "test",
+				address:         "0x000000000000000000000000000000000000dead",
+				autoWithdraw:    true,
+				autoWithdrawErr: errors.New("autoWithdraw error"),
+				stakerId:        1,
 			},
 			expectedFatal: true,
 		},
@@ -421,8 +470,10 @@ func TestExecuteWithdraw(t *testing.T) {
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			flagSetUtilsMock.On("GetBoolAutoWithdraw", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.autoWithdraw, tt.args.autoWithdrawErr)
+			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txnArgs, tt.args.withdrawErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("AutoWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.autoWithdrawErr)
 
 			utils := &UtilsStruct{}
 			fatal = false
@@ -438,12 +489,26 @@ func TestExecuteWithdraw(t *testing.T) {
 
 func TestAutoWithdraw(t *testing.T) {
 
-	var txnArgs types.TransactionOptions
+	var client *ethclient.Client
+	var account types.Account
+	var configurations types.Configurations
 	var stakerId uint32
 
+	txnArgs := types.TransactionOptions{
+		Client:         client,
+		Password:       account.Password,
+		AccountAddress: account.Address,
+		ChainId:        big.NewInt(configurations.ChainId),
+		Config:         configurations,
+	}
+
 	type args struct {
-		withdrawFundsHash common.Hash
-		withdrawFundsErr  error
+		withdrawLockErr error
+		lock            types.Locks
+		lockErr         error
+		stakerId        uint32
+		txnArgs         types.TransactionOptions
+		txn             common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -453,23 +518,41 @@ func TestAutoWithdraw(t *testing.T) {
 		{
 			name: "Test 1: When AutoWithdraw function executes successfully",
 			args: args{
-				withdrawFundsHash: common.BigToHash(big.NewInt(1)),
+				withdrawLockErr: nil,
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:  nil,
+				stakerId: stakerId,
+				txnArgs:  txnArgs,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "Test 2: When there is an error from withdrawFunds",
 			args: args{
-				withdrawFundsErr: errors.New("withdrawFunds error"),
+				withdrawLockErr: errors.New("withdrawFunds error"),
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:  nil,
+				stakerId: stakerId,
+				txnArgs:  txnArgs,
 			},
 			wantErr: errors.New("withdrawFunds error"),
 		},
 		{
-			name: "Test 3: When withdrawFundsTxn is 0x00",
+			name: "Test 3: When there is an error in fetching Withdraw Lock",
 			args: args{
-				withdrawFundsHash: core.NilHash,
+				withdrawLockErr: nil,
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				lockErr:  errors.New("error in fetching withdrawLock"),
+				stakerId: stakerId,
+				txnArgs:  txnArgs,
 			},
-			wantErr: nil,
+			wantErr: errors.New("error in fetching withdrawLock"),
 		},
 	}
 	for _, tt := range tests {
@@ -483,9 +566,10 @@ func TestAutoWithdraw(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 			timeUtils = timeMock
 
-			cmdUtilsMock.On("HandleWithdrawLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawFundsHash, tt.args.withdrawFundsErr)
+			cmdUtilsMock.On("HandleWithdrawLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.withdrawLockErr)
 			timeMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 
 			utils := &UtilsStruct{}
 			gotErr := utils.AutoWithdraw(txnArgs, stakerId)
