@@ -646,3 +646,61 @@ func TestGetStateBuffer(t *testing.T) {
 		})
 	}
 }
+
+func TestIsBlockConfirmed(t *testing.T) {
+	var (
+		client *ethclient.Client
+		epoch  uint32
+	)
+
+	type args struct {
+		isBlockConfirmed    bool
+		isBlockConfirmedErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When IsBlockConfirmed() executes successfully",
+			args: args{
+				isBlockConfirmed: true,
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is error in getting isBlockConfirmed",
+			args: args{
+				isBlockConfirmedErr: errors.New("error in getting isBlockConfirmed"),
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			blockManagerMock := new(mocks.BlockManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				BlockManagerInterface: blockManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			blockManagerMock.On("IsBlockConfirmed", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.isBlockConfirmed, tt.args.isBlockConfirmedErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+			got, err := utils.IsBlockConfirmed(client, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IsBlockConfirmed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("IsBlockConfirmed() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -224,6 +224,7 @@ func (*UtilsStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bo
 			isConfirmed, err = BlockManagerInterface.IsBlockConfirmed(client, epoch)
 			if err != nil {
 				log.Error("Error in fetching isBlockConfirmed!")
+				return err
 			}
 			return nil
 		}, RetryInterface.RetryAttempts(core.MaxRetries))

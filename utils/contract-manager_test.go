@@ -323,3 +323,55 @@ func TestGetVoteManager(t *testing.T) {
 		})
 	}
 }
+
+func TestGetBondManager(t *testing.T) {
+	var client *ethclient.Client
+
+	type args struct {
+		bondManager    *bindings.BondManager
+		bondManagerErr error
+	}
+	tests := []struct {
+		name          string
+		args          args
+		expectedFatal bool
+	}{
+		{
+			name: "Test 1: When GetBondManager() executes successfully",
+			args: args{
+				bondManager: &bindings.BondManager{},
+			},
+			expectedFatal: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting bondManager",
+			args: args{
+				bondManagerErr: errors.New("bondManager error"),
+			},
+			expectedFatal: true,
+		},
+	}
+	defer func() { log.ExitFunc = nil }()
+	var fatal bool
+	log.ExitFunc = func(int) { fatal = true }
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindingsMock := new(mocks.BindingsUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				BindingsInterface: bindingsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			bindingsMock.On("NewBondManager", mock.Anything, mock.AnythingOfType("*ethclient.Client")).Return(tt.args.bondManager, tt.args.bondManagerErr)
+
+			fatal = false
+			utils.GetBondManager(client)
+
+			if fatal != tt.expectedFatal {
+				t.Error("The GetBondManager() function didn't execute as expected")
+			}
+		})
+	}
+}
