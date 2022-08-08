@@ -486,6 +486,7 @@ func TestAutoWithdraw(t *testing.T) {
 		configurations     types.Configurations
 		blockCompletionErr error
 		epoch              uint32
+		state              int64
 		epochErr           error
 		time               string
 	}
@@ -586,7 +587,7 @@ func TestAutoWithdraw(t *testing.T) {
 			timeMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.blockCompletionErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 
 			utils := &UtilsStruct{}
