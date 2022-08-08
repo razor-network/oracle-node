@@ -65,7 +65,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 		utils.CheckError("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
 	}
 
-	if autoWithdraw {
+	if txn != core.NilHash && autoWithdraw {
 		err = cmdUtils.AutoWithdraw(client, types.Account{
 			Address:  address,
 			Password: password,
@@ -158,18 +158,17 @@ func (*UtilsStruct) AutoWithdraw(client *ethclient.Client, account types.Account
 		log.Error("Error in fetching withdrawLock")
 		return err
 	}
-	epoch, err := razorUtils.GetEpoch(client)
+	epoch, state, err := cmdUtils.GetEpochAndState(client)
 	if err != nil {
 		log.Error("Error in fetching epoch")
 		return err
 	}
 
 	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
-	timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
+	timeRemaining := (uint64(waitFor.Int64()-1) * core.EpochLength) + (uint64(6-state) * core.EpochLength / 5) + 5
 	log.Infof("Waiting for lock to get over... please wait for approximately %s", razorUtils.SecondsToReadableTime(int(timeRemaining)))
 
-	// Initiate Withdraw is only allowed in Propose and Dispute
-	timeUtils.Sleep((time.Duration(timeRemaining) * time.Second) - 475)
+	timeUtils.Sleep((time.Duration(timeRemaining) * time.Second))
 	log.Info("Lock period completed")
 	log.Info("Unlocking funds now...")
 
