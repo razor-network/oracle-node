@@ -34,6 +34,7 @@ import (
 //go:generate mockery --name BindUtils --output ./mocks --case=underscore
 //go:generate mockery --name AccountsUtils --output ./mocks --case=underscore
 //go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
+//go:generate mockery --name BondManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name AssetManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name StakeManagerUtils --output ./mocks --case=underscore
@@ -56,6 +57,7 @@ var PathInterface PathUtils
 var BindInterface BindUtils
 var AccountsInterface AccountsUtils
 var BlockManagerInterface BlockManagerUtils
+var BondManagerInterface BondManagerUtils
 var StakeManagerInterface StakeManagerUtils
 var AssetManagerInterface AssetManagerUtils
 var VoteManagerInterface VoteManagerUtils
@@ -79,11 +81,13 @@ type Utils interface {
 	FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]Types.Log, error)
 	BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error)
 	GetBlockManager(client *ethclient.Client) *bindings.BlockManager
+	GetBondManager(client *ethclient.Client) *bindings.BondManager
 	GetOptions() bind.CallOpts
 	GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error)
 	GetSortedProposedBlockId(client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error)
 	FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error)
 	GetBlock(client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error)
+	IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error)
 	GetMaxAltBlocks(client *ethclient.Client) (uint8, error)
 	GetMinSafeRazor(client *ethclient.Client) (*big.Int, error)
 	GetMinStakeAmount(client *ethclient.Client) (*big.Int, error)
@@ -92,6 +96,7 @@ type Utils interface {
 	GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error)
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
 	GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
+	GetBondManagerWithOpts(client *ethclient.Client) (*bindings.BondManager, bind.CallOpts)
 	GetStakeManager(client *ethclient.Client) *bindings.StakeManager
 	GetStakeManagerWithOpts(client *ethclient.Client) (*bindings.StakeManager, bind.CallOpts)
 	GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error)
@@ -99,6 +104,7 @@ type Utils interface {
 	GetStakerId(client *ethclient.Client, address string) (uint32, error)
 	GetNumberOfStakers(client *ethclient.Client) (uint32, error)
 	GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error)
+	GetDataBondCollections(client *ethclient.Client) ([]uint16, error)
 	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
@@ -236,6 +242,11 @@ type BlockManagerUtils interface {
 	MaxAltBlocks(client *ethclient.Client) (uint8, error)
 	SortedProposedBlockIds(client *ethclient.Client, arg0 uint32, arg1 *big.Int) (uint32, error)
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
+	IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error)
+}
+
+type BondManagerUtils interface {
+	GetDataBondCollections(client *ethclient.Client) ([]uint16, error)
 }
 
 type StakeManagerUtils interface {
@@ -280,6 +291,7 @@ type BindingsUtils interface {
 	NewStakeManager(address common.Address, client *ethclient.Client) (*bindings.StakeManager, error)
 	NewVoteManager(address common.Address, client *ethclient.Client) (*bindings.VoteManager, error)
 	NewBlockManager(address common.Address, client *ethclient.Client) (*bindings.BlockManager, error)
+	NewBondManager(address common.Address, client *ethclient.Client) (*bindings.BondManager, error)
 	NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error)
 }
 
@@ -305,7 +317,6 @@ type EthClientStruct struct{}
 type ClientStruct struct{}
 type TimeStruct struct{}
 type OSStruct struct{}
-type BufioStruct struct{}
 type CoinStruct struct{}
 type IOStruct struct{}
 type ABIStruct struct{}
@@ -313,6 +324,7 @@ type PathStruct struct{}
 type BindStruct struct{}
 type AccountsStruct struct{}
 type BlockManagerStruct struct{}
+type BondManagerStruct struct{}
 type StakeManagerStruct struct{}
 type AssetManagerStruct struct{}
 type VoteManagerStruct struct{}
@@ -336,6 +348,7 @@ type OptionsPackageStruct struct {
 	BindInterface         BindUtils
 	AccountsInterface     AccountsUtils
 	BlockManagerInterface BlockManagerUtils
+	BondManagerInterface  BondManagerUtils
 	StakeManagerInterface StakeManagerUtils
 	AssetManagerInterface AssetManagerUtils
 	VoteManagerInterface  VoteManagerUtils

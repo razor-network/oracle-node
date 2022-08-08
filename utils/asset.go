@@ -27,6 +27,11 @@ func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bin
 	return UtilsInterface.GetCollectionManager(client), UtilsInterface.GetOptions()
 }
 
+// GetBondManagerWithOpts function returns the bond manager with opts
+func (*UtilsStruct) GetBondManagerWithOpts(client *ethclient.Client) (*bindings.BondManager, bind.CallOpts) {
+	return UtilsInterface.GetBondManager(client), UtilsInterface.GetOptions()
+}
+
 // GetNumCollections function returns the number of collections
 func (*UtilsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
 	var (
@@ -101,6 +106,27 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 		collections = append(collections, collection)
 	}
 	return collections, nil
+}
+
+//This function returns the collectionIds of data-bond
+func (*UtilsStruct) GetDataBondCollections(client *ethclient.Client) ([]uint16, error) {
+	var (
+		dataBondCollections []uint16
+		err                 error
+	)
+	err = retry.Do(
+		func() error {
+			dataBondCollections, err = BondManagerInterface.GetDataBondCollections(client)
+			if err != nil {
+				log.Error("Error in fetching data bonds")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return nil, err
+	}
+	return dataBondCollections, nil
 }
 
 // GetCollection function returns the particular collection

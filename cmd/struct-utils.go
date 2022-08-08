@@ -639,9 +639,9 @@ func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, op
 }
 
 //This function is used to create the job
-func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, mulJobs []bindings.StructsJob) (*Types.Transaction, error) {
 	assetManager := utilsInterface.GetCollectionManager(client)
-	return assetManager.CreateJob(opts, weight, power, selectorType, name, selector, url)
+	return assetManager.CreateMulJob(opts, mulJobs)
 }
 
 //This function is used to set the collection status
@@ -663,9 +663,9 @@ func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, o
 }
 
 //This function is used to create the collection
-func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
+func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, occurrence uint16, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
 	assetManager := utilsInterface.GetCollectionManager(client)
-	return assetManager.CreateCollection(opts, tolerance, power, aggregationMethod, jobIDs, name)
+	return assetManager.CreateCollection(opts, tolerance, power, occurrence, aggregationMethod, jobIDs, name)
 }
 
 //This function is used to update the collection
@@ -836,6 +836,11 @@ func (flagSetUtils FLagSetUtils) GetStringValue(flagSet *pflag.FlagSet) (string,
 //This function is used to check if weiRazor is passed or not
 func (flagSetUtils FLagSetUtils) GetBoolWeiRazor(flagSet *pflag.FlagSet) (bool, error) {
 	return flagSet.GetBool("weiRazor")
+}
+
+//This function returns the Occurrence in Uint16
+func (flagSetUtils FLagSetUtils) GetUint16Occurrence(flagSet *pflag.FlagSet) (uint16, error) {
+	return flagSet.GetUint16("occurrence")
 }
 
 //This function returns the tolerance in Uint32

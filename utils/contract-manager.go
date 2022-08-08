@@ -55,6 +55,15 @@ func (*UtilsStruct) GetBlockManager(client *ethclient.Client) *bindings.BlockMan
 	return blockManager
 }
 
+// GetBondManager function returns the block manager
+func (*UtilsStruct) GetBondManager(client *ethclient.Client) *bindings.BondManager {
+	bondManager, err := BindingsInterface.NewBondManager(common.HexToAddress(core.BondManagerAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return bondManager
+}
+
 // GetStakedToken function returns the staked token
 func (*UtilsStruct) GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken {
 	stakedTokenContract, err := BindingsInterface.NewStakedToken(tokenAddress, client)

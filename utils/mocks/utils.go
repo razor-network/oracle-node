@@ -553,6 +553,45 @@ func (_m *Utils) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.Bl
 	return r0, r1
 }
 
+// GetBondManager provides a mock function with given fields: client
+func (_m *Utils) GetBondManager(client *ethclient.Client) *bindings.BondManager {
+	ret := _m.Called(client)
+
+	var r0 *bindings.BondManager
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.BondManager); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.BondManager)
+		}
+	}
+
+	return r0
+}
+
+// GetBondManagerWithOpts provides a mock function with given fields: client
+func (_m *Utils) GetBondManagerWithOpts(client *ethclient.Client) (*bindings.BondManager, bind.CallOpts) {
+	ret := _m.Called(client)
+
+	var r0 *bindings.BondManager
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *bindings.BondManager); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.BondManager)
+		}
+	}
+
+	var r1 bind.CallOpts
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) bind.CallOpts); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Get(1).(bind.CallOpts)
+	}
+
+	return r0, r1
+}
+
 // GetBufferedState provides a mock function with given fields: client, buffer
 func (_m *Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
 	ret := _m.Called(client, buffer)
@@ -692,6 +731,29 @@ func (_m *Utils) GetCommitments(client *ethclient.Client, address string) ([32]b
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
 		r1 = rf(client, address)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetDataBondCollections provides a mock function with given fields: client
+func (_m *Utils) GetDataBondCollections(client *ethclient.Client) ([]uint16, error) {
+	ret := _m.Called(client)
+
+	var r0 []uint16
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) []uint16); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uint16)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1768,6 +1830,27 @@ func (_m *Utils) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint64, float32) error); ok {
 		r1 = rf(client, gasLimit, gasLimitMultiplier)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// IsBlockConfirmed provides a mock function with given fields: client, epoch
+func (_m *Utils) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	ret := _m.Called(client, epoch)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bool); ok {
+		r0 = rf(client, epoch)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}

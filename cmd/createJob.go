@@ -101,7 +101,16 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
-	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
+	job := make([]bindings.StructsJob, 1)
+	job[0] = bindings.StructsJob{
+		SelectorType: jobInput.SelectorType,
+		Weight:       jobInput.Weight,
+		Power:        jobInput.Power,
+		Name:         jobInput.Name,
+		Selector:     jobInput.Selector,
+		Url:          jobInput.Url,
+	}
+	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, job)
 	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		return core.NilHash, err

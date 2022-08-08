@@ -21,6 +21,7 @@ contract_addresses_list=(
   "CollectionManager CollectionManagerAddress"
   "VoteManager VoteManagerAddress"
   "BlockManager BlockManagerAddress"
+  "BondManager BondManagerAddress"
 )
 
 for c in "${contract_addresses_list[@]}"

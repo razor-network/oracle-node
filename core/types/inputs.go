@@ -41,6 +41,7 @@ type CreateCollectionInput struct {
 	Password    string
 	Aggregation uint32
 	Power       int8
+	Occurrence  uint16
 	JobIds      []uint
 	Tolerance   uint32
 }

@@ -21,7 +21,7 @@ var createCollectionCmd = &cobra.Command{
 	Long: `A collection is a group of jobs that reports the aggregated value of jobs. createCollection can be used to club multiple jobs into one collection bound by an aggregation method.
 
 Example: 
-  ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2
+  ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --jobIds 1,2 --aggregation 2 --power 2 --occurrencce 1
 
 Note: 
   This command only works for the admin.
@@ -58,15 +58,19 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	occurrence, err := flagSetUtils.GetUint16Occurrence(flagSet)
+	utils.CheckError("Error in getting occurrence: ", err)
 
 	tolerance, err := flagSetUtils.GetUint32Tolerance(flagSet)
 	utils.CheckError("Error in getting tolerance: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
 
 	collectionInput := types.CreateCollectionInput{
 		Address:     address,
 		Password:    password,
 		Power:       power,
+		Occurrence:  occurrence,
 		Name:        name,
 		Aggregation: aggregation,
 		JobIds:      jobIdInUint,
@@ -98,7 +102,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
-	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
+	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Occurrence, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	txnHash := transactionUtils.Hash(txn)
 	if err != nil {
 		log.Error("Error in creating collection")
@@ -118,6 +122,7 @@ func init() {
 		JobIds            []uint
 		AggregationMethod uint32
 		Power             int8
+		Occurrence        uint16
 		Tolerance         uint32
 	)
 
@@ -127,6 +132,7 @@ func init() {
 	createCollectionCmd.Flags().Uint32VarP(&AggregationMethod, "aggregation", "", 1, "aggregation method to be used")
 	createCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 	createCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
+	createCollectionCmd.Flags().Uint16VarP(&Occurrence, "occurrence", "", 1, "occurrence of the collection")
 
 	nameErr := createCollectionCmd.MarkFlagRequired("name")
 	utils.CheckError("Name error: ", nameErr)
@@ -136,6 +142,8 @@ func init() {
 	utils.CheckError("Job Id Error: ", jobIdErr)
 	powerErr := createCollectionCmd.MarkFlagRequired("power")
 	utils.CheckError("Power Error: ", powerErr)
+	occurrenceErr := createCollectionCmd.MarkFlagRequired("occurrence")
+	utils.CheckError("Occurrence Error: ", occurrenceErr)
 	toleranceErr := createCollectionCmd.MarkFlagRequired("tolerance")
 	utils.CheckError("Tolerance Error: ", toleranceErr)
 }

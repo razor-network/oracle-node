@@ -163,10 +163,10 @@ type TokenManagerInterface interface {
 }
 
 type AssetManagerInterface interface {
-	CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error)
+	CreateJob(client *ethclient.Client, opts *bind.TransactOpts, mulJobs []bindings.StructsJob) (*Types.Transaction, error)
 	SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error)
 	GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error)
-	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error)
+	CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, occurrence uint16, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error)
 	UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error)
 	UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint32, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error)
 }
@@ -210,6 +210,7 @@ type FlagSetInterface interface {
 	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
 	GetStringCompress(flagSet *pflag.FlagSet) (string, error)
 	GetRootStringConfig(configType string) (string, error)
+	GetUint16Occurrence(flagSet *pflag.FlagSet) (uint16, error)
 }
 
 type UtilsCmdInterface interface {

@@ -39,6 +39,29 @@ func (_m *BindingsUtils) NewBlockManager(address common.Address, client *ethclie
 	return r0, r1
 }
 
+// NewBondManager provides a mock function with given fields: address, client
+func (_m *BindingsUtils) NewBondManager(address common.Address, client *ethclient.Client) (*bindings.BondManager, error) {
+	ret := _m.Called(address, client)
+
+	var r0 *bindings.BondManager
+	if rf, ok := ret.Get(0).(func(common.Address, *ethclient.Client) *bindings.BondManager); ok {
+		r0 = rf(address, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.BondManager)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(common.Address, *ethclient.Client) error); ok {
+		r1 = rf(address, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewCollectionManager provides a mock function with given fields: address, client
 func (_m *BindingsUtils) NewCollectionManager(address common.Address, client *ethclient.Client) (*bindings.CollectionManager, error) {
 	ret := _m.Called(address, client)

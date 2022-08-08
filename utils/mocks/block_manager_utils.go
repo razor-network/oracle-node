@@ -100,6 +100,27 @@ func (_m *BlockManagerUtils) GetProposedBlock(client *ethclient.Client, epoch ui
 	return r0, r1
 }
 
+// IsBlockConfirmed provides a mock function with given fields: client, epoch
+func (_m *BlockManagerUtils) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	ret := _m.Called(client, epoch)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bool); ok {
+		r0 = rf(client, epoch)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, epoch)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // MaxAltBlocks provides a mock function with given fields: client
 func (_m *BlockManagerUtils) MaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	ret := _m.Called(client)

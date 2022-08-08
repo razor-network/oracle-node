@@ -39,6 +39,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	BindInterface = optionsPackageStruct.BindInterface
 	AccountsInterface = optionsPackageStruct.AccountsInterface
 	BlockManagerInterface = optionsPackageStruct.BlockManagerInterface
+	BondManagerInterface = optionsPackageStruct.BondManagerInterface
 	StakeManagerInterface = optionsPackageStruct.StakeManagerInterface
 	AssetManagerInterface = optionsPackageStruct.AssetManagerInterface
 	VoteManagerInterface = optionsPackageStruct.VoteManagerInterface
@@ -291,6 +292,11 @@ func (b BindingsStruct) NewBlockManager(address common.Address, client *ethclien
 	return bindings.NewBlockManager(address, client)
 }
 
+// NewBondManager function returns the new block manager
+func (b BindingsStruct) NewBondManager(address common.Address, client *ethclient.Client) (*bindings.BondManager, error) {
+	return bindings.NewBondManager(address, client)
+}
+
 // NewStakedToken function returns  the new staked token
 func (b BindingsStruct) NewStakedToken(address common.Address, client *ethclient.Client) (*bindings.StakedToken, error) {
 	return bindings.NewStakedToken(address, client)
@@ -424,4 +430,15 @@ func (r RetryStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
 // GetLogFileName function returns the log file name
 func (f FlagSetStruct) GetLogFileName(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("logFile")
+}
+
+//This function returns if the block is confirmed or not
+func (b BlockManagerStruct) IsBlockConfirmed(client *ethclient.Client, epoch uint32) (bool, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.IsBlockConfirmed(&opts, epoch)
+}
+
+func (b BondManagerStruct) GetDataBondCollections(client *ethclient.Client) ([]uint16, error) {
+	bondManager, opts := UtilsInterface.GetBondManagerWithOpts(client)
+	return bondManager.GetDatabondCollections(&opts)
 }
