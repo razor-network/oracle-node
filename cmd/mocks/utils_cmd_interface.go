@@ -100,13 +100,13 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 	return r0, r1
 }
 
-// AutoWithdraw provides a mock function with given fields: txnArgs, stakerId
-func (_m *UtilsCmdInterface) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
-	ret := _m.Called(txnArgs, stakerId)
+// AutoWithdraw provides a mock function with given fields: client, account, configurations, stakerId
+func (_m *UtilsCmdInterface) AutoWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) error {
+	ret := _m.Called(client, account, configurations, stakerId)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.TransactionOptions, uint32) error); ok {
-		r0 = rf(txnArgs, stakerId)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) error); ok {
+		r0 = rf(client, account, configurations, stakerId)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -926,14 +926,16 @@ func (_m *UtilsCmdInterface) HandleExit() {
 }
 
 // HandleUnstakeLock provides a mock function with given fields: client, account, configurations, stakerId
-func (_m *UtilsCmdInterface) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (types.TransactionOptions, error) {
+func (_m *UtilsCmdInterface) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 	ret := _m.Called(client, account, configurations, stakerId)
 
-	var r0 types.TransactionOptions
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) types.TransactionOptions); ok {
+	var r0 common.Hash
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) common.Hash); ok {
 		r0 = rf(client, account, configurations, stakerId)
 	} else {
-		r0 = ret.Get(0).(types.TransactionOptions)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Hash)
+		}
 	}
 
 	var r1 error
