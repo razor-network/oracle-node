@@ -155,7 +155,8 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 
 //	This function helps the user to auto withdraw the razors after initiating withdraw
 func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint32) error {
-	log.Info("Starting withdrawal now...")
+	log.Info("Starting withdrawal...")
+	log.Info("Waiting for lock to get over...")
 	withdrawLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 1)
 	if err != nil {
 		log.Error("Error in fetching withdrawLock")
@@ -170,7 +171,10 @@ func (*UtilsStruct) AutoWithdraw(txnArgs types.TransactionOptions, stakerId uint
 	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
 	timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
 
-	timeUtils.Sleep(time.Duration(timeRemaining) * time.Second)
+	// Initiate Withdraw is only allowed in Propose and Dispute
+	timeUtils.Sleep((time.Duration(timeRemaining) * time.Second) - 475)
+	log.Info("Lock period completed")
+	log.Info("Unlocking funds now...")
 	txn, err := cmdUtils.HandleWithdrawLock(txnArgs.Client, types.Account{
 		Address:  txnArgs.AccountAddress,
 		Password: txnArgs.Password,
