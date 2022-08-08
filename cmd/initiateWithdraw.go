@@ -170,7 +170,6 @@ func (*UtilsStruct) AutoWithdraw(client *ethclient.Client, account types.Account
 
 	timeUtils.Sleep((time.Duration(timeRemaining) * time.Second))
 	log.Info("Lock period completed")
-	log.Info("Unlocking funds now...")
 
 	txn, err := cmdUtils.HandleWithdrawLock(client, types.Account{
 		Address:  account.Address,
