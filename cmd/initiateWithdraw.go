@@ -131,11 +131,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	if big.NewInt(int64(epoch)).Cmp(unstakeLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-		return cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
-	}
-	return core.NilHash, errors.New("unstakeLock period not over yet! Please try after some time")
-
+	return cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
 }
 
 //This function initiate withdraw for your razors once you've unstaked
