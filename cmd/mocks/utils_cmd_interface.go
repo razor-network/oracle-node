@@ -100,6 +100,20 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 	return r0, r1
 }
 
+// AutoWithdraw provides a mock function with given fields: client, account, configurations, stakerId
+func (_m *UtilsCmdInterface) AutoWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) error {
+	ret := _m.Called(client, account, configurations, stakerId)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, types.Configurations, uint32) error); ok {
+		r0 = rf(client, account, configurations, stakerId)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CalculateSecret provides a mock function with given fields: account, epoch, keystorePath, chainId
 func (_m *UtilsCmdInterface) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
 	ret := _m.Called(account, epoch, keystorePath, chainId)

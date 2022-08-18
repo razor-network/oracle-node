@@ -9,6 +9,7 @@ import (
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -43,6 +44,9 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword()
 
+	autoWithdraw, err := flagSetUtils.GetBoolAutoWithdraw(flagSet)
+	utils.CheckError("Error in getting autoWithdraw status: ", err)
+
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
@@ -60,11 +64,18 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 		err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
 	}
+
+	if txn != core.NilHash && autoWithdraw {
+		err = cmdUtils.AutoWithdraw(client, types.Account{
+			Address:  address,
+			Password: password,
+		}, config, stakerId)
+		utils.CheckError("AutoWithdraw Error: ", err)
+	}
 }
 
 //This function handles the unstake lock
 func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
-
 	_, err := cmdUtils.WaitForAppropriateState(client, "initiateWithdraw", 0, 1, 4)
 	if err != nil {
 		log.Error("Error in fetching epoch: ", err)
@@ -120,10 +131,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
-	if big.NewInt(int64(epoch)).Cmp(unstakeLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
-		return cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
-	}
-	return core.NilHash, errors.New("unstakeLock period not over yet! Please try after some time")
+	return cmdUtils.InitiateWithdraw(client, txnOpts, stakerId)
 }
 
 //This function initiate withdraw for your razors once you've unstaked
@@ -142,16 +150,52 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 	return txnHash, nil
 }
 
+//	This function helps the user to auto withdraw the razors after initiating withdraw
+func (*UtilsStruct) AutoWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) error {
+	log.Info("Starting withdrawal...")
+	withdrawLock, err := razorUtils.GetLock(client, account.Address, stakerId, 1)
+	if err != nil {
+		log.Error("Error in fetching withdrawLock")
+		return err
+	}
+	epoch, state, err := cmdUtils.GetEpochAndState(client)
+	if err != nil {
+		log.Error("Error in fetching epoch")
+		return err
+	}
+
+	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
+	timeRemaining := (uint64(waitFor.Int64()-1) * core.EpochLength) + (uint64(6-state) * core.EpochLength / 5) + 5
+	log.Infof("Waiting for lock to get over... please wait for approximately %s", razorUtils.SecondsToReadableTime(int(timeRemaining)))
+
+	timeUtils.Sleep((time.Duration(timeRemaining) * time.Second))
+	log.Info("Lock period completed")
+
+	txn, err := cmdUtils.HandleWithdrawLock(client, types.Account{
+		Address:  account.Address,
+		Password: account.Password,
+	}, configurations, stakerId)
+	utils.CheckError("UnlockWithdraw error: ", err)
+
+	if txn != core.NilHash {
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+		utils.CheckError("Error in WaitForBlockCompletion for unlockWithdraw: ", err)
+	}
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(initiateWithdrawCmd)
 
 	var (
-		Address  string
-		StakerId uint32
+		Address               string
+		StakerId              uint32
+		WithdrawAutomatically bool
 	)
 
 	initiateWithdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	initiateWithdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
+	initiateWithdrawCmd.Flags().BoolVarP(&WithdrawAutomatically, "autoWithdraw", "", false, "withdraw after un-stake automatically")
 
 	addrErr := initiateWithdrawCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

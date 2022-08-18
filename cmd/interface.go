@@ -180,6 +180,7 @@ type FlagSetInterface interface {
 	GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(flagSet *pflag.FlagSet) (string, error)
+	GetBoolAutoWithdraw(*pflag.FlagSet) (bool, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
@@ -240,6 +241,7 @@ type UtilsCmdInterface interface {
 	ExecuteUnstake(flagSet *pflag.FlagSet)
 	Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
 	ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error)
+	AutoWithdraw(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) error
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
 	InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
