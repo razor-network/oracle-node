@@ -232,8 +232,8 @@ func TestGetDataFromHTML(t *testing.T) {
 		{
 			name: "Test 1: Test data from coin market cap",
 			args: args{
-				url:      "https://coinmarketcap.com/all/views/all/",
-				selector: `/html/body/div[1]/div[1]/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/a/span`,
+				url:      "https://www.coingecko.com/en/coins/bitcoin",
+				selector: `/html/body/div[3]/div[3]/div[3]/div[1]/div[3]/ul/li[1]/div/a/span`,
 			},
 			want:    "Cryptocurrencies",
 			wantErr: false,
