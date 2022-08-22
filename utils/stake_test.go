@@ -446,13 +446,13 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
-		withdrawReleasePeriod    uint8
+		withdrawReleasePeriod    uint16
 		withdrawReleasePeriodErr error
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    uint8
+		want    uint16
 		wantErr bool
 	}{
 		{

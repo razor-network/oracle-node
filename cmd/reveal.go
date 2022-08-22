@@ -37,8 +37,6 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
 	treeRevealData := cmdUtils.GenerateTreeRevealData(merkleTree, commitData)
-	secretBytes32 := [32]byte{}
-	copy(secretBytes32[:], secret)
 
 	log.Debugf("Revealing vote for epoch: %d secret: %s  commitAccount: %s, treeRevealData: %v, root: %v",
 		epoch,
@@ -59,9 +57,9 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerABI,
 		MethodName:      "reveal",
-		Parameters:      []interface{}{epoch, treeRevealData, secretBytes32},
+		Parameters:      []interface{}{epoch, treeRevealData, secret},
 	})
-	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secretBytes32)
+	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, secret)
 	if err != nil {
 		log.Error(err)
 		return core.NilHash, err

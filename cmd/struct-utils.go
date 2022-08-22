@@ -242,7 +242,7 @@ func (u Utils) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSu
 }
 
 //This function returns the withdraw initiation period
-func (u Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint8, error) {
+func (u Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
 	return utilsInterface.GetWithdrawInitiationPeriod(client)
 }
 
@@ -654,7 +654,7 @@ func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.Blo
 }
 
 //This function is used to reveal the values
-func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*Types.Transaction, error) {
+func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret []byte) (*Types.Transaction, error) {
 	voteManager := utilsInterface.GetVoteManager(client)
 	var (
 		txn *Types.Transaction

@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/razor-network/razor-go#readme",
   "dependencies": {
-    "@razor-network/contracts": "1.0.1-patch3"
+    "@razor-network/contracts": "1.0.2"
   }
 }

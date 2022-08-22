@@ -43,11 +43,11 @@ func (_m *VoteManagerInterface) Commit(client *ethclient.Client, txnOpts *bind.T
 }
 
 // Reveal provides a mock function with given fields: client, txnOpts, epoch, tree, secret
-func (_m *VoteManagerInterface) Reveal(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret [32]byte) (*types.Transaction, error) {
+func (_m *VoteManagerInterface) Reveal(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, secret []byte) (*types.Transaction, error) {
 	ret := _m.Called(client, txnOpts, epoch, tree, secret)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, [32]byte) *types.Transaction); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, []byte) *types.Transaction); ok {
 		r0 = rf(client, txnOpts, epoch, tree, secret)
 	} else {
 		if ret.Get(0) != nil {
@@ -56,7 +56,7 @@ func (_m *VoteManagerInterface) Reveal(client *ethclient.Client, txnOpts *bind.T
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, [32]byte) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, bindings.StructsMerkleTree, []byte) error); ok {
 		r1 = rf(client, txnOpts, epoch, tree, secret)
 	} else {
 		r1 = ret.Error(1)

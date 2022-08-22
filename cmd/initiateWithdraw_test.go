@@ -33,7 +33,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 		stateErr                 error
 		lock                     types.Locks
 		lockErr                  error
-		withdrawReleasePeriod    uint8
+		withdrawReleasePeriod    uint16
 		withdrawReleasePeriodErr error
 		txnOpts                  *bind.TransactOpts
 		epoch                    uint32
