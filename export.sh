@@ -13,21 +13,21 @@ generate_binding() {
 }
 
 contracts=(
-  "Core/BlockManager.sol/BlockManager BlockManager blockManager.go"
-  "Core/CollectionManager.sol/CollectionManager CollectionManager collectionManager.go"
-  "Core/StakeManager.sol/StakeManager StakeManager stakeManager.go"
-  "Core/VoteManager.sol/VoteManager VoteManger voteManager.go"
-  "Core/storage/BlockStorage.sol/BlockStorage BlockStorage blockStorage.go"
-  "Core/storage/CollectionStorage.sol/CollectionStorage CollectionStorage collectionStorage.go"
-  "Core/storage/StakeStorage.sol/StakeStorage StakeStorage stakeStorage.go"
-  "Core/storage/VoteStorage.sol/VoteStorage VoteStorage voteStorage.go"
-  "Core/parameters/ACL.sol/ACL ACL acl.go"
-  "Delegator.sol/Delegator Delegator delegator.go"
-  "tokenization/StakedToken.sol/StakedToken StakedToken stakedToken.go"
-  "tokenization/RAZOR.sol/RAZOR RAZOR RAZOR.go"
-  "access/AccessControl.sol/AccessControl AccessControl accessControl.go"
-  "token/ERC20/ERC20.sol/ERC20 ERC20 erc20.go"
-  "utils/introspection/ERC165.sol/ERC165 ERC165 erc165.go"
+  "BlockManager blockManager.go"
+  "CollectionManager collectionManager.go"
+  "StakeManager stakeManager.go"
+  "VoteManger voteManager.go"
+  "BlockStorage blockStorage.go"
+  "CollectionStorage collectionStorage.go"
+  "StakeStorage stakeStorage.go"
+  "VoteStorage voteStorage.go"
+  "ACL acl.go"
+  "Delegator delegator.go"
+  "StakedToken stakedToken.go"
+  "RAZOR RAZOR.go"
+  "AccessControl accessControl.go"
+  "ERC20 erc20.go"
+  "ERC165 erc165.go"
 )
 
 commitId=$1
@@ -35,10 +35,9 @@ git clone https://github.com/razor-network/contracts.git
 cd contracts
 git checkout $1
 npm i
-npm run cp-ci-env
 npm run compile
-cp -r artifacts/contracts ../contract-abi
-cp -r artifacts/@openzeppelin/contracts/* ../contract-abi
+npx hardhat export-abi
+cp -r abi ../contract-abi
 cd ..
 rm -rf contracts
 
