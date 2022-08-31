@@ -25,3 +25,4 @@ __debug_bin
 node_modules
 build
 pkg
+contract-abi
