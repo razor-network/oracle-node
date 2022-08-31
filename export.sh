@@ -6,17 +6,16 @@ mkdir -p ./pkg/bindings
 
 generate_binding() {
   contract=$(echo $1 | awk '{print $1}')
-  contractType=$(echo $1 | awk '{print $2}')
-  go_source=$(echo $1 | awk '{print $3}')
+  go_source=$(echo $1 | awk '{print $2}')
   echo "Generating binding for (${contract})"
-  abigen --abi ./contract-abi/${contract}.json --pkg 'bindings' --type=${contractType} --out ./pkg/bindings/${go_source}
+  abigen --abi ./contract-abi/${contract}.json --pkg 'bindings' --type=${contract} --out ./pkg/bindings/${go_source}
 }
 
 contracts=(
   "BlockManager blockManager.go"
   "CollectionManager collectionManager.go"
   "StakeManager stakeManager.go"
-  "VoteManger voteManager.go"
+  "VoteManager voteManager.go"
   "BlockStorage blockStorage.go"
   "CollectionStorage collectionStorage.go"
   "StakeStorage stakeStorage.go"
