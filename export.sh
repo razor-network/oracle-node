@@ -35,6 +35,7 @@ git clone https://github.com/razor-network/contracts.git
 cd contracts
 git checkout $1
 npm i
+npm run cp-ci-env
 npm run compile
 npx hardhat export-abi
 cp -r abi ../contract-abi
