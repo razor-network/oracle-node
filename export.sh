@@ -30,6 +30,7 @@ contracts=(
 )
 
 commitId=$1
+rm -rf contract-abi
 git clone https://github.com/razor-network/contracts.git
 cd contracts
 git checkout $1
