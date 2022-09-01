@@ -1311,13 +1311,13 @@ func (_m *UtilsInterface) SaveDataToDisputeJsonFile(filePath string, bountyIdQue
 	return r0
 }
 
-// SaveDataToProposeJsonFile provides a mock function with given fields: flePath, epoch, proposeFileData
-func (_m *UtilsInterface) SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFileData types.ProposeData) error {
-	ret := _m.Called(flePath, epoch, proposeFileData)
+// SaveDataToProposeJsonFile provides a mock function with given fields: flePath, proposeFileData
+func (_m *UtilsInterface) SaveDataToProposeJsonFile(flePath string, proposeFileData types.ProposeFileData) error {
+	ret := _m.Called(flePath, proposeFileData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, uint32, types.ProposeData) error); ok {
-		r0 = rf(flePath, epoch, proposeFileData)
+	if rf, ok := ret.Get(0).(func(string, types.ProposeFileData) error); ok {
+		r0 = rf(flePath, proposeFileData)
 	} else {
 		r0 = ret.Error(0)
 	}

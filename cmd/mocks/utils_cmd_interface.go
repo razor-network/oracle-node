@@ -1296,26 +1296,17 @@ func (_m *UtilsCmdInterface) ModifyCollectionStatus(client *ethclient.Client, co
 }
 
 // Propose provides a mock function with given fields: client, config, account, staker, epoch, blockNumber, rogueData
-func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
+func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
 	ret := _m.Called(client, config, account, staker, epoch, blockNumber, rogueData)
 
-	var r0 common.Hash
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *big.Int, types.Rogue) common.Hash); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *big.Int, types.Rogue) error); ok {
 		r0 = rf(client, config, account, staker, epoch, blockNumber, rogueData)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(common.Hash)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *big.Int, types.Rogue) error); ok {
-		r1 = rf(client, config, account, staker, epoch, blockNumber, rogueData)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // ResetDispute provides a mock function with given fields: client, blockManager, txnOpts, epoch
