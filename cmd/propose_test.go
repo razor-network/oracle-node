@@ -79,6 +79,7 @@ func TestPropose(t *testing.T) {
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
+		waitForBlockCompletionErr  error
 	}
 	tests := []struct {
 		name    string
@@ -378,9 +379,10 @@ func TestPropose(t *testing.T) {
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 				fileNameErr:             errors.New("fileName error"),
 			},
-			wantErr: nil,
+			wantErr: errors.New("fileName error"),
 		},
 		{
 			name: "Test 15: When there is an error in saving data to file",
@@ -399,9 +401,10 @@ func TestPropose(t *testing.T) {
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 				saveDataErr:             errors.New("error in saving data"),
 			},
-			wantErr: nil,
+			wantErr: errors.New("error in saving data"),
 		},
 		{
 			name: "Test 17: When there is an error in getting buffer percent",
@@ -468,6 +471,28 @@ func TestPropose(t *testing.T) {
 			},
 			wantErr: errors.New("smallestStakerId error"),
 		},
+		{
+			name: "Test 20: When there is an error in waitForCompletion",
+			args: args{
+				state:                     2,
+				staker:                    bindings.StructsStaker{},
+				numStakers:                5,
+				biggestStake:              big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:           2,
+				salt:                      saltBytes32,
+				iteration:                 1,
+				numOfProposedBlocks:       3,
+				maxAltBlocks:              4,
+				lastIteration:             big.NewInt(5),
+				lastProposedBlockStruct:   bindings.StructsBlock{},
+				medians:                   []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+				txnOpts:                   txnOpts,
+				proposeTxn:                &Types.Transaction{},
+				hash:                      common.BigToHash(big.NewInt(1)),
+				waitForBlockCompletionErr: errors.New("waitForBlockCompletion error"),
+			},
+			wantErr: errors.New("waitForBlockCompletion error"),
+		},
 	}
 	for _, tt := range tests {
 
@@ -501,7 +526,7 @@ func TestPropose(t *testing.T) {
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-		utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+		utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
