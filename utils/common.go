@@ -265,10 +265,10 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 	}
 }
 
-func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
+func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
 
 	var data types.ProposeFileData
-	data.Epoch = epoch
+	data.Epoch = proposeData.Epoch
 	data.MediansData = proposeData.MediansData
 	data.RevealedCollectionIds = proposeData.RevealedCollectionIds
 	data.RevealedDataMaps = proposeData.RevealedDataMaps

@@ -144,7 +144,7 @@ type Utils interface {
 	GetEpoch(client *ethclient.Client) (uint32, error)
 	SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error
 	ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error)
-	SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error
+	SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error
 	ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error)
 	SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error
 	ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error)

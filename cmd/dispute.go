@@ -183,25 +183,22 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 //This function returns the local median data
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
-
-	if _mediansData == nil && !rogueData.IsRogue {
+	if (globalProposedDataStruct.MediansData == nil && !rogueData.IsRogue) || epoch != globalProposedDataStruct.Epoch {
 		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
 			goto CalculateMedian
 		}
-		proposedata, err := razorUtils.ReadFromProposeJsonFile(fileName)
+		proposedData, err := razorUtils.ReadFromProposeJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting propose data from file %s: %t", fileName, err)
 			goto CalculateMedian
 		}
-		if proposedata.Epoch != epoch {
+		if proposedData.Epoch != epoch {
 			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
 			goto CalculateMedian
 		}
-		_mediansData = proposedata.MediansData
-		_revealedDataMaps = proposedata.RevealedDataMaps
-		_revealedCollectionIds = proposedata.RevealedCollectionIds
+		updateGlobalProposedDataStruct(proposedData)
 	}
 CalculateMedian:
 	stakerId, err := razorUtils.GetStakerId(client, account.Address)
@@ -215,7 +212,7 @@ CalculateMedian:
 		return nil, nil, nil, err
 	}
 
-	nilProposedData := _mediansData == nil || _revealedCollectionIds == nil || _revealedDataMaps == nil
+	nilProposedData := globalProposedDataStruct.MediansData == nil || globalProposedDataStruct.RevealedDataMaps == nil || globalProposedDataStruct.RevealedCollectionIds == nil
 	epochCheck := epoch != lastProposedEpoch
 
 	if nilProposedData || rogueData.IsRogue || epochCheck {
@@ -224,14 +221,17 @@ CalculateMedian:
 			log.Error("Error in calculating block medians")
 			return nil, nil, nil, err
 		}
-		_mediansData = medians
-		_revealedCollectionIds = revealedCollectionIds
-		_revealedDataMaps = revealedDataMaps
+		updateGlobalProposedDataStruct(types.ProposeFileData{
+			MediansData:           medians,
+			RevealedCollectionIds: revealedCollectionIds,
+			RevealedDataMaps:      revealedDataMaps,
+			Epoch:                 epoch,
+		})
 	}
 
 	log.Debug("Locally calculated data:")
-	log.Debugf("Medians: %d", _mediansData)
-	return _mediansData, _revealedCollectionIds, _revealedDataMaps, nil
+	log.Debugf("Medians: %d", globalProposedDataStruct.MediansData)
+	return globalProposedDataStruct.MediansData, globalProposedDataStruct.RevealedCollectionIds, globalProposedDataStruct.RevealedDataMaps, nil
 }
 
 //This function check for the dispute in different type of Id's

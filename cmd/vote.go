@@ -460,16 +460,9 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return nil
 	}
 
-	proposeTxn, err := cmdUtils.Propose(client, config, account, staker, epoch, blockNumber, rogueData)
+	err = cmdUtils.Propose(client, config, account, staker, epoch, blockNumber, rogueData)
 	if err != nil {
 		return errors.New("Propose error: " + err.Error())
-	}
-	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
-		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletionErr for propose: ", err)
-			return err
-		}
 	}
 	return nil
 }
