@@ -1209,6 +1209,11 @@ func BenchmarkHandleDispute(b *testing.B) {
 					SortedRevealedValues: nil,
 					VoteWeights:          nil,
 					InfluenceSum:         nil}
+				proposedData := types.ProposeFileData{
+					MediansData:           medians,
+					RevealedCollectionIds: revealedCollectionIds,
+					RevealedDataMaps:      revealedDataMaps,
+				}
 				proposedBlock := bindings.StructsBlock{
 					Medians:      []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
 					Valid:        true,
@@ -1216,7 +1221,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 
 				utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
 				cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
-				cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(medians, revealedCollectionIds, revealedDataMaps, nil)
+				cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedData, nil)
 				utilsPkgMock.On("Shuffle", mock.Anything).Return(randomSortedPorposedBlockIds)
 				utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(proposedBlock, nil)
 				utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
