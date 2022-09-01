@@ -541,7 +541,11 @@ func TestHandleDispute(t *testing.T) {
 
 			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
 			cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakeId, tt.args.biggestStakeErr)
-			cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
+			cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(types.ProposeFileData{
+				MediansData:           tt.args.medians,
+				RevealedCollectionIds: tt.args.revealedCollectionIds,
+				RevealedDataMaps:      tt.args.revealedDataMaps,
+			}, tt.args.mediansErr)
 			utilsPkgMock.On("Shuffle", mock.Anything).Return(tt.args.randomSortedProposedBlockIds)
 			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
@@ -774,19 +778,19 @@ func TestGetLocalMediansData(t *testing.T) {
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedEpoch, tt.args.lastProposedEpochErr)
 			ut := &UtilsStruct{}
-			got, got1, got2, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
+			localProposedData, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLocalMediansData() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetLocalMediansData() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(localProposedData.MediansData, tt.want) {
+				t.Errorf("GetLocalMediansData() got = %v, want %v", localProposedData.MediansData, tt.want)
 			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("GetLocalMediansData() got1 = %v, want %v", got1, tt.want1)
+			if !reflect.DeepEqual(localProposedData.RevealedCollectionIds, tt.want1) {
+				t.Errorf("GetLocalMediansData() got1 = %v, want %v", localProposedData.RevealedCollectionIds, tt.want1)
 			}
-			if !reflect.DeepEqual(got2, tt.want2) {
-				t.Errorf("GetLocalMediansData() got2 = %v, want %v", got2, tt.want2)
+			if !reflect.DeepEqual(localProposedData.RevealedDataMaps, tt.want2) {
+				t.Errorf("GetLocalMediansData() got2 = %v, want %v", localProposedData.RevealedDataMaps, tt.want2)
 			}
 		})
 	}

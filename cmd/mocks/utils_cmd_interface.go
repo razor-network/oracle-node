@@ -731,44 +731,24 @@ func (_m *UtilsCmdInterface) GetLastProposedEpoch(client *ethclient.Client, bloc
 }
 
 // GetLocalMediansData provides a mock function with given fields: client, account, epoch, blockNumber, rogueData
-func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
+func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	ret := _m.Called(client, account, epoch, blockNumber, rogueData)
 
-	var r0 []*big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) []*big.Int); ok {
+	var r0 types.ProposeFileData
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) types.ProposeFileData); ok {
 		r0 = rf(client, account, epoch, blockNumber, rogueData)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*big.Int)
-		}
+		r0 = ret.Get(0).(types.ProposeFileData)
 	}
 
-	var r1 []uint16
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) []uint16); ok {
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) error); ok {
 		r1 = rf(client, account, epoch, blockNumber, rogueData)
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]uint16)
-		}
+		r1 = ret.Error(1)
 	}
 
-	var r2 *types.RevealedDataMaps
-	if rf, ok := ret.Get(2).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) *types.RevealedDataMaps); ok {
-		r2 = rf(client, account, epoch, blockNumber, rogueData)
-	} else {
-		if ret.Get(2) != nil {
-			r2 = ret.Get(2).(*types.RevealedDataMaps)
-		}
-	}
-
-	var r3 error
-	if rf, ok := ret.Get(3).(func(*ethclient.Client, types.Account, uint32, *big.Int, types.Rogue) error); ok {
-		r3 = rf(client, account, epoch, blockNumber, rogueData)
-	} else {
-		r3 = ret.Error(3)
-	}
-
-	return r0, r1, r2, r3
+	return r0, r1
 }
 
 // GetLogLevel provides a mock function with given fields:

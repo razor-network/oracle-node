@@ -43,10 +43,13 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 	log.Debug("Biggest Stake: ", biggestStake)
 
-	medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.GetLocalMediansData(client, account, epoch, blockNumber, rogueData)
+	locallyCalculatedData, err := cmdUtils.GetLocalMediansData(client, account, epoch, blockNumber, rogueData)
 	if err != nil {
 		return err
 	}
+	medians := locallyCalculatedData.MediansData
+	revealedCollectionIds := locallyCalculatedData.RevealedCollectionIds
+	revealedDataMaps := locallyCalculatedData.RevealedDataMaps
 
 	randomSortedProposedBlockIds := utils.UtilsInterface.Shuffle(sortedProposedBlockIds) //shuffles the sortedProposedBlockIds array
 	transactionOptions := types.TransactionOptions{
@@ -182,7 +185,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 }
 
 //This function returns the local median data
-func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
+func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	if (globalProposedDataStruct.MediansData == nil && !rogueData.IsRogue) || epoch != globalProposedDataStruct.Epoch {
 		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
@@ -204,12 +207,12 @@ CalculateMedian:
 	stakerId, err := razorUtils.GetStakerId(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
-		return nil, nil, nil, err
+		return types.ProposeFileData{}, err
 	}
 	lastProposedEpoch, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, stakerId)
 	if err != nil {
 		log.Error("Error in getting last proposed epoch: ", err)
-		return nil, nil, nil, err
+		return types.ProposeFileData{}, err
 	}
 
 	nilProposedData := globalProposedDataStruct.MediansData == nil || globalProposedDataStruct.RevealedDataMaps == nil || globalProposedDataStruct.RevealedCollectionIds == nil
@@ -219,7 +222,7 @@ CalculateMedian:
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
 			log.Error("Error in calculating block medians")
-			return nil, nil, nil, err
+			return types.ProposeFileData{}, err
 		}
 		updateGlobalProposedDataStruct(types.ProposeFileData{
 			MediansData:           medians,
@@ -231,7 +234,7 @@ CalculateMedian:
 
 	log.Debug("Locally calculated data:")
 	log.Debugf("Medians: %d", globalProposedDataStruct.MediansData)
-	return globalProposedDataStruct.MediansData, globalProposedDataStruct.RevealedCollectionIds, globalProposedDataStruct.RevealedDataMaps, nil
+	return globalProposedDataStruct, nil
 }
 
 //This function check for the dispute in different type of Id's
