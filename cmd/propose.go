@@ -105,8 +105,13 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	if numOfProposedBlocks >= maxAltBlocks {
 		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
-		lastBlockIndex := numOfProposedBlocks - 1
-		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, uint32(lastBlockIndex))
+		sortedProposedBlocks, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
+		if err != nil {
+			log.Error("Error in fetching sorted proposed block ids")
+			return core.NilHash, err
+		}
+		lastBlockIndex := sortedProposedBlocks[numOfProposedBlocks-1]
+		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
 			return core.NilHash, err
