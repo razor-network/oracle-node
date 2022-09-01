@@ -142,12 +142,11 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	}
 	proposeTxn := transactionUtils.Hash(txn)
 	log.Info("Txn Hash: ", proposeTxn)
-
 	if proposeTxn != core.NilHash {
 		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
 		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletionErr for propose: ", err)
-			return err
+			log.Error("Error in WaitForBlockCompletionErr for propose: ", waitForBlockCompletionErr)
+			return waitForBlockCompletionErr
 		} else {
 			// Saving proposed data after successful propose
 			updateGlobalProposedDataStruct(types.ProposeFileData{
