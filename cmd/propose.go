@@ -103,7 +103,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		sortedProposedBlocks, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 		if err != nil {
 			log.Error("Error in fetching sorted proposed block ids")
-			return core.NilHash, err
+			return err
 		}
 		lastBlockIndex := sortedProposedBlocks[numOfProposedBlocks-1]
 		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, lastBlockIndex)
