@@ -709,27 +709,6 @@ func (_m *UtilsCmdInterface) GetJobList(client *ethclient.Client) error {
 	return r0
 }
 
-// GetLastProposedEpoch provides a mock function with given fields: client, blockNumber, stakerId
-func (_m *UtilsCmdInterface) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	ret := _m.Called(client, blockNumber, stakerId)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int, uint32) uint32); ok {
-		r0 = rf(client, blockNumber, stakerId)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int, uint32) error); ok {
-		r1 = rf(client, blockNumber, stakerId)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetLocalMediansData provides a mock function with given fields: client, account, epoch, blockNumber, rogueData
 func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	ret := _m.Called(client, account, epoch, blockNumber, rogueData)

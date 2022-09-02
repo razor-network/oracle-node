@@ -772,7 +772,7 @@ func TestGetLocalMediansData(t *testing.T) {
 			utilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedEpoch, tt.args.lastProposedEpochErr)
+			utilsMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedEpoch, tt.args.lastProposedEpochErr)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
 			if (err != nil) != tt.wantErr {

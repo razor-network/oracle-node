@@ -863,6 +863,27 @@ func (_m *Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32
 	return r0, r1
 }
 
+// GetEpochLastProposed provides a mock function with given fields: client, stakerId
+func (_m *Utils) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	ret := _m.Called(client, stakerId)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
+		r0 = rf(client, stakerId)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, stakerId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEpochLastRevealed provides a mock function with given fields: client, stakerId
 func (_m *Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	ret := _m.Called(client, stakerId)

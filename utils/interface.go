@@ -171,6 +171,7 @@ type Utils interface {
 	CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error)
 	GetStateName(stateNumber int64) string
 	Shuffle(slice []uint32) []uint32
+	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 }
 
 type EthClientUtils interface {
@@ -242,6 +243,7 @@ type BlockManagerUtils interface {
 	MaxAltBlocks(client *ethclient.Client) (uint8, error)
 	SortedProposedBlockIds(client *ethclient.Client, arg0 uint32, arg1 *big.Int) (uint32, error)
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
+	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 }
 
 type StakeManagerUtils interface {

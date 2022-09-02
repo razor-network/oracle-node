@@ -140,6 +140,11 @@ func (b BlockManagerStruct) SortedProposedBlockIds(client *ethclient.Client, arg
 	return blockManager.SortedProposedBlockIds(&opts, arg0, arg1)
 }
 
+func (b BlockManagerStruct) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	return blockManager.EpochLastProposed(&opts, stakerId)
+}
+
 func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	return stakeManager.GetStakerId(&opts, address)
