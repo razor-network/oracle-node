@@ -397,8 +397,8 @@ func (u Utils) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, 
 }
 
 //This function saves the data to propose JSON file
-func (u Utils) SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFileData types.ProposeData) error {
-	return utilsInterface.SaveDataToProposeJsonFile(flePath, epoch, proposeFileData)
+func (u Utils) SaveDataToProposeJsonFile(flePath string, proposeFileData types.ProposeFileData) error {
+	return utilsInterface.SaveDataToProposeJsonFile(flePath, proposeFileData)
 }
 
 //This function saves data to Dispute JSON file

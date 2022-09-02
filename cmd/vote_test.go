@@ -763,7 +763,6 @@ func TestInitiatePropose(t *testing.T) {
 		lastProposalErr   error
 		lastReveal        uint32
 		lastRevealErr     error
-		proposeTxn        common.Hash
 		proposeTxnErr     error
 	}
 	tests := []struct {
@@ -779,7 +778,6 @@ func TestInitiatePropose(t *testing.T) {
 				epoch:          5,
 				lastProposal:   4,
 				lastReveal:     6,
-				proposeTxn:     common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: false,
 		},
@@ -799,7 +797,6 @@ func TestInitiatePropose(t *testing.T) {
 				epoch:          5,
 				lastProposal:   4,
 				lastReveal:     6,
-				proposeTxn:     common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: false,
 		},
@@ -861,7 +858,7 @@ func TestInitiatePropose(t *testing.T) {
 			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
-			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeTxnErr)
+			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
 			if err := ut.InitiatePropose(client, config, account, tt.args.epoch, tt.args.staker, blockNumber, rogueData); (err != nil) != tt.wantErr {

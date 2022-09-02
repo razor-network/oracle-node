@@ -1956,13 +1956,13 @@ func (_m *Utils) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint
 	return r0
 }
 
-// SaveDataToProposeJsonFile provides a mock function with given fields: filePath, epoch, proposeData
-func (_m *Utils) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
-	ret := _m.Called(filePath, epoch, proposeData)
+// SaveDataToProposeJsonFile provides a mock function with given fields: filePath, proposeData
+func (_m *Utils) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
+	ret := _m.Called(filePath, proposeData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, uint32, types.ProposeData) error); ok {
-		r0 = rf(filePath, epoch, proposeData)
+	if rf, ok := ret.Get(0).(func(string, types.ProposeFileData) error); ok {
+		r0 = rf(filePath, proposeData)
 	} else {
 		r0 = ret.Error(0)
 	}
