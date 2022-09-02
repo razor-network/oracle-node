@@ -276,7 +276,7 @@ func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (
 	return utilsInterface.GetEpochLastRevealed(client, stakerId)
 }
 
-//This function returns the epoch which is last revealed
+//This function returns the epoch which is last proposed
 func (u Utils) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	return utilsInterface.GetEpochLastProposed(client, stakerId)
 }
