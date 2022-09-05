@@ -926,8 +926,17 @@ func (_m *UtilsCmdInterface) GetWaitTime() (int32, error) {
 }
 
 // GiveSorted provides a mock function with given fields: client, blockManager, txnOpts, epoch, assetId, sortedStakers
-func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) {
-	_m.Called(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	ret := _m.Called(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []*big.Int) error); ok {
+		r0 = rf(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // HandleBlock provides a mock function with given fields: client, account, blockNumber, config, rogueData

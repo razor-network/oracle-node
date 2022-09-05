@@ -78,7 +78,7 @@ func TestDispute(t *testing.T) {
 				containsStatus:     false,
 				finalizeDisputeErr: errors.New("finalizeDispute error"),
 			},
-			want: errors.New("finalizeDispute error"),
+			want: nil,
 		},
 		{
 			name: "Test 4: When Dispute function executes successfully but there is an error in storing bountyId",
@@ -106,12 +106,13 @@ func TestDispute(t *testing.T) {
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			cmdUtilsMock.On("GetCollectionIdPositionInBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.positionOfCollectionInBlock)
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 			utils := &UtilsStruct{}
 
@@ -587,8 +588,9 @@ func TestGiveSorted(t *testing.T) {
 		hash          common.Hash
 	}
 	tests := []struct {
-		name string
-		args args
+		name    string
+		args    args
+		wantErr bool
 	}{
 		{
 			name: "Test 1: When Give Sorted executes successfully",
@@ -597,6 +599,7 @@ func TestGiveSorted(t *testing.T) {
 				giveSorted:   &Types.Transaction{},
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
+			wantErr: false,
 		},
 		{
 			name: "Test 2: When there is an error from GiveSorted",
@@ -604,12 +607,14 @@ func TestGiveSorted(t *testing.T) {
 				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
 				giveSortedErr: errors.New("giveSorted error"),
 			},
+			wantErr: true,
 		},
 		{
 			name: "Test 3: When sortedStakers is nil",
 			args: args{
 				sortedValues: nil,
 			},
+			wantErr: false,
 		},
 		{
 			name: "Test 4: When error is gas limit reached",
@@ -619,6 +624,7 @@ func TestGiveSorted(t *testing.T) {
 				giveSorted:    &Types.Transaction{},
 				hash:          common.BigToHash(big.NewInt(1)),
 			},
+			wantErr: false,
 		},
 		{
 			name: "Test 5: When error is gas limit reached with higher number of stakers",
@@ -628,6 +634,7 @@ func TestGiveSorted(t *testing.T) {
 				giveSorted:    &Types.Transaction{},
 				hash:          common.BigToHash(big.NewInt(1)),
 			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -635,17 +642,24 @@ func TestGiveSorted(t *testing.T) {
 			utilsMock := new(mocks.UtilsInterface)
 			blockManagerUtilsMock := new(mocks.BlockManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
+			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock
 			blockManagerUtils = blockManagerUtilsMock
 			transactionUtils = transactionUtilsMock
+			cmdUtils = cmdUtilsMock
 
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr).Once()
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
+			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
-			GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedValues)
+			err := GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedValues)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CheckDisputeForIds() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 		})
 	}
 }
@@ -1234,7 +1248,6 @@ func BenchmarkHandleDispute(b *testing.B) {
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(nil)
-				cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 				utils := &UtilsStruct{}
 				err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
