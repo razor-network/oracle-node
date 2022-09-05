@@ -967,8 +967,8 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 }
 
 //This function is used to give the sorted Ids
-func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) {
-	GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	return GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
 }
 
 //This function is used to write config as
