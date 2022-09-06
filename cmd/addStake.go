@@ -54,7 +54,10 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 
-	if valueInWei.Cmp(minSafeRazor) < 0 {
+	stakerId, err := razorUtils.GetStakerId(client, address)
+	utils.CheckError("Error in getting stakerId: ", err)
+
+	if valueInWei.Cmp(minSafeRazor) < 0 && stakerId == 0 {
 		log.Fatal("The amount of razors entered is below min safe value.")
 	}
 
