@@ -17,12 +17,10 @@ import (
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
-	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -443,7 +441,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
 		return nil
 	}
-	lastProposal, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, staker.Id)
+	lastProposal, err := razorUtils.GetEpochLastProposed(client, staker.Id)
 	if err != nil {
 		return errors.New("Error in fetching last proposal: " + err.Error())
 	}
@@ -465,68 +463,6 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return errors.New("Propose error: " + err.Error())
 	}
 	return nil
-}
-
-//This function returns the last proposed epoch
-func (*UtilsStruct) GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
-	if err != nil {
-		return 0, errors.New("Not able to Fetch Block: " + err.Error())
-	}
-	query := ethereum.FilterQuery{
-		FromBlock: fromBlock,
-		ToBlock:   blockNumber,
-		Addresses: []common.Address{
-			common.HexToAddress(core.BlockManagerAddress),
-		},
-	}
-	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
-	if err != nil {
-		return 0, err
-	}
-	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.BlockManagerABI))
-	if err != nil {
-		return 0, err
-	}
-	epochLastProposed := uint32(0)
-
-	bufferPercent, err := cmdUtils.GetBufferPercent()
-	if err != nil {
-		return 0, err
-	}
-
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
-	if err != nil {
-		return 0, err
-	}
-	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
-
-loop:
-	for _, vLog := range logs {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			err = errors.New("propose state timeout")
-			break loop
-		default:
-			data, unpackErr := abiUtils.Unpack(contractAbi, "Proposed", vLog.Data)
-			if unpackErr != nil {
-				log.Error(unpackErr)
-				continue
-			}
-			topics := vLog.Topics
-			// topics[1] gives staker id in data type common.Hash
-			// Converting uint32 staker id to common.Hash to compare with staker id from topics
-			stakerIdInHash := common.BigToHash(big.NewInt(int64(stakerId)))
-			if stakerIdInHash == topics[1] && len(topics) > 1 {
-				epochLastProposed = data[0].(uint32)
-			}
-		}
-	}
-	if err != nil {
-		return 0, err
-	}
-	return epochLastProposed, nil
 }
 
 //This function calculates the secret

@@ -209,7 +209,7 @@ CalculateMedian:
 		log.Error("Error in getting stakerId: ", err)
 		return types.ProposeFileData{}, err
 	}
-	lastProposedEpoch, err := cmdUtils.GetLastProposedEpoch(client, blockNumber, stakerId)
+	lastProposedEpoch, err := razorUtils.GetEpochLastProposed(client, stakerId)
 	if err != nil {
 		log.Error("Error in getting last proposed epoch: ", err)
 		return types.ProposeFileData{}, err

@@ -276,6 +276,11 @@ func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (
 	return utilsInterface.GetEpochLastRevealed(client, stakerId)
 }
 
+//This function returns the epoch which is last proposed
+func (u Utils) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	return utilsInterface.GetEpochLastProposed(client, stakerId)
+}
+
 //This function returns the vote value
 func (u Utils) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	return utilsInterface.GetVoteValue(client, epoch, stakerId, medianIndex)

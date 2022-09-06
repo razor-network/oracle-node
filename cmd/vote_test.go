@@ -3,9 +3,7 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
@@ -153,172 +151,6 @@ func TestExecuteVote(t *testing.T) {
 			utils.ExecuteVote(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The ExecuteVote function didn't execute as expected")
-			}
-		})
-	}
-}
-
-func TestGetLastProposedEpoch(t *testing.T) {
-	var client *ethclient.Client
-	blockNumber := big.NewInt(20)
-
-	type args struct {
-		fromBlock        *big.Int
-		fromBlockErr     error
-		stakerId         uint32
-		logs             []Types.Log
-		logsErr          error
-		contractAbi      abi.ABI
-		parseErr         error
-		unpackedData     []interface{}
-		unpackErr        error
-		bufferPercent    int32
-		bufferPercentErr error
-		time             int64
-		timeErr          error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    uint32
-		wantErr error
-	}{
-		{
-			name: "Test 1: When GetLastProposedBlock() executes successfully",
-			args: args{
-				fromBlock: big.NewInt(0),
-				stakerId:  2,
-				logs: []Types.Log{
-					{
-						Data:   []byte{4, 2},
-						Topics: []common.Hash{common.BigToHash(big.NewInt(1000)), common.BigToHash(big.NewInt(2))},
-					},
-				},
-				contractAbi:   abi.ABI{},
-				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercent: 1,
-				time:          0,
-			},
-			want:    4,
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When there is an error in getting logs",
-			args: args{
-				logsErr: errors.New("logs error"),
-			},
-			want:    0,
-			wantErr: errors.New("logs error"),
-		},
-		{
-			name: "Test 3: When there is an error in getting contractAbi while parsing",
-			args: args{
-				logs: []Types.Log{
-					{
-						Data: []byte{4, 2},
-					},
-				},
-				parseErr:     errors.New("parse error"),
-				unpackedData: convertToSliceOfInterface([]uint32{4, 2}),
-			},
-			want:    0,
-			wantErr: errors.New("parse error"),
-		},
-		{
-			name: "Test 4: When there is an error in unpacking",
-			args: args{
-				logs: []Types.Log{
-					{
-						Data: []byte{4, 2},
-					},
-				},
-				contractAbi: abi.ABI{},
-				unpackErr:   errors.New("unpack error"),
-			},
-			want:    0,
-			wantErr: nil,
-		},
-		{
-			name: "Test 5: When there is an error in fetching blocks",
-			args: args{
-				fromBlockErr: errors.New("error in fetching blocks"),
-			},
-			want:    0,
-			wantErr: errors.New("Not able to Fetch Block: error in fetching blocks"),
-		},
-		{
-			name: "Test 6: When there is an error in getting bufferPercent",
-			args: args{
-				fromBlock: big.NewInt(0),
-				stakerId:  2,
-				logs: []Types.Log{
-					{
-						Data: []byte{4, 2},
-					},
-				},
-				contractAbi:      abi.ABI{},
-				unpackedData:     convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercentErr: errors.New("error in getting buffer percent"),
-			},
-			want:    0,
-			wantErr: errors.New("error in getting buffer percent"),
-		},
-		{
-			name: "Test 7: When there is an error in getting remaining time",
-			args: args{
-				fromBlock: big.NewInt(0),
-				stakerId:  2,
-				logs: []Types.Log{
-					{
-						Data: []byte{4, 2},
-					},
-				},
-				contractAbi:   abi.ABI{},
-				unpackedData:  convertToSliceOfInterface([]uint32{4, 2}),
-				bufferPercent: 1,
-				timeErr:       errors.New("error in getting time"),
-			},
-			want:    0,
-			wantErr: errors.New("error in getting time"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			abiMock := new(mocks.AbiInterface)
-			utilsPkgMock := new(mocks2.Utils)
-			abiUtilsMock := new(mocks2.ABIUtils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsMock := new(mocks.UtilsInterface)
-			utilsPkgMock2 := new(mocks2.Utils)
-
-			utilsInterface = utilsPkgMock2
-			razorUtils = utilsMock
-			abiUtils = abiMock
-			utils.UtilsInterface = utilsPkgMock
-			utils.ABIInterface = abiUtilsMock
-			cmdUtils = cmdUtilsMock
-
-			utilsPkgMock.On("CalculateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
-			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.parseErr)
-			utilsPkgMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
-			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unpackedData, tt.args.unpackErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsPkgMock2.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.time, tt.args.timeErr)
-
-			utils := &UtilsStruct{}
-			got, err := utils.GetLastProposedEpoch(client, blockNumber, tt.args.stakerId)
-			if got != tt.want {
-				t.Errorf("GetLastProposedEpoch() got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for GetLastProposedEpoch(), got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for GetLastProposedEpoch(), got = %v, want = %v", err, tt.wantErr)
-				}
 			}
 		})
 	}
@@ -1024,7 +856,7 @@ func TestInitiatePropose(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
-			cmdUtilsMock.On("GetLastProposedEpoch", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*big.Int"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
+			utilsMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)

@@ -127,6 +127,7 @@ type UtilsInterface interface {
 	GetCommitDataFileName(address string) (string, error)
 	GetProposeDataFileName(address string) (string, error)
 	GetDisputeDataFileName(address string) (string, error)
+	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 }
 
 type StakeManagerInterface interface {
@@ -310,7 +311,6 @@ type UtilsCmdInterface interface {
 	GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
-	GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error)
 	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue)
 	ExecuteVote(flagSet *pflag.FlagSet)
 	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error
