@@ -64,6 +64,11 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		IsRogue:   isRogue,
 		RogueMode: rogueMode,
 	}
+
+	if rogueData.IsRogue {
+		log.Warn("You are running vote in rogue mode, this can incur penalties!")
+	}
+
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	account := types.Account{Address: address, Password: password}
@@ -109,11 +114,13 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 		case <-ctx.Done():
 			return nil
 		default:
+			log.Debugf("Header value: ", header.Number)
 			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
 			}
+			log.Debugf("Latest header value: ", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
 				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData)
@@ -200,25 +207,31 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 	switch state {
 	case 0:
+		log.Debugf("Starting commit...")
 		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 1:
+		log.Debugf("Starting reveal...")
 		err := cmdUtils.InitiateReveal(client, config, account, epoch, staker, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 2:
+		log.Debugf("Starting propose...")
 		err := cmdUtils.InitiatePropose(client, config, account, epoch, staker, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 3:
+		log.Debugf("Last verification: %d", lastVerification)
 		if lastVerification >= epoch {
+			log.Debugf("Last verification (%d) is greater or equal to current epoch (%d)", lastVerification, epoch)
+			log.Debugf("Won't dispute now")
 			break
 		}
 
@@ -231,6 +244,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		lastVerification = epoch
 
 		if utilsInterface.IsFlagPassed("autoClaimBounty") {
+			log.Debugf("Automatically claiming bounty")
 			err = cmdUtils.HandleClaimBounty(client, config, account)
 			if err != nil {
 				log.Error(err)
@@ -239,6 +253,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 
 	case 4:
+		log.Debugf("Last verification: %d", lastVerification)
+		log.Debugf("Block confirmed: %d", blockConfirmed)
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
@@ -287,14 +303,18 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
 	}
+	log.Debugf("Minimum stake amount: %d", minStakeAmount)
 	if stakedAmount.Cmp(minStakeAmount) < 0 {
 		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
 		return nil
 	}
+
 	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
 	if err != nil {
 		return errors.New("Error in fetching last commit: " + err.Error())
 	}
+	log.Debugf("Epoch last committed: %d", lastCommit)
+
 	if lastCommit >= epoch {
 		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 		return nil
@@ -304,7 +324,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return err
 	}
 	keystorePath := path.Join(razorPath, "keystore_files")
-
+	log.Debugf("Keystore file path: %s", keystorePath)
 	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return err
@@ -472,7 +492,7 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	}
 	hash := solsha3.SoliditySHA3([]string{"address", "uint32", "uint256", "string"}, []interface{}{common.HexToAddress(account.Address), epoch, chainId, "razororacle"})
 	ethHash := utils.SignHash(hash)
-
+	log.Debug("Hash generated for secret")
 	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, keystorePath)
 	if err != nil {
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
@@ -489,6 +509,7 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	}
 
 	secret := crypto.Keccak256(signedData)
+	log.Debug("Secret generated.")
 	return signedData, secret, nil
 }
 

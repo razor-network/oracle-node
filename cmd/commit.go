@@ -51,7 +51,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	if err != nil {
 		return types.CommitData{}, err
 	}
-
+	log.Debugf("Number of active collections: %d", numActiveCollections)
 	assignedCollections, seqAllottedCollections, err := utils.UtilsInterface.GetAssignedCollections(client, numActiveCollections, seed)
 	if err != nil {
 		return types.CommitData{}, err
