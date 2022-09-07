@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
@@ -21,14 +21,12 @@ import (
 
 var (
 	giveSortedLeafIds []int
-	disputedFlag      bool
 )
 
 //blockId is id of the block
 
 //This function handles the dispute and if there is any error it returns the error
 func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-	disputedFlag = false
 
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
 	if err != nil {
@@ -66,7 +64,8 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Error(err)
 			continue
 		}
-		log.Debug("Proposed block ", blockId, proposedBlock)
+		log.Debug("Block ID: ", blockId)
+		log.Debug("Proposed block ", proposedBlock)
 
 		//blockIndex is index of blockId in sortedProposedBlock
 		blockIndex := utils.IndexOf(sortedProposedBlockIds, uint32(blockId))
@@ -97,7 +96,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
-				disputedFlag = true
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
@@ -121,7 +119,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
-				disputedFlag = true
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
@@ -166,18 +163,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Info("Proposed median matches with local calculations. Will not open dispute.")
 			continue
 		}
-	}
-
-	blockManager := razorUtils.GetBlockManager(client)
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
-	if disputedFlag {
-		cmdUtils.ResetDispute(client, blockManager, txnOpts, epoch)
 	}
 
 	giveSortedLeafIds = []int{}
@@ -238,7 +223,7 @@ CalculateMedian:
 }
 
 //This function check for the dispute in different type of Id's
-func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*types2.Transaction, error) {
+func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error) {
 	//checking for hashing whether there is any dispute or not
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
 	hashRevealedCollectionIds := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{revealedCollectionIds})
@@ -304,59 +289,83 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	blockManager := razorUtils.GetBlockManager(client)
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnArgs := types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
 		AccountAddress: account.Address,
 		ChainId:        core.ChainId,
 		Config:         config,
-	})
+	}
 
+	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	if !utils.Contains(giveSortedLeafIds, leafId) {
-		cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues)
-	}
-
-	log.Info("Finalizing dispute...")
-	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
-	})
-	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
-	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
-	if err != nil {
-		return err
-	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(finalizeTxn))
-	WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
-
-	//If dispute happens, then storing the bountyId into disputeData file
-	if WaitForBlockCompletionErr == nil {
-		disputedFlag = true
-		err = cmdUtils.StoreBountyId(client, account)
+		err := cmdUtils.GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues)
 		if err != nil {
 			return err
 		}
 	}
+	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
+
+	log.Info("Finalizing dispute...")
+	finalizeDisputeTxnArgs := txnArgs
+	finalizeDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
+	finalizeDisputeTxnArgs.MethodName = "finalizeDispute"
+	finalizeDisputeTxnArgs.ABI = bindings.BlockManagerABI
+	finalizeDisputeTxnArgs.Parameters = []interface{}{epoch, blockIndex, positionOfCollectionInBlock}
+	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(finalizeDisputeTxnArgs)
+
+	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
+	if err != nil {
+		log.Error("Error in FinalizeDispute: ", err)
+	}
+
+	var nilTransaction *Types.Transaction
+
+	if finalizeTxn != nilTransaction {
+		WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+		//If dispute happens, then storing the bountyId into disputeData file
+		if WaitForBlockCompletionErr == nil {
+			err = cmdUtils.StoreBountyId(client, account)
+			if err != nil {
+				return err
+			}
+		} else {
+			log.Error("Error in WaitForBlockCompletion for FinalizeDispute: ", WaitForBlockCompletionErr)
+		}
+	}
+
+	//Resetting dispute irrespective of FinalizeDispute transaction status
+	log.Debug("Resetting dispute ...")
+
+	resetDisputeTxnArgs := txnArgs
+	resetDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
+	resetDisputeTxnArgs.MethodName = "resetDispute"
+	resetDisputeTxnArgs.ABI = bindings.BlockManagerABI
+	resetDisputeTxnArgs.Parameters = []interface{}{epoch}
+	resetDisputeTxnOpts := razorUtils.GetTxnOpts(resetDisputeTxnArgs)
+
+	cmdUtils.ResetDispute(client, blockManager, resetDisputeTxnOpts, epoch)
+
 	return nil
 }
 
 //This function sorts the Id's recursively
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) {
+func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
 	if len(sortedValues) == 0 {
-		return
+		return nil
 	}
 	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, leafId, sortedValues)
 	if err != nil {
+		log.Error("Error in calling GiveSorted: ", err)
 		if err.Error() == errors.New("gas limit reached").Error() {
-			log.Error("Error in calling GiveSorted: ", err)
 			mid := len(sortedValues) / 2
-			GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues[:mid])
-			GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues[mid:])
+			err1 := GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues[:mid])
+			err2 := GiveSorted(client, blockManager, txnOpts, epoch, leafId, sortedValues[mid:])
+			if (err1 == nil && err2 != nil) || (err1 != nil && err2 == nil) {
+				cmdUtils.ResetDispute(client, blockManager, txnOpts, epoch)
+			}
 		} else {
-			return
+			return err
 		}
 	}
 	log.Info("Calling GiveSorted...")
@@ -365,7 +374,9 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
+		return err
 	}
+	return nil
 }
 
 //This function returns the collection Id position in block
@@ -426,17 +437,18 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 
 //This function resets the dispute
 func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32) {
-	log.Info("Resetting the dispute ...")
 	txn, err := blockManagerUtils.ResetDispute(blockManager, txnOpts, epoch)
 	if err != nil {
 		log.Error("error in resetting dispute", err)
+		return
 	}
 	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
-	log.Info("Dispute has been reset")
 	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for resetDispute: ", err)
+		return
 	}
+	log.Info("Dispute has been reset")
 }
 
 //This function returns the bountyId from events
