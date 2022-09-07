@@ -849,7 +849,7 @@ docker
 docker exec -it razor-go razo addStake --address <address> --value <value> --logFile stakingLogs
 ```
 
-_The logs for above command will be stored at "home/.razor/stakingLogs.log" path_
+_The logs for above command will be stored at "home/.razor/logs/stakingLogs.log" path_
 
 razor cli
 
@@ -863,7 +863,7 @@ docker
 docker exec -it razor-go razo delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id> --logFile delegationLogs
 ```
 
-_The logs for above command will be stored at "home/.razor/delegationLogs.log" path_
+_The logs for above command will be stored at "home/.razor/logs/delegationLogs.log" path_
 
 _Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
 
