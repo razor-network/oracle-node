@@ -46,7 +46,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	utils.CheckError("Error in getting stakerInfo: ", err)
 
-	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) == 1 {
+	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
 		txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 			Client:          client,
 			AccountAddress:  address,
