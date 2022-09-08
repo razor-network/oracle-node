@@ -114,13 +114,13 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 		case <-ctx.Done():
 			return nil
 		default:
-			log.Debugf("Header value: ", header.Number)
+			log.Debugf("Header value: %d", header.Number)
 			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
 			}
-			log.Debugf("Latest header value: ", latestHeader.Number)
+			log.Debugf("Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
 				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData)
