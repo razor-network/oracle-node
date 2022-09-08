@@ -483,7 +483,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 	for _, vLog := range logs {
 		data, unpackErr := abiUtils.Unpack(contractAbi, "Slashed", vLog.Data)
 		if unpackErr != nil {
-			log.Error(unpackErr)
+			log.Debug(unpackErr)
 			continue
 		}
 		topics := vLog.Topics
