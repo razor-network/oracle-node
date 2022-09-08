@@ -49,6 +49,10 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	revealedCollectionIds := locallyCalculatedData.RevealedCollectionIds
 	revealedDataMaps := locallyCalculatedData.RevealedDataMaps
 
+	log.Debug("Local Medians data:", medians)
+	log.Debug("Revealed collection ids:", revealedCollectionIds)
+	log.Debug("Local revealed data maps:", revealedDataMaps)
+
 	randomSortedProposedBlockIds := utils.UtilsInterface.Shuffle(sortedProposedBlockIds) //shuffles the sortedProposedBlockIds array
 	transactionOptions := types.TransactionOptions{
 		Client:         client,
@@ -57,6 +61,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		ChainId:        core.ChainId,
 		Config:         config,
 	}
+	log.Debug("Shuffled sorted proposed blocks: ", randomSortedProposedBlockIds)
 
 	for _, blockId := range randomSortedProposedBlockIds {
 		proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, uint32(blockId))
@@ -73,7 +78,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Error("Block is not present in SortedProposedBlockIds array")
 			continue
 		}
-
+		log.Debugf("Block Index: %d", blockIndex)
 		// Biggest staker dispute
 		if proposedBlock.BiggestStake.Cmp(biggestStake) != 0 && proposedBlock.Valid {
 			log.Debug("Biggest Stake in proposed block: ", proposedBlock.BiggestStake)
@@ -119,6 +124,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
+				log.Debug("Storing bounty id in dispute data file")
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
