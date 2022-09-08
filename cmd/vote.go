@@ -66,7 +66,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 
 	if rogueData.IsRogue {
-		log.Warn("You are running vote in rogue mode, this can incur penalties!")
+		log.Warn("YOU ARE RUNNING VOTE IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 	}
 
 	client := razorUtils.ConnectToClient(config.Provider)
@@ -387,6 +387,8 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	if err != nil {
 		return errors.New("Error in fetching last reveal: " + err.Error())
 	}
+	log.Debugf("Last reveal was at epoch %d", lastReveal)
+
 	if lastReveal >= epoch {
 		log.Debugf("Since last reveal was at epoch: %d, won't reveal again in epoch: %d", lastReveal, epoch)
 		return nil
@@ -396,7 +398,6 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		log.Error(err)
 		return err
 	}
-	log.Debug("Epoch last revealed: ", lastReveal)
 
 	if _commitData.AssignedCollections == nil && _commitData.SeqAllottedCollections == nil && _commitData.Leaves == nil {
 		fileName, err := razorUtils.GetCommitDataFileName(account.Address)
@@ -404,6 +405,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			log.Error("Error in getting file name to save committed data: ", err)
 			return err
 		}
+		log.Debugf("Getting committed data from file %s", fileName)
 		committedDataFromFile, err := razorUtils.ReadFromCommitJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
@@ -418,6 +420,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		_commitData.Leaves = committedDataFromFile.Leaves
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+		log.Warn("YOU ARE REVEALING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 		var rogueCommittedData []*big.Int
 		for i := 0; i < len(_commitData.Leaves); i++ {
 			rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
@@ -435,6 +438,10 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	if err != nil {
 		return err
 	}
+	log.Debug("Assigned Collections: ", _commitData.AssignedCollections)
+	log.Debug("SeqAllottedCollections: ", _commitData.SeqAllottedCollections)
+	log.Debug("Leaves: ", _commitData.Leaves)
+
 	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, signature)
 	if err != nil {
 		return errors.New("Reveal error: " + err.Error())
@@ -465,6 +472,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 	if err != nil {
 		return errors.New("Error in fetching last proposal: " + err.Error())
 	}
+	log.Debugf("Last propose was in epoch %d", lastProposal)
 	if lastProposal >= epoch {
 		log.Debugf("Since last propose was at epoch: %d, won't propose again in epoch: %d", epoch, lastProposal)
 		return nil

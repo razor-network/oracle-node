@@ -46,6 +46,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	)
 
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "biggestStakerId") {
+		log.Warn("YOU ARE PROPOSING IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 		// If staker is going rogue with biggestStakerId than we do biggestStakerId = smallestStakerId
 		smallestStake, smallestStakerId, smallestStakerErr := cmdUtils.GetSmallestStakeAndId(client, epoch)
 		if smallestStakerErr != nil {

@@ -69,6 +69,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 				return types.CommitData{}, err
 			}
 			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
+				log.Warn("YOU ARE COMMITTING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 				collectionData = razorUtils.GetRogueRandomValue(100000)
 			}
 			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
