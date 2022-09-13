@@ -13,7 +13,7 @@ import (
 
 func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 	client := http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 	var body []byte
 	err := retry.Do(
