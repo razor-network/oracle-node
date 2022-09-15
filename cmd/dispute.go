@@ -315,12 +315,12 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	}
 
 	blockId := sortedProposedBlocks[blockIndex]
-	proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, blockId)
+	updatedProposedBlock, err := razorUtils.GetProposedBlock(client, epoch, blockId)
 	if err != nil {
 		log.Error("Error in getting updated proposed block: ", err)
 		return err
 	}
-	if !proposedBlock.Valid {
+	if !updatedProposedBlock.Valid {
 		log.Debug("Block already disputed, not checking medians dispute again")
 		return errors.New("block already disputed")
 	}
