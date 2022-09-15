@@ -228,21 +228,11 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 	case 3:
-		log.Debugf("Last verification: %d", lastVerification)
-		if lastVerification >= epoch {
-			log.Debugf("Last verification (%d) is greater or equal to current epoch (%d)", lastVerification, epoch)
-			log.Debugf("Won't dispute now")
-			break
-		}
-
 		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
-
-		lastVerification = epoch
-
 		if utilsInterface.IsFlagPassed("autoClaimBounty") {
 			log.Debugf("Automatically claiming bounty")
 			err = cmdUtils.HandleClaimBounty(client, config, account)
