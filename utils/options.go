@@ -34,7 +34,8 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	if privateKey == nil || err != nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
-	nonce, err := UtilsInterface.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
+	callOpts := UtilsInterface.GetOptions()
+	nonce, err := UtilsInterface.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress), callOpts.BlockNumber)
 	CheckError("Error in fetching pending nonce: ", err)
 
 	gasPrice := UtilsInterface.GetGasPrice(transactionData.Client, transactionData.Config)
