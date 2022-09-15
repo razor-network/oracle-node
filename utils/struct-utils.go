@@ -311,7 +311,7 @@ func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Conte
 	return client.HeaderByNumber(ctx, number)
 }
 
-func (c ClientStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address, blocknumber *big.Int) (uint64, error) {
+func (c ClientStruct) NonceAt(client *ethclient.Client, ctx context.Context, account common.Address, blocknumber *big.Int) (uint64, error) {
 	return client.NonceAt(ctx, account, blocknumber)
 }
 
