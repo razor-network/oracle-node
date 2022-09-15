@@ -40,7 +40,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 	client := razorUtils.ConnectToClient(config.Provider)
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account: "+address, err)
@@ -111,11 +111,13 @@ func init() {
 	var (
 		Amount   string
 		Address  string
+		Password string
 		WeiRazor bool
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	stakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")
