@@ -28,6 +28,10 @@ import (
 func TestDispute(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
+	sortedProposedBlocks := []uint32{3, 2, 1, 4}
+	validBlock := bindings.StructsBlock{
+		Valid: true,
+	}
 
 	var (
 		client        *ethclient.Client
@@ -42,6 +46,8 @@ func TestDispute(t *testing.T) {
 	)
 
 	type args struct {
+		proposedBlock               bindings.StructsBlock
+		proposedBlockErr            error
 		containsStatus              bool
 		positionOfCollectionInBlock *big.Int
 		finalizeDisputeTxn          *Types.Transaction
@@ -57,6 +63,7 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 1: When Dispute function executes successfully",
 			args: args{
+				proposedBlock:      validBlock,
 				containsStatus:     false,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -66,6 +73,7 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 2: When Dispute function executes successfully without executing giveSorted",
 			args: args{
+				proposedBlock:      validBlock,
 				containsStatus:     true,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -75,6 +83,7 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 3: When FinalizeDispute transaction fails",
 			args: args{
+				proposedBlock:      validBlock,
 				containsStatus:     false,
 				finalizeDisputeErr: errors.New("finalizeDispute error"),
 			},
@@ -83,6 +92,7 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 4: When Dispute function executes successfully but there is an error in storing bountyId",
 			args: args{
+				proposedBlock:      validBlock,
 				containsStatus:     false,
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
@@ -105,9 +115,10 @@ func TestDispute(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
 			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			cmdUtilsMock.On("GetCollectionIdPositionInBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.positionOfCollectionInBlock)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
@@ -116,7 +127,7 @@ func TestDispute(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			err := utils.Dispute(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues)
+			err := utils.Dispute(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues, sortedProposedBlocks)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for Dispute function, got = %v, want = %v", err, tt.want)
@@ -553,9 +564,9 @@ func TestHandleDispute(t *testing.T) {
 			blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeBiggestStakeTxn, tt.args.disputeBiggestStakeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.Hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.idDisputeTxn, tt.args.idDisputeTxnErr)
+			cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.idDisputeTxn, tt.args.idDisputeTxnErr)
 			utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
-			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
+			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
 			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
@@ -576,16 +587,29 @@ func TestHandleDispute(t *testing.T) {
 }
 
 func TestGiveSorted(t *testing.T) {
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
+
+	nilDisputesMapping := types.DisputesStruct{
+		LastVisitedValue: big.NewInt(0),
+		Median:           big.NewInt(0),
+		AccWeight:        big.NewInt(0),
+	}
+
 	var client *ethclient.Client
 	var blockManager *bindings.BlockManager
-	var txnOpts *bind.TransactOpts
+	var txnArgs types.TransactionOptions
 	var epoch uint32
 	var assetId uint16
+	var callOpts bind.CallOpts
+
 	type args struct {
-		sortedValues  []*big.Int
-		giveSorted    *Types.Transaction
-		giveSortedErr error
-		hash          common.Hash
+		disputesMapping    types.DisputesStruct
+		disputesMappingErr error
+		sortedValues       []*big.Int
+		giveSorted         *Types.Transaction
+		giveSortedErr      error
+		hash               common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -595,17 +619,19 @@ func TestGiveSorted(t *testing.T) {
 		{
 			name: "Test 1: When Give Sorted executes successfully",
 			args: args{
-				sortedValues: []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
-				giveSorted:   &Types.Transaction{},
-				hash:         common.BigToHash(big.NewInt(1)),
+				disputesMapping: nilDisputesMapping,
+				sortedValues:    []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
+				giveSorted:      &Types.Transaction{},
+				hash:            common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: false,
 		},
 		{
 			name: "Test 2: When there is an error from GiveSorted",
 			args: args{
-				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
-				giveSortedErr: errors.New("giveSorted error"),
+				disputesMapping: nilDisputesMapping,
+				sortedValues:    []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
+				giveSortedErr:   errors.New("giveSorted error"),
 			},
 			wantErr: true,
 		},
@@ -619,20 +645,22 @@ func TestGiveSorted(t *testing.T) {
 		{
 			name: "Test 4: When error is gas limit reached",
 			args: args{
-				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
-				giveSortedErr: errors.New("gas limit reached"),
-				giveSorted:    &Types.Transaction{},
-				hash:          common.BigToHash(big.NewInt(1)),
+				sortedValues:    []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5)},
+				disputesMapping: nilDisputesMapping,
+				giveSortedErr:   errors.New("gas limit reached"),
+				giveSorted:      &Types.Transaction{},
+				hash:            common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: false,
 		},
 		{
 			name: "Test 5: When error is gas limit reached with higher number of stakers",
 			args: args{
-				sortedValues:  []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5), big.NewInt(7), big.NewInt(8), big.NewInt(9), big.NewInt(10), big.NewInt(6), big.NewInt(11), big.NewInt(13), big.NewInt(12), big.NewInt(14), big.NewInt(15), big.NewInt(4), big.NewInt(20), big.NewInt(19), big.NewInt(18), big.NewInt(17), big.NewInt(16)},
-				giveSortedErr: errors.New("gas limit reached"),
-				giveSorted:    &Types.Transaction{},
-				hash:          common.BigToHash(big.NewInt(1)),
+				sortedValues:    []*big.Int{big.NewInt(2), big.NewInt(1), big.NewInt(3), big.NewInt(5), big.NewInt(7), big.NewInt(8), big.NewInt(9), big.NewInt(10), big.NewInt(6), big.NewInt(11), big.NewInt(13), big.NewInt(12), big.NewInt(14), big.NewInt(15), big.NewInt(4), big.NewInt(20), big.NewInt(19), big.NewInt(18), big.NewInt(17), big.NewInt(16)},
+				disputesMapping: nilDisputesMapping,
+				giveSortedErr:   errors.New("gas limit reached"),
+				giveSorted:      &Types.Transaction{},
+				hash:            common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: false,
 		},
@@ -652,10 +680,14 @@ func TestGiveSorted(t *testing.T) {
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr).Once()
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("GetOptions").Return(callOpts)
+			blockManagerUtilsMock.On("Disputes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputesMapping, tt.args.disputesMappingErr)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
 			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
+			cmdUtilsMock.On("CheckToDoResetDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 
-			err := GiveSorted(client, blockManager, txnOpts, epoch, assetId, tt.args.sortedValues)
+			err := GiveSorted(client, blockManager, txnArgs, epoch, assetId, tt.args.sortedValues)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckDisputeForIds() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -877,6 +909,8 @@ func TestCheckDisputeForIds(t *testing.T) {
 		blockIndex      uint8
 	)
 
+	sortedProposedBlocks := []uint32{2, 1, 3, 4}
+
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
@@ -885,6 +919,8 @@ func TestCheckDisputeForIds(t *testing.T) {
 		revealedCollectionIds                 []uint16
 		DisputeOnOrderOfIds                   *Types.Transaction
 		DisputeOnOrderOfIdsErr                error
+		proposedBlock                         bindings.StructsBlock
+		proposedBlockErr                      error
 		incrementedGasLimit                   uint64
 		incrementedGasLimitErr                error
 		DisputeCollectionIdShouldBePresent    *Types.Transaction
@@ -903,7 +939,10 @@ func TestCheckDisputeForIds(t *testing.T) {
 			args: args{
 				idsInProposedBlock:    []uint16{1, 3, 2},
 				revealedCollectionIds: []uint16{1, 2, 3},
-				DisputeOnOrderOfIds:   &Types.Transaction{},
+				proposedBlock: bindings.StructsBlock{
+					Valid: true,
+				},
+				DisputeOnOrderOfIds: &Types.Transaction{},
 			},
 			want:    &Types.Transaction{},
 			wantErr: false,
@@ -911,8 +950,11 @@ func TestCheckDisputeForIds(t *testing.T) {
 		{
 			name: "Test 2: When CheckDisputeForIds executes successfully with collectionIdShouldBePresent dispute case",
 			args: args{
-				idsInProposedBlock:                 []uint16{1, 2, 4},
-				revealedCollectionIds:              []uint16{1, 2, 3},
+				idsInProposedBlock:    []uint16{1, 2, 4},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				proposedBlock: bindings.StructsBlock{
+					Valid: true,
+				},
 				DisputeCollectionIdShouldBePresent: &Types.Transaction{},
 			},
 			want:    &Types.Transaction{},
@@ -931,8 +973,11 @@ func TestCheckDisputeForIds(t *testing.T) {
 		{
 			name: "Test 4: When CheckDisputeForIds executes successfully with collectionIdShouldBeAbsent case",
 			args: args{
-				idsInProposedBlock:                []uint16{1, 2, 3, 4},
-				revealedCollectionIds:             []uint16{1, 2, 3},
+				idsInProposedBlock:    []uint16{1, 2, 3, 4},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				proposedBlock: bindings.StructsBlock{
+					Valid: true,
+				},
 				DisputeCollectionIdShouldBeAbsent: &Types.Transaction{},
 			},
 			want:    &Types.Transaction{},
@@ -958,6 +1003,28 @@ func TestCheckDisputeForIds(t *testing.T) {
 			want:    nil,
 			wantErr: false,
 		},
+		{
+			name: "Test 6: When there is an error in getting proposedBlock",
+			args: args{
+				idsInProposedBlock:    []uint16{1, 2, 3, 4},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				proposedBlockErr:      errors.New("proposed block error"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 7: When the block is already disputed",
+			args: args{
+				idsInProposedBlock:    []uint16{1, 2, 3, 4},
+				revealedCollectionIds: []uint16{1, 2, 3},
+				proposedBlock: bindings.StructsBlock{
+					Valid: false,
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -973,11 +1040,12 @@ func TestCheckDisputeForIds(t *testing.T) {
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerUtilsMock.On("DisputeOnOrderOfIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeOnOrderOfIds, tt.args.DisputeOnOrderOfIdsErr)
 			utilsPkgMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.incrementedGasLimit, tt.args.incrementedGasLimitErr)
+			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
 			blockManagerUtilsMock.On("DisputeCollectionIdShouldBePresent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBePresent, tt.args.DisputeCollectionIdShouldBePresentErr)
 			blockManagerUtilsMock.On("DisputeCollectionIdShouldBeAbsent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBeAbsent, tt.args.DisputeCollectionIdShouldBeAbsentErr)
 			utilsPkgMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(uint64(2000), nil)
 			ut := &UtilsStruct{}
-			got, err := ut.CheckDisputeForIds(client, transactionOpts, epoch, blockIndex, tt.args.idsInProposedBlock, tt.args.revealedCollectionIds)
+			got, err := ut.CheckDisputeForIds(client, transactionOpts, epoch, blockIndex, tt.args.idsInProposedBlock, tt.args.revealedCollectionIds, sortedProposedBlocks)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckDisputeForIds() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1242,10 +1310,10 @@ func BenchmarkHandleDispute(b *testing.B) {
 				blockManagerUtilsMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				transactionUtilsMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
 				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-				cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
+				cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				utilsPkgMock.On("IsEqualUint32", mock.Anything, mock.Anything).Return(true, 0)
 				utilsPkgMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
-				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(nil)
 

@@ -153,13 +153,13 @@ func (_m *UtilsCmdInterface) CheckCurrentStatus(client *ethclient.Client, collec
 	return r0, r1
 }
 
-// CheckDisputeForIds provides a mock function with given fields: client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds
-func (_m *UtilsCmdInterface) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*coretypes.Transaction, error) {
-	ret := _m.Called(client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds)
+// CheckDisputeForIds provides a mock function with given fields: client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds, sortedProposedBlocks
+func (_m *UtilsCmdInterface) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16, sortedProposedBlocks []uint32) (*coretypes.Transaction, error) {
+	ret := _m.Called(client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds, sortedProposedBlocks)
 
 	var r0 *coretypes.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.TransactionOptions, uint32, uint8, []uint16, []uint16) *coretypes.Transaction); ok {
-		r0 = rf(client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.TransactionOptions, uint32, uint8, []uint16, []uint16, []uint32) *coretypes.Transaction); ok {
+		r0 = rf(client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds, sortedProposedBlocks)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*coretypes.Transaction)
@@ -167,13 +167,18 @@ func (_m *UtilsCmdInterface) CheckDisputeForIds(client *ethclient.Client, transa
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.TransactionOptions, uint32, uint8, []uint16, []uint16) error); ok {
-		r1 = rf(client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.TransactionOptions, uint32, uint8, []uint16, []uint16, []uint32) error); ok {
+		r1 = rf(client, transactionOpts, epoch, blockIndex, idsInProposedBlock, revealedCollectionIds, sortedProposedBlocks)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
+}
+
+// CheckToDoResetDispute provides a mock function with given fields: client, blockManager, txnOpts, epoch, sortedValues
+func (_m *UtilsCmdInterface) CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int) {
+	_m.Called(client, blockManager, txnOpts, epoch, sortedValues)
 }
 
 // ClaimBlockReward provides a mock function with given fields: options
@@ -345,13 +350,13 @@ func (_m *UtilsCmdInterface) Delegate(txnArgs types.TransactionOptions, stakerId
 	return r0, r1
 }
 
-// Dispute provides a mock function with given fields: client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues
-func (_m *UtilsCmdInterface) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
-	ret := _m.Called(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues)
+// Dispute provides a mock function with given fields: client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues, sortedProposedBlocks
+func (_m *UtilsCmdInterface) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int, sortedProposedBlocks []uint32) error {
+	ret := _m.Called(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues, sortedProposedBlocks)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, bindings.StructsBlock, uint16, []*big.Int) error); ok {
-		r0 = rf(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint8, bindings.StructsBlock, uint16, []*big.Int, []uint32) error); ok {
+		r0 = rf(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues, sortedProposedBlocks)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -904,13 +909,13 @@ func (_m *UtilsCmdInterface) GetWaitTime() (int32, error) {
 	return r0, r1
 }
 
-// GiveSorted provides a mock function with given fields: client, blockManager, txnOpts, epoch, assetId, sortedStakers
-func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
-	ret := _m.Called(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+// GiveSorted provides a mock function with given fields: client, blockManager, txnArgs, epoch, assetId, sortedStakers
+func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	ret := _m.Called(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []*big.Int) error); ok {
-		r0 = rf(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bindings.BlockManager, types.TransactionOptions, uint32, uint16, []*big.Int) error); ok {
+		r0 = rf(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
 	} else {
 		r0 = ret.Error(0)
 	}
