@@ -1162,20 +1162,20 @@ func (_m *Utils) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error) {
 	return r0, r1
 }
 
-// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress, blockNumber
-func (_m *Utils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address, blockNumber *big.Int) (uint64, error) {
-	ret := _m.Called(client, accountAddress, blockNumber)
+// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress
+func (_m *Utils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+	ret := _m.Called(client, accountAddress)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address, *big.Int) uint64); ok {
-		r0 = rf(client, accountAddress, blockNumber)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
+		r0 = rf(client, accountAddress)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address, *big.Int) error); ok {
-		r1 = rf(client, accountAddress, blockNumber)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
+		r1 = rf(client, accountAddress)
 	} else {
 		r1 = ret.Error(1)
 	}

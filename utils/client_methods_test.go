@@ -300,7 +300,6 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 func TestUtilsStruct_GetNonceAtWithRetry(t *testing.T) {
 	var client *ethclient.Client
 	var accountAddress common.Address
-	var blockNumber *big.Int
 
 	type args struct {
 		nonce    uint64
@@ -342,7 +341,7 @@ func TestUtilsStruct_GetNonceAtWithRetry(t *testing.T) {
 			clientMock.On("NonceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address"), mock.Anything).Return(tt.args.nonce, tt.args.nonceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNonceAtWithRetry(client, accountAddress, blockNumber)
+			got, err := utils.GetNonceAtWithRetry(client, accountAddress)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNonceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -11,14 +11,14 @@ import (
 	"razor/core"
 )
 
-func (*UtilsStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address, blockNumber *big.Int) (uint64, error) {
+func (*UtilsStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
 	var (
 		nonce uint64
 		err   error
 	)
 	err = retry.Do(
 		func() error {
-			nonce, err = ClientInterface.NonceAt(client, context.Background(), accountAddress, blockNumber)
+			nonce, err = ClientInterface.NonceAt(client, context.Background(), accountAddress)
 			if err != nil {
 				log.Error("Error in fetching nonce.... Retrying")
 				return err
