@@ -334,48 +334,65 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		log.Debugf("GiveSorted already called for leafId: %d, not calling again! ", leafId)
 		return errors.New("giveSorted already done")
 	}
-	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
 
-	log.Info("Finalizing dispute...")
-	finalizeDisputeTxnArgs := txnArgs
-	finalizeDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
-	finalizeDisputeTxnArgs.MethodName = "finalizeDispute"
-	finalizeDisputeTxnArgs.ABI = bindings.BlockManagerABI
-	finalizeDisputeTxnArgs.Parameters = []interface{}{epoch, blockIndex, positionOfCollectionInBlock}
-	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(finalizeDisputeTxnArgs)
-
-	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
+	callOpts := razorUtils.GetOptions()
+	disputesMapping, err := blockManagerUtils.Disputes(client, &callOpts, epoch, common.HexToAddress(txnArgs.AccountAddress))
 	if err != nil {
-		log.Error("Error in FinalizeDispute: ", err)
+		log.Error("Error in getting disputes mapping: ", disputesMapping)
+		return err
 	}
 
-	var nilTransaction *Types.Transaction
+	LVV := disputesMapping.LastVisitedValue
+	maxValue := sortedValues[len(sortedValues)-1]
+	log.Debug("Last Visited Value after giveSorted: ", LVV)
+	log.Debug("Maximum value in sortedValues array: ", maxValue)
 
-	if finalizeTxn != nilTransaction {
-		WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
-		//If dispute happens, then storing the bountyId into disputeData file
-		if WaitForBlockCompletionErr == nil {
-			err = cmdUtils.StoreBountyId(client, account)
-			if err != nil {
-				return err
-			}
-		} else {
-			log.Error("Error in WaitForBlockCompletion for FinalizeDispute: ", WaitForBlockCompletionErr)
+	//FinalizeDispute only if LVV after giveSorted is equal to the maximum value in sortedValues
+	if LVV.Cmp(maxValue) == 0 {
+		positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
+
+		log.Info("Finalizing dispute...")
+		finalizeDisputeTxnArgs := txnArgs
+		finalizeDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
+		finalizeDisputeTxnArgs.MethodName = "finalizeDispute"
+		finalizeDisputeTxnArgs.ABI = bindings.BlockManagerABI
+		finalizeDisputeTxnArgs.Parameters = []interface{}{epoch, blockIndex, positionOfCollectionInBlock}
+		finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(finalizeDisputeTxnArgs)
+
+		finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
+		if err != nil {
+			log.Error("Error in FinalizeDispute: ", err)
 		}
+
+		var nilTransaction *Types.Transaction
+
+		if finalizeTxn != nilTransaction {
+			WaitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(finalizeTxn).String())
+			//If dispute happens, then storing the bountyId into disputeData file
+			if WaitForBlockCompletionErr == nil {
+				err = cmdUtils.StoreBountyId(client, account)
+				if err != nil {
+					return err
+				}
+			} else {
+				log.Error("Error in WaitForBlockCompletion for FinalizeDispute: ", WaitForBlockCompletionErr)
+			}
+		}
+
+		//Resetting dispute irrespective of FinalizeDispute transaction status
+		log.Debug("Resetting dispute ...")
+
+		resetDisputeTxnArgs := txnArgs
+		resetDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
+		resetDisputeTxnArgs.MethodName = "resetDispute"
+		resetDisputeTxnArgs.ABI = bindings.BlockManagerABI
+		resetDisputeTxnArgs.Parameters = []interface{}{epoch}
+		resetDisputeTxnOpts := razorUtils.GetTxnOpts(resetDisputeTxnArgs)
+
+		cmdUtils.ResetDispute(client, blockManager, resetDisputeTxnOpts, epoch)
+		return nil
 	}
-
-	//Resetting dispute irrespective of FinalizeDispute transaction status
-	log.Debug("Resetting dispute ...")
-
-	resetDisputeTxnArgs := txnArgs
-	resetDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
-	resetDisputeTxnArgs.MethodName = "resetDispute"
-	resetDisputeTxnArgs.ABI = bindings.BlockManagerABI
-	resetDisputeTxnArgs.Parameters = []interface{}{epoch}
-	resetDisputeTxnOpts := razorUtils.GetTxnOpts(resetDisputeTxnArgs)
-
-	cmdUtils.ResetDispute(client, blockManager, resetDisputeTxnOpts, epoch)
-
+	log.Debug("Last Visited value after giveSorted is not equal to max value in sortedValue array, not doing FinalizeDispute")
 	return nil
 }
 

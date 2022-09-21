@@ -41,15 +41,18 @@ func TestDispute(t *testing.T) {
 		blockIndex    uint8
 		proposedBlock bindings.StructsBlock
 		leafId        uint16
-		sortedValues  []*big.Int
 		blockManager  *bindings.BlockManager
+		callOpts      bind.CallOpts
 	)
 
 	type args struct {
+		sortedValues                []*big.Int
 		proposedBlock               bindings.StructsBlock
 		proposedBlockErr            error
 		containsStatus              bool
 		positionOfCollectionInBlock *big.Int
+		disputesMapping             types.DisputesStruct
+		disputesMappingErr          error
 		finalizeDisputeTxn          *Types.Transaction
 		finalizeDisputeErr          error
 		hash                        common.Hash
@@ -63,8 +66,12 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 1: When Dispute function executes successfully",
 			args: args{
-				proposedBlock:      validBlock,
-				containsStatus:     false,
+				sortedValues:   []*big.Int{big.NewInt(100), big.NewInt(101), big.NewInt(102)},
+				proposedBlock:  validBlock,
+				containsStatus: false,
+				disputesMapping: types.DisputesStruct{
+					LastVisitedValue: big.NewInt(102),
+				},
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
 			},
@@ -73,8 +80,12 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 2: When Dispute function executes successfully without executing giveSorted",
 			args: args{
-				proposedBlock:      validBlock,
-				containsStatus:     true,
+				sortedValues:   []*big.Int{big.NewInt(100), big.NewInt(101), big.NewInt(102)},
+				proposedBlock:  validBlock,
+				containsStatus: true,
+				disputesMapping: types.DisputesStruct{
+					LastVisitedValue: big.NewInt(102),
+				},
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
 			},
@@ -83,8 +94,12 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 3: When FinalizeDispute transaction fails",
 			args: args{
-				proposedBlock:      validBlock,
-				containsStatus:     false,
+				sortedValues:   []*big.Int{big.NewInt(100), big.NewInt(101), big.NewInt(102)},
+				proposedBlock:  validBlock,
+				containsStatus: false,
+				disputesMapping: types.DisputesStruct{
+					LastVisitedValue: big.NewInt(102),
+				},
 				finalizeDisputeErr: errors.New("finalizeDispute error"),
 			},
 			want: nil,
@@ -92,8 +107,12 @@ func TestDispute(t *testing.T) {
 		{
 			name: "Test 4: When Dispute function executes successfully but there is an error in storing bountyId",
 			args: args{
-				proposedBlock:      validBlock,
-				containsStatus:     false,
+				sortedValues:   []*big.Int{big.NewInt(100), big.NewInt(101), big.NewInt(102)},
+				proposedBlock:  validBlock,
+				containsStatus: false,
+				disputesMapping: types.DisputesStruct{
+					LastVisitedValue: big.NewInt(102),
+				},
 				finalizeDisputeTxn: &Types.Transaction{},
 				hash:               common.BigToHash(big.NewInt(1)),
 				storeBountyIdErr:   errors.New("storeBountyId error"),
@@ -118,6 +137,8 @@ func TestDispute(t *testing.T) {
 			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
 			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			cmdUtilsMock.On("GetCollectionIdPositionInBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.positionOfCollectionInBlock)
+			utilsMock.On("GetOptions").Return(callOpts)
+			blockManagerUtilsMock.On("Disputes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputesMapping, tt.args.disputesMappingErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerUtilsMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
@@ -127,7 +148,7 @@ func TestDispute(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			err := utils.Dispute(client, config, account, epoch, blockIndex, proposedBlock, leafId, sortedValues, sortedProposedBlocks)
+			err := utils.Dispute(client, config, account, epoch, blockIndex, proposedBlock, leafId, tt.args.sortedValues, sortedProposedBlocks)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for Dispute function, got = %v, want = %v", err, tt.want)
