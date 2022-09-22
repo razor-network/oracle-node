@@ -130,10 +130,10 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 }
 
 var (
-	_commitData      types.CommitData
-	lastVerification uint32
-	blockConfirmed   uint32
-	disputeData      types.DisputeFileData
+	globalCommitDataStruct types.CommitFileData
+	lastVerification       uint32
+	blockConfirmed         uint32
+	disputeData            types.DisputeFileData
 )
 
 //This function handles the block
@@ -342,8 +342,6 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in getting active assets: " + err.Error())
 	}
 
-	_commitData = commitData
-
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
 	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
 	if err != nil {
@@ -355,6 +353,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 			log.Error("Error in WaitForBlockCompletion for commit: ", err)
 			return errors.New("error in sending commit transaction")
 		}
+		updateGlobalCommitDataStruct(commitData, epoch)
 	}
 
 	log.Debug("Saving committed data for recovery")
@@ -399,7 +398,9 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return err
 	}
 
-	if _commitData.AssignedCollections == nil && _commitData.SeqAllottedCollections == nil && _commitData.Leaves == nil {
+	nilCommitData := globalCommitDataStruct.AssignedCollections == nil && globalCommitDataStruct.SeqAllottedCollections == nil && globalCommitDataStruct.Leaves == nil
+
+	if nilCommitData {
 		fileName, err := razorUtils.GetCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
@@ -415,43 +416,55 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
 			return errors.New("commit data file doesn't contain latest committed data")
 		}
-		_commitData.AssignedCollections = committedDataFromFile.AssignedCollections
-		_commitData.SeqAllottedCollections = committedDataFromFile.SeqAllottedCollections
-		_commitData.Leaves = committedDataFromFile.Leaves
+		updateGlobalCommitDataStruct(types.CommitData{
+			Leaves:                 committedDataFromFile.Leaves,
+			SeqAllottedCollections: committedDataFromFile.SeqAllottedCollections,
+			AssignedCollections:    committedDataFromFile.AssignedCollections,
+		}, epoch)
 	}
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
 		log.Warn("YOU ARE REVEALING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 		var rogueCommittedData []*big.Int
-		for i := 0; i < len(_commitData.Leaves); i++ {
+		for i := 0; i < len(globalCommitDataStruct.Leaves); i++ {
 			rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
 		}
-		_commitData.Leaves = rogueCommittedData
+		globalCommitDataStruct.Leaves = rogueCommittedData
 	}
 
-	razorPath, err := razorUtils.GetDefaultPath()
-	if err != nil {
-		return err
-	}
-	keystorePath := path.Join(razorPath, "keystore_files")
-
-	signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
-	if err != nil {
-		return err
-	}
-	log.Debug("Assigned Collections: ", _commitData.AssignedCollections)
-	log.Debug("SeqAllottedCollections: ", _commitData.SeqAllottedCollections)
-	log.Debug("Leaves: ", _commitData.Leaves)
-
-	revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, _commitData, signature)
-	if err != nil {
-		return errors.New("Reveal error: " + err.Error())
-	}
-	if revealTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
-		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+	if globalCommitDataStruct.Epoch == epoch {
+		razorPath, err := razorUtils.GetDefaultPath()
+		if err != nil {
 			return err
 		}
+		keystorePath := path.Join(razorPath, "keystore_files")
+
+		signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+		if err != nil {
+			return err
+		}
+		log.Debug("Assigned Collections: ", globalCommitDataStruct.AssignedCollections)
+		log.Debug("SeqAllottedCollections: ", globalCommitDataStruct.SeqAllottedCollections)
+		log.Debug("Leaves: ", globalCommitDataStruct.Leaves)
+
+		commitDataToSend := types.CommitData{
+			Leaves:                 globalCommitDataStruct.Leaves,
+			AssignedCollections:    globalCommitDataStruct.AssignedCollections,
+			SeqAllottedCollections: globalCommitDataStruct.SeqAllottedCollections,
+		}
+		revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, commitDataToSend, signature)
+		if err != nil {
+			return errors.New("Reveal error: " + err.Error())
+		}
+		if revealTxn != core.NilHash {
+			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+			if waitForBlockCompletionErr != nil {
+				log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+				return err
+			}
+		}
+	} else {
+		log.Error("The commit data is outdated, does not match with the latest epoch")
+		return errors.New("outdated commit data")
 	}
 	return nil
 }
@@ -519,6 +532,14 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	secret := crypto.Keccak256(signedData)
 	log.Debug("Secret generated.")
 	return signedData, secret, nil
+}
+
+func updateGlobalCommitDataStruct(commitData types.CommitData, epoch uint32) types.CommitFileData {
+	globalCommitDataStruct.Leaves = commitData.Leaves
+	globalCommitDataStruct.AssignedCollections = commitData.AssignedCollections
+	globalCommitDataStruct.SeqAllottedCollections = commitData.SeqAllottedCollections
+	globalCommitDataStruct.Epoch = epoch
+	return globalCommitDataStruct
 }
 
 func init() {
