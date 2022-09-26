@@ -57,13 +57,13 @@ func (_m *UtilsInterface) AssignLogFile(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
-// AssignPassword provides a mock function with given fields:
-func (_m *UtilsInterface) AssignPassword() string {
-	ret := _m.Called()
+// AssignPassword provides a mock function with given fields: flagSet
+func (_m *UtilsInterface) AssignPassword(flagSet *pflag.FlagSet) string {
+	ret := _m.Called(flagSet)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
 	} else {
 		r0 = ret.Get(0).(string)
 	}

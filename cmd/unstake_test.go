@@ -317,7 +317,7 @@ func TestExecuteUnstake(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword").Return(tt.args.password)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)

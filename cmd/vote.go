@@ -53,7 +53,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in fetching config details: ", err)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
 	utils.CheckError("Error in getting rogue status: ", err)
 
@@ -549,12 +549,14 @@ func init() {
 		Address         string
 		Rogue           bool
 		RogueMode       []string
+		Password        string
 		AutoClaimBounty bool
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
+	voteCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the staker to protect the keystore")
 	voteCmd.Flags().BoolVarP(&AutoClaimBounty, "autoClaimBounty", "", false, "auto claim bounty")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
