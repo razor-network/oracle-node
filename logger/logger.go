@@ -1,12 +1,16 @@
 package logger
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
+	"math/big"
 	"os"
 	"razor/core"
 	"razor/path"
@@ -20,7 +24,10 @@ type StandardLogger struct {
 var standardLogger = &StandardLogger{logrus.New()}
 
 var Address string
+var Epoch uint32
+var BlockNumber *big.Int
 var FileName string
+var Client *ethclient.Client
 
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
@@ -77,61 +84,104 @@ func joinString(args ...interface{}) string {
 }
 
 func (logger *StandardLogger) Error(args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
-	logger.WithFields(addressLogField).Errorln(args...)
+	logger.WithFields(logFields).Errorln(args...)
 }
 
 func (logger *StandardLogger) Info(args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
-	logger.WithFields(addressLogField).Infoln(args...)
+	logger.WithFields(logFields).Infoln(args...)
 }
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
-	logger.WithFields(addressLogField).Debugln(args...)
+	logger.WithFields(logFields).Debugln(args...)
 }
 
 func (logger *StandardLogger) Fatal(args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
-	logger.WithFields(addressLogField).Fatalln(err)
+	logger.WithFields(logFields).Fatalln(err)
 }
 
 func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
-	logger.WithFields(addressLogField).Errorf(format, args...)
+	logger.WithFields(logFields).Errorf(format, args...)
 }
 
 func (logger *StandardLogger) Infof(format string, args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
-	logger.WithFields(addressLogField).Infof(format, args...)
+	logger.WithFields(logFields).Infof(format, args...)
 }
 
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
-	logger.WithFields(addressLogField).Debugf(format, args...)
+	logger.WithFields(logFields).Debugf(format, args...)
 }
 
 func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
-	var addressLogField = logrus.Fields{
-		"address": Address,
+	SetEpochAndBlockNumber(Client)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
-	logger.WithFields(addressLogField).Fatalf(format, err)
+	logger.WithFields(logFields).Fatalf(format, err)
+}
+
+func SetEpochAndBlockNumber(client *ethclient.Client) {
+	if client != nil {
+		latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			log.Error("Error in fetching block: ", err)
+			return
+		}
+		BlockNumber = latestHeader.Number
+
+		epoch := latestHeader.Time / uint64(core.EpochLength)
+		Epoch = uint32(epoch)
+	}
+}
+
+func SetLoggerParameters(client *ethclient.Client, address string) {
+	Address = address
+	Client = client
 }
