@@ -176,6 +176,11 @@ func (_m *UtilsCmdInterface) CheckDisputeForIds(client *ethclient.Client, transa
 	return r0, r1
 }
 
+// CheckToDoResetDispute provides a mock function with given fields: client, blockManager, txnOpts, epoch, sortedValues
+func (_m *UtilsCmdInterface) CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int) {
+	_m.Called(client, blockManager, txnOpts, epoch, sortedValues)
+}
+
 // ClaimBlockReward provides a mock function with given fields: options
 func (_m *UtilsCmdInterface) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
 	ret := _m.Called(options)
@@ -904,13 +909,13 @@ func (_m *UtilsCmdInterface) GetWaitTime() (int32, error) {
 	return r0, r1
 }
 
-// GiveSorted provides a mock function with given fields: client, blockManager, txnOpts, epoch, assetId, sortedStakers
-func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
-	ret := _m.Called(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+// GiveSorted provides a mock function with given fields: client, blockManager, txnArgs, epoch, assetId, sortedStakers
+func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	ret := _m.Called(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bindings.BlockManager, *bind.TransactOpts, uint32, uint16, []*big.Int) error); ok {
-		r0 = rf(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bindings.BlockManager, types.TransactionOptions, uint32, uint16, []*big.Int) error); ok {
+		r0 = rf(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -918,9 +923,9 @@ func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *
 	return r0
 }
 
-// HandleBlock provides a mock function with given fields: client, account, blockNumber, config, rogueData
-func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
-	_m.Called(client, account, blockNumber, config, rogueData)
+// HandleBlock provides a mock function with given fields: client, account, blockNumber, config, rogueData, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+	_m.Called(client, account, blockNumber, config, rogueData, backupNodeActionsToIgnore)
 }
 
 // HandleClaimBounty provides a mock function with given fields: client, config, account
@@ -958,13 +963,13 @@ func (_m *UtilsCmdInterface) HandleCommitState(client *ethclient.Client, epoch u
 	return r0, r1
 }
 
-// HandleDispute provides a mock function with given fields: client, config, account, epoch, blockNumber, rogueData
-func (_m *UtilsCmdInterface) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-	ret := _m.Called(client, config, account, epoch, blockNumber, rogueData)
+// HandleDispute provides a mock function with given fields: client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+	ret := _m.Called(client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *big.Int, types.Rogue) error); ok {
-		r0 = rf(client, config, account, epoch, blockNumber, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *big.Int, types.Rogue, []string) error); ok {
+		r0 = rf(client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1531,13 +1536,13 @@ func (_m *UtilsCmdInterface) UpdateJob(client *ethclient.Client, config types.Co
 	return r0, r1
 }
 
-// Vote provides a mock function with given fields: ctx, config, client, rogueData, account
-func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
-	ret := _m.Called(ctx, config, client, rogueData, account)
+// Vote provides a mock function with given fields: ctx, config, client, rogueData, account, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
+	ret := _m.Called(ctx, config, client, rogueData, account, backupNodeActionsToIgnore)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account) error); ok {
-		r0 = rf(ctx, config, client, rogueData, account)
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, []string) error); ok {
+		r0 = rf(ctx, config, client, rogueData, account, backupNodeActionsToIgnore)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -870,10 +870,11 @@ func TestInitiatePropose(t *testing.T) {
 
 func TestHandleBlock(t *testing.T) {
 	var (
-		client      *ethclient.Client
-		account     types.Account
-		blockNumber *big.Int
-		rogueData   types.Rogue
+		client                    *ethclient.Client
+		account                   types.Account
+		blockNumber               *big.Int
+		rogueData                 types.Rogue
+		backupNodeActionsToIgnore []string
 	)
 
 	type args struct {
@@ -1248,7 +1249,7 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
-			ut.HandleBlock(client, account, blockNumber, tt.args.config, rogueData)
+			ut.HandleBlock(client, account, blockNumber, tt.args.config, rogueData, backupNodeActionsToIgnore)
 		})
 	}
 }
