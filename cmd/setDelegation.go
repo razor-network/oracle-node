@@ -33,24 +33,23 @@ func initialiseSetDelegation(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the SetDelegation function
 func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.Address = address
-
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword()
+	client := razorUtils.ConnectToClient(config.Provider)
 
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
+
+	password := razorUtils.AssignPassword()
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
 	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status to boolean: ", err)
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("StakerId error: ", err)

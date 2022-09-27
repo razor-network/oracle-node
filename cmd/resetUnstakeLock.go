@@ -33,18 +33,18 @@ func initialiseExtendLock(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ResetUnstakeLock function
 func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
-
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config data: ", err)
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
 	password := razorUtils.AssignPassword()
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
