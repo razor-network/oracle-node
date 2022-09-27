@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"math/big"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -54,6 +56,22 @@ func InitializeUtils() {
 	utils.RetryInterface = &utils.RetryStruct{}
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 	utils.FlagSetInterface = &utils.FlagSetStruct{}
+}
+func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, args ...interface{}) []reflect.Value {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	select {
+	case <-ctx.Done():
+		log.Errorf("%s function timeout!", methodName)
+		log.Debug("Kindly check your connection")
+		return nil
+	default:
+		inputs := make([]reflect.Value, len(args))
+		for i, _ := range args {
+			inputs[i] = reflect.ValueOf(args[i])
+		}
+		return reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
+	}
 }
 
 //This function returns the config file path
@@ -148,7 +166,14 @@ func (u Utils) GetJobFilePath() (string, error) {
 
 //This function fetches the balance
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	return utilsInterface.FetchBalance(client, accountAddress)
+	result := InvokeFunctionWithTimeout(utilsInterface, "FetchBalance", client, accountAddress)
+	resultErr := result[1].Interface()
+	balance := result[0].Interface().(*big.Int)
+
+	if resultErr != nil {
+		return balance, resultErr.(error)
+	}
+	return balance, nil
 }
 
 //This function checks if the flag is passed
