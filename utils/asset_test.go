@@ -778,17 +778,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				RetryInterface: retryMock,
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string")).Return(tt.args.response, tt.args.responseErr)
-			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
 			utilsMock.On("GetDataFromXHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
