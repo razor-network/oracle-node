@@ -353,8 +353,9 @@ docker exec -it razor-go razor vote --address <address>
 run vote command in background
 
 ```
-docker exec -it -d razor-go razor vote --address <address>
+docker exec -it -d razor-go razor vote --address <address> --password /root/.razor/<file_name>
 ```
+>**_NOTE:_**  To run command with password flag with the help of docker, password file should present in $HOME/.razor/ directory
 
 Example:
 
@@ -678,6 +679,8 @@ docker
 docker exec -it razor-go razor collectionList
 ```
 
+Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
+
 ### Expose Metrics
 
 Expose Prometheus-based metrics for monitoring
@@ -929,6 +932,13 @@ $ ./razor contractAddresses
    ```bash
    #Provide password through CLI
    docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000
+   
+      #Provide password through File
+
+        #Create file and put password string
+          vi ~/.razor/pass
+        #Start Staking
+          docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000 --password /root/.razor/pass
    ```
 
 9. To Start **Voting**,
@@ -938,6 +948,9 @@ $ ./razor contractAddresses
    ```bash
    # Run process in foreground and provide password through cli
    docker-compose run razor-go /usr/local/bin/razor vote --address <address>
+   
+   # Run process in background and provide password through file
+   docker-compose run -d razor-go /usr/local/bin/razor vote --address <address> --password /root/.razor/pass
    ```
 
    ```bash
@@ -949,6 +962,9 @@ $ ./razor contractAddresses
     ```bash
     #Provide password with cli
     docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10
+    
+    #provide password through file
+    docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10 --password /root/.razor/pass
     ```
 
 ### Contribute to razor-go

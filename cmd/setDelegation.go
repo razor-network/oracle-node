@@ -42,7 +42,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
@@ -127,11 +127,13 @@ func init() {
 	var (
 		Status     string
 		Address    string
+		Password   string
 		Commission uint8
 	)
 
 	setDelegationCmd.Flags().StringVarP(&Status, "status", "s", "true", "true for accepting delegation and false for not accepting")
 	setDelegationCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
+	setDelegationCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	setDelegationCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
 
 	addrErr := setDelegationCmd.MarkFlagRequired("address")

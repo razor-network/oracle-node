@@ -87,8 +87,8 @@ func (u Utils) GetConfigData() (types.Configurations, error) {
 }
 
 //This function assigns the password
-func (u Utils) AssignPassword() string {
-	return utils.AssignPassword()
+func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
+	return utils.AssignPassword(flagSet)
 }
 
 //This function returns the string address
