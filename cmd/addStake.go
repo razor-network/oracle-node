@@ -32,16 +32,19 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the StakeCoins function
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
 	password := razorUtils.AssignPassword()
-	client := razorUtils.ConnectToClient(config.Provider)
+
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account: "+address, err)
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)

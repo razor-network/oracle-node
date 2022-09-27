@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
+	"razor/logger"
 	"razor/utils"
 	"strconv"
 )
@@ -28,12 +29,11 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the GetStakerInfo function
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
-
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
+	logger.SetLoggerParameters(client, "")
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)

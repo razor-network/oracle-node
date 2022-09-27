@@ -46,16 +46,19 @@ func initializeVote(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Vote function
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
-
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in fetching config details: ", err)
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
 	password := razorUtils.AssignPassword()
+
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
 	utils.CheckError("Error in getting rogue status: ", err)
 
@@ -66,7 +69,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		IsRogue:   isRogue,
 		RogueMode: rogueMode,
 	}
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	account := types.Account{Address: address, Password: password}
 
@@ -193,7 +195,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	}
 
-	log.Infof("Block: %d Epoch: %d State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", blockNumber, epoch, utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")

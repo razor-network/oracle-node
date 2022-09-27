@@ -31,18 +31,18 @@ func initializeUnlockWithdraw(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the UnlockWithdraw function
 func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.Address = address
-
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
-	password := razorUtils.AssignPassword()
-
 	client := razorUtils.ConnectToClient(config.Provider)
+
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
+
+	password := razorUtils.AssignPassword()
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
