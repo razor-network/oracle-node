@@ -60,6 +60,9 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	rogueMode, err := flagSetUtils.GetStringSliceRogueMode(flagSet)
 	utils.CheckError("Error in getting rogue modes: ", err)
 
+	backupNodeActionsToIgnore, err := flagSetUtils.GetStringSliceBackupNode(flagSet)
+	utils.CheckError("Error in getting backupNode actions to ignore: ", err)
+
 	rogueData := types.Rogue{
 		IsRogue:   isRogue,
 		RogueMode: rogueMode,
@@ -75,7 +78,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	cmdUtils.HandleExit()
 
-	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account); err != nil {
+	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%s\n", err)
 		osUtils.Exit(1)
 	}
@@ -106,7 +109,7 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error {
+func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
 	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
@@ -123,7 +126,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			log.Debugf("Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData)
+				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData, backupNodeActionsToIgnore)
 			}
 		}
 	}
@@ -137,7 +140,7 @@ var (
 )
 
 //This function handles the block
-func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue) {
+func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -235,7 +238,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 
-		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData)
+		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
 		if err != nil {
 			log.Error(err)
 			break
@@ -550,12 +553,14 @@ func init() {
 		Rogue           bool
 		RogueMode       []string
 		AutoClaimBounty bool
+		BackupNode      []string
 	)
 
 	voteCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
 	voteCmd.Flags().BoolVarP(&Rogue, "rogue", "r", false, "enable rogue mode to report wrong values")
 	voteCmd.Flags().StringSliceVarP(&RogueMode, "rogueMode", "", []string{}, "type of rogue mode")
 	voteCmd.Flags().BoolVarP(&AutoClaimBounty, "autoClaimBounty", "", false, "auto claim bounty")
+	voteCmd.Flags().StringSliceVarP(&BackupNode, "backupNode", "", []string{}, "actions that backup node will ignore")
 
 	addrErr := voteCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
