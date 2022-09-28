@@ -17,7 +17,6 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
-	"time"
 )
 
 var (
@@ -305,9 +304,38 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	}
 
 	if !utils.Contains(giveSortedLeafIds, leafId) {
-		err := cmdUtils.GiveSorted(client, blockManager, txnArgs, epoch, leafId, sortedValues)
-		if err != nil {
-			return err
+		var (
+			start int
+			end   int
+		)
+		lenOfSortedValues := len(sortedValues)
+		for {
+			if start >= end && start != 0 && end != 0 {
+				break
+			}
+			if end == 0 {
+				end = lenOfSortedValues
+			}
+			err := cmdUtils.GiveSorted(client, blockManager, txnArgs, epoch, leafId, sortedValues[start:end])
+			if err != nil {
+				if err.Error() == errors.New("gas limit reached").Error() {
+					end = end / 2
+				} else {
+					log.Error("Error in GiveSorted: ", err)
+					txnOpts := razorUtils.GetTxnOpts(txnArgs)
+					cmdUtils.CheckToDoResetDispute(client, blockManager, txnOpts, epoch, sortedValues)
+					return err
+				}
+			} else {
+				threshold := end - start
+				start = end
+				if end != lenOfSortedValues {
+					end = end + threshold
+					if end > lenOfSortedValues {
+						end = lenOfSortedValues
+					}
+				}
+			}
 		}
 	}
 	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
@@ -360,74 +388,37 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	if len(sortedValues) == 0 {
 		return nil
 	}
-	var (
-		start int
-		end   int
-	)
-	timeout := time.NewTimer(time.Second * 60)
+	callOpts := razorUtils.GetOptions()
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	disputesMapping, err := blockManagerUtils.Disputes(client, &callOpts, epoch, common.HexToAddress(txnArgs.AccountAddress))
+	if err != nil {
+		log.Error("Error in getting disputes mapping: ", disputesMapping)
+		return err
+	}
 
-	select {
-	case <-timeout.C:
-		log.Error("GiveSorted timeout!")
-		return errors.New("giveSorted timeout error")
-	default:
-		for {
-			callOpts := razorUtils.GetOptions()
-			disputesMapping, err := blockManagerUtils.Disputes(client, &callOpts, epoch, common.HexToAddress(txnArgs.AccountAddress))
-			if err != nil {
-				log.Error("Error in getting disputes mapping: ", disputesMapping)
-				return err
-			}
+	log.Debug("Last visited value: ", disputesMapping.LastVisitedValue)
+	if disputesMapping.LastVisitedValue.Cmp(sortedValues[len(sortedValues)-1]) == 0 {
+		return errors.New("giveSorted already done")
+	}
 
-			log.Debug("Last visited value: ", disputesMapping.LastVisitedValue)
-			if disputesMapping.LastVisitedValue.Cmp(sortedValues[len(sortedValues)-1]) == 0 {
-				break
-			}
+	isGiveSortedInitiated := disputesMapping.LastVisitedValue.Cmp(big.NewInt(0)) > 0 && disputesMapping.AccWeight.Cmp(big.NewInt(0)) > 0
+	if isGiveSortedInitiated && disputesMapping.LeafId != leafId {
+		log.Error("Give sorted is in progress for another leafId")
+		return errors.New("another giveSorted in progress")
+	}
 
-			isGiveSortedInitiated := disputesMapping.LastVisitedValue.Cmp(big.NewInt(0)) > 0 && disputesMapping.AccWeight.Cmp(big.NewInt(0)) > 0
-			if isGiveSortedInitiated && disputesMapping.LeafId != leafId {
-				log.Error("Give sorted is in progress for another leafId")
-				return errors.New("another giveSorted in progress")
-			}
-			if end == 0 {
-				end = len(sortedValues)
-			}
-			txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, leafId, sortedValues)
-			if err != nil {
-				log.Error("Error in calling GiveSorted: ", err)
-				if err.Error() == errors.New("gas limit reached").Error() {
-					end = end / 2
-					err1 := GiveSorted(client, blockManager, txnArgs, epoch, leafId, sortedValues[start:end])
-					if err1 != nil {
-						cmdUtils.CheckToDoResetDispute(client, blockManager, txnOpts, epoch, sortedValues[start:end])
-						return err1
-					} else {
-						start = start + end
-					}
-				} else {
-					return err
-				}
-			} else {
-				log.Info("Calling GiveSorted...")
-				log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-				giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
-				err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
-				if err != nil {
-					log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
-					return err
-				}
-				return nil
-			}
+	txn, err := blockManagerUtils.GiveSorted(blockManager, txnOpts, epoch, leafId, sortedValues)
+	if err != nil {
+		return err
+	}
 
-			if start < len(sortedValues) {
-				err2 := GiveSorted(client, blockManager, txnArgs, epoch, leafId, sortedValues[start:])
-				if err2 != nil {
-					cmdUtils.CheckToDoResetDispute(client, blockManager, txnOpts, epoch, sortedValues[start:])
-					return err2
-				}
-			}
-		}
+	log.Info("Calling GiveSorted...")
+	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
+	giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
+	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+	if err != nil {
+		log.Error("Error in WaitForBlockCompletion for giveSorted: ", err)
+		return err
 	}
 	return nil
 }
