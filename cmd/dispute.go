@@ -337,6 +337,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 				}
 			}
 		}
+		giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
 	}
 	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
 
