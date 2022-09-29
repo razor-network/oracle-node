@@ -8,6 +8,10 @@ import (
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
+	common "github.com/ethereum/go-ethereum/common"
+
+	coretypes "razor/core/types"
+
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
@@ -128,6 +132,27 @@ func (_m *BlockManagerInterface) DisputeOnOrderOfIds(client *ethclient.Client, o
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, uint32, uint8, *big.Int, *big.Int) error); ok {
 		r1 = rf(client, opts, epoch, blockIndex, index0, index1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Disputes provides a mock function with given fields: client, opts, epoch, address
+func (_m *BlockManagerInterface) Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (coretypes.DisputesStruct, error) {
+	ret := _m.Called(client, opts, epoch, address)
+
+	var r0 coretypes.DisputesStruct
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.CallOpts, uint32, common.Address) coretypes.DisputesStruct); ok {
+		r0 = rf(client, opts, epoch, address)
+	} else {
+		r0 = ret.Get(0).(coretypes.DisputesStruct)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.CallOpts, uint32, common.Address) error); ok {
+		r1 = rf(client, opts, epoch, address)
 	} else {
 		r1 = ret.Error(1)
 	}

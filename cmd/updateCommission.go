@@ -41,7 +41,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting config", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
@@ -128,12 +128,14 @@ func init() {
 	var (
 		Address    string
 		Commission uint8
+		Password   string
 	)
 
 	rootCmd.AddCommand(updateCommissionCmd)
 
 	updateCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	updateCommissionCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
+	updateCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := updateCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

@@ -96,8 +96,8 @@ func (u Utils) GetConfigData() (types.Configurations, error) {
 }
 
 //This function assigns the password
-func (u Utils) AssignPassword() string {
-	return utils.AssignPassword()
+func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
+	return utils.AssignPassword(flagSet)
 }
 
 //This function returns the string address
@@ -689,6 +689,12 @@ func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.B
 	return ExecuteTransaction(blockManager, "ResetDispute", opts, epoch)
 }
 
+//This functiom gets Disputes mapping
+func (blockManagerUtils BlockManagerUtils) Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (types.DisputesStruct, error) {
+	blockManager := utilsInterface.GetBlockManager(client)
+	return blockManager.Disputes(opts, epoch, address)
+}
+
 //This function is used to reveal the values
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, signature []byte) (*Types.Transaction, error) {
 	voteManager := utilsInterface.GetVoteManager(client)
@@ -980,6 +986,11 @@ func (flagSetUtils FLagSetUtils) GetStringSliceRogueMode(flagSet *pflag.FlagSet)
 	return flagSet.GetStringSlice("rogueMode")
 }
 
+//This function is used to check the inputs gor backupNode flag
+func (flagSetUtils FLagSetUtils) GetStringSliceBackupNode(flagSet *pflag.FlagSet) ([]string, error) {
+	return flagSet.GetStringSlice("backupNode")
+}
+
 //This function is used to check if exposeMetrics is passed or not
 func (flagSetUtils FLagSetUtils) GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("exposeMetrics")
@@ -1013,8 +1024,8 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 }
 
 //This function is used to give the sorted Ids
-func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
-	return GiveSorted(client, blockManager, txnOpts, epoch, assetId, sortedStakers)
+func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	return GiveSorted(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
 }
 
 //This function is used to write config as

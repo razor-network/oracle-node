@@ -48,7 +48,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -117,11 +117,13 @@ func init() {
 		Address      string
 		CollectionId uint16
 		Status       string
+		Password     string
 	)
 
 	modifyCollectionStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	modifyCollectionStatusCmd.Flags().Uint16VarP(&CollectionId, "collectionId", "", 0, "collectionId of the collection")
 	modifyCollectionStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the collection")
+	modifyCollectionStatusCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 
 	addressErr := modifyCollectionStatusCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addressErr)
