@@ -317,7 +317,11 @@ func (s StakeManagerStruct) Locks(client *ethclient.Client, address common.Addre
 	if returnedError != nil {
 		return coretypes.Locks{}, returnedError
 	}
-	return returnedValues[0].Interface().(coretypes.Locks), nil
+	locks := returnedValues[0].Interface().(struct {
+		Amount      *big.Int
+		UnlockAfter *big.Int
+	})
+	return locks, nil
 }
 
 func (s StakeManagerStruct) MaxCommission(client *ethclient.Client) (uint8, error) {
@@ -406,7 +410,11 @@ func (v VoteManagerStruct) Commitments(client *ethclient.Client, stakerId uint32
 	if returnedValues != nil {
 		return coretypes.Commitment{}, returnedError
 	}
-	return returnedValues[0].Interface().(coretypes.Commitment), nil
+	commitment := returnedValues[0].Interface().(struct {
+		Epoch          uint32
+		CommitmentHash [32]byte
+	})
+	return commitment, nil
 }
 
 func (v VoteManagerStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {

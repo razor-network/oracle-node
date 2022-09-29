@@ -514,7 +514,20 @@ func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, 
 	if returnedError != nil {
 		return types.Staker{}, returnedError
 	}
-	return returnedValues[0].Interface().(types.Staker), nil
+	staker := returnedValues[0].Interface().(struct {
+		AcceptDelegation                bool
+		IsSlashed                       bool
+		Commission                      uint8
+		Id                              uint32
+		Age                             uint32
+		Address                         common.Address
+		TokenAddress                    common.Address
+		EpochFirstStakedOrLastPenalized uint32
+		EpochCommissionLastUpdated      uint32
+		Stake                           *big.Int
+		StakerReward                    *big.Int
+	})
+	return staker, nil
 }
 
 //This function returns the maturity
@@ -537,7 +550,12 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 	if returnedError != nil {
 		return types.BountyLock{}, returnedError
 	}
-	return returnedValues[0].Interface().(types.BountyLock), nil
+	bountyLock := returnedValues[0].Interface().(struct {
+		RedeemAfter  uint32
+		BountyHunter common.Address
+		Amount       *big.Int
+	})
+	return bountyLock, nil
 }
 
 //This function is used to claim the staker reward
@@ -692,7 +710,18 @@ func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.B
 //This functiom gets Disputes mapping
 func (blockManagerUtils BlockManagerUtils) Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (types.DisputesStruct, error) {
 	blockManager := utilsInterface.GetBlockManager(client)
-	return blockManager.Disputes(opts, epoch, address)
+	returnedValues := utils.InvokeFunctionWithTimeout(blockManager, "Disputes", opts, epoch, address)
+	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return types.DisputesStruct{}, returnedError
+	}
+	disputesMapping := returnedValues[0].Interface().(struct {
+		LeafId           uint16
+		LastVisitedValue *big.Int
+		AccWeight        *big.Int
+		Median           *big.Int
+	})
+	return disputesMapping, nil
 }
 
 //This function is used to reveal the values
