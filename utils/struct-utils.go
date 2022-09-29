@@ -10,9 +10,11 @@ import (
 	"math/big"
 	"os"
 	"razor/accounts"
+	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"reflect"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -51,54 +53,146 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	return &UtilsStruct{}
 }
 
+func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, args ...interface{}) []reflect.Value {
+	var functionCall []reflect.Value
+	var gotFunction = make(chan bool)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	go func() {
+		inputs := make([]reflect.Value, len(args))
+		for i := range args {
+			inputs[i] = reflect.ValueOf(args[i])
+		}
+		//TODO: Add function name and arguments to the logs before every invoke function call
+		log.Debug("Function: ", methodName)
+		functionCall = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
+		gotFunction <- true
+	}()
+	for {
+		select {
+		case <-ctx.Done():
+			log.Errorf("%s function timeout!", methodName)
+			log.Debug("Kindly check your connection")
+			return nil
+
+		case <-gotFunction:
+			return functionCall
+		}
+	}
+}
+
+func CheckIfAnyError(result []reflect.Value, errorIndexInReturnValues int) error {
+	if result == nil {
+		return core.RPCTimeoutErr
+	}
+	returnedError := result[errorIndexInReturnValues].Interface()
+	if returnedError != nil {
+		return returnedError.(error)
+	}
+	return nil
+}
+
+//TODO: CHECK DEFAULT RETURN VALUE
 func (b BlockManagerStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.BlockIndexToBeConfirmed(&opts)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "BlockIndexToBeConfirmed", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return -1, returnedError
+	}
+	return returnedValues[0].Interface().(int8), nil
 }
 
 func (s StakeManagerStruct) WithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.WithdrawInitiationPeriod(&opts)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "WithdrawInitiationPeriod", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (a AssetManagerStruct) GetNumJobs(client *ethclient.Client) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetNumJobs(&opts)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetNumJobs", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (a AssetManagerStruct) GetCollection(client *ethclient.Client, id uint16) (bindings.StructsCollection, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetCollection(&opts, id)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetCollection", &opts, id)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return bindings.StructsCollection{}, returnedError
+	}
+	return returnedValues[0].Interface().(bindings.StructsCollection), nil
 }
 
 func (a AssetManagerStruct) GetJob(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetJob(&opts, id)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetJob", &opts, id)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return bindings.StructsJob{}, returnedError
+	}
+	return returnedValues[0].Interface().(bindings.StructsJob), nil
 }
 
 func (a AssetManagerStruct) GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.LeafIdToCollectionIdRegistry(&opts, index)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "LeafIdToCollectionIdRegistry", &opts, index)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (a AssetManagerStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetCollectionIdFromLeafId(&opts, leafId)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetCollectionIdFromLeafId", &opts, leafId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (a AssetManagerStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetLeafIdOfCollection(&opts, collectionId)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetLeafIdOfCollection", &opts, collectionId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (v VoteManagerStruct) ToAssign(client *ethclient.Client) (uint16, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.ToAssign(&opts)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "ToAssign", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (v VoteManagerStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetSalt(&opts)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetSalt", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return [32]byte{}, returnedError
+	}
+	return returnedValues[0].Interface().([32]byte), nil
 }
 
 func (a AccountsStruct) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
@@ -107,132 +201,271 @@ func (a AccountsStruct) GetPrivateKey(address string, password string, keystoreP
 
 func (b BlockManagerStruct) GetNumProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.GetNumProposedBlocks(&opts, epoch)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "GetNumProposedBlocks", &opts, epoch)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint8), nil
 }
 
 func (b BlockManagerStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlock uint32) (bindings.StructsBlock, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.GetProposedBlock(&opts, epoch, proposedBlock)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "GetProposedBlock", &opts, epoch, proposedBlock)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return bindings.StructsBlock{}, returnedError
+	}
+	return returnedValues[0].Interface().(bindings.StructsBlock), nil
 }
 
 func (b BlockManagerStruct) GetBlock(client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.GetBlock(&opts, epoch)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "GetBlock", &opts, epoch)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return bindings.StructsBlock{}, returnedError
+	}
+	return returnedValues[0].Interface().(bindings.StructsBlock), nil
 }
 
 func (b BlockManagerStruct) MinStake(client *ethclient.Client) (*big.Int, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.MinStake(&opts)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "MinStake", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (b BlockManagerStruct) StateBuffer(client *ethclient.Client) (uint8, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.Buffer(&opts)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "Buffer", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint8), nil
 }
 
 func (b BlockManagerStruct) MaxAltBlocks(client *ethclient.Client) (uint8, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.MaxAltBlocks(&opts)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "MaxAltBlocks", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint8), nil
 }
 
 func (b BlockManagerStruct) SortedProposedBlockIds(client *ethclient.Client, arg0 uint32, arg1 *big.Int) (uint32, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.SortedProposedBlockIds(&opts, arg0, arg1)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "SortedProposedBlockIds", &opts, arg0, arg1)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (b BlockManagerStruct) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
-	return blockManager.EpochLastProposed(&opts, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "EpochLastProposed", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.GetStakerId(&opts, address)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "GetStakerId", &opts, address)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (s StakeManagerStruct) GetNumStakers(client *ethclient.Client) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.GetNumStakers(&opts)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "GetNumStakers", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (s StakeManagerStruct) MinSafeRazor(client *ethclient.Client) (*big.Int, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.MinSafeRazor(&opts)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "MinSafeRazor", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (s StakeManagerStruct) Locks(client *ethclient.Client, address common.Address, address1 common.Address, lockType uint8) (coretypes.Locks, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.Locks(&opts, address, address1, lockType)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Locks", &opts, address, address1, lockType)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return coretypes.Locks{}, returnedError
+	}
+	return returnedValues[0].Interface().(coretypes.Locks), nil
 }
 
 func (s StakeManagerStruct) MaxCommission(client *ethclient.Client) (uint8, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.MaxCommission(&opts)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "MaxCommission", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint8), nil
 }
 
 func (s StakeManagerStruct) EpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.EpochLimitForUpdateCommission(&opts)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "EpochLimitForUpdateCommission", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (s StakeManagerStruct) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
-	return stakeManager.GetStaker(&opts, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "GetStaker", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return bindings.StructsStaker{}, returnedError
+	}
+	return returnedValues[0].Interface().(bindings.StructsStaker), nil
 }
 
 func (a AssetManagerStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetNumCollections(&opts)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetNumCollections", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (a AssetManagerStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetNumActiveCollections(&opts)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetNumActiveCollections", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (a AssetManagerStruct) GetActiveCollections(client *ethclient.Client) ([]uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.GetActiveCollections(&opts)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetActiveCollections", &opts)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().([]uint16), nil
 }
 
 func (a AssetManagerStruct) Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
-	return collectionManager.Jobs(&opts, id)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "Jobs", &opts, id)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return bindings.StructsJob{}, returnedError
+	}
+	job := returnedValues[0].Interface().(struct {
+		Id           uint16
+		SelectorType uint8
+		Weight       uint8
+		Power        int8
+		Name         string
+		Selector     string
+		Url          string
+	})
+	return job, nil
 }
 
 func (v VoteManagerStruct) Commitments(client *ethclient.Client, stakerId uint32) (coretypes.Commitment, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.Commitments(&opts, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "Commitments", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedValues != nil {
+		return coretypes.Commitment{}, returnedError
+	}
+	return returnedValues[0].Interface().(coretypes.Commitment), nil
 }
 
 func (v VoteManagerStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetVoteValue(&opts, epoch, stakerId, medianIndex)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetVoteValue", &opts, epoch, stakerId, medianIndex)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (v VoteManagerStruct) GetInfluenceSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetInfluenceSnapshot(&opts, epoch, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetInfluenceSnapshot", &opts, epoch, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (v VoteManagerStruct) GetStakeSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetStakeSnapshot(&opts, epoch, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetStakeSnapshot", &opts, epoch, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (v VoteManagerStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetTotalInfluenceRevealed(&opts, epoch, medianIndex)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetTotalInfluenceRevealed", &opts, epoch, medianIndex)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (v VoteManagerStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetEpochLastCommitted(&opts, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetEpochLastCommitted", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (v VoteManagerStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
-	return voteManager.GetEpochLastRevealed(&opts, stakerId)
+	returnedValues := InvokeFunctionWithTimeout(voteManager, "GetEpochLastRevealed", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (b BindingsStruct) NewCollectionManager(address common.Address, client *ethclient.Client) (*bindings.CollectionManager, error) {
@@ -271,6 +504,7 @@ func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, err
 	return flagSet.GetUint32(name)
 }
 
+//TODO: Check how to implement timeout here
 func (e EthClientStruct) Dial(rawurl string) (*ethclient.Client, error) {
 	return ethclient.Dial(rawurl)
 }
@@ -300,31 +534,66 @@ func (i IOStruct) ReadAll(body io.ReadCloser) ([]byte, error) {
 }
 
 func (c ClientStruct) TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
-	return client.TransactionReceipt(ctx, txHash)
+	returnedValues := InvokeFunctionWithTimeout(client, "TransactionReceipt", ctx, txHash)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return &types.Receipt{}, returnedError
+	}
+	return returnedValues[0].Interface().(*types.Receipt), nil
 }
 
 func (c ClientStruct) BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
-	return client.BalanceAt(ctx, account, blockNumber)
+	returnedValues := InvokeFunctionWithTimeout(client, "BalanceAt", ctx, account, blockNumber)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*types.Header, error) {
-	return client.HeaderByNumber(ctx, number)
+	returnedValues := InvokeFunctionWithTimeout(client, "HeaderByNumber", ctx, number)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return &types.Header{}, returnedError
+	}
+	return returnedValues[0].Interface().(*types.Header), nil
 }
 
 func (c ClientStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
-	return client.PendingNonceAt(ctx, account)
+	returnedValues := InvokeFunctionWithTimeout(client, "PendingNonceAt", ctx, account)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint64), nil
 }
 
 func (c ClientStruct) SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error) {
-	return client.SuggestGasPrice(ctx)
+	returnedValues := InvokeFunctionWithTimeout(client, "SuggestGasPrice", ctx)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (c ClientStruct) EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
-	return client.EstimateGas(ctx, msg)
+	returnedValues := InvokeFunctionWithTimeout(client, "EstimateGas", ctx, msg)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint64), nil
 }
 
 func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
-	return client.FilterLogs(ctx, q)
+	returnedValues := InvokeFunctionWithTimeout(client, "FilterLogs", ctx, q)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return []types.Log{}, returnedError
+	}
+	return returnedValues[0].Interface().([]types.Log), nil
 }
 
 func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
@@ -332,7 +601,23 @@ func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
 }
 
 func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	return coinContract.BalanceOf(opts, account)
+	//result := InvokeFunctionWithTimeout(coinContract, "BalanceOf", opts, account)
+	//if result == nil {
+	//	return nil, core.RPCTimeoutErr
+	//}
+	//resultErr := result[1].Interface()
+	//balance := result[0].Interface().(*big.Int)
+	//
+	//if resultErr != nil {
+	//	return nil, resultErr.(error)
+	//}
+	//return balance, nil
+	returnedValues := InvokeFunctionWithTimeout(coinContract, "BalanceOf", opts, account)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (a ABIStruct) Parse(reader io.Reader) (abi.ABI, error) {
@@ -356,7 +641,12 @@ func (b BindStruct) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID
 }
 
 func (s StakedTokenStruct) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
-	return stakedToken.BalanceOf(callOpts, address)
+	returnedValues := InvokeFunctionWithTimeout(stakedToken, "BalanceOf", callOpts, address)
+	returnedError := CheckIfAnyError(returnedValues, 1)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (r RetryStruct) RetryAttempts(numberOfAttempts uint) retry.Option {
