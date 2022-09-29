@@ -5,12 +5,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/fs"
 	"math/big"
 	"os"
 	"razor/accounts"
-	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -57,6 +57,7 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 	var functionCall []reflect.Value
 	var gotFunction = make(chan bool)
 
+	//TODO: Check what should be the timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
@@ -85,7 +86,7 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 
 func CheckIfAnyError(result []reflect.Value, errorIndexInReturnValues int) error {
 	if result == nil {
-		return core.RPCTimeoutErr
+		return errors.New("RPC Timeout error")
 	}
 	returnedError := result[errorIndexInReturnValues].Interface()
 	if returnedError != nil {
