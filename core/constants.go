@@ -1,10 +1,8 @@
 package core
 
 import (
-	"math/big"
-	"time"
-
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 var EpochLength int64 = 1200
@@ -16,4 +14,4 @@ var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
 
 //TODO: Check what should be the timeout
-var RPCTimeout = time.Second * 10
+var RPCTimeout = 10

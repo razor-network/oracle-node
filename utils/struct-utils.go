@@ -57,8 +57,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, args ...interface{}) []reflect.Value {
 	var functionCall []reflect.Value
 	var gotFunction = make(chan bool)
-
-	ctx, cancel := context.WithTimeout(context.Background(), core.RPCTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(core.RPCTimeout)*time.Second)
 	defer cancel()
 
 	go func() {
@@ -514,7 +513,6 @@ func (u UtilsStruct) GetUint32(flagSet *pflag.FlagSet, name string) (uint32, err
 	return flagSet.GetUint32(name)
 }
 
-//TODO: Check how to implement timeout here
 func (e EthClientStruct) Dial(rawurl string) (*ethclient.Client, error) {
 	return ethclient.Dial(rawurl)
 }
