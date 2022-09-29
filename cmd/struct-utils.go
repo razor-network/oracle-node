@@ -112,7 +112,12 @@ func (u Utils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 
 //This function connects to the client
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
-	return utilsInterface.ConnectToClient(provider)
+	returnedValues := utils.InvokeFunctionWithTimeout(utilsInterface, "ConnectToClient", provider)
+	returnedError := utils.CheckIfAnyError(returnedValues, -1)
+	if returnedError != nil {
+		return nil
+	}
+	return returnedValues[0].Interface().(*ethclient.Client)
 }
 
 //This function waits for the block completion
@@ -444,12 +449,6 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "Stake", txnOpts, epoch, amount)
-	//returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Stake", txnOpts, epoch, amount)
-	//returnedError := utils.CheckIfAnyError(returnedValues, 1)
-	//if returnedError != nil {
-	//	return nil, returnedError
-	//}
-	//return returnedValues[0].Interface().(*Types.Transaction), nil
 }
 
 //This function resets the unstake lock

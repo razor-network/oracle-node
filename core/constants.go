@@ -2,6 +2,7 @@ package core
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -13,3 +14,6 @@ var StateLength = uint64(EpochLength / NumberOfStates)
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
+
+//TODO: Check what should be the timeout
+var RPCTimeout = time.Second * 10

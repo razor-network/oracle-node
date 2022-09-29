@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"os"
 	"razor/accounts"
+	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -57,8 +58,7 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 	var functionCall []reflect.Value
 	var gotFunction = make(chan bool)
 
-	//TODO: Check what should be the timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), core.RPCTimeout)
 	defer cancel()
 
 	go func() {
@@ -66,7 +66,6 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 		for i := range args {
 			inputs[i] = reflect.ValueOf(args[i])
 		}
-		//TODO: Add function name and arguments to the logs before every invoke function call
 		log.Debug("Function: ", methodName)
 		functionCall = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
 		gotFunction <- true
@@ -88,6 +87,9 @@ func CheckIfAnyError(result []reflect.Value, errorIndexInReturnValues int) error
 	if result == nil {
 		return errors.New("RPC Timeout error")
 	}
+	if errorIndexInReturnValues == -1 {
+		return nil
+	}
 	returnedError := result[errorIndexInReturnValues].Interface()
 	if returnedError != nil {
 		return returnedError.(error)
@@ -95,7 +97,6 @@ func CheckIfAnyError(result []reflect.Value, errorIndexInReturnValues int) error
 	return nil
 }
 
-//TODO: CHECK DEFAULT RETURN VALUE
 func (b BlockManagerStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
 	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(blockManager, "BlockIndexToBeConfirmed", &opts)
@@ -610,17 +611,6 @@ func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
 }
 
 func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	//result := InvokeFunctionWithTimeout(coinContract, "BalanceOf", opts, account)
-	//if result == nil {
-	//	return nil, core.RPCTimeoutErr
-	//}
-	//resultErr := result[1].Interface()
-	//balance := result[0].Interface().(*big.Int)
-	//
-	//if resultErr != nil {
-	//	return nil, resultErr.(error)
-	//}
-	//return balance, nil
 	returnedValues := InvokeFunctionWithTimeout(coinContract, "BalanceOf", opts, account)
 	returnedError := CheckIfAnyError(returnedValues, 1)
 	if returnedError != nil {
