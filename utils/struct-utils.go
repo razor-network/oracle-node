@@ -311,8 +311,8 @@ func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Conte
 	return client.HeaderByNumber(ctx, number)
 }
 
-func (c ClientStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
-	return client.PendingNonceAt(ctx, account)
+func (c ClientStruct) NonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
+	return client.NonceAt(ctx, account, nil)
 }
 
 func (c ClientStruct) SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error) {

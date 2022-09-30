@@ -112,8 +112,8 @@ func (_m *ClientUtils) HeaderByNumber(client *ethclient.Client, ctx context.Cont
 	return r0, r1
 }
 
-// PendingNonceAt provides a mock function with given fields: client, ctx, account
-func (_m *ClientUtils) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
+// NonceAt provides a mock function with given fields: client, ctx, account
+func (_m *ClientUtils) NonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
 	ret := _m.Called(client, ctx, account)
 
 	var r0 uint64
