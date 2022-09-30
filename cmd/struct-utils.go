@@ -162,12 +162,7 @@ func (u Utils) GetJobFilePath() (string, error) {
 
 //This function fetches the balance
 func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	returnedValues := utils.InvokeFunctionWithTimeout(utilsInterface, "FetchBalance", client, accountAddress)
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return nil, returnedError
-	}
-	return returnedValues[0].Interface().(*big.Int), nil
+	return utilsInterface.FetchBalance(client, accountAddress)
 }
 
 //This function checks if the flag is passed
