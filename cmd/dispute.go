@@ -53,7 +53,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	log.Debug("Revealed collection ids:", revealedCollectionIds)
 	log.Debug("Local revealed data maps:", revealedDataMaps)
 
-	randomSortedProposedBlockIds := utils.UtilsInterface.Shuffle(sortedProposedBlockIds) //shuffles the sortedProposedBlockIds array
+	randomSortedProposedBlockIds := utils.Shuffle(sortedProposedBlockIds) //shuffles the sortedProposedBlockIds array
 	transactionOptions := types.TransactionOptions{
 		Client:         client,
 		Password:       account.Password,
@@ -64,7 +64,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	log.Debug("Shuffled sorted proposed blocks: ", randomSortedProposedBlockIds)
 
 	for _, blockId := range randomSortedProposedBlockIds {
-		proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, uint32(blockId))
+		proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, blockId)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -73,7 +73,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		log.Debug("Proposed block ", proposedBlock)
 
 		//blockIndex is index of blockId in sortedProposedBlock
-		blockIndex := utils.IndexOf(sortedProposedBlockIds, uint32(blockId))
+		blockIndex := utils.IndexOf(sortedProposedBlockIds, blockId)
 		if blockIndex == -1 {
 			log.Error("Block is not present in SortedProposedBlockIds array")
 			continue
@@ -387,7 +387,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 //This function sorts the Id's recursively
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
 	if len(sortedValues) == 0 {
-		return nil
+		return errors.New("length of sortedValues is 0")
 	}
 	callOpts := razorUtils.GetOptions()
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

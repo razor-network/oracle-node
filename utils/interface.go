@@ -71,7 +71,7 @@ var FlagSetInterface FlagSetUtils
 type Utils interface {
 	SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error)
 	MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int
-	GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error)
+	GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error)
 	GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int
 	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
 	GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error)
@@ -170,7 +170,6 @@ type Utils interface {
 	AssignLogFile(flagSet *pflag.FlagSet)
 	CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error)
 	GetStateName(stateNumber int64) string
-	Shuffle(slice []uint32) []uint32
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 }
 
@@ -182,7 +181,7 @@ type ClientUtils interface {
 	TransactionReceipt(client *ethclient.Client, ctx context.Context, txHash common.Hash) (*Types.Receipt, error)
 	BalanceAt(client *ethclient.Client, ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
 	HeaderByNumber(client *ethclient.Client, ctx context.Context, number *big.Int) (*Types.Header, error)
-	PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error)
+	NonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error)
 	SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error)
 	EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error)
 	FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]Types.Log, error)

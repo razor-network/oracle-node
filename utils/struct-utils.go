@@ -578,8 +578,8 @@ func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Conte
 	return returnedValues[0].Interface().(*types.Header), nil
 }
 
-func (c ClientStruct) PendingNonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
-	returnedValues := InvokeFunctionWithTimeout(client, "PendingNonceAt", ctx, account)
+func (c ClientStruct) NonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
+	returnedValues := InvokeFunctionWithTimeout(client, "NonceAt", ctx, account, nil)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return 0, returnedError
