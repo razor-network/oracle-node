@@ -914,7 +914,7 @@ func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 }
 
 //This function returns the gas limit of root in Float32
-func (flagSetUtils FLagSetUtils) GetRootRPCTimeout() (int64, error) {
+func (flagSetUtils FLagSetUtils) GetRootInt64RPCTimeout() (int64, error) {
 	return rootCmd.PersistentFlags().GetInt64("rpcTimeout")
 }
 

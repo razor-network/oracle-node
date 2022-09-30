@@ -154,7 +154,7 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 
 //This function returns the RPC timeout
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
-	rpcTimeout, err := flagSetUtils.GetRootRPCTimeout()
+	rpcTimeout, err := flagSetUtils.GetRootInt64RPCTimeout()
 	if err != nil {
 		return 10, err
 	}

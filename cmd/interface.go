@@ -204,7 +204,7 @@ type FlagSetInterface interface {
 	GetRootInt32GasPrice() (int32, error)
 	GetRootStringLogLevel() (string, error)
 	GetRootFloat32GasLimit() (float32, error)
-	GetRootRPCTimeout() (int64, error)
+	GetRootInt64RPCTimeout() (int64, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
