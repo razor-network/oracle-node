@@ -387,7 +387,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 //This function sorts the Id's recursively
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
 	if len(sortedValues) == 0 {
-		return nil
+		return errors.New("length of sortedValues is 0")
 	}
 	callOpts := razorUtils.GetOptions()
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
