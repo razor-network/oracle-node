@@ -11,7 +11,6 @@ import (
 	"math/big"
 	"os"
 	"razor/accounts"
-	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -27,6 +26,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 )
+
+var RPCTimeout int64
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	UtilsInterface = optionsPackageStruct.UtilsInterface
@@ -57,7 +58,7 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, args ...interface{}) []reflect.Value {
 	var functionCall []reflect.Value
 	var gotFunction = make(chan bool)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(core.RPCTimeout)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(RPCTimeout)*time.Second)
 	defer cancel()
 
 	go func() {

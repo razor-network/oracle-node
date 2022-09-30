@@ -859,6 +859,10 @@ func (flagSetUtils FLagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
+func (flagSetUtils FLagSetUtils) GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error) {
+	return flagSet.GetInt64("rpcTimeout")
+}
+
 //This function returns Gas Limit in Float32
 func (flagSetUtils FLagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error) {
 	return flagSet.GetFloat32("gasLimit")
@@ -902,6 +906,11 @@ func (flagSetUtils FLagSetUtils) GetRootStringLogLevel() (string, error) {
 //This function returns the gas limit of root in Float32
 func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
+}
+
+//This function returns the gas limit of root in Float32
+func (flagSetUtils FLagSetUtils) GetRootRPCTimeout() (int64, error) {
+	return rootCmd.PersistentFlags().GetInt64("rpcTimeout")
 }
 
 //This function returns the from in string
