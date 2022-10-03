@@ -798,6 +798,27 @@ func (_m *UtilsCmdInterface) GetProvider() (string, error) {
 	return r0, r1
 }
 
+// GetRPCTimeout provides a mock function with given fields:
+func (_m *UtilsCmdInterface) GetRPCTimeout() (int64, error) {
+	ret := _m.Called()
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetSalt provides a mock function with given fields: client, epoch
 func (_m *UtilsCmdInterface) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	ret := _m.Called(client, epoch)

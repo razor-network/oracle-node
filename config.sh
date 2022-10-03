@@ -37,4 +37,4 @@ read -rp "Gas Limit Increment : (2) " GAS_LIMIT
 if [ -z "$GAS_LIMIT" ]; then
    GAS_LIMIT=2
 fi
-$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT
+$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 10
