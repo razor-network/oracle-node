@@ -4,7 +4,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
@@ -17,11 +16,7 @@ import (
 	"time"
 )
 
-var (
-	_mediansData           []*big.Int
-	_revealedCollectionIds []uint16
-	_revealedDataMaps      *types.RevealedDataMaps
-)
+var globalProposedDataStruct types.ProposeFileData
 
 // Index reveal events of staker's
 // Reveal Event would have two things, activeCollectionIndex/medianIndex and values
@@ -32,15 +27,15 @@ var (
 // Find iteration using salt as seed
 
 //This functions handles the propose state
-func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error) {
+func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
 	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
-		return core.NilHash, err
+		return err
 	}
 	numStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		log.Error("Error in fetching number of stakers: ", err)
-		return core.NilHash, err
+		return err
 	}
 	log.Debug("Stake: ", staker.Stake)
 
@@ -51,11 +46,12 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	)
 
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "biggestStakerId") {
+		log.Warn("YOU ARE PROPOSING IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 		// If staker is going rogue with biggestStakerId than we do biggestStakerId = smallestStakerId
 		smallestStake, smallestStakerId, smallestStakerErr := cmdUtils.GetSmallestStakeAndId(client, epoch)
 		if smallestStakerErr != nil {
 			log.Error("Error in calculating smallest staker: ", smallestStakerErr)
-			return core.NilHash, smallestStakerErr
+			return smallestStakerErr
 		}
 		biggestStake = smallestStake
 		biggestStakerId = smallestStakerId
@@ -63,20 +59,20 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
 		if biggestStakerErr != nil {
 			log.Error("Error in calculating biggest staker: ", biggestStakerErr)
-			return core.NilHash, biggestStakerErr
+			return biggestStakerErr
 		}
 	}
 
 	salt, err := cmdUtils.GetSalt(client, epoch)
 	if err != nil {
-		return core.NilHash, err
+		return err
 	}
 
 	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Salt: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
 
 	bufferPercent, err := cmdUtils.GetBufferPercent()
 	if err != nil {
-		return core.NilHash, err
+		return err
 	}
 	iteration := cmdUtils.GetIteration(client, types.ElectedProposer{
 		Stake:           staker.Stake,
@@ -90,63 +86,45 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	log.Debug("Iteration: ", iteration)
 
 	if iteration == -1 {
-		return core.NilHash, nil
+		return nil
 	}
 	numOfProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, epoch)
 	if err != nil {
 		log.Error(err)
-		return core.NilHash, err
+		return err
 	}
 	maxAltBlocks, err := razorUtils.GetMaxAltBlocks(client)
 	if err != nil {
 		log.Error(err)
-		return core.NilHash, err
+		return err
 	}
 	if numOfProposedBlocks >= maxAltBlocks {
 		log.Debugf("Number of blocks proposed: %d, which is equal or greater than maximum alternative blocks allowed", numOfProposedBlocks)
 		log.Debug("Comparing  iterations...")
-		lastBlockIndex := numOfProposedBlocks - 1
-		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, uint32(lastBlockIndex))
+		sortedProposedBlocks, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
+		if err != nil {
+			log.Error("Error in fetching sorted proposed block ids")
+			return err
+		}
+		lastBlockIndex := sortedProposedBlocks[numOfProposedBlocks-1]
+		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, lastBlockIndex)
 		if err != nil {
 			log.Error(err)
-			return core.NilHash, err
+			return err
 		}
 		lastIteration := lastProposedBlockStruct.Iteration
 		if lastIteration.Cmp(big.NewInt(int64(iteration))) < 0 {
 			log.Info("Current iteration is greater than iteration of last proposed block, cannot propose")
-			return core.NilHash, nil
+			return nil
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
 	medians, ids, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
 	if err != nil {
 		log.Error(err)
-		return core.NilHash, err
+		return err
 	}
-
-	_mediansData = medians
-	_revealedCollectionIds = ids
-	_revealedDataMaps = revealedDataMaps
-
-	log.Debug("Saving proposed data for recovery")
-	fileName, err := razorUtils.GetProposeDataFileName(account.Address)
-	if err != nil {
-		log.Error("Error in getting file name to save median data: ", err)
-		return core.NilHash, nil
-	}
-	err = razorUtils.SaveDataToProposeJsonFile(fileName, epoch, types.ProposeData{
-		MediansData:           _mediansData,
-		RevealedCollectionIds: _revealedCollectionIds,
-		RevealedDataMaps:      _revealedDataMaps,
-	})
-	if err != nil {
-		log.Errorf("Error in saving data to file %s: %t", fileName, err)
-		return core.NilHash, nil
-	}
-	log.Debug("Data saved!")
-
 	log.Debugf("Medians: %d", medians)
-
 	log.Debugf("Epoch: %d Medians: %d", epoch, medians)
 	log.Debugf("Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
@@ -166,10 +144,40 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
 		log.Error(err)
-		return core.NilHash, err
+		return err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	proposeTxn := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", proposeTxn)
+	if proposeTxn != core.NilHash {
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		if waitForBlockCompletionErr != nil {
+			log.Error("Error in WaitForBlockCompletionErr for propose: ", waitForBlockCompletionErr)
+			return waitForBlockCompletionErr
+		} else {
+			// Saving proposed data after successful propose
+			updateGlobalProposedDataStruct(types.ProposeFileData{
+				MediansData:           medians,
+				RevealedDataMaps:      revealedDataMaps,
+				RevealedCollectionIds: ids,
+				Epoch:                 epoch,
+			})
+
+			log.Debug("Saving proposed data for recovery")
+			fileName, err := razorUtils.GetProposeDataFileName(account.Address)
+			if err != nil {
+				log.Error("Error in getting file name to save median data: ", err)
+				return err
+			}
+			err = razorUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
+			if err != nil {
+				log.Errorf("Error in saving data to file %s: %t", fileName, err)
+				return err
+			}
+			log.Debug("Data saved!")
+		}
+	}
+
+	return nil
 }
 
 //This function returns the biggest stake and Id of it
@@ -406,4 +414,12 @@ func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32
 		}
 	}
 	return smallestStake, smallestStakerId, nil
+}
+
+func updateGlobalProposedDataStruct(proposedData types.ProposeFileData) types.ProposeFileData {
+	globalProposedDataStruct.MediansData = proposedData.MediansData
+	globalProposedDataStruct.RevealedDataMaps = proposedData.RevealedDataMaps
+	globalProposedDataStruct.RevealedCollectionIds = proposedData.RevealedCollectionIds
+	globalProposedDataStruct.Epoch = proposedData.Epoch
+	return globalProposedDataStruct
 }

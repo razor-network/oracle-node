@@ -200,3 +200,23 @@ func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, 
 	}
 	return blockIndex, nil
 }
+
+func (*UtilsStruct) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	var (
+		epochLastProposed uint32
+		err               error
+	)
+	err = retry.Do(
+		func() error {
+			epochLastProposed, err = BlockManagerInterface.GetEpochLastProposed(client, stakerId)
+			if err != nil {
+				log.Error("Error in fetching epoch last proposed....Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return 0, err
+	}
+	return epochLastProposed, nil
+}

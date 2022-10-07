@@ -147,6 +147,8 @@ func TestExecuteStake(t *testing.T) {
 		approveErr      error
 		minSafeRazor    *big.Int
 		minSafeRazorErr error
+		stakerId        uint32
+		stakerIdErr     error
 		stakeTxn        common.Hash
 		stakeErr        error
 	}
@@ -164,6 +166,7 @@ func TestExecuteStake(t *testing.T) {
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(0),
+				stakerId:     1,
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 			},
@@ -179,6 +182,7 @@ func TestExecuteStake(t *testing.T) {
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(0),
+				stakerId:     1,
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 			},
@@ -194,6 +198,7 @@ func TestExecuteStake(t *testing.T) {
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(0),
+				stakerId:     1,
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 			},
@@ -222,6 +227,7 @@ func TestExecuteStake(t *testing.T) {
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(0),
+				stakerId:     1,
 				approveTxn:   core.NilHash,
 				approveErr:   errors.New("approve error"),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
@@ -237,6 +243,7 @@ func TestExecuteStake(t *testing.T) {
 				amount:       big.NewInt(2000),
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(0),
+				stakerId:     1,
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     core.NilHash,
 				stakeErr:     errors.New("stake error"),
@@ -251,6 +258,7 @@ func TestExecuteStake(t *testing.T) {
 				address:      "0x000000000000000000000000000000000000dead",
 				amount:       big.NewInt(2000),
 				minSafeRazor: big.NewInt(0),
+				stakerId:     1,
 				balance:      nil,
 				balanceErr:   errors.New("balance error"),
 				approveTxn:   common.BigToHash(big.NewInt(1)),
@@ -259,7 +267,7 @@ func TestExecuteStake(t *testing.T) {
 			expectedFatal: true,
 		},
 		{
-			name: "Test 8: When stake value is less than minSafeRazor",
+			name: "Test 8: When stake value is less than minSafeRazor and staker has never staked",
 			args: args{
 				config:       config,
 				password:     "test",
@@ -267,8 +275,24 @@ func TestExecuteStake(t *testing.T) {
 				amount:       big.NewInt(20),
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(100),
+				stakerId:     0,
 			},
 			expectedFatal: true,
+		},
+		{
+			name: "Test 9: When stake value is less than minSafeRazor and staker's stake is more than the minSafeRazor already",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(20),
+				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(100),
+				stakerId:     1,
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: false,
 		},
 	}
 
@@ -290,7 +314,7 @@ func TestExecuteStake(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword").Return(tt.args.password)
+			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
@@ -299,6 +323,7 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsPkgMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 

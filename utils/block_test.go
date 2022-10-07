@@ -646,3 +646,64 @@ func TestGetStateBuffer(t *testing.T) {
 		})
 	}
 }
+
+func TestGetEpochLastProposed(t *testing.T) {
+	var client *ethclient.Client
+	var callOpts bind.CallOpts
+	var stakerId uint32
+
+	type args struct {
+		epochLastProposed    uint32
+		epochLastProposedErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint32
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetEpochLastProposed() executes successfully",
+			args: args{
+				epochLastProposed: 100,
+			},
+			want:    100,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting epochLastProposed",
+			args: args{
+				epochLastProposedErr: errors.New("epochLastProposed error"),
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			utilsMock := new(mocks.Utils)
+			blockManagerMock := new(mocks.BlockManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				BlockManagerInterface: blockManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("GetOptions").Return(callOpts)
+			blockManagerMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastProposed, tt.args.epochLastProposedErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			got, err := utils.GetEpochLastProposed(client, stakerId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetEpochLastProposed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetEpochLastProposed() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
