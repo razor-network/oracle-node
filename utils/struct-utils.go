@@ -579,7 +579,8 @@ func (c ClientStruct) HeaderByNumber(client *ethclient.Client, ctx context.Conte
 }
 
 func (c ClientStruct) NonceAt(client *ethclient.Client, ctx context.Context, account common.Address) (uint64, error) {
-	returnedValues := InvokeFunctionWithTimeout(client, "NonceAt", ctx, account, nil)
+	var blockNumber *big.Int
+	returnedValues := InvokeFunctionWithTimeout(client, "NonceAt", ctx, account, blockNumber)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return 0, returnedError
