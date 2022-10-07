@@ -120,7 +120,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 	for _, vLog := range logs {
 		data, unpackErr := abiUtils.Unpack(contractAbi, "Revealed", vLog.Data)
 		if unpackErr != nil {
-			log.Error(unpackErr)
+			log.Debug(unpackErr)
 			continue
 		}
 		if epoch == data[0].(uint32) {

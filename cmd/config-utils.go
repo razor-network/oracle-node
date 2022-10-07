@@ -4,6 +4,7 @@ package cmd
 import (
 	"github.com/spf13/viper"
 	"razor/core/types"
+	"razor/utils"
 	"strings"
 )
 
@@ -16,6 +17,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		WaitTime:           0,
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
+		RPCTimeout:         0,
 	}
 
 	provider, err := cmdUtils.GetProvider()
@@ -46,6 +48,10 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	rpcTimeout, err := cmdUtils.GetRPCTimeout()
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
@@ -53,6 +59,8 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.GasPrice = gasPrice
 	config.LogLevel = logLevel
 	config.GasLimitMultiplier = gasLimit
+	config.RPCTimeout = rpcTimeout
+	utils.RPCTimeout = rpcTimeout
 
 	return config, nil
 }
@@ -142,4 +150,16 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 		gasLimit = float32(viper.GetFloat64("gasLimit"))
 	}
 	return gasLimit, nil
+}
+
+//This function returns the RPC timeout
+func (*UtilsStruct) GetRPCTimeout() (int64, error) {
+	rpcTimeout, err := flagSetUtils.GetRootInt64RPCTimeout()
+	if err != nil {
+		return 10, err
+	}
+	if rpcTimeout == 0 {
+		rpcTimeout = viper.GetInt64("rpcTimeout")
+	}
+	return rpcTimeout, nil
 }
