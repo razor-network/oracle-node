@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account: "+address, err)
@@ -57,7 +57,10 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 
-	if valueInWei.Cmp(minSafeRazor) < 0 {
+	stakerId, err := razorUtils.GetStakerId(client, address)
+	utils.CheckError("Error in getting stakerId: ", err)
+
+	if valueInWei.Cmp(minSafeRazor) < 0 && stakerId == 0 {
 		log.Fatal("The amount of razors entered is below min safe value.")
 	}
 
@@ -111,11 +114,13 @@ func init() {
 	var (
 		Amount   string
 		Address  string
+		Password string
 		WeiRazor bool
 	)
 
 	stakeCmd.Flags().StringVarP(&Amount, "value", "v", "0", "amount of Razors to stake")
 	stakeCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
+	stakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	stakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 
 	amountErr := stakeCmd.MarkFlagRequired("value")

@@ -57,6 +57,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+	rpcTimeout, rpcTimeoutErr := flagSetUtils.GetInt64RPCTimeout(flagSet)
+	if rpcTimeoutErr != nil {
+		return rpcTimeoutErr
+	}
 
 	path, pathErr := razorUtils.GetConfigFilePath()
 	if pathErr != nil {
@@ -112,7 +116,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if gasLimit != -1 {
 		viper.Set("gasLimit", gasLimit)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 {
+	if rpcTimeout != 0 {
+		viper.Set("rpcTimeout", rpcTimeout)
+	}
+	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 {
 		viper.Set("provider", "http://127.0.0.1:8545")
 		viper.Set("gasmultiplier", 1.0)
 		viper.Set("buffer", 20)
@@ -120,6 +127,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasprice", 1)
 		viper.Set("logLevel", "")
 		viper.Set("gasLimit", 2)
+		viper.Set("rpcTimeout", 10)
 		//viper.Set("exposeMetricsPort", "")
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
@@ -143,6 +151,7 @@ func init() {
 		GasPrice           int32
 		LogLevel           string
 		GasLimitMultiplier float32
+		RPCTimeout         int64
 		ExposeMetrics      string
 		CertFile           string
 		CertKey            string
@@ -154,6 +163,7 @@ func init() {
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
+	setConfig.Flags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
 	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")

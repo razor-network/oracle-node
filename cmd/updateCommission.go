@@ -3,13 +3,14 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -42,7 +43,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
@@ -129,12 +130,14 @@ func init() {
 	var (
 		Address    string
 		Commission uint8
+		Password   string
 	)
 
 	rootCmd.AddCommand(updateCommissionCmd)
 
 	updateCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	updateCommissionCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
+	updateCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := updateCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
