@@ -32,21 +32,21 @@ func initialiseDelegate(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the Delegate function
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
-
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
 	password := razorUtils.AssignPassword()
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account "+address+": ", err)

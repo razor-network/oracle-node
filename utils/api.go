@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"net/http"
-	"razor/core"
 	"time"
 
 	"github.com/PaesslerAG/jsonpath"
@@ -13,7 +12,7 @@ import (
 
 func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 	client := http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: 10 * time.Second,
 	}
 	var body []byte
 	err := retry.Do(
@@ -24,6 +23,7 @@ func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 			}
 			defer response.Body.Close()
 			if response.StatusCode != 200 {
+				log.Errorf("API: %s responded with status code %d", url, response.StatusCode)
 				return errors.New("unable to reach API")
 			}
 			body, err = IOInterface.ReadAll(response.Body)
@@ -31,7 +31,7 @@ func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 				return err
 			}
 			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+		}, retry.Attempts(2), retry.Delay(time.Second*2))
 	if err != nil {
 		return nil, err
 	}

@@ -30,15 +30,18 @@ func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ModifyCollectionStatus function
 func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in fetching config data: ", err)
-
+	password := razorUtils.AssignPassword()
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionId: ", err)
 
@@ -47,10 +50,6 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 
 	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status: ", err)
-
-	password := razorUtils.AssignPassword()
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	modifyCollectionInput := types.ModifyCollectionInput{
 		Address:      address,

@@ -35,14 +35,16 @@ func initialiseCreateJob(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the CreateJob function
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
-
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
 	password := razorUtils.AssignPassword()
 
@@ -63,8 +65,6 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 
 	selectorType, err := flagSetUtils.GetUint8SelectorType(flagSet)
 	utils.CheckError("Error in getting selectorType: ", err)
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	jobInput := types.CreateJobInput{
 		Address:      address,
