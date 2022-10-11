@@ -8,4 +8,5 @@ type Configurations struct {
 	GasPrice           int32
 	LogLevel           string
 	GasLimitMultiplier float32
+	RPCTimeout         int64
 }

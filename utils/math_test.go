@@ -905,7 +905,7 @@ func TestShuffle(t *testing.T) {
 			args: args{
 				slice: []uint32{12, 20, 6, 45, 32},
 			},
-			want: true,
+			want: false,
 		},
 		{
 			name: "Test 2: When array is nil",
@@ -919,16 +919,19 @@ func TestShuffle(t *testing.T) {
 			args: args{
 				slice: []uint32{12},
 			},
-			want: false,
+			want: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			ut := &UtilsStruct{}
-			got := ut.Shuffle(tt.args.slice)
-			if !UintArrayEquals(got, tt.args.slice) && !IndexNotEqual(got, tt.args.slice) {
-				t.Errorf("TestShuffle() = %v, want %v", got, tt.want)
+			log.Info("OriginalSlice: ", tt.args.slice)
+			got := Shuffle(tt.args.slice)
+			log.Info("ShuffledSlice: ", got)
+			log.Info("OriginalSlice after shuffling: ", tt.args.slice)
+			equalStatus := UintArrayEquals(got, tt.args.slice)
+			if equalStatus != tt.want {
+				t.Errorf("TestShuffle() = %v, want = %v", equalStatus, tt.want)
 			}
 		})
 	}

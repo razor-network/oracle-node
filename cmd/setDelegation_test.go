@@ -414,7 +414,7 @@ func TestExecuteSetDelegation(t *testing.T) {
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			utilsMock.On("AssignPassword").Return(tt.args.password)
+			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)

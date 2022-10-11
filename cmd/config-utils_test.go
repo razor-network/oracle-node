@@ -16,6 +16,7 @@ func TestGetConfigData(t *testing.T) {
 		WaitTime:           0,
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
+		RPCTimeout:         0,
 	}
 
 	configData := types.Configurations{
@@ -25,6 +26,7 @@ func TestGetConfigData(t *testing.T) {
 		WaitTime:           1,
 		LogLevel:           "debug",
 		GasLimitMultiplier: 3,
+		RPCTimeout:         10,
 	}
 
 	type args struct {
@@ -41,6 +43,8 @@ func TestGetConfigData(t *testing.T) {
 		logLevel         string
 		logLevelErr      error
 		gasLimit         float32
+		rpcTimeout       int64
+		rpcTimeoutErr    error
 		gasLimitErr      error
 	}
 	tests := []struct {
@@ -58,6 +62,7 @@ func TestGetConfigData(t *testing.T) {
 				waitTime:      1,
 				logLevel:      "debug",
 				gasLimit:      3,
+				rpcTimeout:    10,
 			},
 			want:    configData,
 			wantErr: nil,
@@ -118,6 +123,14 @@ func TestGetConfigData(t *testing.T) {
 			want:    config,
 			wantErr: errors.New("gasLimit error"),
 		},
+		{
+			name: "Test 9: When there is an error in getting rpcTimeout",
+			args: args{
+				rpcTimeoutErr: errors.New("rpcTimeout error"),
+			},
+			want:    config,
+			wantErr: errors.New("rpcTimeout error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -131,6 +144,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
 			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetRPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
 
 			utils := &UtilsStruct{}
 
@@ -579,6 +593,66 @@ func TestGetWaitTime(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for getWaitTime function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetRPCTimeout(t *testing.T) {
+	type args struct {
+		rpcTimeout    int64
+		rpcTimeoutErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getRPCTimeout function executes successfully",
+			args: args{
+				rpcTimeout: 12,
+			},
+			want:    12,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When rpcTimeout is 0",
+			args: args{
+				rpcTimeout: 0,
+			},
+			want:    0,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in getting rpcTimeout",
+			args: args{
+				rpcTimeoutErr: errors.New("rpcTimeout error"),
+			},
+			want:    10,
+			wantErr: errors.New("rpcTimeout error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
+
+			flagSetUtilsMock.On("GetRootInt64RPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
+			utils := &UtilsStruct{}
+			got, err := utils.GetRPCTimeout()
+			if got != tt.want {
+				t.Errorf("getRPCTimeout() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getRPCTimeout function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getRPCTimeout function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
