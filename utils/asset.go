@@ -12,6 +12,7 @@ import (
 	"razor/pkg/bindings"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -273,15 +274,14 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 0 {
-		apiErr = retry.Do(
-			func() error {
-				response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
-				if apiErr != nil {
-					log.Error("Error in fetching data from API: ", apiErr)
-					return apiErr
-				}
-				return nil
-			}, RetryInterface.RetryAttempts(core.MaxRetries))
+		start := time.Now()
+		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
+		if apiErr != nil {
+			log.Error("Error in fetching data from API: ", apiErr)
+			return nil, apiErr
+		}
+		elapsed := time.Since(start).Seconds()
+		log.Debugf("Time taken to fetch the data from API : %s was %f", job.Url, elapsed)
 
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {

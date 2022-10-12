@@ -31,16 +31,17 @@ func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the UpdateCommission function
 func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address", err)
-
-	logger.Address = address
-
 	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config", err)
+	utils.CheckError("Error in getting config: ", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
+
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
+
 	password := razorUtils.AssignPassword()
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)

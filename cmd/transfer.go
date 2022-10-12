@@ -32,20 +32,21 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Transfer function
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
 
-	logger.Address = fromAddress
+	logger.SetLoggerParameters(client, fromAddress)
+	razorUtils.AssignLogFile(flagSet)
 
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
 	password := razorUtils.AssignPassword()
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	balance, err := razorUtils.FetchBalance(client, fromAddress)
 	utils.CheckError("Error in fetching razor balance: ", err)

@@ -34,16 +34,19 @@ func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the CreateCollection function
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.Address = address
-
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
+	client := razorUtils.ConnectToClient(config.Provider)
+
+	address, err := flagSetUtils.GetStringAddress(flagSet)
+	utils.CheckError("Error in getting address: ", err)
+
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
+
 	password := razorUtils.AssignPassword()
+
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
 
@@ -55,8 +58,6 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 	power, err := flagSetUtils.GetInt8Power(flagSet)
 	utils.CheckError("Error in getting power: ", err)
-
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	tolerance, err := flagSetUtils.GetUint32Tolerance(flagSet)
 	utils.CheckError("Error in getting tolerance: ", err)

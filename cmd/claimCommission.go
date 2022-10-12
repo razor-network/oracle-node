@@ -25,16 +25,18 @@ Example:
 
 //This function allows the staker to claim the rewards earned from delegator's pool share as commission
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+
+	client := razorUtils.ConnectToClient(config.Provider)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 
-	logger.Address = address
+	logger.SetLoggerParameters(client, address)
+	razorUtils.AssignLogFile(flagSet)
 
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
 	password := razorUtils.AssignPassword()
-	client := razorUtils.ConnectToClient(config.Provider)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 

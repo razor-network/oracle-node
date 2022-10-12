@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
+	"razor/logger"
 	"razor/utils"
 	"strconv"
 )
@@ -29,12 +30,11 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the GetJobList function
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
-
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 
 	client := razorUtils.ConnectToClient(config.Provider)
+	logger.SetLoggerParameters(client, "")
 
 	err = cmdUtils.GetJobList(client)
 	utils.CheckError("Error in getting job list: ", err)

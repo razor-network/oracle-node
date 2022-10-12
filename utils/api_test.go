@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/avast/retry-go"
 	"github.com/stretchr/testify/mock"
 	"razor/utils/mocks"
 	"reflect"
@@ -88,19 +87,16 @@ func TestGetDataFromAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			retryMock := new(mocks.RetryUtils)
 			utilsMock := new(mocks.Utils)
 			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				RetryInterface: retryMock,
 				UtilsInterface: utilsMock,
 				IOInterface:    ioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
-			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			got, err := utils.GetDataFromAPI(tt.args.url)
 			if (err != nil) != tt.wantErr {
