@@ -58,7 +58,7 @@ func InitializeUtils() {
 
 func ExecuteTransaction(interfaceName interface{}, methodName string, args ...interface{}) (*Types.Transaction, error) {
 	returnedValues := utils.InvokeFunctionWithTimeout(interfaceName, methodName, args...)
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil, returnedError
 	}
@@ -113,7 +113,7 @@ func (u Utils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 //This function connects to the client
 func (u Utils) ConnectToClient(provider string) *ethclient.Client {
 	returnedValues := utils.InvokeFunctionWithTimeout(utilsInterface, "ConnectToClient", provider)
-	returnedError := utils.CheckIfAnyError(returnedValues, -1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil
 	}
@@ -509,7 +509,7 @@ func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Stakers", opts, stakerId)
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return types.Staker{}, returnedError
 	}
@@ -534,7 +534,7 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 	stakeManager := utilsInterface.GetStakeManager(client)
 	index := age / 10000
 	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Maturities", opts, big.NewInt(int64(index)))
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return 0, returnedError
 	}
@@ -545,7 +545,7 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "BountyLocks", opts, bountyId)
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return types.BountyLock{}, returnedError
 	}
@@ -710,7 +710,7 @@ func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.B
 func (blockManagerUtils BlockManagerUtils) Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (types.DisputesStruct, error) {
 	blockManager := utilsInterface.GetBlockManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(blockManager, "Disputes", opts, epoch, address)
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return types.DisputesStruct{}, returnedError
 	}
@@ -769,7 +769,7 @@ func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
 	tokenManager := utilsInterface.GetTokenManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(tokenManager, "Allowance", opts, owner, spender)
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil, returnedError
 	}
@@ -804,7 +804,7 @@ func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient
 func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
 	assetMananger := utilsInterface.GetCollectionManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(assetMananger, "GetCollectionStatus", opts, id)
-	returnedError := utils.CheckIfAnyError(returnedValues, 1)
+	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return false, returnedError
 	}
