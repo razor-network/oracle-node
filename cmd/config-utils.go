@@ -70,7 +70,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 func (*UtilsStruct) GetProvider() (string, error) {
 	provider, err := flagSetUtils.GetRootStringProvider()
 	if err != nil {
-		return "", err
+		return core.DefaultProvider, err
 	}
 	if provider == "" {
 		if viper.IsSet("provider") {
@@ -90,7 +90,7 @@ func (*UtilsStruct) GetProvider() (string, error) {
 func (*UtilsStruct) GetMultiplier() (float32, error) {
 	gasMultiplier, err := flagSetUtils.GetRootFloat32GasMultiplier()
 	if err != nil {
-		return 1, err
+		return float32(core.DefaultGasMultiplier), err
 	}
 	if gasMultiplier == -1 {
 		if viper.IsSet("gasmultiplier") {
@@ -107,7 +107,7 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	bufferPercent, err := flagSetUtils.GetRootInt32Buffer()
 	if err != nil {
-		return 30, err
+		return int32(core.DefaultBufferPercent), err
 	}
 	if bufferPercent == 0 {
 		if viper.IsSet("buffer") {
@@ -124,7 +124,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	waitTime, err := flagSetUtils.GetRootInt32Wait()
 	if err != nil {
-		return 3, err
+		return int32(core.DefaultWaitTime), err
 	}
 	if waitTime == -1 {
 		if viper.IsSet("wait") {
@@ -141,7 +141,7 @@ func (*UtilsStruct) GetWaitTime() (int32, error) {
 func (*UtilsStruct) GetGasPrice() (int32, error) {
 	gasPrice, err := flagSetUtils.GetRootInt32GasPrice()
 	if err != nil {
-		return 0, err
+		return int32(core.DefaultGasPrice), err
 	}
 	if gasPrice == -1 {
 		if viper.IsSet("gasprice") {
@@ -159,7 +159,7 @@ func (*UtilsStruct) GetGasPrice() (int32, error) {
 func (*UtilsStruct) GetLogLevel() (string, error) {
 	logLevel, err := flagSetUtils.GetRootStringLogLevel()
 	if err != nil {
-		return "", err
+		return core.DefaultLogLevel, err
 	}
 	if logLevel == "" {
 		if viper.IsSet("logLevel") {
@@ -176,7 +176,7 @@ func (*UtilsStruct) GetLogLevel() (string, error) {
 func (*UtilsStruct) GetGasLimit() (float32, error) {
 	gasLimit, err := flagSetUtils.GetRootFloat32GasLimit()
 	if err != nil {
-		return -1, err
+		return float32(core.DefaultGasLimit), err
 	}
 	if gasLimit == -1 {
 		if viper.IsSet("gasLimit") {
@@ -193,7 +193,7 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	rpcTimeout, err := flagSetUtils.GetRootInt64RPCTimeout()
 	if err != nil {
-		return 10, err
+		return int64(core.DefaultRPCTimeout), err
 	}
 	if rpcTimeout == 0 {
 		if viper.IsSet("rpcTimeout") {
