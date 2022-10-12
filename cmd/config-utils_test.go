@@ -190,7 +190,7 @@ func TestGetBufferPercent(t *testing.T) {
 			args: args{
 				bufferPercent: 0,
 			},
-			want:    0,
+			want:    20,
 			wantErr: nil,
 		},
 		{
@@ -250,7 +250,7 @@ func TestGetGasLimit(t *testing.T) {
 			args: args{
 				gasLimit: -1,
 			},
-			want:    0,
+			want:    2,
 			wantErr: nil,
 		},
 		{
@@ -311,7 +311,7 @@ func TestGetGasPrice(t *testing.T) {
 			args: args{
 				gasPrice: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -433,7 +433,7 @@ func TestGetMultiplier(t *testing.T) {
 			args: args{
 				gasMultiplier: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -510,7 +510,7 @@ func TestGetProvider(t *testing.T) {
 			args: args{
 				provider: "",
 			},
-			want:    "",
+			want:    "http://127.0.0.1:8545",
 			wantErr: nil,
 		},
 	}
@@ -563,7 +563,7 @@ func TestGetWaitTime(t *testing.T) {
 			args: args{
 				waitTime: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -623,7 +623,7 @@ func TestGetRPCTimeout(t *testing.T) {
 			args: args{
 				rpcTimeout: 0,
 			},
-			want:    0,
+			want:    10,
 			wantErr: nil,
 		},
 		{
