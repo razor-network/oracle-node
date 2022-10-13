@@ -84,16 +84,20 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 }
 
 func CheckIfAnyError(result []reflect.Value) error {
-	rpcError := errors.New("RPC Timeout error")
 	if result == nil {
-		return rpcError
+		return errors.New("RPC timeout error")
 	}
 
+	errorDataType := reflect.TypeOf((*error)(nil)).Elem()
 	errorIndexInReturnedValues := -1
+
 	for i := range result {
 		returnedValue := result[i]
-		if reflect.TypeOf(returnedValue.Interface()) == reflect.TypeOf(rpcError) {
-			errorIndexInReturnedValues = i
+		returnedValueDataType := reflect.TypeOf(returnedValue.Interface())
+		if returnedValueDataType != nil {
+			if returnedValueDataType.Implements(errorDataType) {
+				errorIndexInReturnedValues = i
+			}
 		}
 	}
 	if errorIndexInReturnedValues == -1 {

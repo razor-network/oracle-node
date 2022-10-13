@@ -190,7 +190,7 @@ func TestGetBufferPercent(t *testing.T) {
 			args: args{
 				bufferPercent: 0,
 			},
-			want:    0,
+			want:    20,
 			wantErr: nil,
 		},
 		{
@@ -198,7 +198,7 @@ func TestGetBufferPercent(t *testing.T) {
 			args: args{
 				bufferPercentErr: errors.New("bufferPercent error"),
 			},
-			want:    30,
+			want:    20,
 			wantErr: errors.New("bufferPercent error"),
 		},
 	}
@@ -250,7 +250,7 @@ func TestGetGasLimit(t *testing.T) {
 			args: args{
 				gasLimit: -1,
 			},
-			want:    0,
+			want:    2,
 			wantErr: nil,
 		},
 		{
@@ -258,7 +258,7 @@ func TestGetGasLimit(t *testing.T) {
 			args: args{
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:    -1,
+			want:    2,
 			wantErr: errors.New("gasLimit error"),
 		},
 	}
@@ -311,7 +311,7 @@ func TestGetGasPrice(t *testing.T) {
 			args: args{
 				gasPrice: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -319,7 +319,7 @@ func TestGetGasPrice(t *testing.T) {
 			args: args{
 				gasPriceErr: errors.New("gasPrice error"),
 			},
-			want:    0,
+			want:    1,
 			wantErr: errors.New("gasPrice error"),
 		},
 	}
@@ -433,7 +433,7 @@ func TestGetMultiplier(t *testing.T) {
 			args: args{
 				gasMultiplier: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -502,15 +502,15 @@ func TestGetProvider(t *testing.T) {
 			args: args{
 				providerErr: errors.New("provider error"),
 			},
-			want:    "",
+			want:    "http://127.0.0.1:8545",
 			wantErr: errors.New("provider error"),
 		},
 		{
-			name: "Test 2: When provider is nil",
+			name: "Test 4: When provider is nil",
 			args: args{
 				provider: "",
 			},
-			want:    "",
+			want:    "http://127.0.0.1:8545",
 			wantErr: nil,
 		},
 	}
@@ -563,7 +563,7 @@ func TestGetWaitTime(t *testing.T) {
 			args: args{
 				waitTime: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -571,7 +571,7 @@ func TestGetWaitTime(t *testing.T) {
 			args: args{
 				waitTimeErr: errors.New("waitTime error"),
 			},
-			want:    3,
+			want:    1,
 			wantErr: errors.New("waitTime error"),
 		},
 	}
@@ -623,7 +623,7 @@ func TestGetRPCTimeout(t *testing.T) {
 			args: args{
 				rpcTimeout: 0,
 			},
-			want:    0,
+			want:    10,
 			wantErr: nil,
 		},
 		{

@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"github.com/spf13/viper"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 	"strings"
@@ -69,10 +70,15 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 func (*UtilsStruct) GetProvider() (string, error) {
 	provider, err := flagSetUtils.GetRootStringProvider()
 	if err != nil {
-		return "", err
+		return core.DefaultProvider, err
 	}
 	if provider == "" {
-		provider = viper.GetString("provider")
+		if viper.IsSet("provider") {
+			provider = viper.GetString("provider")
+		} else {
+			provider = core.DefaultProvider
+			log.Debug("Provider is not set, taking its default value ", provider)
+		}
 	}
 	if !strings.HasPrefix(provider, "https") {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
@@ -84,10 +90,15 @@ func (*UtilsStruct) GetProvider() (string, error) {
 func (*UtilsStruct) GetMultiplier() (float32, error) {
 	gasMultiplier, err := flagSetUtils.GetRootFloat32GasMultiplier()
 	if err != nil {
-		return 1, err
+		return float32(core.DefaultGasMultiplier), err
 	}
 	if gasMultiplier == -1 {
-		gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
+		if viper.IsSet("gasmultiplier") {
+			gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
+		} else {
+			gasMultiplier = float32(core.DefaultGasMultiplier)
+			log.Debug("GasMultiplier is not set, taking its default value ", gasMultiplier)
+		}
 	}
 	return gasMultiplier, nil
 }
@@ -96,10 +107,15 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	bufferPercent, err := flagSetUtils.GetRootInt32Buffer()
 	if err != nil {
-		return 30, err
+		return int32(core.DefaultBufferPercent), err
 	}
 	if bufferPercent == 0 {
-		bufferPercent = viper.GetInt32("buffer")
+		if viper.IsSet("buffer") {
+			bufferPercent = viper.GetInt32("buffer")
+		} else {
+			bufferPercent = int32(core.DefaultBufferPercent)
+			log.Debug("BufferPercent is not set, taking its default value ", bufferPercent)
+		}
 	}
 	return bufferPercent, nil
 }
@@ -108,10 +124,15 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	waitTime, err := flagSetUtils.GetRootInt32Wait()
 	if err != nil {
-		return 3, err
+		return int32(core.DefaultWaitTime), err
 	}
 	if waitTime == -1 {
-		waitTime = viper.GetInt32("wait")
+		if viper.IsSet("wait") {
+			waitTime = viper.GetInt32("wait")
+		} else {
+			waitTime = int32(core.DefaultWaitTime)
+			log.Debug("WaitTime is not set, taking its default value ", waitTime)
+		}
 	}
 	return waitTime, nil
 }
@@ -120,10 +141,16 @@ func (*UtilsStruct) GetWaitTime() (int32, error) {
 func (*UtilsStruct) GetGasPrice() (int32, error) {
 	gasPrice, err := flagSetUtils.GetRootInt32GasPrice()
 	if err != nil {
-		return 0, err
+		return int32(core.DefaultGasPrice), err
 	}
 	if gasPrice == -1 {
-		gasPrice = viper.GetInt32("gasprice")
+		if viper.IsSet("gasprice") {
+			gasPrice = viper.GetInt32("gasprice")
+		} else {
+			gasPrice = int32(core.DefaultGasPrice)
+			log.Debug("GasPrice is not set, taking its default value ", gasPrice)
+
+		}
 	}
 	return gasPrice, nil
 }
@@ -132,10 +159,15 @@ func (*UtilsStruct) GetGasPrice() (int32, error) {
 func (*UtilsStruct) GetLogLevel() (string, error) {
 	logLevel, err := flagSetUtils.GetRootStringLogLevel()
 	if err != nil {
-		return "", err
+		return core.DefaultLogLevel, err
 	}
 	if logLevel == "" {
-		logLevel = viper.GetString("logLevel")
+		if viper.IsSet("logLevel") {
+			logLevel = viper.GetString("logLevel")
+		} else {
+			logLevel = core.DefaultLogLevel
+			log.Debug("LogLevel is not set, taking its default value ", logLevel)
+		}
 	}
 	return logLevel, nil
 }
@@ -144,10 +176,15 @@ func (*UtilsStruct) GetLogLevel() (string, error) {
 func (*UtilsStruct) GetGasLimit() (float32, error) {
 	gasLimit, err := flagSetUtils.GetRootFloat32GasLimit()
 	if err != nil {
-		return -1, err
+		return float32(core.DefaultGasLimit), err
 	}
 	if gasLimit == -1 {
-		gasLimit = float32(viper.GetFloat64("gasLimit"))
+		if viper.IsSet("gasLimit") {
+			gasLimit = float32(viper.GetFloat64("gasLimit"))
+		} else {
+			gasLimit = float32(core.DefaultGasLimit)
+			log.Debug("GasLimit is not set, taking its default value ", gasLimit)
+		}
 	}
 	return gasLimit, nil
 }
@@ -156,10 +193,15 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	rpcTimeout, err := flagSetUtils.GetRootInt64RPCTimeout()
 	if err != nil {
-		return 10, err
+		return int64(core.DefaultRPCTimeout), err
 	}
 	if rpcTimeout == 0 {
-		rpcTimeout = viper.GetInt64("rpcTimeout")
+		if viper.IsSet("rpcTimeout") {
+			rpcTimeout = viper.GetInt64("rpcTimeout")
+		} else {
+			rpcTimeout = int64(core.DefaultRPCTimeout)
+			log.Debug("RPCTimeout is not set, taking its default value ", rpcTimeout)
+		}
 	}
 	return rpcTimeout, nil
 }
