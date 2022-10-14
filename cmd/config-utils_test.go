@@ -16,6 +16,7 @@ func TestGetConfigData(t *testing.T) {
 		WaitTime:           0,
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
+		RPCTimeout:         0,
 	}
 
 	configData := types.Configurations{
@@ -25,6 +26,7 @@ func TestGetConfigData(t *testing.T) {
 		WaitTime:           1,
 		LogLevel:           "debug",
 		GasLimitMultiplier: 3,
+		RPCTimeout:         10,
 	}
 
 	type args struct {
@@ -41,6 +43,8 @@ func TestGetConfigData(t *testing.T) {
 		logLevel         string
 		logLevelErr      error
 		gasLimit         float32
+		rpcTimeout       int64
+		rpcTimeoutErr    error
 		gasLimitErr      error
 	}
 	tests := []struct {
@@ -58,6 +62,7 @@ func TestGetConfigData(t *testing.T) {
 				waitTime:      1,
 				logLevel:      "debug",
 				gasLimit:      3,
+				rpcTimeout:    10,
 			},
 			want:    configData,
 			wantErr: nil,
@@ -118,6 +123,14 @@ func TestGetConfigData(t *testing.T) {
 			want:    config,
 			wantErr: errors.New("gasLimit error"),
 		},
+		{
+			name: "Test 9: When there is an error in getting rpcTimeout",
+			args: args{
+				rpcTimeoutErr: errors.New("rpcTimeout error"),
+			},
+			want:    config,
+			wantErr: errors.New("rpcTimeout error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -131,6 +144,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
 			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("GetRPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
 
 			utils := &UtilsStruct{}
 
@@ -176,7 +190,7 @@ func TestGetBufferPercent(t *testing.T) {
 			args: args{
 				bufferPercent: 0,
 			},
-			want:    0,
+			want:    20,
 			wantErr: nil,
 		},
 		{
@@ -184,7 +198,7 @@ func TestGetBufferPercent(t *testing.T) {
 			args: args{
 				bufferPercentErr: errors.New("bufferPercent error"),
 			},
-			want:    30,
+			want:    20,
 			wantErr: errors.New("bufferPercent error"),
 		},
 	}
@@ -236,7 +250,7 @@ func TestGetGasLimit(t *testing.T) {
 			args: args{
 				gasLimit: -1,
 			},
-			want:    0,
+			want:    2,
 			wantErr: nil,
 		},
 		{
@@ -244,7 +258,7 @@ func TestGetGasLimit(t *testing.T) {
 			args: args{
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:    -1,
+			want:    2,
 			wantErr: errors.New("gasLimit error"),
 		},
 	}
@@ -297,7 +311,7 @@ func TestGetGasPrice(t *testing.T) {
 			args: args{
 				gasPrice: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -305,7 +319,7 @@ func TestGetGasPrice(t *testing.T) {
 			args: args{
 				gasPriceErr: errors.New("gasPrice error"),
 			},
-			want:    0,
+			want:    1,
 			wantErr: errors.New("gasPrice error"),
 		},
 	}
@@ -419,7 +433,7 @@ func TestGetMultiplier(t *testing.T) {
 			args: args{
 				gasMultiplier: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -488,15 +502,15 @@ func TestGetProvider(t *testing.T) {
 			args: args{
 				providerErr: errors.New("provider error"),
 			},
-			want:    "",
+			want:    "http://127.0.0.1:8545",
 			wantErr: errors.New("provider error"),
 		},
 		{
-			name: "Test 2: When provider is nil",
+			name: "Test 4: When provider is nil",
 			args: args{
 				provider: "",
 			},
-			want:    "",
+			want:    "http://127.0.0.1:8545",
 			wantErr: nil,
 		},
 	}
@@ -549,7 +563,7 @@ func TestGetWaitTime(t *testing.T) {
 			args: args{
 				waitTime: -1,
 			},
-			want:    0,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -557,7 +571,7 @@ func TestGetWaitTime(t *testing.T) {
 			args: args{
 				waitTimeErr: errors.New("waitTime error"),
 			},
-			want:    3,
+			want:    1,
 			wantErr: errors.New("waitTime error"),
 		},
 	}
@@ -579,6 +593,66 @@ func TestGetWaitTime(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for getWaitTime function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetRPCTimeout(t *testing.T) {
+	type args struct {
+		rpcTimeout    int64
+		rpcTimeoutErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getRPCTimeout function executes successfully",
+			args: args{
+				rpcTimeout: 12,
+			},
+			want:    12,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When rpcTimeout is 0",
+			args: args{
+				rpcTimeout: 0,
+			},
+			want:    10,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in getting rpcTimeout",
+			args: args{
+				rpcTimeoutErr: errors.New("rpcTimeout error"),
+			},
+			want:    10,
+			wantErr: errors.New("rpcTimeout error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
+
+			flagSetUtilsMock.On("GetRootInt64RPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
+			utils := &UtilsStruct{}
+			got, err := utils.GetRPCTimeout()
+			if got != tt.want {
+				t.Errorf("getRPCTimeout() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getRPCTimeout function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getRPCTimeout function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

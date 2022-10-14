@@ -60,7 +60,7 @@ type UtilsInterface interface {
 	GetOptions() bind.CallOpts
 	CalculateBlockTime(client *ethclient.Client) int64
 	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
-	AssignPassword() string
+	AssignPassword(flagSet *pflag.FlagSet) string
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	ConnectToClient(provider string) *ethclient.Client
@@ -119,7 +119,7 @@ type UtilsInterface interface {
 	SecondsToReadableTime(time int) string
 	SaveDataToCommitJsonFile(flePath string, epoch uint32, commitFileData types.CommitData) error
 	ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error)
-	SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFileData types.ProposeData) error
+	SaveDataToProposeJsonFile(flePath string, proposeFileData types.ProposeFileData) error
 	ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error)
 	SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error
 	ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error)
@@ -127,6 +127,7 @@ type UtilsInterface interface {
 	GetCommitDataFileName(address string) (string, error)
 	GetProposeDataFileName(address string) (string, error)
 	GetDisputeDataFileName(address string) (string, error)
+	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 }
 
 type StakeManagerInterface interface {
@@ -163,6 +164,7 @@ type BlockManagerInterface interface {
 	DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error)
 	GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error)
 	ResetDispute(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32) (*Types.Transaction, error)
+	Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (types.DisputesStruct, error)
 }
 
 type VoteManagerInterface interface {
@@ -193,6 +195,7 @@ type FlagSetInterface interface {
 	GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error)
 	GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error)
 	GetStringLogLevel(flagSet *pflag.FlagSet) (string, error)
+	GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	GetRootStringProvider() (string, error)
 	GetRootFloat32GasMultiplier() (float32, error)
@@ -201,6 +204,7 @@ type FlagSetInterface interface {
 	GetRootInt32GasPrice() (int32, error)
 	GetRootStringLogLevel() (string, error)
 	GetRootFloat32GasLimit() (float32, error)
+	GetRootInt64RPCTimeout() (int64, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
@@ -223,6 +227,7 @@ type FlagSetInterface interface {
 	GetUint32Tolerance(flagSet *pflag.FlagSet) (uint32, error)
 	GetBoolRogue(flagSet *pflag.FlagSet) (bool, error)
 	GetStringSliceRogueMode(flagSet *pflag.FlagSet) ([]string, error)
+	GetStringSliceBackupNode(flagSet *pflag.FlagSet) ([]string, error)
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
@@ -237,6 +242,7 @@ type UtilsCmdInterface interface {
 	GetLogLevel() (string, error)
 	GetGasLimit() (float32, error)
 	GetBufferPercent() (int32, error)
+	GetRPCTimeout() (int64, error)
 	GetConfigData() (types.Configurations, error)
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
@@ -285,13 +291,13 @@ type UtilsCmdInterface interface {
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
 	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
-	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (common.Hash, error)
-	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, assetId uint16, sortedStakers []*big.Int)
-	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
+	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
+	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
+	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
 	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
 	Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
 	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
-	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
+	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	ExecuteExtendLock(flagSet *pflag.FlagSet)
 	ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
 	CheckCurrentStatus(client *ethclient.Client, collectionId uint16) (bool, error)
@@ -310,10 +316,9 @@ type UtilsCmdInterface interface {
 	GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
-	GetLastProposedEpoch(client *ethclient.Client, blockNumber *big.Int, stakerId uint32) (uint32, error)
-	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue)
+	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string)
 	ExecuteVote(flagSet *pflag.FlagSet)
-	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account) error
+	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error
 	HandleExit()
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
@@ -327,6 +332,7 @@ type UtilsCmdInterface interface {
 	ContractAddresses()
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 	StoreBountyId(client *ethclient.Client, account types.Account) error
+	CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
 }
 
 type TransactionInterface interface {

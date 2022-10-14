@@ -45,7 +45,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	if utilsInterface.IsFlagPassed("bountyId") {
 		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
@@ -183,10 +183,12 @@ func init() {
 	rootCmd.AddCommand(claimBountyCmd)
 	var (
 		Address  string
+		Password string
 		BountyId uint32
 	)
 
 	claimBountyCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
+	claimBountyCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 	claimBountyCmd.Flags().Uint32VarP(&BountyId, "bountyId", "", 0, "bountyId of the bounty hunter")
 
 	addrErr := claimBountyCmd.MarkFlagRequired("address")

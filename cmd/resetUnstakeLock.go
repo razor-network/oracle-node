@@ -44,7 +44,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
@@ -88,10 +88,12 @@ func init() {
 
 	var (
 		Address  string
+		Password string
 		StakerId uint32
 	)
 
 	extendUnstakeLockCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
+	extendUnstakeLockCmd.Flags().StringVarP(&Password, "password", "", "", "password path of the user to protect the keystore")
 	extendUnstakeLockCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 
 	addrErr := extendUnstakeLockCmd.MarkFlagRequired("address")

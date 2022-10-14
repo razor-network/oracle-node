@@ -57,13 +57,13 @@ func (_m *UtilsInterface) AssignLogFile(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
-// AssignPassword provides a mock function with given fields:
-func (_m *UtilsInterface) AssignPassword() string {
-	ret := _m.Called()
+// AssignPassword provides a mock function with given fields: flagSet
+func (_m *UtilsInterface) AssignPassword(flagSet *pflag.FlagSet) string {
+	ret := _m.Called(flagSet)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -542,6 +542,27 @@ func (_m *UtilsInterface) GetEpoch(client *ethclient.Client) (uint32, error) {
 
 // GetEpochLastCommitted provides a mock function with given fields: client, stakerId
 func (_m *UtilsInterface) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	ret := _m.Called(client, stakerId)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
+		r0 = rf(client, stakerId)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, stakerId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetEpochLastProposed provides a mock function with given fields: client, stakerId
+func (_m *UtilsInterface) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	ret := _m.Called(client, stakerId)
 
 	var r0 uint32
@@ -1311,13 +1332,13 @@ func (_m *UtilsInterface) SaveDataToDisputeJsonFile(filePath string, bountyIdQue
 	return r0
 }
 
-// SaveDataToProposeJsonFile provides a mock function with given fields: flePath, epoch, proposeFileData
-func (_m *UtilsInterface) SaveDataToProposeJsonFile(flePath string, epoch uint32, proposeFileData types.ProposeData) error {
-	ret := _m.Called(flePath, epoch, proposeFileData)
+// SaveDataToProposeJsonFile provides a mock function with given fields: flePath, proposeFileData
+func (_m *UtilsInterface) SaveDataToProposeJsonFile(flePath string, proposeFileData types.ProposeFileData) error {
+	ret := _m.Called(flePath, proposeFileData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, uint32, types.ProposeData) error); ok {
-		r0 = rf(flePath, epoch, proposeFileData)
+	if rf, ok := ret.Get(0).(func(string, types.ProposeFileData) error); ok {
+		r0 = rf(flePath, proposeFileData)
 	} else {
 		r0 = ret.Error(0)
 	}

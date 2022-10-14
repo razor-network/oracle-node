@@ -42,7 +42,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
@@ -116,10 +116,12 @@ func init() {
 	rootCmd.AddCommand(unlockWithdrawCmd)
 	var (
 		Address  string
+		Password string
 		StakerId uint32
 	)
 
 	unlockWithdrawCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
+	unlockWithdrawCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 	unlockWithdrawCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "password path of user to protect the keystore")
 
 	addrErr := unlockWithdrawCmd.MarkFlagRequired("address")
