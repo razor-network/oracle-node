@@ -717,6 +717,100 @@ func TestWaitTillNextNSecs(t *testing.T) {
 	}
 }
 
+func TestIsValidERC20Address(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When correct erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When incorrect erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			want: false,
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidERC20Address(tt.args.address); got != tt.want {
+				t.Errorf("IsValidERC20Address() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsValidateAddress(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantAddress string
+		wantErr     error
+	}{
+		{
+			name: "Test 1: When correct erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			wantAddress: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			wantErr:     nil,
+		},
+		{
+			name: "Test 2: When incorrect erc20 address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			wantAddress: "",
+			wantErr:     errors.New("invalid erc20 address"),
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			wantAddress: "",
+			wantErr:     errors.New("invalid erc20 address"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotErr := ValidateAddress(tt.args.address)
+			if got != tt.wantAddress {
+				t.Errorf("ValidateAddress() returns address = %v, want address = %v", got, tt.wantAddress)
+			}
+			if gotErr == nil || tt.wantErr == nil {
+				if gotErr != tt.wantErr {
+					t.Errorf("Error for ValidateAddress(), got error = %v, want error = %v", gotErr, tt.wantErr)
+				}
+			} else {
+				if gotErr.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for ValidateAddress(), got error = %v, want error = %v", gotErr, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
 func TestAssignStakerId(t *testing.T) {
 	var flagSet *pflag.FlagSet
 	var client *ethclient.Client
