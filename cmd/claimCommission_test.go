@@ -220,7 +220,6 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 			utilsMock.On("GetOptions").Return(callOpts)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
 

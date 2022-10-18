@@ -44,8 +44,6 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
 

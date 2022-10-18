@@ -40,8 +40,6 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	callOpts := razorUtils.GetOptions()

@@ -51,8 +51,6 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
 
