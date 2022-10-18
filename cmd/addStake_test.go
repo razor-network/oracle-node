@@ -15,6 +15,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	"razor/pkg/bindings"
 	"razor/utils"
 	mocks2 "razor/utils/mocks"
 	"testing"
@@ -149,6 +150,8 @@ func TestExecuteStake(t *testing.T) {
 		minSafeRazorErr error
 		stakerId        uint32
 		stakerIdErr     error
+		staker          bindings.StructsStaker
+		stakerErr       error
 		stakeTxn        common.Hash
 		stakeErr        error
 	}
@@ -167,6 +170,7 @@ func TestExecuteStake(t *testing.T) {
 				balance:      big.NewInt(10000),
 				minSafeRazor: big.NewInt(0),
 				stakerId:     1,
+				staker:       bindings.StructsStaker{IsSlashed: false},
 				approveTxn:   common.BigToHash(big.NewInt(1)),
 				stakeTxn:     common.BigToHash(big.NewInt(2)),
 			},
@@ -294,6 +298,20 @@ func TestExecuteStake(t *testing.T) {
 			},
 			expectedFatal: false,
 		},
+		{
+			name: "Test 10: When the staker is slashed before",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(20),
+				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(100),
+				stakerId:     1,
+				staker:       bindings.StructsStaker{IsSlashed: true},
+			},
+			expectedFatal: true,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -324,6 +342,7 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsPkgMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
 			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
