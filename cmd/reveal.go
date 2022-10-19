@@ -92,10 +92,16 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 		proofs = append(proofs, proof)
 	}
 
+	root, err := utils.MerkleInterface.GetMerkleRoot(merkleTree)
+	if err != nil {
+		log.Error("Error in getting root: ", err)
+		return bindings.StructsMerkleTree{}
+	}
+
 	return bindings.StructsMerkleTree{
 		Values: values,
 		Proofs: proofs,
-		Root:   utils.MerkleInterface.GetMerkleRoot(merkleTree),
+		Root:   root,
 	}
 }
 

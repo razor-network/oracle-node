@@ -215,6 +215,7 @@ func TestGenerateTreeRevealData(t *testing.T) {
 		commitData types.CommitData
 		proof      [][32]byte
 		root       [32]byte
+		rootErr    error
 	}
 	tests := []struct {
 		name string
@@ -247,6 +248,19 @@ func TestGenerateTreeRevealData(t *testing.T) {
 				Root:   [32]byte{},
 			},
 		},
+		{
+			name: "Test 3: When there is an error in getting root",
+			args: args{
+				merkleTree: [][][]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    map[int]bool{1: true},
+					SeqAllottedCollections: []*big.Int{big.NewInt(1)},
+					Leaves:                 []*big.Int{big.NewInt(1), big.NewInt(2)},
+				},
+				rootErr: errors.New("root error"),
+			},
+			want: bindings.StructsMerkleTree{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -255,7 +269,7 @@ func TestGenerateTreeRevealData(t *testing.T) {
 			utils2.MerkleInterface = merkleInterface
 
 			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return(tt.args.proof)
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.root)
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.root, tt.args.rootErr)
 			ut := &UtilsStruct{}
 			if got := ut.GenerateTreeRevealData(tt.args.merkleTree, tt.args.commitData); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GenerateTreeRevealData() = %v, want %v", got, tt.want)

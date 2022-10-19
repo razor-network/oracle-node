@@ -330,6 +330,7 @@ func TestInitiateCommit(t *testing.T) {
 		merkleTree                [][][]byte
 		merkleTreeErr             error
 		merkleRoot                [32]byte
+		merkleRootErr             error
 		commitTxn                 common.Hash
 		commitTxnErr              error
 		waitForBlockCompletionErr error
@@ -521,6 +522,23 @@ func TestInitiateCommit(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Test 15: When there is an error in getting merkle root",
+			args: args{
+				epoch:      5,
+				lastCommit: 2,
+				secret:     []byte{1},
+				salt:       [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 nil,
+				},
+				merkleTree:    [][][]byte{},
+				merkleRootErr: errors.New("root error"),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -541,7 +559,7 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
 			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot)
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot, tt.args.merkleRootErr)
 			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)

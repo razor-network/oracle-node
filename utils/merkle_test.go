@@ -92,30 +92,37 @@ func TestMerkleTreeStructGetMerkleRoot(t *testing.T) {
 		tree [][][]byte
 	}
 	tests := []struct {
-		name string
-		args args
-		want [32]byte
+		name    string
+		args    args
+		want    [32]byte
+		wantErr bool
 	}{
 		{
 			name: "When GetMerkleRoot() executes successfully",
 			args: args{
 				tree: [][][]byte{{{2}, {1}, {3}}},
 			},
-			want: [32]byte{2},
+			want:    [32]byte{2},
+			wantErr: false,
 		},
 		{
 			name: "When tree is nil or it does not contain any element",
 			args: args{
 				tree: [][][]byte{{{}, {}, {}}},
 			},
-			want: [32]byte{},
+			want:    [32]byte{},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			me := &MerkleTreeStruct{}
-			if got := me.GetMerkleRoot(tt.args.tree); !reflect.DeepEqual(got, tt.want) {
+			got, gotErr := me.GetMerkleRoot(tt.args.tree)
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetMerkleRoot() = %v, want %v", got, tt.want)
+			}
+			if (gotErr != nil) != tt.wantErr {
+				t.Errorf("GetMerkleRoot() error = %v, wantErr %v", gotErr, tt.wantErr)
 			}
 		})
 	}

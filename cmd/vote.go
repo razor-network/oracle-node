@@ -351,7 +351,11 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	if err != nil {
 		return errors.New("Error in getting merkle tree: " + err.Error())
 	}
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
+	merkleRoot, err := utils.MerkleInterface.GetMerkleRoot(merkleTree)
+	if err != nil {
+		return errors.New("Error in getting root: " + err.Error())
+	}
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, merkleRoot)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
