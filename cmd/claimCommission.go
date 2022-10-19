@@ -40,8 +40,6 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	callOpts := razorUtils.GetOptions()
@@ -59,7 +57,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "claimStakerReward",
 			Parameters:      []interface{}{},
-			ABI:             bindings.StakeManagerABI,
+			ABI:             bindings.StakeManagerMetaData.ABI,
 		})
 
 		log.Info("Claiming commission")

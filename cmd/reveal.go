@@ -58,7 +58,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
-		ABI:             bindings.VoteManagerABI,
+		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 	})
@@ -122,7 +122,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 	if err != nil {
 		return nil, err
 	}
-	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerABI))
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerMetaData.ABI))
 	if err != nil {
 		return nil, err
 	}

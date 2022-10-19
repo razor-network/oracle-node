@@ -86,13 +86,13 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "delegate"
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil

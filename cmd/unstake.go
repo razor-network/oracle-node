@@ -51,8 +51,6 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
 
@@ -103,7 +101,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "unstake"
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
 	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
 	if err != nil {

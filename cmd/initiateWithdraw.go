@@ -44,8 +44,6 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
-
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
 
@@ -102,11 +100,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	waitFor := big.NewInt(0).Sub(unstakeLock.UnlockAfter, big.NewInt(int64(epoch)))
 	if waitFor.Cmp(big.NewInt(0)) > 0 {
 		timeRemaining := int64(uint32(waitFor.Int64())) * core.EpochLength
-		if waitFor.Cmp(big.NewInt(1)) == 0 {
-			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
-		} else {
-			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
-		}
+		log.Infof("Withdrawal Initiation period not reached. Cannot initiate withdraw now, please wait for %d epoch(s)! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		return core.NilHash, nil
 	}
 
@@ -118,7 +112,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "initiateWithdraw",
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		Parameters:      []interface{}{stakerId},
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

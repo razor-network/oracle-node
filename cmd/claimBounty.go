@@ -133,14 +133,14 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	callOpts := razorUtils.GetOptions()

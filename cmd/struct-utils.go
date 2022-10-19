@@ -839,17 +839,29 @@ func (flagSetUtils FLagSetUtils) GetRootInt64RPCTimeout() (int64, error) {
 
 //This function returns the from in string
 func (flagSetUtils FLagSetUtils) GetStringFrom(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("from")
+	from, err := flagSet.GetString("from")
+	if err != nil {
+		return "", err
+	}
+	return utils.ValidateAddress(from)
 }
 
 //This function returns the to in string
 func (flagSetUtils FLagSetUtils) GetStringTo(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("to")
+	to, err := flagSet.GetString("to")
+	if err != nil {
+		return "", err
+	}
+	return utils.ValidateAddress(to)
 }
 
 //This function returns the address in string
 func (flagSetUtils FLagSetUtils) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("address")
+	address, err := flagSet.GetString("address")
+	if err != nil {
+		return "", err
+	}
+	return utils.ValidateAddress(address)
 }
 
 //This function returns the stakerId in Uint32

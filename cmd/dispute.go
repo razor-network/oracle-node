@@ -3,12 +3,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"os"
 	"razor/core"
@@ -17,6 +11,13 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 var (
@@ -243,7 +244,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	// Check if the error is in sorted ids
 	isSorted, index0, index1 := utils.IsSorted(idsInProposedBlock)
 	if !isSorted {
-		transactionOpts.ABI = bindings.BlockManagerABI
+		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeOnOrderOfIds"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, index0, index1}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
@@ -255,12 +256,12 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	// Check if the error is collectionIdShouldBePresent
 	isValueMissing, _, missingCollectionId := utils.CheckValueMissingInArray(revealedCollectionIds, idsInProposedBlock)
 	if isValueMissing {
-		transactionOpts.ABI = bindings.BlockManagerABI
+		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, 5.5)
+		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -273,12 +274,12 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	// Check if the error is collectionIdShouldBeAbsent
 	isValuePresent, positionOfPresentValue, presentCollectionId := utils.CheckValueMissingInArray(idsInProposedBlock, revealedCollectionIds)
 	if isValuePresent {
-		transactionOpts.ABI = bindings.BlockManagerABI
+		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, 5.5)
+		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -345,7 +346,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	finalizeDisputeTxnArgs := txnArgs
 	finalizeDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
 	finalizeDisputeTxnArgs.MethodName = "finalizeDispute"
-	finalizeDisputeTxnArgs.ABI = bindings.BlockManagerABI
+	finalizeDisputeTxnArgs.ABI = bindings.BlockManagerMetaData.ABI
 	finalizeDisputeTxnArgs.Parameters = []interface{}{epoch, blockIndex, positionOfCollectionInBlock}
 	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(finalizeDisputeTxnArgs)
 
@@ -375,7 +376,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	resetDisputeTxnArgs := txnArgs
 	resetDisputeTxnArgs.ContractAddress = core.BlockManagerAddress
 	resetDisputeTxnArgs.MethodName = "resetDispute"
-	resetDisputeTxnArgs.ABI = bindings.BlockManagerABI
+	resetDisputeTxnArgs.ABI = bindings.BlockManagerMetaData.ABI
 	resetDisputeTxnArgs.Parameters = []interface{}{epoch}
 	resetDisputeTxnOpts := razorUtils.GetTxnOpts(resetDisputeTxnArgs)
 
@@ -514,7 +515,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 	if err != nil {
 		return 0, err
 	}
-	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.StakeManagerABI))
+	contractAbi, err := utils.ABIInterface.Parse(strings.NewReader(bindings.StakeManagerMetaData.ABI))
 	if err != nil {
 		return 0, err
 	}

@@ -111,7 +111,6 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("HandleWithdrawLock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
@@ -143,6 +142,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 		txnOpts           *bind.TransactOpts
 		unlockWithdraw    common.Hash
 		unlockWithdrawErr error
+		time              string
 	}
 	tests := []struct {
 		name    string
@@ -200,9 +200,10 @@ func TestHandleWithdrawLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				epoch: 3,
+				time:  "20 minutes 0 seconds",
 			},
 			want:    core.NilHash,
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -218,7 +219,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("UnlockWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unlockWithdraw, tt.args.unlockWithdrawErr)
-
+			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			ut := &UtilsStruct{}
 			got, err := ut.HandleWithdrawLock(client, account, configurations, stakerId)
 			if (err != nil) != tt.wantErr {

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -301,61 +302,60 @@ func TestFetchBalance(t *testing.T) {
 	var callOpts bind.CallOpts
 
 	type args struct {
-		coinContract *bindings.RAZOR
-		balance      *big.Int
-		balanceErr   error
+		erc20Contract *bindings.RAZOR
+		balance       *big.Int
+		balanceErr    error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		expectedFatal bool
-		wantErr       error
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
 	}{
 		{
 			name: "When FetchBalance() executes successfully",
 			args: args{
-				coinContract: &bindings.RAZOR{},
-				balance:      big.NewInt(1),
+				erc20Contract: &bindings.RAZOR{},
+				balance:       big.NewInt(1),
 			},
-			expectedFatal: false,
-			wantErr:       nil,
+			want:    big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "When there is an error in fetching balance",
+			args: args{
+				erc20Contract: &bindings.RAZOR{},
+				balanceErr:    errors.New("error in fetching balance"),
+			},
+			want:    big.NewInt(0),
+			wantErr: true,
 		},
 	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			utilsMock := new(mocks.Utils)
-			coinMock := new(mocks.CoinUtils)
+			erc20Mock := new(mocks.CoinUtils)
+			retryMock := new(mocks.RetryUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
-				CoinInterface:  coinMock,
+				CoinInterface:  erc20Mock,
+				RetryInterface: retryMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
+			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.erc20Contract)
 			utilsMock.On("GetOptions").Return(callOpts)
-			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			erc20Mock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			fatal = false
-
-			_, err := utils.FetchBalance(client, accountAddress)
-			if fatal != tt.expectedFatal {
-				t.Error("The FetchBalance function didn't execute as expected")
+			got, err := utils.FetchBalance(client, accountAddress)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchBalance() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for FetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for fetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FetchBalance() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -713,6 +713,100 @@ func TestWaitTillNextNSecs(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 			utils.WaitTillNextNSecs(tt.args.waitTime)
+		})
+	}
+}
+
+func TestIsValidAddress(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When correct address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When incorrect address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			want: false,
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidAddress(tt.args.address); got != tt.want {
+				t.Errorf("IsValidAddress() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsValidateAddress(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantAddress string
+		wantErr     error
+	}{
+		{
+			name: "Test 1: When correct address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			wantAddress: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			wantErr:     nil,
+		},
+		{
+			name: "Test 2: When incorrect address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			wantAddress: "",
+			wantErr:     errors.New("invalid address"),
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			wantAddress: "",
+			wantErr:     errors.New("invalid address"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotErr := ValidateAddress(tt.args.address)
+			if got != tt.wantAddress {
+				t.Errorf("ValidateAddress() returns address = %v, want address = %v", got, tt.wantAddress)
+			}
+			if gotErr == nil || tt.wantErr == nil {
+				if gotErr != tt.wantErr {
+					t.Errorf("Error for ValidateAddress(), got error = %v, want error = %v", gotErr, tt.wantErr)
+				}
+			} else {
+				if gotErr.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for ValidateAddress(), got error = %v, want error = %v", gotErr, tt.wantErr)
+				}
+			}
 		})
 	}
 }
