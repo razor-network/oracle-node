@@ -24,3 +24,14 @@ var DefaultLogLevel = ""
 
 //DisputeGasMultiplier is a constant gasLimitMultiplier to increase gas Limit for function `disputeCollectionIdShouldBeAbsent` and `disputeCollectionIdShouldBePresent`
 var DisputeGasMultiplier float32 = 5.5
+
+// Following are the constants which will be used to derive different file paths
+
+var DataFileDirectory = "data_files"
+var CommitDataFile = "_commitData.json"
+var ProposeDataFile = "_proposeData.json"
+var DisputeDataFile = "_disputeData.json"
+var AssetsDataFile = "assets.json"
+var ConfigFile = "razor.yaml"
+var LogFileDirectory = "logs"
+var DefaultPathName = ".razor"
