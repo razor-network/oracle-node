@@ -347,7 +347,10 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in getting active assets: " + err.Error())
 	}
 
-	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	merkleTree, err := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	if err != nil {
+		return errors.New("Error in getting merkle tree: " + err.Error())
+	}
 	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())

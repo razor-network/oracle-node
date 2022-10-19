@@ -207,7 +207,7 @@ type CoinUtils interface {
 }
 
 type MerkleTreeInterface interface {
-	CreateMerkle(values []*big.Int) [][][]byte
+	CreateMerkle(values []*big.Int) ([][][]byte, error)
 	GetProofPath(tree [][][]byte, assetId uint16) [][32]byte
 	GetMerkleRoot(tree [][][]byte) [32]byte
 }

@@ -1,13 +1,14 @@
 package utils
 
 import (
+	"errors"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 )
 
-func (*MerkleTreeStruct) CreateMerkle(values []*big.Int) [][][]byte {
+func (*MerkleTreeStruct) CreateMerkle(values []*big.Int) ([][][]byte, error) {
 	if len(values) == 0 {
-		return [][][]byte{}
+		return [][][]byte{}, errors.New("values are nil, cannot create merkle tree")
 	}
 	var tree [][][]byte
 	var leaves [][]byte
@@ -37,7 +38,7 @@ func (*MerkleTreeStruct) CreateMerkle(values []*big.Int) [][][]byte {
 		tree[i], tree[j] = tree[j], tree[i]
 	}
 
-	return tree
+	return tree, nil
 }
 
 func (*MerkleTreeStruct) GetProofPath(tree [][][]byte, assetId uint16) [][32]byte {

@@ -107,6 +107,7 @@ func TestReveal(t *testing.T) {
 		state          int64
 		stateErr       error
 		merkleTree     [][][]byte
+		merkleTreeErr  error
 		treeRevealData bindings.StructsMerkleTree
 		txnOpts        *bind.TransactOpts
 		revealTxn      *Types.Transaction
@@ -157,6 +158,15 @@ func TestReveal(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("reveal error"),
 		},
+		{
+			name: "Test 7: When there is an error in getting merkle tree",
+			args: args{
+				state:         1,
+				merkleTreeErr: errors.New("merkle tree error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("merkle tree error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -174,7 +184,7 @@ func TestReveal(t *testing.T) {
 			utils2.MerkleInterface = merkleInterface
 
 			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree)
+			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
 			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
