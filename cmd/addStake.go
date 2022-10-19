@@ -64,6 +64,15 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 		log.Fatal("The amount of razors entered is below min safe value.")
 	}
 
+	if stakerId != 0 {
+		staker, err := razorUtils.GetStaker(client, stakerId)
+		utils.CheckError("Error in getting staker: ", err)
+
+		if staker.IsSlashed {
+			log.Fatal("Staker is slashed, cannot stake")
+		}
+	}
+
 	txnArgs := types.TransactionOptions{
 		Client:         client,
 		AccountAddress: address,

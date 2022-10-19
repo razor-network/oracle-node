@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"github.com/avast/retry-go"
 	"math/big"
 	"os"
 	"razor/core"
@@ -26,10 +27,26 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 }
 
 func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	address := common.HexToAddress(accountAddress)
-	coinContract := UtilsInterface.GetTokenManager(client)
-	opts := UtilsInterface.GetOptions()
-	return CoinInterface.BalanceOf(coinContract, &opts, address)
+	var (
+		balance *big.Int
+		err     error
+	)
+	err = retry.Do(
+		func() error {
+			address := common.HexToAddress(accountAddress)
+			erc20Contract := UtilsInterface.GetTokenManager(client)
+			opts := UtilsInterface.GetOptions()
+			balance, err = CoinInterface.BalanceOf(erc20Contract, &opts, address)
+			if err != nil {
+				log.Error("Error in fetching balance....Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return big.NewInt(0), err
+	}
+	return balance, nil
 }
 
 func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
@@ -90,6 +107,21 @@ func CheckError(msg string, err error) {
 	if err != nil {
 		log.Fatal(msg + err.Error())
 	}
+}
+
+func IsValidAddress(address string) bool {
+	if !common.IsHexAddress(address) {
+		log.Error("Invalid Address")
+		return false
+	}
+	return true
+}
+
+func ValidateAddress(address string) (string, error) {
+	if !IsValidAddress(address) {
+		return "", errors.New("invalid address")
+	}
+	return address, nil
 }
 
 func (*UtilsStruct) IsFlagPassed(name string) bool {
