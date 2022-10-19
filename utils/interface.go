@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"io"
@@ -27,7 +26,6 @@ import (
 //go:generate mockery --name ClientUtils --output ./mocks --case=underscore
 //go:generate mockery --name TimeUtils --output ./mocks --case=underscore
 //go:generate mockery --name OSUtils --output ./mocks --case=underscore
-//go:generate mockery --name BufioUtils --output ./mocks --case=underscore
 //go:generate mockery --name CoinUtils --output ./mocks --case=underscore
 //go:generate mockery --name IOUtils --output ./mocks --case=underscore
 //go:generate mockery --name ABIUtils --output ./mocks --case=underscore
@@ -50,7 +48,6 @@ var EthClient EthClientUtils
 var ClientInterface ClientUtils
 var Time TimeUtils
 var OS OSUtils
-var Bufio BufioUtils
 var CoinInterface CoinUtils
 var IOInterface IOUtils
 var ABIInterface ABIUtils
@@ -198,10 +195,6 @@ type OSUtils interface {
 	ReadFile(filename string) ([]byte, error)
 }
 
-type BufioUtils interface {
-	NewScanner(r io.Reader) *bufio.Scanner
-}
-
 type CoinUtils interface {
 	BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
 }
@@ -336,7 +329,6 @@ type OptionsPackageStruct struct {
 	ClientInterface       ClientUtils
 	Time                  TimeUtils
 	OS                    OSUtils
-	Bufio                 BufioUtils
 	CoinInterface         CoinUtils
 	IOInterface           IOUtils
 	ABIInterface          ABIUtils
