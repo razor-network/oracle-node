@@ -21,3 +21,6 @@ var DefaultWaitTime = 1
 var DefaultGasLimit = 2
 var DefaultRPCTimeout = 10
 var DefaultLogLevel = ""
+
+//DisputeGasMultiplier is a constant gasLimitMultiplier to increase gas Limit for function `disputeCollectionIdShouldBeAbsent` and `disputeCollectionIdShouldBePresent`
+var DisputeGasMultiplier float32 = 5.5
