@@ -573,7 +573,7 @@ func TestGetStateName(t *testing.T) {
 			args: args{
 				stateNumber: 5,
 			},
-			want: "-1",
+			want: "Buffer",
 		},
 	}
 	for _, tt := range tests {

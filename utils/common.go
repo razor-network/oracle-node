@@ -126,7 +126,7 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	case 4:
 		stateName = "Confirm"
 	default:
-		stateName = "-1"
+		stateName = "Buffer"
 	}
 	return stateName
 }
