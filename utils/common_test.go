@@ -717,7 +717,7 @@ func TestWaitTillNextNSecs(t *testing.T) {
 	}
 }
 
-func TestIsValidERC20Address(t *testing.T) {
+func TestIsValidAddress(t *testing.T) {
 	type args struct {
 		address string
 	}
@@ -727,14 +727,14 @@ func TestIsValidERC20Address(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "Test 1: When correct erc20 address is passed",
+			name: "Test 1: When correct address is passed",
 			args: args{
 				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
 			},
 			want: true,
 		},
 		{
-			name: "Test 2: When incorrect erc20 address is passed",
+			name: "Test 2: When incorrect address is passed",
 			args: args{
 				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
 			},
@@ -750,8 +750,8 @@ func TestIsValidERC20Address(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsValidERC20Address(tt.args.address); got != tt.want {
-				t.Errorf("IsValidERC20Address() = %v, want %v", got, tt.want)
+			if got := IsValidAddress(tt.args.address); got != tt.want {
+				t.Errorf("IsValidAddress() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -768,7 +768,7 @@ func TestIsValidateAddress(t *testing.T) {
 		wantErr     error
 	}{
 		{
-			name: "Test 1: When correct erc20 address is passed",
+			name: "Test 1: When correct address is passed",
 			args: args{
 				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
 			},
@@ -776,12 +776,12 @@ func TestIsValidateAddress(t *testing.T) {
 			wantErr:     nil,
 		},
 		{
-			name: "Test 2: When incorrect erc20 address is passed",
+			name: "Test 2: When incorrect address is passed",
 			args: args{
 				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
 			},
 			wantAddress: "",
-			wantErr:     errors.New("invalid erc20 address"),
+			wantErr:     errors.New("invalid address"),
 		},
 		{
 			name: "Test 2: When nil is passed",
@@ -789,7 +789,7 @@ func TestIsValidateAddress(t *testing.T) {
 				address: "",
 			},
 			wantAddress: "",
-			wantErr:     errors.New("invalid erc20 address"),
+			wantErr:     errors.New("invalid address"),
 		},
 	}
 	for _, tt := range tests {

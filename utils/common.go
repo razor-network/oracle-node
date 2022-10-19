@@ -109,17 +109,17 @@ func CheckError(msg string, err error) {
 	}
 }
 
-func IsValidERC20Address(address string) bool {
+func IsValidAddress(address string) bool {
 	if !common.IsHexAddress(address) {
-		log.Error("Invalid ERC20 Address")
+		log.Error("Invalid Address")
 		return false
 	}
 	return true
 }
 
 func ValidateAddress(address string) (string, error) {
-	if !IsValidERC20Address(address) {
-		return "", errors.New("invalid erc20 address")
+	if !IsValidAddress(address) {
+		return "", errors.New("invalid address")
 	}
 	return address, nil
 }
