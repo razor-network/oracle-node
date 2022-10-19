@@ -59,7 +59,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "claimStakerReward",
 			Parameters:      []interface{}{},
-			ABI:             bindings.StakeManagerABI,
+			ABI:             bindings.StakeManagerMetaData.ABI,
 		})
 
 		log.Info("Claiming commission")

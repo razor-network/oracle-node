@@ -97,7 +97,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "setCollectionStatus",
 		Parameters:      []interface{}{modifyCollectionInput.Status, modifyCollectionInput.CollectionId},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

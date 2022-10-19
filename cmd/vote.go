@@ -269,7 +269,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
-				ABI:             bindings.BlockManagerABI,
+				ABI:             bindings.BlockManagerMetaData.ABI,
 			})
 
 			if err != nil {
