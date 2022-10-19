@@ -92,7 +92,7 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	log.Info("Sending Delegate transaction...")
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
 	return transactionUtils.Hash(txn), nil

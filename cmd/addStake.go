@@ -92,7 +92,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 
 	log.Info("Sending stake transactions...")
@@ -103,7 +103,7 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
 	return transactionUtils.Hash(tx), nil
