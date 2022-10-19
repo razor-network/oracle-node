@@ -115,7 +115,7 @@ func init() {
 		Password          string
 		Power             int8
 		JobIds            []uint
-		Tolerance         uint16
+		Tolerance         uint32
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
@@ -124,7 +124,7 @@ func init() {
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 	updateCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
-	updateCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
+	updateCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 
 	collectionIdErr := updateCollectionCmd.MarkFlagRequired("collectionId")
 	utils.CheckError("Collection Id error: ", collectionIdErr)
