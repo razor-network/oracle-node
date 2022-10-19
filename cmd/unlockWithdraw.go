@@ -86,7 +86,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 			Config:          configurations,
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "unlockWithdraw",
-			ABI:             bindings.StakeManagerABI,
+			ABI:             bindings.StakeManagerMetaData.ABI,
 			Parameters:      []interface{}{stakerId},
 		}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)

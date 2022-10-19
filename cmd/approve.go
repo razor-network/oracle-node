@@ -22,7 +22,7 @@ func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, erro
 		log.Info("Sending Approve transaction...")
 		txnArgs.ContractAddress = core.RAZORAddress
 		txnArgs.MethodName = "approve"
-		txnArgs.ABI = bindings.RAZORABI
+		txnArgs.ABI = bindings.RAZORMetaData.ABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
 		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
