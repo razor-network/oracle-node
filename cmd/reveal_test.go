@@ -23,7 +23,7 @@ import (
 	"testing"
 )
 
-func TestHandleRevealState(t *testing.T) {
+func TestCheckForLastCommitted(t *testing.T) {
 	var client *ethclient.Client
 	staker := bindings.StructsStaker{
 		Id: 1,
@@ -40,7 +40,7 @@ func TestHandleRevealState(t *testing.T) {
 		want error
 	}{
 		{
-			name: "Test 1: When HandleRevealState returns no error",
+			name: "Test 1: When CheckForLastCommitted returns no error",
 			args: args{
 				epoch:                 1,
 				epochLastCommitted:    1,
@@ -58,7 +58,7 @@ func TestHandleRevealState(t *testing.T) {
 			want: errors.New("epochLastCommitted"),
 		},
 		{
-			name: "Test 3: When HandleRevealState returns an error when epoch != epochLastCommitted",
+			name: "Test 3: When CheckForLastCommitted returns an error when epoch != epochLastCommitted",
 			args: args{
 				epoch:                 3,
 				epochLastCommitted:    2,
@@ -77,14 +77,14 @@ func TestHandleRevealState(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			err := utils.HandleRevealState(client, staker, tt.args.epoch)
+			err := utils.CheckForLastCommitted(client, staker, tt.args.epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
-					t.Errorf("Error for HandleRevealState function, got = %v, want %v", err, tt.want)
+					t.Errorf("Error for CheckForLastCommitted function, got = %v, want %v", err, tt.want)
 				}
 			} else {
 				if err.Error() != tt.want.Error() {
-					t.Errorf("Error for HandleRevealState function, got = %v, want %v", err, tt.want)
+					t.Errorf("Error for CheckForLastCommitted function, got = %v, want %v", err, tt.want)
 				}
 			}
 

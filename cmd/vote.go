@@ -398,7 +398,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+	if err := cmdUtils.CheckForLastCommitted(client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}

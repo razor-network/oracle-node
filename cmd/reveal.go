@@ -15,8 +15,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-//This function handles the reveal state
-func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
+//This function checks for epoch last committed
+func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
 		return err
