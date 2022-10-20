@@ -61,7 +61,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		utils.CheckError("ClaimBounty error: ", err)
 
 		if txn != core.NilHash {
-			err = razorUtils.WaitForBlockCompletion(client, txn.String())
+			err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
@@ -105,7 +105,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.Hex())
 			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed
@@ -176,7 +176,9 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	if err != nil {
 		return core.NilHash, err
 	}
-	return transactionUtils.Hash(tx), nil
+	txnHash := transactionUtils.Hash(tx)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

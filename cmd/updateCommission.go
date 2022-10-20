@@ -117,8 +117,8 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		return err
 	}
 	txnHash := transactionUtils.Hash(txn)
-	log.Infof("Transaction hash: %s", txnHash)
-	err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+	log.Infof("Txn Hash: %s", txnHash.Hex())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for updateCommission: ", err)
 		return err

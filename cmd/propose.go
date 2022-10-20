@@ -147,9 +147,9 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		return err
 	}
 	proposeTxn := transactionUtils.Hash(txn)
-	log.Info("Txn Hash: ", proposeTxn)
+	log.Info("Txn Hash: ", proposeTxn.Hex())
 	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for propose: ", waitForBlockCompletionErr)
 			return waitForBlockCompletionErr
