@@ -553,6 +553,27 @@ func (_m *Utils) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.Bl
 	return r0, r1
 }
 
+// GetBufferedState provides a mock function with given fields: client, buffer
+func (_m *Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	ret := _m.Called(client, buffer)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
+		r0 = rf(client, buffer)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
+		r1 = rf(client, buffer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCollection provides a mock function with given fields: client, collectionId
 func (_m *Utils) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
 	ret := _m.Called(client, collectionId)
@@ -798,27 +819,6 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int
 	}
 
 	return r0, r1, r2
-}
-
-// GetDelayedState provides a mock function with given fields: client, buffer
-func (_m *Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	ret := _m.Called(client, buffer)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
-		r0 = rf(client, buffer)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
-		r1 = rf(client, buffer)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // GetEpoch provides a mock function with given fields: client
@@ -1979,22 +1979,6 @@ func (_m *Utils) SecondsToReadableTime(input int) string {
 		r0 = rf(input)
 	} else {
 		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// Shuffle provides a mock function with given fields: slice
-func (_m *Utils) Shuffle(slice []uint32) []uint32 {
-	ret := _m.Called(slice)
-
-	var r0 []uint32
-	if rf, ok := ret.Get(0).(func([]uint32) []uint32); ok {
-		r0 = rf(slice)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]uint32)
-		}
 	}
 
 	return r0

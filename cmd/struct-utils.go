@@ -146,8 +146,8 @@ func (u Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectio
 }
 
 //This function returns the delayed state
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utilsInterface.GetDelayedState(client, buffer)
+func (u Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utilsInterface.GetBufferedState(client, buffer)
 }
 
 //This function returns the default path

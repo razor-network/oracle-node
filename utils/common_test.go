@@ -361,7 +361,7 @@ func TestFetchBalance(t *testing.T) {
 	}
 }
 
-func TestGetDelayedState(t *testing.T) {
+func TestGetBufferedState(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
@@ -378,7 +378,7 @@ func TestGetDelayedState(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetDelayedState() executes successfully",
+			name: "Test 1: When GetBufferedState() executes successfully",
 			args: args{
 				block: &types.Header{
 					Time: 100,
@@ -414,7 +414,7 @@ func TestGetDelayedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 4: When GetDelayedState() executes successfully and state we get is other than 0",
+			name: "Test 4: When GetBufferedState() executes successfully and state we get is other than 0",
 			args: args{
 				block: &types.Header{
 					Time: 900,
@@ -454,13 +454,13 @@ func TestGetDelayedState(t *testing.T) {
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetDelayedState(client, tt.args.buffer)
+			got, err := utils.GetBufferedState(client, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetDelayedState() got = %v, want %v", got, tt.want)
+				t.Errorf("GetBufferedState() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

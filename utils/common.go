@@ -49,7 +49,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	return balance, nil
 }
 
-func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err

@@ -69,7 +69,7 @@ type UtilsInterface interface {
 	GetRogueRandomValue(value int) *big.Int
 	GetRogueRandomMedianValue() uint32
 	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error)
-	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
+	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
 	GetDefaultPath() (string, error)
 	GetJobFilePath() (string, error)
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
