@@ -114,29 +114,6 @@ func (_m *Utils) BalanceAtWithRetry(client *ethclient.Client, account common.Add
 	return r0, r1
 }
 
-// CalculateBlockNumberAtEpochBeginning provides a mock function with given fields: client, epochLength, currentBlockNumber
-func (_m *Utils) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
-	ret := _m.Called(client, epochLength, currentBlockNumber)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int64, *big.Int) *big.Int); ok {
-		r0 = rf(client, epochLength, currentBlockNumber)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, int64, *big.Int) error); ok {
-		r1 = rf(client, epochLength, currentBlockNumber)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CalculateBlockTime provides a mock function with given fields: client
 func (_m *Utils) CalculateBlockTime(client *ethclient.Client) int64 {
 	ret := _m.Called(client)
@@ -237,6 +214,29 @@ func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
 	}
 
 	return r0
+}
+
+// EstimateBlockNumberAtEpochBeginning provides a mock function with given fields: client, epochLength, currentBlockNumber
+func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
+	ret := _m.Called(client, epochLength, currentBlockNumber)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, int64, *big.Int) *big.Int); ok {
+		r0 = rf(client, epochLength, currentBlockNumber)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, int64, *big.Int) error); ok {
+		r1 = rf(client, epochLength, currentBlockNumber)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // EstimateGasWithRetry provides a mock function with given fields: client, message

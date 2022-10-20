@@ -498,7 +498,7 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 
 //This function returns the bountyId from events
 func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
 		log.Error(err)
 		return 0, err
