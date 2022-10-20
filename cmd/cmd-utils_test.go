@@ -92,7 +92,7 @@ func TestGetEpochAndState(t *testing.T) {
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 
 			utils := &UtilsStruct{}
@@ -373,7 +373,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 }
 
-func TestGetStatesAllowed(t *testing.T) {
+func TestGetFormattedStateNames(t *testing.T) {
 	type args struct {
 		states    []int
 		stateName string
@@ -414,8 +414,8 @@ func TestGetStatesAllowed(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-			if got := GetStatesAllowed(tt.args.states); got != tt.want {
-				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
+			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
+				t.Errorf("GetFormattedStateNames() = %v, want %v", got, tt.want)
 			}
 		})
 	}

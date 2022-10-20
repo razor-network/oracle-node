@@ -29,7 +29,8 @@ func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, erro
 		if err != nil {
 			return core.NilHash, err
 		}
-		log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-		return transactionUtils.Hash(txn), nil
+		txnHash := transactionUtils.Hash(txn)
+		log.Info("Txn Hash: ", txnHash.Hex())
+		return txnHash, nil
 	}
 }

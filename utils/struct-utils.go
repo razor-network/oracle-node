@@ -617,8 +617,8 @@ func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, 
 	return returnedValues[0].Interface().([]types.Log), nil
 }
 
-func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	returnedValues := InvokeFunctionWithTimeout(coinContract, "BalanceOf", opts, account)
+func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
+	returnedValues := InvokeFunctionWithTimeout(erc20Contract, "BalanceOf", opts, account)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil, returnedError

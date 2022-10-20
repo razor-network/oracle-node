@@ -134,7 +134,7 @@ type Utils interface {
 	GetDataFromXHTML(url string, selector string) (string, error)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
-	GetDelayedState(client *ethclient.Client, buffer int32) (int64, error)
+	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
 	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
 	CheckEthBalanceIsZero(client *ethclient.Client, address string)
 	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
@@ -165,7 +165,7 @@ type Utils interface {
 	ConvertToNumber(num interface{}) (*big.Float, error)
 	SecondsToReadableTime(input int) string
 	AssignLogFile(flagSet *pflag.FlagSet)
-	CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
+	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetStateName(stateNumber int64) string
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 }
@@ -196,7 +196,7 @@ type OSUtils interface {
 }
 
 type CoinUtils interface {
-	BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
+	BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
 }
 
 type MerkleTreeInterface interface {

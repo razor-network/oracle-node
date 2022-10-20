@@ -65,8 +65,8 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
-	log.Info("Transaction Hash: ", txn)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for transfer: ", err)
 }
 
@@ -94,7 +94,9 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		return core.NilHash, err
 	}
 
-	return transactionUtils.Hash(txn), err
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

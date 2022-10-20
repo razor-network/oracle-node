@@ -20,18 +20,18 @@ If the previous epoch doesn't contain any medians, then the value is fetched fro
 */
 func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
-	numProposedBlock, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
+	numProposedBlocks, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	blockIndexedToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
+	blockIndexToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
+	if numProposedBlocks == 0 || (numProposedBlocks > 0 && blockIndexToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexedToBeConfirmed)))
+	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
@@ -92,7 +92,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
 func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error) {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 0 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
@@ -119,6 +119,7 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }

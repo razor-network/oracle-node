@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("UnlockWithdraw error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unlockWithdraw: ", err)
 	}
 }
@@ -79,7 +79,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 
 	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
 	if waitFor.Cmp(big.NewInt(0)) > 0 {
-		timeRemaining := int64(uint32(waitFor.Int64())) * core.EpochLength
+		timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
 		log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch(s)! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		return core.NilHash, nil
 	}
@@ -112,9 +112,9 @@ func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.Trans
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

@@ -143,7 +143,7 @@ var (
 
 //This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
-	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
+	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
@@ -360,7 +360,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	if commitTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletion for commit: ", err)
 			return errors.New("error in sending commit transaction")
@@ -405,7 +405,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+	if err := cmdUtils.CheckForLastCommitted(client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}
@@ -468,7 +468,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			return errors.New("Reveal error: " + err.Error())
 		}
 		if revealTxn != core.NilHash {
-			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 			if waitForBlockCompletionErr != nil {
 				log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
 				return err

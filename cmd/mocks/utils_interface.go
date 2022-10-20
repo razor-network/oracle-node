@@ -248,6 +248,27 @@ func (_m *UtilsInterface) GetBlockManager(client *ethclient.Client) *bindings.Bl
 	return r0
 }
 
+// GetBufferedState provides a mock function with given fields: client, buffer
+func (_m *UtilsInterface) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	ret := _m.Called(client, buffer)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
+		r0 = rf(client, buffer)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
+		r1 = rf(client, buffer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCollections provides a mock function with given fields: client
 func (_m *UtilsInterface) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
 	ret := _m.Called(client)
@@ -327,27 +348,6 @@ func (_m *UtilsInterface) GetDefaultPath() (string, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetDelayedState provides a mock function with given fields: client, buffer
-func (_m *UtilsInterface) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	ret := _m.Called(client, buffer)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
-		r0 = rf(client, buffer)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
-		r1 = rf(client, buffer)
 	} else {
 		r1 = ret.Error(1)
 	}
