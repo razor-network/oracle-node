@@ -2,12 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/avast/retry-go"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	Types "razor/core/types"
@@ -15,6 +9,13 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckError(t *testing.T) {
@@ -573,7 +574,7 @@ func TestGetStateName(t *testing.T) {
 			args: args{
 				stateNumber: 5,
 			},
-			want: "-1",
+			want: "Buffer",
 		},
 	}
 	for _, tt := range tests {
@@ -1080,7 +1081,6 @@ func TestPrng(t *testing.T) {
 func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
-		epochLength        uint64
 		currentBlockNumber *big.Int
 	)
 	type args struct {
@@ -1126,7 +1126,7 @@ func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
+			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, currentBlockNumber)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EstimateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
 				return

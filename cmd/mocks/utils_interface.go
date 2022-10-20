@@ -24,34 +24,6 @@ type UtilsInterface struct {
 	mock.Mock
 }
 
-// AddJobToJSON provides a mock function with given fields: s, job
-func (_m *UtilsInterface) AddJobToJSON(s string, job *types.StructsJob) error {
-	ret := _m.Called(s, job)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, *types.StructsJob) error); ok {
-		r0 = rf(s, job)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// AllZero provides a mock function with given fields: bytesValue
-func (_m *UtilsInterface) AllZero(bytesValue [32]byte) bool {
-	ret := _m.Called(bytesValue)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func([32]byte) bool); ok {
-		r0 = rf(bytesValue)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
 // AssignLogFile provides a mock function with given fields: flagSet
 func (_m *UtilsInterface) AssignLogFile(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
@@ -143,61 +115,6 @@ func (_m *UtilsInterface) ConnectToClient(provider string) *ethclient.Client {
 	return r0
 }
 
-// ConvertRZRToSRZR provides a mock function with given fields: sAmount, currentStake, totalSupply
-func (_m *UtilsInterface) ConvertRZRToSRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) (*big.Int, error) {
-	ret := _m.Called(sAmount, currentStake, totalSupply)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int, *big.Int) *big.Int); ok {
-		r0 = rf(sAmount, currentStake, totalSupply)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*big.Int, *big.Int, *big.Int) error); ok {
-		r1 = rf(sAmount, currentStake, totalSupply)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ConvertSRZRToRZR provides a mock function with given fields: sAmount, currentStake, totalSupply
-func (_m *UtilsInterface) ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.Int) *big.Int {
-	ret := _m.Called(sAmount, currentStake, totalSupply)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int, *big.Int) *big.Int); ok {
-		r0 = rf(sAmount, currentStake, totalSupply)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	return r0
-}
-
-// ConvertUint32ArrayToBigIntArray provides a mock function with given fields: uint32Array
-func (_m *UtilsInterface) ConvertUint32ArrayToBigIntArray(uint32Array []uint32) []*big.Int {
-	ret := _m.Called(uint32Array)
-
-	var r0 []*big.Int
-	if rf, ok := ret.Get(0).(func([]uint32) []*big.Int); ok {
-		r0 = rf(uint32Array)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*big.Int)
-		}
-	}
-
-	return r0
-}
-
 // ConvertUintArrayToUint16Array provides a mock function with given fields: uintArr
 func (_m *UtilsInterface) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
 	ret := _m.Called(uintArr)
@@ -235,20 +152,6 @@ func (_m *UtilsInterface) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
 	}
 
 	return r0, r1
-}
-
-// DeleteJobFromJSON provides a mock function with given fields: s, jobId
-func (_m *UtilsInterface) DeleteJobFromJSON(s string, jobId string) error {
-	ret := _m.Called(s, jobId)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = rf(s, jobId)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // FetchBalance provides a mock function with given fields: client, accountAddress
@@ -290,29 +193,6 @@ func (_m *UtilsInterface) GetActiveCollections(client *ethclient.Client) ([]uint
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetAggregatedDataOfCollection provides a mock function with given fields: client, collectionId, epoch
-func (_m *UtilsInterface) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
-	ret := _m.Called(client, collectionId, epoch)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32) *big.Int); ok {
-		r0 = rf(client, collectionId, epoch)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32) error); ok {
-		r1 = rf(client, collectionId, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -426,29 +306,6 @@ func (_m *UtilsInterface) GetCommitDataFileName(address string) (string, error) 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(address)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetCommitments provides a mock function with given fields: client, address
-func (_m *UtilsInterface) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
-	ret := _m.Called(client, address)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) [32]byte); ok {
-		r0 = rf(client, address)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
-		r1 = rf(client, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -640,27 +497,6 @@ func (_m *UtilsInterface) GetInfluenceSnapshot(client *ethclient.Client, stakerI
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
 		r1 = rf(client, stakerId, epoch)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetJobFilePath provides a mock function with given fields:
-func (_m *UtilsInterface) GetJobFilePath() (string, error) {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1053,50 +889,6 @@ func (_m *UtilsInterface) GetStakerSRZRBalance(client *ethclient.Client, staker 
 	return r0, r1
 }
 
-// GetStringAddress provides a mock function with given fields: flagSet
-func (_m *UtilsInterface) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetTotalInfluenceRevealed provides a mock function with given fields: client, epoch, medianIndex
-func (_m *UtilsInterface) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
-	ret := _m.Called(client, epoch, medianIndex)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint16) *big.Int); ok {
-		r0 = rf(client, epoch, medianIndex)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint16) error); ok {
-		r1 = rf(client, epoch, medianIndex)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetTxnOpts provides a mock function with given fields: transactionData
 func (_m *UtilsInterface) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	ret := _m.Called(transactionData)
@@ -1111,71 +903,6 @@ func (_m *UtilsInterface) GetTxnOpts(transactionData types.TransactionOptions) *
 	}
 
 	return r0
-}
-
-// GetUint32BountyId provides a mock function with given fields: flagSet
-func (_m *UtilsInterface) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 uint32
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint32); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(uint32)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetUpdatedStaker provides a mock function with given fields: client, stakerId
-func (_m *UtilsInterface) GetUpdatedStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
-	ret := _m.Called(client, stakerId)
-
-	var r0 bindings.StructsStaker
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) bindings.StructsStaker); ok {
-		r0 = rf(client, stakerId)
-	} else {
-		r0 = ret.Get(0).(bindings.StructsStaker)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
-		r1 = rf(client, stakerId)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetVoteValue provides a mock function with given fields: client, epoch, stakerId, medianIndex
-func (_m *UtilsInterface) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
-	ret := _m.Called(client, epoch, stakerId, medianIndex)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32, uint16) *big.Int); ok {
-		r0 = rf(client, epoch, stakerId, medianIndex)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32, uint16) error); ok {
-		r1 = rf(client, epoch, stakerId, medianIndex)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // GetWithdrawInitiationPeriod provides a mock function with given fields: client

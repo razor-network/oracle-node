@@ -35,7 +35,11 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		return core.NilHash, err
 	}
 
-	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	merkleTree, err := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	if err != nil {
+		log.Error("Error in getting merkle tree: ", err)
+		return core.NilHash, err
+	}
 	treeRevealData := cmdUtils.GenerateTreeRevealData(merkleTree, commitData)
 
 	log.Debugf("Revealing vote for epoch: %d, commitAccount: %s, treeRevealData: %v, root: %v",
@@ -89,16 +93,22 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 		proofs = append(proofs, proof)
 	}
 
+	root, err := utils.MerkleInterface.GetMerkleRoot(merkleTree)
+	if err != nil {
+		log.Error("Error in getting root: ", err)
+		return bindings.StructsMerkleTree{}
+	}
+
 	return bindings.StructsMerkleTree{
 		Values: values,
 		Proofs: proofs,
-		Root:   utils.MerkleInterface.GetMerkleRoot(merkleTree),
+		Root:   root,
 	}
 }
 
 //This function indexes the reveal events of current epoch
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
-	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
+	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		return nil, errors.New("Not able to Fetch Block: " + err.Error())
 	}

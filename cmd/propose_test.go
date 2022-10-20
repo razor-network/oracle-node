@@ -805,51 +805,6 @@ func TestGetIteration(t *testing.T) {
 	}
 }
 
-func TestInfluencedMedian(t *testing.T) {
-	type args struct {
-		sortedVotes            []*big.Int
-		totalInfluenceRevealed *big.Int
-	}
-	tests := []struct {
-		name string
-		args args
-		want *big.Int
-	}{
-		{
-			name: "Test if sortedVotes is empty",
-			args: args{
-				sortedVotes:            []*big.Int{},
-				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test if totalInfluenceRevealed is 0",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-				totalInfluenceRevealed: big.NewInt(0),
-			},
-			want: big.NewInt(1).Mul(big.NewInt(2093037800), big.NewInt(1e18)),
-		},
-		{
-			name: "Test if all the values are present",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-			},
-			want: big.NewInt(498342),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utils := &UtilsStruct{}
-			if got := utils.InfluencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestIsElectedProposer(t *testing.T) {
 
 	randaoHash := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
@@ -1400,27 +1355,6 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				if err != nil {
 					log.Fatal(err)
 				}
-			}
-		})
-	}
-}
-
-func BenchmarkInfluencedMedian(b *testing.B) {
-	var table = []struct {
-		numOfSortedVotes       int
-		totalInfluenceRevealed *big.Int
-	}{
-		{numOfSortedVotes: 10, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18))},
-		{numOfSortedVotes: 100, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
-		{numOfSortedVotes: 500, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
-		{numOfSortedVotes: 1000, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(420000), big.NewInt(1e18))},
-	}
-	for _, v := range table {
-		b.Run(fmt.Sprintf("Number_Of_Sorted_Votes_%d", v.numOfSortedVotes), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				utils := &UtilsStruct{}
-				sortedVotes := GetDummyVotes(v.numOfSortedVotes)
-				utils.InfluencedMedian(sortedVotes, v.totalInfluenceRevealed)
 			}
 		})
 	}
