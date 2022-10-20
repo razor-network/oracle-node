@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
-	"path"
+	"path/filepath"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -328,7 +328,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	if err != nil {
 		return err
 	}
-	keystorePath := path.Join(razorPath, "keystore_files")
+	keystorePath := filepath.Join(razorPath, "keystore_files")
 	log.Debugf("Keystore file path: %s", keystorePath)
 	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
@@ -448,7 +448,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		if err != nil {
 			return err
 		}
-		keystorePath := path.Join(razorPath, "keystore_files")
+		keystorePath := filepath.Join(razorPath, "keystore_files")
 
 		signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 		if err != nil {

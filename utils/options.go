@@ -3,7 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
-	"path"
+	"path/filepath"
 	"razor/core/types"
 	"strings"
 
@@ -29,7 +29,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
-	keystorePath := path.Join(defaultPath, "keystore_files")
+	keystorePath := filepath.Join(defaultPath, "keystore_files")
 	privateKey, err := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, keystorePath)
 	if privateKey == nil || err != nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))

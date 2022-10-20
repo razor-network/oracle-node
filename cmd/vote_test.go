@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"os"
 	"path"
+	"path/filepath"
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -168,7 +169,7 @@ func convertToSliceOfInterface(arr []uint32) []interface{} {
 func TestCalculateSecret(t *testing.T) {
 	dir, _ := os.Getwd()
 	razorPath := path.Dir(dir)
-	testKeystorePath := path.Join(razorPath, "utils/test_accounts")
+	testKeystorePath := filepath.Join(razorPath, "utils/test_accounts")
 
 	type args struct {
 		address  string
