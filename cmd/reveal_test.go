@@ -382,7 +382,7 @@ func BenchmarkGenerateTreeRevealData(b *testing.B) {
 			utils2.MerkleInterface = merkleInterface
 
 			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return([][32]byte{[32]byte{1, 2, 3}, {4, 5, 6}})
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return([32]byte{100})
+			merkleInterface.On("GetMerkleRoot", mock.Anything).Return([32]byte{100}, nil)
 
 			ut := &UtilsStruct{}
 			seqAllottedCollections := getDummySeqAllottedCollection(v.numOfAllottedCollections)
