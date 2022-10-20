@@ -161,7 +161,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
-		timeRemaining := int64(waitFor) * core.EpochLength
+		timeRemaining := uint64(waitFor) * core.EpochLength
 		if waitFor == 1 {
 			log.Infof("Cannot claim bounty now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {
