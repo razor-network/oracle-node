@@ -125,8 +125,8 @@ func (u Utils) GetRogueRandomMedianValue() uint32 {
 }
 
 //This function returns the delayed state
-func (u Utils) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utilsInterface.GetDelayedState(client, buffer)
+func (u Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	return utilsInterface.GetBufferedState(client, buffer)
 }
 
 //This function returns the default path
@@ -482,7 +482,7 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 }
 
 //This function is used to claim the staker reward
-func (stakeManagerUtils StakeManagerUtils) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "ClaimStakerReward", opts)
 }

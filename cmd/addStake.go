@@ -86,14 +86,14 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
 
-	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for stake: ", err)
 }
 
@@ -110,12 +110,13 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txn, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
-	return transactionUtils.Hash(tx), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

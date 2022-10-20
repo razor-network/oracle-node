@@ -3,13 +3,14 @@ package utils
 import (
 	"context"
 	"errors"
-	"github.com/avast/retry-go"
 	"math/big"
 	"os"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"time"
+
+	"github.com/avast/retry-go"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -49,7 +50,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	return balance, nil
 }
 
-func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
+func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
 	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
@@ -58,14 +59,13 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	if err != nil {
 		return -1, err
 	}
-	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit-stateBuffer || blockTime%(core.StateLength) < lowerLimit+stateBuffer {
+	if block.Time%(core.StateLength) > upperLimit-stateBuffer || block.Time%(core.StateLength) < lowerLimit+stateBuffer {
 		return -1, nil
 	}
-	state := blockTime / core.StateLength
-	return int64(state) % core.NumberOfStates, nil
+	state := block.Time / core.StateLength
+	return int64(state % core.NumberOfStates), nil
 }
 
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
@@ -176,7 +176,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
+	epoch := latestHeader.Time / core.EpochLength
 	return uint32(epoch), nil
 }
 
@@ -221,13 +221,13 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Errorf("Error in fetching block : %s", err)
 		return nil, err
 	}
-	currentEpoch := block.Time / uint64(core.EpochLength)
+	currentEpoch := block.Time / core.EpochLength
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
@@ -236,10 +236,11 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 		return nil, err
 	}
 	previousBlockActualTimestamp := previousBlock.Time
-	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
-	previousEpoch := previousBlockActualTimestamp / uint64(core.EpochLength)
+	previousBlockAssumedTimestamp := block.Time - core.EpochLength
+	previousEpoch := previousBlockActualTimestamp / core.EpochLength
 	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previousEpoch != currentEpoch-1 {
-		return UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
+		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
+
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil
 

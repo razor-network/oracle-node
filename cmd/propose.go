@@ -28,7 +28,7 @@ var globalProposedDataStruct types.ProposeFileData
 
 //This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return err
 	}
@@ -147,9 +147,9 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		return err
 	}
 	proposeTxn := transactionUtils.Hash(txn)
-	log.Info("Txn Hash: ", proposeTxn)
+	log.Info("Txn Hash: ", proposeTxn.Hex())
 	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for propose: ", waitForBlockCompletionErr)
 			return waitForBlockCompletionErr

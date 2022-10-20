@@ -46,7 +46,7 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 		expectedFatal bool
 	}{
 		{
-			name: "Test 1: When ClaimStakeReward runs successfully",
+			name: "Test 1: When ClaimStakerReward runs successfully",
 			args: args{
 				config:   types.Configurations{},
 				stakerId: 1,
@@ -224,7 +224,7 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
 
 			stakeManagerUtilsMock.On("StakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
-			stakeManagerUtilsMock.On("ClaimStakeReward", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.txn, tt.args.err)
+			stakeManagerUtilsMock.On("ClaimStakerReward", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.txn, tt.args.err)
 
 			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)

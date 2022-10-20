@@ -75,7 +75,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createCollection: ", err)
 }
 
@@ -104,8 +104,9 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		return core.NilHash, err
 	}
 	log.Info("Creating collection...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

@@ -71,13 +71,13 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for delegate: ", err)
 }
 
@@ -94,8 +94,9 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {
