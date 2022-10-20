@@ -623,8 +623,8 @@ func (b BufioStruct) NewScanner(r io.Reader) *bufio.Scanner {
 	return bufio.NewScanner(r)
 }
 
-func (c CoinStruct) BalanceOf(coinContract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	returnedValues := InvokeFunctionWithTimeout(coinContract, "BalanceOf", opts, account)
+func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
+	returnedValues := InvokeFunctionWithTimeout(erc20Contract, "BalanceOf", opts, account)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil, returnedError
