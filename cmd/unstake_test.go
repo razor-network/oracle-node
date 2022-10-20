@@ -341,9 +341,9 @@ func TestExecuteUnstake(t *testing.T) {
 
 func TestApproveUnstake(t *testing.T) {
 	var (
-		client  *ethclient.Client
-		staker  bindings.StructsStaker
-		txnArgs types.TransactionOptions
+		client             *ethclient.Client
+		stakerTokenAddress common.Address
+		txnArgs            types.TransactionOptions
 	)
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -390,7 +390,7 @@ func TestApproveUnstake(t *testing.T) {
 			stakeManagerUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			ut := &UtilsStruct{}
-			got, err := ut.ApproveUnstake(client, staker, txnArgs)
+			got, err := ut.ApproveUnstake(client, stakerTokenAddress, txnArgs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApproveUnstake() error = %v, wantErr %v", err, tt.wantErr)
 				return

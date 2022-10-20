@@ -379,19 +379,6 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
-//This function returns the influenced median
-func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
-	accProd := big.NewInt(0)
-
-	for _, vote := range sortedVotes {
-		accProd = accProd.Add(accProd, vote)
-	}
-	if totalInfluenceRevealed.Cmp(big.NewInt(0)) == 0 {
-		return accProd
-	}
-	return accProd.Div(accProd, totalInfluenceRevealed)
-}
-
 func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {

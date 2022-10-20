@@ -171,7 +171,7 @@ func TestGetDataInBytes(t *testing.T) {
 	}
 }
 
-func TestIsEqual(t *testing.T) {
+func TestIsBigIntArrayEqual(t *testing.T) {
 	type args struct {
 		arr1 []*big.Int
 		arr2 []*big.Int
@@ -231,12 +231,12 @@ func TestIsEqual(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got, got1 := IsEqual(tt.args.arr1, tt.args.arr2)
+			got, got1 := IsBigIntArrayEqual(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
-				t.Errorf("IsEqualUint32() got = %v, want %v", got, tt.want)
+				t.Errorf("IsBigIntArrayEqual() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("IsEqualUint32() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("IsBigIntArrayEqual() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -414,7 +414,7 @@ func TestContainsStringFromArray(t *testing.T) {
 	}
 }
 
-func TestIsMissing(t *testing.T) {
+func TestCheckValueMissingInArray(t *testing.T) {
 	type args struct {
 		arr1 []uint16
 		arr2 []uint16
@@ -510,15 +510,15 @@ func TestIsMissing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got, got1, got2 := IsMissing(tt.args.arr1, tt.args.arr2)
+			got, got1, got2 := CheckValueMissingInArray(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
-				t.Errorf("IsMissing() got = %v, want %v", got, tt.want)
+				t.Errorf("CheckValueMissingInArray() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("IsMissing() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("CheckValueMissingInArray() got1 = %v, want %v", got1, tt.want1)
 			}
 			if got2 != tt.want2 {
-				t.Errorf("IsMissing() got2 = %v, want %v", got2, tt.want2)
+				t.Errorf("CheckValueMissingInArray() got2 = %v, want %v", got2, tt.want2)
 			}
 		})
 	}
@@ -634,7 +634,7 @@ func TestIndexOf(t *testing.T) {
 	}
 }
 
-func TestIsEqualByte(t *testing.T) {
+func TestIsByteArrayEqual(t *testing.T) {
 	type args struct {
 		arr1 []byte
 		arr2 []byte
@@ -694,12 +694,12 @@ func TestIsEqualByte(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got, got1 := IsEqualByte(tt.args.arr1, tt.args.arr2)
+			got, got1 := IsByteArrayEqual(tt.args.arr1, tt.args.arr2)
 			if got != tt.want {
-				t.Errorf("IsEqualByte() got = %v, want %v", got, tt.want)
+				t.Errorf("IsByteArrayEqual() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("IsEqualByte() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("IsByteArrayEqual() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
