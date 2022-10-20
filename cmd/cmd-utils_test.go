@@ -373,7 +373,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 }
 
-func TestGetStatesAllowed(t *testing.T) {
+func TestGetFormattedStateNames(t *testing.T) {
 	type args struct {
 		states    []int
 		stateName string
@@ -414,8 +414,8 @@ func TestGetStatesAllowed(t *testing.T) {
 			utils.UtilsInterface = utilsPkgMock
 
 			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-			if got := GetStatesAllowed(tt.args.states); got != tt.want {
-				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
+			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
+				t.Errorf("GetFormattedStateNames() = %v, want %v", got, tt.want)
 			}
 		})
 	}
