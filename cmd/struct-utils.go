@@ -558,7 +558,7 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 }
 
 //This function is used to claim the staker reward
-func (stakeManagerUtils StakeManagerUtils) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
+func (stakeManagerUtils StakeManagerUtils) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	stakeManager := utilsInterface.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "ClaimStakerReward", opts)
 }
