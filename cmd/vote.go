@@ -203,7 +203,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	}
 
-	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f sFuel Balance: %f", utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
