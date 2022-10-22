@@ -146,7 +146,7 @@ Password:
 
 ### Import Account
 
-If you already have an account created, and have it's private key, that account can be imported into the `razor-go` client.
+If you already have an account created, and have its private key, that account can be imported into the `razor-go` client.
 To do that, you can use the `import` command. You'll be asked the private key first and then the password which you want to encrypt your keystore file with.
 
 razor cli
@@ -503,7 +503,7 @@ $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e -
 
 ### Create Job
 
-Create new jobs using `creteJob` command.
+Create new jobs using `createJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 
@@ -533,7 +533,7 @@ $  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc
 
 ### Create Collection
 
-Create new collections using `creteCollection` command.
+Create new collections using `createCollection` command.
 
 _Note: This command is restricted to "Admin Role"_
 
@@ -557,7 +557,7 @@ $ ./razor createCollection --name btcCollectionMean --address 0x5a0b54d5dc17e0aa
 
 ### Modify Collection Status
 
-Modify the active status of an collection using the `modifyCollectionStatus` command.
+Modify the active status of a collection using the `modifyCollectionStatus` command.
 
 _Note: This command is restricted to "Admin Role"_
 
