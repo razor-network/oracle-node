@@ -39,7 +39,7 @@ func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 
 //This function is used to create the new account
 func (*UtilsStruct) Create(password string) (accounts.Account, error) {
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err

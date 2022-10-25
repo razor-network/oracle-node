@@ -73,7 +73,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 //This function transfers the razors from your account to others account
 func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 
-	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
+	utils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
@@ -86,7 +86,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
 		ABI:             bindings.RAZORMetaData.ABI,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
+	log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 
 	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
 	if err != nil {

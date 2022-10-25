@@ -36,7 +36,7 @@ func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 
 //This function is used to list all accessible accounts
 func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
-	path, err := razorUtils.GetDefaultPath()
+	path, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return nil, err

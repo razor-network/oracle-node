@@ -26,11 +26,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-var utilsInterface = utils.UtilsInterface
+var (
+	razorUtils = utils.UtilsInterface
+	pathUtils  = path.PathUtilsInterface
+)
 
 //This function initializes the utils
 func InitializeUtils() {
-	utilsInterface = &utils.UtilsStruct{}
+	razorUtils = &utils.UtilsStruct{}
 	utils.UtilsInterface = &utils.UtilsStruct{}
 	utils.EthClient = &utils.EthClientStruct{}
 	utils.ClientInterface = &utils.ClientStruct{}
@@ -64,306 +67,6 @@ func ExecuteTransaction(interfaceName interface{}, methodName string, args ...in
 	return returnedValues[0].Interface().(*Types.Transaction), nil
 }
 
-//This function returns the config file path
-func (u Utils) GetConfigFilePath() (string, error) {
-	return path.PathUtilsInterface.GetConfigFilePath()
-}
-
-//This function returns the epoch
-func (u Utils) GetEpoch(client *ethclient.Client) (uint32, error) {
-	return utilsInterface.GetEpoch(client)
-}
-
-//This function returns the options
-func (u Utils) GetOptions() bind.CallOpts {
-	return utilsInterface.GetOptions()
-}
-
-//This function returns the block time
-func (u Utils) CalculateBlockTime(client *ethclient.Client) int64 {
-	return utilsInterface.CalculateBlockTime(client)
-}
-
-//This function returns the transaction opts
-func (u Utils) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
-	return utilsInterface.GetTxnOpts(transactionData)
-}
-
-//This function assigns the password
-func (u Utils) AssignPassword(flagSet *pflag.FlagSet) string {
-	return utils.AssignPassword(flagSet)
-}
-
-//This function connects to the client
-func (u Utils) ConnectToClient(provider string) *ethclient.Client {
-	returnedValues := utils.InvokeFunctionWithTimeout(utilsInterface, "ConnectToClient", provider)
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return nil
-	}
-	return returnedValues[0].Interface().(*ethclient.Client)
-}
-
-//This function waits for the block completion
-func (u Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
-	return utilsInterface.WaitForBlockCompletion(client, hashToRead)
-}
-
-//This function returns the number of active collections
-func (u Utils) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
-	return utilsInterface.GetNumActiveCollections(client)
-}
-
-//This function returns rogue random value
-func (u Utils) GetRogueRandomValue(value int) *big.Int {
-	return utils.GetRogueRandomValue(value)
-}
-
-//This function returns the rogue median value
-func (u Utils) GetRogueRandomMedianValue() uint32 {
-	return utils.GetRogueRandomMedianValue()
-}
-
-//This function returns the delayed state
-func (u Utils) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
-	return utilsInterface.GetBufferedState(client, buffer)
-}
-
-//This function returns the default path
-func (u Utils) GetDefaultPath() (string, error) {
-	return path.PathUtilsInterface.GetDefaultPath()
-}
-
-//This function fetches the balance
-func (u Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	return utilsInterface.FetchBalance(client, accountAddress)
-}
-
-//This function checks if the flag is passed
-func (u Utils) IsFlagPassed(name string) bool {
-	return utilsInterface.IsFlagPassed(name)
-}
-
-//This function returns the amount in wei
-func (u Utils) GetAmountInWei(amount *big.Int) *big.Int {
-	return utils.GetAmountInWei(amount)
-}
-
-//This function checks the amount and balance
-func (u Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
-	return utils.CheckAmountAndBalance(amountInWei, balance)
-}
-
-//This function returns the amount in decimal
-func (u Utils) GetAmountInDecimal(amountInWei *big.Int) *big.Float {
-	return utils.GetAmountInDecimal(amountInWei)
-}
-
-//This function returns the epoch which is last committed
-func (u Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utilsInterface.GetEpochLastCommitted(client, stakerId)
-}
-
-//This function converts the Uint array to Uint16 array
-func (u Utils) ConvertUintArrayToUint16Array(uintArr []uint) []uint16 {
-	return utils.ConvertUintArrayToUint16Array(uintArr)
-}
-
-//This function returns the jobs array
-func (u Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
-	return utilsInterface.GetJobs(client)
-}
-
-//This function if the eth balance is zero or not
-func (u Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	utilsInterface.CheckEthBalanceIsZero(client, address)
-}
-
-//This function assigns the stakerId
-func (u Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
-	return utilsInterface.AssignStakerId(flagSet, client, address)
-}
-
-//This function returns the lock
-func (u Utils) GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error) {
-	return utilsInterface.GetLock(client, address, stakerId, lockType)
-}
-
-//This function returns the staker
-func (u Utils) GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
-	return utilsInterface.GetStaker(client, stakerId)
-}
-
-//This function returns the staked token
-func (u Utils) GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken {
-	return utilsInterface.GetStakedToken(client, address)
-}
-
-//This function returns the withdraw initiation period
-func (u Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error) {
-	return utilsInterface.GetWithdrawInitiationPeriod(client)
-}
-
-//This function returns the influence snapshot
-func (u Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utilsInterface.GetInfluenceSnapshot(client, stakerId, epoch)
-}
-
-//This function returns the collections
-func (u Utils) GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
-	return utilsInterface.GetAllCollections(client)
-}
-
-//This function returns the number of stakers
-func (u Utils) GetNumberOfStakers(client *ethclient.Client) (uint32, error) {
-	return utilsInterface.GetNumberOfStakers(client)
-}
-
-//This function returns the number of proposed blocks
-func (u Utils) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
-	return utilsInterface.GetNumberOfProposedBlocks(client, epoch)
-}
-
-//This function returns the maximum alt blocks
-func (u Utils) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
-	return utilsInterface.GetMaxAltBlocks(client)
-}
-
-//This function returns the proposed block
-func (u Utils) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
-	return utilsInterface.GetProposedBlock(client, epoch, proposedBlockId)
-}
-
-//This function returns the epoch which is last revealed
-func (u Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utilsInterface.GetEpochLastRevealed(client, stakerId)
-}
-
-//This function returns the epoch which is last proposed
-func (u Utils) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	return utilsInterface.GetEpochLastProposed(client, stakerId)
-}
-
-//This function returns the active collections
-func (u Utils) GetActiveCollections(client *ethclient.Client) ([]uint16, error) {
-	return utilsInterface.GetActiveCollectionIds(client)
-}
-
-//This function retrns the block manager
-func (u Utils) GetBlockManager(client *ethclient.Client) *bindings.BlockManager {
-	return utilsInterface.GetBlockManager(client)
-}
-
-//This function returns the sorted proposed block Ids
-func (u Utils) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
-	return utilsInterface.GetSortedProposedBlockIds(client, epoch)
-}
-
-//This function returns the stakerId
-func (u Utils) GetStakerId(client *ethclient.Client, address string) (uint32, error) {
-	return utilsInterface.GetStakerId(client, address)
-}
-
-//This function returns the stake
-func (u Utils) GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error) {
-	return utilsInterface.GetStake(client, stakerId)
-}
-
-//This function prompts the private key
-func (u Utils) PrivateKeyPrompt() string {
-	return utils.PrivateKeyPrompt()
-}
-
-//This function prompts the password
-func (u Utils) PasswordPrompt() string {
-	return utils.PasswordPrompt()
-}
-
-//This function returns the max commission
-func (u Utils) GetMaxCommission(client *ethclient.Client) (uint8, error) {
-	return utilsInterface.GetMaxCommission(client)
-}
-
-//This function returns the epoch limit for updated commission
-func (u Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error) {
-	return utilsInterface.GetEpochLimitForUpdateCommission(client)
-}
-
-//This function returns the stake snapshot
-func (u Utils) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	return utilsInterface.GetStakeSnapshot(client, stakerId, epoch)
-}
-
-//This function converts the wei to eth
-func (u Utils) ConvertWeiToEth(data *big.Int) (*big.Float, error) {
-	return utils.ConvertWeiToEth(data)
-}
-
-//This function wait till next N seconds
-func (u Utils) WaitTillNextNSecs(seconds int32) {
-	utilsInterface.WaitTillNextNSecs(seconds)
-}
-
-//This function converts seconds into readable time
-func (u Utils) SecondsToReadableTime(time int) string {
-	return utilsInterface.SecondsToReadableTime(time)
-}
-
-//This function returns the staker SRZR balance
-func (u Utils) GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
-	return utilsInterface.GetStakerSRZRBalance(client, staker)
-}
-
-//This function saves the data to commit JSON File
-func (u Utils) SaveDataToCommitJsonFile(flePath string, epoch uint32, commitFileData types.CommitData) error {
-	return utilsInterface.SaveDataToCommitJsonFile(flePath, epoch, commitFileData)
-}
-
-//This function reads from the commit JSON file
-func (u Utils) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
-	return utilsInterface.ReadFromCommitJsonFile(filePath)
-}
-
-//This function assigns the log file
-func (u Utils) AssignLogFile(flagSet *pflag.FlagSet) {
-	utilsInterface.AssignLogFile(flagSet)
-}
-
-//This function reads from propose JSON file
-func (u Utils) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
-	return utilsInterface.ReadFromProposeJsonFile(filePath)
-}
-
-//This function saves the data to propose JSON file
-func (u Utils) SaveDataToProposeJsonFile(flePath string, proposeFileData types.ProposeFileData) error {
-	return utilsInterface.SaveDataToProposeJsonFile(flePath, proposeFileData)
-}
-
-//This function saves data to Dispute JSON file
-func (u Utils) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
-	return utilsInterface.SaveDataToDisputeJsonFile(filePath, bountyIdQueue)
-}
-
-//This function reads from Dispute JSON file
-func (u Utils) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
-	return utilsInterface.ReadFromDisputeJsonFile(filePath)
-}
-
-//This function returns the proposed data JSON file
-func (u Utils) GetProposeDataFileName(address string) (string, error) {
-	return path.PathUtilsInterface.GetProposeDataFileName(address)
-}
-
-//This function returns the commit data file name
-func (u Utils) GetCommitDataFileName(address string) (string, error) {
-	return path.PathUtilsInterface.GetCommitDataFileName(address)
-}
-
-//This function returns the dispute data file name
-func (u Utils) GetDisputeDataFileName(address string) (string, error) {
-	return path.PathUtilsInterface.GetDisputeDataFileName(address)
-}
-
 //This function returns the hash
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()
@@ -371,49 +74,49 @@ func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Has
 
 //This function is of staking the razors
 func (stakeManagerUtils StakeManagerUtils) Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "Stake", txnOpts, epoch, amount)
 }
 
 //This function resets the unstake lock
 func (stakeManagerUtils StakeManagerUtils) ResetUnstakeLock(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "ResetUnstakeLock", opts, stakerId)
 }
 
 //This function is for delegation
 func (stakeManagerUtils StakeManagerUtils) Delegate(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, amount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "Delegate", opts, stakerId, amount)
 }
 
 //This function initiates the withdraw
 func (stakeManagerUtils StakeManagerUtils) InitiateWithdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "InitiateWithdraw", opts, stakerId)
 }
 
 //This function unlocks the withdraw amount
 func (stakeManagerUtils StakeManagerUtils) UnlockWithdraw(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "UnlockWithdraw", opts, stakerId)
 }
 
 //This function sets the delegation acceptance or rejection
 func (stakeManagerUtils StakeManagerUtils) SetDelegationAcceptance(client *ethclient.Client, opts *bind.TransactOpts, status bool) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "SetDelegationAcceptance", opts, status)
 }
 
 //This function updates the commission
 func (stakeManagerUtils StakeManagerUtils) UpdateCommission(client *ethclient.Client, opts *bind.TransactOpts, commission uint8) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "UpdateCommission", opts, commission)
 }
 
 //This function allows to unstake the razors
 func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opts *bind.TransactOpts, stakerId uint32, sAmount *big.Int) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "Unstake", opts, stakerId, sAmount)
 }
 
@@ -425,13 +128,13 @@ func (stakeManagerUtils StakeManagerUtils) ApproveUnstake(client *ethclient.Clie
 
 //This function is used to redeem the bounty
 func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client, opts *bind.TransactOpts, bountyId uint32) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "RedeemBounty", opts, bountyId)
 }
 
 //This function returns the staker Info
 func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Stakers", opts, stakerId)
 	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
@@ -455,7 +158,7 @@ func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, 
 
 //This function returns the maturity
 func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	index := age / 10000
 	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Maturities", opts, big.NewInt(int64(index)))
 	returnedError := utils.CheckIfAnyError(returnedValues)
@@ -467,7 +170,7 @@ func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client,
 
 //This function returns the bounty lock
 func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "BountyLocks", opts, bountyId)
 	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
@@ -483,19 +186,19 @@ func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Clien
 
 //This function is used to claim the staker reward
 func (stakeManagerUtils StakeManagerUtils) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	stakeManager := utilsInterface.GetStakeManager(client)
+	stakeManager := razorUtils.GetStakeManager(client)
 	return ExecuteTransaction(stakeManager, "ClaimStakerReward", opts)
 }
 
 //This function is used to claim the block reward
 func (blockManagerUtils BlockManagerUtils) ClaimBlockReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	return ExecuteTransaction(blockManager, "ClaimBlockReward", opts)
 }
 
 //Thid function is used to finalize the dispute
 func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -516,7 +219,7 @@ func (blockManagerUtils BlockManagerUtils) FinalizeDispute(client *ethclient.Cli
 
 //This function is used to dispute the biggest staker which is proposed
 func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, correctBiggestStakerId uint32) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -537,7 +240,7 @@ func (blockManagerUtils BlockManagerUtils) DisputeBiggestStakeProposed(client *e
 
 //This function is used to check if dispute collection Id is absent or not
 func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBeAbsent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16, positionOfCollectionInBlock *big.Int) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -559,7 +262,7 @@ func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBeAbsent(cli
 
 //This function is used to check if dispute collection Id is present or not
 func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBePresent(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, id uint16) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -580,7 +283,7 @@ func (blockManagerUtils BlockManagerUtils) DisputeCollectionIdShouldBePresent(cl
 
 //This function is used to do dispute on order of Ids
 func (blockManagerUtils BlockManagerUtils) DisputeOnOrderOfIds(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, blockIndex uint8, index0 *big.Int, index1 *big.Int) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -601,7 +304,7 @@ func (blockManagerUtils BlockManagerUtils) DisputeOnOrderOfIds(client *ethclient
 
 //This function is used for proposing the block
 func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, ids []uint16, medians []*big.Int, iteration *big.Int, biggestInfluencerId uint32) (*Types.Transaction, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -632,7 +335,7 @@ func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.B
 
 //This functiom gets Disputes mapping
 func (blockManagerUtils BlockManagerUtils) Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (types.DisputesStruct, error) {
-	blockManager := utilsInterface.GetBlockManager(client)
+	blockManager := razorUtils.GetBlockManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(blockManager, "Disputes", opts, epoch, address)
 	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
@@ -649,7 +352,7 @@ func (blockManagerUtils BlockManagerUtils) Disputes(client *ethclient.Client, op
 
 //This function is used to reveal the values
 func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, tree bindings.StructsMerkleTree, signature []byte) (*Types.Transaction, error) {
-	voteManager := utilsInterface.GetVoteManager(client)
+	voteManager := razorUtils.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -670,7 +373,7 @@ func (voteManagerUtils VoteManagerUtils) Reveal(client *ethclient.Client, opts *
 
 //This function is used to commit the values
 func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, commitment [32]byte) (*Types.Transaction, error) {
-	voteManager := utilsInterface.GetVoteManager(client)
+	voteManager := razorUtils.GetVoteManager(client)
 	var (
 		txn *Types.Transaction
 		err error
@@ -691,7 +394,7 @@ func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *
 
 //This function is used to check the allowance of staker
 func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	tokenManager := utilsInterface.GetTokenManager(client)
+	tokenManager := razorUtils.GetTokenManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(tokenManager, "Allowance", opts, owner, spender)
 	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
@@ -702,31 +405,31 @@ func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, o
 
 //This function is used to approve the transaction
 func (tokenManagerUtils TokenManagerUtils) Approve(client *ethclient.Client, opts *bind.TransactOpts, spender common.Address, amount *big.Int) (*Types.Transaction, error) {
-	tokenManager := utilsInterface.GetTokenManager(client)
+	tokenManager := razorUtils.GetTokenManager(client)
 	return ExecuteTransaction(tokenManager, "Approve", opts, spender, amount)
 }
 
 //This function is used to transfer the tokens
 func (tokenManagerUtils TokenManagerUtils) Transfer(client *ethclient.Client, opts *bind.TransactOpts, recipient common.Address, amount *big.Int) (*Types.Transaction, error) {
-	tokenManager := utilsInterface.GetTokenManager(client)
+	tokenManager := razorUtils.GetTokenManager(client)
 	return ExecuteTransaction(tokenManager, "Transfer", opts, recipient, amount)
 }
 
 //This function is used to create the job
 func (assetManagerUtils AssetManagerUtils) CreateJob(client *ethclient.Client, opts *bind.TransactOpts, weight uint8, power int8, selectorType uint8, name string, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utilsInterface.GetCollectionManager(client)
+	assetManager := razorUtils.GetCollectionManager(client)
 	return ExecuteTransaction(assetManager, "CreateJob", opts, weight, power, selectorType, name, selector, url)
 }
 
 //This function is used to set the collection status
 func (assetManagerUtils AssetManagerUtils) SetCollectionStatus(client *ethclient.Client, opts *bind.TransactOpts, assetStatus bool, id uint16) (*Types.Transaction, error) {
-	assetManager := utilsInterface.GetCollectionManager(client)
+	assetManager := razorUtils.GetCollectionManager(client)
 	return ExecuteTransaction(assetManager, "SetCollectionStatus", opts, assetStatus, id)
 }
 
 //This function is used to get the active status
 func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Client, opts *bind.CallOpts, id uint16) (bool, error) {
-	assetMananger := utilsInterface.GetCollectionManager(client)
+	assetMananger := razorUtils.GetCollectionManager(client)
 	returnedValues := utils.InvokeFunctionWithTimeout(assetMananger, "GetCollectionStatus", opts, id)
 	returnedError := utils.CheckIfAnyError(returnedValues)
 	if returnedError != nil {
@@ -737,19 +440,19 @@ func (assetManagerUtils AssetManagerUtils) GetActiveStatus(client *ethclient.Cli
 
 //This function is used to update the job
 func (assetManagerUtils AssetManagerUtils) UpdateJob(client *ethclient.Client, opts *bind.TransactOpts, jobId uint16, weight uint8, power int8, selectorType uint8, selector string, url string) (*Types.Transaction, error) {
-	assetManager := utilsInterface.GetCollectionManager(client)
+	assetManager := razorUtils.GetCollectionManager(client)
 	return ExecuteTransaction(assetManager, "UpdateJob", opts, jobId, weight, power, selectorType, selector, url)
 }
 
 //This function is used to create the collection
 func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Client, opts *bind.TransactOpts, tolerance uint32, power int8, aggregationMethod uint32, jobIDs []uint16, name string) (*Types.Transaction, error) {
-	assetManager := utilsInterface.GetCollectionManager(client)
+	assetManager := razorUtils.GetCollectionManager(client)
 	return ExecuteTransaction(assetManager, "CreateCollection", opts, tolerance, power, aggregationMethod, jobIDs, name)
 }
 
 //This function is used to update the collection
 func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint32, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
-	assetManager := utilsInterface.GetCollectionManager(client)
+	assetManager := razorUtils.GetCollectionManager(client)
 	return ExecuteTransaction(assetManager, "UpdateCollection", opts, collectionId, tolerance, aggregationMethod, power, jobIds)
 }
 

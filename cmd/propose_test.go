@@ -11,7 +11,6 @@ import (
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
 	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
@@ -967,7 +966,7 @@ func TestMakeBlock(t *testing.T) {
 		epoch       uint32
 	)
 
-	randomValue := utils.GetRogueRandomValue(10000000)
+	randomValue := razorUtils.GetRogueRandomValue(10000000)
 
 	type args struct {
 		revealedDataMaps     *types.RevealedDataMaps

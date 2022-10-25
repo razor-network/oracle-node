@@ -47,7 +47,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 	password := razorUtils.AssignPassword(flagSet)
 
-	if utilsInterface.IsFlagPassed("bountyId") {
+	if razorUtils.IsFlagPassed("bountyId") {
 		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 		utils.CheckError("Error in getting bountyId: ", err)
 
@@ -76,7 +76,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 //This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
 func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
-	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
+	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.Hex())
+			claimBountyErr := razorUtils.WaitForBlockCompletion(client, claimBountyTxn.Hex())
 			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed

@@ -128,7 +128,7 @@ func TestHandleCommitState(t *testing.T) {
 		seed   []byte
 	)
 
-	rogueValue := utils.GetRogueRandomValue(100000)
+	rogueValue := razorUtils.GetRogueRandomValue(100000)
 
 	type args struct {
 		numActiveCollections    uint16
@@ -387,7 +387,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 		seed   []byte
 	)
 
-	rogueValue := utils.GetRogueRandomValue(100000)
+	rogueValue := razorUtils.GetRogueRandomValue(100000)
 
 	var table = []struct {
 		numActiveCollections uint16

@@ -62,7 +62,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		return rpcTimeoutErr
 	}
 
-	path, pathErr := razorUtils.GetConfigFilePath()
+	path, pathErr := pathUtils.GetConfigFilePath()
 	if pathErr != nil {
 		log.Error("Error in fetching config file path")
 		return pathErr

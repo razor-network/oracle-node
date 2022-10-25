@@ -175,12 +175,12 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
 	}
-	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
+	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
 		return
 	}
-	actualBalance, err := razorUtils.ConvertWeiToEth(ethBalance)
+	actualBalance, err := utils.ConvertWeiToEth(ethBalance)
 	if err != nil {
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
@@ -196,7 +196,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	if sRZRBalance.Cmp(big.NewInt(0)) == 0 {
 		sRZRInEth = big.NewFloat(0)
 	} else {
-		sRZRInEth, err = razorUtils.ConvertWeiToEth(sRZRBalance)
+		sRZRInEth, err = utils.ConvertWeiToEth(sRZRBalance)
 		if err != nil {
 			log.Error(err)
 			return
@@ -248,7 +248,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 		lastVerification = epoch
 
-		if utilsInterface.IsFlagPassed("autoClaimBounty") {
+		if razorUtils.IsFlagPassed("autoClaimBounty") {
 			log.Debugf("Automatically claiming bounty")
 			err = cmdUtils.HandleClaimBounty(client, config, account)
 			if err != nil {
@@ -324,7 +324,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 		return nil
 	}
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		return err
 	}
@@ -369,7 +369,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 
 	log.Debug("Saving committed data for recovery")
-	fileName, err := razorUtils.GetCommitDataFileName(account.Address)
+	fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
@@ -413,7 +413,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	nilCommitData := globalCommitDataStruct.AssignedCollections == nil && globalCommitDataStruct.SeqAllottedCollections == nil && globalCommitDataStruct.Leaves == nil
 
 	if nilCommitData {
-		fileName, err := razorUtils.GetCommitDataFileName(account.Address)
+		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
 			return err
@@ -444,7 +444,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 
 	if globalCommitDataStruct.Epoch == epoch {
-		razorPath, err := razorUtils.GetDefaultPath()
+		razorPath, err := pathUtils.GetDefaultPath()
 		if err != nil {
 			return err
 		}

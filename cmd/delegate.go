@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
-	razorUtils.CheckAmountAndBalance(valueInWei, balance)
+	utils.CheckAmountAndBalance(valueInWei, balance)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
@@ -83,7 +83,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 
 //This function allows the delegator to stake coins without setting up a node
 func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
-	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
+	log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI

@@ -154,7 +154,7 @@ func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.
 	return big.NewInt(1).Div(big.NewInt(1).Mul(sAmount, currentStake), totalSupply)
 }
 
-func GetRogueRandomValue(value int) *big.Int {
+func (*UtilsStruct) GetRogueRandomValue(value int) *big.Int {
 	if value <= 0 {
 		return big.NewInt(0)
 	}

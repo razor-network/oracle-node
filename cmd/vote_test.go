@@ -580,7 +580,7 @@ func TestInitiateReveal(t *testing.T) {
 		account types.Account
 	)
 
-	randomNum := utils.GetRogueRandomValue(10000000)
+	randomNum := razorUtils.GetRogueRandomValue(10000000)
 
 	type args struct {
 		staker                   bindings.StructsStaker

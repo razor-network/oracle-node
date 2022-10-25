@@ -43,7 +43,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	log.Info("Enter password to protect keystore file")
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.PasswordPrompt()
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err

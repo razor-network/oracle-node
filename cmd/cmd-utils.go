@@ -90,7 +90,7 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 			amountInWei = _amount
 		}
 	} else {
-		amountInWei = razorUtils.GetAmountInWei(_amount)
+		amountInWei = utils.GetAmountInWei(_amount)
 	}
 	return amountInWei, nil
 }

@@ -181,7 +181,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 //This function returns the local median data
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	if (globalProposedDataStruct.MediansData == nil && !rogueData.IsRogue) || epoch != globalProposedDataStruct.Epoch {
-		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
+		fileName, err := pathUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
 			goto CalculateMedian
@@ -263,7 +263,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := razorUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -281,7 +281,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := razorUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -448,7 +448,7 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 
 //This function saves the bountyId in disputeData file and return the error if there is any
 func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Account) error {
-	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
+	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
 	}

@@ -50,7 +50,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
-	razorUtils.CheckAmountAndBalance(valueInWei, balance)
+	utils.CheckAmountAndBalance(valueInWei, balance)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
