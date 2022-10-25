@@ -28,7 +28,7 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 		return 0, 0, err
 	}
 	log.Debug("Epoch ", epoch)
-	log.Debug("State ", utils.UtilsInterface.GetStateName(state))
+	log.Debug("State ", utils.GetStateName(state))
 	return epoch, state, nil
 }
 
@@ -100,9 +100,9 @@ func GetFormattedStateNames(states []int) string {
 	var statesAllowed string
 	for i := 0; i < len(states); i++ {
 		if i == len(states)-1 {
-			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.UtilsInterface.GetStateName(int64(states[i]))
+			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.GetStateName(int64(states[i]))
 		} else {
-			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.UtilsInterface.GetStateName(int64(states[i])) + ", "
+			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.GetStateName(int64(states[i])) + ", "
 		}
 	}
 	return statesAllowed

@@ -112,7 +112,7 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+	header, err := razorUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
@@ -120,7 +120,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			return nil
 		default:
 			log.Debugf("Header value: %d", header.Number)
-			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+			latestHeader, err := razorUtils.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -170,7 +170,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	stakedAmount := staker.Stake
 
-	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
+	ethBalance, err := razorUtils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
@@ -203,7 +203,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	}
 
-	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", utils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
@@ -303,7 +303,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return err
 	}
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
@@ -385,7 +385,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 //This function initiates the reveal
 func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
@@ -484,7 +484,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 //This function initiates the propose
 func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err

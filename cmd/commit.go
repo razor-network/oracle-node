@@ -20,26 +20,26 @@ If the previous epoch doesn't contain any medians, then the value is fetched fro
 */
 func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
-	numProposedBlocks, err := utils.UtilsInterface.GetNumberOfProposedBlocks(client, previousEpoch)
+	numProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	blockIndexToBeConfirmed, err := utils.UtilsInterface.GetBlockIndexToBeConfirmed(client)
+	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
 	if err != nil {
 		return [32]byte{}, err
 	}
 	if numProposedBlocks == 0 || (numProposedBlocks > 0 && blockIndexToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := utils.UtilsInterface.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
+	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
-	previousBlock, err := utils.UtilsInterface.GetProposedBlock(client, previousEpoch, blockId)
+	previousBlock, err := razorUtils.GetProposedBlock(client, previousEpoch, blockId)
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
 	}
-	return utils.UtilsInterface.CalculateSalt(previousEpoch, previousBlock.Medians), nil
+	return razorUtils.CalculateSalt(previousEpoch, previousBlock.Medians), nil
 }
 
 /*
@@ -47,12 +47,12 @@ HandleCommitState fetches the collections assigned to the staker and creates the
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
 func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
-	numActiveCollections, err := utils.UtilsInterface.GetNumActiveCollections(client)
+	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
 	}
 	log.Debugf("Number of active collections: %d", numActiveCollections)
-	assignedCollections, seqAllottedCollections, err := utils.UtilsInterface.GetAssignedCollections(client, numActiveCollections, seed)
+	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(client, numActiveCollections, seed)
 	if err != nil {
 		return types.CommitData{}, err
 	}
@@ -60,11 +60,11 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	var leavesOfTree []*big.Int
 	for i := 0; i < int(numActiveCollections); i++ {
 		if assignedCollections[i] {
-			collectionId, err := utils.UtilsInterface.GetCollectionIdFromIndex(client, uint16(i))
+			collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
 			if err != nil {
 				return types.CommitData{}, err
 			}
-			collectionData, err := utils.UtilsInterface.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch)
 			if err != nil {
 				return types.CommitData{}, err
 			}

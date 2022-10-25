@@ -154,7 +154,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				//Here 0th key in map represents collectionId 1.
 
 				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
-				leafId, err := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
+				leafId, err := razorUtils.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
 				if err != nil {
 					log.Error("Error in leaf id: ", err)
 					continue
@@ -433,7 +433,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 //This function returns the collection Id position in block
 func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ids := proposedBlock.Ids
-	idToBeDisputed, err := utils.UtilsInterface.GetCollectionIdFromLeafId(client, leafId)
+	idToBeDisputed, err := razorUtils.GetCollectionIdFromLeafId(client, leafId)
 	if err != nil {
 		log.Error("Error in fetching collection id from leaf id")
 		return nil
@@ -455,7 +455,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 
 	var latestBountyId uint32
 
-	latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+	latestHeader, err := razorUtils.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return err
@@ -505,7 +505,7 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 
 //This function returns the bountyId from events
 func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
+	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		log.Error(err)
 		return 0, err
@@ -517,7 +517,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 			common.HexToAddress(core.StakeManagerAddress),
 		},
 	}
-	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	logs, err := razorUtils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return 0, err
 	}
