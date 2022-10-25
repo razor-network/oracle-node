@@ -14,7 +14,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
-	mocks2 "razor/utils/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -125,7 +125,7 @@ func TestExecuteVote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			osMock := new(mocks.OSInterface)
 
@@ -542,18 +542,16 @@ func TestInitiateCommit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			merkleInterface := new(mocks2.MerkleTreeInterface)
-			utilsPkgMock := new(mocks2.Utils)
+			merkleInterface := new(utilsPkgMocks.MerkleTreeInterface)
 
 			utils.MerkleInterface = merkleInterface
-			utils.UtilsInterface = utilsPkgMock
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastCommit, tt.args.lastCommitErr)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
@@ -756,15 +754,13 @@ func TestInitiateReveal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
 
-			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
 			cmdUtilsMock.On("CheckForLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
 			utilsMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
@@ -883,15 +879,13 @@ func TestInitiatePropose(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
 
-			utilsPkgMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxnErr)
@@ -1251,16 +1245,13 @@ func TestHandleBlock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
 			osMock := new(mocks.OSInterface)
 			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
-			utilsInterface = utilsPkgMock
 			osUtils = osMock
 			timeUtils = timeMock
 
@@ -1268,16 +1259,15 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			utilsPkgMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			utilsMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 			utilsMock.On("ConvertWeiToEth", mock.AnythingOfType("*big.Int")).Return(tt.args.actualStake, tt.args.actualStakeErr)
 			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZRBalance, tt.args.sRZRBalanceErr)
-			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
 			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
 			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
-			utilsPkgMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
+			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
 			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)

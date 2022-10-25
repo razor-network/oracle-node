@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"razor/cmd/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
 	"github.com/spf13/pflag"
@@ -286,7 +287,7 @@ func TestSetConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			viperMock := new(mocks.ViperInterface)

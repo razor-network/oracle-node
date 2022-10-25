@@ -15,6 +15,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -94,7 +95,7 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
@@ -209,7 +210,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock

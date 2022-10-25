@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -203,7 +204,7 @@ func TestUtilsStruct_ClaimCommission(t *testing.T) {
 
 			fatal = false
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)

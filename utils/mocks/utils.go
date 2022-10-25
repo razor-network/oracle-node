@@ -70,6 +70,20 @@ func (_m *Utils) AssignLogFile(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
+// AssignPassword provides a mock function with given fields: flagSet
+func (_m *Utils) AssignPassword(flagSet *pflag.FlagSet) string {
+	ret := _m.Called(flagSet)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // AssignStakerId provides a mock function with given fields: flagSet, client, address
 func (_m *Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
 	ret := _m.Called(flagSet, client, address)
@@ -1323,6 +1337,22 @@ func (_m *Utils) GetRemainingTimeOfCurrentState(client *ethclient.Client, buffer
 	return r0, r1
 }
 
+// GetRogueRandomValue provides a mock function with given fields: value
+func (_m *Utils) GetRogueRandomValue(value int) *big.Int {
+	ret := _m.Called(value)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(int) *big.Int); ok {
+		r0 = rf(value)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
 // GetSaltFromBlockchain provides a mock function with given fields: client
 func (_m *Utils) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
 	ret := _m.Called(client)
@@ -1821,6 +1851,34 @@ func (_m *Utils) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64)
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
+	}
+
+	return r0
+}
+
+// PasswordPrompt provides a mock function with given fields:
+func (_m *Utils) PasswordPrompt() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// PrivateKeyPrompt provides a mock function with given fields:
+func (_m *Utils) PrivateKeyPrompt() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

@@ -14,6 +14,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -132,7 +133,7 @@ func TestApprove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			tokenManagerUtilsMock := new(mocks.TokenManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 

@@ -9,6 +9,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -67,11 +68,10 @@ func TestDelegate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 
-			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerUtilsMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
@@ -253,7 +253,7 @@ func TestExecuteDelegate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)

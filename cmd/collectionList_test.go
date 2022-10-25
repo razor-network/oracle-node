@@ -8,6 +8,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -71,7 +72,7 @@ func TestGetCollectionList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			razorUtils = utilsMock
 
 			utilsMock.On("GetCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
@@ -142,7 +143,7 @@ func TestExecuteCollectionList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock

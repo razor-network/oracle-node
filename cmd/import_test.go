@@ -13,6 +13,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/path"
 	mocks1 "razor/path/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -150,7 +151,7 @@ func TestImportAccount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			keystoreUtilsMock := new(mocks.KeystoreInterface)
 			cryptoUtilsMock := new(mocks.CryptoInterface)
 			osMock := new(mocks1.OSInterface)
@@ -225,7 +226,7 @@ func TestExecuteImport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			cmdUtils = cmdUtilsMock

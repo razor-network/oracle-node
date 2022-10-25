@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	razorAccounts "razor/accounts"
+	utilsPkgMocks "razor/utils/mocks"
 
 	//"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
@@ -61,7 +62,7 @@ func TestCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			accountUtilsMock := new(Mocks.AccountInterface)
 
 			razorUtils = utilsMock
@@ -137,7 +138,7 @@ func TestExecuteCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock
