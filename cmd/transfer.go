@@ -73,7 +73,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 //This function transfers the razors from your account to others account
 func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 
-	utils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
+	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,

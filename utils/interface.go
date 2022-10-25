@@ -167,6 +167,7 @@ type Utils interface {
 	AssignLogFile(flagSet *pflag.FlagSet)
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
+	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
 	PasswordPrompt() string
 	AssignPassword(flagSet *pflag.FlagSet) string
 	PrivateKeyPrompt() string
