@@ -1,3 +1,5 @@
+// This file contains constants, DO NOT MODIFY.
+
 package core
 
 import (
