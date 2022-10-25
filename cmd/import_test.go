@@ -12,7 +12,7 @@ import (
 	"io/fs"
 	"razor/cmd/mocks"
 	"razor/path"
-	mocks1 "razor/path/mocks"
+	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
@@ -154,16 +154,18 @@ func TestImportAccount(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			keystoreUtilsMock := new(mocks.KeystoreInterface)
 			cryptoUtilsMock := new(mocks.CryptoInterface)
-			osMock := new(mocks1.OSInterface)
+			osMock := new(pathPkgMocks.OSInterface)
+			pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 			path.OSUtilsInterface = osMock
 			razorUtils = utilsMock
 			keystoreUtils = keystoreUtilsMock
 			cryptoUtils = cryptoUtilsMock
+			pathUtils = pathUtilsMock
 
 			utilsMock.On("PrivateKeyPrompt").Return(tt.args.privateKey)
 			utilsMock.On("PasswordPrompt").Return(tt.args.password)
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			pathUtilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cryptoUtilsMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
 			keystoreUtilsMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
 			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)

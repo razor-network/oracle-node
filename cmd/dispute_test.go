@@ -17,7 +17,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/path"
-	pathMocks "razor/path/mocks"
+	pathPkgMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils"
 	utilsPkgMocks "razor/utils/mocks"
@@ -802,11 +802,13 @@ func TestGetLocalMediansData(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
+			pathUtils = pathUtilsMock
 
-			utilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+			pathUtilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			utilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
@@ -1376,13 +1378,15 @@ func TestStoreBountyId(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			osUtilsMock := new(pathMocks.OSInterface)
+			osUtilsMock := new(pathPkgMocks.OSInterface)
+			pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			path.OSUtilsInterface = osUtilsMock
+			pathUtils = pathUtilsMock
 
-			utilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
+			pathUtilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
 			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			cmdUtilsMock.On("GetBountyIdFromEvents", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.latestBountyId, tt.args.latestBountyIdErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)

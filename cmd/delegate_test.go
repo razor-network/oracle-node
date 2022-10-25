@@ -24,11 +24,10 @@ func TestDelegate(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	var txnArgs types.TransactionOptions
 	var stakerId uint32 = 1
 
 	type args struct {
-		amount      *big.Float
+		amount      *big.Int
 		txnOpts     *bind.TransactOpts
 		delegateTxn *Types.Transaction
 		delegateErr error
@@ -43,7 +42,7 @@ func TestDelegate(t *testing.T) {
 		{
 			name: "Test 1: When delegate function executes successfully",
 			args: args{
-				amount:      big.NewFloat(1000),
+				amount:      big.NewInt(1000),
 				txnOpts:     txnOpts,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: nil,
@@ -55,7 +54,7 @@ func TestDelegate(t *testing.T) {
 		{
 			name: "Test 2: When delegate transaction fails",
 			args: args{
-				amount:      big.NewFloat(1000),
+				amount:      big.NewInt(1000),
 				txnOpts:     txnOpts,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: errors.New("delegate error"),
@@ -82,7 +81,9 @@ func TestDelegate(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Delegate(txnArgs, stakerId)
+			got, err := utils.Delegate(types.TransactionOptions{
+				Amount: tt.args.amount,
+			}, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for delegate function, got = %v, want %v", got, tt.want)
 			}

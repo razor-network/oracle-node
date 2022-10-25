@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
+	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
@@ -61,11 +62,13 @@ func TestListAccounts(t *testing.T) {
 
 			utilsMock := new(utilsPkgMocks.Utils)
 			keystoreUtilsMock := new(mocks.KeystoreInterface)
+			pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 			razorUtils = utilsMock
 			keystoreUtils = keystoreUtilsMock
+			pathUtils = pathUtilsMock
 
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			pathUtilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			keystoreUtilsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
 			utils := &UtilsStruct{}
 			got, err := utils.ListAccounts()

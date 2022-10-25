@@ -158,6 +158,22 @@ func (_m *Utils) CalculateSalt(epoch uint32, medians []*big.Int) [32]byte {
 	return r0
 }
 
+// CheckAmountAndBalance provides a mock function with given fields: amountInWei, balance
+func (_m *Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+	ret := _m.Called(amountInWei, balance)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(amountInWei, balance)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
 // CheckEthBalanceIsZero provides a mock function with given fields: client, address
 func (_m *Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
 	_m.Called(client, address)
@@ -1605,20 +1621,6 @@ func (_m *Utils) GetStateBuffer(client *ethclient.Client) (uint64, error) {
 	}
 
 	return r0, r1
-}
-
-// GetStateName provides a mock function with given fields: stateNumber
-func (_m *Utils) GetStateName(stateNumber int64) string {
-	ret := _m.Called(stateNumber)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(int64) string); ok {
-		r0 = rf(stateNumber)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
 }
 
 // GetTokenManager provides a mock function with given fields: client

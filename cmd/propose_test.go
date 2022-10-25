@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core/types"
+	pathPkgMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
@@ -544,11 +545,13 @@ func TestPropose(t *testing.T) {
 		cmdUtilsMock := new(mocks.UtilsCmdInterface)
 		blockManagerUtilsMock := new(mocks.BlockManagerInterface)
 		transactionUtilsMock := new(mocks.TransactionInterface)
+		pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 		razorUtils = utilsMock
 		cmdUtils = cmdUtilsMock
 		blockManagerUtils = blockManagerUtilsMock
 		transactionUtils = transactionUtilsMock
+		pathUtils = pathUtilsMock
 
 		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
@@ -565,7 +568,7 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr)
 		cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.ids, tt.args.revealDataMaps, tt.args.mediansErr)
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
-		utilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+		pathUtilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 		utilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
@@ -962,7 +965,7 @@ func TestMakeBlock(t *testing.T) {
 		epoch       uint32
 	)
 
-	randomValue := razorUtils.GetRogueRandomValue(10000000)
+	randomValue := big.NewInt(1111)
 
 	type args struct {
 		revealedDataMaps     *types.RevealedDataMaps
@@ -1098,7 +1101,7 @@ func TestMakeBlock(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealedDataMaps, tt.args.revealedDataMapsErr)
-			utilsMock.On("GetActiveCollections", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
+			utilsMock.On("GetActiveCollectionIds", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(randomValue)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.MakeBlock(client, blockNumber, epoch, tt.args.rogueData)

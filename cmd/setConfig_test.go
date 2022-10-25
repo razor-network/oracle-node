@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"razor/cmd/mocks"
+	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
@@ -291,11 +292,13 @@ func TestSetConfig(t *testing.T) {
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
 			viperMock := new(mocks.ViperInterface)
+			pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			flagSetUtils = flagSetUtilsMock
 			viperUtils = viperMock
+			pathUtils = pathUtilsMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
@@ -310,7 +313,7 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetStringCertFile", flagSet).Return(tt.args.certFile, tt.args.certFileErr)
 			flagSetUtilsMock.On("GetStringCertKey", flagSet).Return(tt.args.certKey, tt.args.certKeyErr)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
-			utilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
+			pathUtilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)
 
 			utils := &UtilsStruct{}

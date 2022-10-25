@@ -23,7 +23,6 @@ import (
 func TestTransfer(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
-	var transferInput types.TransferInput
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000))
@@ -88,7 +87,9 @@ func TestTransfer(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Transfer(client, config, transferInput)
+			got, err := utils.Transfer(client, config, types.TransferInput{
+				ValueInWei: big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e18)),
+			})
 			if got != tt.want {
 				t.Errorf("Txn hash for transfer function, got = %v, want = %v", got, tt.want)
 			}

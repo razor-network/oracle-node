@@ -75,7 +75,7 @@ func TestGetCollectionList(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			razorUtils = utilsMock
 
-			utilsMock.On("GetCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
+			utilsMock.On("GetAllCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
 			utils := &UtilsStruct{}
 
 			err := utils.GetCollectionList(tt.args.client)

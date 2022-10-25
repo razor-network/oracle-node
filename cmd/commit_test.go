@@ -128,7 +128,7 @@ func TestHandleCommitState(t *testing.T) {
 		seed   []byte
 	)
 
-	rogueValue := razorUtils.GetRogueRandomValue(100000)
+	rogueValue := big.NewInt(1111)
 
 	type args struct {
 		numActiveCollections    uint16
