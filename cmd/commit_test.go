@@ -385,7 +385,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 		seed   []byte
 	)
 
-	rogueValue := razorUtils.GetRogueRandomValue(100000)
+	rogueValue := big.NewInt(1111)
 
 	var table = []struct {
 		numActiveCollections uint16
