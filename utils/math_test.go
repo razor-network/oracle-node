@@ -251,7 +251,8 @@ func TestCheckAmountAndBalance(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fatal = false
-			got := CheckAmountAndBalance(tt.args.amount, tt.args.balance)
+			ut := &UtilsStruct{}
+			got := ut.CheckAmountAndBalance(tt.args.amount, tt.args.balance)
 			if tt.expectedFatal {
 				assert.Equal(t, tt.expectedFatal, fatal)
 			}
@@ -868,7 +869,8 @@ func TestGetRogueRandomValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetRogueRandomValue(tt.args.value)
+			ut := UtilsStruct{}
+			got := ut.GetRogueRandomValue(tt.args.value)
 			if got.Cmp(tt.want) > 0 {
 				t.Errorf("GetRogueRandomValue() = %v, want %v", got, tt.want)
 			}

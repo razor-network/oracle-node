@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/pflag"
 )
 
-//go:generate mockery --name UtilsInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name FlagSetInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name UtilsCmdInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name StakeManagerInterface --output ./mocks/ --case=underscore
@@ -37,7 +36,6 @@ import (
 //go:generate mockery --name AbiInterface --output ./mocks/ --case=underscore
 //go:generate mockery --name OSInterface --output ./mocks/ --case=underscore
 
-var razorUtils UtilsInterface
 var flagSetUtils FlagSetInterface
 var cmdUtils UtilsCmdInterface
 var stakeManagerUtils StakeManagerInterface
@@ -53,68 +51,6 @@ var timeUtils TimeInterface
 var stringUtils StringInterface
 var abiUtils AbiInterface
 var osUtils OSInterface
-
-type UtilsInterface interface {
-	GetConfigFilePath() (string, error)
-	GetEpoch(client *ethclient.Client) (uint32, error)
-	GetOptions() bind.CallOpts
-	CalculateBlockTime(client *ethclient.Client) int64
-	GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts
-	AssignPassword(flagSet *pflag.FlagSet) string
-	ConnectToClient(provider string) *ethclient.Client
-	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
-	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
-	GetRogueRandomValue(value int) *big.Int
-	GetRogueRandomMedianValue() uint32
-	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
-	GetDefaultPath() (string, error)
-	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
-	IsFlagPassed(name string) bool
-	GetAmountInWei(amount *big.Int) *big.Int
-	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
-	GetAmountInDecimal(amountInWei *big.Int) *big.Float
-	GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error)
-	ConvertUintArrayToUint16Array(uintArr []uint) []uint16
-	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
-	CheckEthBalanceIsZero(client *ethclient.Client, address string)
-	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
-	GetLock(client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error)
-	GetStaker(client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error)
-	GetStakedToken(client *ethclient.Client, address common.Address) *bindings.StakedToken
-	GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
-	GetCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
-	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
-	GetStakerId(client *ethclient.Client, address string) (uint32, error)
-	GetNumberOfStakers(client *ethclient.Client) (uint32, error)
-	GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error)
-	GetMaxAltBlocks(client *ethclient.Client) (uint8, error)
-	GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error)
-	GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetActiveCollections(client *ethclient.Client) ([]uint16, error)
-	GetBlockManager(client *ethclient.Client) *bindings.BlockManager
-	GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error)
-	PrivateKeyPrompt() string
-	PasswordPrompt() string
-	GetMaxCommission(client *ethclient.Client) (uint8, error)
-	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
-	GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
-	GetStake(client *ethclient.Client, stakerId uint32) (*big.Int, error)
-	ConvertWeiToEth(data *big.Int) (*big.Float, error)
-	WaitTillNextNSecs(seconds int32)
-	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
-	SecondsToReadableTime(time int) string
-	SaveDataToCommitJsonFile(flePath string, epoch uint32, commitFileData types.CommitData) error
-	ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error)
-	SaveDataToProposeJsonFile(flePath string, proposeFileData types.ProposeFileData) error
-	ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error)
-	SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error
-	ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error)
-	AssignLogFile(flagSet *pflag.FlagSet)
-	GetCommitDataFileName(address string) (string, error)
-	GetProposeDataFileName(address string) (string, error)
-	GetDisputeDataFileName(address string) (string, error)
-	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
-}
 
 type StakeManagerInterface interface {
 	Stake(client *ethclient.Client, txnOpts *bind.TransactOpts, epoch uint32, amount *big.Int) (*Types.Transaction, error)
@@ -365,7 +301,6 @@ type AbiUtils struct{}
 type OSUtils struct{}
 
 func InitializeInterfaces() {
-	razorUtils = Utils{}
 	flagSetUtils = FLagSetUtils{}
 	cmdUtils = &UtilsStruct{}
 	stakeManagerUtils = StakeManagerUtils{}

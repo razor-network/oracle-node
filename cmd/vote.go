@@ -112,7 +112,7 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+	header, err := razorUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
@@ -120,7 +120,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			return nil
 		default:
 			log.Debugf("Header value: %d", header.Number)
-			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+			latestHeader, err := razorUtils.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -170,7 +170,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	stakedAmount := staker.Stake
 
-	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
+	ethBalance, err := razorUtils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
@@ -181,12 +181,12 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Warn("sFuel balance is lower than 0.1 SKL, kindly add more SKL to be safe for executing transactions successfully")
 	}
 
-	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
+	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
 		return
 	}
-	actualBalance, err := razorUtils.ConvertWeiToEth(ethBalance)
+	actualBalance, err := utils.ConvertWeiToEth(ethBalance)
 	if err != nil {
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
@@ -202,14 +202,14 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	if sRZRBalance.Cmp(big.NewInt(0)) == 0 {
 		sRZRInEth = big.NewFloat(0)
 	} else {
-		sRZRInEth, err = razorUtils.ConvertWeiToEth(sRZRBalance)
+		sRZRInEth, err = utils.ConvertWeiToEth(sRZRBalance)
 		if err != nil {
 			log.Error(err)
 			return
 		}
 	}
 
-	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f sFuel Balance: %f", utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f sFuel Balance: %f", utils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
@@ -254,7 +254,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 		lastVerification = epoch
 
-		if utilsInterface.IsFlagPassed("autoClaimBounty") {
+		if razorUtils.IsFlagPassed("autoClaimBounty") {
 			log.Debugf("Automatically claiming bounty")
 			err = cmdUtils.HandleClaimBounty(client, config, account)
 			if err != nil {
@@ -309,7 +309,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return err
 	}
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
@@ -330,7 +330,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 		return nil
 	}
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		return err
 	}
@@ -375,7 +375,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 
 	log.Debug("Saving committed data for recovery")
-	fileName, err := razorUtils.GetCommitDataFileName(account.Address)
+	fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
@@ -391,7 +391,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 //This function initiates the reveal
 func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
@@ -419,7 +419,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	nilCommitData := globalCommitDataStruct.AssignedCollections == nil && globalCommitDataStruct.SeqAllottedCollections == nil && globalCommitDataStruct.Leaves == nil
 
 	if nilCommitData {
-		fileName, err := razorUtils.GetCommitDataFileName(account.Address)
+		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
 			return err
@@ -450,7 +450,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 
 	if globalCommitDataStruct.Epoch == epoch {
-		razorPath, err := razorUtils.GetDefaultPath()
+		razorPath, err := pathUtils.GetDefaultPath()
 		if err != nil {
 			return err
 		}
@@ -490,7 +490,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 //This function initiates the propose
 func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err

@@ -81,7 +81,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 //This function allows the admin to create collction if existing jobs are present
 func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
-	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")

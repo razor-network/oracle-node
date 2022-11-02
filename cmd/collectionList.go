@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 
 //This function provides the list of all collections with their name, power, ID etc.
 func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
-	collections, err := razorUtils.GetCollections(client)
+	collections, err := razorUtils.GetAllCollections(client)
 
 	if err != nil {
 		return err

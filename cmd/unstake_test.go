@@ -16,6 +16,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -124,7 +125,7 @@ func TestUnstake(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
@@ -303,7 +304,7 @@ func TestExecuteUnstake(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
@@ -378,7 +379,7 @@ func TestApproveUnstake(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 

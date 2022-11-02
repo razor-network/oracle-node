@@ -7,8 +7,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
-	"razor/utils"
-	mocks2 "razor/utils/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -82,18 +81,15 @@ func TestGetEpochAndState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 
 			utils := &UtilsStruct{}
 			gotEpoch, gotState, err := utils.GetEpochAndState(client)
@@ -344,7 +340,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 
 			razorUtils = utilsMock
@@ -409,11 +405,11 @@ func TestGetFormattedStateNames(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsPkgMock := new(mocks2.Utils)
+			utilsMock := new(utilsPkgMocks.Utils)
 
-			utils.UtilsInterface = utilsPkgMock
+			razorUtils = utilsMock
 
-			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
+			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
 				t.Errorf("GetFormattedStateNames() = %v, want %v", got, tt.want)
 			}

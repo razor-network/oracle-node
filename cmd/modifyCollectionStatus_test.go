@@ -15,6 +15,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -57,7 +58,7 @@ func TestCheckCurrentStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			assetManageUtilsMock := new(mocks.AssetManagerInterface)
 
 			razorUtils = utilsMock
@@ -177,7 +178,7 @@ func TestModifyAssetStatus(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
 
@@ -342,7 +343,7 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			stringMock := new(mocks.StringInterface)

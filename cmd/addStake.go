@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
-	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
+	minSafeRazor, err := razorUtils.GetMinSafeRazor(client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 
 	stakerId, err := razorUtils.GetStakerId(client, address)

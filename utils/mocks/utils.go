@@ -70,6 +70,20 @@ func (_m *Utils) AssignLogFile(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
+// AssignPassword provides a mock function with given fields: flagSet
+func (_m *Utils) AssignPassword(flagSet *pflag.FlagSet) string {
+	ret := _m.Called(flagSet)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // AssignStakerId provides a mock function with given fields: flagSet, client, address
 func (_m *Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
 	ret := _m.Called(flagSet, client, address)
@@ -138,6 +152,22 @@ func (_m *Utils) CalculateSalt(epoch uint32, medians []*big.Int) [32]byte {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([32]byte)
+		}
+	}
+
+	return r0
+}
+
+// CheckAmountAndBalance provides a mock function with given fields: amountInWei, balance
+func (_m *Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+	ret := _m.Called(amountInWei, balance)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*big.Int, *big.Int) *big.Int); ok {
+		r0 = rf(amountInWei, balance)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
@@ -1323,6 +1353,22 @@ func (_m *Utils) GetRemainingTimeOfCurrentState(client *ethclient.Client, buffer
 	return r0, r1
 }
 
+// GetRogueRandomValue provides a mock function with given fields: value
+func (_m *Utils) GetRogueRandomValue(value int) *big.Int {
+	ret := _m.Called(value)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(int) *big.Int); ok {
+		r0 = rf(value)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	return r0
+}
+
 // GetSaltFromBlockchain provides a mock function with given fields: client
 func (_m *Utils) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
 	ret := _m.Called(client)
@@ -1577,20 +1623,6 @@ func (_m *Utils) GetStateBuffer(client *ethclient.Client) (uint64, error) {
 	return r0, r1
 }
 
-// GetStateName provides a mock function with given fields: stateNumber
-func (_m *Utils) GetStateName(stateNumber int64) string {
-	ret := _m.Called(stateNumber)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(int64) string); ok {
-		r0 = rf(stateNumber)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
 // GetTokenManager provides a mock function with given fields: client
 func (_m *Utils) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 	ret := _m.Called(client)
@@ -1821,6 +1853,34 @@ func (_m *Utils) MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64)
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
+	}
+
+	return r0
+}
+
+// PasswordPrompt provides a mock function with given fields:
+func (_m *Utils) PasswordPrompt() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// PrivateKeyPrompt provides a mock function with given fields:
+func (_m *Utils) PrivateKeyPrompt() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	return r0

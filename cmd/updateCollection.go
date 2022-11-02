@@ -78,7 +78,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 
 //This function allows the admin to update an existing collection
 func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
-	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	_, err := cmdUtils.WaitIfCommitState(client, "update collection")
 	if err != nil {
 		log.Error("Error in fetching state")

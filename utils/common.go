@@ -144,7 +144,7 @@ func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address stri
 	}
 }
 
-func (*UtilsStruct) GetStateName(stateNumber int64) string {
+func GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
 	case 0:

@@ -10,6 +10,7 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -22,7 +23,6 @@ import (
 func TestTransfer(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
-	var transferInput types.TransferInput
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000))
@@ -71,7 +71,7 @@ func TestTransfer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			tokenManangerUtilsMock := new(mocks.TokenManagerInterface)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 
@@ -87,7 +87,9 @@ func TestTransfer(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Transfer(client, config, transferInput)
+			got, err := utils.Transfer(client, config, types.TransferInput{
+				ValueInWei: big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e18)),
+			})
 			if got != tt.want {
 				t.Errorf("Txn hash for transfer function, got = %v, want = %v", got, tt.want)
 			}
@@ -257,7 +259,7 @@ func TestExecuteTransfer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 

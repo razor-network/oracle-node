@@ -17,7 +17,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
-	mocks2 "razor/utils/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -90,7 +90,7 @@ func TestCommit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			transactionUtilsMock := new(mocks.TransactionInterface)
 			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
 
@@ -128,7 +128,7 @@ func TestHandleCommitState(t *testing.T) {
 		seed   []byte
 	)
 
-	rogueValue := utils.GetRogueRandomValue(100000)
+	rogueValue := big.NewInt(1111)
 
 	type args struct {
 		numActiveCollections    uint16
@@ -227,16 +227,14 @@ func TestHandleCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsPkgMock := new(mocks2.Utils)
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 
-			utils.UtilsInterface = utilsPkgMock
 			razorUtils = utilsMock
 
-			utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
-			utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
-			utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
-			utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
+			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
+			utilsMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
+			utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
@@ -349,18 +347,18 @@ func TestGetSalt(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsPkgMock := new(mocks2.Utils)
-			utilsVoteManagerMock := new(mocks2.VoteManagerUtils)
+			utilsMock := new(utilsPkgMocks.Utils)
+			utilsVoteManagerMock := new(utilsPkgMocks.VoteManagerUtils)
 
-			utils.UtilsInterface = utilsPkgMock
+			razorUtils = utilsMock
 			utils.VoteManagerInterface = utilsVoteManagerMock
 
-			utilsPkgMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
-			utilsPkgMock.On("GetBlockIndexToBeConfirmed", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
+			utilsMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
+			utilsMock.On("GetBlockIndexToBeConfirmed", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
 			utilsVoteManagerMock.On("GetSaltFromBlockchain", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.saltFromBlockChain, tt.args.saltFromBlockChainErr)
-			utilsPkgMock.On("GetSortedProposedBlockId", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
-			utilsPkgMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			utilsPkgMock.On("CalculateSalt", mock.Anything, mock.Anything).Return(tt.args.salt)
+			utilsMock.On("GetSortedProposedBlockId", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
+			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
+			utilsMock.On("CalculateSalt", mock.Anything, mock.Anything).Return(tt.args.salt)
 
 			ut := &UtilsStruct{}
 			got, err := ut.GetSalt(client, tt.args.epoch)
@@ -387,7 +385,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 		seed   []byte
 	)
 
-	rogueValue := utils.GetRogueRandomValue(100000)
+	rogueValue := big.NewInt(1111)
 
 	var table = []struct {
 		numActiveCollections uint16
@@ -400,16 +398,14 @@ func BenchmarkHandleCommitState(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Active_Collections%d", v.numActiveCollections), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				utilsPkgMock := new(mocks2.Utils)
-				utilsMock := new(mocks.UtilsInterface)
+				utilsMock := new(utilsPkgMocks.Utils)
 
-				utils.UtilsInterface = utilsPkgMock
 				razorUtils = utilsMock
 
-				utilsPkgMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
-				utilsPkgMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
-				utilsPkgMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(uint16(1), nil)
-				utilsPkgMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
+				utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
+				utilsMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
+				utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(uint16(1), nil)
+				utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 				ut := &UtilsStruct{}

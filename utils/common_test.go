@@ -579,13 +579,7 @@ func TestGetStateName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-			if got := utils.GetStateName(tt.args.stateNumber); got != tt.want {
+			if got := GetStateName(tt.args.stateNumber); got != tt.want {
 				t.Errorf("GetStateName() = %v, want %v", got, tt.want)
 			}
 		})

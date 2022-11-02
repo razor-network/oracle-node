@@ -108,7 +108,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 
 //This function indexes the reveal events of current epoch
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
-	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
+	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		return nil, errors.New("Not able to Fetch Block: " + err.Error())
 	}
@@ -119,7 +119,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			common.HexToAddress(core.VoteManagerAddress),
 		},
 	}
-	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	logs, err := razorUtils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return nil, err
 	}

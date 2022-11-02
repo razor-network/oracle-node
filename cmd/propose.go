@@ -163,7 +163,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 			})
 
 			log.Debug("Saving proposed data for recovery")
-			fileName, err := razorUtils.GetProposeDataFileName(account.Address)
+			fileName, err := pathUtils.GetProposeDataFileName(account.Address)
 			if err != nil {
 				log.Error("Error in getting file name to save median data: ", err)
 				return err
@@ -197,7 +197,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 		return nil, 0, err
 	}
 
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -235,7 +235,7 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 		return -1
 	}
 	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return -1
 	}
@@ -332,7 +332,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		return nil, nil, nil, err
 	}
 
-	activeCollections, err := razorUtils.GetActiveCollections(client)
+	activeCollections, err := razorUtils.GetActiveCollectionIds(client)
 	if err != nil {
 		return nil, nil, nil, err
 	}

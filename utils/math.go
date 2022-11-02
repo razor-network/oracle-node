@@ -65,7 +65,7 @@ func AllZero(bytesValue [32]byte) bool {
 	return true
 }
 
-func CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
+func (*UtilsStruct) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int {
 	if amountInWei.Cmp(balance) > 0 {
 		log.Fatal("Not enough razor balance")
 	}
@@ -154,7 +154,7 @@ func ConvertSRZRToRZR(sAmount *big.Int, currentStake *big.Int, totalSupply *big.
 	return big.NewInt(1).Div(big.NewInt(1).Mul(sAmount, currentStake), totalSupply)
 }
 
-func GetRogueRandomValue(value int) *big.Int {
+func (*UtilsStruct) GetRogueRandomValue(value int) *big.Int {
 	if value <= 0 {
 		return big.NewInt(0)
 	}

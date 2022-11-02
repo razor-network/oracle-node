@@ -166,8 +166,12 @@ type Utils interface {
 	SecondsToReadableTime(input int) string
 	AssignLogFile(flagSet *pflag.FlagSet)
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
-	GetStateName(stateNumber int64) string
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
+	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
+	PasswordPrompt() string
+	AssignPassword(flagSet *pflag.FlagSet) string
+	PrivateKeyPrompt() string
+	GetRogueRandomValue(value int) *big.Int
 }
 
 type EthClientUtils interface {

@@ -6,11 +6,11 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	razorAccounts "razor/accounts"
+	pathPkgMocks "razor/path/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 
-	//"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	Mocks "razor/accounts/mocks"
-	//razorAccounts "razor/accounts"
 	"razor/cmd/mocks"
 	"testing"
 )
@@ -61,13 +61,15 @@ func TestCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			accountUtilsMock := new(Mocks.AccountInterface)
+			pathUtilsMock := new(pathPkgMocks.PathInterface)
 
 			razorUtils = utilsMock
 			razorAccounts.AccountUtilsInterface = accountUtilsMock
+			pathUtils = pathUtilsMock
 
-			utilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			pathUtilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			accountUtilsMock.On("CreateAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(accounts.Account{
 				Address: tt.args.account.Address,
 				URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
@@ -137,7 +139,7 @@ func TestExecuteCreate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock

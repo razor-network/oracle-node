@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -40,7 +41,7 @@ func TestExecuteContractAddresses(t *testing.T) {
 	log.ExitFunc = func(int) { fatal = true }
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 
 			razorUtils = utilsMock

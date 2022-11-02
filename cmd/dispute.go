@@ -154,7 +154,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				//Here 0th key in map represents collectionId 1.
 
 				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
-				leafId, err := utils.UtilsInterface.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
+				leafId, err := razorUtils.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
 				if err != nil {
 					log.Error("Error in leaf id: ", err)
 					continue
@@ -181,7 +181,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 //This function returns the local median data
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	if (globalProposedDataStruct.MediansData == nil && !rogueData.IsRogue) || epoch != globalProposedDataStruct.Epoch {
-		fileName, err := razorUtils.GetProposeDataFileName(account.Address)
+		fileName, err := pathUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
 			goto CalculateMedian
@@ -263,7 +263,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := razorUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -281,7 +281,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := utilsInterface.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := razorUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -433,7 +433,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 //This function returns the collection Id position in block
 func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ids := proposedBlock.Ids
-	idToBeDisputed, err := utils.UtilsInterface.GetCollectionIdFromLeafId(client, leafId)
+	idToBeDisputed, err := razorUtils.GetCollectionIdFromLeafId(client, leafId)
 	if err != nil {
 		log.Error("Error in fetching collection id from leaf id")
 		return nil
@@ -448,14 +448,14 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 
 //This function saves the bountyId in disputeData file and return the error if there is any
 func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Account) error {
-	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
+	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
 	}
 
 	var latestBountyId uint32
 
-	latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+	latestHeader, err := razorUtils.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return err
@@ -505,7 +505,7 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 
 //This function returns the bountyId from events
 func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
-	fromBlock, err := utils.UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
+	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		log.Error(err)
 		return 0, err
@@ -517,7 +517,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 			common.HexToAddress(core.StakeManagerAddress),
 		},
 	}
-	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
+	logs, err := razorUtils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return 0, err
 	}
