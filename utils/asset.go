@@ -277,7 +277,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		start := time.Now()
 		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
 		if apiErr != nil {
-			log.Error("Error in fetching data from API: ", apiErr)
+			log.Errorf("Error in fetching data from API %s: %s", job.Url, apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
