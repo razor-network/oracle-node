@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"math/big"
@@ -53,11 +54,36 @@ func InitializeLogger(fileName string) {
 			standardLogger.Fatal("Error in fetching log file path: ", err)
 		}
 
+		logFileMaxSize := core.DefaultLogFileMaxSize
+		logFileMaxBackups := core.DefaultLogFileMaxBackups
+		logFileMaxAge := core.DefaultLogFileMaxAge
+
+		if viper.IsSet("logFileMaxSize") {
+			logFileMaxSizeFromConfig := viper.GetInt("logFileMaxSize")
+			if logFileMaxSizeFromConfig != 0 {
+				logFileMaxSize = logFileMaxSizeFromConfig
+			}
+		}
+
+		if viper.IsSet("logFileMaxBackups") {
+			logFileMaxBackupsFromConfig := viper.GetInt("logFileMaxBackups")
+			if logFileMaxBackupsFromConfig != 0 {
+				logFileMaxBackups = logFileMaxBackupsFromConfig
+			}
+		}
+
+		if viper.IsSet("logFileMaxAge") {
+			logFileMaxAgeFromConfig := viper.GetInt("logFileMaxAge")
+			if logFileMaxAgeFromConfig != 0 {
+				logFileMaxAge = logFileMaxAgeFromConfig
+			}
+		}
+
 		lumberJackLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
-			MaxSize:    5,
-			MaxBackups: 10,
-			MaxAge:     30,
+			MaxSize:    logFileMaxSize,
+			MaxBackups: logFileMaxBackups,
+			MaxAge:     logFileMaxAge,
 		}
 
 		out := os.Stderr
