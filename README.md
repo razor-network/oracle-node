@@ -664,12 +664,12 @@ docker
 docker exec -it razor-go razorcollectionList
 ```
 
-### Prerequisites
+### Expose Metrics
+Expose Prometheus-based metrics for monitoring
 
-- You must have Docker and Docker Compose installed.
+Example:
 
 razor cli
-
 #### Without TLS
 
 ```
