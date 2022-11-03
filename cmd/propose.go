@@ -170,7 +170,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 			}
 			err = razorUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
 			if err != nil {
-				log.Errorf("Error in saving data to file %s: %t", fileName, err)
+				log.Errorf("Error in saving data to file %s: %v", fileName, err)
 				return err
 			}
 			log.Debug("Data saved!")

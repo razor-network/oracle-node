@@ -2,10 +2,10 @@
 package cmd
 
 import (
+	"razor/core"
 	"razor/metrics"
 	"razor/utils"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -92,7 +92,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 
 		err = metrics.Run(port, certFile, certKey)
 		if err != nil {
-			logrus.Errorf("failed to start metrics http server: %s", err)
+			log.Error("Failed to start metrics http server: ", err)
 		}
 	}
 	if provider != "" {
@@ -120,14 +120,14 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("rpcTimeout", rpcTimeout)
 	}
 	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 {
-		viper.Set("provider", "http://127.0.0.1:8545")
-		viper.Set("gasmultiplier", 1.0)
-		viper.Set("buffer", 20)
-		viper.Set("wait", 3)
-		viper.Set("gasprice", 1)
-		viper.Set("logLevel", "")
-		viper.Set("gasLimit", 2)
-		viper.Set("rpcTimeout", 10)
+		viper.Set("provider", core.DefaultProvider)
+		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
+		viper.Set("buffer", core.DefaultBufferPercent)
+		viper.Set("wait", core.DefaultWaitTime)
+		viper.Set("gasprice", core.DefaultGasPrice)
+		viper.Set("logLevel", core.DefaultLogLevel)
+		viper.Set("gasLimit", core.DefaultGasLimit)
+		viper.Set("rpcTimeout", core.DefaultRPCTimeout)
 		//viper.Set("exposeMetricsPort", "")
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
