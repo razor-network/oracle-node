@@ -104,6 +104,8 @@ func (logger *StandardLogger) Info(args ...interface{}) {
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
 	SetEpochAndBlockNumber(Client)
+
+	// Checking if there was a logger timeout. If it was ,we add a field Error in logs stating there was a logger timeout and change the logType to Error.
 	if !loggerTimeoutBool {
 		var logFields = logrus.Fields{
 			"address":     Address,
@@ -156,6 +158,8 @@ func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 	SetEpochAndBlockNumber(Client)
+
+	// Checking if there was a logger timeout. If it was ,we add a field Error in logs stating there was a logger timeout and change the logType to Error.
 	if !loggerTimeoutBool {
 		var logFields = logrus.Fields{
 			"address":     Address,
@@ -203,12 +207,14 @@ func SetEpochAndBlockNumber(client *ethclient.Client) {
 			epoch := latestHeader.Time / core.EpochLength
 			Epoch = uint32(epoch)
 		}
+		// Setting loggerTimeoutBool to false everytime when there is no logger timeout
 		loggerTimeoutBool = false
 		gotBlockNumber <- true
 	}()
 	for {
 		select {
 		case <-ctx.Done():
+			// Setting loggerTimeoutBool to true when there is a logger timeout
 			loggerTimeoutBool = true
 			logrus.Error("Logger Timeout! Error in fetching block number, Kindly Check your connection")
 			return
