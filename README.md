@@ -696,7 +696,7 @@ docker exec -it razor-go razor setConfig --exposeMetrics 2112
 docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
-### Configuration
+#### Configuration
 
 Clone repo and setup monitoring and alerting using Prometheus/Grafana
 
@@ -720,7 +720,7 @@ cd monitoring
             staker: "<staker-name>"
         ```
     2. Restart vmagent service `docker-compose restart vmagent`
-### Start monitoring stack
+#### Start monitoring stack
 -  You can spin all agents at once via 
         
     ```
@@ -739,7 +739,7 @@ cd monitoring
     
 >**_NOTE:_** Configure firewall for port `3000` on your host to access grafana.
 
-### Troubleshoot Alerting
+#### Troubleshoot Alerting
 
 1. In `docker-compose.yml` uncomment ports for `alertmanager` and `vmalert`.
 2. Configure firewall to allow access to ports `8880` and `9093`.
