@@ -185,11 +185,11 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 		}
 		proposedData, err := razorUtils.ReadFromProposeJsonFile(fileName)
 		if err != nil {
-			log.Errorf("Error in getting propose data from file %s: %t", fileName, err)
+			log.Errorf("Error in getting propose data from file %s: %v", fileName, err)
 			goto CalculateMedian
 		}
 		if proposedData.Epoch != epoch {
-			log.Errorf("File %s doesn't contain latest median data: %t", fileName, err)
+			log.Errorf("File %s doesn't contain latest median data: %v", fileName, err)
 			goto CalculateMedian
 		}
 		updateGlobalProposedDataStruct(proposedData)

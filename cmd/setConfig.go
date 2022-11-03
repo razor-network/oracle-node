@@ -6,7 +6,6 @@ import (
 	"razor/metrics"
 	"razor/utils"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -93,7 +92,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 
 		err = metrics.Run(port, certFile, certKey)
 		if err != nil {
-			logrus.Errorf("failed to start metrics http server: %s", err)
+			log.Error("Failed to start metrics http server: ", err)
 		}
 	}
 	if provider != "" {

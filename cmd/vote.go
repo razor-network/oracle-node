@@ -81,7 +81,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	cmdUtils.HandleExit()
 
 	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
-		log.Errorf("%s\n", err)
+		log.Errorf("%v\n", err)
 		osUtils.Exit(1)
 	}
 }
@@ -172,7 +172,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
-		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
+		log.Errorf("Error in fetching balance of the account: %s\n%v", account.Address, err)
 		return
 	}
 	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
@@ -414,11 +414,11 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		log.Debugf("Getting committed data from file %s", fileName)
 		committedDataFromFile, err := razorUtils.ReadFromCommitJsonFile(fileName)
 		if err != nil {
-			log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
+			log.Errorf("Error in getting committed data from file %s: %v", fileName, err)
 			return err
 		}
 		if committedDataFromFile.Epoch != epoch {
-			log.Errorf("File %s doesn't contain latest committed data: %t", fileName, err)
+			log.Errorf("File %s doesn't contain latest committed data", fileName)
 			return errors.New("commit data file doesn't contain latest committed data")
 		}
 		updateGlobalCommitDataStruct(types.CommitData{

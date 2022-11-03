@@ -192,7 +192,7 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
-		log.Errorf("Error in fetching block : %s", err)
+		log.Error("Error in fetching block: ", err)
 		return nil, err
 	}
 	current_epoch := block.Time / uint64(core.EpochLength)
@@ -200,7 +200,7 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
-		log.Errorf("Err in fetching Previous block : %s", err)
+		log.Error("Err in fetching Previous block: ", err)
 		return nil, err
 	}
 	previousBlockActualTimestamp := previousBlock.Time

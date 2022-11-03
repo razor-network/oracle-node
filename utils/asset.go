@@ -195,7 +195,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		if !Contains(overriddenJobIds, id) {
 			job, err := UtilsInterface.GetActiveJob(client, id)
 			if err != nil {
-				log.Errorf("Error in fetching job %d: %s", id, err)
+				log.Errorf("Error in fetching job %d: %v", id, err)
 				continue
 			}
 			jobs = append(jobs, job)
@@ -277,7 +277,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		start := time.Now()
 		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
 		if apiErr != nil {
-			log.Errorf("Error in fetching data from API %s: %s", job.Url, apiErr)
+			log.Errorf("Error in fetching data from API %s: %v", job.Url, apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
