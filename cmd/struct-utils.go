@@ -535,9 +535,24 @@ func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
 }
 
-//This function returns the gas limit of root in Float32
+//This function returns the rpcTimeout of root in Int64
 func (flagSetUtils FLagSetUtils) GetRootInt64RPCTimeout() (int64, error) {
 	return rootCmd.PersistentFlags().GetInt64("rpcTimeout")
+}
+
+//This function returns the max size of log file for root flag in Int
+func (flagSetUtils FLagSetUtils) GetRootIntLogFileMaxSize() (int, error) {
+	return rootCmd.PersistentFlags().GetInt("logFileMaxSize")
+}
+
+//This function returns the max number of backups for logFile for root flag in Int
+func (flagSetUtils FLagSetUtils) GetRootIntLogFileMaxBackups() (int, error) {
+	return rootCmd.PersistentFlags().GetInt("logFileMaxBackups")
+}
+
+//This function returns the max age of logFle for root file in Int
+func (flagSetUtils FLagSetUtils) GetRootIntLogFileMaxAge() (int, error) {
+	return rootCmd.PersistentFlags().GetInt("logFileMaxAge")
 }
 
 //This function returns the from in string
@@ -675,6 +690,21 @@ func (flagSetUtils FLagSetUtils) GetStringCertFile(flagSet *pflag.FlagSet) (stri
 //This function is used to check if CertFile  is passed or not
 func (flagSetUtils FLagSetUtils) GetStringCertKey(flagSet *pflag.FlagSet) (string, error) {
 	return flagSet.GetString("certKey")
+}
+
+//This function returns the max size of log file in Int
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxSize")
+}
+
+//This function returns the max number of backups for logFile in Int
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxBackups")
+}
+
+//This function returns the max nage for logFle in Int
+func (flagSetUtils FLagSetUtils) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	return flagSet.GetInt("logFileMaxAge")
 }
 
 //This function returns the accounts

@@ -19,6 +19,9 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
 		RPCTimeout:         0,
+		LogFileMaxSize:     0,
+		LogFileMaxBackups:  0,
+		LogFileMaxAge:      0,
 	}
 
 	provider, err := cmdUtils.GetProvider()
@@ -53,6 +56,18 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	logFileMaxSize, err := cmdUtils.GetLogFileMaxSize()
+	if err != nil {
+		return config, err
+	}
+	logFileMaxBackups, err := cmdUtils.GetLogFileMaxBackups()
+	if err != nil {
+		return config, err
+	}
+	logFileMaxAge, err := cmdUtils.GetLogFileMaxAge()
+	if err != nil {
+		return config, err
+	}
 	config.Provider = provider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
@@ -62,6 +77,9 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.GasLimitMultiplier = gasLimit
 	config.RPCTimeout = rpcTimeout
 	utils.RPCTimeout = rpcTimeout
+	config.LogFileMaxSize = logFileMaxSize
+	config.LogFileMaxBackups = logFileMaxBackups
+	config.LogFileMaxAge = logFileMaxAge
 
 	return config, nil
 }
@@ -204,4 +222,52 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 		}
 	}
 	return rpcTimeout, nil
+}
+
+func (*UtilsStruct) GetLogFileMaxSize() (int, error) {
+	logFileMaxSize, err := flagSetUtils.GetRootIntLogFileMaxSize()
+	if err != nil {
+		return core.DefaultLogFileMaxSize, err
+	}
+	if logFileMaxSize == 0 {
+		if viper.IsSet("logFileMaxSize") {
+			logFileMaxSize = viper.GetInt("logFileMaxSize")
+		} else {
+			logFileMaxSize = core.DefaultLogFileMaxSize
+			log.Debug("logFileMaxSize is not set, taking its default value ", logFileMaxSize)
+		}
+	}
+	return logFileMaxSize, nil
+}
+
+func (*UtilsStruct) GetLogFileMaxBackups() (int, error) {
+	logFileMaxBackups, err := flagSetUtils.GetRootIntLogFileMaxBackups()
+	if err != nil {
+		return core.DefaultLogFileMaxBackups, err
+	}
+	if logFileMaxBackups == 0 {
+		if viper.IsSet("logFileMaxBackups") {
+			logFileMaxBackups = viper.GetInt("logFileMaxBackups")
+		} else {
+			logFileMaxBackups = core.DefaultLogFileMaxBackups
+			log.Debug("logFileMaxBackups is not set, taking its default value ", logFileMaxBackups)
+		}
+	}
+	return logFileMaxBackups, nil
+}
+
+func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
+	logFileMaxAge, err := flagSetUtils.GetRootIntLogFileMaxAge()
+	if err != nil {
+		return core.DefaultLogFileMaxAge, err
+	}
+	if logFileMaxAge == 0 {
+		if viper.IsSet("logFileMaxAge") {
+			logFileMaxAge = viper.GetInt("logFileMaxAge")
+		} else {
+			logFileMaxAge = core.DefaultLogFileMaxAge
+			log.Debug("logFileMaxAge is not set, taking its default value ", logFileMaxAge)
+		}
+	}
+	return logFileMaxAge, nil
 }
