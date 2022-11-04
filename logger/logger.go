@@ -8,12 +8,12 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"math/big"
 	"os"
 	"razor/core"
+	"razor/core/types"
 	"razor/path"
 	"runtime"
 )
@@ -33,7 +33,7 @@ var Client *ethclient.Client
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
 	path.OSUtilsInterface = &path.OSUtils{}
-	InitializeLogger(FileName)
+	InitializeLogger(FileName, types.Configurations{})
 
 	osInfo := goInfo.GetInfo()
 	standardLogger.WithFields(logrus.Fields{
@@ -47,36 +47,27 @@ func init() {
 
 }
 
-func InitializeLogger(fileName string) {
+func InitializeLogger(fileName string, config types.Configurations) {
 	if fileName != "" {
 		logFilePath, err := path.PathUtilsInterface.GetLogFilePath(fileName)
 		if err != nil {
 			standardLogger.Fatal("Error in fetching log file path: ", err)
 		}
 
-		logFileMaxSize := core.DefaultLogFileMaxSize
-		logFileMaxBackups := core.DefaultLogFileMaxBackups
-		logFileMaxAge := core.DefaultLogFileMaxAge
+		logFileMaxSize := config.LogFileMaxSize
+		logFileMaxBackups := config.LogFileMaxBackups
+		logFileMaxAge := config.LogFileMaxAge
 
-		if viper.IsSet("logFileMaxSize") {
-			logFileMaxSizeFromConfig := viper.GetInt("logFileMaxSize")
-			if logFileMaxSizeFromConfig != 0 {
-				logFileMaxSize = logFileMaxSizeFromConfig
-			}
+		if logFileMaxSize == 0 {
+			logFileMaxSize = core.DefaultLogFileMaxSize
 		}
 
-		if viper.IsSet("logFileMaxBackups") {
-			logFileMaxBackupsFromConfig := viper.GetInt("logFileMaxBackups")
-			if logFileMaxBackupsFromConfig != 0 {
-				logFileMaxBackups = logFileMaxBackupsFromConfig
-			}
+		if logFileMaxBackups == 0 {
+			logFileMaxBackups = core.DefaultLogFileMaxBackups
 		}
 
-		if viper.IsSet("logFileMaxAge") {
-			logFileMaxAgeFromConfig := viper.GetInt("logFileMaxAge")
-			if logFileMaxAgeFromConfig != 0 {
-				logFileMaxAge = logFileMaxAgeFromConfig
-			}
+		if logFileMaxAge == 0 {
+			logFileMaxAge = core.DefaultLogFileMaxAge
 		}
 
 		lumberJackLogger := &lumberjack.Logger{

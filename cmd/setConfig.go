@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"razor/core"
+	"razor/core/types"
 	"razor/metrics"
 	"razor/utils"
 
@@ -29,7 +30,7 @@ Example:
 
 //This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	razorUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet, types.Configurations{})
 	provider, err := flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err
@@ -141,7 +142,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if logFileMaxAge != 0 {
 		viper.Set("logFileMaxAge", logFileMaxAge)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 {
+	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", "http://127.0.0.1:8545")
 		viper.Set("gasmultiplier", 1.0)
 		viper.Set("buffer", 20)

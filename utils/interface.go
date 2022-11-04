@@ -164,7 +164,7 @@ type Utils interface {
 	GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error)
 	ConvertToNumber(num interface{}) (*big.Float, error)
 	SecondsToReadableTime(input int) string
-	AssignLogFile(flagSet *pflag.FlagSet)
+	AssignLogFile(flagSet *pflag.FlagSet, config types.Configurations)
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int

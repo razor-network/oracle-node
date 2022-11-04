@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"path/filepath"
+	"razor/core/types"
 	"razor/utils"
 )
 
@@ -25,7 +26,7 @@ func initialiseListAccounts(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the ListAccounts function
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet, types.Configurations{})
 	allAccounts, err := cmdUtils.ListAccounts()
 	utils.CheckError("ListAccounts error: ", err)
 	log.Info("The available accounts are: ")
