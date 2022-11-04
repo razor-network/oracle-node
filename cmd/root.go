@@ -22,6 +22,9 @@ var (
 	GasLimitMultiplier float32
 	LogFile            string
 	RPCTimeout         int64
+	LogFileMaxSize     int
+	LogFileMaxBackups  int
+	LogFileMaxAge      int
 )
 
 var log = logger.NewLogger()
@@ -63,6 +66,9 @@ func init() {
 	rootCmd.PersistentFlags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
 	rootCmd.PersistentFlags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 	rootCmd.PersistentFlags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
+	rootCmd.PersistentFlags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "max size of log file MB")
+	rootCmd.PersistentFlags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "max number of old log files to retain")
+	rootCmd.PersistentFlags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "max number of days to retain old log files")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -111,4 +117,10 @@ func setLogLevel() {
 	log.Debugf("Log Level: %s", config.LogLevel)
 	log.Debugf("Gas Limit: %.2f", config.GasLimitMultiplier)
 	log.Debugf("RPC Timeout: %d", config.RPCTimeout)
+
+	if razorUtils.IsFlagPassed("logFile") {
+		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
+		log.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)
+		log.Debugf("Log File Max Age (max number of days to retain old log files): %d", config.LogFileMaxAge)
+	}
 }

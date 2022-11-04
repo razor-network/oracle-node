@@ -749,6 +749,69 @@ func (_m *UtilsCmdInterface) GetLocalMediansData(client *ethclient.Client, accou
 	return r0, r1
 }
 
+// GetLogFileMaxAge provides a mock function with given fields:
+func (_m *UtilsCmdInterface) GetLogFileMaxAge() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLogFileMaxBackups provides a mock function with given fields:
+func (_m *UtilsCmdInterface) GetLogFileMaxBackups() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLogFileMaxSize provides a mock function with given fields:
+func (_m *UtilsCmdInterface) GetLogFileMaxSize() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetLogLevel provides a mock function with given fields:
 func (_m *UtilsCmdInterface) GetLogLevel() (string, error) {
 	ret := _m.Called()

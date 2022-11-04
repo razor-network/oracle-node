@@ -24,6 +24,12 @@ var DefaultGasLimit = 2
 var DefaultRPCTimeout = 10
 var DefaultLogLevel = ""
 
+//Following are the default logFile parameters in config
+
+var DefaultLogFileMaxSize = 5
+var DefaultLogFileMaxBackups = 10
+var DefaultLogFileMaxAge = 30
+
 //DisputeGasMultiplier is a constant gasLimitMultiplier to increase gas Limit for function `disputeCollectionIdShouldBeAbsent` and `disputeCollectionIdShouldBePresent`
 var DisputeGasMultiplier float32 = 5.5
 

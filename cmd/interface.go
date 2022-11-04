@@ -127,6 +127,9 @@ type FlagSetInterface interface {
 	GetRootStringLogLevel() (string, error)
 	GetRootFloat32GasLimit() (float32, error)
 	GetRootInt64RPCTimeout() (int64, error)
+	GetRootIntLogFileMaxSize() (int, error)
+	GetRootIntLogFileMaxBackups() (int, error)
+	GetRootIntLogFileMaxAge() (int, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
@@ -152,6 +155,9 @@ type FlagSetInterface interface {
 	GetStringExposeMetrics(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertFile(flagSet *pflag.FlagSet) (string, error)
 	GetStringCertKey(flagSet *pflag.FlagSet) (string, error)
+	GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error)
+	GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error)
 }
 
 type UtilsCmdInterface interface {
@@ -164,6 +170,9 @@ type UtilsCmdInterface interface {
 	GetGasLimit() (float32, error)
 	GetBufferPercent() (int32, error)
 	GetRPCTimeout() (int64, error)
+	GetLogFileMaxSize() (int, error)
+	GetLogFileMaxBackups() (int, error)
+	GetLogFileMaxAge() (int, error)
 	GetConfigData() (types.Configurations, error)
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)

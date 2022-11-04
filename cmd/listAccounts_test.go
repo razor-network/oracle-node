@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
+	"razor/core/types"
 	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
@@ -139,8 +140,9 @@ func TestExecuteListAccounts(t *testing.T) {
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("ListAccounts").Return(tt.args.allAccounts, tt.args.allAccountsErr)
+			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

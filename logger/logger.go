@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"os"
 	"razor/core"
+	"razor/core/types"
 	"razor/path"
 	"runtime"
 	"time"
@@ -34,7 +35,7 @@ var loggerTimeoutBool bool
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
 	path.OSUtilsInterface = &path.OSUtils{}
-	InitializeLogger(FileName)
+	InitializeLogger(FileName, types.Configurations{})
 
 	osInfo := goInfo.GetInfo()
 	standardLogger.WithFields(logrus.Fields{
@@ -48,7 +49,7 @@ func init() {
 
 }
 
-func InitializeLogger(fileName string) {
+func InitializeLogger(fileName string, config types.Configurations) {
 	if fileName != "" {
 		logFilePath, err := path.PathUtilsInterface.GetLogFilePath(fileName)
 		if err != nil {
@@ -57,10 +58,13 @@ func InitializeLogger(fileName string) {
 
 		lumberJackLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
-			MaxSize:    5,
-			MaxBackups: 10,
-			MaxAge:     30,
+			MaxSize:    config.LogFileMaxSize,
+			MaxBackups: config.LogFileMaxBackups,
+			MaxAge:     config.LogFileMaxAge,
 		}
+		fmt.Println(config.LogFileMaxSize)
+		fmt.Println(config.LogFileMaxBackups)
+		fmt.Println(config.LogFileMaxAge)
 
 		out := os.Stderr
 		mw := io.MultiWriter(out, lumberJackLogger)

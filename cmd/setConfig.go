@@ -2,6 +2,8 @@
 package cmd
 
 import (
+	"razor/core"
+	"razor/core/types"
 	"razor/metrics"
 	"razor/utils"
 
@@ -28,7 +30,7 @@ Example:
 
 //This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	razorUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet, types.Configurations{})
 	provider, err := flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err
@@ -60,6 +62,18 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	rpcTimeout, rpcTimeoutErr := flagSetUtils.GetInt64RPCTimeout(flagSet)
 	if rpcTimeoutErr != nil {
 		return rpcTimeoutErr
+	}
+	logFileMaxSize, err := flagSetUtils.GetIntLogFileMaxSize(flagSet)
+	if err != nil {
+		return err
+	}
+	logFileMaxBackups, err := flagSetUtils.GetIntLogFileMaxBackups(flagSet)
+	if err != nil {
+		return err
+	}
+	logFileMaxAge, err := flagSetUtils.GetIntLogFileMaxAge(flagSet)
+	if err != nil {
+		return err
 	}
 
 	path, pathErr := pathUtils.GetConfigFilePath()
@@ -119,7 +133,16 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if rpcTimeout != 0 {
 		viper.Set("rpcTimeout", rpcTimeout)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 {
+	if logFileMaxSize != 0 {
+		viper.Set("logFileMaxSize", logFileMaxSize)
+	}
+	if logFileMaxBackups != 0 {
+		viper.Set("logFileMaxBackups", logFileMaxBackups)
+	}
+	if logFileMaxAge != 0 {
+		viper.Set("logFileMaxAge", logFileMaxAge)
+	}
+	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", "http://127.0.0.1:8545")
 		viper.Set("gasmultiplier", 1.0)
 		viper.Set("buffer", 20)
@@ -129,6 +152,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasLimit", 2)
 		viper.Set("rpcTimeout", 10)
 		//viper.Set("exposeMetricsPort", "")
+		viper.Set("logFileMaxSize", core.DefaultLogFileMaxSize)
+		viper.Set("logFileMaxBackups", core.DefaultLogFileMaxBackups)
+		viper.Set("logFileMaxAge", core.DefaultLogFileMaxAge)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 
@@ -155,6 +181,9 @@ func init() {
 		ExposeMetrics      string
 		CertFile           string
 		CertKey            string
+		LogFileMaxSize     int
+		LogFileMaxBackups  int
+		LogFileMaxAge      int
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
@@ -167,5 +196,8 @@ func init() {
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
 	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")
+	setConfig.Flags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "max size of log file in MB")
+	setConfig.Flags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "max number of old log files to retain")
+	setConfig.Flags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "max number of days to retain old log files")
 
 }
