@@ -65,9 +65,9 @@ func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, colle
 	return r0, r1
 }
 
-// AssignLogFile provides a mock function with given fields: flagSet
-func (_m *Utils) AssignLogFile(flagSet *pflag.FlagSet) {
-	_m.Called(flagSet)
+// AssignLogFile provides a mock function with given fields: flagSet, config
+func (_m *Utils) AssignLogFile(flagSet *pflag.FlagSet, config types.Configurations) {
+	_m.Called(flagSet, config)
 }
 
 // AssignPassword provides a mock function with given fields: flagSet

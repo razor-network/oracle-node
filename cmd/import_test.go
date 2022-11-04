@@ -234,7 +234,7 @@ func TestExecuteImport(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 			razorUtils = utilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
 
 			utils := &UtilsStruct{}

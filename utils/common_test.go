@@ -939,7 +939,7 @@ func TestAssignLogFile(t *testing.T) {
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			flagSetMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
 
-			utils.AssignLogFile(flagSet)
+			utils.AssignLogFile(flagSet, Types.Configurations{})
 			if fatal != tt.expectedFatal {
 				t.Error("The AssignLogFile function didn't execute as expected")
 			}

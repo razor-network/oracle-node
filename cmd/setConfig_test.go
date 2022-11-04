@@ -42,6 +42,12 @@ func TestSetConfig(t *testing.T) {
 		certFileErr           error
 		certKey               string
 		certKeyErr            error
+		logFileMaxSize        int
+		logFileMaxSizeErr     error
+		logFileMaxBackups     int
+		logFileMaxBackupsErr  error
+		logFileMaxAge         int
+		logFileMaxAgeErr      error
 	}
 	tests := []struct {
 		name    string
@@ -62,6 +68,9 @@ func TestSetConfig(t *testing.T) {
 				gasLimitMultiplier:    10,
 				gasLimitMultiplierErr: nil,
 				rpcTimeout:            10,
+				logFileMaxSize:        6,
+				logFileMaxBackups:     11,
+				logFileMaxAge:         31,
 			},
 			wantErr: nil,
 		},
@@ -300,7 +309,7 @@ func TestSetConfig(t *testing.T) {
 			viperUtils = viperMock
 			pathUtils = pathUtilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
 			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
 			flagSetUtilsMock.On("GetInt32Buffer", flagSet).Return(tt.args.buffer, tt.args.bufferErr)
@@ -312,6 +321,9 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return(tt.args.port, tt.args.portErr)
 			flagSetUtilsMock.On("GetStringCertFile", flagSet).Return(tt.args.certFile, tt.args.certFileErr)
 			flagSetUtilsMock.On("GetStringCertKey", flagSet).Return(tt.args.certKey, tt.args.certKeyErr)
+			flagSetUtilsMock.On("GetIntLogFileMaxSize", mock.Anything).Return(tt.args.logFileMaxSize, tt.args.logFileMaxSizeErr)
+			flagSetUtilsMock.On("GetIntLogFileMaxBackups", mock.Anything).Return(tt.args.logFileMaxBackups, tt.args.logFileMaxBackupsErr)
+			flagSetUtilsMock.On("GetIntLogFileMaxAge", mock.Anything).Return(tt.args.logFileMaxAge, tt.args.logFileMaxAgeErr)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			pathUtilsMock.On("GetConfigFilePath").Return(tt.args.path, tt.args.pathErr)
 			viperMock.On("ViperWriteConfigAs", mock.AnythingOfType("string")).Return(tt.args.configErr)

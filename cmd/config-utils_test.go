@@ -27,25 +27,34 @@ func TestGetConfigData(t *testing.T) {
 		LogLevel:           "debug",
 		GasLimitMultiplier: 3,
 		RPCTimeout:         10,
+		LogFileMaxSize:     5,
+		LogFileMaxBackups:  10,
+		LogFileMaxAge:      30,
 	}
 
 	type args struct {
-		provider         string
-		providerErr      error
-		gasMultiplier    float32
-		gasMultiplierErr error
-		bufferPercent    int32
-		bufferPercentErr error
-		waitTime         int32
-		waitTimeErr      error
-		gasPrice         int32
-		gasPriceErr      error
-		logLevel         string
-		logLevelErr      error
-		gasLimit         float32
-		rpcTimeout       int64
-		rpcTimeoutErr    error
-		gasLimitErr      error
+		provider             string
+		providerErr          error
+		gasMultiplier        float32
+		gasMultiplierErr     error
+		bufferPercent        int32
+		bufferPercentErr     error
+		waitTime             int32
+		waitTimeErr          error
+		gasPrice             int32
+		gasPriceErr          error
+		logLevel             string
+		logLevelErr          error
+		gasLimit             float32
+		rpcTimeout           int64
+		rpcTimeoutErr        error
+		gasLimitErr          error
+		logFileMaxSize       int
+		logFileMaxSizeErr    error
+		logFileMaxBackups    int
+		logFileMaxBackupsErr error
+		logFileMaxAge        int
+		logFileMaxAgeErr     error
 	}
 	tests := []struct {
 		name    string
@@ -56,13 +65,16 @@ func TestGetConfigData(t *testing.T) {
 		{
 			name: "Test 1: When GetConfigData function executes successfully",
 			args: args{
-				provider:      "",
-				gasMultiplier: 1,
-				bufferPercent: 20,
-				waitTime:      1,
-				logLevel:      "debug",
-				gasLimit:      3,
-				rpcTimeout:    10,
+				provider:          "",
+				gasMultiplier:     1,
+				bufferPercent:     20,
+				waitTime:          1,
+				logLevel:          "debug",
+				gasLimit:          3,
+				rpcTimeout:        10,
+				logFileMaxSize:    5,
+				logFileMaxBackups: 10,
+				logFileMaxAge:     30,
 			},
 			want:    configData,
 			wantErr: nil,
@@ -145,7 +157,9 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			cmdUtilsMock.On("GetRPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
-
+			cmdUtilsMock.On("GetLogFileMaxSize").Return(tt.args.logFileMaxSize, tt.args.logFileMaxSizeErr)
+			cmdUtilsMock.On("GetLogFileMaxBackups").Return(tt.args.logFileMaxBackups, tt.args.logFileMaxBackupsErr)
+			cmdUtilsMock.On("GetLogFileMaxAge").Return(tt.args.logFileMaxAge, tt.args.logFileMaxAgeErr)
 			utils := &UtilsStruct{}
 
 			got, err := utils.GetConfigData()
