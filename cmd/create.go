@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/pflag"
 	"path/filepath"
 	razorAccounts "razor/accounts"
-	"razor/core/types"
 	"razor/utils"
 )
 
@@ -29,7 +28,9 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the Create function
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet, types.Configurations{})
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	razorUtils.AssignLogFile(flagSet, config)
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.AssignPassword(flagSet)
 	account, err := cmdUtils.Create(password)

@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"razor/cmd/mocks"
+	"razor/core/types"
 	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
@@ -16,6 +17,8 @@ func TestSetConfig(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
+		config                types.Configurations
+		configFileErr         error
 		provider              string
 		providerErr           error
 		gasmultiplier         float32
@@ -293,6 +296,13 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("rpcTimeout error"),
 		},
+		{
+			name: "Test 17: When there is an error in getting config",
+			args: args{
+				configFileErr: errors.New("config error"),
+			},
+			wantErr: errors.New("config error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -309,6 +319,7 @@ func TestSetConfig(t *testing.T) {
 			viperUtils = viperMock
 			pathUtils = pathUtilsMock
 
+			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configFileErr)
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			flagSetUtilsMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
 			flagSetUtilsMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)

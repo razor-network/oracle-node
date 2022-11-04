@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"path/filepath"
-	"razor/core/types"
 	"razor/path"
 	"razor/utils"
 	"strings"
@@ -29,7 +28,9 @@ func initialiseImport(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ImportAccount function
 func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet, types.Configurations{})
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	razorUtils.AssignLogFile(flagSet, config)
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)
 	log.Info("Account Address: ", account.Address)

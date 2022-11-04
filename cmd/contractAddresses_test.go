@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
+	"razor/core/types"
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
@@ -48,6 +49,7 @@ func TestExecuteContractAddresses(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 
 			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
+			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 			cmdUtilsMock.On("ContractAddresses")
 
 			utils := &UtilsStruct{}

@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"razor/core"
-	"razor/core/types"
 	"razor/metrics"
 	"razor/utils"
 
@@ -30,7 +29,11 @@ Example:
 
 //This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	razorUtils.AssignLogFile(flagSet, types.Configurations{})
+	config, err := cmdUtils.GetConfigData()
+	if err != nil {
+		return err
+	}
+	razorUtils.AssignLogFile(flagSet, config)
 	provider, err := flagSetUtils.GetStringProvider(flagSet)
 	if err != nil {
 		return err

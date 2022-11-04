@@ -54,27 +54,11 @@ func InitializeLogger(fileName string, config types.Configurations) {
 			standardLogger.Fatal("Error in fetching log file path: ", err)
 		}
 
-		logFileMaxSize := config.LogFileMaxSize
-		logFileMaxBackups := config.LogFileMaxBackups
-		logFileMaxAge := config.LogFileMaxAge
-
-		if logFileMaxSize == 0 {
-			logFileMaxSize = core.DefaultLogFileMaxSize
-		}
-
-		if logFileMaxBackups == 0 {
-			logFileMaxBackups = core.DefaultLogFileMaxBackups
-		}
-
-		if logFileMaxAge == 0 {
-			logFileMaxAge = core.DefaultLogFileMaxAge
-		}
-
 		lumberJackLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
-			MaxSize:    logFileMaxSize,
-			MaxBackups: logFileMaxBackups,
-			MaxAge:     logFileMaxAge,
+			MaxSize:    config.LogFileMaxSize,
+			MaxBackups: config.LogFileMaxBackups,
+			MaxAge:     config.LogFileMaxAge,
 		}
 
 		out := os.Stderr

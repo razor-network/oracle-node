@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"razor/core"
-	"razor/core/types"
+	"razor/utils"
 )
 
 // contractAddressesCmd represents the contractAddresses command
@@ -24,7 +24,9 @@ func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriatley and executes the ContractAddresses function
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
-	razorUtils.AssignLogFile(flagSet, types.Configurations{})
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	razorUtils.AssignLogFile(flagSet, config)
 	fmt.Println("The contract addresses are: ")
 	cmdUtils.ContractAddresses()
 
