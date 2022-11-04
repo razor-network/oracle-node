@@ -31,19 +31,9 @@ razor -v
 ## Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
-
-1. Create user 
-    ```
-      useradd -u 82 razor
-    ```
-2. Start the container
-    ```
-    docker run -d -it --entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/home/razor/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
-    ```
-3. Update the owner of `.razor` directory
-    ```
-     chown razor:razor $HOME/.razor 
-    ```
+```
+docker run -d -it--entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
+```
 
 >**_NOTE:_** that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
