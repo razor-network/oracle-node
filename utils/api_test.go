@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"github.com/stretchr/testify/mock"
+	"razor/cache"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
@@ -97,8 +98,7 @@ func TestGetDataFromAPI(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
-
-			got, err := utils.GetDataFromAPI(tt.args.url)
+			got, err := utils.GetDataFromAPI(tt.args.url, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -108,6 +108,10 @@ func TestGetDataFromAPI(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAPI(t *testing.T) {
+
 }
 
 func TestGetDataFromJSON(t *testing.T) {
