@@ -9,4 +9,7 @@ type Configurations struct {
 	LogLevel           string
 	GasLimitMultiplier float32
 	RPCTimeout         int64
+	LogFileMaxSize     int
+	LogFileMaxBackups  int
+	LogFileMaxAge      int
 }

@@ -36,7 +36,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
-	razorUtils.AssignLogFile(flagSet)
+	razorUtils.AssignLogFile(flagSet, config)
 
 	password := razorUtils.AssignPassword(flagSet)
 

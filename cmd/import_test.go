@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"io/fs"
 	"razor/cmd/mocks"
+	"razor/core/types"
 	"razor/path"
 	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
@@ -234,8 +235,9 @@ func TestExecuteImport(t *testing.T) {
 			cmdUtils = cmdUtilsMock
 			razorUtils = utilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
+			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 
 			utils := &UtilsStruct{}
 			utils.ExecuteImport(flagSet)
