@@ -21,7 +21,7 @@ func (*UtilsStruct) HandleRevealState(client *ethclient.Client, staker bindings.
 	if err != nil {
 		return err
 	}
-	log.Debug("Staker last epoch committed: ", epochLastCommitted)
+	log.Debug("HandleRevealState: Staker last epoch committed: ", epochLastCommitted)
 	if epochLastCommitted != epoch {
 		return errors.New("commitment for this epoch not found on network.... aborting reveal")
 	}
@@ -35,7 +35,9 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		return core.NilHash, err
 	}
 
+	log.Debug("Creating merkle tree...")
 	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	log.Debug("Generating tree reveal data...")
 	treeRevealData := cmdUtils.GenerateTreeRevealData(merkleTree, commitData)
 
 	log.Debugf("Revealing vote for epoch: %d, commitAccount: %s, treeRevealData: %v, root: %v",
@@ -58,6 +60,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 	})
+	log.Debugf("Executing Reveal transaction wih epoch = %d, treeRevealData = %v, signature = %v", epoch, treeRevealData, signature)
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)
 	if err != nil {
 		log.Error(err)
@@ -87,20 +90,24 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 		values = append(values, value)
 		proofs = append(proofs, proof)
 	}
+	root := utils.MerkleInterface.GetMerkleRoot(merkleTree)
+	log.Debugf("GenerateTreeRevealData: values = %+v, proofs = %+v, root = %v", values, proofs, root)
 
 	return bindings.StructsMerkleTree{
 		Values: values,
 		Proofs: proofs,
-		Root:   utils.MerkleInterface.GetMerkleRoot(merkleTree),
+		Root:   root,
 	}
 }
 
 //This function indexes the reveal events of current epoch
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
+	log.Debug("Fetching reveal events of current epoch...")
 	fromBlock, err := utils.UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, blockNumber)
 	if err != nil {
 		return nil, errors.New("Not able to Fetch Block: " + err.Error())
 	}
+	log.Debugf("IndexRevealEventsOfCurrentEpoch: Checking for events from block: %s to block: %s", fromBlock, blockNumber)
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,
 		ToBlock:   blockNumber,
@@ -108,6 +115,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			common.HexToAddress(core.VoteManagerAddress),
 		},
 	}
+	log.Debugf("IndexRevealEventsOfCurrentEpoch: Query to send in filter logs: %+v", query)
 	logs, err := utils.UtilsInterface.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return nil, err
@@ -142,6 +150,6 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			revealedData = append(revealedData, consolidatedRevealedData)
 		}
 	}
-	log.Debug("Revealed values: ", revealedData)
+	log.Debug("IndexRevealEventsOfCurrentEpoch: Revealed values: ", revealedData)
 	return revealedData, nil
 }

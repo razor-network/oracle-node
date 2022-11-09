@@ -37,6 +37,7 @@ func initialiseCreateJob(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteCreateJob: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -44,8 +45,10 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
@@ -76,7 +79,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 		Weight:       weight,
 		Power:        power,
 	}
-
+	log.Debugf("ExecuteCreateJob: Calling CreateJob() with argument jobInput: %+v", jobInput)
 	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -99,6 +102,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
+	log.Debugf("CreateJob: Executing CreateJob transaction with weight = %d, power = %d, selector type = %d, name = %s, selector = %s, URl = %s", jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err

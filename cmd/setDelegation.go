@@ -35,6 +35,7 @@ func initialiseSetDelegation(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteSetDelegation: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -42,8 +43,10 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
@@ -66,6 +69,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 		Commission:   commission,
 	}
 
+	log.Debugf("ExecuteSetDelegation: Calling SetDelegation() with argument delegationInput = %+v", delegationInput)
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
@@ -80,13 +84,16 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 	if err != nil {
 		return core.NilHash, err
 	}
+	log.Debugf("SetDelegation: Staker Info: %+v", stakerInfo)
 	if delegationInput.Commission != 0 {
-		err = cmdUtils.UpdateCommission(config, client, types.UpdateCommissionInput{
+		updateCommissionInput := types.UpdateCommissionInput{
 			StakerId:   delegationInput.StakerId,
 			Address:    delegationInput.Address,
 			Password:   delegationInput.Password,
 			Commission: delegationInput.Commission,
-		})
+		}
+		log.Debugf("Calling UpdateCommission() with argument updateCommissionInput = %+v", updateCommissionInput)
+		err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
 		if err != nil {
 			return core.NilHash, err
 		}
@@ -110,6 +117,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 	}
 	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
 	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+	log.Debug("Executing SetDelegationAcceptance transaction with status ", delegationInput.Status)
 	delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
 	if err != nil {
 		log.Error("Error in setting delegation acceptance")

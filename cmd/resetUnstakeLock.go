@@ -35,6 +35,7 @@ func initialiseExtendLock(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteExtendLock: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -42,8 +43,10 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
@@ -54,6 +57,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 		Password: password,
 		StakerId: stakerId,
 	}
+	log.Debugf("ExecuteExtendLock: Calling ResetUnstakeLock with arguments extendLockInput = %+v", extendLockInput)
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -75,6 +79,7 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 	})
 
 	log.Info("Extending lock...")
+	log.Debug("Executing ResetUnstakeLock transaction with stakerId = ", extendLockInput.StakerId)
 	txn, err := stakeManagerUtils.ResetUnstakeLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {
 		return core.NilHash, err

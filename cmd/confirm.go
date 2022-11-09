@@ -15,12 +15,14 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 		log.Error("Error in getting epoch: ", err)
 		return core.NilHash, err
 	}
+	log.Debug("ClaimBlockReward: Epoch: ", epoch)
 
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(options.Client, epoch)
 	if err != nil {
 		log.Error("Error in getting sortedProposedBlockIds: ", err)
 		return core.NilHash, err
 	}
+	log.Debug("ClaimBlockReward: Sorted proposed block Ids: ", sortedProposedBlockIds)
 
 	if sortedProposedBlockIds == nil {
 		log.Debug("No blocks proposed in this epoch")
@@ -32,16 +34,19 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 		log.Error("Error in getting stakerId: ", err)
 		return core.NilHash, err
 	}
+	log.Debug("ClaimBlockReward: Staker Id: ", stakerID)
 
 	selectedProposedBlock, err := razorUtils.GetProposedBlock(options.Client, epoch, sortedProposedBlockIds[0])
 	if err != nil {
 		log.Error("Error in getting selectedProposedBlock: ", err)
 		return core.NilHash, err
 	}
+	log.Debug("ClaimBlockReward: Selected proposed block: ", selectedProposedBlock)
 
 	if selectedProposedBlock.ProposerId == stakerID {
 		log.Info("Claiming block reward...")
 		txnOpts := razorUtils.GetTxnOpts(options)
+		log.Debug("Executing ClaimBlockReward transaction...")
 		txn, err := blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
 		if err != nil {
 			log.Error("Error in claiming block reward: ", err)

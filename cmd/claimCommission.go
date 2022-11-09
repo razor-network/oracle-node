@@ -29,25 +29,31 @@ Example:
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ClaimCommission: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ClaimCommission: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
+	log.Debug("ClaimCommission: Staker Id: ", stakerId)
 	callOpts := razorUtils.GetOptions()
 
 	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	utils.CheckError("Error in getting stakerInfo: ", err)
+	log.Debugf("ClaimCommission: Staker Info: %+v", stakerInfo)
 
 	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
 		txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -62,8 +68,9 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 			ABI:             bindings.StakeManagerABI,
 		})
 
-		log.Info("Claiming commission")
+		log.Info("Claiming commission...")
 
+		log.Debug("Executing ClaimStakeReward transaction...")
 		txn, err := stakeManagerUtils.ClaimStakeReward(client, txnOpts)
 		utils.CheckError("Error in claiming stake reward: ", err)
 

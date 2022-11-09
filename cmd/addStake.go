@@ -34,31 +34,41 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteStake: config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ExecuteStake: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account: "+address, err)
+	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
+	log.Debug("ExecuteStake: Amount in wei: ", valueInWei)
 
+	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
+	log.Debug("Checking whether sFuel balance is not 0...")
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
+	log.Debug("ExecuteStake: Minimum razor that you can stake for first time: ", minSafeRazor)
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
+	log.Debug("ExecuteStake: Staker Id: ", stakerId)
 
 	if valueInWei.Cmp(minSafeRazor) < 0 && stakerId == 0 {
 		log.Fatal("The amount of razors entered is below min safe value.")
@@ -73,6 +83,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 		Config:         config,
 	}
 
+	log.Debugf("ExecuteStake: Calling Approve() with transaction arguments: %+v", txnArgs)
 	approveTxnHash, err := cmdUtils.Approve(txnArgs)
 	utils.CheckError("Approve error: ", err)
 
@@ -81,6 +92,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
+	log.Debugf("ExecuteStake: Calling StakeCoins() with transaction arguments: %+v", txnArgs)
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
 
@@ -94,13 +106,14 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	if err != nil {
 		return common.Hash{0x00}, err
 	}
+	log.Debug("StakeCoins: Epoch: ", epoch)
 
-	log.Info("Sending stake transactions...")
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerABI
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	log.Debugf("Executing Stake transaction with epoch = %d, amount = %d", epoch, txnArgs.Amount)
 	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err

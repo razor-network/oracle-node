@@ -34,28 +34,36 @@ func initialiseDelegate(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteDelegate: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ExecuteDelegate: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
-
+	log.Debug("ExecuteDelegate: Staker Id: ", stakerId)
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account "+address+": ", err)
+	log.Debug("ExecuteDelegate: Balance: ", balance)
 
+	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
+	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
+	log.Debug("Checking whether sFuel balance is not 0...")
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	txnArgs := types.TransactionOptions{
@@ -67,6 +75,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 		Config:         config,
 	}
 
+	log.Debugf("ExecuteDelegate: Calling Approve() with transaction arguments: %+v", txnArgs)
 	approveTxnHash, err := cmdUtils.Approve(txnArgs)
 	utils.CheckError("Approve error: ", err)
 
@@ -75,6 +84,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
+	log.Debug("ExecuteDelegate:Calling Delegate() with stakerId: ", stakerId)
 	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
@@ -90,6 +100,7 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
+	log.Debug("Executing Delegate transaction with stakerId = %d, amount = %s", stakerId, txnArgs.Amount)
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		return common.Hash{0x00}, err

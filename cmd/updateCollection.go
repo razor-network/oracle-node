@@ -36,6 +36,7 @@ func initialiseUpdateCollection(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteUpdateCollection: Config : %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -43,8 +44,10 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
@@ -70,6 +73,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 		JobIds:      jobIdInUint,
 		Tolerance:   tolerance,
 	}
+	log.Debugf("ExecuteUpdateCollection: Calling UpdateCollection() with arguments collectionInput: %+v, collectionId: %d", collectionInput, collectionId)
 	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -79,6 +83,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 //This function allows the admin to update an existing collection
 func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
 	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	log.Debug("UpdateCollection: Uint16 jobIds: ", jobIds)
 	_, err := cmdUtils.WaitIfCommitState(client, "update collection")
 	if err != nil {
 		log.Error("Error in fetching state")
@@ -95,6 +100,7 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
 		ABI:             bindings.CollectionManagerABI,
 	})
+	log.Debugf("Executing UpdateCollection transaction with collectionId = %d, tolerance = %d, aggregation method = %d, power = %d, jobIds = %v", collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")

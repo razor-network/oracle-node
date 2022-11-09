@@ -162,6 +162,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		return nil, err
 	}
 	if _, err := path.OSUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
+		log.Debug("Fetching the jobs from assets.json file...")
 		jsonFile, err := path.OSUtilsInterface.Open(assetsFilePath)
 		if err != nil {
 			return nil, err
@@ -258,6 +259,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.
 		if err != nil {
 			continue
 		}
+		log.Debugf("Job %s gives data %s", job.Url, dataToAppend)
 		data = append(data, dataToAppend)
 		weight = append(weight, job.Weight)
 	}

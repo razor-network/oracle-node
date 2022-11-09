@@ -25,10 +25,12 @@ func initialiseListAccounts(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the ListAccounts function
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
+	log.Debug("ExecuteListAccounts: Calling ListAccounts()...")
 	allAccounts, err := cmdUtils.ListAccounts()
 	utils.CheckError("ListAccounts error: ", err)
-	log.Info("The available accounts are: ")
+	log.Info("ExecuteListAccounts: The available accounts are: ")
 	for _, account := range allAccounts {
 		log.Infof("%s", account.Address.String())
 	}
@@ -41,8 +43,10 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return nil, err
 	}
+	log.Debug("ListAccounts: .razor path: ", path)
 
 	keystorePath := pathPkg.Join(path, "keystore_files")
+	log.Debug("ListAccounts: Keystore path: ", keystorePath)
 	return keystoreUtils.Accounts(keystorePath), nil
 }
 

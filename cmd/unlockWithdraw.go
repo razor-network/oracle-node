@@ -33,22 +33,28 @@ func initializeUnlockWithdraw(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteUnlockWithdraw: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ExecuteUnlockWithdraw: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
+	log.Debug("ExecuteUnlockWithdraw: StakerId: ", stakerId)
 
+	log.Debugf("ExecuteUnlockWithdraw: Calling HandleWithdrawLock with arguments account address = %s, stakerId = %d", address, stakerId)
 	txn, err := cmdUtils.HandleWithdrawLock(client, types.Account{
 		Address:  address,
 		Password: password,
@@ -67,6 +73,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 	if err != nil {
 		return core.NilHash, err
 	}
+	log.Debugf("HandleWithdrawLock: Withdraw lock: %+v", withdrawLock)
 
 	if withdrawLock.UnlockAfter.Cmp(big.NewInt(0)) == 0 {
 		log.Error("initiateWithdrawCmd command not called before unlocking razors!")
@@ -78,6 +85,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
 	}
+	log.Debugf("HandleWithdrawLock: Epoch: ", epoch)
 
 	if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 {
 		txnArgs := types.TransactionOptions{
@@ -92,6 +100,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 			Parameters:      []interface{}{stakerId},
 		}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
+		log.Debug("HandleWithdrawLock: Calling UnlockWithdraw() with arguments stakerId = ", stakerId)
 		return cmdUtils.UnlockWithdraw(client, txnOpts, stakerId)
 	}
 	return core.NilHash, errors.New("withdrawLock period not over yet! Please try after some time")
@@ -101,6 +110,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
 	log.Info("Unlocking funds...")
 
+	log.Debug("Executing UnlockWithdraw transaction with stakerId = ", stakerId)
 	txn, err := stakeManagerUtils.UnlockWithdraw(client, txnOpts, stakerId)
 	if err != nil {
 		log.Error("Error in unlocking funds")
