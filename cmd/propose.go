@@ -153,7 +153,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})
 
-	log.Debugf("Executing Propose transaction with epoch = %d, Ids = %s, medians = %s, iteration = %s, biggestStakerId = %d", epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
+	log.Debugf("Executing Propose transaction with epoch = %d, Ids = %v, medians = %s, iteration = %s, biggestStakerId = %d", epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	txn, err := blockManagerUtils.Propose(client, txnOpts, epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId)
 	if err != nil {
 		log.Error(err)
@@ -287,15 +287,16 @@ loop:
 //This function returns if the elected staker is proposer or not
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
-	log.Debug("IsElectedProposer: Seed: ", seed)
+
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.Salt[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
 	pseudoRandomNumber = pseudoRandomNumber.Add(pseudoRandomNumber, big.NewInt(1))
-	log.Debug("IsElectedProposer: Pseudo random number: ", pseudoRandomNumber)
 	if pseudoRandomNumber.Cmp(big.NewInt(int64(proposer.StakerId))) != 0 {
 		return false
 	}
 	seed2 := solsha3.SoliditySHA3([]string{"uint256", "uint256"}, []interface{}{big.NewInt(int64(proposer.StakerId)), big.NewInt(int64(proposer.Iteration))})
+	log.Debug("IsElectedProposer: Seed: ", seed)
+	log.Debug("IsElectedProposer: Pseudo random number: ", pseudoRandomNumber)
 	log.Debug("IsElectedProposer: Seed 2: ", seed2)
 	randomHash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(proposer.Salt[:]), "0x" + hex.EncodeToString(seed2)})
 	randomHashNumber := big.NewInt(0).SetBytes(randomHash)

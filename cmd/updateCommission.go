@@ -121,7 +121,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
-	log.Debugf("Executing UpdateCommission transaction with commission = ", updateCommissionInput.Commission)
+	log.Debug("Executing UpdateCommission transaction with commission = ", updateCommissionInput.Commission)
 	txn, err := stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
 	if err != nil {
 		log.Error("Error in setting commission")

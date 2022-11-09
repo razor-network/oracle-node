@@ -36,7 +36,7 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	log.Debug("ExecuteClaimBounty: config: %+v", config)
+	log.Debugf("ExecuteClaimBounty: config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 

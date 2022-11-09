@@ -85,7 +85,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
 	}
-	log.Debugf("HandleWithdrawLock: Epoch: ", epoch)
+	log.Debug("HandleWithdrawLock: Epoch: ", epoch)
 
 	if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 {
 		txnArgs := types.TransactionOptions{

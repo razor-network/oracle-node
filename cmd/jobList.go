@@ -32,7 +32,7 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteJobList: Config: ", config)
+	log.Debugf("ExecuteJobList: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	logger.SetLoggerParameters(client, "")

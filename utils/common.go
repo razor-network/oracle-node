@@ -261,7 +261,10 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 		if err != nil {
 			log.Fatalf("Error in getting file name : ", err)
 		}
+		log.Debug("Log file name: ", fileName)
 		logger.InitializeLogger(fileName)
+	} else {
+		log.Debug("No `logFile` flag passed, not storing logs in any file")
 	}
 }
 

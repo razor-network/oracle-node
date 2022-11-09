@@ -228,7 +228,7 @@ CalculateMedian:
 
 	if nilProposedData || rogueData.IsRogue || epochCheck {
 		log.Debug("Calculating the medians data again...")
-		log.Debug("GetLocalMediansData: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", blockNumber, epoch, types.Rogue{IsRogue: false})
+		log.Debugf("GetLocalMediansData: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", blockNumber, epoch, types.Rogue{IsRogue: false})
 		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 		if err != nil {
 			log.Error("Error in calculating block medians")
@@ -365,7 +365,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		// Adding leafId to giveSortedLeafIds as giveSorted is done for that leafId
 		giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
 	}
-	log.Debug("Dispute: Calling GetCollectionIdPositionInBlock with arguments leafId = %d, proposed block = %+v", leafId, proposedBlock)
+	log.Debugf("Dispute: Calling GetCollectionIdPositionInBlock with arguments leafId = %d, proposed block = %+v", leafId, proposedBlock)
 	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
 	log.Debug("Dispute: Position of collection id in block: ", positionOfCollectionInBlock)
 
