@@ -551,10 +551,10 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 		}, {Id: 2, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 		},
 	}
 
@@ -579,7 +579,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				overrideJobData: map[string]*types.StructsJob{"1": {
 					Id: 2, SelectorType: 1, Weight: 100,
 					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: "https://api.gemini.com/v1/pubticker/ethusd",
+					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 				}},
 				dataToAppend: big.NewInt(1),
 			},
@@ -647,12 +647,12 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 func TestGetDataToCommitFromJob(t *testing.T) {
 	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 	}
 
 	job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 	}
 
 	response := []byte(`{
@@ -785,9 +785,9 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string")).Return(tt.args.response, tt.args.responseErr)
+			utilsMock.On("GetDataFromAPI", mock.Anything).Return(tt.args.response, tt.args.responseErr)
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
-			utilsMock.On("GetDataFromXHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
+			utilsMock.On("GetDataFromXHTML", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
 
 			got, err := utils.GetDataToCommitFromJob(tt.args.job)
