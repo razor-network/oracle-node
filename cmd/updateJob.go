@@ -36,6 +36,7 @@ func initialiseUpdateJob(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteUpdateJob: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -43,8 +44,10 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
@@ -75,6 +78,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 		SelectorType: selectorType,
 	}
 
+	log.Debugf("ExecuteUpdateJob: Calling UpdateJob() with arguments jobInput = %+v, jobId = %d", jobInput, jobId)
 	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -83,7 +87,6 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 
 //This function allows the admin to update an existing job
 func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
-
 	_, err := cmdUtils.WaitIfCommitState(client, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")
@@ -100,6 +103,7 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 		Parameters:      []interface{}{jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.CollectionManagerABI,
 	})
+	log.Debugf("Executing UpdateJob transaction with arguments jobId = %d, weight = %d, power = %d, selector type = %d, selector = %s, URL = %s", jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err

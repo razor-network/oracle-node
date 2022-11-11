@@ -37,6 +37,7 @@ func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteCreateCollection: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -44,8 +45,10 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
@@ -73,6 +76,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 		Tolerance:   tolerance,
 	}
 
+	log.Debugf("Calling CreateCollection() with argument collectionInput: %+v", collectionInput)
 	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -82,6 +86,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 //This function allows the admin to create collction if existing jobs are present
 func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
 	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	log.Debug("CreateCollection: Uint16 jobIds: ", jobIds)
 	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")
@@ -98,6 +103,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
 		ABI:             bindings.CollectionManagerABI,
 	})
+	log.Debugf("Executing CreateCollection transaction with tolerance: %d, power = %d , aggregation = %d, jobIds = %v, name = %s", collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	if err != nil {
 		log.Error("Error in creating collection")
