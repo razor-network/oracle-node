@@ -729,13 +729,13 @@ func (_m *Utils) GetCommitments(client *ethclient.Client, address string) ([32]b
 	return r0, r1
 }
 
-// GetDataFromAPI provides a mock function with given fields: url
-func (_m *Utils) GetDataFromAPI(url string) ([]byte, error) {
-	ret := _m.Called(url)
+// GetDataFromAPI provides a mock function with given fields: urlStruct
+func (_m *Utils) GetDataFromAPI(urlStruct types.DataSourceURL) ([]byte, error) {
+	ret := _m.Called(urlStruct)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(string) []byte); ok {
-		r0 = rf(url)
+	if rf, ok := ret.Get(0).(func(types.DataSourceURL) []byte); ok {
+		r0 = rf(urlStruct)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -743,8 +743,8 @@ func (_m *Utils) GetDataFromAPI(url string) ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(url)
+	if rf, ok := ret.Get(1).(func(types.DataSourceURL) error); ok {
+		r1 = rf(urlStruct)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -775,20 +775,20 @@ func (_m *Utils) GetDataFromJSON(jsonObject map[string]interface{}, selector str
 	return r0, r1
 }
 
-// GetDataFromXHTML provides a mock function with given fields: url, selector
-func (_m *Utils) GetDataFromXHTML(url string, selector string) (string, error) {
-	ret := _m.Called(url, selector)
+// GetDataFromXHTML provides a mock function with given fields: urlStruct, selector
+func (_m *Utils) GetDataFromXHTML(urlStruct types.DataSourceURL, selector string) (string, error) {
+	ret := _m.Called(urlStruct, selector)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(string, string) string); ok {
-		r0 = rf(url, selector)
+	if rf, ok := ret.Get(0).(func(types.DataSourceURL, string) string); ok {
+		r0 = rf(urlStruct, selector)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(url, selector)
+	if rf, ok := ret.Get(1).(func(types.DataSourceURL, string) error); ok {
+		r1 = rf(urlStruct, selector)
 	} else {
 		r1 = ret.Error(1)
 	}
