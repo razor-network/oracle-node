@@ -15,21 +15,12 @@ import (
 
 //'https://staging-v2.skalenodes.com/v1/whispering-turais  -X POST -H "Content-Type: application/json"}'
 //[]byte(`{"Type":1,"name":"test"}`
-func (*UtilsStruct) GetDataFromAPI(dataSourceURL string) ([]byte, error) {
+func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
 
-	dataSourceURLInBytes := []byte(dataSourceURL)
-	var dataSourceURLStruct types.DataSourceURL
 	var body []byte
-
-	err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
-	if err != nil {
-		log.Errorf("Error in unmarshalling %s: %v", dataSourceURL, err)
-		return body, err
-	}
-	log.Infof("URL Struct: %+v", dataSourceURLStruct)
 	if dataSourceURLStruct.Type == "GET" {
 		err := retry.Do(
 			func() error {
@@ -92,13 +83,13 @@ func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector 
 	return jsonpath.Get(selector, jsonObject)
 }
 
-func (*UtilsStruct) GetDataFromXHTML(url string, selector string) (string, error) {
+func (*UtilsStruct) GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, selector string) (string, error) {
 	c := colly.NewCollector()
 	var priceData string
 	c.OnXML(selector, func(e *colly.XMLElement) {
 		priceData = e.Text
 	})
-	err := c.Visit(url)
+	err := c.Visit(dataSourceURLStruct.URL)
 	if err != nil {
 		return "", err
 	}

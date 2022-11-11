@@ -270,20 +270,29 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		response []byte
 		apiErr   error
 	)
+	dataSourceURLInBytes := []byte(job.Url)
+	var dataSourceURLStruct types.DataSourceURL
 
+	err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
+	if err != nil {
+		log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
+		return nil, err
+	}
+	log.Infof("URL Struct: %+v", dataSourceURLStruct)
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 0 {
+
 		start := time.Now()
-		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url)
+		response, apiErr = UtilsInterface.GetDataFromAPI(dataSourceURLStruct)
 		if apiErr != nil {
 			log.Error("Error in fetching data from API: ", apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
-		log.Debugf("Time taken to fetch the data from API : %s was %f", job.Url, elapsed)
+		log.Debugf("Time taken to fetch the data from API : %s was %f", dataSourceURLStruct.URL, elapsed)
 
-		err := json.Unmarshal(response, &parsedJSON)
+		err = json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Error("Error in parsing data from API: ", err)
 			return nil, err
@@ -295,7 +304,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		}
 	} else {
 		//TODO: Add retry here.
-		dataPoint, err := UtilsInterface.GetDataFromXHTML(job.Url, job.Selector)
+		dataPoint, err := UtilsInterface.GetDataFromXHTML(dataSourceURLStruct, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed XHTML: ", err)
 			return nil, err

@@ -128,10 +128,10 @@ type Utils interface {
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
-	GetDataFromAPI(url string) ([]byte, error)
+	GetDataFromAPI(urlStruct types.DataSourceURL) ([]byte, error)
 	GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error)
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
-	GetDataFromXHTML(url string, selector string) (string, error)
+	GetDataFromXHTML(urlStruct types.DataSourceURL, selector string) (string, error)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
