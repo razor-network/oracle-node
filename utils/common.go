@@ -259,7 +259,7 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
 		if err != nil {
-			log.Fatalf("Error in getting file name : ", err)
+			log.Fatal("Error in getting file name: ", err)
 		}
 		log.Debug("Log file name: ", fileName)
 		logger.InitializeLogger(fileName)

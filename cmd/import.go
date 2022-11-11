@@ -51,7 +51,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	log.Debug("ImportAccount: .razor path: ", razorPath)
+	log.Debug("ImportAccount: .razor directory path: ", razorPath)
 	priv, err := cryptoUtils.HexToECDSA(privateKey)
 	if err != nil {
 		log.Error("Error in parsing private key")

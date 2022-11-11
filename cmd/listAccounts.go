@@ -43,7 +43,7 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return nil, err
 	}
-	log.Debug("ListAccounts: .razor path: ", path)
+	log.Debug("ListAccounts: .razor directory path: ", path)
 
 	keystorePath := pathPkg.Join(path, "keystore_files")
 	log.Debug("ListAccounts: Keystore path: ", keystorePath)
