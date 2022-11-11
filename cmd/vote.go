@@ -336,7 +336,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	if err != nil {
 		return err
 	}
-	log.Debugf("InitiateCommit: Default .razor file path: %s", razorPath)
+	log.Debugf("InitiateCommit: .razor directory path: %s", razorPath)
 	keystorePath := path.Join(razorPath, "keystore_files")
 	log.Debugf("InitiateCommit: Keystore file path: %s", keystorePath)
 	log.Debugf("InitiateCommit: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
@@ -470,7 +470,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		if err != nil {
 			return err
 		}
-		log.Debug("InitiateReveal: Default .razor file path: ", razorPath)
+		log.Debug("InitiateReveal: .razor directory path: ", razorPath)
 		keystorePath := path.Join(razorPath, "keystore_files")
 		log.Debug("InitiateReveal: Keystore file path: ", keystorePath)
 
