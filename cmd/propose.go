@@ -266,6 +266,8 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	}
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 	log.Debug("GetIteration: State remaining time: ", stateRemainingTime)
+	log.Debug("Calculating Iteration...")
+	log.Debugf("GetIteration: Calling IsElectedProposer() to find iteration...")
 loop:
 	for i := 0; i < 10000000; i++ {
 		select {
@@ -274,7 +276,6 @@ loop:
 			break loop
 		default:
 			proposer.Iteration = i
-			log.Debugf("GetIteration: Calling IsElectedProposer with arguments proposer = %+v, current staker stake = %s", proposer, currentStakerStake)
 			isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
 			if isElected {
 				return i
