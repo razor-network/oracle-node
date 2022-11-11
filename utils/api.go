@@ -13,13 +13,10 @@ import (
 	"time"
 )
 
-//'https://staging-v2.skalenodes.com/v1/whispering-turais  -X POST -H "Content-Type: application/json"}'
-//[]byte(`{"Type":1,"name":"test"}`
 func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-
 	var body []byte
 	if dataSourceURLStruct.Type == "GET" {
 		err := retry.Do(
