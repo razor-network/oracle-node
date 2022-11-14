@@ -12,6 +12,7 @@ import (
 	"razor/pkg/bindings"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -267,18 +268,30 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
 	var (
-		response []byte
-		apiErr   error
+		response            []byte
+		apiErr              error
+		dataSourceURLStruct types.DataSourceURL
 	)
-	dataSourceURLInBytes := []byte(job.Url)
-	var dataSourceURLStruct types.DataSourceURL
+	log.Debugf("Getting the data to commit for job %s having job Id %d", job.Name, job.Id)
+	if strings.HasPrefix(job.Url, "{") {
+		log.Debug("Job URL passed is a struct containing URL along with type of request data")
+		dataSourceURLInBytes := []byte(job.Url)
 
-	err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
-	if err != nil {
-		log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
-		return nil, err
+		err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
+		if err != nil {
+			log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
+			return nil, err
+		}
+		log.Infof("URL Struct: %+v", dataSourceURLStruct)
+	} else {
+		log.Debug("Job URL passed is a direct URL: ", job.Url)
+		dataSourceURLStruct = types.DataSourceURL{
+			URL:         job.Url,
+			Type:        "GET",
+			Body:        nil,
+			ContentType: "",
+		}
 	}
-	log.Infof("URL Struct: %+v", dataSourceURLStruct)
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 0 {
@@ -292,7 +305,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 		elapsed := time.Since(start).Seconds()
 		log.Debugf("Time taken to fetch the data from API : %s was %f", dataSourceURLStruct.URL, elapsed)
 
-		err = json.Unmarshal(response, &parsedJSON)
+		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Error("Error in parsing data from API: ", err)
 			return nil, err
