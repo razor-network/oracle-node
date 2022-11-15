@@ -3,9 +3,7 @@ package cmd
 import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"razor/cmd/mocks"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -42,14 +40,7 @@ func TestExecuteContractAddresses(t *testing.T) {
 	log.ExitFunc = func(int) { fatal = true }
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)

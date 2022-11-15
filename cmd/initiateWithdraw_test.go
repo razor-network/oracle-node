@@ -6,10 +6,8 @@ import (
 	"crypto/rand"
 	"errors"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -192,15 +190,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerUtilsMock
-			cmdUtils = cmdUtilsMock
-			transactionUtils = transactionUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
@@ -270,15 +260,10 @@ func TestWithdraw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			stakeManagerUtils = stakeManagerUtilsMock
-			transactionUtils = transactionUtilsMock
-
-			stakeManagerUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawTxn, tt.args.withdrawErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			stakeManagerMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawTxn, tt.args.withdrawErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 			got, err := utils.InitiateWithdraw(client, txnOpts, stakerId)
@@ -387,21 +372,12 @@ func TestExecuteWithdraw(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			flagSetUtils = flagSetUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)

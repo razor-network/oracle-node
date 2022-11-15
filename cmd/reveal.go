@@ -35,7 +35,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		return core.NilHash, err
 	}
 
-	merkleTree, err := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	merkleTree, err := merkleUtils.CreateMerkle(commitData.Leaves)
 	if err != nil {
 		log.Error("Error in getting merkle tree: ", err)
 		return core.NilHash, err
@@ -88,12 +88,12 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 			LeafId: uint16(commitData.SeqAllottedCollections[i].Uint64()),
 			Value:  big.NewInt(commitData.Leaves[commitData.SeqAllottedCollections[i].Uint64()].Int64()),
 		}
-		proof := utils.MerkleInterface.GetProofPath(merkleTree, value.LeafId)
+		proof := merkleUtils.GetProofPath(merkleTree, value.LeafId)
 		values = append(values, value)
 		proofs = append(proofs, proof)
 	}
 
-	root, err := utils.MerkleInterface.GetMerkleRoot(merkleTree)
+	root, err := merkleUtils.GetMerkleRoot(merkleTree)
 	if err != nil {
 		log.Error("Error in getting root: ", err)
 		return bindings.StructsMerkleTree{}

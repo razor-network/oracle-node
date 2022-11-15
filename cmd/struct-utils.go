@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 	"os"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -27,11 +28,13 @@ import (
 )
 
 var (
-	razorUtils  = utils.UtilsInterface
-	pathUtils   = path.PathUtilsInterface
-	clientUtils = utils.ClientInterface
-	fileUtils   = utils.FileInterface
-	gasUtils    = utils.GasInterface
+	razorUtils   = utils.UtilsInterface
+	pathUtils    = path.PathUtilsInterface
+	clientUtils  = utils.ClientInterface
+	fileUtils    = utils.FileInterface
+	gasUtils     = utils.GasInterface
+	merkleUtils  = utils.MerkleInterface
+	accountUtils = accounts.AccountUtilsInterface
 )
 
 //This function initializes the utils
@@ -62,6 +65,8 @@ func InitializeUtils() {
 	clientUtils = &utils.ClientStruct{}
 	fileUtils = &utils.FileStruct{}
 	gasUtils = &utils.GasStruct{}
+	merkleUtils = &utils.MerkleTreeStruct{}
+	accountUtils = &accounts.AccountUtils{}
 }
 
 func ExecuteTransaction(interfaceName interface{}, methodName string, args ...interface{}) (*Types.Transaction, error) {

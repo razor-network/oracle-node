@@ -16,8 +16,6 @@ import (
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
-	"razor/path"
-	pathPkgMocks "razor/path/mocks"
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
@@ -122,22 +120,13 @@ func TestExecuteClaimBounty(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			flagSetUtils = flagSetUtilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
-			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
-			flagSetUtilsMock.On("GetUint32BountyId", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.bountyId, tt.args.bountyIdErr)
+			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetUint32BountyId", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.bountyId, tt.args.bountyIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
@@ -389,20 +378,10 @@ func TestHandleClaimBounty(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			osUtilsMock := new(pathPkgMocks.OSInterface)
-			pathUtilsMock := new(pathPkgMocks.PathInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
+			SetUpMockInterfaces()
 
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			path.OSUtilsInterface = osUtilsMock
-			pathUtils = pathUtilsMock
-			fileUtils = fileUtilsMock
-
-			pathUtilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
-			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
+			pathMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
+			osPathMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			fileUtilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
 			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)

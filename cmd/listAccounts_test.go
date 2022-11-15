@@ -6,10 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"razor/cmd/mocks"
 	"razor/core/types"
-	pathPkgMocks "razor/path/mocks"
-	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 )
@@ -60,17 +57,10 @@ func TestListAccounts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			utilsMock := new(utilsPkgMocks.Utils)
-			keystoreUtilsMock := new(mocks.KeystoreInterface)
-			pathUtilsMock := new(pathPkgMocks.PathInterface)
-
-			razorUtils = utilsMock
-			keystoreUtils = keystoreUtilsMock
-			pathUtils = pathUtilsMock
-
-			pathUtilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			keystoreUtilsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			keystoreMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
 			utils := &UtilsStruct{}
 			got, err := utils.ListAccounts()
 
@@ -134,13 +124,7 @@ func TestExecuteListAccounts(t *testing.T) {
 	log.ExitFunc = func(int) { fatal = true }
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("ListAccounts").Return(tt.args.allAccounts, tt.args.allAccountsErr)

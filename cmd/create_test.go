@@ -5,14 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
-	razorAccounts "razor/accounts"
-	"razor/core/types"
-	pathPkgMocks "razor/path/mocks"
-	utilsPkgMocks "razor/utils/mocks"
-
 	"github.com/stretchr/testify/mock"
-	Mocks "razor/accounts/mocks"
-	"razor/cmd/mocks"
+	"razor/core/types"
 	"testing"
 )
 
@@ -61,17 +55,10 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			utilsMock := new(utilsPkgMocks.Utils)
-			accountUtilsMock := new(Mocks.AccountInterface)
-			pathUtilsMock := new(pathPkgMocks.PathInterface)
-
-			razorUtils = utilsMock
-			razorAccounts.AccountUtilsInterface = accountUtilsMock
-			pathUtils = pathUtilsMock
-
-			pathUtilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountUtilsMock.On("CreateAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(accounts.Account{
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			accountsMock.On("CreateAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(accounts.Account{
 				Address: tt.args.account.Address,
 				URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 			})
@@ -139,14 +126,7 @@ func TestExecuteCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)

@@ -5,10 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -66,9 +64,7 @@ func TestGetJobList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			razorUtils = utilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobList, tt.args.jobListErr)
 			utils := &UtilsStruct{}
@@ -137,14 +133,7 @@ func TestExecuteJobList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)

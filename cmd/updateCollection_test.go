@@ -12,10 +12,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -83,22 +81,13 @@ func TestUpdateCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			razorUtils = utilsMock
-			assetManagerUtils = assetManagerUtilsMock
-			transactionUtils = transactionUtilsMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(jobIdUint16)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("WaitIfCommitState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
-			assetManagerUtilsMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			assetManagerMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 			got, err := utils.UpdateCollection(client, config, collectionInput, collectionId)
@@ -292,29 +281,20 @@ func TestExecuteUpdateCollection(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			flagSetUtils = flagsetUtilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
-			flagsetUtilsMock.On("GetUint16CollectionId", flagSet).Return(tt.args.collectionId, tt.args.collectionIdErr)
-			flagsetUtilsMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
-			flagsetUtilsMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
-			flagsetUtilsMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
+			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetUint16CollectionId", flagSet).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			flagSetMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
+			flagSetMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
+			flagSetMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("UpdateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
-			flagsetUtilsMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
+			flagSetMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

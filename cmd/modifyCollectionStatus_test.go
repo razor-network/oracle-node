@@ -12,10 +12,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -57,15 +55,10 @@ func TestCheckCurrentStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			assetManageUtilsMock := new(mocks.AssetManagerInterface)
-
-			razorUtils = utilsMock
-			assetManagerUtils = assetManageUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetOptions").Return(tt.args.callOpts)
-			assetManageUtilsMock.On("GetActiveStatus", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint16")).Return(tt.args.activeStatus, tt.args.activeStatusErr)
+			assetManagerMock.On("GetActiveStatus", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint16")).Return(tt.args.activeStatus, tt.args.activeStatusErr)
 
 			utils := &UtilsStruct{}
 			got, err := utils.CheckCurrentStatus(client, assetId)
@@ -176,22 +169,13 @@ func TestModifyAssetStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsMock := new(utilsPkgMocks.Utils)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			transactionUtils = transactionUtilsMock
-			assetManagerUtils = assetManagerUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("CheckCurrentStatus", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.currentStatus, tt.args.currentStatusErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
-			assetManagerUtilsMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			assetManagerMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
@@ -342,24 +326,12 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
-			stringMock := new(mocks.StringInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			flagSetUtils = flagsetUtilsMock
-			stringUtils = stringMock
-			fileUtils = fileUtilsMock
-
+			SetUpMockInterfaces()
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
-			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
-			flagsetUtilsMock.On("GetUint16CollectionId", flagSet).Return(tt.args.collectionId, tt.args.collectionIdErr)
-			flagsetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
+			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetUint16CollectionId", flagSet).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			flagSetMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)

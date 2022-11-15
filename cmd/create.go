@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"path/filepath"
-	razorAccounts "razor/accounts"
 	"razor/utils"
 )
 
@@ -47,7 +46,7 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 	keystorePath := filepath.Join(razorPath, "keystore_files")
-	account := razorAccounts.AccountUtilsInterface.CreateAccount(keystorePath, password)
+	account := accountUtils.CreateAccount(keystorePath, password)
 	return account, nil
 }
 

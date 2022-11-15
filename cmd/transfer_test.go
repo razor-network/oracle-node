@@ -7,10 +7,8 @@ import (
 	"errors"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -70,20 +68,13 @@ func TestTransfer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			tokenManangerUtilsMock := new(mocks.TokenManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			tokenManagerUtils = tokenManangerUtilsMock
-			transactionUtils = transactionUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("GetTxnOpts", mock.Anything).Return(tt.args.txnOpts)
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.decimalAmount)
-			tokenManangerUtilsMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.transferTxn, tt.args.transferErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.transferHash)
+			tokenManagerMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.transferTxn, tt.args.transferErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.transferHash)
 
 			utils := &UtilsStruct{}
 
@@ -258,22 +249,13 @@ func TestExecuteTransfer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
-
-			razorUtils = utilsMock
-			flagSetUtils = flagsetUtilsMock
-			cmdUtils = cmdUtilsMock
-			fileUtils = fileUtilsMock
+			SetUpMockInterfaces()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagsetUtilsMock.On("GetStringFrom", flagSet).Return(tt.args.from, tt.args.fromErr)
-			flagsetUtilsMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
+			flagSetMock.On("GetStringFrom", flagSet).Return(tt.args.from, tt.args.fromErr)
+			flagSetMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("AssignPassword", flagSet).Return()
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
