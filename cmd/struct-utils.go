@@ -27,8 +27,11 @@ import (
 )
 
 var (
-	razorUtils = utils.UtilsInterface
-	pathUtils  = path.PathUtilsInterface
+	razorUtils  = utils.UtilsInterface
+	pathUtils   = path.PathUtilsInterface
+	clientUtils = utils.ClientInterface
+	fileUtils   = utils.FileInterface
+	gasUtils    = utils.GasInterface
 )
 
 //This function initializes the utils
@@ -56,6 +59,9 @@ func InitializeUtils() {
 	utils.RetryInterface = &utils.RetryStruct{}
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 	utils.FlagSetInterface = &utils.FlagSetStruct{}
+	clientUtils = &utils.ClientStruct{}
+	fileUtils = &utils.FileStruct{}
+	gasUtils = &utils.GasStruct{}
 }
 
 func ExecuteTransaction(interfaceName interface{}, methodName string, args ...interface{}) (*Types.Transaction, error) {

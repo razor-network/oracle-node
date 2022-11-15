@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	password := razorUtils.AssignPassword(flagSet)
 
@@ -81,7 +81,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 		return err
 	}
 	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
-		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		disputeData, err = fileUtils.ReadFromDisputeJsonFile(disputeFilePath)
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 		}
 	}
 
-	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	err = fileUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
 	if err != nil {
 		return err
 	}

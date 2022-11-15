@@ -119,7 +119,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 			common.HexToAddress(core.VoteManagerAddress),
 		},
 	}
-	logs, err := razorUtils.FilterLogsWithRetry(client, query)
+	logs, err := clientUtils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return nil, err
 	}

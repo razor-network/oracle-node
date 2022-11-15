@@ -314,12 +314,14 @@ func TestExecuteCreateJob(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			flagsetUtilsMock := new(mocks.FlagSetInterface)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			fileUtilsMock := new(utilsPkgMocks.FileUtils)
 
 			razorUtils = utilsMock
 			flagSetUtils = flagsetUtilsMock
 			cmdUtils = cmdUtilsMock
+			fileUtils = fileUtilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)

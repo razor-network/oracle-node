@@ -51,7 +51,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 }
 
 func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
-	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	block, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
 	}
@@ -171,7 +171,7 @@ func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Cli
 }
 
 func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	latestHeader, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -181,7 +181,7 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 }
 
 func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
-	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
@@ -194,7 +194,7 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
-	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	block, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return 0, err
 	}
@@ -246,7 +246,7 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 
 }
 
-func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
+func (*FileStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
 
 	var data types.CommitFileData
 	data.Epoch = epoch
@@ -266,7 +266,7 @@ func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, comm
 	return nil
 }
 
-func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
+func (*FileStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)
@@ -287,7 +287,7 @@ func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileDat
 	return commitedData, nil
 }
 
-func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet, configurations types.Configurations) {
+func (*FileStruct) AssignLogFile(flagSet *pflag.FlagSet, configurations types.Configurations) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
 		if err != nil {
@@ -297,7 +297,7 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet, configurations types.C
 	}
 }
 
-func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
+func (*FileStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
 
 	var data types.ProposeFileData
 	data.Epoch = proposeData.Epoch
@@ -317,7 +317,7 @@ func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, proposeData types
 	return nil
 }
 
-func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
+func (*FileStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)
@@ -338,7 +338,7 @@ func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileD
 	return proposedData, nil
 }
 
-func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
+func (*FileStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
 	var data types.DisputeFileData
 
 	data.BountyIdQueue = bountyIdQueue
@@ -354,7 +354,7 @@ func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []u
 	return nil
 }
 
-func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
+func (*FileStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)

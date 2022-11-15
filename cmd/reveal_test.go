@@ -345,12 +345,14 @@ func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			abiUtilsMock := new(utilsPkgMocks.ABIUtils)
+			clientUtilsMock := new(utilsPkgMocks.ClientUtils)
 
 			razorUtils = utilsMock
 			utils.ABIInterface = abiUtilsMock
+			clientUtils = clientUtilsMock
 
 			utilsMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
-			utilsMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.contractAbiErr)
 			abiUtilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
 			ut := &UtilsStruct{}

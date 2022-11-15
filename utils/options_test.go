@@ -110,17 +110,20 @@ func Test_getGasPrice(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsMock := new(mocks.Utils)
+			clientUtilsMock := new(mocks.ClientUtils)
 
-			UtilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
+			clientUtilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
 			UtilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(tt.args.multipliedGasPrice)
 
 			fatal = false
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: UtilsMock,
+				UtilsInterface:  UtilsMock,
+				ClientInterface: clientUtilsMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
-			got := utils.GetGasPrice(client, tt.args.config)
+			StartRazor(optionsPackageStruct)
+			gasUtils := GasStruct{}
+			got := gasUtils.GetGasPrice(client, tt.args.config)
 			if fatal != tt.expectedFatal {
 				if got.Cmp(tt.want) != 0 {
 					t.Errorf("getGasPrice() = %v, want %v", got, tt.want)
@@ -274,25 +277,29 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			pathMock := new(mocks.PathUtils)
 			bindMock := new(mocks.BindUtils)
 			accountsMock := new(mocks.AccountsUtils)
+			clientMock := new(mocks.ClientUtils)
+			gasMock := new(mocks.GasUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface:    utilsMock,
 				PathInterface:     pathMock,
 				BindInterface:     bindMock,
 				AccountsInterface: accountsMock,
+				ClientInterface:   clientMock,
+				GasInterface:      gasMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey, nil)
-			utilsMock.On("GetNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
-			utilsMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
+			clientMock.On("GetNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
+			gasMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
 			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
-			utilsMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			utilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
+			gasMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			clientMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
-			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			clientMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
 			fatal = false
 			got := utils.GetTxnOpts(transactionData)
@@ -402,19 +409,25 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 
 			utilsMock := new(mocks.Utils)
 			abiMock := new(mocks.ABIUtils)
+			clientUtilsMock := new(mocks.ClientUtils)
+			gasUtilsMock := new(mocks.GasUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-				ABIInterface:   abiMock,
+				UtilsInterface:  utilsMock,
+				ABIInterface:    abiMock,
+				ClientInterface: clientUtilsMock,
+				GasInterface:    gasUtilsMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 
 			abiMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
 			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
-			utilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			utilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
-			got, err := utils.GetGasLimit(tt.args.transactionData, txnOpts)
+			clientUtilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			gasUtilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
+
+			gasUtils := GasStruct{}
+			got, err := gasUtils.GetGasLimit(tt.args.transactionData, txnOpts)
 			if got != tt.want {
 				t.Errorf("getGasLimit() got = %v, want %v", got, tt.want)
 			}
@@ -501,17 +514,18 @@ func TestUtilsStruct_IncreaseGasLimitValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
+			clientUtilsMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				ClientInterface: clientUtilsMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.blockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.blockErr)
 
-			got, err := utils.IncreaseGasLimitValue(client, tt.args.gasLimit, tt.args.gasLimitMultiplier)
+			gasUtils := GasStruct{}
+			got, err := gasUtils.IncreaseGasLimitValue(client, tt.args.gasLimit, tt.args.gasLimitMultiplier)
 			if got != tt.want {
 				t.Errorf("increaseGasLimitValue() got = %v, want %v", got, tt.want)
 			}

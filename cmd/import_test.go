@@ -231,11 +231,13 @@ func TestExecuteImport(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			fileUtilsMock := new(utilsPkgMocks.FileUtils)
 
 			cmdUtils = cmdUtilsMock
 			razorUtils = utilsMock
+			fileUtils = fileUtilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
 			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 

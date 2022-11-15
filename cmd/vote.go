@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	password := razorUtils.AssignPassword(flagSet)
 
@@ -112,7 +112,7 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	header, err := razorUtils.GetLatestBlockWithRetry(client)
+	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
@@ -120,7 +120,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			return nil
 		default:
 			log.Debugf("Header value: %d", header.Number)
-			latestHeader, err := razorUtils.GetLatestBlockWithRetry(client)
+			latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -170,7 +170,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	stakedAmount := staker.Stake
 
-	ethBalance, err := razorUtils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
+	ethBalance, err := clientUtils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%s", account.Address, err)
 		return
@@ -380,7 +380,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
 
-	err = razorUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
+	err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
 	if err != nil {
 		return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
 	}
@@ -425,7 +425,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			return err
 		}
 		log.Debugf("Getting committed data from file %s", fileName)
-		committedDataFromFile, err := razorUtils.ReadFromCommitJsonFile(fileName)
+		committedDataFromFile, err := fileUtils.ReadFromCommitJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting committed data from file %s: %t", fileName, err)
 			return err

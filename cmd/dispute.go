@@ -186,7 +186,7 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 			log.Error("Error in getting file name to read median data: ", err)
 			goto CalculateMedian
 		}
-		proposedData, err := razorUtils.ReadFromProposeJsonFile(fileName)
+		proposedData, err := fileUtils.ReadFromProposeJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting propose data from file %s: %t", fileName, err)
 			goto CalculateMedian
@@ -263,7 +263,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := razorUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -281,7 +281,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
 		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := razorUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -455,7 +455,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 
 	var latestBountyId uint32
 
-	latestHeader, err := razorUtils.GetLatestBlockWithRetry(client)
+	latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return err
@@ -467,7 +467,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 	}
 
 	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
-		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		disputeData, err = fileUtils.ReadFromDisputeJsonFile(disputeFilePath)
 		if err != nil {
 			return err
 		}
@@ -479,7 +479,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 	}
 
 	//saving the updated bountyIds to disputeData file
-	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	err = fileUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
 	if err != nil {
 		return err
 	}
@@ -517,7 +517,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 			common.HexToAddress(core.StakeManagerAddress),
 		},
 	}
-	logs, err := razorUtils.FilterLogsWithRetry(client, query)
+	logs, err := clientUtils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		return 0, err
 	}

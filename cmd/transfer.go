@@ -42,7 +42,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting fromAddress: ", err)
 
 	logger.SetLoggerParameters(client, fromAddress)
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	password := razorUtils.AssignPassword(flagSet)
 

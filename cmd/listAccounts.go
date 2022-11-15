@@ -27,7 +27,7 @@ func initialiseListAccounts(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 	allAccounts, err := cmdUtils.ListAccounts()
 	utils.CheckError("ListAccounts error: ", err)
 	log.Info("The available accounts are: ")

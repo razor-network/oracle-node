@@ -168,7 +168,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 				log.Error("Error in getting file name to save median data: ", err)
 				return err
 			}
-			err = razorUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
+			err = fileUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
 			if err != nil {
 				log.Errorf("Error in saving data to file %s: %t", fileName, err)
 				return err

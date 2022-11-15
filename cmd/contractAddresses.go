@@ -26,7 +26,7 @@ func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 	fmt.Println("The contract addresses are: ")
 	cmdUtils.ContractAddresses()
 
