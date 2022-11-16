@@ -23,6 +23,3 @@ var DefaultWaitTime = 1
 var DefaultGasLimit = 2
 var DefaultRPCTimeout = 10
 var DefaultLogLevel = ""
-
-//BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
-var BlockNumberInterval = 5

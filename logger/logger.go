@@ -15,7 +15,6 @@ import (
 	"razor/core"
 	"razor/path"
 	"runtime"
-	"time"
 )
 
 type StandardLogger struct {
@@ -29,7 +28,6 @@ var Epoch uint32
 var BlockNumber *big.Int
 var FileName string
 var Client *ethclient.Client
-var lastBlockNumberTimestamp time.Time
 
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
@@ -170,20 +168,16 @@ func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
 }
 
 func SetEpochAndBlockNumber(client *ethclient.Client) {
-	elapsedTime := time.Since(lastBlockNumberTimestamp).Seconds()
-	if elapsedTime > float64(core.BlockNumberInterval) {
-		if client != nil {
-			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
-			if err != nil {
-				log.Error("Error in fetching block: ", err)
-				return
-			}
-			BlockNumber = latestHeader.Number
-
-			epoch := latestHeader.Time / uint64(core.EpochLength)
-			Epoch = uint32(epoch)
-			lastBlockNumberTimestamp = time.Now()
+	if client != nil {
+		latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			log.Error("Error in fetching block: ", err)
+			return
 		}
+		BlockNumber = latestHeader.Number
+
+		epoch := latestHeader.Time / uint64(core.EpochLength)
+		Epoch = uint32(epoch)
 	}
 }
 
