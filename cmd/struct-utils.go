@@ -63,10 +63,15 @@ func InitializeUtils() {
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 	utils.FlagSetInterface = &utils.FlagSetStruct{}
 	clientUtils = &utils.ClientStruct{}
+	utils.ClientInterface = &utils.ClientStruct{}
 	fileUtils = &utils.FileStruct{}
+	utils.FileInterface = &utils.FileStruct{}
 	gasUtils = &utils.GasStruct{}
+	utils.GasInterface = &utils.GasStruct{}
 	merkleUtils = &utils.MerkleTreeStruct{}
+	utils.MerkleInterface = &utils.MerkleTreeStruct{}
 	accountUtils = &accounts.AccountUtils{}
+	accounts.AccountUtilsInterface = &accounts.AccountUtils{}
 }
 
 func ExecuteTransaction(interfaceName interface{}, methodName string, args ...interface{}) (*Types.Transaction, error) {
