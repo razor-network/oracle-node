@@ -1,17 +1,16 @@
 package logger
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/razor-network/goInfo"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"math/big"
 	"os"
+	"razor/block"
 	"razor/core"
 	"razor/path"
 	"runtime"
@@ -169,19 +168,17 @@ func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
 
 func SetEpochAndBlockNumber(client *ethclient.Client) {
 	if client != nil {
-		latestHeader, err := client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			log.Error("Error in fetching block: ", err)
-			return
+		latestBlock := block.GetLatestBlock()
+		if latestBlock != nil {
+			BlockNumber = latestBlock.Number
+			epoch := latestBlock.Time / uint64(core.EpochLength)
+			Epoch = uint32(epoch)
 		}
-		BlockNumber = latestHeader.Number
-
-		epoch := latestHeader.Time / uint64(core.EpochLength)
-		Epoch = uint32(epoch)
 	}
 }
 
 func SetLoggerParameters(client *ethclient.Client, address string) {
 	Address = address
 	Client = client
+	go block.CalculateLatestBlock(client)
 }
