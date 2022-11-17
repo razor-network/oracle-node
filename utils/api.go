@@ -18,7 +18,6 @@ func (*UtilsStruct) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]
 	}
 	cachedData, err := localCache.Read(url)
 	if err != nil {
-		log.Debugf("Data for URL: %s is not present in local cache, ", url)
 		var body []byte
 		err := retry.Do(
 			func() error {

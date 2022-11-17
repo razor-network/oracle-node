@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errUserNotInCache = errors.New("the user isn't in cache")
+	errDataNotInCache = errors.New("data not present in cache")
 )
 
 type Data struct {
@@ -81,12 +81,12 @@ func (lc *LocalCache) Read(url string) (Data, error) {
 	lc.mu.RLock()
 	defer lc.mu.RUnlock()
 
-	cu, ok := lc.URLs[url]
+	cacheData, ok := lc.URLs[url]
 	if !ok {
-		return Data{}, errUserNotInCache
+		return Data{}, errDataNotInCache
 	}
 
-	return cu.Data, nil
+	return cacheData.Data, nil
 }
 
 func (lc *LocalCache) Delete(url string) {
