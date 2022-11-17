@@ -83,7 +83,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 		Config:         config,
 	}
 
-	log.Debugf("ExecuteStake: Calling Approve() with transaction arguments: %+v", txnArgs)
+	log.Debug("ExecuteStake: Calling Approve() for amount: ", txnArgs.Amount)
 	approveTxnHash, err := cmdUtils.Approve(txnArgs)
 	utils.CheckError("Approve error: ", err)
 
@@ -92,7 +92,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
-	log.Debugf("ExecuteStake: Calling StakeCoins() with transaction arguments: %+v", txnArgs)
+	log.Debug("ExecuteStake: Calling StakeCoins() for amount: ", txnArgs.Amount)
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
 
