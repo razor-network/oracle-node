@@ -202,7 +202,7 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 		}
 		log.Debugf("GetLocalMediansData: Proposed data from file: %+v", proposedData)
 		if proposedData.Epoch != epoch {
-			log.Errorf("File %s doesn't contain latest median data: %v", fileName, err)
+			log.Errorf("File %s doesn't contain latest median data", fileName)
 			goto CalculateMedian
 		}
 		log.Debug("Updating global proposed data struct...")
