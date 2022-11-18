@@ -186,6 +186,9 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 
 		// Also adding custom jobs to jobs array
 		customJobs := GetCustomJobsFromJSONFile(collection.Name, dataString)
+		if len(customJobs) != 0 {
+			log.Debugf("Got Custom Jobs from asset.json file: %+v", customJobs)
+		}
 		jobs = append(jobs, customJobs...)
 	}
 
@@ -390,26 +393,36 @@ func (*UtilsStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId u
 
 func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []bindings.StructsJob {
 	var collectionCustomJobs []bindings.StructsJob
+	var customJob types.CustomJob
 
 	collectionCustomJobsPath := "assets.collection." + collection + ".custom jobs"
-	customJobs := gjson.Get(jsonFileData, collectionCustomJobsPath).Array()
-	if len(customJobs) == 0 {
-		return nil
-	}
-
-	for i := 0; i < len(customJobs); i++ {
-		customJobsData := customJobs[i].String()
-		url := gjson.Get(customJobsData, "URL").String()
-		selector := gjson.Get(customJobsData, "selector").String()
-		power := int8(gjson.Get(customJobsData, "power").Int())
-		weight := uint8(gjson.Get(customJobsData, "weight").Int())
-		job := ConvertCustomJobToStructJob(types.CustomJob{
-			URL:      url,
-			Power:    power,
-			Selector: selector,
-			Weight:   weight,
-		})
-		collectionCustomJobs = append(collectionCustomJobs, job)
+	customJobsJSONResult := gjson.Get(jsonFileData, collectionCustomJobsPath)
+	if customJobsJSONResult.Exists() {
+		customJobs := customJobsJSONResult.Array()
+		if len(customJobs) == 0 {
+			return nil
+		}
+		for i := 0; i < len(customJobs); i++ {
+			customJobsData := customJobs[i].String()
+			url := gjson.Get(customJobsData, "URL")
+			if url.Exists() {
+				customJob.URL = url.String()
+			}
+			selector := gjson.Get(customJobsData, "selector")
+			if selector.Exists() {
+				customJob.Selector = selector.String()
+			}
+			power := gjson.Get(customJobsData, "power")
+			if power.Exists() {
+				customJob.Power = int8(power.Int())
+			}
+			weight := gjson.Get(customJobsData, "weight")
+			if weight.Exists() {
+				customJob.Weight = uint8(weight.Int())
+			}
+			job := ConvertCustomJobToStructJob(customJob)
+			collectionCustomJobs = append(collectionCustomJobs, job)
+		}
 	}
 
 	return collectionCustomJobs
@@ -433,19 +446,34 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 
 	for i := 0; i < len(jobIds); i++ {
 		officialJobsPath := "assets.collection." + collectionName + ".official jobs." + strconv.Itoa(int(jobIds[i]))
-		officialJobs := gjson.Get(dataString, officialJobsPath).String()
-		if officialJobs != "" {
-			job, err := UtilsInterface.GetActiveJob(client, jobIds[i])
-			if err != nil {
-				continue
+		officialJobsJSONResult := gjson.Get(dataString, officialJobsPath)
+		if officialJobsJSONResult.Exists() {
+			officialJobs := officialJobsJSONResult.String()
+			if officialJobs != "" {
+				job, err := UtilsInterface.GetActiveJob(client, jobIds[i])
+				if err != nil {
+					continue
+				}
+				log.Debugf("Overriding job %s having jobId %d from official job present in assets.json file...", job.Url, job.Id)
+				url := gjson.Get(officialJobs, "URL")
+				if url.Exists() {
+					job.Url = url.String()
+				}
+				selector := gjson.Get(officialJobs, "selector")
+				if selector.Exists() {
+					job.Selector = selector.String()
+				}
+				weight := gjson.Get(officialJobs, "weight")
+				if weight.Exists() {
+					job.Weight = uint8(weight.Int())
+				}
+				power := gjson.Get(officialJobs, "power")
+				if power.Exists() {
+					job.Power = int8(power.Int())
+				}
+				overrideJobs = append(overrideJobs, job)
+				overriddenJobIds = append(overriddenJobIds, jobIds[i])
 			}
-			job.Url = gjson.Get(officialJobs, "URL").String()
-			job.Selector = gjson.Get(officialJobs, "selector").String()
-			job.Weight = uint8(gjson.Get(officialJobs, "weight").Int())
-			job.Power = int8(gjson.Get(officialJobs, "power").Int())
-
-			overrideJobs = append(overrideJobs, job)
-			overriddenJobIds = append(overriddenJobIds, jobIds[i])
 		} else {
 			continue
 		}
