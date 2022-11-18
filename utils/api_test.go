@@ -112,10 +112,6 @@ func TestGetDataFromAPI(t *testing.T) {
 	}
 }
 
-func TestAPI(t *testing.T) {
-
-}
-
 func TestGetDataFromJSON(t *testing.T) {
 	type args struct {
 		jsonObject map[string]interface{}
