@@ -8,6 +8,8 @@ import (
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
+	cache "razor/cache"
+
 	common "github.com/ethereum/go-ethereum/common"
 
 	coretypes "github.com/ethereum/go-ethereum/core/types"
@@ -729,13 +731,13 @@ func (_m *Utils) GetCommitments(client *ethclient.Client, address string) ([32]b
 	return r0, r1
 }
 
-// GetDataFromAPI provides a mock function with given fields: urlStruct
-func (_m *Utils) GetDataFromAPI(urlStruct types.DataSourceURL) ([]byte, error) {
-	ret := _m.Called(urlStruct)
+// GetDataFromAPI provides a mock function with given fields: urlStruct, localCache
+func (_m *Utils) GetDataFromAPI(urlStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
+	ret := _m.Called(urlStruct, localCache)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(types.DataSourceURL) []byte); ok {
-		r0 = rf(urlStruct)
+	if rf, ok := ret.Get(0).(func(types.DataSourceURL, *cache.LocalCache) []byte); ok {
+		r0 = rf(urlStruct, localCache)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -743,8 +745,8 @@ func (_m *Utils) GetDataFromAPI(urlStruct types.DataSourceURL) ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(types.DataSourceURL) error); ok {
-		r1 = rf(urlStruct)
+	if rf, ok := ret.Get(1).(func(types.DataSourceURL, *cache.LocalCache) error); ok {
+		r1 = rf(urlStruct, localCache)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -796,13 +798,13 @@ func (_m *Utils) GetDataFromXHTML(urlStruct types.DataSourceURL, selector string
 	return r0, r1
 }
 
-// GetDataToCommitFromJob provides a mock function with given fields: job
-func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
-	ret := _m.Called(job)
+// GetDataToCommitFromJob provides a mock function with given fields: job, localCache
+func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
+	ret := _m.Called(job, localCache)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(bindings.StructsJob) *big.Int); ok {
-		r0 = rf(job)
+	if rf, ok := ret.Get(0).(func(bindings.StructsJob, *cache.LocalCache) *big.Int); ok {
+		r0 = rf(job, localCache)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -810,8 +812,8 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, erro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(bindings.StructsJob) error); ok {
-		r1 = rf(job)
+	if rf, ok := ret.Get(1).(func(bindings.StructsJob, *cache.LocalCache) error); ok {
+		r1 = rf(job, localCache)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -819,13 +821,13 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, erro
 	return r0, r1
 }
 
-// GetDataToCommitFromJobs provides a mock function with given fields: jobs
-func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
-	ret := _m.Called(jobs)
+// GetDataToCommitFromJobs provides a mock function with given fields: jobs, localCache
+func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
+	ret := _m.Called(jobs, localCache)
 
 	var r0 []*big.Int
-	if rf, ok := ret.Get(0).(func([]bindings.StructsJob) []*big.Int); ok {
-		r0 = rf(jobs)
+	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *cache.LocalCache) []*big.Int); ok {
+		r0 = rf(jobs, localCache)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*big.Int)
@@ -833,8 +835,8 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int
 	}
 
 	var r1 []uint8
-	if rf, ok := ret.Get(1).(func([]bindings.StructsJob) []uint8); ok {
-		r1 = rf(jobs)
+	if rf, ok := ret.Get(1).(func([]bindings.StructsJob, *cache.LocalCache) []uint8); ok {
+		r1 = rf(jobs, localCache)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).([]uint8)
@@ -842,8 +844,8 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func([]bindings.StructsJob) error); ok {
-		r2 = rf(jobs)
+	if rf, ok := ret.Get(2).(func([]bindings.StructsJob, *cache.LocalCache) error); ok {
+		r2 = rf(jobs, localCache)
 	} else {
 		r2 = ret.Error(2)
 	}

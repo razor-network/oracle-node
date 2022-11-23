@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -206,8 +207,8 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-
-	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs)
+	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
+	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
 	if err != nil || len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
@@ -215,6 +216,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		}
 		return prevCommitmentData, nil
 	}
+	localCache.StopCleanup()
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
@@ -249,13 +251,13 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 	return collection, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
+func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
 	var (
 		data   []*big.Int
 		weight []uint8
 	)
 	for _, job := range jobs {
-		dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job)
+		dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
 		if err != nil {
 			continue
 		}
@@ -265,7 +267,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.
 	return data, weight, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
+func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
 	var (
 		response            []byte
@@ -297,7 +299,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, e
 	if job.SelectorType == 0 {
 
 		start := time.Now()
-		response, apiErr = UtilsInterface.GetDataFromAPI(dataSourceURLStruct)
+		response, apiErr = UtilsInterface.GetDataFromAPI(dataSourceURLStruct, localCache)
 		if apiErr != nil {
 			log.Error("Error in fetching data from API: ", apiErr)
 			return nil, apiErr
