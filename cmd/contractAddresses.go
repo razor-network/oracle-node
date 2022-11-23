@@ -3,10 +3,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/utils"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // contractAddressesCmd represents the contractAddresses command
@@ -26,6 +27,7 @@ func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet, config)
 	fmt.Println("The contract addresses are: ")
 	cmdUtils.ContractAddresses()

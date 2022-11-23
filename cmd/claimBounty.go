@@ -3,10 +3,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"math/big"
 	"os"
 	"razor/core"
@@ -15,6 +11,11 @@ import (
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var claimBountyCmd = &cobra.Command{
@@ -36,20 +37,26 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteClaimBounty: config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ExecuteClaimBounty: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet, config)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	if razorUtils.IsFlagPassed("bountyId") {
 		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 		utils.CheckError("Error in getting bountyId: ", err)
+		log.Debug("ExecuteClaimBounty: BountyId: ", bountyId)
 
 		redeemBountyInput := types.RedeemBountyInput{
 			Address:  address,
@@ -57,6 +64,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 			BountyId: bountyId,
 		}
 
+		log.Debugf("ExecuteClaimBounty: Calling ClaimBounty() with arguments redeem bounty input: %+v", redeemBountyInput)
 		txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
 		utils.CheckError("ClaimBounty error: ", err)
 
@@ -65,6 +73,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
+		log.Debug("ExecuteClaimBounty: Calling HandleClaimBounty()")
 		err := cmdUtils.HandleClaimBounty(client, config, types.Account{
 			Address:  address,
 			Password: password,
@@ -80,11 +89,15 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 	if err != nil {
 		return err
 	}
+	log.Debug("HandleClaimBounty: Dispute data file path: ", disputeFilePath)
 	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
+		log.Debug("Fetching the dispute data from dispute data file...")
 		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
 		if err != nil {
 			return err
 		}
+
+		log.Debugf("HandleClaimBounty: DisputeData: %+v", disputeData)
 	}
 
 	if disputeData.BountyIdQueue == nil {
@@ -96,11 +109,13 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 		log.Info("Bounty ids that needs be claimed: ", disputeData.BountyIdQueue)
 		length := len(disputeData.BountyIdQueue)
 		log.Info("Claiming bounty for bountyId ", disputeData.BountyIdQueue[length-1])
-		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, types.RedeemBountyInput{
+		redeemBountyInput := types.RedeemBountyInput{
 			BountyId: disputeData.BountyIdQueue[length-1],
 			Address:  account.Address,
 			Password: account.Password,
-		})
+		}
+		log.Debugf("HandleClaimBounty: Calling ClaimBounty() with arguments redeemBountyInput: %+v", redeemBountyInput)
+		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
 		if err != nil {
 			return err
 		}
@@ -117,6 +132,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 		}
 	}
 
+	log.Debug("Saving the updated dispute data to dispute data file...")
 	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
 	if err != nil {
 		return err
@@ -142,6 +158,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		log.Error("Error in getting epoch: ", err)
 		return core.NilHash, err
 	}
+	log.Debug("ClaimBounty: Epoch: ", epoch)
 
 	callOpts := razorUtils.GetOptions()
 	bountyLock, err := stakeManagerUtils.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
@@ -149,6 +166,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		log.Error("Error in getting bounty lock: ", err)
 		return core.NilHash, err
 	}
+	log.Debugf("ClaimBounty: Bounty lock: %+v", bountyLock)
 
 	if bountyLock.Amount.Cmp(big.NewInt(0)) == 0 {
 		err = errors.New("bounty amount is 0")
@@ -172,6 +190,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 
+	log.Debug("Executing RedeemBounty transaction with bountyId: ", redeemBountyInput.BountyId)
 	tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
 	if err != nil {
 		return core.NilHash, err

@@ -4,14 +4,15 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 /*
@@ -20,25 +21,31 @@ If the previous epoch doesn't contain any medians, then the value is fetched fro
 */
 func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
-	numProposedBlocks, err := razorUtils.GetNumberOfProposedBlocks(client, previousEpoch)
+	log.Debug("GetSalt: Previous epoch: ", previousEpoch)
+	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(client, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
+	log.Debug("GetSalt: Number of proposed blocks: ", numProposedBlock)
+	blockIndexedToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	if numProposedBlocks == 0 || (numProposedBlocks > 0 && blockIndexToBeConfirmed < 0) {
+	log.Debug("GetSalt: Block Index to be confirmed: ", blockIndexedToBeConfirmed)
+	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
+	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexedToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
+	log.Debug("GetSalt: Block Id: ", blockId)
 	previousBlock, err := razorUtils.GetProposedBlock(client, previousEpoch, blockId)
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
 	}
+	log.Debug("GetSalt: PreviousBlock: ", previousBlock)
+	log.Debugf("GetSalt: Calling CalculateSalt() with arguments previous epoch = %d, previous block medians = %s", previousEpoch, previousBlock.Medians)
 	return razorUtils.CalculateSalt(previousEpoch, previousBlock.Medians), nil
 }
 
@@ -51,14 +58,18 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	if err != nil {
 		return types.CommitData{}, err
 	}
-	log.Debugf("Number of active collections: %d", numActiveCollections)
+	log.Debug("HandleCommitState: Number of active collections: ", numActiveCollections)
+	log.Debugf("HandleCommitState: Calling GetAssignedCollections() with arguments number of active collections = %d, seed = %v", numActiveCollections, seed)
 	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(client, numActiveCollections, seed)
 	if err != nil {
 		return types.CommitData{}, err
 	}
 
 	var leavesOfTree []*big.Int
+	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
+		log.Debug("HandleCommitState: Iterating index: ", i)
+		log.Debug("HandleCommitState: Is the collection assigned: ", assignedCollections[i])
 		if assignedCollections[i] {
 			collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
 			if err != nil {
@@ -71,16 +82,17 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
 				log.Warn("YOU ARE COMMITTING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 				collectionData = razorUtils.GetRogueRandomValue(100000)
+				log.Debug("HandleCommitState: Collection data in rogue mode: ", collectionData)
 			}
-			log.Debugf("Data of collection %d:%s", collectionId, collectionData)
+			log.Debugf("HandleCommitState: Data of collection %d: %s", collectionId, collectionData)
 			leavesOfTree = append(leavesOfTree, collectionData)
 		} else {
 			leavesOfTree = append(leavesOfTree, big.NewInt(0))
 		}
 	}
-	log.Debug("Assigned Collections: ", assignedCollections)
-	log.Debug("SeqAllottedCollections: ", seqAllottedCollections)
-	log.Debug("Leaves: ", leavesOfTree)
+	log.Debug("HandleCommitState: Assigned Collections: ", assignedCollections)
+	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
+	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,
 		SeqAllottedCollections: seqAllottedCollections,
@@ -115,6 +127,7 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 	log.Debugf("Committing: epoch: %d, commitment: %s, seed: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(seed), account.Address)
 
 	log.Info("Commitment sent...")
+	log.Debugf("Executing Commit transaction with epoch = %d, commitmentToSend = %v", epoch, commitmentToSend)
 	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)
 	if err != nil {
 		return core.NilHash, err
