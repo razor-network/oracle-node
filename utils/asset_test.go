@@ -1120,6 +1120,11 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollection",
 	}
 
+	ethCollection1 := bindings.StructsCollection{
+		Active: true, Id: 7, Power: 2,
+		AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollection",
+	}
+
 	type args struct {
 		collection bindings.StructsCollection
 		dataString string
@@ -1173,6 +1178,37 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 			},
 			want:               nil,
 			wantOverrideJobIds: nil,
+		},
+		{
+			name: "Test 4: When multiple jobIds are needed to be overridden from official jobs",
+			args: args{
+				collection: ethCollection1,
+				dataString: jsonDataString,
+				job: bindings.StructsJob{
+					Id:       1,
+					Url:      "http://kraken.com/eth1",
+					Selector: "data.ETH",
+					Power:    3,
+					Weight:   1,
+				},
+			},
+			want: []bindings.StructsJob{
+				{
+					Id:       1,
+					Url:      "http://kucoin.com/eth1",
+					Selector: "eth1",
+					Power:    2,
+					Weight:   2,
+				},
+				{
+					Id:       1,
+					Url:      "http://api.coinbase.com/eth2",
+					Selector: "eth2",
+					Power:    3,
+					Weight:   2,
+				},
+			},
+			wantOverrideJobIds: []uint16{1, 2},
 		},
 	}
 	for _, tt := range tests {
