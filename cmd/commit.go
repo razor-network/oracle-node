@@ -27,15 +27,15 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 		return [32]byte{}, err
 	}
 	log.Debug("GetSalt: Number of proposed blocks: ", numProposedBlock)
-	blockIndexedToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
+	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
 	if err != nil {
 		return [32]byte{}, err
 	}
-	log.Debug("GetSalt: Block Index to be confirmed: ", blockIndexedToBeConfirmed)
-	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexedToBeConfirmed < 0) {
+	log.Debug("GetSalt: Block Index to be confirmed: ", blockIndexToBeConfirmed)
+	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexedToBeConfirmed)))
+	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
