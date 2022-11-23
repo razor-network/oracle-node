@@ -15,6 +15,7 @@ func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, erro
 	if err != nil {
 		return core.NilHash, err
 	}
+	log.Debugf("Approve: Allowance amount: %d, Amount to get approved: %d", allowance, txnArgs.Amount)
 	if allowance.Cmp(txnArgs.Amount) >= 0 {
 		log.Debug("Sufficient allowance, no need to increase")
 		return core.NilHash, nil
@@ -25,6 +26,7 @@ func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, erro
 		txnArgs.ABI = bindings.RAZORMetaData.ABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
+		log.Debug("Executing Approve transaction with amount: ", txnArgs.Amount)
 		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {
 			return core.NilHash, err

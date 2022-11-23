@@ -64,7 +64,7 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 		for i := range args {
 			inputs[i] = reflect.ValueOf(args[i])
 		}
-		log.Debug("Function: ", methodName)
+		log.Debug("Blockchain function: ", methodName)
 		functionCall = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
 		gotFunction <- true
 	}()

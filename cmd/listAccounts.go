@@ -2,11 +2,12 @@
 package cmd
 
 import (
+	"path/filepath"
+	"razor/utils"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"path/filepath"
-	"razor/utils"
 )
 
 var listAccountsCmd = &cobra.Command{
@@ -27,10 +28,14 @@ func initialiseListAccounts(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet, config)
+
+	log.Debug("ExecuteListAccounts: Calling ListAccounts()...")
 	allAccounts, err := cmdUtils.ListAccounts()
 	utils.CheckError("ListAccounts error: ", err)
-	log.Info("The available accounts are: ")
+	log.Info("ExecuteListAccounts: The available accounts are: ")
 	for _, account := range allAccounts {
 		log.Infof("%s", account.Address.String())
 	}
@@ -43,8 +48,10 @@ func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return nil, err
 	}
+	log.Debug("ListAccounts: .razor directory path: ", path)
 
 	keystorePath := filepath.Join(path, "keystore_files")
+	log.Debug("ListAccounts: Keystore path: ", keystorePath)
 	return keystoreUtils.Accounts(keystorePath), nil
 }
 
