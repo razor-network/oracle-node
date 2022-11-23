@@ -731,13 +731,13 @@ func (_m *Utils) GetCommitments(client *ethclient.Client, address string) ([32]b
 	return r0, r1
 }
 
-// GetDataFromAPI provides a mock function with given fields: url, localCache
-func (_m *Utils) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]byte, error) {
-	ret := _m.Called(url, localCache)
+// GetDataFromAPI provides a mock function with given fields: urlStruct, localCache
+func (_m *Utils) GetDataFromAPI(urlStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
+	ret := _m.Called(urlStruct, localCache)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(string, *cache.LocalCache) []byte); ok {
-		r0 = rf(url, localCache)
+	if rf, ok := ret.Get(0).(func(types.DataSourceURL, *cache.LocalCache) []byte); ok {
+		r0 = rf(urlStruct, localCache)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -745,8 +745,8 @@ func (_m *Utils) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]byt
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, *cache.LocalCache) error); ok {
-		r1 = rf(url, localCache)
+	if rf, ok := ret.Get(1).(func(types.DataSourceURL, *cache.LocalCache) error); ok {
+		r1 = rf(urlStruct, localCache)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -777,20 +777,20 @@ func (_m *Utils) GetDataFromJSON(jsonObject map[string]interface{}, selector str
 	return r0, r1
 }
 
-// GetDataFromXHTML provides a mock function with given fields: url, selector
-func (_m *Utils) GetDataFromXHTML(url string, selector string) (string, error) {
-	ret := _m.Called(url, selector)
+// GetDataFromXHTML provides a mock function with given fields: urlStruct, selector
+func (_m *Utils) GetDataFromXHTML(urlStruct types.DataSourceURL, selector string) (string, error) {
+	ret := _m.Called(urlStruct, selector)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func(string, string) string); ok {
-		r0 = rf(url, selector)
+	if rf, ok := ret.Get(0).(func(types.DataSourceURL, string) string); ok {
+		r0 = rf(urlStruct, selector)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(url, selector)
+	if rf, ok := ret.Get(1).(func(types.DataSourceURL, string) error); ok {
+		r1 = rf(urlStruct, selector)
 	} else {
 		r1 = ret.Error(1)
 	}
