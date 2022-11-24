@@ -2,15 +2,16 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var updateJobCmd = &cobra.Command{
@@ -36,6 +37,7 @@ func initialiseUpdateJob(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteUpdateJob: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -43,8 +45,11 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
+	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, config)
 
+	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
 	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
@@ -75,6 +80,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 		SelectorType: selectorType,
 	}
 
+	log.Debugf("ExecuteUpdateJob: Calling UpdateJob() with arguments jobInput = %+v, jobId = %d", jobInput, jobId)
 	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -83,7 +89,6 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 
 //This function allows the admin to update an existing job
 func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
-
 	_, err := cmdUtils.WaitIfCommitState(client, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")
@@ -101,6 +106,7 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
 	log.Info("Updating Job...")
+	log.Debugf("Executing UpdateJob transaction with arguments jobId = %d, weight = %d, power = %d, selector type = %d, selector = %s, URL = %s", jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err

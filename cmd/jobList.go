@@ -32,10 +32,12 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteJobList: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	logger.SetLoggerParameters(client, "")
 
+	log.Debug("ExecuteJobList: Calling JobList()...")
 	err = cmdUtils.GetJobList(client)
 	utils.CheckError("Error in getting job list: ", err)
 }
@@ -43,7 +45,7 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 //This function provides the list of all jobs
 func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
 	jobs, err := razorUtils.GetJobs(client)
-
+	log.Debugf("JobList: Jobs: %+v", jobs)
 	if err != nil {
 		return err
 	}

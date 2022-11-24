@@ -74,6 +74,7 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 		log.Error("Error in reading value: ", err)
 		return nil, err
 	}
+	log.Debug("AssignAmountInWei: Amount: ", amount)
 	_amount, ok := new(big.Int).SetString(amount, 10)
 
 	if !ok {
@@ -87,6 +88,7 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 			return nil, err
 		}
 		if weiRazorPassed {
+			log.Debug("weiRazor flag is passed as true, considering teh value input in wei")
 			amountInWei = _amount
 		}
 	} else {

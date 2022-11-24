@@ -1,22 +1,21 @@
 package logger
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/razor-network/goInfo"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"math/big"
 	"os"
+	"razor/block"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	"runtime"
-	"time"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/razor-network/goInfo"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type StandardLogger struct {
@@ -30,7 +29,6 @@ var Epoch uint32
 var BlockNumber *big.Int
 var FileName string
 var Client *ethclient.Client
-var loggerTimeoutBool bool
 
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
@@ -62,9 +60,6 @@ func InitializeLogger(fileName string, config types.Configurations) {
 			MaxBackups: config.LogFileMaxBackups,
 			MaxAge:     config.LogFileMaxAge,
 		}
-		fmt.Println(config.LogFileMaxSize)
-		fmt.Println(config.LogFileMaxBackups)
-		fmt.Println(config.LogFileMaxAge)
 
 		out := os.Stderr
 		mw := io.MultiWriter(out, lumberJackLogger)
@@ -108,24 +103,12 @@ func (logger *StandardLogger) Info(args ...interface{}) {
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
 	SetEpochAndBlockNumber(Client)
-
-	// Checking if there was a logger timeout. If it was ,we add a field Error in logs stating there was a logger timeout and change the logType to Error.
-	if !loggerTimeoutBool {
-		var logFields = logrus.Fields{
-			"address":     Address,
-			"epoch":       Epoch,
-			"blockNumber": BlockNumber,
-		}
-		logger.WithFields(logFields).Debugln(args...)
-	} else {
-		var logFields = logrus.Fields{
-			"address":     Address,
-			"epoch":       Epoch,
-			"blockNumber": BlockNumber,
-			"Error":       core.LoggerTimeoutErr,
-		}
-		logger.WithFields(logFields).Errorln(args...)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
+	logger.WithFields(logFields).Debugln(args...)
 }
 
 func (logger *StandardLogger) Fatal(args ...interface{}) {
@@ -163,23 +146,12 @@ func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 	SetEpochAndBlockNumber(Client)
 
-	// Checking if there was a logger timeout. If it was ,we add a field Error in logs stating there was a logger timeout and change the logType to Error.
-	if !loggerTimeoutBool {
-		var logFields = logrus.Fields{
-			"address":     Address,
-			"epoch":       Epoch,
-			"blockNumber": BlockNumber,
-		}
-		logger.WithFields(logFields).Debugf(format, args...)
-	} else {
-		var logFields = logrus.Fields{
-			"address":     Address,
-			"epoch":       Epoch,
-			"blockNumber": BlockNumber,
-			"Error":       core.LoggerTimeoutErr,
-		}
-		logger.WithFields(logFields).Errorf(format, args...)
+	var logFields = logrus.Fields{
+		"address":     Address,
+		"epoch":       Epoch,
+		"blockNumber": BlockNumber,
 	}
+	logger.WithFields(logFields).Debugf(format, args...)
 }
 
 func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
@@ -195,35 +167,12 @@ func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
 }
 
 func SetEpochAndBlockNumber(client *ethclient.Client) {
-	var gotBlockNumber = make(chan bool)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(core.LoggerTimeout)*time.Second)
-	defer cancel()
-
-	go func() {
-		if client != nil {
-			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
-			if err != nil {
-				log.Error("Error in fetching block: ", err)
-				return
-			}
-			BlockNumber = latestHeader.Number
-
-			epoch := latestHeader.Time / core.EpochLength
+	if client != nil {
+		latestBlock := block.GetLatestBlock()
+		if latestBlock != nil {
+			BlockNumber = latestBlock.Number
+			epoch := latestBlock.Time / core.EpochLength
 			Epoch = uint32(epoch)
-		}
-		// Setting loggerTimeoutBool to false everytime when there is no logger timeout
-		loggerTimeoutBool = false
-		gotBlockNumber <- true
-	}()
-	for {
-		select {
-		case <-ctx.Done():
-			// Setting loggerTimeoutBool to true when there is a logger timeout
-			loggerTimeoutBool = true
-			logrus.Error("Logger Timeout! Error in fetching block number, Kindly Check your connection")
-			return
-		case <-gotBlockNumber:
-			return
 		}
 	}
 }
@@ -231,4 +180,5 @@ func SetEpochAndBlockNumber(client *ethclient.Client) {
 func SetLoggerParameters(client *ethclient.Client, address string) {
 	Address = address
 	Client = client
+	go block.CalculateLatestBlock(client)
 }

@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
+	"razor/cache"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"time"
@@ -112,8 +113,8 @@ type Utils interface {
 	GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
 	GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
 	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error)
-	GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error)
-	GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error)
+	GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error)
+	GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error)
 	GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
 	GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
@@ -123,10 +124,10 @@ type Utils interface {
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
-	GetDataFromAPI(url string) ([]byte, error)
+	GetDataFromAPI(urlStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error)
 	GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error)
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
-	GetDataFromXHTML(url string, selector string) (string, error)
+	GetDataFromXHTML(urlStruct types.DataSourceURL, selector string) (string, error)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)

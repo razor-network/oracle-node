@@ -55,3 +55,10 @@ type CustomJob struct {
 	Power    int8   `json:"power"`
 	Weight   uint8  `json:"weight"`
 }
+
+type DataSourceURL struct {
+	Type        string                 `json:"type"`
+	URL         string                 `json:"url"`
+	Body        map[string]interface{} `json:"body"`
+	ContentType string                 `json:"content-type"`
+}

@@ -108,25 +108,26 @@ There are a set of parameters that are configurable. These include:
 - Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 1, the razor client will automatically calculate the optimum gas price and send it.
 - Log Level: Normally debug logs are not logged into the log file. But if you want you can set `logLevel` to `debug` and fetch the debug logs.
 - Gas Limit: The value with which the gas limit will be multiplied while sending every transaction.
+- RPC Timeout: This is the threshold number of seconds after which any contract and client calls will time out.
 
 The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setConfig` command.
 
 razor cli
 
 ```
-$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout>
 ```
 
 docker
 
 ```
-docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout>
 ```
 
 Example:
 
 ```
-$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2
+$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10
 ```
 
 Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
@@ -555,13 +556,13 @@ docker exec -it razor-go razor createJob --url <URL> --selector <selector_in_jso
 Example:
 
 ```
-$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --selectorType 1 --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --weight 32
+$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power 2 --name ethusd_kraken --selector 'result.XETHZUSD.c[0]' --url '{"type":"GET","url":"https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body":{},"content-type":""}'
 ```
 
 OR
 
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u {"type":"GET","url":"https://www.coingecko.com/en","body":{},"content-type":""} --selectorType 0 --weight 100
 ```
 
 ### Create Collection
@@ -844,30 +845,35 @@ Shown below is an example of how your `assets.json` file should be -
 
 ```
 {
-  "assets": {
-    "collection": {
-      "ethCollectionMean": {
-        "power": 2,
-        "official jobs": {
-          "1": {
-            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
-            "selector": "[`data`][`market_data`][`price_usd`]",
-            "power": 2,
-            "weight": 2
-          },
-        },
-        "custom jobs": [
-          {
-            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
-            "selector": "[`data`][`0`][`price`]",
-            "power": 3,
-            "weight": 2
-          },
-        ]
-      }
-    }
-  }
-}
+	"assets": {
+		"collection": {
+			"ethCollectionMedian": {
+				"power": 2,
+				"official jobs": {
+					"1": {
+					  "URL": {
+						   "type": "GET",
+						   "url": "https://data.messari.io/api/v1/assets/eth/metrics",
+						   "body": {},
+						   "content-type": ""
+						},
+						"selector": "[`data`][`market_data`][`price_usd`]",
+						"power": 2,
+						"weight": 2
+					},
+				},
+				"custom jobs": [{
+						"URL": {
+							"type": "GET",
+							"url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
+							"body": {},
+							"content-type": ""
+						},
+					]
+				}
+			}
+		}
+	}
 ```
 
 Breaking down into components

@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
+	"razor/cache"
 	"razor/core/types"
 	"razor/path"
 	pathMocks "razor/path/mocks"
@@ -181,7 +182,7 @@ func TestAggregate(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
-			utilsMock.On("GetDataToCommitFromJobs", mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
+			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
@@ -551,10 +552,10 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 		}, {Id: 2, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 		},
 	}
 
@@ -579,7 +580,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				overrideJobData: map[string]*types.StructsJob{"1": {
 					Id: 2, SelectorType: 1, Weight: 100,
 					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: "https://api.gemini.com/v1/pubticker/ethusd",
+					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 				}},
 				dataToAppend: big.NewInt(1),
 			},
@@ -630,9 +631,9 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 
 			pathMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
 			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
-			utilsMock.On("GetDataToCommitFromJob", mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
+			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
-			got, _, err := utils.GetDataToCommitFromJobs(jobsArray)
+			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -647,12 +648,12 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 func TestGetDataToCommitFromJob(t *testing.T) {
 	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 	}
 
 	job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 	}
 
 	response := []byte(`{
@@ -785,12 +786,12 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string")).Return(tt.args.response, tt.args.responseErr)
+			utilsMock.On("GetDataFromAPI", mock.Anything, mock.Anything).Return(tt.args.response, tt.args.responseErr)
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
-			utilsMock.On("GetDataFromXHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
+			utilsMock.On("GetDataFromXHTML", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
 
-			got, err := utils.GetDataToCommitFromJob(tt.args.job)
+			got, err := utils.GetDataToCommitFromJob(tt.args.job, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1119,6 +1120,11 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollection",
 	}
 
+	ethCollection1 := bindings.StructsCollection{
+		Active: true, Id: 7, Power: 2,
+		AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollection",
+	}
+
 	type args struct {
 		collection bindings.StructsCollection
 		dataString string
@@ -1172,6 +1178,37 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 			},
 			want:               nil,
 			wantOverrideJobIds: nil,
+		},
+		{
+			name: "Test 4: When multiple jobIds are needed to be overridden from official jobs",
+			args: args{
+				collection: ethCollection1,
+				dataString: jsonDataString,
+				job: bindings.StructsJob{
+					Id:       1,
+					Url:      "http://kraken.com/eth1",
+					Selector: "data.ETH",
+					Power:    3,
+					Weight:   1,
+				},
+			},
+			want: []bindings.StructsJob{
+				{
+					Id:       1,
+					Url:      "http://kucoin.com/eth1",
+					Selector: "eth1",
+					Power:    2,
+					Weight:   2,
+				},
+				{
+					Id:       1,
+					Url:      "http://api.coinbase.com/eth2",
+					Selector: "eth2",
+					Power:    3,
+					Weight:   2,
+				},
+			},
+			wantOverrideJobIds: []uint16{1, 2},
 		},
 	}
 	for _, tt := range tests {

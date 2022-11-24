@@ -139,6 +139,7 @@ func (stakeManagerUtils StakeManagerUtils) Unstake(client *ethclient.Client, opt
 //This function approves the unstake your razor
 func (stakeManagerUtils StakeManagerUtils) ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, stakerTokenAddress common.Address, amount *big.Int) (*Types.Transaction, error) {
 	stakedToken := razorUtils.GetStakedToken(client, stakerTokenAddress)
+	log.Debugf("ApproveUnstake: Executing Approve transaction for stakedToken address: %s with arguments amount : %s", stakerTokenAddress, amount)
 	return ExecuteTransaction(stakedToken, "Approve", opts, common.HexToAddress(core.StakeManagerAddress), amount)
 }
 

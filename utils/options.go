@@ -27,6 +27,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 }
 
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+	log.Debug("Getting transaction options...")
 	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
 	keystorePath := filepath.Join(defaultPath, "keystore_files")
