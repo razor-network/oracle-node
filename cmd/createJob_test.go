@@ -12,10 +12,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -63,18 +61,11 @@ func TestCreateJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			assetManagerUtilsMock := new(mocks.AssetManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			assetManagerUtils = assetManagerUtilsMock
-			transactionUtils = transactionUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			assetManagerUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			assetManagerMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 			got, err := utils.CreateJob(client, config, jobInput)
@@ -310,25 +301,18 @@ func TestExecuteCreateJob(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			utilsMock := new(utilsPkgMocks.Utils)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			razorUtils = utilsMock
-			flagSetUtils = flagsetUtilsMock
-			cmdUtils = cmdUtilsMock
-
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagsetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
-			flagsetUtilsMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
-			flagsetUtilsMock.On("GetStringUrl", flagSet).Return(tt.args.url, tt.args.urlErr)
-			flagsetUtilsMock.On("GetStringSelector", flagSet).Return(tt.args.selector, tt.args.selectorErr)
-			flagsetUtilsMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
-			flagsetUtilsMock.On("GetUint8Weight", flagSet).Return(tt.args.weight, tt.args.weightErr)
-			flagsetUtilsMock.On("GetUint8SelectorType", flagSet).Return(tt.args.selectorType, tt.args.selectorTypeErr)
+			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
+			flagSetMock.On("GetStringUrl", flagSet).Return(tt.args.url, tt.args.urlErr)
+			flagSetMock.On("GetStringSelector", flagSet).Return(tt.args.selector, tt.args.selectorErr)
+			flagSetMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
+			flagSetMock.On("GetUint8Weight", flagSet).Return(tt.args.weight, tt.args.weightErr)
+			flagSetMock.On("GetUint8SelectorType", flagSet).Return(tt.args.selectorType, tt.args.selectorTypeErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createJobHash, tt.args.createJobErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)

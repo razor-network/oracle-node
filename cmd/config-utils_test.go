@@ -146,8 +146,7 @@ func TestGetConfigData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetProvider").Return(tt.args.provider, tt.args.providerErr)
 			cmdUtilsMock.On("GetMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
@@ -218,10 +217,9 @@ func TestGetBufferPercent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootInt32Buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			flagSetMock.On("GetRootInt32Buffer").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			utils := &UtilsStruct{}
 			got, err := utils.GetBufferPercent()
 			if got != tt.want {
@@ -278,10 +276,9 @@ func TestGetGasLimit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootFloat32GasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			flagSetMock.On("GetRootFloat32GasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			utils := &UtilsStruct{}
 
 			got, err := utils.GetGasLimit()
@@ -400,10 +397,9 @@ func TestGetLogLevel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootStringLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
+			flagSetMock.On("GetRootStringLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
 			utils := &UtilsStruct{}
 
 			got, err := utils.GetLogLevel()
@@ -461,10 +457,9 @@ func TestGetMultiplier(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootFloat32GasMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
+			flagSetMock.On("GetRootFloat32GasMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
 			utils := &UtilsStruct{}
 
 			got, err := utils.GetMultiplier()
@@ -530,10 +525,9 @@ func TestGetProvider(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootStringProvider").Return(tt.args.provider, tt.args.providerErr)
+			flagSetMock.On("GetRootStringProvider").Return(tt.args.provider, tt.args.providerErr)
 			utils := &UtilsStruct{}
 
 			got, err := utils.GetProvider()
@@ -591,10 +585,9 @@ func TestGetWaitTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootInt32Wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
+			flagSetMock.On("GetRootInt32Wait").Return(tt.args.waitTime, tt.args.waitTimeErr)
 			utils := &UtilsStruct{}
 			got, err := utils.GetWaitTime()
 			if got != tt.want {
@@ -651,10 +644,9 @@ func TestGetRPCTimeout(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			flagSetUtils = flagSetUtilsMock
+			SetUpMockInterfaces()
 
-			flagSetUtilsMock.On("GetRootInt64RPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
+			flagSetMock.On("GetRootInt64RPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
 			utils := &UtilsStruct{}
 			got, err := utils.GetRPCTimeout()
 			if got != tt.want {

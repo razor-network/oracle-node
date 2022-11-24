@@ -32,7 +32,7 @@ func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 	log.Debug("Calling ImportAccount()...")
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)

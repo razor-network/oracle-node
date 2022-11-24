@@ -50,6 +50,8 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	RetryInterface = optionsPackageStruct.RetryInterface
 	MerkleInterface = optionsPackageStruct.MerkleInterface
 	FlagSetInterface = optionsPackageStruct.FlagSetInterface
+	FileInterface = optionsPackageStruct.FileInterface
+	GasInterface = optionsPackageStruct.GasInterface
 	return &UtilsStruct{}
 }
 

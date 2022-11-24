@@ -43,7 +43,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)

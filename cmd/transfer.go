@@ -45,7 +45,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, fromAddress)
 
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)

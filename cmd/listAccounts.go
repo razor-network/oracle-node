@@ -30,7 +30,7 @@ func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting config: ", err)
 
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("ExecuteListAccounts: Calling ListAccounts()...")
 	allAccounts, err := cmdUtils.ListAccounts()

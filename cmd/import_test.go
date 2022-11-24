@@ -10,11 +10,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"io/fs"
-	"razor/cmd/mocks"
 	"razor/core/types"
-	"razor/path"
-	pathPkgMocks "razor/path/mocks"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -151,27 +147,16 @@ func TestImportAccount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			keystoreUtilsMock := new(mocks.KeystoreInterface)
-			cryptoUtilsMock := new(mocks.CryptoInterface)
-			osMock := new(pathPkgMocks.OSInterface)
-			pathUtilsMock := new(pathPkgMocks.PathInterface)
-
-			path.OSUtilsInterface = osMock
-			razorUtils = utilsMock
-			keystoreUtils = keystoreUtilsMock
-			cryptoUtils = cryptoUtilsMock
-			pathUtils = pathUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("PrivateKeyPrompt").Return(tt.args.privateKey)
 			utilsMock.On("PasswordPrompt").Return(tt.args.password)
-			pathUtilsMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			cryptoUtilsMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
-			keystoreUtilsMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
-			osMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
-			osMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
-			osMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+			cryptoMock.On("HexToECDSA", mock.AnythingOfType("string")).Return(tt.args.ecdsaPrivateKey, tt.args.ecdsaPrivateKeyErr)
+			keystoreMock.On("ImportECDSA", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.importAccount, tt.args.importAccountErr)
+			osPathMock.On("Stat", mock.AnythingOfType("string")).Return(fileInfo, tt.args.statErr)
+			osPathMock.On("IsNotExist", mock.Anything).Return(tt.args.isNotExist)
+			osPathMock.On("Mkdir", mock.Anything, mock.Anything).Return(tt.args.mkdirErr)
 
 			utils := &UtilsStruct{}
 
@@ -229,13 +214,9 @@ func TestExecuteImport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
+			SetUpMockInterfaces()
 
-			cmdUtils = cmdUtilsMock
-			razorUtils = utilsMock
-
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("ImportAccount").Return(tt.args.account, tt.args.accountErr)
 			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 

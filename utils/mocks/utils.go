@@ -12,11 +12,7 @@ import (
 
 	common "github.com/ethereum/go-ethereum/common"
 
-	coretypes "github.com/ethereum/go-ethereum/core/types"
-
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
-
-	ethereum "github.com/ethereum/go-ethereum"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -67,11 +63,6 @@ func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, colle
 	return r0, r1
 }
 
-// AssignLogFile provides a mock function with given fields: flagSet, config
-func (_m *Utils) AssignLogFile(flagSet *pflag.FlagSet, config types.Configurations) {
-	_m.Called(flagSet, config)
-}
-
 // AssignPassword provides a mock function with given fields: flagSet
 func (_m *Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	ret := _m.Called(flagSet)
@@ -100,29 +91,6 @@ func (_m *Utils) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet, *ethclient.Client, string) error); ok {
 		r1 = rf(flagSet, client, address)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// BalanceAtWithRetry provides a mock function with given fields: client, account
-func (_m *Utils) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	ret := _m.Called(client, account)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *big.Int); ok {
-		r0 = rf(client, account)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, account)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -271,27 +239,6 @@ func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, c
 	return r0, r1
 }
 
-// EstimateGasWithRetry provides a mock function with given fields: client, message
-func (_m *Utils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
-	ret := _m.Called(client, message)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) uint64); ok {
-		r0 = rf(client, message)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.CallMsg) error); ok {
-		r1 = rf(client, message)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FetchBalance provides a mock function with given fields: client, accountAddress
 func (_m *Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
 	ret := _m.Called(client, accountAddress)
@@ -331,29 +278,6 @@ func (_m *Utils) FetchPreviousValue(client *ethclient.Client, epoch uint32, asse
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint16) error); ok {
 		r1 = rf(client, epoch, assetId)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FilterLogsWithRetry provides a mock function with given fields: client, query
-func (_m *Utils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]coretypes.Log, error) {
-	ret := _m.Called(client, query)
-
-	var r0 []coretypes.Log
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) []coretypes.Log); ok {
-		r0 = rf(client, query)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]coretypes.Log)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.FilterQuery) error); ok {
-		r1 = rf(client, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -958,43 +882,6 @@ func (_m *Utils) GetEpochLimitForUpdateCommission(client *ethclient.Client) (uin
 	return r0, r1
 }
 
-// GetGasLimit provides a mock function with given fields: transactionData, txnOpts
-func (_m *Utils) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
-	ret := _m.Called(transactionData, txnOpts)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(types.TransactionOptions, *bind.TransactOpts) uint64); ok {
-		r0 = rf(transactionData, txnOpts)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.TransactionOptions, *bind.TransactOpts) error); ok {
-		r1 = rf(transactionData, txnOpts)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetGasPrice provides a mock function with given fields: client, config
-func (_m *Utils) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
-	ret := _m.Called(client, config)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations) *big.Int); ok {
-		r0 = rf(client, config)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	return r0
-}
-
 // GetInfluenceSnapshot provides a mock function with given fields: client, stakerId, epoch
 func (_m *Utils) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
 	ret := _m.Called(client, stakerId, epoch)
@@ -1028,29 +915,6 @@ func (_m *Utils) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]bindings.StructsJob)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetLatestBlockWithRetry provides a mock function with given fields: client
-func (_m *Utils) GetLatestBlockWithRetry(client *ethclient.Client) (*coretypes.Header, error) {
-	ret := _m.Called(client)
-
-	var r0 *coretypes.Header
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) *coretypes.Header); ok {
-		r0 = rf(client)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*coretypes.Header)
 		}
 	}
 
@@ -1187,27 +1051,6 @@ func (_m *Utils) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
 		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress
-func (_m *Utils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
-	ret := _m.Called(client, accountAddress)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
-		r0 = rf(client, accountAddress)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, accountAddress)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1809,27 +1652,6 @@ func (_m *Utils) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collec
 	return r0, r1
 }
 
-// IncreaseGasLimitValue provides a mock function with given fields: client, gasLimit, gasLimitMultiplier
-func (_m *Utils) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
-	ret := _m.Called(client, gasLimit, gasLimitMultiplier)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint64, float32) uint64); ok {
-		r0 = rf(client, gasLimit, gasLimitMultiplier)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint64, float32) error); ok {
-		r1 = rf(client, gasLimit, gasLimitMultiplier)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // IsFlagPassed provides a mock function with given fields: name
 func (_m *Utils) IsFlagPassed(name string) bool {
 	ret := _m.Called(name)
@@ -1904,69 +1726,6 @@ func (_m *Utils) Prng(max uint32, prngHashes []byte) *big.Int {
 	return r0
 }
 
-// ReadFromCommitJsonFile provides a mock function with given fields: filePath
-func (_m *Utils) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
-	ret := _m.Called(filePath)
-
-	var r0 types.CommitFileData
-	if rf, ok := ret.Get(0).(func(string) types.CommitFileData); ok {
-		r0 = rf(filePath)
-	} else {
-		r0 = ret.Get(0).(types.CommitFileData)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(filePath)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ReadFromDisputeJsonFile provides a mock function with given fields: filePath
-func (_m *Utils) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
-	ret := _m.Called(filePath)
-
-	var r0 types.DisputeFileData
-	if rf, ok := ret.Get(0).(func(string) types.DisputeFileData); ok {
-		r0 = rf(filePath)
-	} else {
-		r0 = ret.Get(0).(types.DisputeFileData)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(filePath)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// ReadFromProposeJsonFile provides a mock function with given fields: filePath
-func (_m *Utils) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
-	ret := _m.Called(filePath)
-
-	var r0 types.ProposeFileData
-	if rf, ok := ret.Get(0).(func(string) types.ProposeFileData); ok {
-		r0 = rf(filePath)
-	} else {
-		r0 = ret.Get(0).(types.ProposeFileData)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(filePath)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // ReadJSONData provides a mock function with given fields: fileName
 func (_m *Utils) ReadJSONData(fileName string) (map[string]*types.StructsJob, error) {
 	ret := _m.Called(fileName)
@@ -1990,48 +1749,6 @@ func (_m *Utils) ReadJSONData(fileName string) (map[string]*types.StructsJob, er
 	return r0, r1
 }
 
-// SaveDataToCommitJsonFile provides a mock function with given fields: filePath, epoch, commitData
-func (_m *Utils) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
-	ret := _m.Called(filePath, epoch, commitData)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, uint32, types.CommitData) error); ok {
-		r0 = rf(filePath, epoch, commitData)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// SaveDataToDisputeJsonFile provides a mock function with given fields: filePath, bountyIdQueue
-func (_m *Utils) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
-	ret := _m.Called(filePath, bountyIdQueue)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, []uint32) error); ok {
-		r0 = rf(filePath, bountyIdQueue)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// SaveDataToProposeJsonFile provides a mock function with given fields: filePath, proposeData
-func (_m *Utils) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
-	ret := _m.Called(filePath, proposeData)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string, types.ProposeFileData) error); ok {
-		r0 = rf(filePath, proposeData)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // SecondsToReadableTime provides a mock function with given fields: input
 func (_m *Utils) SecondsToReadableTime(input int) string {
 	ret := _m.Called(input)
@@ -2044,29 +1761,6 @@ func (_m *Utils) SecondsToReadableTime(input int) string {
 	}
 
 	return r0
-}
-
-// SuggestGasPriceWithRetry provides a mock function with given fields: client
-func (_m *Utils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
-	ret := _m.Called(client)
-
-	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
-		r0 = rf(client)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // ToAssign provides a mock function with given fields: client

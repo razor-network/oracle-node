@@ -28,7 +28,7 @@ func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 	fmt.Println("The contract addresses are: ")
 	cmdUtils.ContractAddresses()
 

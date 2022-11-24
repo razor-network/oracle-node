@@ -7,12 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
-	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 
@@ -70,9 +67,7 @@ func TestCheckForLastCommitted(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			razorUtils = utilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 
@@ -171,25 +166,14 @@ func TestReveal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-			voteManagerUtilsMock := new(mocks.VoteManagerInterface)
-			merkleInterface := new(utilsPkgMocks.MerkleTreeInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			razorUtils = utilsMock
-			transactionUtils = transactionUtilsMock
-			voteManagerUtils = voteManagerUtilsMock
-			cmdUtils = cmdUtilsMock
-			utils.MerkleInterface = merkleInterface
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			merkleInterface.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
+			merkleUtilsMock.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
-			voteManagerUtilsMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
-			transactionUtilsMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
+			voteManagerMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
+			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
@@ -265,12 +249,10 @@ func TestGenerateTreeRevealData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			merkleInterface := new(utilsPkgMocks.MerkleTreeInterface)
+			SetUpMockInterfaces()
 
-			utils.MerkleInterface = merkleInterface
-
-			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return(tt.args.proof)
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return(tt.args.root, tt.args.rootErr)
+			merkleUtilsMock.On("GetProofPath", mock.Anything, mock.Anything).Return(tt.args.proof)
+			merkleUtilsMock.On("GetMerkleRoot", mock.Anything).Return(tt.args.root, tt.args.rootErr)
 			ut := &UtilsStruct{}
 			if got := ut.GenerateTreeRevealData(tt.args.merkleTree, tt.args.commitData); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GenerateTreeRevealData() = %v, want %v", got, tt.want)
@@ -343,14 +325,10 @@ func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			abiUtilsMock := new(utilsPkgMocks.ABIUtils)
-
-			razorUtils = utilsMock
-			utils.ABIInterface = abiUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
-			utilsMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.contractAbiErr)
 			abiUtilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
 			ut := &UtilsStruct{}
@@ -379,11 +357,10 @@ func BenchmarkGenerateTreeRevealData(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Allotted_Collections%d", v.numOfAllottedCollections), func(b *testing.B) {
 			merkleTree := [][][]byte{{{byte(1)}, {byte(2)}}, {{byte(3)}, {byte(4)}}, {{byte(5)}, {byte(6)}}}
-			merkleInterface := new(utilsPkgMocks.MerkleTreeInterface)
-			utils.MerkleInterface = merkleInterface
+			SetUpMockInterfaces()
 
-			merkleInterface.On("GetProofPath", mock.Anything, mock.Anything).Return([][32]byte{[32]byte{1, 2, 3}, {4, 5, 6}})
-			merkleInterface.On("GetMerkleRoot", mock.Anything).Return([32]byte{100}, nil)
+			merkleUtilsMock.On("GetProofPath", mock.Anything, mock.Anything).Return([][32]byte{[32]byte{1, 2, 3}, {4, 5, 6}})
+			merkleUtilsMock.On("GetMerkleRoot", mock.Anything).Return([32]byte{100}, nil)
 
 			ut := &UtilsStruct{}
 			seqAllottedCollections := getDummySeqAllottedCollection(v.numOfAllottedCollections)

@@ -45,6 +45,29 @@ func (_m *ClientUtils) BalanceAt(client *ethclient.Client, ctx context.Context, 
 	return r0, r1
 }
 
+// BalanceAtWithRetry provides a mock function with given fields: client, account
+func (_m *ClientUtils) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
+	ret := _m.Called(client, account)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *big.Int); ok {
+		r0 = rf(client, account)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
+		r1 = rf(client, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // EstimateGas provides a mock function with given fields: client, ctx, msg
 func (_m *ClientUtils) EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error) {
 	ret := _m.Called(client, ctx, msg)
@@ -59,6 +82,27 @@ func (_m *ClientUtils) EstimateGas(client *ethclient.Client, ctx context.Context
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.CallMsg) error); ok {
 		r1 = rf(client, ctx, msg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// EstimateGasWithRetry provides a mock function with given fields: client, message
+func (_m *ClientUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
+	ret := _m.Called(client, message)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) uint64); ok {
+		r0 = rf(client, message)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.CallMsg) error); ok {
+		r1 = rf(client, message)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -82,6 +126,73 @@ func (_m *ClientUtils) FilterLogs(client *ethclient.Client, ctx context.Context,
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context, ethereum.FilterQuery) error); ok {
 		r1 = rf(client, ctx, q)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterLogsWithRetry provides a mock function with given fields: client, query
+func (_m *ClientUtils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(client, query)
+
+	var r0 []types.Log
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) []types.Log); ok {
+		r0 = rf(client, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]types.Log)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.FilterQuery) error); ok {
+		r1 = rf(client, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLatestBlockWithRetry provides a mock function with given fields: client
+func (_m *ClientUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
+	ret := _m.Called(client)
+
+	var r0 *types.Header
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *types.Header); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Header)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress
+func (_m *ClientUtils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+	ret := _m.Called(client, accountAddress)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
+		r0 = rf(client, accountAddress)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
+		r1 = rf(client, accountAddress)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -149,6 +260,29 @@ func (_m *ClientUtils) SuggestGasPrice(client *ethclient.Client, ctx context.Con
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, context.Context) error); ok {
 		r1 = rf(client, ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SuggestGasPriceWithRetry provides a mock function with given fields: client
+func (_m *ClientUtils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
+	ret := _m.Called(client)
+
+	var r0 *big.Int
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
+		r1 = rf(client)
 	} else {
 		r1 = ret.Error(1)
 	}

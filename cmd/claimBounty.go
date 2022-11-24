@@ -48,7 +48,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	logger.SetLoggerParameters(client, address)
 
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
@@ -92,7 +92,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 	log.Debug("HandleClaimBounty: Dispute data file path: ", disputeFilePath)
 	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
 		log.Debug("Fetching the dispute data from dispute data file...")
-		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		disputeData, err = fileUtils.ReadFromDisputeJsonFile(disputeFilePath)
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 	}
 
 	log.Debug("Saving the updated dispute data to dispute data file...")
-	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	err = fileUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
 	if err != nil {
 		return err
 	}

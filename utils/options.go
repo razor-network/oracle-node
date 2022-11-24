@@ -35,21 +35,21 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	if privateKey == nil || err != nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
-	nonce, err := UtilsInterface.GetNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
+	nonce, err := ClientInterface.GetNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
 	CheckError("Error in fetching nonce: ", err)
 
-	gasPrice := UtilsInterface.GetGasPrice(transactionData.Client, transactionData.Config)
+	gasPrice := GasInterface.GetGasPrice(transactionData.Client, transactionData.Config)
 	txnOpts, err := BindInterface.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
 
-	gasLimit, err := UtilsInterface.GetGasLimit(transactionData, txnOpts)
+	gasLimit, err := GasInterface.GetGasLimit(transactionData, txnOpts)
 	if err != nil {
 		errString := err.Error()
 		if ContainsStringFromArray(errString, []string{"500", "501", "502", "503", "504"}) || errString == errors.New("intrinsic gas too low").Error() {
-			latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(transactionData.Client)
+			latestBlock, err := ClientInterface.GetLatestBlockWithRetry(transactionData.Client)
 			CheckError("Error in fetching block: ", err)
 
 			txnOpts.GasLimit = latestBlock.GasLimit
@@ -64,7 +64,7 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	return txnOpts
 }
 
-func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+func (*GasStruct) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
@@ -72,7 +72,7 @@ func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configura
 		gas = big.NewInt(0)
 	}
 	var err error
-	suggestedGasPrice, err := UtilsInterface.SuggestGasPriceWithRetry(client)
+	suggestedGasPrice, err := ClientInterface.SuggestGasPriceWithRetry(client)
 	if err != nil {
 		log.Error(err)
 		return UtilsInterface.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
@@ -87,7 +87,7 @@ func (*UtilsStruct) GetGasPrice(client *ethclient.Client, config types.Configura
 	return gasPrice
 }
 
-func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
@@ -109,22 +109,22 @@ func (*UtilsStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpt
 		Value:    txnOpts.Value,
 		Data:     inputData,
 	}
-	gasLimit, err := UtilsInterface.EstimateGasWithRetry(transactionData.Client, msg)
+	gasLimit, err := ClientInterface.EstimateGasWithRetry(transactionData.Client, msg)
 	if err != nil {
 		return 0, err
 	}
 	log.Debug("Estimated Gas: ", gasLimit)
-	return UtilsInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
+	return GasInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
 }
 
-func (*UtilsStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+func (*GasStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil
 	}
 	gasLimitIncremented := float64(gasLimitMultiplier) * float64(gasLimit)
 	gasLimit = uint64(gasLimitIncremented)
 
-	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err

@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"path/filepath"
-	razorAccounts "razor/accounts"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -32,7 +31,7 @@ func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet, config)
+	fileUtils.AssignLogFile(flagSet, config)
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.AssignPassword(flagSet)
 	log.Debug("ExecuteCreate: Calling Create() with argument as input password")
@@ -51,7 +50,7 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 	}
 	log.Debug("Create: .razor directory path: ", razorPath)
 	keystorePath := filepath.Join(razorPath, "keystore_files")
-	account := razorAccounts.AccountUtilsInterface.CreateAccount(keystorePath, password)
+	account := accountUtils.CreateAccount(keystorePath, password)
 	return account, nil
 }
 

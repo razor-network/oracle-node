@@ -11,7 +11,7 @@ import (
 	"razor/core"
 )
 
-func (*UtilsStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+func (*ClientStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
 	var (
 		nonce uint64
 		err   error
@@ -31,7 +31,7 @@ func (*UtilsStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress
 	return nonce, nil
 }
 
-func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
+func (*ClientStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
 	var (
 		latestHeader *types.Header
 		err          error
@@ -51,7 +51,7 @@ func (*UtilsStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.He
 	return latestHeader, nil
 }
 
-func (o *UtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
+func (*ClientStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
 	var (
 		gasPrice *big.Int
 		err      error
@@ -71,7 +71,7 @@ func (o *UtilsStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.I
 	return gasPrice, nil
 }
 
-func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
+func (*ClientStruct) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
 	var (
 		gasLimit uint64
 		err      error
@@ -91,7 +91,7 @@ func (*UtilsStruct) EstimateGasWithRetry(client *ethclient.Client, message ether
 	return gasLimit, nil
 }
 
-func (*UtilsStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
+func (*ClientStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
 	var (
 		logs []types.Log
 		err  error
@@ -111,7 +111,7 @@ func (*UtilsStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum
 	return logs, nil
 }
 
-func (*UtilsStruct) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
+func (*ClientStruct) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
 	var (
 		balance *big.Int
 		err     error

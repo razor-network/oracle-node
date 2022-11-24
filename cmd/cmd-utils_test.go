@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -80,12 +78,7 @@ func TestGetEpochAndState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
@@ -174,12 +167,7 @@ func TestWaitForAppropriateState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			timeMock := new(mocks.TimeInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			timeUtils = timeMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
@@ -236,12 +224,7 @@ func TestWaitIfCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			timeMock := new(mocks.TimeInterface)
-
-			cmdUtils = cmdUtilsMock
-			timeUtils = timeMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
@@ -340,14 +323,10 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			SetUpMockInterfaces()
 
-			razorUtils = utilsMock
-			flagSetUtils = flagsetUtilsMock
-
-			flagsetUtilsMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
-			flagsetUtilsMock.On("GetBoolWeiRazor", flagSet).Return(tt.args.weiRazor, tt.args.weiRazorErr)
+			flagSetMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
+			flagSetMock.On("GetBoolWeiRazor", flagSet).Return(tt.args.weiRazor, tt.args.weiRazorErr)
 			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
 			utilsMock.On("GetAmountInWei", mock.AnythingOfType("*big.Int")).Return(tt.args.amountInWei)
 
@@ -405,9 +384,7 @@ func TestGetFormattedStateNames(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-
-			razorUtils = utilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
 			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
