@@ -54,7 +54,7 @@ func InitializeLogger(fileName string) {
 
 		lumberJackLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
-			MaxSize:    182, // Maximum Size of a log file
+			MaxSize:    200, // Maximum Size of a log file
 			MaxBackups: 52,  // Maximum number of log files
 			MaxAge:     365, // Maximum number of days to retain olf files
 		}
