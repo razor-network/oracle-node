@@ -3,10 +3,6 @@ package logger
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/razor-network/goInfo"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"math/big"
 	"os"
@@ -14,6 +10,11 @@ import (
 	"razor/core"
 	"razor/path"
 	"runtime"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/razor-network/goInfo"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type StandardLogger struct {
