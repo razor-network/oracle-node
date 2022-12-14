@@ -192,7 +192,7 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
-		log.Errorf("Error in fetching block : %s", err)
+		log.Error("Error in fetching block: ", err)
 		return nil, err
 	}
 	current_epoch := block.Time / uint64(core.EpochLength)
@@ -200,7 +200,7 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
-		log.Errorf("Err in fetching Previous block : %s", err)
+		log.Error("Err in fetching Previous block: ", err)
 		return nil, err
 	}
 	previousBlockActualTimestamp := previousBlock.Time
@@ -259,16 +259,19 @@ func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
 		if err != nil {
-			log.Fatalf("Error in getting file name : ", err)
+			log.Fatal("Error in getting file name: ", err)
 		}
+		log.Debug("Log file name: ", fileName)
 		logger.InitializeLogger(fileName)
+	} else {
+		log.Debug("No `logFile` flag passed, not storing logs in any file")
 	}
 }
 
-func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
+func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
 
 	var data types.ProposeFileData
-	data.Epoch = epoch
+	data.Epoch = proposeData.Epoch
 	data.MediansData = proposeData.MediansData
 	data.RevealedCollectionIds = proposeData.RevealedCollectionIds
 	data.RevealedDataMaps = proposeData.RevealedDataMaps

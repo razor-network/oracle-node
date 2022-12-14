@@ -1107,8 +1107,7 @@ func TestSaveDataToCommitJsonFile(t *testing.T) {
 func TestSaveDataToProposeJsonFile(t *testing.T) {
 	var (
 		filePath    string
-		epoch       uint32
-		proposeData Types.ProposeData
+		proposeData Types.ProposeFileData
 	)
 
 	type args struct {
@@ -1157,7 +1156,7 @@ func TestSaveDataToProposeJsonFile(t *testing.T) {
 
 			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
 			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
-			if err := utils.SaveDataToProposeJsonFile(filePath, epoch, proposeData); (err != nil) != tt.wantErr {
+			if err := utils.SaveDataToProposeJsonFile(filePath, proposeData); (err != nil) != tt.wantErr {
 				t.Errorf("SaveDataToProposeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -31,6 +31,8 @@ func TestSetConfig(t *testing.T) {
 		configErr             error
 		gasLimitMultiplier    float32
 		gasLimitMultiplierErr error
+		rpcTimeout            int64
+		rpcTimeoutErr         error
 		isFlagPassed          bool
 		port                  string
 		portErr               error
@@ -57,6 +59,7 @@ func TestSetConfig(t *testing.T) {
 				configErr:             nil,
 				gasLimitMultiplier:    10,
 				gasLimitMultiplierErr: nil,
+				rpcTimeout:            10,
 			},
 			wantErr: nil,
 		},
@@ -73,6 +76,7 @@ func TestSetConfig(t *testing.T) {
 				configErr:             nil,
 				gasLimitMultiplier:    10,
 				gasLimitMultiplierErr: nil,
+				rpcTimeout:            0,
 			},
 			wantErr: nil,
 		},
@@ -262,6 +266,22 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("error in getting port"),
 		},
+		{
+			name: "Test 16: When there is an error in getting RPC timeout",
+			args: args{
+				provider:           "http://127.0.0.1",
+				gasmultiplier:      2,
+				buffer:             20,
+				waitTime:           2,
+				gasPrice:           1,
+				logLevel:           "debug",
+				path:               "/home/config",
+				configErr:          nil,
+				gasLimitMultiplier: -1,
+				rpcTimeoutErr:      errors.New("rpcTimeout error"),
+			},
+			wantErr: errors.New("rpcTimeout error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -284,6 +304,7 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetInt32GasPrice", flagSet).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
+			flagSetUtilsMock.On("GetInt64RPCTimeout", flagSet).Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
 			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return(tt.args.port, tt.args.portErr)
 			flagSetUtilsMock.On("GetStringCertFile", flagSet).Return(tt.args.certFile, tt.args.certFileErr)
 			flagSetUtilsMock.On("GetStringCertKey", flagSet).Return(tt.args.certKey, tt.args.certKeyErr)

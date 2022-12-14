@@ -2,12 +2,13 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/spf13/pflag"
 
@@ -34,6 +35,7 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteTransfer: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -41,9 +43,11 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting fromAddress: ", err)
 
 	logger.SetLoggerParameters(client, fromAddress)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	log.Debug("Getting password...")
+	password := razorUtils.AssignPassword(flagSet)
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
@@ -51,6 +55,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	balance, err := razorUtils.FetchBalance(client, fromAddress)
 	utils.CheckError("Error in fetching razor balance: ", err)
 
+	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
 
@@ -62,6 +67,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 		Balance:     balance,
 	}
 
+	log.Debugf("Calling Transfer() with arguments transferInput = %+v", transferInput)
 	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 	log.Info("Transaction Hash: ", txn)
@@ -71,7 +77,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 
 //This function transfers the razors from your account to others account
 func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
-
+	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
@@ -87,6 +93,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 	})
 	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 
+	log.Debugf("Executing Transfer transaction with toAddress: %s, amount: %s", transferInput.ToAddress, transferInput.ValueInWei)
 	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
 	if err != nil {
 		log.Errorf("Error in transferring tokens ")
@@ -102,12 +109,14 @@ func init() {
 		Amount   string
 		From     string
 		To       string
+		Password string
 		WeiRazor bool
 	)
 
 	transferCmd.Flags().StringVarP(&Amount, "value", "v", "0", "value to transfer")
 	transferCmd.Flags().StringVarP(&From, "from", "", "", "transfer from")
 	transferCmd.Flags().StringVarP(&To, "to", "", "", "transfer to")
+	transferCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	transferCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 
 	amountErr := transferCmd.MarkFlagRequired("value")

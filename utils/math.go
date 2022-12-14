@@ -167,11 +167,13 @@ func GetRogueRandomMedianValue() uint32 {
 	return uint32(rogueRandomMedianValue.Int64())
 }
 
-func (*UtilsStruct) Shuffle(slice []uint32) []uint32 {
+func Shuffle(slice []uint32) []uint32 {
+	copiedSlice := make([]uint32, len(slice))
+	copy(copiedSlice, slice)
 	r := mathRand.New(mathRand.NewSource(time.Now().Unix()))
-	for n := len(slice); n > 0; n-- {
+	for n := len(copiedSlice); n > 0; n-- {
 		randIndex := r.Intn(n)
-		slice[n-1], slice[randIndex] = slice[randIndex], slice[n-1]
+		copiedSlice[n-1], copiedSlice[randIndex] = copiedSlice[randIndex], copiedSlice[n-1]
 	}
-	return slice
+	return copiedSlice
 }

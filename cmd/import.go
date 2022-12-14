@@ -28,15 +28,18 @@ func initialiseImport(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ImportAccount function
 func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
+	log.Debug("Calling ImportAccount()...")
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)
-	log.Info("Account Address: ", account.Address)
-	log.Info("Keystore Path: ", account.URL)
+	log.Info("ExecuteImport: Account Address: ", account.Address)
+	log.Info("ExecuteImport: Keystore Path: ", account.URL)
 }
 
 //This function is used to import existing accounts into razor-go
 func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
+	log.Info("Enter the private key for the account that you want to import")
 	privateKey := razorUtils.PrivateKeyPrompt()
 	// Remove 0x from the private key
 	privateKey = strings.TrimPrefix(privateKey, "0x")
@@ -48,6 +51,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
+	log.Debug("ImportAccount: .razor directory path: ", razorPath)
 	priv, err := cryptoUtils.HexToECDSA(privateKey)
 	if err != nil {
 		log.Error("Error in parsing private key")
@@ -60,6 +64,8 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 			return accounts.Account{Address: common.Address{0x00}}, mkdirErr
 		}
 	}
+	log.Debug("ImportAccount: Keystore directory path: ", keystoreDir)
+	log.Debug("Importing the account...")
 	account, err := keystoreUtils.ImportECDSA(keystoreDir, priv, password)
 	if err != nil {
 		log.Error("Error in importing account")

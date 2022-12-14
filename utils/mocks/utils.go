@@ -863,6 +863,27 @@ func (_m *Utils) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32
 	return r0, r1
 }
 
+// GetEpochLastProposed provides a mock function with given fields: client, stakerId
+func (_m *Utils) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
+	ret := _m.Called(client, stakerId)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) uint32); ok {
+		r0 = rf(client, stakerId)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) error); ok {
+		r1 = rf(client, stakerId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEpochLastRevealed provides a mock function with given fields: client, stakerId
 func (_m *Utils) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
 	ret := _m.Called(client, stakerId)
@@ -1141,6 +1162,27 @@ func (_m *Utils) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error) {
 	return r0, r1
 }
 
+// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress
+func (_m *Utils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+	ret := _m.Called(client, accountAddress)
+
+	var r0 uint64
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
+		r0 = rf(client, accountAddress)
+	} else {
+		r0 = ret.Get(0).(uint64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
+		r1 = rf(client, accountAddress)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetNumActiveCollections provides a mock function with given fields: client
 func (_m *Utils) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
 	ret := _m.Called(client)
@@ -1237,27 +1279,6 @@ func (_m *Utils) GetOptions() bind.CallOpts {
 	}
 
 	return r0
-}
-
-// GetPendingNonceAtWithRetry provides a mock function with given fields: client, accountAddress
-func (_m *Utils) GetPendingNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
-	ret := _m.Called(client, accountAddress)
-
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
-		r0 = rf(client, accountAddress)
-	} else {
-		r0 = ret.Get(0).(uint64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, accountAddress)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // GetProposedBlock provides a mock function with given fields: client, epoch, proposedBlockId
@@ -1935,13 +1956,13 @@ func (_m *Utils) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint
 	return r0
 }
 
-// SaveDataToProposeJsonFile provides a mock function with given fields: filePath, epoch, proposeData
-func (_m *Utils) SaveDataToProposeJsonFile(filePath string, epoch uint32, proposeData types.ProposeData) error {
-	ret := _m.Called(filePath, epoch, proposeData)
+// SaveDataToProposeJsonFile provides a mock function with given fields: filePath, proposeData
+func (_m *Utils) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
+	ret := _m.Called(filePath, proposeData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, uint32, types.ProposeData) error); ok {
-		r0 = rf(filePath, epoch, proposeData)
+	if rf, ok := ret.Get(0).(func(string, types.ProposeFileData) error); ok {
+		r0 = rf(filePath, proposeData)
 	} else {
 		r0 = ret.Error(0)
 	}

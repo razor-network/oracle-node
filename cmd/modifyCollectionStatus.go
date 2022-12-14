@@ -32,16 +32,20 @@ func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteModifyCollectionStatus: Config: %+v: ", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ExecuteModifyCollectionStatus: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	log.Debug("Getting password...")
+	password := razorUtils.AssignPassword(flagSet)
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionId: ", err)
 
@@ -58,6 +62,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 		CollectionId: collectionId,
 	}
 
+	log.Debugf("Calling ModifyCollectionStatus() with arguments modifyCollectionInput = %+v", modifyCollectionInput)
 	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
@@ -79,6 +84,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		log.Error("Error in fetching active status")
 		return core.NilHash, err
 	}
+	log.Debug("ModifyCollectionStatus: Current status of collection: ", currentStatus)
 	if currentStatus == modifyCollectionInput.Status {
 		log.Errorf("Collection %d has the active status already set to %t", modifyCollectionInput.CollectionId, modifyCollectionInput.Status)
 		return core.NilHash, nil
@@ -102,6 +108,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Changing active status of collection: %d from %t to %t", modifyCollectionInput.CollectionId, !modifyCollectionInput.Status, modifyCollectionInput.Status)
+	log.Debugf("Executing SetCollectionStatus transaction with status = %v, collectionId = %d", modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
 	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
 	if err != nil {
 		return core.NilHash, err
@@ -116,11 +123,13 @@ func init() {
 		Address      string
 		CollectionId uint16
 		Status       string
+		Password     string
 	)
 
 	modifyCollectionStatusCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the user")
 	modifyCollectionStatusCmd.Flags().Uint16VarP(&CollectionId, "collectionId", "", 0, "collectionId of the collection")
 	modifyCollectionStatusCmd.Flags().StringVarP(&Status, "status", "", "true", "active status of the collection")
+	modifyCollectionStatusCmd.Flags().StringVarP(&Password, "password", "", "", "password path of user to protect the keystore")
 
 	addressErr := modifyCollectionStatusCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addressErr)

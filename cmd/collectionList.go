@@ -33,10 +33,12 @@ func initialiseCollectionList(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteCollectionList: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	logger.SetLoggerParameters(client, "")
 
+	log.Debug("Calling GetCollectionList()")
 	err = cmdUtils.GetCollectionList(client)
 	utils.CheckError("Error in getting collection list: ", err)
 }
@@ -44,6 +46,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 //This function provides the list of all collections with their name, power, ID etc.
 func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
 	collections, err := razorUtils.GetCollections(client)
+	log.Debugf("GetCollectionList: Collections: %+v", collections)
 
 	if err != nil {
 		return err

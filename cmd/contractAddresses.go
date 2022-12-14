@@ -23,6 +23,7 @@ func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriatley and executes the ContractAddresses function
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 	fmt.Println("The contract addresses are: ")
 	cmdUtils.ContractAddresses()

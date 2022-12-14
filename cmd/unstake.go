@@ -3,13 +3,14 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
@@ -37,6 +38,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteUnstake: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -44,10 +46,13 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	log.Debug("Getting password...")
+	password := razorUtils.AssignPassword(flagSet)
 
+	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
@@ -63,6 +68,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 		StakerId:   stakerId,
 	}
 
+	log.Debugf("ExecuteUnstake: Calling Unstake() with arguments unstakeInput: %+v", unstakeInput)
 	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
@@ -87,6 +93,8 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in getting staker: ", err)
 		return core.NilHash, err
 	}
+	log.Debugf("Unstake: Staker info: %+v", staker)
+	log.Debug("Unstake: Calling ApproveUnstake()...")
 	approveHash, err := cmdUtils.ApproveUnstake(client, staker, txnArgs)
 	if err != nil {
 		return core.NilHash, err
@@ -110,6 +118,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in getting unstakeLock: ", err)
 		return core.NilHash, err
 	}
+	log.Debugf("Unstake: Unstake lock: %+v", unstakeLock)
 
 	if unstakeLock.Amount.Cmp(big.NewInt(0)) != 0 {
 		err := errors.New("existing unstake lock")
@@ -120,6 +129,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Unstaking coins")
+	log.Debugf("Executing Unstake transaction with stakerId = %d, amount = %s", stakerId, txnArgs.Amount)
 	txn, err := stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
@@ -148,12 +158,14 @@ func init() {
 	var (
 		Address         string
 		AmountToUnStake string
+		Password        string
 		WeiRazor        bool
 		StakerId        uint32
 	)
 
 	unstakeCmd.Flags().StringVarP(&Address, "address", "a", "", "user's address")
 	unstakeCmd.Flags().StringVarP(&AmountToUnStake, "value", "v", "0", "value of sRazors to un-stake")
+	unstakeCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 	unstakeCmd.Flags().BoolVarP(&WeiRazor, "weiRazor", "", false, "value can be passed in wei")
 	unstakeCmd.Flags().Uint32VarP(&StakerId, "stakerId", "", 0, "staker id")
 

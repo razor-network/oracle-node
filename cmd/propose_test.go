@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cmd/mocks"
-	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
@@ -63,6 +62,8 @@ func TestPropose(t *testing.T) {
 		iteration                  int
 		numOfProposedBlocks        uint8
 		numOfProposedBlocksErr     error
+		sortedProposedBlockIds     []uint32
+		sortedProposedBlocksIdsErr error
 		maxAltBlocks               uint8
 		maxAltBlocksErr            error
 		lastIteration              *big.Int
@@ -80,11 +81,11 @@ func TestPropose(t *testing.T) {
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
+		waitForBlockCompletionErr  error
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    common.Hash
 		wantErr error
 	}{
 		{
@@ -98,6 +99,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 1, 0},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -106,7 +108,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
 		},
 		{
@@ -120,6 +121,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 1, 0},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -128,7 +130,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("state error"),
 		},
 		{
@@ -142,6 +143,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
+				sortedProposedBlockIds:  []uint32{1, 0},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -150,7 +152,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("numberOfStakers error"),
 		},
 		{
@@ -163,6 +164,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 1, 0},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -171,7 +173,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("biggest staker error"),
 		},
 		{
@@ -185,6 +186,7 @@ func TestPropose(t *testing.T) {
 				saltErr:                 errors.New("salt error"),
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -193,7 +195,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("salt error"),
 		},
 		{
@@ -207,6 +208,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               -1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -215,7 +217,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: nil,
 		},
 		{
@@ -229,6 +230,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocksErr:  errors.New("numOfProposedBlocks error"),
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -237,7 +239,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("numOfProposedBlocks error"),
 		},
 		{
@@ -251,6 +252,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
+				sortedProposedBlockIds:  []uint32{0, 1},
 				maxAltBlocksErr:         errors.New("maxAltBlocks error"),
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -259,7 +261,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("maxAltBlocks error"),
 		},
 		{
@@ -273,6 +274,7 @@ func TestPropose(t *testing.T) {
 				salt:                       saltBytes32,
 				iteration:                  1,
 				numOfProposedBlocks:        4,
+				sortedProposedBlockIds:     []uint32{2, 0, 1, 3},
 				maxAltBlocks:               2,
 				lastIteration:              big.NewInt(5),
 				lastProposedBlockStructErr: errors.New("lastProposedBlockStruct error"),
@@ -281,22 +283,22 @@ func TestPropose(t *testing.T) {
 				proposeTxn:                 &Types.Transaction{},
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("lastProposedBlockStruct error"),
 		},
 		{
 			name: "Test 10: When numOfProposedBlocks >= maxAltBlocks and current iteration is greater than iteration of last proposed block ",
 			args: args{
-				state:               2,
-				staker:              bindings.StructsStaker{},
-				numStakers:          5,
-				biggestStake:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestStakerId:     2,
-				salt:                saltBytes32,
-				iteration:           2,
-				numOfProposedBlocks: 4,
-				maxAltBlocks:        2,
-				lastIteration:       big.NewInt(5),
+				state:                  2,
+				staker:                 bindings.StructsStaker{},
+				numStakers:             5,
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:        2,
+				salt:                   saltBytes32,
+				iteration:              2,
+				numOfProposedBlocks:    4,
+				sortedProposedBlockIds: []uint32{2, 0, 1, 3},
+				maxAltBlocks:           2,
+				lastIteration:          big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{
 					Iteration: big.NewInt(1),
 				},
@@ -305,22 +307,22 @@ func TestPropose(t *testing.T) {
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: nil,
 		},
 		{
 			name: "Test 11: When numOfProposedBlocks >= maxAltBlocks and current iteration is less than iteration of last proposed block and propose transaction is successful",
 			args: args{
-				state:               2,
-				staker:              bindings.StructsStaker{},
-				numStakers:          5,
-				biggestStake:        big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestStakerId:     2,
-				salt:                saltBytes32,
-				iteration:           1,
-				numOfProposedBlocks: 4,
-				maxAltBlocks:        2,
-				lastIteration:       big.NewInt(5),
+				state:                  2,
+				staker:                 bindings.StructsStaker{},
+				numStakers:             5,
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:        2,
+				salt:                   saltBytes32,
+				iteration:              1,
+				numOfProposedBlocks:    4,
+				sortedProposedBlockIds: []uint32{2, 0, 1, 3},
+				maxAltBlocks:           2,
+				lastIteration:          big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{
 					Iteration: big.NewInt(2),
 				},
@@ -329,11 +331,35 @@ func TestPropose(t *testing.T) {
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
 		},
 		{
-			name: "Test 12: When there is an error in getting medians",
+			name: "Test 12: When numOfProposedBlocks >= maxAltBlocks and there is an error in fetching sortedProposedBlockIds",
+			args: args{
+				state:                      2,
+				staker:                     bindings.StructsStaker{},
+				numStakers:                 5,
+				biggestStake:               big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:            2,
+				salt:                       saltBytes32,
+				iteration:                  1,
+				numOfProposedBlocks:        4,
+				sortedProposedBlockIds:     nil,
+				sortedProposedBlocksIdsErr: errors.New("error in fetching sorted proposed block ids"),
+				maxAltBlocks:               2,
+				lastIteration:              big.NewInt(5),
+				lastProposedBlockStruct: bindings.StructsBlock{
+					Iteration: big.NewInt(2),
+				},
+				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+				txnOpts:    txnOpts,
+				proposeTxn: &Types.Transaction{},
+				hash:       common.BigToHash(big.NewInt(1)),
+			},
+			wantErr: errors.New("error in fetching sorted proposed block ids"),
+		},
+		{
+			name: "Test 13: When there is an error in getting medians",
 			args: args{
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
@@ -343,6 +369,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
+				sortedProposedBlockIds:  []uint32{2, 0},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -351,11 +378,10 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("makeBlock error"),
 		},
 		{
-			name: "Test 13: When Propose transaction fails",
+			name: "Test 14: When Propose transaction fails",
 			args: args{
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
@@ -365,6 +391,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     2,
+				sortedProposedBlockIds:  []uint32{2, 0},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -373,11 +400,10 @@ func TestPropose(t *testing.T) {
 				proposeErr:              errors.New("propose error"),
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("propose error"),
 		},
 		{
-			name: "Test 14: When there is an error in getting fileName",
+			name: "Test 15: When there is an error in getting fileName",
 			args: args{
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
@@ -387,19 +413,20 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 				fileNameErr:             errors.New("fileName error"),
 			},
-			want:    core.NilHash,
-			wantErr: nil,
+			wantErr: errors.New("fileName error"),
 		},
 		{
-			name: "Test 15: When there is an error in saving data to file",
+			name: "Test 16: When there is an error in saving data to file",
 			args: args{
 				state:                   2,
 				staker:                  bindings.StructsStaker{},
@@ -409,16 +436,17 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
 				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
+				hash:                    common.BigToHash(big.NewInt(1)),
 				saveDataErr:             errors.New("error in saving data"),
 			},
-			want:    core.NilHash,
-			wantErr: nil,
+			wantErr: errors.New("error in saving data"),
 		},
 		{
 			name: "Test 17: When there is an error in getting buffer percent",
@@ -430,7 +458,6 @@ func TestPropose(t *testing.T) {
 				biggestStakerId:  2,
 				bufferPercentErr: errors.New("buffer error"),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("buffer error"),
 		},
 		{
@@ -450,6 +477,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -458,7 +486,6 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.BigToHash(big.NewInt(1)),
 			wantErr: nil,
 		},
 		{
@@ -477,6 +504,7 @@ func TestPropose(t *testing.T) {
 				salt:                    saltBytes32,
 				iteration:               1,
 				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 0, 1},
 				maxAltBlocks:            4,
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
@@ -485,8 +513,30 @@ func TestPropose(t *testing.T) {
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
-			want:    core.NilHash,
 			wantErr: errors.New("smallestStakerId error"),
+		},
+		{
+			name: "Test 20: When there is an error in waitForCompletion",
+			args: args{
+				state:                     2,
+				staker:                    bindings.StructsStaker{},
+				numStakers:                5,
+				biggestStake:              big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:           2,
+				salt:                      saltBytes32,
+				iteration:                 1,
+				numOfProposedBlocks:       3,
+				sortedProposedBlockIds:    []uint32{2, 0, 1},
+				maxAltBlocks:              4,
+				lastIteration:             big.NewInt(5),
+				lastProposedBlockStruct:   bindings.StructsBlock{},
+				medians:                   []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+				txnOpts:                   txnOpts,
+				proposeTxn:                &Types.Transaction{},
+				hash:                      common.BigToHash(big.NewInt(1)),
+				waitForBlockCompletionErr: errors.New("waitForBlockCompletion error"),
+			},
+			wantErr: errors.New("waitForBlockCompletion error"),
 		},
 	}
 	for _, tt := range tests {
@@ -511,6 +561,7 @@ func TestPropose(t *testing.T) {
 		cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything).Return(tt.args.iteration)
 		utilsMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr)
+		utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlocksIdsErr)
 		utilsMock.On("GetMaxAltBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.maxAltBlocks, tt.args.maxAltBlocksErr)
 		utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr)
 		cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.ids, tt.args.revealDataMaps, tt.args.mediansErr)
@@ -521,13 +572,11 @@ func TestPropose(t *testing.T) {
 		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+		utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := utils.Propose(client, config, account, staker, epoch, blockNumber, tt.args.rogueData)
-			if got != tt.want {
-				t.Errorf("Txn hash for Propose function, got = %v, want %v", got, tt.want)
-			}
+			err := utils.Propose(client, config, account, staker, epoch, blockNumber, tt.args.rogueData)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for Propose function, got = %v, want %v", err, tt.wantErr)

@@ -10,32 +10,45 @@ Official node for running stakers in Golang.
 
 Install `razor-go` pre build binary directly from github and configure into host.
 
-  For linux-amd64
-  ```
-  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
-  ```
+For linux-amd64
 
-  For linux-arm64
-  ```
-  export PLATFORM=arm64
+```
+curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash
+```
 
-  curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash 
-  ```
+For linux-arm64
+
+```
+export PLATFORM=arm64
+
+curl -sSL https://raw.githubusercontent.com/razor-network/razor-go/main/install.sh | bash
+```
 
 Check installation
 
 ```
 razor -v
 ```
->**_NOTE:_** To install the version you want, you can set VERSION:<git-tag> environment variable before running above command.
+
+> **_NOTE:_** To install the version you want, you can set VERSION:<git-tag> environment variable before running above command.
+
 ## Docker quick start
 
 One of the quickest ways to get `razor-go` up and running on your machine is by using Docker:
+
+1. Create docker network
+
 ```
-docker run -d -it--entrypoint /bin/sh  --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.1-incentivised-testnet-phase2
+docker network create razor_network
 ```
 
->**_NOTE:_** that we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
+2. Start razor-go container
+
+```
+docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.0-mainnet
+```
+
+> **_NOTE:_** we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
 
@@ -56,6 +69,7 @@ docker exec -it razor-go razor <command>
 - Silicon chip based Mac users must go for node 15.3.0+
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
 - `solc` and `jq` must be installed.
+
 ### Building the source
 
 1. Run `npm install` to install the node dependencies.
@@ -74,7 +88,6 @@ Go to the `build/bin` directory where the razor binary is generated.
 
 `cd build/bin`
 
-
 ### Set Config
 
 There are a set of parameters that are configurable. These include:
@@ -82,29 +95,30 @@ There are a set of parameters that are configurable. These include:
 - Provider: The RPC URL of the provider you are using to connect to the blockchain.
 - Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
 - Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
-- Wait Time: This is the number of blocks the system will wait while voting.
+- Wait Time: This is the number of seconds the system will wait while voting.
 - Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 1, the razor client will automatically calculate the optimum gas price and send it.
 - Log Level: Normally debug logs are not logged into the log file. But if you want you can set `logLevel` to `debug` and fetch the debug logs.
 - Gas Limit: The value with which the gas limit will be multiplied while sending every transaction.
+- RPC Timeout: This is the threshold number of seconds after which any contract and client calls will time out.
 
 The config is set while the build is generated, but if you need to change any of the above parameter, you can use the `setConfig` command.
 
 razor cli
 
 ```
-$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+$ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout>
 ```
 
 docker
 
 ```
-docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout>
 ```
 
 Example:
 
 ```
-$ ./razor setConfig --provider https://infura/v3/matic --gasmultiplier 1.5 --buffer 20 --wait 70 --gasprice 1 --logLevel debug --gasLimit 0.8
+$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10
 ```
 
 Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
@@ -116,8 +130,6 @@ $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --gasprice 1
 ```
 
 This will cause this particular vote command to run with a gas price of 10.
-
-
 
 ## Razor commands
 
@@ -137,6 +149,7 @@ Docker
 ```
 docker exec -it razor-go razor create
 ```
+
 Example:
 
 ```
@@ -300,26 +313,26 @@ Example:
 $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000 --weiRazor false --stakerId 1
 ```
 
-### Claim Commission 
+### Claim Commission
 
 Staker can claim the rewards earned from delegator's pool share as commission using `claimCommission`
 
 razor cli
 
 ```
-$ ./razor claimCommission --address <address> 
+$ ./razor claimCommission --address <address>
 ```
 
 docker
 
 ```
-docker exec -it razor-go razor claimCommission --address <address> 
+docker exec -it razor-go razor claimCommission --address <address>
 ```
 
 Example:
 
 ```
-$ ./razor claimCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c 
+$ ./razor claimCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
 
 ### Vote
@@ -339,17 +352,25 @@ docker exec -it razor-go razor vote --address <address>
 ```
 
 run vote command in background
-```
-docker exec -it -d razor-go razor vote --address <address> 
-```
 
+```
+docker exec -it -d razor-go razor vote --address <address> --password /root/.razor/<file_name>
+```
+>**_NOTE:_**  To run command with password flag with the help of docker, password file should present in $HOME/.razor/ directory
 
 Example:
 
 ```
 $ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 ```
+
 If you want to claim your bounty automatically after disputing staker, you can just pass `--autoClaimBounty` flag in your vote command.
+
+If you are running an extra backup node, it is suggested to avoid performing few actions. So to do that you need to pass actions that need to be ignored as a value to flag `--backupNode <actions_To_Ignore>`.
+For now, we only support `disputeMedians` as actions to be ignored as a value for backup node.
+```
+$ ./razor vote --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --backupNode disputeMedians
+```
 
 If you want to report incorrect values, there is a `rogue` mode available. Just pass an extra flag `--rogue` to start voting in rogue mode and the client will report wrong medians.
 The rogueMode key can be used to specify in which particular voting state (commit, reveal) or for which values i.e. medians/revealedIds (medians, missingIds, extraIds, unsortedIds)you want to report incorrect values.
@@ -397,6 +418,7 @@ $ ./razor initiateWithdraw --address <address> --stakerId <staker_id>
 ```
 $ ./razor unlockWithdraw --address <address> --stakerId <staker_id>
 ```
+
 docker
 
 ```
@@ -412,6 +434,7 @@ Example:
 ```
 $ ./razor initiateWithdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
+
 ```
 $ ./razor unlockWithdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stakerId 1
 ```
@@ -442,10 +465,10 @@ $ ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stak
 
 If you want to claim your bounty after disputing a rogue staker, you can run `claimBounty` command
 
->**_NOTE:_**  bountyIds are stored in .razor directory with file name in format `YOUR_ADDRESS_disputeData.json file.`
+> **_NOTE:_** bountyIds are stored in .razor directory with file name in format `YOUR_ADDRESS_disputeData.json file.`
 >
 > e.g: `0x2EDc3c6F93e4e20590F480272AB490D2620557xY_disputeData.json`
-If you know the bountyId, you can pass the value to `bountyId` flag.
+> If you know the bountyId, you can pass the value to `bountyId` flag.
 
 razor cli
 
@@ -470,13 +493,13 @@ You can also run claimBounty command without passing `bountyId` flag as it will 
 razor cli
 
 ```
-$ ./razor claimBounty --address <address> 
+$ ./razor claimBounty --address <address>
 ```
 
 docker
 
 ```
-docker exec -it razor-go razor claimBounty --address <address> 
+docker exec -it razor-go razor claimBounty --address <address>
 ```
 
 ### Transfer
@@ -660,10 +683,13 @@ $ ./razor collectionList
 docker
 
 ```
-docker exec -it razor-go razorcollectionList
+docker exec -it razor-go razor collectionList
 ```
 
+Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
+
 ### Expose Metrics
+
 Expose Prometheus-based metrics for monitoring
 
 Example:
@@ -671,10 +697,13 @@ Example:
 razor cli
 
 Without TLS
+
 ```
 $ ./razor setConfig --exposeMetrics 2112
 ```
+
 With TLS
+
 ```
 $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
@@ -693,12 +722,68 @@ docker exec -it razor-go razor setConfig --exposeMetrics 2112
 docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
+#### Configuration
+
+Clone repo and setup monitoring and alerting using Prometheus/Grafana
+
+```
+git clone https://github.com/razor-network/monitoring.git
+cd monitoring
+```
+
+- If your staker is running via binary, then
+
+  1. In `./configs/prometheus.yml`, replace `"razor-go:2112"` with `"<private/public address of host>:2112"`
+
+- For alerting you can add webhook in `./configs/alertmanager.yml`, replace `http://127.0.0.1:5001/` with your webhook URL. This will send you an alert in every 5min if metrics stops.
+
+- If you are running multiple stakers and want to monitor via single grafana dashboard
+  1. You need to update `./config/prometheus.yml`, add new target block where `job_name: "razor-go"`
+     ```
+     - targets: ["<second-host-address>:2112"]
+       labels:
+         staker: "<staker-name>"
+     ```
+  2. Restart vmagent service `docker-compose restart vmagent`
+
+#### Start monitoring stack
+
+- You can spin all agents at once via
+
+  ```
+  docker-compose up -d
+  ```
+
+  Can check the status of each service via
+
+  ```
+  docker-compose ps
+  ```
+
+- You can open grafana at `<private/public address of host>:3000`, and get
+  1. Can checkout `Razor` dashboard to monitor your staker.
+  2. Insight of host metrics at `Node Exporter Full` dashboard.
+  3. Containers Insight at `Docker and OS metrics ( cadvisor, node_exporter )` dashboard.
+  4. Can monitor alerts at `Alertmanager` dashboard.
+
+> **_NOTE:_** Configure firewall for port `3000` on your host to access grafana.
+
+#### Troubleshoot Alerting
+
+1. In `docker-compose.yml` uncomment ports for `alertmanager` and `vmalert`.
+2. Configure firewall to allow access to ports `8880` and `9093`.
+
+3. Check you get alerts on vmalert via `http://<host_address>:8880/vmalert/alerts`. vmalert is configured to scrap in every 2min.
+
+4. If you see alert in vmalert then look into alertmanager `http://<host_address>:9093/#/alerts?`, if you see alerts in there but you didn't get one then probably you need to check your weebhook.
+
 ### Override Job and Adding Your Custom Jobs
 
 Jobs URLs are a placeholder from where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
 You can override the existing job and also add your custom jobs by adding `assets.json` file in `.razor` directory so that razor-nodes can fetch data directly from the provided jobs.
 
 Shown below is an example of how your `assets.json` file should be -
+
 ```
 {
   "assets": {
@@ -728,9 +813,11 @@ Shown below is an example of how your `assets.json` file should be -
 ```
 
 Breaking down into components
+
 - The existing jobs that you want to override should be included in `official jobs` and fields like URL, selector should be replaced with your provided inputs respectively.
 
 In the above example for the collection `ethCollectionMean`, job having `jobId:1` is override by provided URL, selector, power and weight.
+
 ```
 "official jobs": {
           "1": {
@@ -744,6 +831,7 @@ In the above example for the collection `ethCollectionMean`, job having `jobId:1
 - Additional jobs that you want to add to a collection should be added in `custom jobs` field with their respective URLs and selectors.
 
 In the above example for the collection `ethCollectionMean`, new custom job having URL `https://api.lunarcrush.com/v2?data=assets&symbol=ETH` is added.
+
 ```
  "custom jobs": [
           {
@@ -757,30 +845,37 @@ In the above example for the collection `ethCollectionMean`, new custom job havi
 
 ### Logs
 
-User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in ```.razor/logs``` directory.
+User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in `.razor/logs` directory.
 
 razor cli
+
 ```
 $ ./razor addStake --address <address> --value <value> --logFile stakingLogs
 ```
+
 docker
+
 ```
 docker exec -it razor-go razo addStake --address <address> --value <value> --logFile stakingLogs
 ```
-_The logs for above command will be stored at "home/.razor/stakingLogs.log" path_
+
+_The logs for above command will be stored at "$HOME/.razor/logs/stakingLogs.log" path_
 
 razor cli
+
 ```
 $ ./razor delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id> --logFile delegationLogs
 ```
+
 docker
+
 ```
 docker exec -it razor-go razo delegate --address <address> --value <value> --weiRazor <bool> --stakerId <staker_id> --logFile delegationLogs
 ```
-_The logs for above command will be stored at "home/.razor/delegationLogs.log" path_
+
+_The logs for above command will be stored at "$HOME/.razor/logs/delegationLogs.log" path_
 
 _Note: If the user runs multiple commands with the same log file name all the logs will be appended in the same log file._
-
 
 ### Contract Addresses
 
@@ -803,7 +898,6 @@ Example:
 ```
 $ ./razor contractAddresses
 ```
-
 
 ### Setting up razor-go and commands using docker-compose
 
@@ -839,12 +933,19 @@ $ ./razor contractAddresses
    docker-compose run razor-go /usr/local/bin/razor import
    ```
 
-7. Get some **RAZOR** and **MATIC** token (or Token of respective RPC) to this address
+7. Get some **RAZOR** and **sFUEL** token (or Token of respective RPC) to this address
 8. Start **Staking**
 
    ```bash
    #Provide password through CLI
    docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000
+   
+      #Provide password through File
+
+        #Create file and put password string
+          vi ~/.razor/pass
+        #Start Staking
+          docker-compose run razor-go /usr/local/bin/razor addStake --address <address> --value 50000 --password /root/.razor/pass
    ```
 
 9. To Start **Voting**,
@@ -854,6 +955,9 @@ $ ./razor contractAddresses
    ```bash
    # Run process in foreground and provide password through cli
    docker-compose run razor-go /usr/local/bin/razor vote --address <address>
+   
+   # Run process in background and provide password through file
+   docker-compose run -d razor-go /usr/local/bin/razor vote --address <address> --password /root/.razor/pass
    ```
 
    ```bash
@@ -865,6 +969,9 @@ $ ./razor contractAddresses
     ```bash
     #Provide password with cli
     docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10
+    
+    #provide password through file
+    docker-compose run razor-go /usr/local/bin/razor setDelegation --address <address> --status true --commission 10 --password /root/.razor/pass
     ```
 
 ### Contribute to razor-go

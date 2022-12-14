@@ -31,13 +31,16 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteStakerinfo: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 	logger.SetLoggerParameters(client, "")
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
+	log.Debug("ExecuteStakerinfo: StakerId: ", stakerId)
 
+	log.Debug("ExecuteStakerinfo: Calling GetStakerInfo() with argument stakerId = ", stakerId)
 	err = cmdUtils.GetStakerInfo(client, stakerId)
 	utils.CheckError("Error in getting staker info: ", err)
 

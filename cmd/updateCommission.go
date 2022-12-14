@@ -3,13 +3,14 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -33,6 +34,7 @@ func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteUpdateCommission: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -40,9 +42,11 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	log.Debug("Getting password...")
+	password := razorUtils.AssignPassword(flagSet)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
@@ -50,12 +54,15 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId", err)
 
-	err = cmdUtils.UpdateCommission(config, client, types.UpdateCommissionInput{
+	updateCommissionInput := types.UpdateCommissionInput{
 		Commission: commission,
 		Address:    address,
 		Password:   password,
 		StakerId:   stakerId,
-	})
+	}
+
+	log.Debugf("ExecuteUpdateCommission: calling UpdateCommission() with argument UpdateCommissionInput: %+v", updateCommissionInput)
+	err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
 	utils.CheckError("SetDelegation error: ", err)
 }
 
@@ -66,11 +73,13 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		log.Error("Error in fetching staker info")
 		return err
 	}
+	log.Debugf("UpdateCommission: Staker Info: %+v", stakerInfo)
 
 	maxCommission, err := razorUtils.GetMaxCommission(client)
 	if err != nil {
 		return err
 	}
+	log.Debug("UpdateCommission: Maximum Commission: ", maxCommission)
 
 	if updateCommissionInput.Commission == 0 || updateCommissionInput.Commission > maxCommission {
 		return errors.New("commission out of range")
@@ -80,11 +89,13 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	if err != nil {
 		return err
 	}
+	log.Debug("UpdateCommission: Epoch limit to update commission: ", epochLimitForUpdateCommission)
 
 	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
 		return err
 	}
+	log.Debug("UpdateCommission: Current epoch: ", epoch)
 
 	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
 		waitFor := uint32(epochLimitForUpdateCommission) - (epoch - stakerInfo.EpochCommissionLastUpdated) + 1
@@ -110,6 +121,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
+	log.Debug("Executing UpdateCommission transaction with commission = ", updateCommissionInput.Commission)
 	txn, err := stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
 	if err != nil {
 		log.Error("Error in setting commission")
@@ -129,12 +141,14 @@ func init() {
 	var (
 		Address    string
 		Commission uint8
+		Password   string
 	)
 
 	rootCmd.AddCommand(updateCommissionCmd)
 
 	updateCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "your account address")
 	updateCommissionCmd.Flags().Uint8VarP(&Commission, "commission", "c", 0, "commission")
+	updateCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path to protect the keystore")
 
 	addrErr := updateCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

@@ -27,6 +27,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 }
 
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+	log.Debug("Getting transaction options...")
 	defaultPath, err := PathInterface.GetDefaultPath()
 	CheckError("Error in fetching default path: ", err)
 	keystorePath := path.Join(defaultPath, "keystore_files")
@@ -34,8 +35,8 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	if privateKey == nil || err != nil {
 		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
 	}
-	nonce, err := UtilsInterface.GetPendingNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
-	CheckError("Error in fetching pending nonce: ", err)
+	nonce, err := UtilsInterface.GetNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
+	CheckError("Error in fetching nonce: ", err)
 
 	gasPrice := UtilsInterface.GetGasPrice(transactionData.Client, transactionData.Config)
 	txnOpts, err := BindInterface.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)

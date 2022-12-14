@@ -2,12 +2,14 @@
 package cmd
 
 import (
-	"github.com/spf13/pflag"
+	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -27,51 +29,69 @@ Example:
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ClaimCommission: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
+	log.Debug("ClaimCommission: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	log.Debug("Getting password...")
+	password := razorUtils.AssignPassword(flagSet)
 
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:          client,
-		AccountAddress:  address,
-		Password:        password,
-		ChainId:         core.ChainId,
-		Config:          config,
-		ContractAddress: core.StakeManagerAddress,
-		MethodName:      "claimStakerReward",
-		Parameters:      []interface{}{},
-		ABI:             bindings.StakeManagerABI,
-	})
+	stakerId, err := razorUtils.GetStakerId(client, address)
+	utils.CheckError("Error in getting stakerId: ", err)
+	log.Debug("ClaimCommission: Staker Id: ", stakerId)
+	callOpts := razorUtils.GetOptions()
 
-	log.Info("Claiming commission")
+	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
+	utils.CheckError("Error in getting stakerInfo: ", err)
+	log.Debugf("ClaimCommission: Staker Info: %+v", stakerInfo)
 
-	txn, err := stakeManagerUtils.ClaimStakeReward(client, txnOpts)
-	if err != nil {
-		log.Fatal("Error in claiming stake reward: ", err)
+	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
+		txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+			Client:          client,
+			AccountAddress:  address,
+			Password:        password,
+			ChainId:         core.ChainId,
+			Config:          config,
+			ContractAddress: core.StakeManagerAddress,
+			MethodName:      "claimStakerReward",
+			Parameters:      []interface{}{},
+			ABI:             bindings.StakeManagerABI,
+		})
+
+		log.Info("Claiming commission...")
+
+		log.Debug("Executing ClaimStakeReward transaction...")
+		txn, err := stakeManagerUtils.ClaimStakeReward(client, txnOpts)
+		utils.CheckError("Error in claiming stake reward: ", err)
+
+		err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+		utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
+	} else {
+		log.Error("no commission to claim")
+		return
 	}
-
-	err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
-	utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
-
 }
 
 func init() {
 	rootCmd.AddCommand(claimCommissionCmd)
 
 	var (
-		Address string
+		Address  string
+		Password string
 	)
 
 	claimCommissionCmd.Flags().StringVarP(&Address, "address", "a", "", "address of the staker")
+	claimCommissionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of staker to protect the keystore")
 
 	addrErr := claimCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)

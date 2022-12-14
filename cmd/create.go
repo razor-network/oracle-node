@@ -28,13 +28,15 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the Create function
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
-	password := razorUtils.AssignPassword()
+	password := razorUtils.AssignPassword(flagSet)
+	log.Debug("ExecuteCreate: Calling Create() with argument as input password")
 	account, err := cmdUtils.Create(password)
 	utils.CheckError("Create error: ", err)
-	log.Info("Account address: ", account.Address)
-	log.Info("Keystore Path: ", account.URL)
+	log.Info("ExecuteCreate: Account address: ", account.Address)
+	log.Info("ExecuteCreate: Keystore Path: ", account.URL)
 }
 
 //This function is used to create the new account
@@ -44,6 +46,7 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
+	log.Debug("Create: .razor directory path: ", razorPath)
 	keystorePath := path.Join(razorPath, "keystore_files")
 	account := razorAccounts.AccountUtilsInterface.CreateAccount(keystorePath, password)
 	return account, nil
@@ -51,4 +54,10 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 
 func init() {
 	rootCmd.AddCommand(createCmd)
+
+	var (
+		Password string
+	)
+
+	createCmd.Flags().StringVarP(&Password, "password", "", "", "password file path to protect the keystore")
 }

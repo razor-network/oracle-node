@@ -2,14 +2,15 @@
 package cmd
 
 import (
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
 )
@@ -37,6 +38,7 @@ func initialiseCreateJob(cmd *cobra.Command, args []string) {
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
+	log.Debugf("ExecuteCreateJob: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
@@ -44,9 +46,11 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+	log.Debug("Checking to assign log file...")
 	razorUtils.AssignLogFile(flagSet)
 
-	password := razorUtils.AssignPassword()
+	log.Debug("Getting password...")
+	password := razorUtils.AssignPassword(flagSet)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -76,7 +80,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 		Weight:       weight,
 		Power:        power,
 	}
-
+	log.Debugf("ExecuteCreateJob: Calling CreateJob() with argument jobInput: %+v", jobInput)
 	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.String())
@@ -99,6 +103,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Creating Job...")
+	log.Debugf("CreateJob: Executing CreateJob transaction with weight = %d, power = %d, selector type = %d, name = %s, selector = %s, URl = %s", jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
@@ -117,6 +122,7 @@ func init() {
 		Name         string
 		Power        int8
 		Account      string
+		Password     string
 		Weight       uint8
 	)
 
@@ -127,6 +133,7 @@ func init() {
 	createJobCmd.Flags().Int8VarP(&Power, "power", "", 0, "power")
 	createJobCmd.Flags().Uint8VarP(&Weight, "weight", "", 0, "weight assigned to the job")
 	createJobCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
+	createJobCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 
 	urlErr := createJobCmd.MarkFlagRequired("url")
 	utils.CheckError("URL error: ", urlErr)
