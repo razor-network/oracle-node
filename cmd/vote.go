@@ -137,6 +137,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 				header = latestHeader
 				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData, backupNodeActionsToIgnore)
 			}
+			time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 		}
 	}
 }
