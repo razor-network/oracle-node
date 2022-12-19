@@ -145,7 +145,6 @@ func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 	SetEpochAndBlockNumber(Client)
-
 	var logFields = logrus.Fields{
 		"address":     Address,
 		"epoch":       Epoch,

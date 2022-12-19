@@ -2,21 +2,28 @@ package block
 
 import (
 	"context"
+	"razor/core"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
-	"razor/core"
-	"time"
 )
 
 var latestBlock *types.Header
+var mu = sync.Mutex{}
 
 func GetLatestBlock() *types.Header {
+	mu.Lock()
+	defer mu.Unlock()
 	return latestBlock
 }
 
 func SetLatestBlock(block *types.Header) {
+	mu.Lock()
 	latestBlock = block
+	mu.Unlock()
 }
 
 func CalculateLatestBlock(client *ethclient.Client) {

@@ -2,13 +2,14 @@ package utils
 
 import (
 	"context"
+	"math/big"
+	"razor/core"
+
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"math/big"
-	"razor/core"
 )
 
 func (*ClientStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {

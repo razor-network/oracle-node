@@ -9,11 +9,12 @@ import (
 	"razor/core"
 	"time"
 
+	"io/ioutil"
+	"razor/core/types"
+
 	"github.com/PaesslerAG/jsonpath"
 	"github.com/avast/retry-go"
 	"github.com/gocolly/colly"
-	"io/ioutil"
-	"razor/core/types"
 )
 
 func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {

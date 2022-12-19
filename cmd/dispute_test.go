@@ -6,18 +6,19 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/stretchr/testify/mock"
 	"io/fs"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestDispute(t *testing.T) {

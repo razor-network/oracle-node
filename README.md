@@ -41,6 +41,7 @@ One of the quickest ways to get `razor-go` up and running on your machine is by 
 ```
 docker network create razor_network
 ```
+<<<<<<< HEAD
 2. Create user 
     ```
       useradd -u 82 razor
@@ -57,6 +58,15 @@ docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -
      chown razor:razor $HOME/.razor 
     ```
 
+=======
+
+2. Start razor-go container
+
+```
+docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.0-mainnet
+```
+
+>>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 > **_NOTE:_** we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
@@ -360,6 +370,7 @@ docker
 docker exec -it razor-go razor vote --address <address>
 ```
 
+<<<<<<< HEAD
 > **Note**: _To run vote command in background you can use `tmux` for that._
 >
 > 1.  Run: `tmux new -s razor-go`
@@ -368,6 +379,14 @@ docker exec -it razor-go razor vote --address <address>
 > 4.  To list your session: `tmux ls`
 > 5.  To attach Session back: `tmux attach-session -t razor-go`
 
+=======
+run vote command in background
+
+```
+docker exec -it -d razor-go razor vote --address <address> --password /root/.razor/<file_name>
+```
+>**_NOTE:_**  To run command with password flag with the help of docker, password file should present in $HOME/.razor/ directory
+>>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 
 Example:
 
@@ -705,11 +724,22 @@ Expose Prometheus-based metrics for monitoring
 
 #### Without TLS
 
+<<<<<<< HEAD
+=======
+razor cli
+
+Without TLS
+
+>>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 ```
 $ ./razor setConfig --exposeMetrics 2112
 ```
 
+<<<<<<< HEAD
 #### With TLS
+=======
+With TLS
+>>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 
 ```
 $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
@@ -738,6 +768,7 @@ git clone https://github.com/razor-network/monitoring.git
 cd monitoring
 ```
 
+<<<<<<< HEAD
 - If your staker is running via binary, then 
     
     1. In `./configs/prometheus.yml`, replace `"razor-go:2112"` with `"<private/public address of host>:2112"`
@@ -790,6 +821,8 @@ git clone https://github.com/razor-network/monitoring.git
 cd monitoring
 ```
 
+=======
+>>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 - If your staker is running via binary, then
 
   1. In `./configs/prometheus.yml`, replace `"razor-go:2112"` with `"<private/public address of host>:2112"`

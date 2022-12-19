@@ -5,17 +5,18 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"testing"
 )
 
 func TestStakeCoins(t *testing.T) {
@@ -300,6 +301,21 @@ func TestExecuteStake(t *testing.T) {
 				staker:       bindings.StructsStaker{IsSlashed: true},
 			},
 			expectedFatal: true,
+		},
+		{
+			name: "Test 9: When stake value is less than minSafeRazor and staker's stake is more than the minSafeRazor already",
+			args: args{
+				config:       config,
+				password:     "test",
+				address:      "0x000000000000000000000000000000000000dead",
+				amount:       big.NewInt(20),
+				balance:      big.NewInt(10000),
+				minSafeRazor: big.NewInt(100),
+				stakerId:     1,
+				approveTxn:   common.BigToHash(big.NewInt(1)),
+				stakeTxn:     common.BigToHash(big.NewInt(2)),
+			},
+			expectedFatal: false,
 		},
 	}
 
