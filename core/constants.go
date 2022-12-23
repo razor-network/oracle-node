@@ -29,7 +29,7 @@ var DefaultLogLevel = ""
 
 //Following are the default logFile parameters in config
 
-var DefaultLogFileMaxSize = 182
+var DefaultLogFileMaxSize = 200
 var DefaultLogFileMaxBackups = 52
 var DefaultLogFileMaxAge = 365
 
