@@ -41,24 +41,6 @@ One of the quickest ways to get `razor-go` up and running on your machine is by 
 ```
 docker network create razor_network
 ```
-<<<<<<< HEAD
-2. Create user 
-    ```
-      useradd -u 82 razor
-    ```
-
-3. Start razor-go container
-
-```
-docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/home/razor/.razor razornetwork/razor-go:v1.0.0-mainnet
-```
-
-4. Update the owner of `.razor` directory
-    ```
-     chown razor:razor $HOME/.razor 
-    ```
-
-=======
 
 2. Start razor-go container
 
@@ -66,7 +48,6 @@ docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -
 docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.0-mainnet
 ```
 
->>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 > **_NOTE:_** we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
@@ -370,23 +351,12 @@ docker
 docker exec -it razor-go razor vote --address <address>
 ```
 
-<<<<<<< HEAD
-> **Note**: _To run vote command in background you can use `tmux` for that._
->
-> 1.  Run: `tmux new -s razor-go`
-> 2.  Run vote command
-> 3.  To exit from tmux session: press `ctrl+b`, release those keys and press `d`
-> 4.  To list your session: `tmux ls`
-> 5.  To attach Session back: `tmux attach-session -t razor-go`
-
-=======
 run vote command in background
 
 ```
 docker exec -it -d razor-go razor vote --address <address> --password /root/.razor/<file_name>
 ```
 >**_NOTE:_**  To run command with password flag with the help of docker, password file should present in $HOME/.razor/ directory
->>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 
 Example:
 
@@ -575,13 +545,13 @@ docker exec -it razor-go razor createJob --url <URL> --selector <selector_in_jso
 Example:
 
 ```
-$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power 2 --name ethusd_kraken --selector 'result.XETHZUSD.c[0]' --url '{"type":"GET","url":"https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body":{},"content-type":""}'
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --selectorType 1 --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --weight 32
 ```
 
 OR
 
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u {"type":"GET","url":"https://www.coingecko.com/en","body":{},"content-type":""} --selectorType 0 --weight 100
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
 ```
 
 ### Create Collection
@@ -722,24 +692,17 @@ Note : _All the commands have an additional --password flag that you can provide
 
 Expose Prometheus-based metrics for monitoring
 
-#### Without TLS
+Example:
 
-<<<<<<< HEAD
-=======
 razor cli
 
 Without TLS
 
->>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 ```
 $ ./razor setConfig --exposeMetrics 2112
 ```
 
-<<<<<<< HEAD
-#### With TLS
-=======
 With TLS
->>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
 
 ```
 $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
@@ -747,15 +710,15 @@ $ ./razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt
 
 docker
 
-#### Expose Metrics without TLS
-
 ```
+# Create docker network
+
+docker network create razor_network
+
+# Expose Metrics without TLS
 docker exec -it razor-go razor setConfig --exposeMetrics 2112
-```
 
-#### Expose Metrics with TLS
-
-```
+# Expose Metrics with TLS
 docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/file/path/certfile.crt --certKey key/file/path/keyfile.key
 ```
 
@@ -768,75 +731,20 @@ git clone https://github.com/razor-network/monitoring.git
 cd monitoring
 ```
 
-<<<<<<< HEAD
-- If your staker is running via binary, then 
-    
+- If your staker is running via binary, then
+
     1. In `./configs/prometheus.yml`, replace `"razor-go:2112"` with `"<private/public address of host>:2112"`
 
 - For alerting you can add webhook in `./configs/alertmanager.yml`, replace `http://127.0.0.1:5001/` with your webhook URL. This will send you an alert in every 5min if metrics stops.
 
 - If you are running multiple stakers and want to monitor via single grafana dashboard
-    
     1. You need to update `./config/prometheus.yml`, add new target block where `job_name: "razor-go"`
-        ```
-        - targets: ["<second-host-address>:2112"]
-          labels:
-            staker: "<staker-name>"
-        ```
+       ```
+       - targets: ["<second-host-address>:2112"]
+         labels:
+           staker: "<staker-name>"
+       ```
     2. Restart vmagent service `docker-compose restart vmagent`
-#### Start monitoring stack
--  You can spin all agents at once via 
-        
-    ```
-    docker-compose up -d
-    ``` 
-    Can check the status of each service via
-    ```
-    docker-compose ps
-    ```
-
-- You can open grafana at `<private/public address of host>:3000`, and get 
-    1. Can checkout `Razor` dashboard to monitor your staker.
-    2. Insight of host metrics at `Node Exporter Full` dashboard.
-    3. Containers Insight at `Docker and OS metrics ( cadvisor, node_exporter )` dashboard.
-    4. Can monitor alerts at `Alertmanager` dashboard.
-    
->**_NOTE:_** Configure firewall for port `3000` on your host to access grafana.
-
-#### Troubleshoot Alerting
-
-1. In `docker-compose.yml` uncomment ports for `alertmanager` and `vmalert`.
-2. Configure firewall to allow access to ports `8880` and `9093`.
-
-3. Check you get alerts on vmalert via `http://<host_address>:8880/vmalert/alerts`. vmalert is configured to scrap in every 2min. 
-
-4. If you see alert in vmalert then look into alertmanager `http://<host_address>:9093/#/alerts?`, if you see alerts in there but you didn't get one then probably you need to check your weebhook.
-
-#### Configuration
-
-Clone repo and setup monitoring and alerting using Prometheus/Grafana
-
-```
-git clone https://github.com/razor-network/monitoring.git
-cd monitoring
-```
-
-=======
->>>>>>> bdcaed0b34456fa1aa0ef4bfb68e7b0a52071cf6
-- If your staker is running via binary, then
-
-  1. In `./configs/prometheus.yml`, replace `"razor-go:2112"` with `"<private/public address of host>:2112"`
-
-- For alerting you can add webhook in `./configs/alertmanager.yml`, replace `http://127.0.0.1:5001/` with your webhook URL. This will send you an alert in every 5min if metrics stops.
-
-- If you are running multiple stakers and want to monitor via single grafana dashboard
-  1. You need to update `./config/prometheus.yml`, add new target block where `job_name: "razor-go"`
-     ```
-     - targets: ["<second-host-address>:2112"]
-       labels:
-         staker: "<staker-name>"
-     ```
-  2. Restart vmagent service `docker-compose restart vmagent`
 
 #### Start monitoring stack
 
@@ -853,10 +761,10 @@ cd monitoring
   ```
 
 - You can open grafana at `<private/public address of host>:3000`, and get
-  1. Can checkout `Razor` dashboard to monitor your staker.
-  2. Insight of host metrics at `Node Exporter Full` dashboard.
-  3. Containers Insight at `Docker and OS metrics ( cadvisor, node_exporter )` dashboard.
-  4. Can monitor alerts at `Alertmanager` dashboard.
+    1. Can checkout `Razor` dashboard to monitor your staker.
+    2. Insight of host metrics at `Node Exporter Full` dashboard.
+    3. Containers Insight at `Docker and OS metrics ( cadvisor, node_exporter )` dashboard.
+    4. Can monitor alerts at `Alertmanager` dashboard.
 
 > **_NOTE:_** Configure firewall for port `3000` on your host to access grafana.
 
@@ -878,35 +786,30 @@ Shown below is an example of how your `assets.json` file should be -
 
 ```
 {
-	"assets": {
-		"collection": {
-			"ethCollectionMedian": {
-				"power": 2,
-				"official jobs": {
-					"1": {
-					  "URL": {
-						   "type": "GET",
-						   "url": "https://data.messari.io/api/v1/assets/eth/metrics",
-						   "body": {},
-						   "content-type": ""
-						},
-						"selector": "[`data`][`market_data`][`price_usd`]",
-						"power": 2,
-						"weight": 2
-					},
-				},
-				"custom jobs": [{
-						"URL": {
-							"type": "GET",
-							"url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
-							"body": {},
-							"content-type": ""
-						},
-					]
-				}
-			}
-		}
-	}
+  "assets": {
+    "collection": {
+      "ethCollectionMean": {
+        "power": 2,
+        "official jobs": {
+          "1": {
+            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
+            "selector": "[`data`][`market_data`][`price_usd`]",
+            "power": 2,
+            "weight": 2
+          },
+        },
+        "custom jobs": [
+          {
+            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
+            "selector": "[`data`][`0`][`price`]",
+            "power": 3,
+            "weight": 2
+          },
+        ]
+      }
+    }
+  }
+}
 ```
 
 Breaking down into components
@@ -1047,7 +950,7 @@ $ ./razor contractAddresses
 
 9. To Start **Voting**,
 
-   1. Provide password through **CLI**
+    1. Provide password through **CLI**
 
    ```bash
    # Run process in foreground and provide password through cli
