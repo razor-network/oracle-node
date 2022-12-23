@@ -3,10 +3,11 @@ package utils
 import (
 	"bufio"
 	"errors"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/pflag"
 	"os"
 	"unicode"
+
+	"github.com/manifoldco/promptui"
+	"github.com/spf13/pflag"
 )
 
 func (*UtilsStruct) PasswordPrompt() string {

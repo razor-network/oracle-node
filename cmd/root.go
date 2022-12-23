@@ -3,13 +3,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"razor/core"
 	"razor/logger"
 	"razor/path"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (

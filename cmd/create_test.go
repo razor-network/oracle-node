@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"errors"
+	"razor/core/types"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"razor/core/types"
-	"testing"
 )
 
 func TestCreate(t *testing.T) {

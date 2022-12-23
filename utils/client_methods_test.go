@@ -3,16 +3,17 @@ package utils
 import (
 	"context"
 	"errors"
+	"math/big"
+	"razor/utils/mocks"
+	"reflect"
+	"testing"
+
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/utils/mocks"
-	"reflect"
-	"testing"
 )
 
 func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {

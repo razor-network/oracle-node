@@ -5,11 +5,12 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

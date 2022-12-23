@@ -3,10 +3,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	"path"
@@ -15,6 +11,11 @@ import (
 	"razor/pkg/bindings"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestExecuteVote(t *testing.T) {

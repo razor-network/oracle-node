@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"razor/cache"
 	"razor/core/types"
 	"razor/utils/mocks"
@@ -27,13 +29,14 @@ func getAPIByteArray(index int) []byte {
   "email": "Eliseo@gardner.biz",
   "body": "laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"
 }`),
-		[]byte(`{"id":0,"jsonrpc":"2.0","result":"0x785b4b9847b9"}`),
 	}
 	return apiData[index]
 }
 
 func TestGetDataFromAPI(t *testing.T) {
-	//postRequestInput := `{"type": "POST","url": "https://staging-v2.skalenodes.com/v1/whispering-turais","body": {"jsonrpc": "2.0","method": "eth_chainId","params": [],"id": 0},"content-type": "application/json"}`
+	//postRequestInput := `{"type": "POST","url": "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar","body": {"jsonrpc": "2.0","method": "eth_chainId","params": [],"id": 0},"content-type": "application/json"}`
+	sampleChainId, _ := hex.DecodeString("7b226964223a302c226a736f6e727063223a22322e30222c22726573756c74223a2230783561373963343465227d")
+
 	type args struct {
 		urlStruct types.DataSourceURL
 		body      []byte
@@ -119,12 +122,12 @@ func TestGetDataFromAPI(t *testing.T) {
 			args: args{
 				urlStruct: types.DataSourceURL{
 					Type:        "POST",
-					URL:         "https://staging-v2.skalenodes.com/v1/whispering-turais",
+					URL:         "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
 					Body:        map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
 					ContentType: "application/json",
 				},
 			},
-			want: getAPIByteArray(2),
+			want: sampleChainId,
 		},
 	}
 	for _, tt := range tests {
@@ -141,6 +144,7 @@ func TestGetDataFromAPI(t *testing.T) {
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
 			localCache := cache.NewLocalCache(time.Second * 10)
 			got, err := utils.GetDataFromAPI(tt.args.urlStruct, localCache)
+			fmt.Println("ABC: ", hex.EncodeToString(got))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
