@@ -10,7 +10,7 @@ import (
 
 var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
-var ChainId = big.NewInt(132333505628089)
+var ChainId = big.NewInt(0x5a79c44e)
 var StateLength = EpochLength / NumberOfStates
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
