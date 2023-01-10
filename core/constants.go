@@ -46,6 +46,13 @@ var AssetsDataFile = "assets.json"
 var ConfigFile = "razor.yaml"
 var LogFileDirectory = "logs"
 var DefaultPathName = ".razor"
+var DotENVFileName = ".env"
 
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
+
+//APIKeyRegex will be used as a regular expression to be matched in job Urls
+var APIKeyRegex = `{API_KEY}`
+
+//APIKeyFormat is the format that should be followed for keywords in .env file to match with corresponding jobs
+var APIKeyFormat = "%s_API_KEY"
