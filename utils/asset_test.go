@@ -656,6 +656,11 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
 	}
 
+	job3 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "last",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd/{API_KEY}",
+	}
+
 	response := []byte(`{
   			"userId": 1,
   			"id": 1,
@@ -776,6 +781,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Test 9: When there is a case to pick up API key from .env file and env file is not present",
+			args: args{
+				job: job3,
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -786,10 +799,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
+			pathUtilsMock := new(pathMocks.PathInterface)
+			path.PathUtilsInterface = pathUtilsMock
+
 			utilsMock.On("GetDataFromAPI", mock.Anything, mock.Anything).Return(tt.args.response, tt.args.responseErr)
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
 			utilsMock.On("GetDataFromXHTML", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
+			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
 
 			got, err := utils.GetDataToCommitFromJob(tt.args.job, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {

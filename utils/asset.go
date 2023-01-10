@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"os"
 	"razor/cache"
@@ -19,6 +20,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/joho/godotenv"
 	"github.com/tidwall/gjson"
 
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -292,6 +294,32 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		log.Infof("URL Struct: %+v", dataSourceURLStruct)
 	} else {
 		log.Debug("Job URL passed is a direct URL: ", job.Url)
+		isAPIKeyRequired, err := regexp.MatchString(core.APIKeyRegex, job.Url)
+		if err != nil {
+			log.Error("Error in matching api key regex in job url: ", err)
+			return nil, err
+		}
+		if isAPIKeyRequired {
+			envFilePath, err := path.PathUtilsInterface.GetDotENVFilePath()
+			if err != nil {
+				log.Error("Error in getting enc file path: ", err)
+				return nil, err
+			}
+			log.Debug(".env file path: ", envFilePath)
+			log.Info("Loading env file...")
+			loadErr := godotenv.Load(envFilePath)
+			if loadErr != nil {
+				log.Error("Error in loading .env file: ", loadErr)
+				return nil, loadErr
+			}
+			apiKeyKeyword := fmt.Sprintf(core.APIKeyFormat, job.Name)
+			log.Debug("API key keyword in env file: ", apiKeyKeyword)
+			apiKey := os.Getenv(apiKeyKeyword)
+			log.Debug("API key: ", apiKey)
+			urlWithAPIKey := strings.Replace(job.Url, core.APIKeyRegex, apiKey, 1)
+			log.Debug("URl with API key: ", urlWithAPIKey)
+			job.Url = urlWithAPIKey
+		}
 		dataSourceURLStruct = types.DataSourceURL{
 			URL:         job.Url,
 			Type:        "GET",
