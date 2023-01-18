@@ -462,6 +462,10 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 			if url.Exists() {
 				customJob.URL = url.String()
 			}
+			name := gjson.Get(customJobsData, "name")
+			if name.Exists() {
+				customJob.Name = name.String()
+			}
 			selector := gjson.Get(customJobsData, "selector")
 			if selector.Exists() {
 				customJob.Selector = selector.String()
@@ -485,6 +489,7 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob {
 	return bindings.StructsJob{
 		Url:      customJob.URL,
+		Name:     customJob.Name,
 		Selector: customJob.Selector,
 		Power:    customJob.Power,
 		Weight:   customJob.Weight,

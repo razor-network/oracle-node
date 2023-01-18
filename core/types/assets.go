@@ -51,6 +51,7 @@ type AssignedAsset struct {
 
 type CustomJob struct {
 	URL      string `json:"URL"`
+	Name     string `json:"name"`
 	Selector string `json:"selector"`
 	Power    int8   `json:"power"`
 	Weight   uint8  `json:"weight"`

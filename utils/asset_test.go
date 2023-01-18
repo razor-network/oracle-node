@@ -1110,12 +1110,14 @@ func TestConvertCustomJobToStructJob(t *testing.T) {
 			args: args{
 				customJob: types.CustomJob{
 					URL:    "http://api.coinbase.com/eth2",
+					Name:   "eth_coinBase",
 					Power:  3,
 					Weight: 2,
 				},
 			},
 			want: bindings.StructsJob{
 				Url:    "http://api.coinbase.com/eth2",
+				Name:   "eth_coinBase",
 				Power:  3,
 				Weight: 2,
 			},
