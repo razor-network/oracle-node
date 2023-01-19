@@ -20,6 +20,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		LogLevel:           "",
 		GasLimitMultiplier: 0,
 		RPCTimeout:         0,
+		HTTPTimeout:        0,
 		LogFileMaxSize:     0,
 		LogFileMaxBackups:  0,
 		LogFileMaxAge:      0,
@@ -57,6 +58,10 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	httpTimeout, err := cmdUtils.GetHTTPTimeout()
+	if err != nil {
+		return config, err
+	}
 	logFileMaxSize, err := cmdUtils.GetLogFileMaxSize()
 	if err != nil {
 		return config, err
@@ -78,6 +83,8 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.GasLimitMultiplier = gasLimit
 	config.RPCTimeout = rpcTimeout
 	utils.RPCTimeout = rpcTimeout
+	config.HTTPTimeout = httpTimeout
+	utils.HTTPTimeout = httpTimeout
 	config.LogFileMaxSize = logFileMaxSize
 	config.LogFileMaxBackups = logFileMaxBackups
 	config.LogFileMaxAge = logFileMaxAge
@@ -223,6 +230,22 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 		}
 	}
 	return rpcTimeout, nil
+}
+
+func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
+	httpTimeout, err := flagSetUtils.GetRootInt64HTTPTimeout()
+	if err != nil {
+		return int64(core.DefaultHTTPTimeout), err
+	}
+	if httpTimeout == 0 {
+		if viper.IsSet("httpTimeout") {
+			httpTimeout = viper.GetInt64("httpTimeout")
+		} else {
+			httpTimeout = int64(core.DefaultRPCTimeout)
+			log.Debug("HTTPTimeout is not set, taking its default value ", httpTimeout)
+		}
+	}
+	return httpTimeout, nil
 }
 
 func (*UtilsStruct) GetLogFileMaxSize() (int, error) {

@@ -700,6 +700,27 @@ func (_m *UtilsCmdInterface) GetGasPrice() (int32, error) {
 	return r0, r1
 }
 
+// GetHTTPTimeout provides a mock function with given fields:
+func (_m *UtilsCmdInterface) GetHTTPTimeout() (int64, error) {
+	ret := _m.Called()
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetIteration provides a mock function with given fields: client, proposer, bufferPercent
 func (_m *UtilsCmdInterface) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	ret := _m.Called(client, proposer, bufferPercent)

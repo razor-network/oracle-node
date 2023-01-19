@@ -159,6 +159,27 @@ func (_m *FlagSetInterface) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) 
 	return r0, r1
 }
 
+// GetInt64HTTPTimeout provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int64); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetInt64RPCTimeout provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error) {
 	ret := _m.Called(flagSet)
@@ -357,6 +378,27 @@ func (_m *FlagSetInterface) GetRootInt32Wait() (int32, error) {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(int32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetRootInt64HTTPTimeout provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootInt64HTTPTimeout() (int64, error) {
+	ret := _m.Called()
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
