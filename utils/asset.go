@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/big"
 	"os"
 	"razor/cache"
@@ -300,31 +299,23 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 			return nil, err
 		}
 		if isAPIKeyRequired {
-			envFilePath, err := path.PathUtilsInterface.GetDotENVFilePath()
+			keyword, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(job.Url)
 			if err != nil {
-				log.Error("Error in getting enc file path: ", err)
+				log.Error("Error in getting value from env file: ", err)
 				return nil, err
 			}
-			log.Debug(".env file path: ", envFilePath)
-			log.Info("Loading env file...")
-			loadErr := godotenv.Load(envFilePath)
-			if loadErr != nil {
-				log.Error("Error in loading .env file: ", loadErr)
-				return nil, loadErr
-			}
-			apiKeyKeyword := fmt.Sprintf(core.APIKeyFormat, job.Name)
-			log.Debug("API key keyword in env file: ", apiKeyKeyword)
-			apiKey := os.Getenv(apiKeyKeyword)
-			log.Debug("API key: ", apiKey)
-			urlWithAPIKey := strings.Replace(job.Url, core.APIKeyRegex, apiKey, 1)
+			log.Debug("API key: ", APIKey)
+			keywordWithDollar := `$` + keyword
+			log.Debug("Keyword to replace in url: ", keywordWithDollar)
+			urlWithAPIKey := strings.Replace(job.Url, keywordWithDollar, APIKey, 1)
 			log.Debug("URl with API key: ", urlWithAPIKey)
 			job.Url = urlWithAPIKey
 		}
 		dataSourceURLStruct = types.DataSourceURL{
-			URL:         job.Url,
-			Type:        "GET",
-			Body:        nil,
-			ContentType: "",
+			URL:    job.Url,
+			Type:   "GET",
+			Body:   nil,
+			Header: nil,
 		}
 	}
 	// Fetch data from API with retry mechanism
@@ -539,4 +530,30 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	}
 
 	return overrideJobs, overriddenJobIds
+}
+
+func GetKeyWordAndAPIKeyFromENVFile(url string) (string, string, error) {
+	envFilePath, err := path.PathUtilsInterface.GetDotENVFilePath()
+	if err != nil {
+		log.Error("Error in getting env file path: ", err)
+		return "", "", err
+	}
+	log.Debug("GetKeyWordAndAPIKeyFromENVFile: .env file path: ", envFilePath)
+
+	log.Info("Loading env file...")
+	envFileMap, err := godotenv.Read(envFilePath)
+	if err != nil {
+		log.Error("Error in getting env file map: ", err)
+		return "", "", err
+	}
+	log.Debugf("GetKeyWordAndAPIKeyFromENVFile: ENV file map: %v", envFileMap)
+	for keyword, APIKey := range envFileMap {
+		keywordWithDollar := `$` + keyword
+		isTheKeywordPresentInURL := strings.Contains(url, keywordWithDollar)
+		if isTheKeywordPresentInURL {
+			log.Infof("Found the keyword %s in env file: ", keyword)
+			return keyword, APIKey, nil
+		}
+	}
+	return "", "", errors.New("no value found in env file")
 }

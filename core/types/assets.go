@@ -58,8 +58,8 @@ type CustomJob struct {
 }
 
 type DataSourceURL struct {
-	Type        string                 `json:"type"`
-	URL         string                 `json:"url"`
-	Body        map[string]interface{} `json:"body"`
-	ContentType string                 `json:"content-type"`
+	Type   string                 `json:"type"`
+	URL    string                 `json:"url"`
+	Body   map[string]interface{} `json:"body"`
+	Header map[string]string      `json:"header"`
 }
