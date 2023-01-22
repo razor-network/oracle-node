@@ -552,10 +552,10 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 		}, {Id: 2, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 		},
 	}
 
@@ -580,7 +580,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				overrideJobData: map[string]*types.StructsJob{"1": {
 					Id: 2, SelectorType: 1, Weight: 100,
 					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 				}},
 				dataToAppend: big.NewInt(1),
 			},
@@ -629,8 +629,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			pathMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
-			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
 			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
 			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
@@ -648,17 +646,17 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 func TestGetDataToCommitFromJob(t *testing.T) {
 	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 	}
 
 	job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 	}
 
 	job3 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd/{API_KEY}",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=$ethusd_sample_key",
 	}
 
 	response := []byte(`{

@@ -4,14 +4,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/mock"
 	"razor/cache"
 	"razor/core/types"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/mock"
 )
 
 func getAPIByteArray(index int) []byte {
@@ -52,10 +51,10 @@ func TestGetDataFromAPI(t *testing.T) {
 			name: "TODO API",
 			args: args{
 				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https://jsonplaceholder.typicode.com/todos/1",
-					Body:        nil,
-					ContentType: "",
+					Type:   "GET",
+					URL:    "https://jsonplaceholder.typicode.com/todos/1",
+					Body:   nil,
+					Header: nil,
 				},
 				body: getAPIByteArray(0),
 			},
@@ -66,9 +65,9 @@ func TestGetDataFromAPI(t *testing.T) {
 			name: "Comments API",
 			args: args{
 				urlStruct: types.DataSourceURL{Type: "GET",
-					URL:         "https://jsonplaceholder.typicode.com/comments/1",
-					Body:        nil,
-					ContentType: "",
+					URL:    "https://jsonplaceholder.typicode.com/comments/1",
+					Body:   nil,
+					Header: nil,
 				},
 				body: getAPIByteArray(1),
 			},
@@ -79,10 +78,10 @@ func TestGetDataFromAPI(t *testing.T) {
 			name: "When API is invalid",
 			args: args{
 				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https:api.gemini.com/v1/pubticker",
-					Body:        nil,
-					ContentType: "",
+					Type:   "GET",
+					URL:    "https:api.gemini.com/v1/pubticker",
+					Body:   nil,
+					Header: nil,
 				},
 				body: getAPIByteArray(0),
 			},
@@ -93,10 +92,10 @@ func TestGetDataFromAPI(t *testing.T) {
 			name: "When API is not responding",
 			args: args{
 				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https://api.gemini.com/v1/pubticker/TEST",
-					Body:        nil,
-					ContentType: "",
+					Type:   "GET",
+					URL:    "https://api.gemini.com/v1/pubticker/TEST",
+					Body:   nil,
+					Header: nil,
 				},
 				body: getAPIByteArray(0),
 			},
@@ -107,10 +106,10 @@ func TestGetDataFromAPI(t *testing.T) {
 			name: "When there is an error in getting body",
 			args: args{
 				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https://jsonplaceholder.typicode.com/todos/1",
-					Body:        nil,
-					ContentType: "",
+					Type:   "GET",
+					URL:    "https://jsonplaceholder.typicode.com/todos/1",
+					Body:   nil,
+					Header: nil,
 				},
 				bodyErr: errors.New("body error"),
 			},
@@ -121,10 +120,10 @@ func TestGetDataFromAPI(t *testing.T) {
 			name: "Post request to fetch chainId",
 			args: args{
 				urlStruct: types.DataSourceURL{
-					Type:        "POST",
-					URL:         "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
-					Body:        map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
-					ContentType: "application/json",
+					Type:   "POST",
+					URL:    "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
+					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
+					Header: map[string]string{"content-type": "application/json"},
 				},
 			},
 			want: sampleChainId,

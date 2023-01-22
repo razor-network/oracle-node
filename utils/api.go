@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"razor/cache"
 	"razor/core"
+	"strings"
 	"time"
 
 	"io/ioutil"
@@ -54,7 +55,13 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 			responseBody := bytes.NewBuffer(postBody)
 			err = retry.Do(
 				func() error {
-					response, err := client.Post(dataSourceURLStruct.URL, dataSourceURLStruct.ContentType, responseBody)
+					request, err := http.NewRequest("POST", dataSourceURLStruct.URL, responseBody)
+					if err != nil {
+						log.Errorf("Error in creating a POST request for URL %s: %v", dataSourceURLStruct.URL, err)
+						return err
+					}
+					requestWithHeader := AddHeaderToPostRequest(request, dataSourceURLStruct.Header)
+					response, err := client.Do(requestWithHeader)
 					if err != nil {
 						log.Errorf("Error sending POST request URL %s: %v", dataSourceURLStruct.URL, err)
 						return err
@@ -104,4 +111,21 @@ func (*UtilsStruct) GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, se
 		return "", err
 	}
 	return priceData, nil
+}
+
+func AddHeaderToPostRequest(request *http.Request, headerMap map[string]string) *http.Request {
+	for key, value := range headerMap {
+		// If core.APIKeyRegex = `$` and if value starts with '$' then we need to fetch the respective value from env file
+		if strings.HasPrefix(value, core.APIKeyRegex) {
+			_, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(value)
+			if err != nil {
+				log.Error("Error in getting value from env file: ", err)
+				return nil
+			}
+			value = APIKey
+		}
+		log.Debugf("Adding key: %s, value: %s pair to header", key, value)
+		request.Header.Add(key, value)
+	}
+	return request
 }

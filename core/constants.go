@@ -52,7 +52,4 @@ var DotENVFileName = ".env"
 var BlockNumberInterval = 5
 
 //APIKeyRegex will be used as a regular expression to be matched in job Urls
-var APIKeyRegex = `$API_KEY`
-
-//APIKeyFormat is the format that should be followed for keywords in .env file to match with corresponding jobs
-var APIKeyFormat = "%s_API_KEY"
+var APIKeyRegex = `$`
