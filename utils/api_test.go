@@ -123,7 +123,7 @@ func TestGetDataFromAPI(t *testing.T) {
 					Type:   "POST",
 					URL:    "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
 					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
-					Header: map[string]string{"content-type": "application/json", "api_Key": "$SAMPLEKEY"},
+					Header: map[string]string{"content-type": "application/json"},
 				},
 			},
 			want: sampleChainId,
