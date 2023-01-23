@@ -305,9 +305,9 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 				return nil, err
 			}
 			log.Debug("API key: ", APIKey)
-			keywordWithDollar := `$` + keyword
-			log.Debug("Keyword to replace in url: ", keywordWithDollar)
-			urlWithAPIKey := strings.Replace(job.Url, keywordWithDollar, APIKey, 1)
+			keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
+			log.Debug("Keyword to replace in url: ", keywordWithAPIKeyRegex)
+			urlWithAPIKey := strings.Replace(job.Url, keywordWithAPIKeyRegex, APIKey, 1)
 			log.Debug("URl with API key: ", urlWithAPIKey)
 			job.Url = urlWithAPIKey
 		}
@@ -548,8 +548,8 @@ func GetKeyWordAndAPIKeyFromENVFile(url string) (string, string, error) {
 	}
 	log.Debugf("GetKeyWordAndAPIKeyFromENVFile: ENV file map: %v", envFileMap)
 	for keyword, APIKey := range envFileMap {
-		keywordWithDollar := `$` + keyword
-		isTheKeywordPresentInURL := strings.Contains(url, keywordWithDollar)
+		keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
+		isTheKeywordPresentInURL := strings.Contains(url, keywordWithAPIKeyRegex)
 		if isTheKeywordPresentInURL {
 			log.Infof("Found the keyword %s in env file: ", keyword)
 			return keyword, APIKey, nil
