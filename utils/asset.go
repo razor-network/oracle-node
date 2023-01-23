@@ -551,7 +551,7 @@ func GetKeyWordAndAPIKeyFromENVFile(url string) (string, string, error) {
 		keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
 		isTheKeywordPresentInURL := strings.Contains(url, keywordWithAPIKeyRegex)
 		if isTheKeywordPresentInURL {
-			log.Infof("Found the keyword %s in env file: ", keyword)
+			log.Infof("Found the keyword %s in env file", keyword)
 			return keyword, APIKey, nil
 		}
 	}

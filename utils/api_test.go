@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/stretchr/testify/mock"
 	"razor/cache"
 	"razor/core/types"
@@ -143,7 +142,6 @@ func TestGetDataFromAPI(t *testing.T) {
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
 			localCache := cache.NewLocalCache(time.Second * 10)
 			got, err := utils.GetDataFromAPI(tt.args.urlStruct, localCache)
-			fmt.Println("ABC: ", hex.EncodeToString(got))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
