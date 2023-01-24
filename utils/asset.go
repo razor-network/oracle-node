@@ -293,11 +293,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		log.Infof("URL Struct: %+v", dataSourceURLStruct)
 	} else {
 		log.Debug("Job URL passed is a direct URL: ", job.Url)
-		isAPIKeyRequired, err := regexp.MatchString(core.APIKeyRegex, job.Url)
-		if err != nil {
-			log.Error("Error in matching api key regex in job url: ", err)
-			return nil, err
-		}
+		isAPIKeyRequired := strings.Contains(job.Url, core.APIKeyRegex)
 		if isAPIKeyRequired {
 			keyword, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(job.Url)
 			if err != nil {
