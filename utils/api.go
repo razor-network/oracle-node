@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"razor/cache"
 	"razor/core"
 	"strings"
 	"time"
 
-	"io/ioutil"
 	"razor/core/types"
 
 	"github.com/PaesslerAG/jsonpath"
@@ -28,8 +28,18 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 		if dataSourceURLStruct.Type == "GET" {
 			err := retry.Do(
 				func() error {
-					response, err := client.Get(dataSourceURLStruct.URL)
+					request, err := http.NewRequest("GET", dataSourceURLStruct.URL, nil)
 					if err != nil {
+						return err
+					}
+					requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
+					if err != nil {
+						log.Error("Error in adding header to GET request: ", err)
+						return err
+					}
+					response, err := client.Do(requestWithHeader)
+					if err != nil {
+						log.Errorf("Error sending GET request URL %s: %v", dataSourceURLStruct.URL, err)
 						return err
 					}
 					defer response.Body.Close()
@@ -37,7 +47,7 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 						log.Errorf("API: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
 						return errors.New("unable to reach API")
 					}
-					body, err = IOInterface.ReadAll(response.Body)
+					body, err = io.ReadAll(response.Body)
 					if err != nil {
 						return err
 					}
@@ -60,9 +70,9 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 						log.Errorf("Error in creating a POST request for URL %s: %v", dataSourceURLStruct.URL, err)
 						return err
 					}
-					requestWithHeader, err := AddHeaderToPostRequest(request, dataSourceURLStruct.Header)
+					requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
 					if err != nil {
-						log.Error("Error in adding header to post request: ", err)
+						log.Error("Error in adding header to POST request: ", err)
 						return err
 					}
 					response, err := client.Do(requestWithHeader)
@@ -75,7 +85,7 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 						log.Errorf("URL: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
 						return errors.New("unable to reach API")
 					}
-					body, err = ioutil.ReadAll(response.Body)
+					body, err = io.ReadAll(response.Body)
 					if err != nil {
 						return err
 					}
@@ -117,7 +127,7 @@ func (*UtilsStruct) GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, se
 	return priceData, nil
 }
 
-func AddHeaderToPostRequest(request *http.Request, headerMap map[string]string) (*http.Request, error) {
+func AddHeaderToRequest(request *http.Request, headerMap map[string]string) (*http.Request, error) {
 	for key, value := range headerMap {
 		// If core.APIKeyRegex = `$` and if value starts with '$' then we need to fetch the respective value from env file
 		if strings.HasPrefix(value, core.APIKeyRegex) {

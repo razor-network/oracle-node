@@ -2,8 +2,6 @@ package utils
 
 import (
 	"encoding/hex"
-	"errors"
-	"github.com/stretchr/testify/mock"
 	"razor/cache"
 	"razor/core/types"
 	"razor/utils/mocks"
@@ -37,8 +35,6 @@ func TestGetDataFromAPI(t *testing.T) {
 
 	type args struct {
 		urlStruct types.DataSourceURL
-		body      []byte
-		bodyErr   error
 	}
 	tests := []struct {
 		name    string
@@ -55,7 +51,6 @@ func TestGetDataFromAPI(t *testing.T) {
 					Body:   nil,
 					Header: nil,
 				},
-				body: getAPIByteArray(0),
 			},
 			want:    getAPIByteArray(0),
 			wantErr: false,
@@ -68,7 +63,6 @@ func TestGetDataFromAPI(t *testing.T) {
 					Body:   nil,
 					Header: nil,
 				},
-				body: getAPIByteArray(1),
 			},
 			want:    getAPIByteArray(1),
 			wantErr: false,
@@ -82,7 +76,6 @@ func TestGetDataFromAPI(t *testing.T) {
 					Body:   nil,
 					Header: nil,
 				},
-				body: getAPIByteArray(0),
 			},
 			want:    nil,
 			wantErr: true,
@@ -96,21 +89,6 @@ func TestGetDataFromAPI(t *testing.T) {
 					Body:   nil,
 					Header: nil,
 				},
-				body: getAPIByteArray(0),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "When there is an error in getting body",
-			args: args{
-				urlStruct: types.DataSourceURL{
-					Type:   "GET",
-					URL:    "https://jsonplaceholder.typicode.com/todos/1",
-					Body:   nil,
-					Header: nil,
-				},
-				bodyErr: errors.New("body error"),
 			},
 			want:    nil,
 			wantErr: true,
@@ -131,15 +109,12 @@ func TestGetDataFromAPI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
-			ioMock := new(mocks.IOUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
-				IOInterface:    ioMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
 			localCache := cache.NewLocalCache(time.Second * 10)
 			got, err := utils.GetDataFromAPI(tt.args.urlStruct, localCache)
 			if (err != nil) != tt.wantErr {
