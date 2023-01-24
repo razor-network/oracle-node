@@ -63,7 +63,7 @@ jobs:
       - run:
           name: "Build docker image"
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+            echo "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
             docker buildx build --push --platform linux/arm64/v8,linux/amd64 --tag $IMAGE_NAME:$CIRCLE_TAG .
   build-amd:
     machine:
