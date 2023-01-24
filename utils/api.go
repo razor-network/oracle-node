@@ -20,7 +20,7 @@ import (
 
 func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
 	client := http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: time.Duration(HTTPTimeout) * time.Second,
 	}
 	cachedData, cachedErr := localCache.Read(dataSourceURLStruct.URL)
 	if cachedErr != nil {
