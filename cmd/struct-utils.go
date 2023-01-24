@@ -503,8 +503,14 @@ func (flagSetUtils FLagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
+//This function returns RPC Timeout in Int64
 func (flagSetUtils FLagSetUtils) GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error) {
 	return flagSet.GetInt64("rpcTimeout")
+}
+
+//This function returns HTTP Timeout in Int64
+func (flagSetUtils FLagSetUtils) GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error) {
+	return flagSet.GetInt64("httpTimeout")
 }
 
 //This function returns Gas Limit in Float32
@@ -555,6 +561,11 @@ func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 //This function returns the rpcTimeout of root in Int64
 func (flagSetUtils FLagSetUtils) GetRootInt64RPCTimeout() (int64, error) {
 	return rootCmd.PersistentFlags().GetInt64("rpcTimeout")
+}
+
+//This function returns the HTTPTimeout of root in Int64
+func (flagSetUtils FLagSetUtils) GetRootInt64HTTPTimeout() (int64, error) {
+	return rootCmd.PersistentFlags().GetInt64("httpTimeout")
 }
 
 //This function returns the max size of log file for root flag in Int

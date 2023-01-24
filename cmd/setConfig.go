@@ -63,6 +63,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if rpcTimeoutErr != nil {
 		return rpcTimeoutErr
 	}
+	httpTimeout, httpTimeoutErr := flagSetUtils.GetInt64HTTPTimeout(flagSet)
+	if httpTimeoutErr != nil {
+		return httpTimeoutErr
+	}
 	logFileMaxSize, err := flagSetUtils.GetIntLogFileMaxSize(flagSet)
 	if err != nil {
 		return err
@@ -133,6 +137,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if rpcTimeout != 0 {
 		viper.Set("rpcTimeout", rpcTimeout)
 	}
+	if httpTimeout != 0 {
+		viper.Set("httpTimeout", httpTimeout)
+	}
 	if logFileMaxSize != 0 {
 		viper.Set("logFileMaxSize", logFileMaxSize)
 	}
@@ -142,7 +149,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if logFileMaxAge != 0 {
 		viper.Set("logFileMaxAge", logFileMaxAge)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
+	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", core.DefaultProvider)
 		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
 		viper.Set("buffer", core.DefaultBufferPercent)
@@ -151,7 +158,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("logLevel", core.DefaultLogLevel)
 		viper.Set("gasLimit", core.DefaultGasLimit)
 		viper.Set("rpcTimeout", core.DefaultRPCTimeout)
-		//viper.Set("exposeMetricsPort", "")
+		viper.Set("httpTimeout", core.DefaultHTTPTimeout)
 		viper.Set("logFileMaxSize", core.DefaultLogFileMaxSize)
 		viper.Set("logFileMaxBackups", core.DefaultLogFileMaxBackups)
 		viper.Set("logFileMaxAge", core.DefaultLogFileMaxAge)
@@ -178,6 +185,7 @@ func init() {
 		LogLevel           string
 		GasLimitMultiplier float32
 		RPCTimeout         int64
+		HTTPTimeout        int64
 		ExposeMetrics      string
 		CertFile           string
 		CertKey            string
@@ -193,6 +201,7 @@ func init() {
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
 	setConfig.Flags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
+	setConfig.Flags().Int64VarP(&HTTPTimeout, "httpTimeout", "", 0, "http request timeout if its not responding")
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
 	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")
