@@ -20,6 +20,7 @@ type PathInterface interface {
 	GetCommitDataFileName(address string) (string, error)
 	GetProposeDataFileName(address string) (string, error)
 	GetDisputeDataFileName(address string) (string, error)
+	GetDotENVFilePath() (string, error)
 }
 
 type OSInterface interface {

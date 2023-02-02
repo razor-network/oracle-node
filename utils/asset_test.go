@@ -552,10 +552,10 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 		}, {Id: 2, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 		},
 	}
 
@@ -580,7 +580,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				overrideJobData: map[string]*types.StructsJob{"1": {
 					Id: 2, SelectorType: 1, Weight: 100,
 					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 				}},
 				dataToAppend: big.NewInt(1),
 			},
@@ -629,8 +629,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			pathMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
-			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
 			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
 			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
@@ -648,12 +646,17 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 func TestGetDataToCommitFromJob(t *testing.T) {
 	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 	}
 
 	job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"content-type": ""}`,
+		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
+	}
+
+	job3 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "last",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=$ethusd_sample_key",
 	}
 
 	response := []byte(`{
@@ -776,6 +779,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Test 9: When there is a case to pick up API key from .env file and env file is not present",
+			args: args{
+				job: job3,
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -786,10 +797,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
+			pathUtilsMock := new(pathMocks.PathInterface)
+			path.PathUtilsInterface = pathUtilsMock
+
 			utilsMock.On("GetDataFromAPI", mock.Anything, mock.Anything).Return(tt.args.response, tt.args.responseErr)
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
 			utilsMock.On("GetDataFromXHTML", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
+			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
 
 			got, err := utils.GetDataToCommitFromJob(tt.args.job, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {
@@ -1093,12 +1108,14 @@ func TestConvertCustomJobToStructJob(t *testing.T) {
 			args: args{
 				customJob: types.CustomJob{
 					URL:    "http://api.coinbase.com/eth2",
+					Name:   "eth_coinBase",
 					Power:  3,
 					Weight: 2,
 				},
 			},
 			want: bindings.StructsJob{
 				Url:    "http://api.coinbase.com/eth2",
+				Name:   "eth_coinBase",
 				Power:  3,
 				Weight: 2,
 			},

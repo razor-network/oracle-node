@@ -113,3 +113,13 @@ func (PathUtils) GetDisputeDataFileName(address string) (string, error) {
 	}
 	return filepath.Join(dataFileDir, address+core.DisputeDataFile), nil
 }
+
+//This function returns the job file path
+func (PathUtils) GetDotENVFilePath() (string, error) {
+	razorPath, err := PathUtilsInterface.GetDefaultPath()
+	if err != nil {
+		return "", err
+	}
+	filePath := filepath.Join(razorPath, core.DotENVFileName)
+	return filePath, nil
+}

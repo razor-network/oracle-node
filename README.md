@@ -873,6 +873,10 @@ Shown below is an example of how your `assets.json` file should be -
 							"body": {},
 							"content-type": ""
 						},
+						 "name:" "eth_lunarCrush",
+						 "selector": "[`data`][`0`][`price`]",
+                         "power": 3,
+                         "weight": 2
 					]
 				}
 			}
