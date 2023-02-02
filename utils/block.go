@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"math/big"
 	"razor/core"
 	"razor/pkg/bindings"
@@ -58,6 +59,9 @@ func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, a
 	block, err := UtilsInterface.GetBlock(client, epoch)
 	if err != nil {
 		return big.NewInt(0), err
+	}
+	if len(block.Medians) < int(assetId) {
+		return big.NewInt(0), errors.New("value not found in previous block")
 	}
 	return block.Medians[assetId-1], nil
 }
