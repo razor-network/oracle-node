@@ -24,82 +24,51 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 	}
 	cachedData, cachedErr := localCache.Read(dataSourceURLStruct.URL)
 	if cachedErr != nil {
-		var body []byte
-		if dataSourceURLStruct.Type == "GET" {
+		var response []byte
+		switch dataSourceURLStruct.Type {
+		case "GET":
 			err := retry.Do(
 				func() error {
-					request, err := http.NewRequest("GET", dataSourceURLStruct.URL, nil)
+					responseBody, err := ProcessRequest(client, dataSourceURLStruct, nil)
 					if err != nil {
+						log.Error("Error in processing GET request: ", err)
 						return err
 					}
-					requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
-					if err != nil {
-						log.Error("Error in adding header to GET request: ", err)
-						return err
-					}
-					response, err := client.Do(requestWithHeader)
-					if err != nil {
-						log.Errorf("Error sending GET request URL %s: %v", dataSourceURLStruct.URL, err)
-						return err
-					}
-					defer response.Body.Close()
-					if response.StatusCode != 200 {
-						log.Errorf("API: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
-						return errors.New("unable to reach API")
-					}
-					body, err = io.ReadAll(response.Body)
-					if err != nil {
-						return err
-					}
+					response = responseBody
 					return nil
-				}, retry.Attempts(2), retry.Delay(time.Second*2))
+				}, retry.Attempts(core.ProcessRequestRetryAttempts), retry.Delay(time.Second*time.Duration(core.ProcessRequestRetryDelay)))
 			if err != nil {
 				return nil, err
 			}
-		}
-		if dataSourceURLStruct.Type == "POST" {
+		case "POST":
 			postBody, err := json.Marshal(dataSourceURLStruct.Body)
 			if err != nil {
 				log.Errorf("Error in marshalling body of a POST request URL %s: %v", dataSourceURLStruct.URL, err)
+				return nil, err
 			}
-			responseBody := bytes.NewBuffer(postBody)
+			requestBody := bytes.NewBuffer(postBody)
 			err = retry.Do(
 				func() error {
-					request, err := http.NewRequest("POST", dataSourceURLStruct.URL, responseBody)
+					responseBody, err := ProcessRequest(client, dataSourceURLStruct, requestBody)
 					if err != nil {
-						log.Errorf("Error in creating a POST request for URL %s: %v", dataSourceURLStruct.URL, err)
+						log.Error("Error in processing POST request: ", err)
 						return err
 					}
-					requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
-					if err != nil {
-						log.Error("Error in adding header to POST request: ", err)
-						return err
-					}
-					response, err := client.Do(requestWithHeader)
-					if err != nil {
-						log.Errorf("Error sending POST request URL %s: %v", dataSourceURLStruct.URL, err)
-						return err
-					}
-					defer response.Body.Close()
-					if response.StatusCode != 200 {
-						log.Errorf("URL: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
-						return errors.New("unable to reach API")
-					}
-					body, err = io.ReadAll(response.Body)
-					if err != nil {
-						return err
-					}
+					response = responseBody
 					return nil
-				}, retry.Attempts(2), retry.Delay(time.Second*2))
+				}, retry.Attempts(core.ProcessRequestRetryAttempts), retry.Delay(time.Second*time.Duration(core.ProcessRequestRetryDelay)))
 			if err != nil {
 				return nil, err
 			}
+		default:
+			return nil, errors.New("invalid request type")
 		}
+
 		dataToCache := cache.Data{
-			Result: body,
+			Result: response,
 		}
 		localCache.Update(dataToCache, dataSourceURLStruct.URL, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
-		return body, nil
+		return response, nil
 	}
 	log.Debugf("Getting Data for URL %s from local cache...", dataSourceURLStruct.URL)
 	return cachedData.Result, nil
@@ -142,4 +111,31 @@ func AddHeaderToRequest(request *http.Request, headerMap map[string]string) (*ht
 		request.Header.Add(key, value)
 	}
 	return request, nil
+}
+
+func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
+	request, err := http.NewRequest(dataSourceURLStruct.Type, dataSourceURLStruct.URL, requestBody)
+	if err != nil {
+		return nil, err
+	}
+	requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
+	if err != nil {
+		log.Errorf("Error in adding header to %s request: %v", dataSourceURLStruct.Type, err)
+		return nil, err
+	}
+	response, err := client.Do(requestWithHeader)
+	if err != nil {
+		log.Errorf("Error sending %s request URL %s: %v", dataSourceURLStruct.Type, dataSourceURLStruct.URL, err)
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		log.Errorf("API: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
+		return nil, errors.New("unable to reach API")
+	}
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return responseBody, nil
 }
