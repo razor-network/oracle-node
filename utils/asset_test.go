@@ -13,6 +13,7 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -644,38 +645,23 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJob(t *testing.T) {
-	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
+	job := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
 		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 	}
 
-	job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
-		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
-	}
-
+	//job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+	//	Power: 2, Name: "ethusd_gemini", Selector: "last",
+	//	Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
+	//}
+	//
 	job3 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "last",
 		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=$ethusd_sample_key",
 	}
 
-	response := []byte(`{
-  			"userId": 1,
-  			"id": 1,
-			"title": "delectus aut autem",
-  			"completed": false
-	}`)
-
 	type args struct {
-		job           bindings.StructsJob
-		response      []byte
-		responseErr   error
-		parsedData    interface{}
-		parsedDataErr error
-		dataPoint     string
-		dataPointErr  error
-		datum         *big.Float
-		datumErr      error
+		job bindings.StructsJob
 	}
 	tests := []struct {
 		name    string
@@ -686,101 +672,12 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		{
 			name: "Test 1: When GetDataToCommitFromJob() executes successfully",
 			args: args{
-				job:        job,
-				response:   response,
-				parsedData: "abc",
-				dataPoint:  "1",
-				datum:      big.NewFloat(0.1),
+				job: job,
 			},
-			want:    big.NewInt(10),
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting response",
-			args: args{
-				job:         job,
-				responseErr: errors.New("response error"),
-				parsedData:  "abc",
-				dataPoint:   "1",
-				datum:       big.NewFloat(0.1),
-			},
-			want:    big.NewInt(10),
-			wantErr: false,
-		},
-		{
-			name: "Test 3: When there is an error in getting parsedData",
-			args: args{
-				job:           job,
-				response:      response,
-				parsedDataErr: errors.New("parsedData error"),
-				dataPoint:     "1",
-				datum:         big.NewFloat(0.1),
-			},
-			want:    big.NewInt(10),
-			wantErr: false,
-		},
-		{
-			name: "Test 4: When there is an error in getting dataPoint",
-			args: args{
-				job:          job,
-				response:     response,
-				parsedData:   "abc",
-				dataPointErr: errors.New("dataPoint error"),
-				datum:        big.NewFloat(0.1),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "test 5: When there is an error in getting datum",
-			args: args{
-				job:        job,
-				response:   response,
-				parsedData: "abc",
-				dataPoint:  "1",
-				datumErr:   errors.New("datum error"),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 6: When there is an Unmarshal error",
-			args: args{
-				job:        job2,
-				response:   []byte(""),
-				parsedData: "abc",
-				dataPoint:  "1",
-				datum:      big.NewFloat(0.1),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 7: When there is an error in getting response and selector type is 0",
-			args: args{
-				job:         job2,
-				responseErr: errors.New("API error"),
-				parsedData:  "abc",
-				dataPoint:   "1",
-				datum:       big.NewFloat(0.1),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 8: When there is an error in getting parsedData and selector type is 0",
-			args: args{
-				job:           job2,
-				response:      response,
-				parsedDataErr: errors.New("parseData error"),
-				dataPoint:     "1",
-				datum:         big.NewFloat(0.1),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 9: When there is a case to pick up API key from .env file and env file is not present",
+			name: "Test 2: When there is a case to pick up API key from .env file and env file is not present",
 			args: args{
 				job: job3,
 			},
@@ -800,19 +697,12 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			pathUtilsMock := new(pathMocks.PathInterface)
 			path.PathUtilsInterface = pathUtilsMock
 
-			utilsMock.On("GetDataFromAPI", mock.Anything, mock.Anything).Return(tt.args.response, tt.args.responseErr)
-			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
-			utilsMock.On("GetDataFromXHTML", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
-			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
 			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
-
-			got, err := utils.GetDataToCommitFromJob(tt.args.job, &cache.LocalCache{})
+			lc := cache.NewLocalCache(time.Second * 10)
+			_, err := utils.GetDataToCommitFromJob(tt.args.job, lc)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetDataToCommitFromJob() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

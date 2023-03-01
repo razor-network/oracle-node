@@ -110,13 +110,7 @@ func TestConvertToNumber(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			UtilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: UtilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-			got, err := utils.ConvertToNumber(tt.args.num)
+			got, err := ConvertToNumber(tt.args.num)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ConvertToNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return
