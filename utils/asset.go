@@ -317,9 +317,8 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 0 {
-
 		start := time.Now()
-		response, apiErr = UtilsInterface.GetDataFromAPI(dataSourceURLStruct, localCache)
+		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
 		if apiErr != nil {
 			log.Errorf("Error in fetching data from API %s: %v", job.Url, apiErr)
 			return nil, apiErr
@@ -332,14 +331,14 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 			log.Error("Error in parsing data from API: ", err)
 			return nil, err
 		}
-		parsedData, err = UtilsInterface.GetDataFromJSON(parsedJSON, job.Selector)
+		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed data: ", err)
 			return nil, err
 		}
 	} else {
 		//TODO: Add retry here.
-		dataPoint, err := UtilsInterface.GetDataFromXHTML(dataSourceURLStruct, job.Selector)
+		dataPoint, err := GetDataFromXHTML(dataSourceURLStruct, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed XHTML: ", err)
 			return nil, err
@@ -348,7 +347,13 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		parsedData = regexp.MustCompile(`[\p{Sc}, ]`).ReplaceAllString(dataPoint, "")
 	}
 
-	datum, err := UtilsInterface.ConvertToNumber(parsedData)
+	parsedDataInDecimal, err := ManageReturnType(parsedData, dataSourceURLStruct.ReturnType)
+	if err != nil {
+		log.Error("Error in converting parsed data to decimal value: ", err)
+		return nil, err
+	}
+
+	datum, err := ConvertToNumber(parsedDataInDecimal)
 	if err != nil {
 		log.Error("Result is not a number")
 		return nil, err

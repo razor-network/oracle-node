@@ -3,15 +3,17 @@ package utils
 import (
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	mathRand "math/rand"
+	"razor/core"
 	"sort"
 	"strconv"
 	"time"
 )
 
-func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
+func ConvertToNumber(num interface{}) (*big.Float, error) {
 	if num == nil {
 		return big.NewFloat(0), errors.New("no data provided")
 	}
@@ -29,6 +31,21 @@ func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 		return big.NewFloat(convertedNumber), nil
 	}
 	return big.NewFloat(0), nil
+}
+
+func ManageReturnType(num interface{}, returnType string) (interface{}, error) {
+	switch returnType {
+	case core.HexReturnType:
+		//Converting given hex value to decimal value
+		decimalValue, err := strconv.ParseUint(fmt.Sprint(num), 16, 64)
+		if err != nil {
+			log.Errorf("%v is not of type %v, error in converting %v to decimal value", num, core.HexReturnType, num)
+			return nil, err
+		}
+		return int(decimalValue), nil
+	default:
+		return num, nil
+	}
 }
 
 func MultiplyWithPower(num *big.Float, power int8) *big.Int {

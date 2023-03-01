@@ -59,3 +59,6 @@ var APIKeyRegex = `$`
 
 var ProcessRequestRetryAttempts uint = 2
 var ProcessRequestRetryDelay = 2
+
+// HexReturnType is the ReturnType for a job if that job returns a hex value
+var HexReturnType = "hex"
