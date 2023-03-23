@@ -7,7 +7,6 @@ type Configurations struct {
 	WaitTime           int32
 	GasPrice           int32
 	LogLevel           string
-	GasLimitOverride   uint64
 	GasLimitMultiplier float32
 	RPCTimeout         int64
 }

@@ -31,8 +31,6 @@ func TestSetConfig(t *testing.T) {
 		configErr             error
 		gasLimitMultiplier    float32
 		gasLimitMultiplierErr error
-		gasLimitOverride      uint64
-		gasLimitOverrideErr   error
 		rpcTimeout            int64
 		rpcTimeoutErr         error
 		isFlagPassed          bool
@@ -284,21 +282,6 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("rpcTimeout error"),
 		},
-		{
-			name: "Test 17: When there is an error in getting gas limit to overrride",
-			args: args{
-				provider:            "http://127.0.0.1",
-				gasmultiplier:       2,
-				buffer:              20,
-				waitTime:            2,
-				gasPrice:            1,
-				logLevel:            "debug",
-				path:                "/home/config",
-				gasLimitMultiplier:  -1,
-				gasLimitOverrideErr: errors.New("gasLimitOverride error"),
-			},
-			wantErr: errors.New("gasLimitOverride error"),
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -321,7 +304,6 @@ func TestSetConfig(t *testing.T) {
 			flagSetUtilsMock.On("GetInt32GasPrice", flagSet).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			flagSetUtilsMock.On("GetStringLogLevel", flagSet).Return(tt.args.logLevel, tt.args.logLevelErr)
 			flagSetUtilsMock.On("GetFloat32GasLimit", flagSet).Return(tt.args.gasLimitMultiplier, tt.args.gasLimitMultiplierErr)
-			flagSetUtilsMock.On("GetUint64GasLimitOverride", flagSet).Return(tt.args.gasLimitOverride, tt.args.gasLimitOverrideErr)
 			flagSetUtilsMock.On("GetInt64RPCTimeout", flagSet).Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
 			flagSetUtilsMock.On("GetStringExposeMetrics", flagSet).Return(tt.args.port, tt.args.portErr)
 			flagSetUtilsMock.On("GetStringCertFile", flagSet).Return(tt.args.certFile, tt.args.certFileErr)

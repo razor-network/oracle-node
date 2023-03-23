@@ -860,14 +860,8 @@ func (flagSetUtils FLagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("logLevel")
 }
 
-//This function returns RPC timeout in Int64
 func (flagSetUtils FLagSetUtils) GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error) {
 	return flagSet.GetInt64("rpcTimeout")
-}
-
-//This function returns GasLimit to override in Uint64
-func (flagSetUtils FLagSetUtils) GetUint64GasLimitOverride(flagSet *pflag.FlagSet) (uint64, error) {
-	return flagSet.GetUint64("gasLimitOverride")
 }
 
 //This function returns Gas Limit in Float32
@@ -913,11 +907,6 @@ func (flagSetUtils FLagSetUtils) GetRootStringLogLevel() (string, error) {
 //This function returns the gas limit of root in Float32
 func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
 	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
-}
-
-//This function returns the gas limit to overridr of root in Uint64
-func (flagSetUtils FLagSetUtils) GetRootUint64GasLimitOverride() (uint64, error) {
-	return rootCmd.PersistentFlags().GetUint64("gasLimitOverride")
 }
 
 //This function returns the gas limit of root in Float32
