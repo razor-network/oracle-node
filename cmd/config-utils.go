@@ -2,11 +2,13 @@
 package cmd
 
 import (
-	"github.com/spf13/viper"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 	"strings"
+
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 //This function returns the config data
