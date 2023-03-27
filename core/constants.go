@@ -1,9 +1,8 @@
 package core
 
 import (
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 var EpochLength int64 = 1200
