@@ -287,6 +287,7 @@ func TestExecuteCreateCollection(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagSetMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)
