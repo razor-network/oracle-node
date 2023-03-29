@@ -51,6 +51,9 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
+	err = utils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
 

@@ -53,6 +53,9 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
+	err = utils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	if razorUtils.IsFlagPassed("bountyId") {
 		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 		utils.CheckError("Error in getting bountyId: ", err)

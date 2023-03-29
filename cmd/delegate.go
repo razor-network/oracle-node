@@ -49,6 +49,9 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
+	err = utils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ExecuteDelegate: Staker Id: ", stakerId)
