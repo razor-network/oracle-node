@@ -63,7 +63,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = utils.CheckPassword(address, password)
+	err = razorUtils.CheckPassword(address, password)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)

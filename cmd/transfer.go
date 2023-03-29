@@ -50,7 +50,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = utils.CheckPassword(fromAddress, password)
+	err = razorUtils.CheckPassword(fromAddress, password)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)

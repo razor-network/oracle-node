@@ -50,7 +50,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = utils.CheckPassword(address, password)
+	err = razorUtils.CheckPassword(address, password)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)

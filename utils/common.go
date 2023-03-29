@@ -379,7 +379,7 @@ func (*FileStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileDa
 	return disputeData, nil
 }
 
-func CheckPassword(address string, password string) error {
+func (*UtilsStruct) CheckPassword(address string, password string) error {
 	razorPath, err := PathInterface.GetDefaultPath()
 	if err != nil {
 		log.Error("CheckPassword: Error in getting .razor path: ", err)

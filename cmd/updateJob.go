@@ -52,7 +52,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = utils.CheckPassword(address, password)
+	err = razorUtils.CheckPassword(address, password)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
