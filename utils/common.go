@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"path/filepath"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -376,4 +377,20 @@ func (*FileStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileDa
 		return types.DisputeFileData{}, err
 	}
 	return disputeData, nil
+}
+
+func CheckPassword(address string, password string) error {
+	razorPath, err := PathInterface.GetDefaultPath()
+	if err != nil {
+		log.Error("CheckPassword: Error in getting .razor path: ", err)
+		return err
+	}
+	keystorePath := filepath.Join(razorPath, "keystore_files")
+	_, err = AccountsInterface.GetPrivateKey(address, password, keystorePath)
+	if err != nil {
+		log.Info("Kindly check your password!")
+		log.Error("CheckPassword: Error in getting private key: ", err)
+		return err
+	}
+	return nil
 }
