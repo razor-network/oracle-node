@@ -10,13 +10,13 @@ import (
 var log = logger.NewLogger()
 
 var SwitchClientToAlternateClient bool
+var AlternateProvider string
 
 func StartTimerForAlternateClient(switchClientAfterTime uint64) {
-	select {
-	case <-time.After(time.Duration(switchClientAfterTime) * time.Second):
-		log.Info("Switching back to primary RPC..")
-		SwitchClientToAlternateClient = false
-	}
+	log.Infof("StartTimerForAlternateClient: Alternate client will be switched back to primary client in %v seconds!", switchClientAfterTime)
+	time.Sleep(time.Duration(switchClientAfterTime) * time.Second)
+	log.Info("Switching back to primary RPC..")
+	SwitchClientToAlternateClient = false
 }
 
 //ReplaceClientWithAlternateClient will replace the primary client(client from primary RPC) with secondary client which would be created using alternate RPC
@@ -27,10 +27,9 @@ func ReplaceClientWithAlternateClient(arguments []reflect.Value) []reflect.Value
 		argumentDataType := reflect.TypeOf(argument.Interface()).Elem()
 		if argumentDataType != nil {
 			if argumentDataType == clientDataType {
-				alternateRPC := "http://127.0.0.1:8000"
-				alternateClient, dialErr := ethclient.Dial(alternateRPC)
+				alternateClient, dialErr := ethclient.Dial(AlternateProvider)
 				if dialErr != nil {
-					log.Errorf("Error in connecting using alternate RPC %v: %v", alternateRPC, dialErr)
+					log.Errorf("Error in connecting using alternate RPC %v: %v", AlternateProvider, dialErr)
 					return arguments
 				}
 				arguments[i] = reflect.ValueOf(alternateClient)

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
@@ -81,6 +82,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	}
 	config.Provider = provider
 	config.AlternateProvider = alternateProvider
+	client.AlternateProvider = alternateProvider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
