@@ -31,6 +31,10 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	alternateProvider, err := cmdUtils.GetAlternateProvider()
+	if err != nil {
+		return config, err
+	}
 	gasMultiplier, err := cmdUtils.GetMultiplier()
 	if err != nil {
 		return config, err
@@ -76,6 +80,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.Provider = provider
+	config.AlternateProvider = alternateProvider
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
