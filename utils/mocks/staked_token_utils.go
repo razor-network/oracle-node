@@ -4,11 +4,9 @@ package mocks
 
 import (
 	big "math/big"
-	bindings "razor/pkg/bindings"
-
-	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	common "github.com/ethereum/go-ethereum/common"
+	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -18,13 +16,13 @@ type StakedTokenUtils struct {
 	mock.Mock
 }
 
-// BalanceOf provides a mock function with given fields: stakedToken, callOpts, address
-func (_m *StakedTokenUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error) {
-	ret := _m.Called(stakedToken, callOpts, address)
+// BalanceOf provides a mock function with given fields: client, tokenAddress, address
+func (_m *StakedTokenUtils) BalanceOf(client *ethclient.Client, tokenAddress common.Address, address common.Address) (*big.Int, error) {
+	ret := _m.Called(client, tokenAddress, address)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*bindings.StakedToken, *bind.CallOpts, common.Address) *big.Int); ok {
-		r0 = rf(stakedToken, callOpts, address)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address, common.Address) *big.Int); ok {
+		r0 = rf(client, tokenAddress, address)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -32,8 +30,8 @@ func (_m *StakedTokenUtils) BalanceOf(stakedToken *bindings.StakedToken, callOpt
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*bindings.StakedToken, *bind.CallOpts, common.Address) error); ok {
-		r1 = rf(stakedToken, callOpts, address)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address, common.Address) error); ok {
+		r1 = rf(client, tokenAddress, address)
 	} else {
 		r1 = ret.Error(1)
 	}
