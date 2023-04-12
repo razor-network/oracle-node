@@ -18,7 +18,7 @@ func (*ClientStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddres
 }
 
 func (*ClientStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
-	var blockNumberArgument *big.Int = nil
+	var blockNumberArgument *big.Int
 	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "HeaderByNumber", client, context.Background(), blockNumberArgument)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (*ClientStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereu
 }
 
 func (*ClientStruct) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	var blockNumberArgument *big.Int = nil
+	var blockNumberArgument *big.Int
 	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "BalanceAt", client, context.Background(), account, blockNumberArgument)
 	if err != nil {
 		return nil, err

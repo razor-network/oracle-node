@@ -82,7 +82,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	}
 	config.Provider = provider
 	config.AlternateProvider = alternateProvider
-	client.AlternateProvider = alternateProvider
+	client.SetAlternateProvider(alternateProvider)
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime

@@ -120,7 +120,8 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 	for i := range args {
 		inputs[i] = reflect.ValueOf(args[i])
 	}
-	if client.SwitchClientToAlternateClient {
+	switchToAlternateClient := client.GetSwitchToAlternateClientStatus()
+	if switchToAlternateClient {
 		// Changing client argument to alternate client
 		log.Debug("Making this RPC call using alternate RPC provider!")
 		inputs = client.ReplaceClientWithAlternateClient(inputs)
@@ -137,10 +138,10 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 			return nil
 		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
-		if !client.SwitchClientToAlternateClient {
+		if !switchToAlternateClient {
 			log.Errorf("%v error after retries: %v", methodName, err)
 			log.Info("Switching RPC to alternate RPC")
-			client.SwitchClientToAlternateClient = true
+			client.SetSwitchToAlternateClientStatus(true)
 			go client.StartTimerForAlternateClient(core.SwitchClientDuration)
 		}
 	}
@@ -529,7 +530,7 @@ func (v VoteManagerStruct) GetEpochLastRevealed(client *ethclient.Client, staker
 }
 
 func (s StakedTokenStruct) BalanceOf(client *ethclient.Client, tokenAddress common.Address, address common.Address) (*big.Int, error) {
-	stakedToken, opts := UtilsInterface.GetStakedTokenWithOpts(client, tokenAddress)
+	stakedToken, opts := UtilsInterface.GetStakedTokenManagerWithOpts(client, tokenAddress)
 	returnedValues := InvokeFunctionWithTimeout(stakedToken, "BalanceOf", &opts, address)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {

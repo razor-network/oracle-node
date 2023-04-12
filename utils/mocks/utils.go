@@ -1360,7 +1360,7 @@ func (_m *Utils) GetStakedToken(client *ethclient.Client, tokenAddress common.Ad
 }
 
 // GetStakedTokenWithOpts provides a mock function with given fields: client, tokenAddress
-func (_m *Utils) GetStakedTokenWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts) {
+func (_m *Utils) GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts) {
 	ret := _m.Called(client, tokenAddress)
 
 	var r0 *bindings.StakedToken

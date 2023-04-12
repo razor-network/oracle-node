@@ -159,7 +159,7 @@ type Utils interface {
 	AssignPassword(flagSet *pflag.FlagSet) string
 	PrivateKeyPrompt() string
 	GetRogueRandomValue(value int) *big.Int
-	GetStakedTokenWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
+	GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 }
 

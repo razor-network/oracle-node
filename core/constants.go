@@ -61,5 +61,5 @@ var APIKeyRegex = `$`
 var ProcessRequestRetryAttempts uint = 2
 var ProcessRequestRetryDelay = 2
 
-//SwitchClientDuration is the timeout for which alternate client i.e. alternate client will be activated
+//SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength

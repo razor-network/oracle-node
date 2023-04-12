@@ -8,7 +8,7 @@ import (
 	"razor/pkg/bindings"
 )
 
-func (*UtilsStruct) GetStakedTokenWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts) {
+func (*UtilsStruct) GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts) {
 	return UtilsInterface.GetStakedToken(client, tokenAddress), UtilsInterface.GetOptions()
 }
 
