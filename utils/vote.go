@@ -2,11 +2,8 @@ package utils
 
 import (
 	"math/big"
-	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
-
-	"github.com/avast/retry-go"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -21,181 +18,66 @@ func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([3
 	if err != nil {
 		return [32]byte{}, err
 	}
-	var (
-		commitments   types.Commitment
-		commitmentErr error
-	)
-	commitmentErr = retry.Do(
-		func() error {
-			commitments, commitmentErr = VoteManagerInterface.Commitments(client, stakerId)
-			if commitmentErr != nil {
-				log.Error("Error in fetching commitment....Retrying")
-				return commitmentErr
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if commitmentErr != nil {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "Commitments", client, stakerId)
+	if err != nil {
 		return [32]byte{}, err
 	}
-	return commitments.CommitmentHash, nil
+	commitment := returnedValues[0].Interface().(types.Commitment)
+	return commitment.CommitmentHash, nil
 }
 
 func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
-	var (
-		voteValue    *big.Int
-		voteValueErr error
-	)
-	voteValueErr = retry.Do(
-		func() error {
-			voteValue, voteValueErr = VoteManagerInterface.GetVoteValue(client, epoch, stakerId, medianIndex)
-			if voteValueErr != nil {
-				log.Error("Error in fetching last vote value....Retrying")
-				return voteValueErr
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if voteValueErr != nil {
-		return big.NewInt(0), voteValueErr
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetVoteValue", client, epoch, stakerId, medianIndex)
+	if err != nil {
+		return big.NewInt(0), err
 	}
-	return voteValue, nil
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (*UtilsStruct) GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	var (
-		influenceSnapshot *big.Int
-		influenceErr      error
-	)
-	influenceErr = retry.Do(
-		func() error {
-			influenceSnapshot, influenceErr = VoteManagerInterface.GetInfluenceSnapshot(client, epoch, stakerId)
-			if influenceErr != nil {
-				log.Error("Error in fetching influence snapshot....Retrying")
-				return influenceErr
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if influenceErr != nil {
-		return nil, influenceErr
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetInfluenceSnapshot", client, epoch, stakerId)
+	if err != nil {
+		return nil, err
 	}
-	return influenceSnapshot, nil
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (*UtilsStruct) GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	var (
-		stakeSnapshot *big.Int
-		snapshotErr   error
-	)
-	snapshotErr = retry.Do(
-		func() error {
-			stakeSnapshot, snapshotErr = VoteManagerInterface.GetStakeSnapshot(client, epoch, stakerId)
-			if snapshotErr != nil {
-				log.Error("Error in fetching stake snapshot....Retrying")
-				return snapshotErr
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if snapshotErr != nil {
-		return nil, snapshotErr
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetStakeSnapshot", client, epoch, stakerId)
+	if err != nil {
+		return nil, err
 	}
-	return stakeSnapshot, nil
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (*UtilsStruct) GetTotalInfluenceRevealed(client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
-	var (
-		totalInfluenceRevealed *big.Int
-		influenceErr           error
-	)
-	influenceErr = retry.Do(
-		func() error {
-			totalInfluenceRevealed, influenceErr = VoteManagerInterface.GetTotalInfluenceRevealed(client, epoch, medianIndex)
-			if influenceErr != nil {
-				log.Error("Error in fetching total influence revealed....Retrying")
-				return influenceErr
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if influenceErr != nil {
-		return nil, influenceErr
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetTotalInfluenceRevealed", client, epoch, medianIndex)
+	if err != nil {
+		return nil, err
 	}
-	return totalInfluenceRevealed, nil
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 func (*UtilsStruct) GetEpochLastCommitted(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	var (
-		epochLastCommitted uint32
-		err                error
-	)
-	err = retry.Do(
-		func() error {
-			epochLastCommitted, err = VoteManagerInterface.GetEpochLastCommitted(client, stakerId)
-			if err != nil {
-				log.Error("Error in fetching epoch last committed....Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetEpochLastCommitted", client, stakerId)
 	if err != nil {
 		return 0, err
 	}
-	return epochLastCommitted, nil
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (*UtilsStruct) GetEpochLastRevealed(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	var (
-		epochLastRevealed uint32
-		err               error
-	)
-	err = retry.Do(
-		func() error {
-			epochLastRevealed, err = VoteManagerInterface.GetEpochLastRevealed(client, stakerId)
-			if err != nil {
-				log.Error("Error in fetching epoch last revealed....Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetEpochLastRevealed", client, stakerId)
 	if err != nil {
 		return 0, err
 	}
-	return epochLastRevealed, nil
+	return returnedValues[0].Interface().(uint32), nil
 }
 
 func (*UtilsStruct) ToAssign(client *ethclient.Client) (uint16, error) {
-	var (
-		toAssign uint16
-		err      error
-	)
-	err = retry.Do(
-		func() error {
-			toAssign, err = VoteManagerInterface.ToAssign(client)
-			if err != nil {
-				log.Error("Error in fetching toAssign....Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "ToAssign", client)
 	if err != nil {
 		return 0, err
 	}
-	return toAssign, nil
-}
-
-func (*UtilsStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
-	var (
-		salt [32]byte
-		err  error
-	)
-	err = retry.Do(
-		func() error {
-			salt, err = VoteManagerInterface.GetSaltFromBlockchain(client)
-			if err != nil {
-				log.Error("Error in fetching salt....Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
-	if err != nil {
-		return [32]byte{}, err
-	}
-	return salt, nil
+	return returnedValues[0].Interface().(uint16), nil
 }
