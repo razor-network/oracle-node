@@ -10,6 +10,7 @@ import (
 	"math/big"
 	"os"
 	"razor/accounts"
+	"razor/client"
 	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
@@ -119,6 +120,11 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 	for i := range args {
 		inputs[i] = reflect.ValueOf(args[i])
 	}
+	if client.SwitchClientToAlternateClient {
+		// Changing client argument to alternate client
+		log.Debug("Making this RPC call using alternate RPC provider!")
+		inputs = client.ReplaceClientWithAlternateClient(inputs)
+	}
 	err = retry.Do(
 		func() error {
 			returnedValues = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
@@ -130,6 +136,14 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 			}
 			return nil
 		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		if !client.SwitchClientToAlternateClient {
+			log.Errorf("%v error after retries: %v", methodName, err)
+			log.Info("Switching RPC to alternate RPC")
+			client.SwitchClientToAlternateClient = true
+			go client.StartTimerForAlternateClient(core.SwitchClientDuration)
+		}
+	}
 	return returnedValues, err
 }
 
