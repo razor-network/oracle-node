@@ -478,6 +478,10 @@ func (flagSetUtils FLagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (stri
 	return flagSet.GetString("provider")
 }
 
+func (flagSetUtils FLagSetUtils) GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error) {
+	return flagSet.GetString("alternateProvider")
+}
+
 //This function returns gas multiplier in float 32
 func (flagSetUtils FLagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
 	return flagSet.GetFloat32("gasmultiplier")
@@ -526,6 +530,11 @@ func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint
 //This function returns the provider of root in string
 func (flagSetUtils FLagSetUtils) GetRootStringProvider() (string, error) {
 	return rootCmd.PersistentFlags().GetString("provider")
+}
+
+//This function returns the alternate provider of root in string
+func (flagSetUtils FLagSetUtils) GetRootStringAlternateProvider() (string, error) {
+	return rootCmd.PersistentFlags().GetString("alternateProvider")
 }
 
 //This function returns the gas multiplier of root in float32

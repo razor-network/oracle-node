@@ -14,6 +14,7 @@ import (
 func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
+		AlternateProvider:  "",
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -110,6 +111,26 @@ func (*UtilsStruct) GetProvider() (string, error) {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
 	return provider, nil
+}
+
+//This function returns the alternate provider
+func (*UtilsStruct) GetAlternateProvider() (string, error) {
+	alternateProvider, err := flagSetUtils.GetRootStringAlternateProvider()
+	if err != nil {
+		return core.DefaultAlternateProvider, err
+	}
+	if alternateProvider == "" {
+		if viper.IsSet("alternateProvider") {
+			alternateProvider = viper.GetString("alternateProvider")
+		} else {
+			alternateProvider = core.DefaultAlternateProvider
+			log.Debug("alternate provider is not set, taking its default value ", alternateProvider)
+		}
+	}
+	if !strings.HasPrefix(alternateProvider, "https") {
+		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
+	}
+	return alternateProvider, nil
 }
 
 //This function returns the multiplier
