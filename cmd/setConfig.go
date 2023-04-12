@@ -35,7 +35,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
-	alternateProvider, err := flagSetUtils.GetRootStringAlternateProvider()
+	alternateProvider, err := flagSetUtils.GetStringAlternateProvider(flagSet)
 	if err != nil {
 		return err
 	}

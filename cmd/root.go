@@ -115,6 +115,7 @@ func setLogLevel() {
 
 	log.Debug("Config details: ")
 	log.Debugf("Provider: %s", config.Provider)
+	log.Debugf("Alternate Provider: %s", config.AlternateProvider)
 	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
 	log.Debugf("Buffer Percent: %d", config.BufferPercent)
 	log.Debugf("Wait Time: %d", config.WaitTime)
