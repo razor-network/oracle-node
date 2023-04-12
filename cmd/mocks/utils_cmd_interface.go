@@ -507,6 +507,27 @@ func (_m *UtilsCmdInterface) GenerateTreeRevealData(merkleTree [][][]byte, commi
 	return r0
 }
 
+// GetAlternateProvider provides a mock function with given fields:
+func (_m *UtilsCmdInterface) GetAlternateProvider() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetBiggestStakeAndId provides a mock function with given fields: client, address, epoch
 func (_m *UtilsCmdInterface) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
 	ret := _m.Called(client, address, epoch)

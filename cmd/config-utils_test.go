@@ -11,6 +11,7 @@ import (
 func TestGetConfigData(t *testing.T) {
 	nilConfig := types.Configurations{
 		Provider:           "",
+		AlternateProvider:  "",
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -25,6 +26,7 @@ func TestGetConfigData(t *testing.T) {
 
 	configData := types.Configurations{
 		Provider:           "",
+		AlternateProvider:  "",
 		GasMultiplier:      1,
 		BufferPercent:      20,
 		WaitTime:           1,
@@ -40,6 +42,8 @@ func TestGetConfigData(t *testing.T) {
 	type args struct {
 		provider             string
 		providerErr          error
+		alternateProvider    string
+		alternateProviderErr error
 		gasMultiplier        float32
 		gasMultiplierErr     error
 		bufferPercent        int32
@@ -73,6 +77,7 @@ func TestGetConfigData(t *testing.T) {
 			name: "Test 1: When GetConfigData function executes successfully",
 			args: args{
 				provider:          "",
+				alternateProvider: "",
 				gasMultiplier:     1,
 				bufferPercent:     20,
 				waitTime:          1,
@@ -159,12 +164,21 @@ func TestGetConfigData(t *testing.T) {
 			want:    nilConfig,
 			wantErr: errors.New("httpTimeout error"),
 		},
+		{
+			name: "Test 11: When there is an error in getting alternate provider",
+			args: args{
+				alternateProviderErr: errors.New("alternate provider error"),
+			},
+			want:    nilConfig,
+			wantErr: errors.New("alternate provider error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetProvider").Return(tt.args.provider, tt.args.providerErr)
+			cmdUtilsMock.On("GetAlternateProvider").Return(tt.args.alternateProvider, tt.args.alternateProviderErr)
 			cmdUtilsMock.On("GetMultiplier").Return(tt.args.gasMultiplier, tt.args.gasMultiplierErr)
 			cmdUtilsMock.On("GetWaitTime").Return(tt.args.waitTime, tt.args.waitTimeErr)
 			cmdUtilsMock.On("GetGasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
@@ -558,6 +572,74 @@ func TestGetProvider(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for getProvider function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetAlternateProvider(t *testing.T) {
+	type args struct {
+		alternateProvider    string
+		alternateProviderErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getAlternateProvider function execute successfully",
+			args: args{
+				alternateProvider: "https://polygon-mumbai.g.alchemy.com/v2/-Re1lE3oDIVTWchuKMfRIECn0I",
+			},
+			want:    "https://polygon-mumbai.g.alchemy.com/v2/-Re1lE3oDIVTWchuKMfRIECn0I",
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When alternate provider has prefix https",
+			args: args{
+				alternateProvider: "127.0.0.1:8545",
+			},
+			want:    "127.0.0.1:8545",
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in getting alternate provider",
+			args: args{
+				alternateProviderErr: errors.New("alternateProvider error"),
+			},
+			want:    "http://127.0.0.1:8545",
+			wantErr: errors.New("alternateProvider error"),
+		},
+		{
+			name: "Test 4: When alternate provider is nil",
+			args: args{
+				alternateProvider: "",
+			},
+			want:    "http://127.0.0.1:8545",
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			flagSetMock.On("GetRootStringAlternateProvider").Return(tt.args.alternateProvider, tt.args.alternateProviderErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetAlternateProvider()
+			if got != tt.want {
+				t.Errorf("getAlternateProvider() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getAlternateProvider function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getAlternateProvider function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

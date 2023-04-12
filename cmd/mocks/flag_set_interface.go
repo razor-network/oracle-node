@@ -495,6 +495,27 @@ func (_m *FlagSetInterface) GetRootIntLogFileMaxSize() (int, error) {
 	return r0, r1
 }
 
+// GetRootStringAlternateProvider provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootStringAlternateProvider() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRootStringLogLevel provides a mock function with given fields:
 func (_m *FlagSetInterface) GetRootStringLogLevel() (string, error) {
 	ret := _m.Called()
@@ -539,6 +560,27 @@ func (_m *FlagSetInterface) GetRootStringProvider() (string, error) {
 
 // GetStringAddress provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringAlternateProvider provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error) {
 	ret := _m.Called(flagSet)
 
 	var r0 string

@@ -174,7 +174,7 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			clientMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			clientMock.On("BalanceAtWithRetry", mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 
 			fatal = false
 
