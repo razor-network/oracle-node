@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package.json 
 RUN npm install 
 
-FROM golang:1.17 as ethereum
+FROM golang:1.17-alpine as ethereum
 RUN apt update && apt install jq -y
 WORKDIR /app
 RUN go get -d github.com/ethereum/go-ethereum@v1.10.8 \
