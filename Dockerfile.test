@@ -1,4 +1,5 @@
 FROM node:16.2.0-alpine AS builder
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 WORKDIR /app
 COPY package.json package.json 
 RUN npm install 
