@@ -17,8 +17,9 @@ jobs:
             sudo apt-get update
             sudo apt-get install npm ethereum
       - run:
-          name: "Installing go dependencies"
+          name: "Installing dependencies"
           command: |
+            npm i
             go get -d github.com/ethereum/go-ethereum@v1.10.8 \
             && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.10.8 \
             && go install github.com/mattn/goveralls@v0.0.11 \
