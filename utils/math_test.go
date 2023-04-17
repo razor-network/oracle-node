@@ -110,13 +110,7 @@ func TestConvertToNumber(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			UtilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: UtilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-			got, err := utils.ConvertToNumber(tt.args.num)
+			got, err := ConvertToNumber(tt.args.num)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ConvertToNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -962,4 +956,47 @@ func IndexNotEqual(a []uint32, b []uint32) bool {
 	}
 	return true
 
+}
+
+func TestManageReturnType(t *testing.T) {
+	type args struct {
+		num        interface{}
+		returnType string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When there is a valid hex value",
+			args: args{
+				num:        "0x0000000000000000000000000000000000000000000000000000000061a55c2e",
+				returnType: "hex",
+			},
+			want: 1638226990,
+		},
+		{
+			name: "Test 2: When the hex value is invalid",
+			args: args{
+				num:        "0xZZ",
+				returnType: "hex",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ManageReturnType(tt.args.num, tt.args.returnType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ManageReturnType() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ManageReturnType() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

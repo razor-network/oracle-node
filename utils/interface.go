@@ -124,10 +124,7 @@ type Utils interface {
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
-	GetDataFromAPI(urlStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error)
-	GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error)
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
-	GetDataFromXHTML(urlStruct types.DataSourceURL, selector string) (string, error)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
@@ -152,7 +149,6 @@ type Utils interface {
 	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error)
-	ConvertToNumber(num interface{}) (*big.Float, error)
 	SecondsToReadableTime(input int) string
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)

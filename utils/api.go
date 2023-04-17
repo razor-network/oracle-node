@@ -18,7 +18,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
+func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
 	client := http.Client{
 		Timeout: time.Duration(HTTPTimeout) * time.Second,
 	}
@@ -74,7 +74,7 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 	return cachedData.Result, nil
 }
 
-func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
+func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
 	if selector[0] == '[' {
 		selector = "$" + selector
 	} else {
@@ -83,7 +83,7 @@ func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector 
 	return jsonpath.Get(selector, jsonObject)
 }
 
-func (*UtilsStruct) GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, selector string) (string, error) {
+func GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, selector string) (string, error) {
 	c := colly.NewCollector()
 	var priceData string
 	c.OnXML(selector, func(e *colly.XMLElement) {
