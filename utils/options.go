@@ -88,6 +88,10 @@ func (*GasStruct) GetGasPrice(client *ethclient.Client, config types.Configurati
 }
 
 func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+	if transactionData.Config.GasLimitOverride != 0 {
+		log.Debugf("Taking the gas limit value = %d from config", transactionData.Config.GasLimitOverride)
+		return transactionData.Config.GasLimitOverride, nil
+	}
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
