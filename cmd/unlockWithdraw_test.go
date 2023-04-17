@@ -5,17 +5,18 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"reflect"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"reflect"
-	"testing"
 )
 
 func TestExecuteUnlockWithdraw(t *testing.T) {

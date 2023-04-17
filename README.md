@@ -108,6 +108,7 @@ There are a set of parameters that are configurable. These include:
 - Gas Price: The value of gas price if you want to set manually. If you don't provide any value or simply keep it to 1, the razor client will automatically calculate the optimum gas price and send it.
 - Log Level: Normally debug logs are not logged into the log file. But if you want you can set `logLevel` to `debug` and fetch the debug logs.
 - Gas Limit: The value with which the gas limit will be multiplied while sending every transaction.
+- Gas Limit Override: This value would be used as a gas limit for all the transactions instead of estimating for each transaction.
 - RPC Timeout: This is the threshold number of seconds after which any contract and client calls will time out.
 - HTTP Timeout: This is the threshold number of seconds after which an HTTP request for a job will time out.
 - Maximum size of log file: This is the maximum size of log file in MB
