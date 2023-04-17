@@ -149,6 +149,20 @@ func (_m *Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string)
 	_m.Called(client, address)
 }
 
+// CheckPassword provides a mock function with given fields: address, password
+func (_m *Utils) CheckPassword(address string, password string) error {
+	ret := _m.Called(address, password)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string, string) error); ok {
+		r0 = rf(address, password)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CheckTransactionReceipt provides a mock function with given fields: client, _txHash
 func (_m *Utils) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
 	ret := _m.Called(client, _txHash)

@@ -24,6 +24,7 @@ var DefaultBufferPercent = 20
 var DefaultGasPrice = 1
 var DefaultWaitTime = 1
 var DefaultGasLimit = 2
+var DefaultGasLimitOverride = 0
 var DefaultRPCTimeout = 10
 var DefaultHTTPTimeout = 10
 var DefaultLogLevel = ""

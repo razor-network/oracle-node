@@ -45,6 +45,9 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ClaimCommission: Staker Id: ", stakerId)

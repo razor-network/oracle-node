@@ -334,6 +334,7 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			flagSetMock.On("GetUint16CollectionId", flagSet).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			flagSetMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
 			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("ModifyCollectionStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyCollectionStatusHash, tt.args.ModifyCollectionStatusErr)

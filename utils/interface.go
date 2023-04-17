@@ -157,6 +157,7 @@ type Utils interface {
 	AssignPassword(flagSet *pflag.FlagSet) string
 	PrivateKeyPrompt() string
 	GetRogueRandomValue(value int) *big.Int
+	CheckPassword(address string, password string) error
 }
 
 type EthClientUtils interface {

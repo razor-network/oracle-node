@@ -5,17 +5,18 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"reflect"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/core"
-	"razor/core/types"
-	"reflect"
-	"testing"
 )
 
 func TestExecuteUnlockWithdraw(t *testing.T) {
@@ -99,6 +100,7 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
+			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			cmdUtilsMock.On("HandleWithdrawLock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
