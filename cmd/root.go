@@ -22,6 +22,7 @@ var (
 	GasPrice           int32
 	LogLevel           string
 	GasLimitMultiplier float32
+	GasLimitOverride   uint64
 	LogFile            string
 	RPCTimeout         int64
 	HTTPTimeout        int64
@@ -68,6 +69,7 @@ func init() {
 	rootCmd.PersistentFlags().Int32VarP(&GasPrice, "gasprice", "", -1, "gas price")
 	rootCmd.PersistentFlags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	rootCmd.PersistentFlags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
+	rootCmd.PersistentFlags().Uint64VarP(&GasLimitOverride, "gasLimitOverride", "", 0, "gas limit to be over ridden for a transaction")
 	rootCmd.PersistentFlags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 	rootCmd.PersistentFlags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
 	rootCmd.PersistentFlags().Int64VarP(&HTTPTimeout, "httpTimeout", "", 0, "HTTP request timeout if its not responding")

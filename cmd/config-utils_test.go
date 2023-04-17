@@ -32,6 +32,7 @@ func TestGetConfigData(t *testing.T) {
 		WaitTime:           1,
 		LogLevel:           "debug",
 		GasLimitMultiplier: 3,
+		GasLimitOverride:   1000000,
 		RPCTimeout:         10,
 		HTTPTimeout:        10,
 		LogFileMaxSize:     5,
@@ -55,6 +56,8 @@ func TestGetConfigData(t *testing.T) {
 		logLevel             string
 		logLevelErr          error
 		gasLimit             float32
+		gasLimitOverride     uint64
+		gasLimitOverrideErr  error
 		rpcTimeout           int64
 		rpcTimeoutErr        error
 		httpTimeout          int64
@@ -83,6 +86,7 @@ func TestGetConfigData(t *testing.T) {
 				waitTime:          1,
 				logLevel:          "debug",
 				gasLimit:          3,
+				gasLimitOverride:  1000000,
 				rpcTimeout:        10,
 				httpTimeout:       10,
 				logFileMaxSize:    5,
@@ -184,6 +188,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetGasPrice").Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			cmdUtilsMock.On("GetLogLevel").Return(tt.args.logLevel, tt.args.logLevelErr)
 			cmdUtilsMock.On("GetGasLimit").Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			cmdUtilsMock.On("GetGasLimitOverride").Return(tt.args.gasLimitOverride, tt.args.gasLimitOverrideErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 			cmdUtilsMock.On("GetRPCTimeout").Return(tt.args.rpcTimeout, tt.args.rpcTimeoutErr)
 			cmdUtilsMock.On("GetHTTPTimeout").Return(tt.args.httpTimeout, tt.args.httpTimeoutErr)
@@ -323,6 +328,67 @@ func TestGetGasLimit(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for getGasLimit function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetGasLimitOverride(t *testing.T) {
+	type args struct {
+		gasLimitOverride    uint64
+		gasLimitOverrideErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    uint64
+		wantErr error
+	}{
+		{
+			name: "Test 1: When getGasLimitOverride function executes successfully",
+			args: args{
+				gasLimitOverride: 5000000,
+			},
+			want:    5000000,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When gasLimitOverride is 0",
+			args: args{
+				gasLimitOverride: 0,
+			},
+			want:    0,
+			wantErr: nil,
+		},
+		{
+			name: "Test 3: When there is an error in getting gasLimitOverride",
+			args: args{
+				gasLimitOverrideErr: errors.New("gasLimitOverride error"),
+			},
+			want:    0,
+			wantErr: errors.New("gasLimitOverride error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			flagSetUtils = flagSetUtilsMock
+
+			flagSetUtilsMock.On("GetRootUint64GasLimitOverride").Return(tt.args.gasLimitOverride, tt.args.gasLimitOverrideErr)
+			utils := &UtilsStruct{}
+
+			got, err := utils.GetGasLimitOverride()
+			if got != tt.want {
+				t.Errorf("getGasLimitOverride() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for getGasLimitOverride function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for getGasLimitOverride function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})

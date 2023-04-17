@@ -59,6 +59,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+	gasLimitOverride, err := flagSetUtils.GetUint64GasLimitOverride(flagSet)
+	if err != nil {
+		return err
+	}
 	gasLimit, err := flagSetUtils.GetFloat32GasLimit(flagSet)
 	if err != nil {
 		return err
@@ -141,6 +145,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if gasLimit != -1 {
 		viper.Set("gasLimit", gasLimit)
 	}
+	if gasLimitOverride != 0 {
+		viper.Set("gasLimitOverride", gasLimitOverride)
+	}
 	if rpcTimeout != 0 {
 		viper.Set("rpcTimeout", rpcTimeout)
 	}
@@ -156,7 +163,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if logFileMaxAge != 0 {
 		viper.Set("logFileMaxAge", logFileMaxAge)
 	}
-	if provider == "" && alternateProvider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
+	if provider == "" && alternateProvider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", core.DefaultProvider)
 		viper.Set("alternateProvider", core.DefaultAlternateProvider)
 		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
@@ -165,6 +172,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasprice", core.DefaultGasPrice)
 		viper.Set("logLevel", core.DefaultLogLevel)
 		viper.Set("gasLimit", core.DefaultGasLimit)
+		viper.Set("gasLimitOverride", core.DefaultGasLimitOverride)
 		viper.Set("rpcTimeout", core.DefaultRPCTimeout)
 		viper.Set("httpTimeout", core.DefaultHTTPTimeout)
 		viper.Set("logFileMaxSize", core.DefaultLogFileMaxSize)
@@ -193,6 +201,7 @@ func init() {
 		GasPrice           int32
 		LogLevel           string
 		GasLimitMultiplier float32
+		GasLimitOverride   uint64
 		RPCTimeout         int64
 		HTTPTimeout        int64
 		ExposeMetrics      string
@@ -210,6 +219,7 @@ func init() {
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
+	setConfig.Flags().Uint64VarP(&GasLimitOverride, "gasLimitOverride", "", 0, "gas limit to be over ridden for a transaction")
 	setConfig.Flags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
 	setConfig.Flags().Int64VarP(&HTTPTimeout, "httpTimeout", "", 0, "http request timeout if its not responding")
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")

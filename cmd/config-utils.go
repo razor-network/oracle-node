@@ -60,6 +60,10 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	if err != nil {
 		return config, err
 	}
+	gasLimitOverride, err := cmdUtils.GetGasLimitOverride()
+	if err != nil {
+		return config, err
+	}
 	rpcTimeout, err := cmdUtils.GetRPCTimeout()
 	if err != nil {
 		return config, err
@@ -89,6 +93,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.GasPrice = gasPrice
 	config.LogLevel = logLevel
 	config.GasLimitMultiplier = gasLimit
+	config.GasLimitOverride = gasLimitOverride
 	config.RPCTimeout = rpcTimeout
 	utils.RPCTimeout = rpcTimeout
 	config.HTTPTimeout = httpTimeout
@@ -241,6 +246,23 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 		}
 	}
 	return gasLimit, nil
+}
+
+//This function returns the gas limit to override
+func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
+	gasLimitOverride, err := flagSetUtils.GetRootUint64GasLimitOverride()
+	if err != nil {
+		return uint64(core.DefaultGasLimitOverride), err
+	}
+	if gasLimitOverride == 0 {
+		if viper.IsSet("gasLimitOverride") {
+			gasLimitOverride = viper.GetUint64("gasLimitOverride")
+		} else {
+			gasLimitOverride = uint64(core.DefaultGasLimitOverride)
+			log.Debug("GasLimitOverride is not set, taking its default value ", gasLimitOverride)
+		}
+	}
+	return gasLimitOverride, nil
 }
 
 //This function returns the RPC timeout
