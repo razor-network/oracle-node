@@ -658,7 +658,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 
 	postJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "result",
-		Url: `{"type": "POST","url": "https://eth-mainnet.g.alchemy.com/v2/XnNMhDWtJz0ikNuWh0aeQQxhO3HCzCkv","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+		Url: `{"type": "POST","url": "https://eth-mainnet.g.alchemy.com/v2/P7lKLFO6_WrETCZvaec-vqC31iiYqoOI","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
 	}
 
 	type args struct {
