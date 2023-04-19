@@ -19,6 +19,7 @@ var BlockCompletionTimeout = 30
 //Following are the default config values for all the config parameters
 
 var DefaultProvider = "http://127.0.0.1:8545"
+var DefaultAlternateProvider = "http://127.0.0.1:8545"
 var DefaultGasMultiplier = 1.0
 var DefaultBufferPercent = 20
 var DefaultGasPrice = 1
@@ -60,6 +61,9 @@ var APIKeyRegex = `$`
 
 var ProcessRequestRetryAttempts uint = 2
 var ProcessRequestRetryDelay = 2
+
+//SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
+var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value
 var HexReturnType = "hex"

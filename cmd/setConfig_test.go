@@ -14,6 +14,8 @@ func TestSetConfig(t *testing.T) {
 	type args struct {
 		provider              string
 		providerErr           error
+		alternateProvider     string
+		alternateProviderErr  error
 		gasmultiplier         float32
 		gasmultiplierErr      error
 		buffer                int32
@@ -58,6 +60,7 @@ func TestSetConfig(t *testing.T) {
 			name: "Test 1: When values are passed to all flags and setConfig returns no error",
 			args: args{
 				provider:           "http://127.0.0.1",
+				alternateProvider:  "http://127.0.0.1:8545",
 				gasmultiplier:      2,
 				buffer:             20,
 				waitTime:           2,
@@ -276,6 +279,14 @@ func TestSetConfig(t *testing.T) {
 			},
 			wantErr: errors.New("httpTimeout error"),
 		},
+		{
+			name: "Test 18: When there is an error in getting alternate provider",
+			args: args{
+				provider:             "http://127.0.0.1",
+				alternateProviderErr: errors.New("alternate provider error"),
+			},
+			wantErr: errors.New("alternate provider error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -283,6 +294,7 @@ func TestSetConfig(t *testing.T) {
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			flagSetMock.On("GetStringProvider", flagSet).Return(tt.args.provider, tt.args.providerErr)
+			flagSetMock.On("GetStringAlternateProvider", flagSet).Return(tt.args.alternateProvider, tt.args.alternateProviderErr)
 			flagSetMock.On("GetFloat32GasMultiplier", flagSet).Return(tt.args.gasmultiplier, tt.args.gasmultiplierErr)
 			flagSetMock.On("GetInt32Buffer", flagSet).Return(tt.args.buffer, tt.args.bufferErr)
 			flagSetMock.On("GetInt32Wait", flagSet).Return(tt.args.waitTime, tt.args.waitTimeErr)

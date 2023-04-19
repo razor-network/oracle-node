@@ -111,6 +111,7 @@ type AssetManagerInterface interface {
 
 type FlagSetInterface interface {
 	GetStringProvider(flagSet *pflag.FlagSet) (string, error)
+	GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error)
 	GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error)
 	GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error)
 	GetInt32Wait(flagSet *pflag.FlagSet) (int32, error)
@@ -122,6 +123,7 @@ type FlagSetInterface interface {
 	GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	GetRootStringProvider() (string, error)
+	GetRootStringAlternateProvider() (string, error)
 	GetRootFloat32GasMultiplier() (float32, error)
 	GetRootInt32Buffer() (int32, error)
 	GetRootInt32Wait() (int32, error)
@@ -167,6 +169,7 @@ type FlagSetInterface interface {
 type UtilsCmdInterface interface {
 	SetConfig(flagSet *pflag.FlagSet) error
 	GetProvider() (string, error)
+	GetAlternateProvider() (string, error)
 	GetMultiplier() (float32, error)
 	GetWaitTime() (int32, error)
 	GetGasPrice() (int32, error)

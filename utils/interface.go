@@ -146,8 +146,6 @@ type Utils interface {
 	CalculateSalt(epoch uint32, medians []*big.Int) [32]byte
 	ToAssign(client *ethclient.Client) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
-	GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error)
-	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error)
 	SecondsToReadableTime(input int) string
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
@@ -157,6 +155,8 @@ type Utils interface {
 	AssignPassword(flagSet *pflag.FlagSet) string
 	PrivateKeyPrompt() string
 	GetRogueRandomValue(value int) *big.Int
+	GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
+	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	CheckPassword(address string, password string) error
 }
 
@@ -285,7 +285,7 @@ type JsonUtils interface {
 }
 
 type StakedTokenUtils interface {
-	BalanceOf(stakedToken *bindings.StakedToken, callOpts *bind.CallOpts, address common.Address) (*big.Int, error)
+	BalanceOf(client *ethclient.Client, tokenAddress common.Address, address common.Address) (*big.Int, error)
 }
 
 type RetryUtils interface {

@@ -1228,29 +1228,6 @@ func (_m *Utils) GetRogueRandomValue(value int) *big.Int {
 	return r0
 }
 
-// GetSaltFromBlockchain provides a mock function with given fields: client
-func (_m *Utils) GetSaltFromBlockchain(client *ethclient.Client) ([32]byte, error) {
-	ret := _m.Called(client)
-
-	var r0 [32]byte
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) [32]byte); ok {
-		r0 = rf(client)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([32]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetSortedProposedBlockId provides a mock function with given fields: client, epoch, index
 func (_m *Utils) GetSortedProposedBlockId(client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error) {
 	ret := _m.Called(client, epoch, index)
@@ -1394,6 +1371,29 @@ func (_m *Utils) GetStakedToken(client *ethclient.Client, tokenAddress common.Ad
 	}
 
 	return r0
+}
+
+// GetStakedTokenWithOpts provides a mock function with given fields: client, tokenAddress
+func (_m *Utils) GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts) {
+	ret := _m.Called(client, tokenAddress)
+
+	var r0 *bindings.StakedToken
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *bindings.StakedToken); ok {
+		r0 = rf(client, tokenAddress)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*bindings.StakedToken)
+		}
+	}
+
+	var r1 bind.CallOpts
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) bind.CallOpts); ok {
+		r1 = rf(client, tokenAddress)
+	} else {
+		r1 = ret.Get(1).(bind.CallOpts)
+	}
+
+	return r0, r1
 }
 
 // GetStaker provides a mock function with given fields: client, stakerId

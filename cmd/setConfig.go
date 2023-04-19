@@ -35,6 +35,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if err != nil {
 		return err
 	}
+	alternateProvider, err := flagSetUtils.GetStringAlternateProvider(flagSet)
+	if err != nil {
+		return err
+	}
 	gasMultiplier, err := flagSetUtils.GetFloat32GasMultiplier(flagSet)
 	if err != nil {
 		return err
@@ -120,6 +124,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if provider != "" {
 		viper.Set("provider", provider)
 	}
+	if alternateProvider != "" {
+		viper.Set("alternateProvider", alternateProvider)
+	}
 	if gasMultiplier != -1 {
 		viper.Set("gasmultiplier", gasMultiplier)
 	}
@@ -156,8 +163,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if logFileMaxAge != 0 {
 		viper.Set("logFileMaxAge", logFileMaxAge)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
+	if provider == "" && alternateProvider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", core.DefaultProvider)
+		viper.Set("alternateProvider", core.DefaultAlternateProvider)
 		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
 		viper.Set("buffer", core.DefaultBufferPercent)
 		viper.Set("wait", core.DefaultWaitTime)
@@ -186,6 +194,7 @@ func init() {
 
 	var (
 		Provider           string
+		AlternateProvider  string
 		GasMultiplier      float32
 		BufferPercent      int32
 		WaitTime           int32
@@ -203,6 +212,7 @@ func init() {
 		LogFileMaxAge      int
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
+	setConfig.Flags().StringVarP(&AlternateProvider, "alternateProvider", "", "", "alternate provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
