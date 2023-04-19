@@ -64,3 +64,6 @@ var ProcessRequestRetryDelay = 2
 
 //SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength
+
+// HexReturnType is the ReturnType for a job if that job returns a hex value
+var HexReturnType = "hex"
