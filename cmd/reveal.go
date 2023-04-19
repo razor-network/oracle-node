@@ -66,7 +66,6 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 	})
 	log.Debugf("Executing Reveal transaction wih epoch = %d, treeRevealData = %v, signature = %v", epoch, treeRevealData, signature)
-	txnOpts.GasLimit = 50000000
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)
 	if err != nil {
 		log.Error(err)
