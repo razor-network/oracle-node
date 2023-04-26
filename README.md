@@ -102,6 +102,7 @@ Go to the `build/bin` directory where the razor binary is generated.
 There are a set of parameters that are configurable. These include:
 
 - Provider: The RPC URL of the provider you are using to connect to the blockchain.
+- Alternate Provider: This is the secondary RPC URL of the provider used to connect to the blockchain if the primary one is not working.
 - Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
 - Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
 - Wait Time: This is the number of seconds the system will wait while voting.
@@ -126,13 +127,13 @@ $ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value>
 docker
 
 ```
-docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --alternateProvider <alternate_rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
 ```
 
 Example:
 
 ```
-$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize 200 --logFileMaxBackups 52 --logFileMaxAge 365
+$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --alternateProvider https://ce2m-skale.chainode.tech:10200/ --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize 200 --logFileMaxBackups 52 --logFileMaxAge 365
 ```
 
 Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
@@ -561,13 +562,23 @@ docker exec -it razor-go razor createJob --url <URL> --selector <selector_in_jso
 Example:
 
 ```
-$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power 2 --name ethusd_kraken --selector 'result.XETHZUSD.c[0]' --url '{"type":"GET","url":"https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body":{},"content-type":""}'
+$ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QUOTE\&symbol\=MSFT\&apikey\=demo --selector '[`Global Quote`][`05. price`]" --selectorType 1 --name msft --power 2 --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --weight 32
 ```
 
 OR
 
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u {"type":"GET","url":"https://www.coingecko.com/en","body":{},"content-type":""} --selectorType 0 --weight 100
+$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
+```
+
+If you want to specify request type(GET/POST) along with fields like body and header then you can pass that to the `url` flag as specified below,
+```
+$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power 2 --name ethusd_kraken --selector 'result.XETHZUSD.c[0]' --url '{"type":"GET","url":"https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body":{},"header": {}}'
+```
+
+If the job returns a `hex` value, than you can specify the `hex` value to `returnType` field as specified below in the example which is a POST job returning the result in hex format,
+```
+$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power -4 --name eth_postJob --selector 'result' --url '{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}'
 ```
 
 ### Create Collection
@@ -848,41 +859,66 @@ You can override the existing job and also add your custom jobs by adding `asset
 
 Shown below is an example of how your `assets.json` file should be -
 
-```
+``` json
 {
-	"assets": {
-		"collection": {
-			"ethCollectionMedian": {
-				"power": 2,
-				"official jobs": {
-					"1": {
-					  "URL": {
-						   "type": "GET",
-						   "url": "https://data.messari.io/api/v1/assets/eth/metrics",
-						   "body": {},
-						   "content-type": ""
-						},
-						"selector": "[`data`][`market_data`][`price_usd`]",
-						"power": 2,
-						"weight": 2
-					},
-				},
-				"custom jobs": [{
-						"URL": {
-							"type": "GET",
-							"url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
-							"body": {},
-							"content-type": ""
-						},
-						 "name:" "eth_lunarCrush",
-						 "selector": "[`data`][`0`][`price`]",
-                         "power": 3,
-                         "weight": 2
-					]
-				}
-			}
-		}
-	}
+  "assets": {
+    "collection": {
+      "ethCollectionMean": {
+        "power": 2,
+        "official jobs": {
+          "1": {
+            "URL": {
+              "type": "GET",
+              "url": "https://data.messari.io/api/v1/assets/eth/metrics",
+              "body": {},
+              "header": {}
+            },
+            "selector": "[`data`][`market_data`][`price_usd`]",
+            "power": 2,
+            "weight": 2
+          }
+        },
+        "custom jobs": [
+          {
+            "URL": {
+              "type": "GET",
+              "url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
+              "body": {},
+              "header": {}
+            },
+            "selector": "[`data`][`0`][`price`]",
+            "power": 3,
+            "weight": 2
+          },
+          {
+            "URL": {
+              "type": "POST",
+              "url": "https://rpc.ankr.com/eth",
+              "body": {
+                "jsonrpc": "2.0",
+                "method": "eth_call",
+                "params": [
+                  {
+                    "to": "0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6",
+                    "data": "0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"
+                  },
+                  "latest"
+                ],
+                "id": 5
+              },
+              "header": { "content-type": "application/json" },
+              "returnType": "hex"
+            },
+            "selector": "result",
+            "power": -4,
+            "weight": 1
+          }
+        ]
+      }
+    }
+  }
+}
+
 ```
 
 Breaking down into components
