@@ -3,8 +3,6 @@ package utils
 import (
 	"errors"
 	"net/http"
-	"razor/cache"
-	"razor/core"
 	"time"
 
 	"io/ioutil"
@@ -15,41 +13,32 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func (*UtilsStruct) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]byte, error) {
+func (*UtilsStruct) GetDataFromAPI(url string) ([]byte, error) {
 	client := http.Client{
 		Timeout: time.Duration(HTTPTimeout) * time.Second,
 	}
-	cachedData, err := localCache.Read(url)
+	var body []byte
+	err := retry.Do(
+		func() error {
+			response, err := client.Get(url)
+			if err != nil {
+				return err
+			}
+			defer response.Body.Close()
+			if response.StatusCode != 200 {
+				log.Errorf("API: %s responded with status code %d", url, response.StatusCode)
+				return errors.New("unable to reach API")
+			}
+			body, err = IOInterface.ReadAll(response.Body)
+			if err != nil {
+				return err
+			}
+			return nil
+		}, retry.Attempts(2), retry.Delay(time.Second*2))
 	if err != nil {
-		var body []byte
-		err := retry.Do(
-			func() error {
-				response, err := client.Get(url)
-				if err != nil {
-					return err
-				}
-				defer response.Body.Close()
-				if response.StatusCode != 200 {
-					log.Errorf("API: %s responded with status code %d", url, response.StatusCode)
-					return errors.New("unable to reach API")
-				}
-				body, err = IOInterface.ReadAll(response.Body)
-				if err != nil {
-					return err
-				}
-				return nil
-			}, retry.Attempts(2), retry.Delay(time.Second*2))
-		if err != nil {
-			return nil, err
-		}
-		dataToCache := cache.Data{
-			Result: body,
-		}
-		localCache.Update(dataToCache, url, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
-		return body, nil
+		return nil, err
 	}
-	log.Debugf("Getting Data for URL %s from local cache...", url)
-	return cachedData.Result, nil
+	return body, nil
 }
 
 func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {

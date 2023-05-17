@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/cache"
 	"razor/core/types"
 	"razor/path"
 	pathMocks "razor/path/mocks"
@@ -182,7 +181,7 @@ func TestAggregate(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
-			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
+			utilsMock.On("GetDataToCommitFromJobs", mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
@@ -631,9 +630,9 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 
 			pathMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
 			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
-			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
+			utilsMock.On("GetDataToCommitFromJob", mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
-			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
+			got, _, err := utils.GetDataToCommitFromJobs(jobsArray)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -786,12 +785,12 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string"), mock.Anything).Return(tt.args.response, tt.args.responseErr)
+			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string")).Return(tt.args.response, tt.args.responseErr)
 			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
 			utilsMock.On("GetDataFromXHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
 			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
 
-			got, err := utils.GetDataToCommitFromJob(tt.args.job, &cache.LocalCache{})
+			got, err := utils.GetDataToCommitFromJob(tt.args.job)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
 				return

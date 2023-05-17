@@ -8,8 +8,6 @@ import (
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
-	cache "razor/cache"
-
 	common "github.com/ethereum/go-ethereum/common"
 
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
@@ -669,13 +667,13 @@ func (_m *Utils) GetCommitments(client *ethclient.Client, address string) ([32]b
 	return r0, r1
 }
 
-// GetDataFromAPI provides a mock function with given fields: url, localCache
-func (_m *Utils) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]byte, error) {
-	ret := _m.Called(url, localCache)
+// GetDataFromAPI provides a mock function with given fields: url
+func (_m *Utils) GetDataFromAPI(url string) ([]byte, error) {
+	ret := _m.Called(url)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(string, *cache.LocalCache) []byte); ok {
-		r0 = rf(url, localCache)
+	if rf, ok := ret.Get(0).(func(string) []byte); ok {
+		r0 = rf(url)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -683,8 +681,8 @@ func (_m *Utils) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]byt
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, *cache.LocalCache) error); ok {
-		r1 = rf(url, localCache)
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(url)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -736,13 +734,13 @@ func (_m *Utils) GetDataFromXHTML(url string, selector string) (string, error) {
 	return r0, r1
 }
 
-// GetDataToCommitFromJob provides a mock function with given fields: job, localCache
-func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
-	ret := _m.Called(job, localCache)
+// GetDataToCommitFromJob provides a mock function with given fields: job
+func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob) (*big.Int, error) {
+	ret := _m.Called(job)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(bindings.StructsJob, *cache.LocalCache) *big.Int); ok {
-		r0 = rf(job, localCache)
+	if rf, ok := ret.Get(0).(func(bindings.StructsJob) *big.Int); ok {
+		r0 = rf(job)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -750,8 +748,8 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cac
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(bindings.StructsJob, *cache.LocalCache) error); ok {
-		r1 = rf(job, localCache)
+	if rf, ok := ret.Get(1).(func(bindings.StructsJob) error); ok {
+		r1 = rf(job)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -759,13 +757,13 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cac
 	return r0, r1
 }
 
-// GetDataToCommitFromJobs provides a mock function with given fields: jobs, localCache
-func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
-	ret := _m.Called(jobs, localCache)
+// GetDataToCommitFromJobs provides a mock function with given fields: jobs
+func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob) ([]*big.Int, []uint8, error) {
+	ret := _m.Called(jobs)
 
 	var r0 []*big.Int
-	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *cache.LocalCache) []*big.Int); ok {
-		r0 = rf(jobs, localCache)
+	if rf, ok := ret.Get(0).(func([]bindings.StructsJob) []*big.Int); ok {
+		r0 = rf(jobs)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*big.Int)
@@ -773,8 +771,8 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache 
 	}
 
 	var r1 []uint8
-	if rf, ok := ret.Get(1).(func([]bindings.StructsJob, *cache.LocalCache) []uint8); ok {
-		r1 = rf(jobs, localCache)
+	if rf, ok := ret.Get(1).(func([]bindings.StructsJob) []uint8); ok {
+		r1 = rf(jobs)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).([]uint8)
@@ -782,8 +780,8 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache 
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func([]bindings.StructsJob, *cache.LocalCache) error); ok {
-		r2 = rf(jobs, localCache)
+	if rf, ok := ret.Get(2).(func([]bindings.StructsJob) error); ok {
+		r2 = rf(jobs)
 	} else {
 		r2 = ret.Error(2)
 	}
