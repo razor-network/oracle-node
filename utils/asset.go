@@ -19,7 +19,6 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/joho/godotenv"
 	"github.com/tidwall/gjson"
 
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -293,25 +292,11 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		log.Infof("URL Struct: %+v", dataSourceURLStruct)
 	} else {
 		log.Debug("Job URL passed is a direct URL: ", job.Url)
-		isAPIKeyRequired := strings.Contains(job.Url, core.APIKeyRegex)
-		if isAPIKeyRequired {
-			keyword, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(job.Url)
-			if err != nil {
-				log.Error("Error in getting value from env file: ", err)
-				return nil, err
-			}
-			log.Debug("API key: ", APIKey)
-			keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
-			log.Debug("Keyword to replace in url: ", keywordWithAPIKeyRegex)
-			urlWithAPIKey := strings.Replace(job.Url, keywordWithAPIKeyRegex, APIKey, 1)
-			log.Debug("URl with API key: ", urlWithAPIKey)
-			job.Url = urlWithAPIKey
-		}
 		dataSourceURLStruct = types.DataSourceURL{
-			URL:    job.Url,
-			Type:   "GET",
-			Body:   nil,
-			Header: nil,
+			URL:         job.Url,
+			Type:        "GET",
+			Body:        nil,
+			ContentType: "",
 		}
 	}
 	// Fetch data from API with retry mechanism
@@ -449,10 +434,6 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 			if url.Exists() {
 				customJob.URL = url.String()
 			}
-			name := gjson.Get(customJobsData, "name")
-			if name.Exists() {
-				customJob.Name = name.String()
-			}
 			selector := gjson.Get(customJobsData, "selector")
 			if selector.Exists() {
 				customJob.Selector = selector.String()
@@ -476,7 +457,6 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob {
 	return bindings.StructsJob{
 		Url:      customJob.URL,
-		Name:     customJob.Name,
 		Selector: customJob.Selector,
 		Power:    customJob.Power,
 		Weight:   customJob.Weight,
@@ -526,30 +506,4 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	}
 
 	return overrideJobs, overriddenJobIds
-}
-
-func GetKeyWordAndAPIKeyFromENVFile(url string) (string, string, error) {
-	envFilePath, err := path.PathUtilsInterface.GetDotENVFilePath()
-	if err != nil {
-		log.Error("Error in getting env file path: ", err)
-		return "", "", err
-	}
-	log.Debug("GetKeyWordAndAPIKeyFromENVFile: .env file path: ", envFilePath)
-
-	log.Info("Loading env file...")
-	envFileMap, err := godotenv.Read(envFilePath)
-	if err != nil {
-		log.Error("Error in getting env file map: ", err)
-		return "", "", err
-	}
-	log.Debugf("GetKeyWordAndAPIKeyFromENVFile: ENV file map: %v", envFileMap)
-	for keyword, APIKey := range envFileMap {
-		keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
-		isTheKeywordPresentInURL := strings.Contains(url, keywordWithAPIKeyRegex)
-		if isTheKeywordPresentInURL {
-			log.Infof("Found the keyword %s in env file", keyword)
-			return keyword, APIKey, nil
-		}
-	}
-	return "", "", errors.New("no value found in env file")
 }

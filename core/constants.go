@@ -49,15 +49,6 @@ var AssetsDataFile = "assets.json"
 var ConfigFile = "razor.yaml"
 var LogFileDirectory = "logs"
 var DefaultPathName = ".razor"
-var DotENVFileName = ".env"
 
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
-
-//APIKeyRegex will be used as a regular expression to be matched in job Urls
-var APIKeyRegex = `$`
-
-// Following are the constants which defines retry attempts and retry delay if there is an error in processing request
-
-var ProcessRequestRetryAttempts uint = 2
-var ProcessRequestRetryDelay = 2

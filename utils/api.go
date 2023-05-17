@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"razor/cache"
 	"razor/core"
-	"strings"
 	"time"
 
+	"io/ioutil"
 	"razor/core/types"
 
 	"github.com/PaesslerAG/jsonpath"
@@ -24,51 +23,62 @@ func (*UtilsStruct) GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, loca
 	}
 	cachedData, cachedErr := localCache.Read(dataSourceURLStruct.URL)
 	if cachedErr != nil {
-		var response []byte
-		switch dataSourceURLStruct.Type {
-		case "GET":
+		var body []byte
+		if dataSourceURLStruct.Type == "GET" {
 			err := retry.Do(
 				func() error {
-					responseBody, err := ProcessRequest(client, dataSourceURLStruct, nil)
+					response, err := client.Get(dataSourceURLStruct.URL)
 					if err != nil {
-						log.Error("Error in processing GET request: ", err)
 						return err
 					}
-					response = responseBody
+					defer response.Body.Close()
+					if response.StatusCode != 200 {
+						log.Errorf("API: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
+						return errors.New("unable to reach API")
+					}
+					body, err = IOInterface.ReadAll(response.Body)
+					if err != nil {
+						return err
+					}
 					return nil
-				}, retry.Attempts(core.ProcessRequestRetryAttempts), retry.Delay(time.Second*time.Duration(core.ProcessRequestRetryDelay)))
+				}, retry.Attempts(2), retry.Delay(time.Second*2))
 			if err != nil {
 				return nil, err
 			}
-		case "POST":
+		}
+		if dataSourceURLStruct.Type == "POST" {
 			postBody, err := json.Marshal(dataSourceURLStruct.Body)
 			if err != nil {
 				log.Errorf("Error in marshalling body of a POST request URL %s: %v", dataSourceURLStruct.URL, err)
-				return nil, err
 			}
-			requestBody := bytes.NewBuffer(postBody)
+			responseBody := bytes.NewBuffer(postBody)
 			err = retry.Do(
 				func() error {
-					responseBody, err := ProcessRequest(client, dataSourceURLStruct, requestBody)
+					response, err := client.Post(dataSourceURLStruct.URL, dataSourceURLStruct.ContentType, responseBody)
 					if err != nil {
-						log.Error("Error in processing POST request: ", err)
+						log.Errorf("Error sending POST request URL %s: %v", dataSourceURLStruct.URL, err)
 						return err
 					}
-					response = responseBody
+					defer response.Body.Close()
+					if response.StatusCode != 200 {
+						log.Errorf("URL: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
+						return errors.New("unable to reach API")
+					}
+					body, err = ioutil.ReadAll(response.Body)
+					if err != nil {
+						return err
+					}
 					return nil
-				}, retry.Attempts(core.ProcessRequestRetryAttempts), retry.Delay(time.Second*time.Duration(core.ProcessRequestRetryDelay)))
+				}, retry.Attempts(2), retry.Delay(time.Second*2))
 			if err != nil {
 				return nil, err
 			}
-		default:
-			return nil, errors.New("invalid request type")
 		}
-
 		dataToCache := cache.Data{
-			Result: response,
+			Result: body,
 		}
 		localCache.Update(dataToCache, dataSourceURLStruct.URL, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
-		return response, nil
+		return body, nil
 	}
 	log.Debugf("Getting Data for URL %s from local cache...", dataSourceURLStruct.URL)
 	return cachedData.Result, nil
@@ -94,48 +104,4 @@ func (*UtilsStruct) GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, se
 		return "", err
 	}
 	return priceData, nil
-}
-
-func AddHeaderToRequest(request *http.Request, headerMap map[string]string) (*http.Request, error) {
-	for key, value := range headerMap {
-		// If core.APIKeyRegex = `$` and if value starts with '$' then we need to fetch the respective value from env file
-		if strings.HasPrefix(value, core.APIKeyRegex) {
-			_, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(value)
-			if err != nil {
-				log.Error("Error in getting value from env file: ", err)
-				return nil, err
-			}
-			value = APIKey
-		}
-		log.Debugf("Adding key: %s, value: %s pair to header", key, value)
-		request.Header.Add(key, value)
-	}
-	return request, nil
-}
-
-func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
-	request, err := http.NewRequest(dataSourceURLStruct.Type, dataSourceURLStruct.URL, requestBody)
-	if err != nil {
-		return nil, err
-	}
-	requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
-	if err != nil {
-		log.Errorf("Error in adding header to %s request: %v", dataSourceURLStruct.Type, err)
-		return nil, err
-	}
-	response, err := client.Do(requestWithHeader)
-	if err != nil {
-		log.Errorf("Error sending %s request URL %s: %v", dataSourceURLStruct.Type, dataSourceURLStruct.URL, err)
-		return nil, err
-	}
-	defer response.Body.Close()
-	if response.StatusCode != 200 {
-		log.Errorf("API: %s responded with status code %d", dataSourceURLStruct.URL, response.StatusCode)
-		return nil, errors.New("unable to reach API")
-	}
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	return responseBody, nil
 }
