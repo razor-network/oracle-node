@@ -1,11 +1,8 @@
 package utils
 
 import (
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"razor/cache"
-	"razor/core/types"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
@@ -34,13 +31,10 @@ func getAPIByteArray(index int) []byte {
 }
 
 func TestGetDataFromAPI(t *testing.T) {
-	//postRequestInput := `{"type": "POST","url": "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar","body": {"jsonrpc": "2.0","method": "eth_chainId","params": [],"id": 0},"content-type": "application/json"}`
-	sampleChainId, _ := hex.DecodeString("7b226964223a302c226a736f6e727063223a22322e30222c22726573756c74223a2230783561373963343465227d")
-
 	type args struct {
-		urlStruct types.DataSourceURL
-		body      []byte
-		bodyErr   error
+		url     string
+		body    []byte
+		bodyErr error
 	}
 	tests := []struct {
 		name    string
@@ -51,12 +45,7 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "TODO API",
 			args: args{
-				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https://jsonplaceholder.typicode.com/todos/1",
-					Body:        nil,
-					ContentType: "",
-				},
+				url:  "https://jsonplaceholder.typicode.com/todos/1",
 				body: getAPIByteArray(0),
 			},
 			want:    getAPIByteArray(0),
@@ -65,11 +54,7 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "Comments API",
 			args: args{
-				urlStruct: types.DataSourceURL{Type: "GET",
-					URL:         "https://jsonplaceholder.typicode.com/comments/1",
-					Body:        nil,
-					ContentType: "",
-				},
+				url:  "https://jsonplaceholder.typicode.com/comments/1",
 				body: getAPIByteArray(1),
 			},
 			want:    getAPIByteArray(1),
@@ -78,12 +63,7 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "When API is invalid",
 			args: args{
-				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https:api.gemini.com/v1/pubticker",
-					Body:        nil,
-					ContentType: "",
-				},
+				url:  "https:api.gemini.com/v1/pubticker",
 				body: getAPIByteArray(0),
 			},
 			want:    nil,
@@ -92,12 +72,7 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "When API is not responding",
 			args: args{
-				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https://api.gemini.com/v1/pubticker/TEST",
-					Body:        nil,
-					ContentType: "",
-				},
+				url:  "https://api.gemini.com/v1/pubticker/TEST",
 				body: getAPIByteArray(0),
 			},
 			want:    nil,
@@ -106,28 +81,11 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "When there is an error in getting body",
 			args: args{
-				urlStruct: types.DataSourceURL{
-					Type:        "GET",
-					URL:         "https://jsonplaceholder.typicode.com/todos/1",
-					Body:        nil,
-					ContentType: "",
-				},
+				url:     "https://jsonplaceholder.typicode.com/todos/1",
 				bodyErr: errors.New("body error"),
 			},
 			want:    nil,
 			wantErr: true,
-		},
-		{
-			name: "Post request to fetch chainId",
-			args: args{
-				urlStruct: types.DataSourceURL{
-					Type:        "POST",
-					URL:         "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
-					Body:        map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
-					ContentType: "application/json",
-				},
-			},
-			want: sampleChainId,
 		},
 	}
 	for _, tt := range tests {
@@ -143,8 +101,7 @@ func TestGetDataFromAPI(t *testing.T) {
 
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
 			localCache := cache.NewLocalCache(time.Second * 10)
-			got, err := utils.GetDataFromAPI(tt.args.urlStruct, localCache)
-			fmt.Println("ABC: ", hex.EncodeToString(got))
+			got, err := utils.GetDataFromAPI(tt.args.url, localCache)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -262,8 +219,8 @@ func TestGetDataFromJSON(t *testing.T) {
 
 func TestGetDataFromHTML(t *testing.T) {
 	type args struct {
-		urlStruct types.DataSourceURL
-		selector  string
+		url      string
+		selector string
 	}
 	tests := []struct {
 		name    string
@@ -274,8 +231,8 @@ func TestGetDataFromHTML(t *testing.T) {
 		{
 			name: "Test 1: Test data from coin market cap",
 			args: args{
-				urlStruct: types.DataSourceURL{URL: "https://coinmarketcap.com/all/views/all/"},
-				selector:  `/html/body/div/div[1]/div[2]/div/div[1]/h1`,
+				url:      "https://coinmarketcap.com/all/views/all/",
+				selector: `/html/body/div/div[1]/div[2]/div/div[1]/h1`,
 			},
 			want:    "All Cryptocurrencies",
 			wantErr: false,
@@ -283,7 +240,7 @@ func TestGetDataFromHTML(t *testing.T) {
 		{
 			name: "Test 2: Test for invalid website",
 			args: args{
-				urlStruct: types.DataSourceURL{URL: "http://razor-go.com/"},
+				url: "http://razor-go.com/",
 			},
 			want:    "",
 			wantErr: true,
@@ -298,7 +255,7 @@ func TestGetDataFromHTML(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			got, err := utils.GetDataFromXHTML(tt.args.urlStruct, tt.args.selector)
+			got, err := utils.GetDataFromXHTML(tt.args.url, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
