@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"razor/cache"
 	"razor/core/types"
+	"razor/utils/mocks"
 	"reflect"
 	"testing"
 	"time"
@@ -107,8 +108,15 @@ func TestGetDataFromAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
 			localCache := cache.NewLocalCache(time.Second * 10)
-			got, err := GetDataFromAPI(tt.args.urlStruct, localCache)
+			got, err := utils.GetDataFromAPI(tt.args.urlStruct, localCache)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -205,7 +213,14 @@ func TestGetDataFromJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetDataFromJSON(tt.args.jsonObject, tt.args.selector)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			got, err := utils.GetDataFromJSON(tt.args.jsonObject, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromJSON() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -248,7 +263,14 @@ func TestGetDataFromHTML(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetDataFromXHTML(tt.args.urlStruct, tt.args.selector)
+			utilsMock := new(mocks.Utils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface: utilsMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			got, err := utils.GetDataFromXHTML(tt.args.urlStruct, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
