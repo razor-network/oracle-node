@@ -5,9 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"io/ioutil"
-	"razor/core/types"
-
 	"github.com/PaesslerAG/jsonpath"
 	"github.com/avast/retry-go"
 	"github.com/gocolly/colly"

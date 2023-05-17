@@ -52,3 +52,6 @@ var DefaultPathName = ".razor"
 
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
+
+//SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
+var SwitchClientDuration = 5 * EpochLength
