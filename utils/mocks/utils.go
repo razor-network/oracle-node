@@ -40,13 +40,13 @@ func (_m *Utils) AddJobToJSON(fileName string, job *types.StructsJob) error {
 	return r0
 }
 
-// Aggregate provides a mock function with given fields: client, previousEpoch, collection
-func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
-	ret := _m.Called(client, previousEpoch, collection)
+// Aggregate provides a mock function with given fields: client, previousEpoch, collection, localCache
+func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error) {
+	ret := _m.Called(client, previousEpoch, collection, localCache)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection) *big.Int); ok {
-		r0 = rf(client, previousEpoch, collection)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache) *big.Int); ok {
+		r0 = rf(client, previousEpoch, collection, localCache)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -54,8 +54,8 @@ func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, colle
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection) error); ok {
-		r1 = rf(client, previousEpoch, collection)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache) error); ok {
+		r1 = rf(client, previousEpoch, collection, localCache)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -364,13 +364,13 @@ func (_m *Utils) GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.
 	return r0, r1
 }
 
-// GetAggregatedDataOfCollection provides a mock function with given fields: client, collectionId, epoch
-func (_m *Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
-	ret := _m.Called(client, collectionId, epoch)
+// GetAggregatedDataOfCollection provides a mock function with given fields: client, collectionId, epoch, localCache
+func (_m *Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error) {
+	ret := _m.Called(client, collectionId, epoch, localCache)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32) *big.Int); ok {
-		r0 = rf(client, collectionId, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache) *big.Int); ok {
+		r0 = rf(client, collectionId, epoch, localCache)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -378,8 +378,8 @@ func (_m *Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collect
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32) error); ok {
-		r1 = rf(client, collectionId, epoch)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache) error); ok {
+		r1 = rf(client, collectionId, epoch, localCache)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1373,7 +1373,7 @@ func (_m *Utils) GetStakedToken(client *ethclient.Client, tokenAddress common.Ad
 	return r0
 }
 
-// GetStakedTokenWithOpts provides a mock function with given fields: client, tokenAddress
+// GetStakedTokenManagerWithOpts provides a mock function with given fields: client, tokenAddress
 func (_m *Utils) GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts) {
 	ret := _m.Called(client, tokenAddress)
 

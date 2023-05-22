@@ -190,7 +190,7 @@ func TestAggregate(t *testing.T) {
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
 			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
-			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection)
+			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Aggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1324,9 +1324,9 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
-			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
+			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &cache.LocalCache{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -139,21 +139,21 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
+func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(client, collectionId)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	//Supply previous epoch to Aggregate in case if last reported value is required.
-	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection)
+	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, localCache)
 	if aggregationError != nil {
 		return nil, aggregationError
 	}
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -210,7 +210,6 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
 	if err != nil || len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
@@ -219,7 +218,6 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		}
 		return prevCommitmentData, nil
 	}
-	localCache.StopCleanup()
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
