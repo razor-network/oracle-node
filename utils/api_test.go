@@ -2,9 +2,11 @@ package utils
 
 import (
 	"errors"
+	"razor/cache"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -98,8 +100,8 @@ func TestGetDataFromAPI(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
-
-			got, err := utils.GetDataFromAPI(tt.args.url)
+			localCache := cache.NewLocalCache(time.Second * 10)
+			got, err := utils.GetDataFromAPI(tt.args.url, localCache)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
