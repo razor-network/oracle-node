@@ -10,12 +10,8 @@ var (
 	errDataNotInCache = errors.New("data not present in cache")
 )
 
-type Data struct {
-	Result []byte
-}
-
 type cachedData struct {
-	Data
+	Result            []byte
 	expireAtTimestamp int64
 }
 
@@ -67,26 +63,26 @@ func (lc *LocalCache) StopCleanup() {
 	lc.wg.Wait()
 }
 
-func (lc *LocalCache) Update(u Data, url string, expireAtTimestamp int64) {
+func (lc *LocalCache) Update(data []byte, url string, expireAtTimestamp int64) {
 	lc.mu.Lock()
 	defer lc.mu.Unlock()
 
 	lc.URLs[url] = cachedData{
-		Data:              u,
+		Result:            data,
 		expireAtTimestamp: expireAtTimestamp,
 	}
 }
 
-func (lc *LocalCache) Read(url string) (Data, error) {
+func (lc *LocalCache) Read(url string) ([]byte, error) {
 	lc.mu.RLock()
 	defer lc.mu.RUnlock()
 
 	cacheData, ok := lc.URLs[url]
 	if !ok {
-		return Data{}, errDataNotInCache
+		return []byte{}, errDataNotInCache
 	}
 
-	return cacheData.Data, nil
+	return cacheData.Result, nil
 }
 
 func (lc *LocalCache) Delete(url string) {
