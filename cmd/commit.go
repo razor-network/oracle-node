@@ -5,10 +5,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/big"
+	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -66,6 +68,10 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	}
 
 	var leavesOfTree []*big.Int
+
+	log.Debug("Creating a local cache which will store API result and expire at the end of commit state")
+	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
+
 	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
 		log.Debug("HandleCommitState: Iterating index: ", i)
@@ -75,7 +81,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 			if err != nil {
 				return types.CommitData{}, err
 			}
-			collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch)
+			collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache)
 			if err != nil {
 				return types.CommitData{}, err
 			}
@@ -93,6 +99,9 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	log.Debug("HandleCommitState: Assigned Collections: ", assignedCollections)
 	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
+
+	localCache.StopCleanup()
+
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,
 		SeqAllottedCollections: seqAllottedCollections,

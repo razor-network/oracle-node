@@ -39,14 +39,12 @@ func (*UtilsStruct) GetDataFromAPI(url string, localCache *cache.LocalCache) ([]
 		if err != nil {
 			return nil, err
 		}
-		dataToCache := cache.Data{
-			Result: body,
-		}
-		localCache.Update(dataToCache, url, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
+		//Storing the data into cache
+		localCache.Update(body, url, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
 		return body, nil
 	}
 	log.Debugf("Getting Data for URL %s from local cache...", url)
-	return cachedData.Result, nil
+	return cachedData, nil
 }
 
 func (*UtilsStruct) GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
