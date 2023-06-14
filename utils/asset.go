@@ -13,13 +13,11 @@ import (
 	"razor/pkg/bindings"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/joho/godotenv"
 	"github.com/tidwall/gjson"
 
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -141,21 +139,21 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32) (*big.Int, error) {
+func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(client, collectionId)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	//Supply previous epoch to Aggregate in case if last reported value is required.
-	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection)
+	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, localCache)
 	if aggregationError != nil {
 		return nil, aggregationError
 	}
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -212,7 +210,6 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
 	if err != nil || len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
@@ -221,7 +218,6 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		}
 		return prevCommitmentData, nil
 	}
-	localCache.StopCleanup()
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
@@ -276,69 +272,35 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCac
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
 	var (
-		response            []byte
-		apiErr              error
-		dataSourceURLStruct types.DataSourceURL
+		response []byte
+		apiErr   error
 	)
-	log.Debugf("Getting the data to commit for job %s having job Id %d", job.Name, job.Id)
-	if strings.HasPrefix(job.Url, "{") {
-		log.Debug("Job URL passed is a struct containing URL along with type of request data")
-		dataSourceURLInBytes := []byte(job.Url)
 
-		err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
-		if err != nil {
-			log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
-			return nil, err
-		}
-		log.Infof("URL Struct: %+v", dataSourceURLStruct)
-	} else {
-		log.Debug("Job URL passed is a direct URL: ", job.Url)
-		isAPIKeyRequired := strings.Contains(job.Url, core.APIKeyRegex)
-		if isAPIKeyRequired {
-			keyword, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(job.Url)
-			if err != nil {
-				log.Error("Error in getting value from env file: ", err)
-				return nil, err
-			}
-			log.Debug("API key: ", APIKey)
-			keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
-			log.Debug("Keyword to replace in url: ", keywordWithAPIKeyRegex)
-			urlWithAPIKey := strings.Replace(job.Url, keywordWithAPIKeyRegex, APIKey, 1)
-			log.Debug("URl with API key: ", urlWithAPIKey)
-			job.Url = urlWithAPIKey
-		}
-		dataSourceURLStruct = types.DataSourceURL{
-			URL:    job.Url,
-			Type:   "GET",
-			Body:   nil,
-			Header: nil,
-		}
-	}
 	// Fetch data from API with retry mechanism
 	var parsedData interface{}
 	if job.SelectorType == 0 {
 		start := time.Now()
-		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
+		response, apiErr = UtilsInterface.GetDataFromAPI(job.Url, localCache)
 		if apiErr != nil {
 			log.Errorf("Error in fetching data from API %s: %v", job.Url, apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
-		log.Debugf("Time taken to fetch the data from API : %s was %f", dataSourceURLStruct.URL, elapsed)
+		log.Debugf("Time taken to fetch the data from API : %s was %f", job.Url, elapsed)
 
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Error("Error in parsing data from API: ", err)
 			return nil, err
 		}
-		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
+		parsedData, err = UtilsInterface.GetDataFromJSON(parsedJSON, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed data: ", err)
 			return nil, err
 		}
 	} else {
 		//TODO: Add retry here.
-		dataPoint, err := GetDataFromXHTML(dataSourceURLStruct, job.Selector)
+		dataPoint, err := UtilsInterface.GetDataFromXHTML(job.Url, job.Selector)
 		if err != nil {
 			log.Error("Error in fetching value from parsed XHTML: ", err)
 			return nil, err
@@ -347,13 +309,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		parsedData = regexp.MustCompile(`[\p{Sc}, ]`).ReplaceAllString(dataPoint, "")
 	}
 
-	parsedDataInDecimal, err := ManageReturnType(parsedData, dataSourceURLStruct.ReturnType)
-	if err != nil {
-		log.Error("Error in converting parsed data to decimal value: ", err)
-		return nil, err
-	}
-
-	datum, err := ConvertToNumber(parsedDataInDecimal)
+	datum, err := UtilsInterface.ConvertToNumber(parsedData)
 	if err != nil {
 		log.Error("Result is not a number")
 		return nil, err
@@ -454,10 +410,6 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 			if url.Exists() {
 				customJob.URL = url.String()
 			}
-			name := gjson.Get(customJobsData, "name")
-			if name.Exists() {
-				customJob.Name = name.String()
-			}
 			selector := gjson.Get(customJobsData, "selector")
 			if selector.Exists() {
 				customJob.Selector = selector.String()
@@ -481,7 +433,6 @@ func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []binding
 func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob {
 	return bindings.StructsJob{
 		Url:      customJob.URL,
-		Name:     customJob.Name,
 		Selector: customJob.Selector,
 		Power:    customJob.Power,
 		Weight:   customJob.Weight,
@@ -531,30 +482,4 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	}
 
 	return overrideJobs, overriddenJobIds
-}
-
-func GetKeyWordAndAPIKeyFromENVFile(url string) (string, string, error) {
-	envFilePath, err := path.PathUtilsInterface.GetDotENVFilePath()
-	if err != nil {
-		log.Error("Error in getting env file path: ", err)
-		return "", "", err
-	}
-	log.Debug("GetKeyWordAndAPIKeyFromENVFile: .env file path: ", envFilePath)
-
-	log.Info("Loading env file...")
-	envFileMap, err := godotenv.Read(envFilePath)
-	if err != nil {
-		log.Error("Error in getting env file map: ", err)
-		return "", "", err
-	}
-	log.Debugf("GetKeyWordAndAPIKeyFromENVFile: ENV file map: %v", envFileMap)
-	for keyword, APIKey := range envFileMap {
-		keywordWithAPIKeyRegex := core.APIKeyRegex + keyword
-		isTheKeywordPresentInURL := strings.Contains(url, keywordWithAPIKeyRegex)
-		if isTheKeywordPresentInURL {
-			log.Infof("Found the keyword %s in env file", keyword)
-			return keyword, APIKey, nil
-		}
-	}
-	return "", "", errors.New("no value found in env file")
 }

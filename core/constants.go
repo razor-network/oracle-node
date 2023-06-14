@@ -49,21 +49,9 @@ var AssetsDataFile = "assets.json"
 var ConfigFile = "razor.yaml"
 var LogFileDirectory = "logs"
 var DefaultPathName = ".razor"
-var DotENVFileName = ".env"
 
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
 
-//APIKeyRegex will be used as a regular expression to be matched in job Urls
-var APIKeyRegex = `$`
-
-// Following are the constants which defines retry attempts and retry delay if there is an error in processing request
-
-var ProcessRequestRetryAttempts uint = 2
-var ProcessRequestRetryDelay = 2
-
 //SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength
-
-// HexReturnType is the ReturnType for a job if that job returns a hex value
-var HexReturnType = "hex"

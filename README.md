@@ -41,21 +41,12 @@ One of the quickest ways to get `razor-go` up and running on your machine is by 
 ```
 docker network create razor_network
 ```
-2. Create user
-    ```
-      useradd -u 82 razor
-    ```
 
-3. Start razor-go container
+2. Start razor-go container
 
 ```
-docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/home/razor/.razor razornetwork/razor-go:v1.0.0-mainnet
+docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.0-mainnet
 ```
-
-4. Update the owner of `.razor` directory
-    ```
-     chown razor:razor $HOME/.razor 
-    ```
 
 > **_NOTE:_** we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
@@ -571,16 +562,6 @@ OR
 $  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
 ```
 
-If you want to specify request type(GET/POST) along with fields like body and header then you can pass that to the `url` flag as specified below,
-```
-$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power 2 --name ethusd_kraken --selector 'result.XETHZUSD.c[0]' --url '{"type":"GET","url":"https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body":{},"header": {}}'
-```
-
-If the job returns a `hex` value, than you can specify the `hex` value to `returnType` field as specified below in the example which is a POST job returning the result in hex format,
-```
-$  ./razor createJob --selectorType 0 --address 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --weight 1 --power -4 --name eth_postJob --selector 'result' --url '{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}'
-```
-
 ### Create Collection
 
 Create new collections using `createCollection` command.
@@ -867,58 +848,24 @@ Shown below is an example of how your `assets.json` file should be -
         "power": 2,
         "official jobs": {
           "1": {
-            "URL": {
-              "type": "GET",
-              "url": "https://data.messari.io/api/v1/assets/eth/metrics",
-              "body": {},
-              "header": {}
-            },
+            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
             "selector": "[`data`][`market_data`][`price_usd`]",
             "power": 2,
             "weight": 2
-          }
+          },
         },
         "custom jobs": [
           {
-            "URL": {
-              "type": "GET",
-              "url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
-              "body": {},
-              "header": {}
-            },
+            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
             "selector": "[`data`][`0`][`price`]",
             "power": 3,
             "weight": 2
           },
-          {
-            "URL": {
-              "type": "POST",
-              "url": "https://rpc.ankr.com/eth",
-              "body": {
-                "jsonrpc": "2.0",
-                "method": "eth_call",
-                "params": [
-                  {
-                    "to": "0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6",
-                    "data": "0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"
-                  },
-                  "latest"
-                ],
-                "id": 5
-              },
-              "header": { "content-type": "application/json" },
-              "returnType": "hex"
-            },
-            "selector": "result",
-            "power": -4,
-            "weight": 1
-          }
         ]
       }
     }
   }
 }
-
 ```
 
 Breaking down into components

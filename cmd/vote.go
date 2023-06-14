@@ -393,7 +393,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	if commitTxn != core.NilHash {
 		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
 		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletion for commit: ", err)
+			log.Error("Error in WaitForBlockCompletion for commit: ", waitForBlockCompletionErr)
 			return errors.New("error in sending commit transaction")
 		}
 		log.Debug("Updating GlobalCommitDataStruct with latest commitData and epoch...")
