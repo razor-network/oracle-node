@@ -93,6 +93,7 @@ Go to the `build/bin` directory where the razor binary is generated.
 There are a set of parameters that are configurable. These include:
 
 - Provider: The RPC URL of the provider you are using to connect to the blockchain.
+- Alternate Provider: This is the secondary RPC URL of the provider used to connect to the blockchain if the primary one is not working.
 - Gas Multiplier: The value with which the gas price will be multiplied while sending every transaction.
 - Buffer Size: Buffer size determines, out of all blocks in a state, in how many blocks the voting or any other operation can be performed.
 - Wait Time: This is the number of seconds the system will wait while voting.
@@ -117,13 +118,13 @@ $ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value>
 docker
 
 ```
-docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --alternateProvider <alternate_rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
 ```
 
 Example:
 
 ```
-$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize 200 --logFileMaxBackups 52 --logFileMaxAge 365
+$ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --alternateProvider https://ce2m-skale.chainode.tech:10200/ --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize 200 --logFileMaxBackups 52 --logFileMaxAge 365
 ```
 
 Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
@@ -839,7 +840,7 @@ You can override the existing job and also add your custom jobs by adding `asset
 
 Shown below is an example of how your `assets.json` file should be -
 
-```
+``` json
 {
   "assets": {
     "collection": {
