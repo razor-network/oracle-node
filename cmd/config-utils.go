@@ -133,7 +133,7 @@ func (*UtilsStruct) GetAlternateProvider() (string, error) {
 	}
 	if alternateProvider == "" {
 		if viper.IsSet("alternateProvider") {
-			alternateProvider = viper.GetString("alternatalternateProvider = viper.GetString(\"alternateProvidereProvider")
+			alternateProvider = viper.GetString("alternateProvider")
 		} else {
 			alternateProvider = ""
 			log.Debug("alternate provider is not set, taking its nil value ", alternateProvider)
