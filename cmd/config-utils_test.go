@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/stretchr/testify/mock"
 	"razor/cmd/mocks"
 	"razor/core/types"
 	"reflect"
@@ -195,6 +196,7 @@ func TestGetConfigData(t *testing.T) {
 			cmdUtilsMock.On("GetLogFileMaxSize").Return(tt.args.logFileMaxSize, tt.args.logFileMaxSizeErr)
 			cmdUtilsMock.On("GetLogFileMaxBackups").Return(tt.args.logFileMaxBackups, tt.args.logFileMaxBackupsErr)
 			cmdUtilsMock.On("GetLogFileMaxAge").Return(tt.args.logFileMaxAge, tt.args.logFileMaxAgeErr)
+			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(true)
 			utils := &UtilsStruct{}
 
 			got, err := utils.GetConfigData()
@@ -608,7 +610,7 @@ func TestGetProvider(t *testing.T) {
 			args: args{
 				providerErr: errors.New("provider error"),
 			},
-			want:    "http://127.0.0.1:8545",
+			want:    "",
 			wantErr: errors.New("provider error"),
 		},
 		{
@@ -616,8 +618,8 @@ func TestGetProvider(t *testing.T) {
 			args: args{
 				provider: "",
 			},
-			want:    "http://127.0.0.1:8545",
-			wantErr: nil,
+			want:    "",
+			wantErr: errors.New("provider is not set"),
 		},
 	}
 	for _, tt := range tests {

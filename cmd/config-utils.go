@@ -2,6 +2,8 @@
 package cmd
 
 import (
+	"errors"
+	"github.com/sirupsen/logrus"
 	"razor/client"
 	"razor/core"
 	"razor/core/types"
@@ -102,6 +104,8 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.LogFileMaxBackups = logFileMaxBackups
 	config.LogFileMaxAge = logFileMaxAge
 
+	setLogLevel(config)
+
 	return config, nil
 }
 
@@ -109,14 +113,14 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 func (*UtilsStruct) GetProvider() (string, error) {
 	provider, err := flagSetUtils.GetRootStringProvider()
 	if err != nil {
-		return core.DefaultProvider, err
+		return "", err
 	}
 	if provider == "" {
 		if viper.IsSet("provider") {
 			provider = viper.GetString("provider")
 		} else {
-			provider = core.DefaultProvider
-			log.Debug("Provider is not set, taking its default value ", provider)
+			log.Error("Provider is not set in config file")
+			return "", errors.New("provider is not set")
 		}
 	}
 	if !strings.HasPrefix(provider, "https") {
@@ -344,4 +348,30 @@ func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
 		}
 	}
 	return logFileMaxAge, nil
+}
+
+//This function sets the log level
+func setLogLevel(config types.Configurations) {
+	if config.LogLevel == "debug" {
+		log.SetLevel(logrus.DebugLevel)
+	}
+
+	log.Debug("Config details: ")
+	log.Debugf("Provider: %s", config.Provider)
+	log.Debugf("Alternate Provider: %s", config.AlternateProvider)
+	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
+	log.Debugf("Buffer Percent: %d", config.BufferPercent)
+	log.Debugf("Wait Time: %d", config.WaitTime)
+	log.Debugf("Gas Price: %d", config.GasPrice)
+	log.Debugf("Log Level: %s", config.LogLevel)
+	log.Debugf("Gas Limit: %.2f", config.GasLimitMultiplier)
+	log.Debugf("Gas Limit Override: %d", config.GasLimitOverride)
+	log.Debugf("RPC Timeout: %d", config.RPCTimeout)
+	log.Debugf("HTTP Timeout: %d", config.HTTPTimeout)
+
+	if razorUtils.IsFlagPassed("logFile") {
+		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
+		log.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)
+		log.Debugf("Log File Max Age (max number of days to retain old log files): %d", config.LogFileMaxAge)
+	}
 }

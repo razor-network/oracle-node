@@ -18,7 +18,6 @@ var BlockCompletionTimeout = 30
 
 //Following are the default config values for all the config parameters
 
-var DefaultProvider = "http://127.0.0.1:8545"
 var DefaultGasMultiplier = 1.0
 var DefaultBufferPercent = 20
 var DefaultGasPrice = 1
