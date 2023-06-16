@@ -124,6 +124,7 @@ func setLogLevel() {
 	log.Debugf("Gas Price: %d", config.GasPrice)
 	log.Debugf("Log Level: %s", config.LogLevel)
 	log.Debugf("Gas Limit: %.2f", config.GasLimitMultiplier)
+	log.Debugf("Gas Limit Override: %d", config.GasLimitOverride)
 	log.Debugf("RPC Timeout: %d", config.RPCTimeout)
 	log.Debugf("HTTP Timeout: %d", config.HTTPTimeout)
 
