@@ -120,8 +120,9 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 	for i := range args {
 		inputs[i] = reflect.ValueOf(args[i])
 	}
+	alternateProvider := client.GetAlternateProvider()
 	switchToAlternateClient := client.GetSwitchToAlternateClientStatus()
-	if switchToAlternateClient {
+	if switchToAlternateClient && alternateProvider != "" {
 		// Changing client argument to alternate client
 		log.Debug("Making this RPC call using alternate RPC provider!")
 		inputs = client.ReplaceClientWithAlternateClient(inputs)
@@ -138,7 +139,7 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 			return nil
 		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
-		if !switchToAlternateClient {
+		if !switchToAlternateClient && alternateProvider != "" {
 			log.Errorf("%v error after retries: %v", methodName, err)
 			log.Info("Switching RPC to alternate RPC")
 			client.SetSwitchToAlternateClientStatus(true)

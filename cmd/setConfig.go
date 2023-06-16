@@ -165,7 +165,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	}
 	if provider == "" && alternateProvider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
 		viper.Set("provider", core.DefaultProvider)
-		viper.Set("alternateProvider", core.DefaultAlternateProvider)
+		viper.Set("alternateProvider", "")
 		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
 		viper.Set("buffer", core.DefaultBufferPercent)
 		viper.Set("wait", core.DefaultWaitTime)

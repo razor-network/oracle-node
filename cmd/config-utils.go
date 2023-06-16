@@ -129,14 +129,14 @@ func (*UtilsStruct) GetProvider() (string, error) {
 func (*UtilsStruct) GetAlternateProvider() (string, error) {
 	alternateProvider, err := flagSetUtils.GetRootStringAlternateProvider()
 	if err != nil {
-		return core.DefaultAlternateProvider, err
+		return "", err
 	}
 	if alternateProvider == "" {
 		if viper.IsSet("alternateProvider") {
-			alternateProvider = viper.GetString("alternateProvider")
+			alternateProvider = viper.GetString("alternatalternateProvider = viper.GetString(\"alternateProvidereProvider")
 		} else {
-			alternateProvider = core.DefaultAlternateProvider
-			log.Debug("alternate provider is not set, taking its default value ", alternateProvider)
+			alternateProvider = ""
+			log.Debug("alternate provider is not set, taking its nil value ", alternateProvider)
 		}
 	}
 	if !strings.HasPrefix(alternateProvider, "https") {
