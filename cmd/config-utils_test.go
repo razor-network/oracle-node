@@ -678,7 +678,7 @@ func TestGetAlternateProvider(t *testing.T) {
 			args: args{
 				alternateProviderErr: errors.New("alternateProvider error"),
 			},
-			want:    "http://127.0.0.1:8545",
+			want:    "",
 			wantErr: errors.New("alternateProvider error"),
 		},
 		{
@@ -686,7 +686,7 @@ func TestGetAlternateProvider(t *testing.T) {
 			args: args{
 				alternateProvider: "",
 			},
-			want:    "http://127.0.0.1:8545",
+			want:    "",
 			wantErr: nil,
 		},
 	}
