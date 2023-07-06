@@ -51,7 +51,16 @@ type AssignedAsset struct {
 
 type CustomJob struct {
 	URL      string `json:"URL"`
+	Name     string `json:"name"`
 	Selector string `json:"selector"`
 	Power    int8   `json:"power"`
 	Weight   uint8  `json:"weight"`
+}
+
+type DataSourceURL struct {
+	Type       string                 `json:"type"`
+	URL        string                 `json:"url"`
+	Body       map[string]interface{} `json:"body"`
+	Header     map[string]string      `json:"header"`
+	ReturnType string                 `json:"returnType"`
 }
