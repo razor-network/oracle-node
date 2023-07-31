@@ -43,11 +43,15 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
@@ -60,7 +64,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	log.Debugf("ExecuteExtendLock: Calling ResetUnstakeLock with arguments extendLockInput = %+v", extendLockInput)
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for resetUnstakeLock: ", err)
 }
 
@@ -75,7 +79,7 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "resetUnstakeLock",
 		Parameters:      []interface{}{extendLockInput.StakerId},
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 	})
 
 	log.Info("Extending lock...")
@@ -84,8 +88,9 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

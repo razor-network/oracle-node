@@ -47,10 +47,13 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 
 	logger.SetLoggerParameters(client, address)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -83,7 +86,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	log.Debugf("ExecuteCreateJob: Calling CreateJob() with argument jobInput: %+v", jobInput)
 	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createJob: ", err)
 }
 
@@ -98,7 +101,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createJob",
 		Parameters:      []interface{}{jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -108,8 +111,9 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

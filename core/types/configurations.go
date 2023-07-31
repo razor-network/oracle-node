@@ -2,6 +2,7 @@ package types
 
 type Configurations struct {
 	Provider           string
+	AlternateProvider  string
 	GasMultiplier      float32
 	BufferPercent      int32
 	WaitTime           int32
@@ -10,4 +11,8 @@ type Configurations struct {
 	GasLimitOverride   uint64
 	GasLimitMultiplier float32
 	RPCTimeout         int64
+	HTTPTimeout        int64
+	LogFileMaxSize     int
+	LogFileMaxBackups  int
+	LogFileMaxAge      int
 }

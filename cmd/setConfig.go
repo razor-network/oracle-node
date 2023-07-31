@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"razor/core"
+	"razor/core/types"
 	"razor/metrics"
 	"razor/utils"
 
@@ -29,8 +30,12 @@ Example:
 //This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, types.Configurations{})
 	provider, err := flagSetUtils.GetStringProvider(flagSet)
+	if err != nil {
+		return err
+	}
+	alternateProvider, err := flagSetUtils.GetStringAlternateProvider(flagSet)
 	if err != nil {
 		return err
 	}
@@ -66,8 +71,24 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if rpcTimeoutErr != nil {
 		return rpcTimeoutErr
 	}
+	httpTimeout, httpTimeoutErr := flagSetUtils.GetInt64HTTPTimeout(flagSet)
+	if httpTimeoutErr != nil {
+		return httpTimeoutErr
+	}
+	logFileMaxSize, err := flagSetUtils.GetIntLogFileMaxSize(flagSet)
+	if err != nil {
+		return err
+	}
+	logFileMaxBackups, err := flagSetUtils.GetIntLogFileMaxBackups(flagSet)
+	if err != nil {
+		return err
+	}
+	logFileMaxAge, err := flagSetUtils.GetIntLogFileMaxAge(flagSet)
+	if err != nil {
+		return err
+	}
 
-	path, pathErr := razorUtils.GetConfigFilePath()
+	path, pathErr := pathUtils.GetConfigFilePath()
 	if pathErr != nil {
 		log.Error("Error in fetching config file path")
 		return pathErr
@@ -103,6 +124,9 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if provider != "" {
 		viper.Set("provider", provider)
 	}
+	if alternateProvider != "" {
+		viper.Set("alternateProvider", alternateProvider)
+	}
 	if gasMultiplier != -1 {
 		viper.Set("gasmultiplier", gasMultiplier)
 	}
@@ -127,8 +151,21 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	if rpcTimeout != 0 {
 		viper.Set("rpcTimeout", rpcTimeout)
 	}
-	if provider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 {
-		viper.Set("provider", core.DefaultProvider)
+	if httpTimeout != 0 {
+		viper.Set("httpTimeout", httpTimeout)
+	}
+	if logFileMaxSize != 0 {
+		viper.Set("logFileMaxSize", logFileMaxSize)
+	}
+	if logFileMaxBackups != 0 {
+		viper.Set("logFileMaxBackups", logFileMaxBackups)
+	}
+	if logFileMaxAge != 0 {
+		viper.Set("logFileMaxAge", logFileMaxAge)
+	}
+	if provider == "" && alternateProvider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
+		viper.Set("provider", "")
+		viper.Set("alternateProvider", "")
 		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
 		viper.Set("buffer", core.DefaultBufferPercent)
 		viper.Set("wait", core.DefaultWaitTime)
@@ -137,7 +174,10 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 		viper.Set("gasLimit", core.DefaultGasLimit)
 		viper.Set("gasLimitOverride", core.DefaultGasLimitOverride)
 		viper.Set("rpcTimeout", core.DefaultRPCTimeout)
-		//viper.Set("exposeMetricsPort", "")
+		viper.Set("httpTimeout", core.DefaultHTTPTimeout)
+		viper.Set("logFileMaxSize", core.DefaultLogFileMaxSize)
+		viper.Set("logFileMaxBackups", core.DefaultLogFileMaxBackups)
+		viper.Set("logFileMaxAge", core.DefaultLogFileMaxAge)
 		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 
@@ -154,6 +194,7 @@ func init() {
 
 	var (
 		Provider           string
+		AlternateProvider  string
 		GasMultiplier      float32
 		BufferPercent      int32
 		WaitTime           int32
@@ -162,11 +203,16 @@ func init() {
 		GasLimitMultiplier float32
 		GasLimitOverride   uint64
 		RPCTimeout         int64
+		HTTPTimeout        int64
 		ExposeMetrics      string
 		CertFile           string
 		CertKey            string
+		LogFileMaxSize     int
+		LogFileMaxBackups  int
+		LogFileMaxAge      int
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
+	setConfig.Flags().StringVarP(&AlternateProvider, "alternateProvider", "", "", "alternate provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
@@ -175,8 +221,12 @@ func init() {
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
 	setConfig.Flags().Uint64VarP(&GasLimitOverride, "gasLimitOverride", "", 0, "gas limit to be over ridden for a transaction")
 	setConfig.Flags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
+	setConfig.Flags().Int64VarP(&HTTPTimeout, "httpTimeout", "", 0, "http request timeout if its not responding")
 	setConfig.Flags().StringVarP(&ExposeMetrics, "exposeMetrics", "", "", "port number")
 	setConfig.Flags().StringVarP(&CertFile, "certFile", "", "", "ssl certificate path")
 	setConfig.Flags().StringVarP(&CertKey, "certKey", "", "", "ssl certificate key path")
+	setConfig.Flags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "max size of log file in MB")
+	setConfig.Flags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "max number of old log files to retain")
+	setConfig.Flags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "max number of days to retain old log files")
 
 }

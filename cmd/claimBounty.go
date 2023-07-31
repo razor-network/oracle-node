@@ -46,13 +46,17 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteClaimBounty: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	if utilsInterface.IsFlagPassed("bountyId") {
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
+	if razorUtils.IsFlagPassed("bountyId") {
 		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
 		utils.CheckError("Error in getting bountyId: ", err)
 		log.Debug("ExecuteClaimBounty: BountyId: ", bountyId)
@@ -68,7 +72,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		utils.CheckError("ClaimBounty error: ", err)
 
 		if txn != core.NilHash {
-			err = razorUtils.WaitForBlockCompletion(client, txn.String())
+			err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
@@ -84,14 +88,14 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 //This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
 func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
-	disputeFilePath, err := razorUtils.GetDisputeDataFileName(account.Address)
+	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
 	}
 	log.Debug("HandleClaimBounty: Dispute data file path: ", disputeFilePath)
 	if _, err := path.OSUtilsInterface.Stat(disputeFilePath); !errors.Is(err, os.ErrNotExist) {
 		log.Debug("Fetching the dispute data from dispute data file...")
-		disputeData, err = razorUtils.ReadFromDisputeJsonFile(disputeFilePath)
+		disputeData, err = fileUtils.ReadFromDisputeJsonFile(disputeFilePath)
 		if err != nil {
 			return err
 		}
@@ -119,7 +123,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyErr := utilsInterface.WaitForBlockCompletion(client, claimBountyTxn.String())
+			claimBountyErr := razorUtils.WaitForBlockCompletion(client, claimBountyTxn.Hex())
 			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed
@@ -132,7 +136,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 	}
 
 	log.Debug("Saving the updated dispute data to dispute data file...")
-	err = razorUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
+	err = fileUtils.SaveDataToDisputeJsonFile(disputeFilePath, disputeData.BountyIdQueue)
 	if err != nil {
 		return err
 	}
@@ -148,14 +152,14 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Debug("ClaimBounty: Epoch: ", epoch)
 
@@ -178,7 +182,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	if waitFor > 0 {
 		log.Debug("Waiting for lock period to get over....")
 
-		timeRemaining := int64(waitFor) * core.EpochLength
+		timeRemaining := uint64(waitFor) * core.EpochLength
 		if waitFor == 1 {
 			log.Infof("Cannot claim bounty now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {
@@ -194,7 +198,9 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 	if err != nil {
 		return core.NilHash, err
 	}
-	return transactionUtils.Hash(tx), nil
+	txnHash := transactionUtils.Hash(tx)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

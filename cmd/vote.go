@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
-	"path"
+	"path/filepath"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -56,11 +56,15 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteVote: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
 	utils.CheckError("Error in getting rogue status: ", err)
@@ -119,7 +123,7 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	header, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
@@ -127,7 +131,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			return nil
 		default:
 			log.Debugf("Vote: Header value: %d", header.Number)
-			latestHeader, err := utils.UtilsInterface.GetLatestBlockWithRetry(client)
+			latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
 			if err != nil {
 				log.Error("Error in fetching block: ", err)
 				continue
@@ -151,7 +155,7 @@ var (
 
 //This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
-	state, err := razorUtils.GetDelayedState(client, config.BufferPercent)
+	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
@@ -178,17 +182,23 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	}
 	stakedAmount := staker.Stake
 
-	ethBalance, err := utils.UtilsInterface.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
+	ethBalance, err := clientUtils.BalanceAtWithRetry(client, common.HexToAddress(account.Address))
 	if err != nil {
 		log.Errorf("Error in fetching balance of the account: %s\n%v", account.Address, err)
 		return
 	}
-	actualStake, err := razorUtils.ConvertWeiToEth(stakedAmount)
+
+	// Warning the staker if ETH balance is less than 0.1 ETH
+	if ethBalance.Cmp(big.NewInt(1e17)) == -1 {
+		log.Warn("sFuel balance is lower than 0.1 SKL, kindly add more SKL to be safe for executing transactions successfully")
+	}
+
+	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
 	if err != nil {
 		log.Error("Error in converting stakedAmount from wei denomination: ", err)
 		return
 	}
-	actualBalance, err := razorUtils.ConvertWeiToEth(ethBalance)
+	actualBalance, err := utils.ConvertWeiToEth(ethBalance)
 	if err != nil {
 		log.Error("Error in converting ethBalance from wei denomination: ", err)
 		return
@@ -204,14 +214,14 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	if sRZRBalance.Cmp(big.NewInt(0)) == 0 {
 		sRZRInEth = big.NewFloat(0)
 	} else {
-		sRZRInEth, err = razorUtils.ConvertWeiToEth(sRZRBalance)
+		sRZRInEth, err = utils.ConvertWeiToEth(sRZRBalance)
 		if err != nil {
 			log.Error(err)
 			return
 		}
 	}
 
-	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f Eth Balance: %f", utils.UtilsInterface.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f sFuel Balance: %f", utils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
@@ -256,7 +266,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 
 		lastVerification = epoch
 
-		if utilsInterface.IsFlagPassed("autoClaimBounty") {
+		if razorUtils.IsFlagPassed("autoClaimBounty") {
 			log.Debugf("Automatically claiming bounty")
 			err = cmdUtils.HandleClaimBounty(client, config, account)
 			if err != nil {
@@ -277,7 +287,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
-				ABI:             bindings.BlockManagerABI,
+				ABI:             bindings.BlockManagerMetaData.ABI,
 			})
 
 			if err != nil {
@@ -312,7 +322,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	log.Debug("InitiateCommit: Staker:", staker)
 	stakedAmount := staker.Stake
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
@@ -333,12 +343,12 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
 		return nil
 	}
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		return err
 	}
 	log.Debugf("InitiateCommit: .razor directory path: %s", razorPath)
-	keystorePath := path.Join(razorPath, "keystore_files")
+	keystorePath := filepath.Join(razorPath, "keystore_files")
 	log.Debugf("InitiateCommit: Keystore file path: %s", keystorePath)
 	log.Debugf("InitiateCommit: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
 	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
@@ -364,17 +374,26 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
 	log.Debug("InitiateCommit: Calling CreateMerkle() with argument Leaves = ", commitData.Leaves)
-	merkleTree := utils.MerkleInterface.CreateMerkle(commitData.Leaves)
+	merkleTree, err := merkleUtils.CreateMerkle(commitData.Leaves)
+	if err != nil {
+		return errors.New("Error in getting merkle tree: " + err.Error())
+	}
 	log.Debug("InitiateCommit: Merkle Tree: ", merkleTree)
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, utils.MerkleInterface.GetMerkleRoot(merkleTree))
+	log.Debug("InitiateCommit: Calling GetMerkleRoot() for the merkle tree...")
+	merkleRoot, err := merkleUtils.GetMerkleRoot(merkleTree)
+	if err != nil {
+		return errors.New("Error in getting root: " + err.Error())
+	}
+	log.Debug("InitiateCommit: Merkle Tree Root: ", merkleRoot)
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, merkleRoot)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
 	log.Debug("InitiateCommit: Commit Transaction Hash: ", commitTxn)
 	if commitTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
 		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletion for commit: ", err)
+			log.Error("Error in WaitForBlockCompletion for commit: ", waitForBlockCompletionErr)
 			return errors.New("error in sending commit transaction")
 		}
 		log.Debug("Updating GlobalCommitDataStruct with latest commitData and epoch...")
@@ -383,13 +402,13 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 
 	log.Debug("Saving committed data for recovery...")
-	fileName, err := razorUtils.GetCommitDataFileName(account.Address)
+	fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 	if err != nil {
 		return errors.New("Error in getting file name to save committed data: " + err.Error())
 	}
 	log.Debug("InitiateCommit: Commit data file path: ", fileName)
 
-	err = razorUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
+	err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
 	if err != nil {
 		return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
 	}
@@ -401,7 +420,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiateReveal: Staked Amount: ", stakedAmount)
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err
@@ -422,8 +441,8 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return nil
 	}
 
-	log.Debugf("InitiateReveal: Calling HandleRevealState with arguments staker = %+v, epoch = %d", staker, epoch)
-	if err := cmdUtils.HandleRevealState(client, staker, epoch); err != nil {
+	log.Debugf("InitiateReveal: Calling CheckForLastCommitted with arguments staker = %+v, epoch = %d", staker, epoch)
+	if err := cmdUtils.CheckForLastCommitted(client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}
@@ -432,13 +451,13 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 
 	if nilCommitData {
 		log.Debug("InitiateReveal: Global commit data is nil, getting the commit data from file...")
-		fileName, err := razorUtils.GetCommitDataFileName(account.Address)
+		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
 			return err
 		}
 		log.Debug("InitiateReveal: Commit data file path: ", fileName)
-		committedDataFromFile, err := razorUtils.ReadFromCommitJsonFile(fileName)
+		committedDataFromFile, err := fileUtils.ReadFromCommitJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting committed data from file %s: %v", fileName, err)
 			return err
@@ -467,12 +486,12 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	}
 
 	if globalCommitDataStruct.Epoch == epoch {
-		razorPath, err := razorUtils.GetDefaultPath()
+		razorPath, err := pathUtils.GetDefaultPath()
 		if err != nil {
 			return err
 		}
 		log.Debug("InitiateReveal: .razor directory path: ", razorPath)
-		keystorePath := path.Join(razorPath, "keystore_files")
+		keystorePath := filepath.Join(razorPath, "keystore_files")
 		log.Debug("InitiateReveal: Keystore file path: ", keystorePath)
 
 		log.Debugf("InitiateReveal: Calling CalculateSecret() with argument epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
@@ -496,7 +515,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			return errors.New("Reveal error: " + err.Error())
 		}
 		if revealTxn != core.NilHash {
-			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.String())
+			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 			if waitForBlockCompletionErr != nil {
 				log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
 				return err
@@ -513,7 +532,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiatePropose: Staked Amount: ", stakedAmount)
-	minStakeAmount, err := utils.UtilsInterface.GetMinStakeAmount(client)
+	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
 	if err != nil {
 		log.Error("Error in getting minimum stake amount: ", err)
 		return err

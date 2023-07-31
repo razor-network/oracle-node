@@ -43,13 +43,15 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteInitiateWithdraw: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
@@ -63,19 +65,13 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("InitiateWithdraw error: ", err)
 	if txn != core.NilHash {
-		err := razorUtils.WaitForBlockCompletion(client, txn.String())
+		err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
 	}
 }
 
 //This function handles the unstake lock
 func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
-	_, err := cmdUtils.WaitForAppropriateState(client, "initiateWithdraw", 0, 1, 4)
-	if err != nil {
-		log.Error("Error in fetching epoch: ", err)
-		return core.NilHash, err
-	}
-
 	unstakeLock, err := razorUtils.GetLock(client, account.Address, stakerId, 0)
 	if err != nil {
 		log.Error("Error in fetching unstakeLock")
@@ -111,13 +107,16 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 
 	waitFor := big.NewInt(0).Sub(unstakeLock.UnlockAfter, big.NewInt(int64(epoch)))
 	if waitFor.Cmp(big.NewInt(0)) > 0 {
-		timeRemaining := int64(uint32(waitFor.Int64())) * core.EpochLength
-		if waitFor.Cmp(big.NewInt(1)) == 0 {
-			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
-		} else {
-			log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epochs! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
-		}
+		timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
+		log.Infof("Withdrawal Initiation period not reached. Cannot initiate withdraw now, please wait for %d epoch(s)! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		return core.NilHash, nil
+	}
+
+	log.Debug("Waiting for appropriate state to initiate withdraw...")
+	_, err = cmdUtils.WaitForAppropriateState(client, "initiateWithdraw", 0, 1, 4)
+	if err != nil {
+		log.Error("Error in fetching state: ", err)
+		return core.NilHash, err
 	}
 
 	txnArgs := types.TransactionOptions{
@@ -128,7 +127,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "initiateWithdraw",
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		Parameters:      []interface{}{stakerId},
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -150,9 +149,9 @@ func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.Tra
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

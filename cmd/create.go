@@ -2,13 +2,13 @@
 package cmd
 
 import (
+	"path/filepath"
+	"razor/utils"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"path"
-	razorAccounts "razor/accounts"
-	"razor/utils"
 )
 
 var createCmd = &cobra.Command{
@@ -28,8 +28,10 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the Create function
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.AssignPassword(flagSet)
 	log.Debug("ExecuteCreate: Calling Create() with argument as input password")
@@ -41,14 +43,14 @@ func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
 
 //This function is used to create the new account
 func (*UtilsStruct) Create(password string) (accounts.Account, error) {
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 	log.Debug("Create: .razor directory path: ", razorPath)
-	keystorePath := path.Join(razorPath, "keystore_files")
-	account := razorAccounts.AccountUtilsInterface.CreateAccount(keystorePath, password)
+	keystorePath := filepath.Join(razorPath, "keystore_files")
+	account := accountUtils.CreateAccount(keystorePath, password)
 	return account, nil
 }
 

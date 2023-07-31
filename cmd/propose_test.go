@@ -6,15 +6,13 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core/types"
 	"razor/pkg/bindings"
-	"razor/utils"
-	Mocks "razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -540,18 +538,9 @@ func TestPropose(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		SetUpMockInterfaces()
 
-		utilsMock := new(mocks.UtilsInterface)
-		cmdUtilsMock := new(mocks.UtilsCmdInterface)
-		blockManagerUtilsMock := new(mocks.BlockManagerInterface)
-		transactionUtilsMock := new(mocks.TransactionInterface)
-
-		razorUtils = utilsMock
-		cmdUtils = cmdUtilsMock
-		blockManagerUtils = blockManagerUtilsMock
-		transactionUtils = transactionUtilsMock
-
-		utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
@@ -566,11 +555,11 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedBlockStruct, tt.args.lastProposedBlockStructErr)
 		cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.ids, tt.args.revealDataMaps, tt.args.mediansErr)
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
-		utilsMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
-		utilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
+		pathMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
+		fileUtilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-		blockManagerUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
-		transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
+		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 		utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 
@@ -689,18 +678,11 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(Mocks.Utils)
-
-			razorUtils = utilsMock
-			utilsInterface = utilsPkgMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
@@ -785,66 +767,16 @@ func TestGetIteration(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsMock := new(mocks.UtilsInterface)
-			utilsPkgMock := new(Mocks.Utils)
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			utilsInterface = utilsPkgMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
 			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
-			utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
+			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 
 			utils := &UtilsStruct{}
 
 			if got := utils.GetIteration(client, proposer, bufferPercent); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestInfluencedMedian(t *testing.T) {
-	type args struct {
-		sortedVotes            []*big.Int
-		totalInfluenceRevealed *big.Int
-	}
-	tests := []struct {
-		name string
-		args args
-		want *big.Int
-	}{
-		{
-			name: "Test if sortedVotes is empty",
-			args: args{
-				sortedVotes:            []*big.Int{},
-				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-			},
-			want: big.NewInt(0),
-		},
-		{
-			name: "Test if totalInfluenceRevealed is 0",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-				totalInfluenceRevealed: big.NewInt(0),
-			},
-			want: big.NewInt(1).Mul(big.NewInt(2093037800), big.NewInt(1e18)),
-		},
-		{
-			name: "Test if all the values are present",
-			args: args{
-				sortedVotes:            []*big.Int{big.NewInt(1).Mul(big.NewInt(697690000), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697629800), big.NewInt(1e18)), big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))},
-				totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18)),
-			},
-			want: big.NewInt(498342),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			utils := &UtilsStruct{}
-			if got := utils.InfluencedMedian(tt.args.sortedVotes, tt.args.totalInfluenceRevealed); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("influencedMedian() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1012,7 +944,7 @@ func TestMakeBlock(t *testing.T) {
 		epoch       uint32
 	)
 
-	randomValue := utils.GetRogueRandomValue(10000000)
+	randomValue := big.NewInt(1111)
 
 	type args struct {
 		revealedDataMaps     *types.RevealedDataMaps
@@ -1141,14 +1073,10 @@ func TestMakeBlock(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealedDataMaps, tt.args.revealedDataMapsErr)
-			utilsMock.On("GetActiveCollections", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
+			utilsMock.On("GetActiveCollectionIds", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(randomValue)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.MakeBlock(client, blockNumber, epoch, tt.args.rogueData)
@@ -1209,9 +1137,7 @@ func TestGetSortedRevealedValues(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("IndexRevealEventsOfCurrentEpoch", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assignedAssets, tt.args.assignedAssetsErr)
 			ut := &UtilsStruct{}
@@ -1286,14 +1212,7 @@ func TestGetSmallestStakeAndId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(Mocks.Utils)
-
-			razorUtils = utilsMock
-			utilsInterface = utilsPkgMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
@@ -1349,15 +1268,12 @@ func BenchmarkGetIteration(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.stakeSnapshot), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				utilsMock := new(mocks.UtilsInterface)
-				utilsPkgMock := new(Mocks.Utils)
+				SetUpMockInterfaces()
 
-				razorUtils = utilsMock
 				cmdUtils = &UtilsStruct{}
-				utilsInterface = utilsPkgMock
 
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
-				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
+				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
 
 				cmdUtils.GetIteration(client, proposer, bufferPercent)
 			}
@@ -1382,17 +1298,11 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Stakers_Stake_%d", v.numOfStakers), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				utilsMock := new(mocks.UtilsInterface)
-				cmdUtilsMock := new(mocks.UtilsCmdInterface)
-				utilsPkgMock := new(Mocks.Utils)
-
-				razorUtils = utilsMock
-				utilsInterface = utilsPkgMock
-				cmdUtils = cmdUtilsMock
+				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
 				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
-				utilsPkgMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
+				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
 				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
 
 				ut := &UtilsStruct{}
@@ -1400,27 +1310,6 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				if err != nil {
 					log.Fatal(err)
 				}
-			}
-		})
-	}
-}
-
-func BenchmarkInfluencedMedian(b *testing.B) {
-	var table = []struct {
-		numOfSortedVotes       int
-		totalInfluenceRevealed *big.Int
-	}{
-		{numOfSortedVotes: 10, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(4200), big.NewInt(1e18))},
-		{numOfSortedVotes: 100, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
-		{numOfSortedVotes: 500, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(42000), big.NewInt(1e18))},
-		{numOfSortedVotes: 1000, totalInfluenceRevealed: big.NewInt(1).Mul(big.NewInt(420000), big.NewInt(1e18))},
-	}
-	for _, v := range table {
-		b.Run(fmt.Sprintf("Number_Of_Sorted_Votes_%d", v.numOfSortedVotes), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				utils := &UtilsStruct{}
-				sortedVotes := GetDummyVotes(v.numOfSortedVotes)
-				utils.InfluencedMedian(sortedVotes, v.totalInfluenceRevealed)
 			}
 		})
 	}
@@ -1444,9 +1333,8 @@ func BenchmarkGetSortedRevealedValues(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Assigned_Assets_%d, Number_Of_Revealed_Votes_%d", v.numOfAssignedAssets, v.numOfRevealedValues), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				cmdUtilsMock := new(mocks.UtilsCmdInterface)
+				SetUpMockInterfaces()
 
-				cmdUtils = cmdUtilsMock
 				asset := GetDummyRevealedValues(v.numOfRevealedValues)
 
 				cmdUtilsMock.On("IndexRevealEventsOfCurrentEpoch", mock.Anything, mock.Anything, mock.Anything).Return(GetDummyAssignedAssets(asset, v.numOfAssignedAssets), nil)
@@ -1479,11 +1367,7 @@ func BenchmarkMakeBlock(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Votes_%d", v.numOfVotes), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				utilsMock := new(mocks.UtilsInterface)
-				cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-				razorUtils = utilsMock
-				cmdUtils = cmdUtilsMock
+				SetUpMockInterfaces()
 
 				votes := GetDummyVotes(v.numOfVotes)
 
@@ -1492,7 +1376,7 @@ func BenchmarkMakeBlock(b *testing.B) {
 					VoteWeights:          map[string]*big.Int{(big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
 				}, nil)
-				utilsMock.On("GetActiveCollections", mock.Anything).Return([]uint16{1}, nil)
+				utilsMock.On("GetActiveCollectionIds", mock.Anything).Return([]uint16{1}, nil)
 				ut := &UtilsStruct{}
 				_, _, _, err := ut.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 				if err != nil {

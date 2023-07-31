@@ -2,10 +2,13 @@ package utils
 
 import (
 	"errors"
-	"github.com/stretchr/testify/mock"
+	"razor/cache"
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func getAPIByteArray(index int) []byte {
@@ -97,8 +100,8 @@ func TestGetDataFromAPI(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
-
-			got, err := utils.GetDataFromAPI(tt.args.url)
+			localCache := cache.NewLocalCache(time.Second * 10)
+			got, err := utils.GetDataFromAPI(tt.args.url, localCache)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -229,7 +232,7 @@ func TestGetDataFromHTML(t *testing.T) {
 			name: "Test 1: Test data from coin market cap",
 			args: args{
 				url:      "https://coinmarketcap.com/all/views/all/",
-				selector: `/html/body/div/div[1]/div[2]/div/div[1]/h1`,
+				selector: `/html/body/div[1]/div[2]/div[2]/div/div[1]/h1`,
 			},
 			want:    "All Cryptocurrencies",
 			wantErr: false,

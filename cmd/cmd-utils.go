@@ -23,18 +23,18 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	if err != nil {
 		return 0, 0, err
 	}
-	state, err := razorUtils.GetDelayedState(client, bufferPercent)
+	state, err := razorUtils.GetBufferedState(client, bufferPercent)
 	if err != nil {
 		return 0, 0, err
 	}
 	log.Debug("Epoch ", epoch)
-	log.Debug("State ", utils.UtilsInterface.GetStateName(state))
+	log.Debug("State ", utils.GetStateName(state))
 	return epoch, state, nil
 }
 
 //This function waits for the appropriate states which are required
 func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error) {
-	statesAllowed := GetStatesAllowed(states)
+	statesAllowed := GetFormattedStateNames(states)
 	for {
 		epoch, state, err := cmdUtils.GetEpochAndState(client)
 		if err != nil {
@@ -92,19 +92,19 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 			amountInWei = _amount
 		}
 	} else {
-		amountInWei = razorUtils.GetAmountInWei(_amount)
+		amountInWei = utils.GetAmountInWei(_amount)
 	}
 	return amountInWei, nil
 }
 
 //This function returns the states which are allowed
-func GetStatesAllowed(states []int) string {
+func GetFormattedStateNames(states []int) string {
 	var statesAllowed string
 	for i := 0; i < len(states); i++ {
 		if i == len(states)-1 {
-			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.UtilsInterface.GetStateName(int64(states[i]))
+			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.GetStateName(int64(states[i]))
 		} else {
-			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.UtilsInterface.GetStateName(int64(states[i])) + ", "
+			statesAllowed = statesAllowed + strconv.Itoa(states[i]) + ":" + utils.GetStateName(int64(states[i])) + ", "
 		}
 	}
 	return statesAllowed

@@ -52,8 +52,9 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 			log.Error("Error in claiming block reward: ", err)
 			return core.NilHash, err
 		}
-		log.Info("Txn Hash: ", transactionUtils.Hash(txn).Hex())
-		return transactionUtils.Hash(txn), nil
+		txnHash := transactionUtils.Hash(txn)
+		log.Info("Txn Hash: ", txnHash.Hex())
+		return txnHash, nil
 	}
 
 	log.Debug("Only selected block proposer can claim block reward")

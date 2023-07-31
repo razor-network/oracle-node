@@ -43,13 +43,15 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteUnlockWithdraw: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
@@ -63,7 +65,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 
 	utils.CheckError("UnlockWithdraw error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unlockWithdraw: ", err)
 	}
 }
@@ -88,6 +90,13 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 	}
 	log.Debug("HandleWithdrawLock: Epoch: ", epoch)
 
+	waitFor := big.NewInt(0).Sub(withdrawLock.UnlockAfter, big.NewInt(int64(epoch)))
+	if waitFor.Cmp(big.NewInt(0)) > 0 {
+		timeRemaining := uint64(waitFor.Int64()) * core.EpochLength
+		log.Infof("Withdrawal period not reached. Cannot withdraw now, please wait for %d epoch(s)! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
+		return core.NilHash, nil
+	}
+
 	if big.NewInt(int64(epoch)).Cmp(withdrawLock.UnlockAfter) >= 0 {
 		txnArgs := types.TransactionOptions{
 			Client:          client,
@@ -97,7 +106,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 			Config:          configurations,
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "unlockWithdraw",
-			ABI:             bindings.StakeManagerABI,
+			ABI:             bindings.StakeManagerMetaData.ABI,
 			Parameters:      []interface{}{stakerId},
 		}
 		txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -118,9 +127,9 @@ func (*UtilsStruct) UnlockWithdraw(client *ethclient.Client, txnOpts *bind.Trans
 		return core.NilHash, err
 	}
 
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

@@ -45,11 +45,15 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
 	utils.CheckError("Error in getting jobId: ", err)
@@ -82,7 +86,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	log.Debugf("ExecuteUpdateJob: Calling UpdateJob() with arguments jobInput = %+v, jobId = %d", jobInput, jobId)
 	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateJob: ", err)
 }
 
@@ -102,14 +106,18 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "updateJob",
 		Parameters:      []interface{}{jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
+	log.Info("Updating Job...")
 	log.Debugf("Executing UpdateJob transaction with arguments jobId = %d, weight = %d, power = %d, selector type = %d, selector = %s, URL = %s", jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	txn, err := assetManagerUtils.UpdateJob(client, txnArgs, jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
+
 }
 
 func init() {

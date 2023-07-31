@@ -45,11 +45,15 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionID: ", err)
@@ -77,13 +81,13 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	log.Debugf("ExecuteUpdateCollection: Calling UpdateCollection() with arguments collectionInput: %+v, collectionId: %d", collectionInput, collectionId)
 	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateCollection: ", err)
 }
 
 //This function allows the admin to update an existing collection
 func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
-	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("UpdateCollection: Uint16 jobIds: ", jobIds)
 	_, err := cmdUtils.WaitIfCommitState(client, "update collection")
 	if err != nil {
@@ -99,17 +103,18 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "updateCollection",
 		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
+	log.Info("Updating collection...")
 	log.Debugf("Executing UpdateCollection transaction with collectionId = %d, tolerance = %d, aggregation method = %d, power = %d, jobIds = %v", collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	txn, err := assetManagerUtils.UpdateCollection(client, txnOpts, collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)
 	if err != nil {
 		log.Error("Error in updating collection")
 		return core.NilHash, err
 	}
-	log.Info("Updating collection...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {
@@ -122,7 +127,7 @@ func init() {
 		Password          string
 		Power             int8
 		JobIds            []uint
-		Tolerance         uint16
+		Tolerance         uint32
 	)
 
 	updateCollectionCmd.Flags().StringVarP(&Account, "address", "a", "", "address of the job creator")
@@ -131,7 +136,7 @@ func init() {
 	updateCollectionCmd.Flags().Int8VarP(&Power, "power", "", 0, "multiplier for the collection")
 	updateCollectionCmd.Flags().StringVarP(&Password, "password", "", "", "password path of job creator to protect the keystore")
 	updateCollectionCmd.Flags().UintSliceVarP(&JobIds, "jobIds", "", []uint{}, "job ids for the  collection")
-	updateCollectionCmd.Flags().Uint16VarP(&Tolerance, "tolerance", "", 0, "tolerance")
+	updateCollectionCmd.Flags().Uint32VarP(&Tolerance, "tolerance", "", 0, "tolerance")
 
 	collectionIdErr := updateCollectionCmd.MarkFlagRequired("collectionId")
 	utils.CheckError("Collection Id error: ", collectionIdErr)

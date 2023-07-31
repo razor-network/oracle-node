@@ -5,10 +5,13 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"path/filepath"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"time"
+
+	"github.com/avast/retry-go"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -26,14 +29,30 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 }
 
 func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	address := common.HexToAddress(accountAddress)
-	coinContract := UtilsInterface.GetTokenManager(client)
-	opts := UtilsInterface.GetOptions()
-	return CoinInterface.BalanceOf(coinContract, &opts, address)
+	var (
+		balance *big.Int
+		err     error
+	)
+	err = retry.Do(
+		func() error {
+			address := common.HexToAddress(accountAddress)
+			erc20Contract := UtilsInterface.GetTokenManager(client)
+			opts := UtilsInterface.GetOptions()
+			balance, err = CoinInterface.BalanceOf(erc20Contract, &opts, address)
+			if err != nil {
+				log.Error("Error in fetching balance....Retrying")
+				return err
+			}
+			return nil
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	if err != nil {
+		return big.NewInt(0), err
+	}
+	return balance, nil
 }
 
-func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int64, error) {
-	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
+	block, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return -1, err
 	}
@@ -41,14 +60,13 @@ func (*UtilsStruct) GetDelayedState(client *ethclient.Client, buffer int32) (int
 	if err != nil {
 		return -1, err
 	}
-	blockTime := uint64(block.Time)
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if blockTime%(core.StateLength) > upperLimit-stateBuffer || blockTime%(core.StateLength) < lowerLimit+stateBuffer {
+	if block.Time%(core.StateLength) > upperLimit-stateBuffer || block.Time%(core.StateLength) < lowerLimit+stateBuffer {
 		return -1, nil
 	}
-	state := blockTime / core.StateLength
-	return int64(state) % core.NumberOfStates, nil
+	state := block.Time / core.StateLength
+	return int64(state % core.NumberOfStates), nil
 }
 
 func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
@@ -92,6 +110,21 @@ func CheckError(msg string, err error) {
 	}
 }
 
+func IsValidAddress(address string) bool {
+	if !common.IsHexAddress(address) {
+		log.Error("Invalid Address")
+		return false
+	}
+	return true
+}
+
+func ValidateAddress(address string) (string, error) {
+	if !IsValidAddress(address) {
+		return "", errors.New("invalid address")
+	}
+	return address, nil
+}
+
 func (*UtilsStruct) IsFlagPassed(name string) bool {
 	found := false
 	for _, arg := range os.Args {
@@ -103,16 +136,16 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 }
 
 func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	ethBalance, err := ClientInterface.BalanceAt(client, context.Background(), common.HexToAddress(address), nil)
+	ethBalance, err := ClientInterface.BalanceAtWithRetry(client, common.HexToAddress(address))
 	if err != nil {
-		log.Fatalf("Error in fetching eth balance of the account: %s\n%s", address, err)
+		log.Fatalf("Error in fetching sFuel balance of the account: %s\n%s", address, err)
 	}
 	if ethBalance.Cmp(big.NewInt(0)) == 0 {
-		log.Fatal("Eth balance is 0, Aborting...")
+		log.Fatal("sFuel balance is 0, Aborting...")
 	}
 }
 
-func (*UtilsStruct) GetStateName(stateNumber int64) string {
+func GetStateName(stateNumber int64) string {
 	var stateName string
 	switch stateNumber {
 	case 0:
@@ -126,7 +159,7 @@ func (*UtilsStruct) GetStateName(stateNumber int64) string {
 	case 4:
 		stateName = "Confirm"
 	default:
-		stateName = "-1"
+		stateName = "Buffer"
 	}
 	return stateName
 }
@@ -139,17 +172,17 @@ func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Cli
 }
 
 func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	latestHeader, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
 	}
-	epoch := uint64(latestHeader.Time) / uint64(core.EpochLength)
+	epoch := latestHeader.Time / core.EpochLength
 	return uint32(epoch), nil
 }
 
 func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
-	latestBlock, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
@@ -162,7 +195,7 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 }
 
 func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
-	block, err := UtilsInterface.GetLatestBlockWithRetry(client)
+	block, err := ClientInterface.GetLatestBlockWithRetry(client)
 	if err != nil {
 		return 0, err
 	}
@@ -189,13 +222,13 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Client, epochLength int64, currentBlockNumber *big.Int) (*big.Int, error) {
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
 	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return nil, err
 	}
-	current_epoch := block.Time / uint64(core.EpochLength)
+	currentEpoch := block.Time / core.EpochLength
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
 	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
@@ -204,17 +237,17 @@ func (*UtilsStruct) CalculateBlockNumberAtEpochBeginning(client *ethclient.Clien
 		return nil, err
 	}
 	previousBlockActualTimestamp := previousBlock.Time
-	previousBlockAssumedTimestamp := block.Time - uint64(core.EpochLength)
-	previous_epoch := previousBlockActualTimestamp / uint64(core.EpochLength)
-	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previous_epoch != current_epoch-1 {
-		return UtilsInterface.CalculateBlockNumberAtEpochBeginning(client, core.EpochLength, big.NewInt(int64(previousBlockNumber)))
+	previousBlockAssumedTimestamp := block.Time - core.EpochLength
+	previousEpoch := previousBlockActualTimestamp / core.EpochLength
+	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previousEpoch != currentEpoch-1 {
+		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
 
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil
 
 }
 
-func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
+func (*FileStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
 
 	var data types.CommitFileData
 	data.Epoch = epoch
@@ -234,7 +267,7 @@ func (*UtilsStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, comm
 	return nil
 }
 
-func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
+func (*FileStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)
@@ -255,20 +288,20 @@ func (*UtilsStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileDat
 	return commitedData, nil
 }
 
-func (*UtilsStruct) AssignLogFile(flagSet *pflag.FlagSet) {
+func (*FileStruct) AssignLogFile(flagSet *pflag.FlagSet, configurations types.Configurations) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
 		if err != nil {
 			log.Fatal("Error in getting file name: ", err)
 		}
 		log.Debug("Log file name: ", fileName)
-		logger.InitializeLogger(fileName)
+		logger.InitializeLogger(fileName, configurations)
 	} else {
 		log.Debug("No `logFile` flag passed, not storing logs in any file")
 	}
 }
 
-func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
+func (*FileStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {
 
 	var data types.ProposeFileData
 	data.Epoch = proposeData.Epoch
@@ -288,7 +321,7 @@ func (*UtilsStruct) SaveDataToProposeJsonFile(filePath string, proposeData types
 	return nil
 }
 
-func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
+func (*FileStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)
@@ -309,7 +342,7 @@ func (*UtilsStruct) ReadFromProposeJsonFile(filePath string) (types.ProposeFileD
 	return proposedData, nil
 }
 
-func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
+func (*FileStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error {
 	var data types.DisputeFileData
 
 	data.BountyIdQueue = bountyIdQueue
@@ -325,7 +358,7 @@ func (*UtilsStruct) SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []u
 	return nil
 }
 
-func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
+func (*FileStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error) {
 	jsonFile, err := OS.Open(filePath)
 	if err != nil {
 		log.Error("Error in opening json file: ", err)
@@ -344,4 +377,20 @@ func (*UtilsStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileD
 		return types.DisputeFileData{}, err
 	}
 	return disputeData, nil
+}
+
+func (*UtilsStruct) CheckPassword(address string, password string) error {
+	razorPath, err := PathInterface.GetDefaultPath()
+	if err != nil {
+		log.Error("CheckPassword: Error in getting .razor path: ", err)
+		return err
+	}
+	keystorePath := filepath.Join(razorPath, "keystore_files")
+	_, err = AccountsInterface.GetPrivateKey(address, password, keystorePath)
+	if err != nil {
+		log.Info("Kindly check your password!")
+		log.Error("CheckPassword: Error in getting private key: ", err)
+		return err
+	}
+	return nil
 }

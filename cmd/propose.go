@@ -4,8 +4,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
 	"math"
 	"math/big"
 	"razor/core"
@@ -14,6 +12,9 @@ import (
 	"razor/utils"
 	"sort"
 	"time"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
 var globalProposedDataStruct types.ProposeFileData
@@ -28,7 +29,7 @@ var globalProposedDataStruct types.ProposeFileData
 
 //This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-	if state, err := razorUtils.GetDelayedState(client, config.BufferPercent); err != nil || state != 2 {
+	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return err
 	}
@@ -148,7 +149,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
-		ABI:             bindings.BlockManagerABI,
+		ABI:             bindings.BlockManagerMetaData.ABI,
 		MethodName:      "propose",
 		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 	})
@@ -160,9 +161,9 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		return err
 	}
 	proposeTxn := transactionUtils.Hash(txn)
-	log.Info("Txn Hash: ", proposeTxn)
+	log.Info("Txn Hash: ", proposeTxn.Hex())
 	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.String())
+		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletionErr for propose: ", waitForBlockCompletionErr)
 			return waitForBlockCompletionErr
@@ -178,13 +179,13 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 			log.Debugf("Propose: Global propose data struct: %+v", globalProposedDataStruct)
 
 			log.Debug("Saving proposed data for recovery...")
-			fileName, err := razorUtils.GetProposeDataFileName(account.Address)
+			fileName, err := pathUtils.GetProposeDataFileName(account.Address)
 			if err != nil {
 				log.Error("Error in getting file name to save median data: ", err)
 				return err
 			}
 			log.Debug("Propose: Propose data file path: ", fileName)
-			err = razorUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
+			err = fileUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
 			if err != nil {
 				log.Errorf("Error in saving data to file %s: %v", fileName, err)
 				return err
@@ -215,7 +216,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	}
 	log.Debug("GetBiggestStakeAndId: Buffer Percent: ", bufferPercent)
 
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -260,7 +261,7 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	}
 	log.Debug("GetIteration: Stake: ", stake)
 	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
-	stateRemainingTime, err := utilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
 	if err != nil {
 		return -1
 	}
@@ -373,7 +374,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 	log.Debugf("MakeBlock: Revealed data map: %+v", revealedDataMaps)
 
-	activeCollections, err := razorUtils.GetActiveCollections(client)
+	activeCollections, err := razorUtils.GetActiveCollectionIds(client)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -423,19 +424,6 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		idsRevealedInThisEpoch[1] = temp
 	}
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
-}
-
-//This function returns the influenced median
-func (*UtilsStruct) InfluencedMedian(sortedVotes []*big.Int, totalInfluenceRevealed *big.Int) *big.Int {
-	accProd := big.NewInt(0)
-
-	for _, vote := range sortedVotes {
-		accProd = accProd.Add(accProd, vote)
-	}
-	if totalInfluenceRevealed.Cmp(big.NewInt(0)) == 0 {
-		return accProd
-	}
-	return accProd.Div(accProd, totalInfluenceRevealed)
 }
 
 func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {

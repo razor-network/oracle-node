@@ -44,10 +44,13 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 
 	logger.SetLoggerParameters(client, address)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
@@ -80,33 +83,34 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	log.Debug("ExecuteDelegate:Calling Delegate() with stakerId: ", stakerId)
 	delegateTxnHash, err := cmdUtils.Delegate(txnArgs, stakerId)
 	utils.CheckError("Delegate error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(client, delegateTxnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for delegate: ", err)
 }
 
 //This function allows the delegator to stake coins without setting up a node
 func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
-	log.Infof("Delegating %g razors to Staker %d", razorUtils.GetAmountInDecimal(txnArgs.Amount), stakerId)
+	log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "delegate"
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
 	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Info("Sending Delegate transaction...")
 	log.Debugf("Executing Delegate transaction with stakerId = %d, amount = %s", stakerId, txnArgs.Amount)
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

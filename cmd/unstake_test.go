@@ -5,19 +5,19 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"math/big"
+	"razor/core"
+	"razor/core/types"
+	"razor/pkg/bindings"
+	"reflect"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/cmd/mocks"
-	"razor/core"
-	"razor/core/types"
-	"razor/pkg/bindings"
-	"reflect"
-	"testing"
 )
 
 func TestUnstake(t *testing.T) {
@@ -123,16 +123,7 @@ func TestUnstake(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerUtilsMock
-			cmdUtils = cmdUtilsMock
-			transactionUtils = transactionUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			cmdUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.approveHash, tt.args.approveHashErr)
@@ -140,8 +131,8 @@ func TestUnstake(t *testing.T) {
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			stakeManagerUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			stakeManagerMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 			_, gotErr := utils.Unstake(config, client,
@@ -302,26 +293,14 @@ func TestExecuteUnstake(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerUtilsMock
-			cmdUtils = cmdUtilsMock
-			transactionUtils = transactionUtilsMock
-			flagSetUtils = flagSetUtilsMock
-
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			SetUpMockInterfaces()
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
+			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeHash, tt.args.unstakeErr)
@@ -342,9 +321,9 @@ func TestExecuteUnstake(t *testing.T) {
 
 func TestApproveUnstake(t *testing.T) {
 	var (
-		client  *ethclient.Client
-		staker  bindings.StructsStaker
-		txnArgs types.TransactionOptions
+		client             *ethclient.Client
+		stakerTokenAddress common.Address
+		txnArgs            types.TransactionOptions
 	)
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -379,19 +358,13 @@ func TestApproveUnstake(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerUtilsMock
-			transactionUtils = transactionUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			stakeManagerUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			stakeManagerMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			ut := &UtilsStruct{}
-			got, err := ut.ApproveUnstake(client, staker, txnArgs)
+			got, err := ut.ApproveUnstake(client, stakerTokenAddress, txnArgs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApproveUnstake() error = %v, wantErr %v", err, tt.wantErr)
 				return

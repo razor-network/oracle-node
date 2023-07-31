@@ -42,11 +42,15 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
@@ -99,7 +103,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 
 	if stakerInfo.EpochCommissionLastUpdated != 0 && (stakerInfo.EpochCommissionLastUpdated+uint32(epochLimitForUpdateCommission)) >= epoch {
 		waitFor := uint32(epochLimitForUpdateCommission) - (epoch - stakerInfo.EpochCommissionLastUpdated) + 1
-		timeRemaining := int64(waitFor) * core.EpochLength
+		timeRemaining := uint64(waitFor) * core.EpochLength
 		if waitFor == 1 {
 			log.Infof("Cannot update commission now. Please wait for %d epoch! (approximately %s)", waitFor, razorUtils.SecondsToReadableTime(int(timeRemaining)))
 		} else {
@@ -115,7 +119,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "updateCommission",
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 	}
@@ -128,8 +132,8 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		return err
 	}
 	txnHash := transactionUtils.Hash(txn)
-	log.Infof("Transaction hash: %s", txnHash)
-	err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+	log.Infof("Txn Hash: %s", txnHash.Hex())
+	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for updateCommission: ", err)
 		return err

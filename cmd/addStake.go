@@ -44,10 +44,13 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	logger.SetLoggerParameters(client, address)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	balance, err := razorUtils.FetchBalance(client, address)
 	utils.CheckError("Error in fetching razor balance for account: "+address, err)
@@ -62,7 +65,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	log.Debug("Checking whether sFuel balance is not 0...")
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
-	minSafeRazor, err := utils.UtilsInterface.GetMinSafeRazor(client)
+	minSafeRazor, err := razorUtils.GetMinSafeRazor(client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 	log.Debug("ExecuteStake: Minimum razor that you can stake for first time: ", minSafeRazor)
 
@@ -72,6 +75,15 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 	if valueInWei.Cmp(minSafeRazor) < 0 && stakerId == 0 {
 		log.Fatal("The amount of razors entered is below min safe value.")
+	}
+
+	if stakerId != 0 {
+		staker, err := razorUtils.GetStaker(client, stakerId)
+		utils.CheckError("Error in getting staker: ", err)
+
+		if staker.IsSlashed {
+			log.Fatal("Staker is slashed, cannot stake")
+		}
 	}
 
 	txnArgs := types.TransactionOptions{
@@ -88,7 +100,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.String())
+		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
@@ -96,7 +108,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
 	utils.CheckError("Stake error: ", err)
 
-	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.String())
+	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for stake: ", err)
 }
 
@@ -104,22 +116,23 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
 	log.Debug("StakeCoins: Epoch: ", epoch)
 
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Debugf("Executing Stake transaction with epoch = %d, amount = %d", epoch, txnArgs.Amount)
-	tx, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txn, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
-		return common.Hash{0x00}, err
+		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(tx).Hex())
-	return transactionUtils.Hash(tx), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

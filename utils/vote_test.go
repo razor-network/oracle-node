@@ -57,7 +57,7 @@ func TestGetCommitments(t *testing.T) {
 				commitmentErr: errors.New("commitments error"),
 			},
 			want:    [32]byte{},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -153,7 +153,6 @@ func TestGetEpochLastCommitted(t *testing.T) {
 
 func TestGetEpochLastRevealed(t *testing.T) {
 	var client *ethclient.Client
-	var callOpts bind.CallOpts
 	var stakerId uint32
 
 	type args struct {
@@ -196,7 +195,6 @@ func TestGetEpochLastRevealed(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetOptions").Return(callOpts)
 			voteManagerMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
@@ -539,61 +537,6 @@ func TestToAssign(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("ToAssign() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetSaltFromBlockchain(t *testing.T) {
-	var client *ethclient.Client
-	type args struct {
-		salt    [32]byte
-		saltErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    [32]byte
-		wantErr bool
-	}{
-		{
-			name: "Test 1: When GetSaltFromBlockChain() executes successfully",
-			args: args{
-				salt: [32]byte{},
-			},
-			want:    [32]byte{},
-			wantErr: false,
-		},
-		{
-			name: "Test 2: When there is an error in getting salt",
-			args: args{
-				saltErr: errors.New("error in getting salt"),
-			},
-			want:    [32]byte{},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			retryMock := new(mocks.RetryUtils)
-			voteManagerMock := new(mocks.VoteManagerUtils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				RetryInterface:       retryMock,
-				VoteManagerInterface: voteManagerMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			voteManagerMock.On("GetSaltFromBlockchain", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.salt, tt.args.saltErr)
-			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
-
-			got, err := utils.GetSaltFromBlockchain(client)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetSaltFromBlockchain() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSaltFromBlockchain() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

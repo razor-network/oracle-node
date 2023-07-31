@@ -321,7 +321,7 @@ func TestGetCommitDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/data_files/0x000000000000000000000000000000000000dead_CommitData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_commitData.json",
 			wantErr: nil,
 		},
 		{
@@ -341,7 +341,7 @@ func TestGetCommitDataFileName(t *testing.T) {
 				statErr:    errors.New("not exists"),
 				isNotExist: true,
 			},
-			want:    "/home/data_files/0x000000000000000000000000000000000000dead_CommitData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_commitData.json",
 			wantErr: nil,
 		},
 		{
@@ -411,7 +411,7 @@ func TestGetProposeDataFileName(t *testing.T) {
 				address: "0x000000000000000000000000000000000000dead",
 				path:    "/home",
 			},
-			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposedData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposeData.json",
 			wantErr: nil,
 		},
 		{
@@ -431,7 +431,7 @@ func TestGetProposeDataFileName(t *testing.T) {
 				statErr:    errors.New("not exists"),
 				isNotExist: true,
 			},
-			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposedData.json",
+			want:    "/home/data_files/0x000000000000000000000000000000000000dead_proposeData.json",
 			wantErr: nil,
 		},
 		{

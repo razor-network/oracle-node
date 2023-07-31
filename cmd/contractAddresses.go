@@ -3,9 +3,11 @@ package cmd
 
 import (
 	"fmt"
+	"razor/core"
+	"razor/utils"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"razor/core"
 )
 
 // contractAddressesCmd represents the contractAddresses command
@@ -23,8 +25,10 @@ func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriatley and executes the ContractAddresses function
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 	fmt.Println("The contract addresses are: ")
 	cmdUtils.ContractAddresses()
 
@@ -32,11 +36,11 @@ func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 
 //This function provides the list of all contract addresses
 func (*UtilsStruct) ContractAddresses() {
-	fmt.Println("StakeManagerAddress :", core.StakeManagerAddress)
-	fmt.Println("RAZORAddress :", core.RAZORAddress)
-	fmt.Println("CollectionManagerAddress :", core.CollectionManagerAddress)
-	fmt.Println("VoteManagerAddress :", core.VoteManagerAddress)
-	fmt.Println("BlockManagerAddress :", core.BlockManagerAddress)
+	log.Info("StakeManagerAddress :", core.StakeManagerAddress)
+	log.Info("RAZORAddress :", core.RAZORAddress)
+	log.Info("CollectionManagerAddress :", core.CollectionManagerAddress)
+	log.Info("VoteManagerAddress :", core.VoteManagerAddress)
+	log.Info("BlockManagerAddress :", core.BlockManagerAddress)
 }
 
 func init() {

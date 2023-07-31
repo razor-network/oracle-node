@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
 	"testing"
@@ -23,11 +22,10 @@ func TestDelegate(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	var txnArgs types.TransactionOptions
 	var stakerId uint32 = 1
 
 	type args struct {
-		amount      *big.Float
+		amount      *big.Int
 		txnOpts     *bind.TransactOpts
 		delegateTxn *Types.Transaction
 		delegateErr error
@@ -42,7 +40,7 @@ func TestDelegate(t *testing.T) {
 		{
 			name: "Test 1: When delegate function executes successfully",
 			args: args{
-				amount:      big.NewFloat(1000),
+				amount:      big.NewInt(1000),
 				txnOpts:     txnOpts,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: nil,
@@ -54,7 +52,7 @@ func TestDelegate(t *testing.T) {
 		{
 			name: "Test 2: When delegate transaction fails",
 			args: args{
-				amount:      big.NewFloat(1000),
+				amount:      big.NewInt(1000),
 				txnOpts:     txnOpts,
 				delegateTxn: &Types.Transaction{},
 				delegateErr: errors.New("delegate error"),
@@ -66,23 +64,17 @@ func TestDelegate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			utilsMock := new(mocks.UtilsInterface)
-			stakeManagerUtilsMock := new(mocks.StakeManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			stakeManagerUtilsMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerUtilsMock
-			transactionUtils = transactionUtilsMock
+			stakeManagerMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Delegate(txnArgs, stakerId)
+			got, err := utils.Delegate(types.TransactionOptions{
+				Amount: tt.args.amount,
+			}, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for delegate function, got = %v, want %v", got, tt.want)
 			}
@@ -252,22 +244,14 @@ func TestExecuteDelegate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			flagSetUtils = flagSetUtilsMock
-			transactionUtils = transactionUtilsMock
-
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
-			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)

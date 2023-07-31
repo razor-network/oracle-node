@@ -43,11 +43,16 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
 	utils.CheckError("Error in getting status: ", err)
 
@@ -73,7 +78,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for setDelegation: ", err)
 	}
 }
@@ -106,7 +111,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
-		ABI:             bindings.StakeManagerABI,
+		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "setDelegationAcceptance",
 		Parameters:      []interface{}{delegationInput.Status},
 	}
@@ -123,8 +128,9 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 		log.Error("Error in setting delegation acceptance")
 		return core.NilHash, err
 	}
-	log.Infof("Transaction hash: %s", transactionUtils.Hash(delegationAcceptanceTxn))
-	return transactionUtils.Hash(delegationAcceptanceTxn), nil
+	delegationAcceptanceTxnHash := transactionUtils.Hash(delegationAcceptanceTxn)
+	log.Info("Txn Hash: ", delegationAcceptanceTxnHash.Hex())
+	return delegationAcceptanceTxnHash, nil
 }
 
 func init() {

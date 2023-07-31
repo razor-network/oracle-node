@@ -6,9 +6,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
-	"razor/utils"
-	mocks2 "razor/utils/mocks"
 	"testing"
 )
 
@@ -81,19 +78,11 @@ func TestGetEpochAndState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
-
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsMock.On("GetDelayedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 
 			utils := &UtilsStruct{}
 			gotEpoch, gotState, err := utils.GetEpochAndState(client)
@@ -178,12 +167,7 @@ func TestWaitForAppropriateState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			timeMock := new(mocks.TimeInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-
-			timeUtils = timeMock
-			cmdUtils = cmdUtilsMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
@@ -240,12 +224,7 @@ func TestWaitIfCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			timeMock := new(mocks.TimeInterface)
-
-			cmdUtils = cmdUtilsMock
-			timeUtils = timeMock
+			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
@@ -344,14 +323,10 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			flagsetUtilsMock := new(mocks.FlagSetInterface)
+			SetUpMockInterfaces()
 
-			razorUtils = utilsMock
-			flagSetUtils = flagsetUtilsMock
-
-			flagsetUtilsMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
-			flagsetUtilsMock.On("GetBoolWeiRazor", flagSet).Return(tt.args.weiRazor, tt.args.weiRazorErr)
+			flagSetMock.On("GetStringValue", flagSet).Return(tt.args.amount, tt.args.amountErr)
+			flagSetMock.On("GetBoolWeiRazor", flagSet).Return(tt.args.weiRazor, tt.args.weiRazorErr)
 			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
 			utilsMock.On("GetAmountInWei", mock.AnythingOfType("*big.Int")).Return(tt.args.amountInWei)
 
@@ -373,7 +348,7 @@ func TestAssignAmountInWei1(t *testing.T) {
 	}
 }
 
-func TestGetStatesAllowed(t *testing.T) {
+func TestGetFormattedStateNames(t *testing.T) {
 	type args struct {
 		states    []int
 		stateName string
@@ -409,13 +384,11 @@ func TestGetStatesAllowed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsPkgMock := new(mocks2.Utils)
+			SetUpMockInterfaces()
 
-			utils.UtilsInterface = utilsPkgMock
-
-			utilsPkgMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
-			if got := GetStatesAllowed(tt.args.states); got != tt.want {
-				t.Errorf("GetStatesAllowed() = %v, want %v", got, tt.want)
+			utilsMock.On("GetStateName", mock.AnythingOfType("int64")).Return(tt.args.stateName)
+			if got := GetFormattedStateNames(tt.args.states); got != tt.want {
+				t.Errorf("GetFormattedStateNames() = %v, want %v", got, tt.want)
 			}
 		})
 	}

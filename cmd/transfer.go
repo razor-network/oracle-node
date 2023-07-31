@@ -43,11 +43,15 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting fromAddress: ", err)
 
 	logger.SetLoggerParameters(client, fromAddress)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(fromAddress, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
@@ -70,8 +74,8 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	log.Debugf("Calling Transfer() with arguments transferInput = %+v", transferInput)
 	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
-	log.Info("Transaction Hash: ", txn)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for transfer: ", err)
 }
 
@@ -89,9 +93,9 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",
 		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
-		ABI:             bindings.RAZORABI,
+		ABI:             bindings.RAZORMetaData.ABI,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", razorUtils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
+	log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
 
 	log.Debugf("Executing Transfer transaction with toAddress: %s, amount: %s", transferInput.ToAddress, transferInput.ValueInWei)
 	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)
@@ -100,7 +104,9 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		return core.NilHash, err
 	}
 
-	return transactionUtils.Hash(txn), err
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

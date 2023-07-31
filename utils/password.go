@@ -3,13 +3,14 @@ package utils
 import (
 	"bufio"
 	"errors"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/pflag"
 	"os"
 	"unicode"
+
+	"github.com/manifoldco/promptui"
+	"github.com/spf13/pflag"
 )
 
-func PasswordPrompt() string {
+func (*UtilsStruct) PasswordPrompt() string {
 	prompt := promptui.Prompt{
 		Label:    "Password",
 		Validate: validate,
@@ -22,7 +23,7 @@ func PasswordPrompt() string {
 	return password
 }
 
-func PrivateKeyPrompt() string {
+func (*UtilsStruct) PrivateKeyPrompt() string {
 	prompt := promptui.Prompt{
 		Label:    "🔑 Private Key",
 		Validate: validatePrivateKey,
@@ -67,14 +68,14 @@ func GetPasswordFromFile(path string) string {
 	return ""
 }
 
-func AssignPassword(flagSet *pflag.FlagSet) string {
+func (*UtilsStruct) AssignPassword(flagSet *pflag.FlagSet) string {
 	if UtilsInterface.IsFlagPassed("password") {
 		log.Warn("Password flag is passed")
 		log.Warn("This is a unsecure way to use razor-go")
 		passwordPath, _ := flagSet.GetString("password")
 		return GetPasswordFromFile(passwordPath)
 	}
-	return PasswordPrompt()
+	return UtilsInterface.PasswordPrompt()
 }
 
 //This function checks if the password is strong enough or not

@@ -3,16 +3,17 @@ package utils
 import (
 	"context"
 	"errors"
+	"math/big"
+	"razor/utils/mocks"
+	"reflect"
+	"testing"
+
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"razor/utils/mocks"
-	"reflect"
-	"testing"
 )
 
 func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
@@ -55,12 +56,13 @@ func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
 				ClientInterface: clientMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 
 			clientMock.On("SuggestGasPrice", mock.AnythingOfType("*ethclient.Client"), context.Background()).Return(tt.args.gasPrice, tt.args.gasPriceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.SuggestGasPriceWithRetry(client)
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.SuggestGasPriceWithRetry(client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SuggestGasPriceWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -113,11 +115,12 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 				ClientInterface: clientMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			clientMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.balance, tt.args.balanceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.BalanceAtWithRetry(client, account)
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.BalanceAtWithRetry(client, account)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BalanceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -170,11 +173,12 @@ func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
 				ClientInterface: clientMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			clientMock.On("EstimateGas", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.EstimateGasWithRetry(client, message)
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.EstimateGasWithRetry(client, message)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EstimateGasWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -226,11 +230,12 @@ func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
 				ClientInterface: clientMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			clientMock.On("FilterLogs", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.FilterLogsWithRetry(client, query)
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.FilterLogsWithRetry(client, query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FilterLogsWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -281,11 +286,12 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 				ClientInterface: clientMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("*big.Int")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetLatestBlockWithRetry(client)
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.GetLatestBlockWithRetry(client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLatestBlockWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -337,11 +343,12 @@ func TestUtilsStruct_GetNonceAtWithRetry(t *testing.T) {
 				ClientInterface: clientMock,
 			}
 
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			clientMock.On("NonceAt", mock.AnythingOfType("*ethclient.Client"), context.Background(), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNonceAtWithRetry(client, accountAddress)
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.GetNonceAtWithRetry(client, accountAddress)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNonceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return

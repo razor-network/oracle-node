@@ -159,6 +159,27 @@ func (_m *FlagSetInterface) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) 
 	return r0, r1
 }
 
+// GetInt64HTTPTimeout provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int64); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetInt64RPCTimeout provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error) {
 	ret := _m.Called(flagSet)
@@ -189,6 +210,69 @@ func (_m *FlagSetInterface) GetInt8Power(flagSet *pflag.FlagSet) (int8, error) {
 		r0 = rf(flagSet)
 	} else {
 		r0 = ret.Get(0).(int8)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetIntLogFileMaxAge provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxAge(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetIntLogFileMaxBackups provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxBackups(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetIntLogFileMaxSize provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetIntLogFileMaxSize(flagSet *pflag.FlagSet) (int, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) int); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
@@ -306,6 +390,27 @@ func (_m *FlagSetInterface) GetRootInt32Wait() (int32, error) {
 	return r0, r1
 }
 
+// GetRootInt64HTTPTimeout provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootInt64HTTPTimeout() (int64, error) {
+	ret := _m.Called()
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func() int64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRootInt64RPCTimeout provides a mock function with given fields:
 func (_m *FlagSetInterface) GetRootInt64RPCTimeout() (int64, error) {
 	ret := _m.Called()
@@ -315,6 +420,90 @@ func (_m *FlagSetInterface) GetRootInt64RPCTimeout() (int64, error) {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetRootIntLogFileMaxAge provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootIntLogFileMaxAge() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetRootIntLogFileMaxBackups provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootIntLogFileMaxBackups() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetRootIntLogFileMaxSize provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootIntLogFileMaxSize() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetRootStringAlternateProvider provides a mock function with given fields:
+func (_m *FlagSetInterface) GetRootStringAlternateProvider() (string, error) {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
@@ -392,6 +581,27 @@ func (_m *FlagSetInterface) GetRootUint64GasLimitOverride() (uint64, error) {
 
 // GetStringAddress provides a mock function with given fields: flagSet
 func (_m *FlagSetInterface) GetStringAddress(flagSet *pflag.FlagSet) (string, error) {
+	ret := _m.Called(flagSet)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) string); ok {
+		r0 = rf(flagSet)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
+		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetStringAlternateProvider provides a mock function with given fields: flagSet
+func (_m *FlagSetInterface) GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error) {
 	ret := _m.Called(flagSet)
 
 	var r0 string
@@ -697,27 +907,6 @@ func (_m *FlagSetInterface) GetStringValue(flagSet *pflag.FlagSet) (string, erro
 		r0 = rf(flagSet)
 	} else {
 		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
-		r1 = rf(flagSet)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetUint16AssetId provides a mock function with given fields: flagSet
-func (_m *FlagSetInterface) GetUint16AssetId(flagSet *pflag.FlagSet) (uint16, error) {
-	ret := _m.Called(flagSet)
-
-	var r0 uint16
-	if rf, ok := ret.Get(0).(func(*pflag.FlagSet) uint16); ok {
-		r0 = rf(flagSet)
-	} else {
-		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 error

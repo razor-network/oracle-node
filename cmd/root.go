@@ -3,17 +3,18 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"razor/core"
 	"razor/logger"
 	"razor/path"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
 	Provider           string
+	AlternateProvider  string
 	GasMultiplier      float32
 	BufferPercent      int32
 	WaitTime           int32
@@ -23,6 +24,10 @@ var (
 	GasLimitOverride   uint64
 	LogFile            string
 	RPCTimeout         int64
+	HTTPTimeout        int64
+	LogFileMaxSize     int
+	LogFileMaxBackups  int
+	LogFileMaxAge      int
 )
 
 var log = logger.NewLogger()
@@ -56,6 +61,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
+	rootCmd.PersistentFlags().StringVarP(&AlternateProvider, "alternateProvider", "", "", "alternate provider name")
 	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")
@@ -65,6 +71,10 @@ func init() {
 	rootCmd.PersistentFlags().Uint64VarP(&GasLimitOverride, "gasLimitOverride", "", 0, "gas limit to be over ridden for a transaction")
 	rootCmd.PersistentFlags().StringVarP(&LogFile, "logFile", "", "", "name of log file")
 	rootCmd.PersistentFlags().Int64VarP(&RPCTimeout, "rpcTimeout", "", 0, "RPC timeout if its not responding")
+	rootCmd.PersistentFlags().Int64VarP(&HTTPTimeout, "httpTimeout", "", 0, "HTTP request timeout if its not responding")
+	rootCmd.PersistentFlags().IntVarP(&LogFileMaxSize, "logFileMaxSize", "", 0, "max size of log file MB")
+	rootCmd.PersistentFlags().IntVarP(&LogFileMaxBackups, "logFileMaxBackups", "", 0, "max number of old log files to retain")
+	rootCmd.PersistentFlags().IntVarP(&LogFileMaxAge, "logFileMaxAge", "", 0, "max number of days to retain old log files")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -89,29 +99,4 @@ func initConfig() {
 			log.Warn("error in reading config")
 		}
 	}
-
-	setLogLevel()
-}
-
-//This function sets the log level
-func setLogLevel() {
-	config, err := cmdUtils.GetConfigData()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if config.LogLevel == "debug" {
-		log.SetLevel(logrus.DebugLevel)
-	}
-
-	log.Debug("Config details: ")
-	log.Debugf("Provider: %s", config.Provider)
-	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
-	log.Debugf("Buffer Percent: %d", config.BufferPercent)
-	log.Debugf("Wait Time: %d", config.WaitTime)
-	log.Debugf("Gas Price: %d", config.GasPrice)
-	log.Debugf("Log Level: %s", config.LogLevel)
-	log.Debugf("Gas Limit: %.2f", config.GasLimitMultiplier)
-	log.Debugf("Gas Limit Override: %d", config.GasLimitOverride)
-	log.Debugf("RPC Timeout: %d", config.RPCTimeout)
 }

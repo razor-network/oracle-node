@@ -2,11 +2,6 @@ package utils
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/spf13/pflag"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"os"
 	Types "razor/core/types"
@@ -14,6 +9,13 @@ import (
 	"razor/utils/mocks"
 	"reflect"
 	"testing"
+
+	"github.com/avast/retry-go"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/spf13/pflag"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckError(t *testing.T) {
@@ -102,17 +104,15 @@ func TestCalculateBlockTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-			clientMock := new(mocks.ClientUtils)
+			clientUtilsMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface:  utilsMock,
-				ClientInterface: clientMock,
+				ClientInterface: clientUtilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.latestBlockErr)
-			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.lastSecondBlock, tt.args.lastSecondBlockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.latestBlockErr)
+			clientUtilsMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.lastSecondBlock, tt.args.lastSecondBlockErr)
 
 			fatal = false
 
@@ -174,7 +174,7 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			clientMock.On("BalanceAt", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			clientMock.On("BalanceAtWithRetry", mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 
 			fatal = false
 
@@ -301,67 +301,66 @@ func TestFetchBalance(t *testing.T) {
 	var callOpts bind.CallOpts
 
 	type args struct {
-		coinContract *bindings.RAZOR
-		balance      *big.Int
-		balanceErr   error
+		erc20Contract *bindings.RAZOR
+		balance       *big.Int
+		balanceErr    error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		expectedFatal bool
-		wantErr       error
+		name    string
+		args    args
+		want    *big.Int
+		wantErr bool
 	}{
 		{
 			name: "When FetchBalance() executes successfully",
 			args: args{
-				coinContract: &bindings.RAZOR{},
-				balance:      big.NewInt(1),
+				erc20Contract: &bindings.RAZOR{},
+				balance:       big.NewInt(1),
 			},
-			expectedFatal: false,
-			wantErr:       nil,
+			want:    big.NewInt(1),
+			wantErr: false,
+		},
+		{
+			name: "When there is an error in fetching balance",
+			args: args{
+				erc20Contract: &bindings.RAZOR{},
+				balanceErr:    errors.New("error in fetching balance"),
+			},
+			want:    big.NewInt(0),
+			wantErr: true,
 		},
 	}
-
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			utilsMock := new(mocks.Utils)
-			coinMock := new(mocks.CoinUtils)
+			erc20Mock := new(mocks.CoinUtils)
+			retryMock := new(mocks.RetryUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
 				UtilsInterface: utilsMock,
-				CoinInterface:  coinMock,
+				CoinInterface:  erc20Mock,
+				RetryInterface: retryMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.coinContract)
+			utilsMock.On("GetTokenManager", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.erc20Contract)
 			utilsMock.On("GetOptions").Return(callOpts)
-			coinMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			erc20Mock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			fatal = false
-
-			_, err := utils.FetchBalance(client, accountAddress)
-			if fatal != tt.expectedFatal {
-				t.Error("The FetchBalance function didn't execute as expected")
+			got, err := utils.FetchBalance(client, accountAddress)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchBalance() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for FetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for fetchBalance function, got = %v, want = %v", err, tt.wantErr)
-				}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FetchBalance() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGetDelayedState(t *testing.T) {
+func TestGetBufferedState(t *testing.T) {
 	var client *ethclient.Client
 
 	type args struct {
@@ -378,7 +377,7 @@ func TestGetDelayedState(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetDelayedState() executes successfully",
+			name: "Test 1: When GetBufferedState() executes successfully",
 			args: args{
 				block: &types.Header{
 					Time: 100,
@@ -414,7 +413,7 @@ func TestGetDelayedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 4: When GetDelayedState() executes successfully and state we get is other than 0",
+			name: "Test 4: When GetBufferedState() executes successfully and state we get is other than 0",
 			args: args{
 				block: &types.Header{
 					Time: 900,
@@ -444,23 +443,25 @@ func TestGetDelayedState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			utilsMock := new(mocks.Utils)
+			clientUtilsMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				UtilsInterface:  utilsMock,
+				ClientInterface: clientUtilsMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetDelayedState(client, tt.args.buffer)
+			got, err := utils.GetBufferedState(client, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDelayedState() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("GetDelayedState() got = %v, want %v", got, tt.want)
+				t.Errorf("GetBufferedState() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -503,14 +504,14 @@ func TestGetEpoch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
+			clientUtilsMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				ClientInterface: clientUtilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
 			got, err := utils.GetEpoch(client)
 			if (err != nil) != tt.wantErr {
@@ -573,18 +574,12 @@ func TestGetStateName(t *testing.T) {
 			args: args{
 				stateNumber: 5,
 			},
-			want: "-1",
+			want: "Buffer",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-			if got := utils.GetStateName(tt.args.stateNumber); got != tt.want {
+			if got := GetStateName(tt.args.stateNumber); got != tt.want {
 				t.Errorf("GetStateName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -717,6 +712,100 @@ func TestWaitTillNextNSecs(t *testing.T) {
 	}
 }
 
+func TestIsValidAddress(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Test 1: When correct address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			want: true,
+		},
+		{
+			name: "Test 2: When incorrect address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			want: false,
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidAddress(tt.args.address); got != tt.want {
+				t.Errorf("IsValidAddress() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsValidateAddress(t *testing.T) {
+	type args struct {
+		address string
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantAddress string
+		wantErr     error
+	}{
+		{
+			name: "Test 1: When correct address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			},
+			wantAddress: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90e",
+			wantErr:     nil,
+		},
+		{
+			name: "Test 2: When incorrect address is passed",
+			args: args{
+				address: "0x8797EA6306881D74c4311C08C0Ca2C0a76dDC90z",
+			},
+			wantAddress: "",
+			wantErr:     errors.New("invalid address"),
+		},
+		{
+			name: "Test 2: When nil is passed",
+			args: args{
+				address: "",
+			},
+			wantAddress: "",
+			wantErr:     errors.New("invalid address"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotErr := ValidateAddress(tt.args.address)
+			if got != tt.wantAddress {
+				t.Errorf("ValidateAddress() returns address = %v, want address = %v", got, tt.wantAddress)
+			}
+			if gotErr == nil || tt.wantErr == nil {
+				if gotErr != tt.wantErr {
+					t.Errorf("Error for ValidateAddress(), got error = %v, want error = %v", gotErr, tt.wantErr)
+				}
+			} else {
+				if gotErr.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for ValidateAddress(), got error = %v, want error = %v", gotErr, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
 func TestAssignStakerId(t *testing.T) {
 	var flagSet *pflag.FlagSet
 	var client *ethclient.Client
@@ -844,13 +933,14 @@ func TestAssignLogFile(t *testing.T) {
 				UtilsInterface:   utilsMock,
 				FlagSetInterface: flagSetMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			fatal = false
 
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			flagSetMock.On("GetLogFileName", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.fileName, tt.args.fileNameErr)
 
-			utils.AssignLogFile(flagSet)
+			fileUtils := FileStruct{}
+			fileUtils.AssignLogFile(flagSet, Types.Configurations{})
 			if fatal != tt.expectedFatal {
 				t.Error("The AssignLogFile function didn't execute as expected")
 			}
@@ -905,14 +995,16 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
+			clientUtilsMock := new(mocks.ClientUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+				UtilsInterface:  utilsMock,
+				ClientInterface: clientUtilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-			utilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 			got, err := utils.GetRemainingTimeOfCurrentState(client, bufferPercent)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetRemainingTimeOfCurrentState() error = %v, wantErr %v", err, tt.wantErr)
@@ -983,10 +1075,9 @@ func TestPrng(t *testing.T) {
 	}
 }
 
-func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
+func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 	var (
 		client             *ethclient.Client
-		epochLength        int64
 		currentBlockNumber *big.Int
 	)
 	type args struct {
@@ -1002,7 +1093,7 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When CalculateBlockNumberAtEpochBeginning() is executed successfully",
+			name: "Test 1: When EstimateBlockNumberAtEpochBeginning() is executed successfully",
 			args: args{
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
@@ -1032,13 +1123,13 @@ func TestCalculateBlockNumberAtEpochBeginning(t *testing.T) {
 
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
-			got, err := utils.CalculateBlockNumberAtEpochBeginning(client, epochLength, currentBlockNumber)
+			got, err := utils.EstimateBlockNumberAtEpochBeginning(client, currentBlockNumber)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
+				t.Errorf("EstimateBlockNumberAtEpochBeginning() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1092,12 +1183,13 @@ func TestSaveDataToCommitJsonFile(t *testing.T) {
 				JsonInterface: jsonMock,
 				OS:            osMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 
 			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
 			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
 
-			if err := utils.SaveDataToCommitJsonFile(filePath, epoch, commitData); (err != nil) != tt.wantErr {
+			fileUtils := FileStruct{}
+			if err := fileUtils.SaveDataToCommitJsonFile(filePath, epoch, commitData); (err != nil) != tt.wantErr {
 				t.Errorf("SaveDataToCommitJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1152,11 +1244,13 @@ func TestSaveDataToProposeJsonFile(t *testing.T) {
 				JsonInterface: jsonMock,
 				OS:            osMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 
 			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
 			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
-			if err := utils.SaveDataToProposeJsonFile(filePath, proposeData); (err != nil) != tt.wantErr {
+
+			fileUtils := FileStruct{}
+			if err := fileUtils.SaveDataToProposeJsonFile(filePath, proposeData); (err != nil) != tt.wantErr {
 				t.Errorf("SaveDataToProposeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1210,11 +1304,13 @@ func TestSaveDataToDisputeJsonFile(t *testing.T) {
 				JsonInterface: jsonMock,
 				OS:            osMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 
 			jsonMock.On("Marshal", mock.Anything).Return(tt.args.jsonData, tt.args.jsonDataErr)
 			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
-			if err := utils.SaveDataToDisputeJsonFile(filePath, bountyIdQueue); (err != nil) != tt.wantErr {
+
+			fileUtils := FileStruct{}
+			if err := fileUtils.SaveDataToDisputeJsonFile(filePath, bountyIdQueue); (err != nil) != tt.wantErr {
 				t.Errorf("SaveDataToDisputeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1284,11 +1380,13 @@ func TestReadFromCommitJsonFile(t *testing.T) {
 				OS:            osMock,
 				IOInterface:   ioMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
 			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
-			got, err := utils.ReadFromCommitJsonFile(filePath)
+
+			fileUtils := FileStruct{}
+			got, err := fileUtils.ReadFromCommitJsonFile(filePath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFromCommitJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1363,12 +1461,13 @@ func TestReadFromProposeJsonFile(t *testing.T) {
 				OS:            osMock,
 				IOInterface:   ioMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
 			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
 
-			got, err := utils.ReadFromProposeJsonFile(filePath)
+			fileUtils := FileStruct{}
+			got, err := fileUtils.ReadFromProposeJsonFile(filePath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFromProposeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1443,12 +1542,13 @@ func TestReadFromDisputeJsonFile(t *testing.T) {
 				OS:            osMock,
 				IOInterface:   ioMock,
 			}
-			utils := StartRazor(optionsPackageStruct)
+			StartRazor(optionsPackageStruct)
 			osMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.byteValue, tt.args.byteValueErr)
 			jsonMock.On("Unmarshal", mock.Anything, mock.Anything).Return(tt.args.unmarshalErr)
 
-			got, err := utils.ReadFromDisputeJsonFile(filePath)
+			fileUtils := FileStruct{}
+			got, err := fileUtils.ReadFromDisputeJsonFile(filePath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFromDisputeJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 				return

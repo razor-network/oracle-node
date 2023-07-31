@@ -8,6 +8,7 @@ import (
 	"os"
 	"razor/block"
 	"razor/core"
+	"razor/core/types"
 	"razor/path"
 	"runtime"
 
@@ -32,7 +33,7 @@ var Client *ethclient.Client
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
 	path.OSUtilsInterface = &path.OSUtils{}
-	InitializeLogger(FileName)
+	InitializeLogger(FileName, types.Configurations{})
 
 	osInfo := goInfo.GetInfo()
 	standardLogger.WithFields(logrus.Fields{
@@ -46,7 +47,7 @@ func init() {
 
 }
 
-func InitializeLogger(fileName string) {
+func InitializeLogger(fileName string, config types.Configurations) {
 	if fileName != "" {
 		logFilePath, err := path.PathUtilsInterface.GetLogFilePath(fileName)
 		if err != nil {
@@ -55,19 +56,19 @@ func InitializeLogger(fileName string) {
 
 		lumberJackLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
-			MaxSize:    200, // Maximum Size of a log file
-			MaxBackups: 52,  // Maximum number of log files
-			MaxAge:     365, // Maximum number of days to retain olf files
+			MaxSize:    config.LogFileMaxSize,
+			MaxBackups: config.LogFileMaxBackups,
+			MaxAge:     config.LogFileMaxAge,
 		}
+		fmt.Println(config.LogFileMaxSize)
+		fmt.Println(config.LogFileMaxBackups)
+		fmt.Println(config.LogFileMaxAge)
 
 		out := os.Stderr
 		mw := io.MultiWriter(out, lumberJackLogger)
-		standardLogger.Formatter = &logrus.JSONFormatter{}
 		standardLogger.SetOutput(mw)
-
-	} else {
-		standardLogger.Formatter = &logrus.JSONFormatter{}
 	}
+	standardLogger.Formatter = &logrus.JSONFormatter{}
 }
 
 func NewLogger() *StandardLogger {
@@ -172,7 +173,7 @@ func SetEpochAndBlockNumber(client *ethclient.Client) {
 		latestBlock := block.GetLatestBlock()
 		if latestBlock != nil {
 			BlockNumber = latestBlock.Number
-			epoch := latestBlock.Time / uint64(core.EpochLength)
+			epoch := latestBlock.Time / core.EpochLength
 			Epoch = uint32(epoch)
 		}
 	}

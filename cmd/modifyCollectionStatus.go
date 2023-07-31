@@ -41,11 +41,16 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteModifyCollectionStatus: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionId: ", err)
 
@@ -66,7 +71,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.String())
+		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for modifyCollectionStatus: ", err)
 	}
 }
@@ -103,7 +108,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "setCollectionStatus",
 		Parameters:      []interface{}{modifyCollectionInput.Status, modifyCollectionInput.CollectionId},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
@@ -113,8 +118,9 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 	if err != nil {
 		return core.NilHash, err
 	}
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn).String())
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

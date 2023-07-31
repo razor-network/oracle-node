@@ -5,22 +5,20 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"io/fs"
+	"math/big"
+	"razor/cmd/mocks"
+	"razor/core"
+	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
-	"io/fs"
-	"math/big"
-	"razor/cmd/mocks"
-	"razor/core"
-	"razor/core/types"
-	"razor/path"
-	pathMocks "razor/path/mocks"
-	"razor/utils"
-	mocks2 "razor/utils/mocks"
-	"testing"
 )
 
 func TestExecuteClaimBounty(t *testing.T) {
@@ -123,24 +121,16 @@ func TestExecuteClaimBounty(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
 
-			utilsMock := new(mocks.UtilsInterface)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
-
-			razorUtils = utilsMock
-			flagSetUtils = flagSetUtilsMock
-			cmdUtils = cmdUtilsMock
-			utilsInterface = utilsPkgMock
-
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
-			flagSetUtilsMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
-			flagSetUtilsMock.On("GetUint32BountyId", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.bountyId, tt.args.bountyIdErr)
+			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
+			flagSetMock.On("GetUint32BountyId", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.bountyId, tt.args.bountyIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsPkgMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
 			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
@@ -269,13 +259,13 @@ func TestClaimBounty(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stakeManagerMock := new(mocks.StakeManagerInterface)
-			utilsMock := new(mocks.UtilsInterface)
-			trasactionUtilsMock := new(mocks.TransactionInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
+			transactionUtilsMock := new(mocks.TransactionInterface)
 			timeMock := new(mocks.TimeInterface)
 
 			razorUtils = utilsMock
 			stakeManagerUtils = stakeManagerMock
-			transactionUtils = trasactionUtilsMock
+			transactionUtils = transactionUtilsMock
 			timeUtils = timeMock
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
@@ -286,7 +276,7 @@ func TestClaimBounty(t *testing.T) {
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
-			trasactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 			got, err := utils.ClaimBounty(config, client, bountyInput)
@@ -390,23 +380,14 @@ func TestHandleClaimBounty(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			utilsPkgMock := new(mocks2.Utils)
-			osUtilsMock := new(pathMocks.OSInterface)
+			SetUpMockInterfaces()
 
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			utils.UtilsInterface = utilsPkgMock
-			utilsInterface = utilsPkgMock
-			path.OSUtilsInterface = osUtilsMock
-
-			utilsMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
-			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
-			utilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
+			pathMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
+			osPathMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
+			fileUtilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
 			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyTxnErr)
-			utilsPkgMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			utilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
+			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			fileUtilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 
 			ut := &UtilsStruct{}
 			if err := ut.HandleClaimBounty(client, config, account); (err != nil) != tt.wantErr {

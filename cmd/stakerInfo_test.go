@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"razor/cmd/mocks"
 	"razor/core/types"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
@@ -212,7 +213,7 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			stakeManagerMock := new(mocks.StakeManagerInterface)
 
 			razorUtils = utilsMock
@@ -306,15 +307,17 @@ func TestUtilsStruct_ExecuteStakerinfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.UtilsInterface)
+			utilsMock := new(utilsPkgMocks.Utils)
 			cmdUtilsMock := new(mocks.UtilsCmdInterface)
 			flagSetUtilsMock := new(mocks.FlagSetInterface)
+			fileUtilsMock := new(utilsPkgMocks.FileUtils)
 
 			razorUtils = utilsMock
 			cmdUtils = cmdUtilsMock
 			flagSetUtils = flagSetUtilsMock
+			fileUtils = fileUtilsMock
 
-			utilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"))
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)

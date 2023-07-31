@@ -11,7 +11,7 @@ import (
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
+	"razor/core"
 	"razor/core/types"
 	"testing"
 )
@@ -79,7 +79,7 @@ func TestApprove(t *testing.T) {
 				approveError:    nil,
 				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.Hash{0x00},
+			want:    core.NilHash,
 			wantErr: nil,
 		},
 		{
@@ -101,7 +101,7 @@ func TestApprove(t *testing.T) {
 				approveError:    nil,
 				hash:            common.BigToHash(big.NewInt(1)),
 			},
-			want:    common.Hash{0x00},
+			want:    core.NilHash,
 			wantErr: errors.New("allowance error"),
 		},
 
@@ -130,20 +130,13 @@ func TestApprove(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			utilsMock := new(mocks.UtilsInterface)
-			tokenManagerUtilsMock := new(mocks.TokenManagerInterface)
-			transactionUtilsMock := new(mocks.TransactionInterface)
-
-			razorUtils = utilsMock
-			tokenManagerUtils = tokenManagerUtilsMock
-			transactionUtils = transactionUtilsMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetOptions").Return(tt.args.callOpts)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
-			tokenManagerUtilsMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
-			tokenManagerUtilsMock.On("Approve", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveError)
+			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
+			tokenManagerMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
+			tokenManagerMock.On("Approve", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveError)
 
 			utils := &UtilsStruct{}
 

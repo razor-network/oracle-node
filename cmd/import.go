@@ -2,14 +2,15 @@
 package cmd
 
 import (
+	"path/filepath"
+	"razor/path"
+	"razor/utils"
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	pathPkg "path"
-	"razor/path"
-	"razor/utils"
-	"strings"
 )
 
 var importCmd = &cobra.Command{
@@ -28,8 +29,10 @@ func initialiseImport(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ImportAccount function
 func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 	log.Debug("Calling ImportAccount()...")
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)
@@ -46,7 +49,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	log.Info("Enter password to protect keystore file")
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.PasswordPrompt()
-	razorPath, err := razorUtils.GetDefaultPath()
+	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		log.Error("Error in fetching .razor directory")
 		return accounts.Account{Address: common.Address{0x00}}, err
@@ -57,7 +60,7 @@ func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 		log.Error("Error in parsing private key")
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
-	keystoreDir := pathPkg.Join(razorPath, "keystore_files")
+	keystoreDir := filepath.Join(razorPath, "keystore_files")
 	if _, err := path.OSUtilsInterface.Stat(keystoreDir); path.OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := path.OSUtilsInterface.Mkdir(keystoreDir, 0700)
 		if mkdirErr != nil {

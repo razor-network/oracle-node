@@ -4,9 +4,10 @@ package mocks
 
 import (
 	big "math/big"
-	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
+
+	common "github.com/ethereum/go-ethereum/common"
 
 	coretypes "razor/core/types"
 
@@ -22,13 +23,13 @@ type StakeManagerInterface struct {
 	mock.Mock
 }
 
-// ApproveUnstake provides a mock function with given fields: client, opts, staker, amount
-func (_m *StakeManagerInterface) ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, staker bindings.StructsStaker, amount *big.Int) (*types.Transaction, error) {
-	ret := _m.Called(client, opts, staker, amount)
+// ApproveUnstake provides a mock function with given fields: client, opts, stakerTokenAddress, amount
+func (_m *StakeManagerInterface) ApproveUnstake(client *ethclient.Client, opts *bind.TransactOpts, stakerTokenAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	ret := _m.Called(client, opts, stakerTokenAddress, amount)
 
 	var r0 *types.Transaction
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, bindings.StructsStaker, *big.Int) *types.Transaction); ok {
-		r0 = rf(client, opts, staker, amount)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) *types.Transaction); ok {
+		r0 = rf(client, opts, stakerTokenAddress, amount)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -36,8 +37,8 @@ func (_m *StakeManagerInterface) ApproveUnstake(client *ethclient.Client, opts *
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, bindings.StructsStaker, *big.Int) error); ok {
-		r1 = rf(client, opts, staker, amount)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *bind.TransactOpts, common.Address, *big.Int) error); ok {
+		r1 = rf(client, opts, stakerTokenAddress, amount)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -45,8 +46,8 @@ func (_m *StakeManagerInterface) ApproveUnstake(client *ethclient.Client, opts *
 	return r0, r1
 }
 
-// ClaimStakeReward provides a mock function with given fields: client, opts
-func (_m *StakeManagerInterface) ClaimStakeReward(client *ethclient.Client, opts *bind.TransactOpts) (*types.Transaction, error) {
+// ClaimStakerReward provides a mock function with given fields: client, opts
+func (_m *StakeManagerInterface) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*types.Transaction, error) {
 	ret := _m.Called(client, opts)
 
 	var r0 *types.Transaction

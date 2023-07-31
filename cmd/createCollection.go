@@ -46,10 +46,13 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 
 	logger.SetLoggerParameters(client, address)
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
+
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -79,13 +82,13 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	log.Debugf("Calling CreateCollection() with argument collectionInput: %+v", collectionInput)
 	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.String())
+	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createCollection: ", err)
 }
 
 //This function allows the admin to create collction if existing jobs are present
 func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
-	jobIds := razorUtils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
+	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("CreateCollection: Uint16 jobIds: ", jobIds)
 	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)
 	if err != nil {
@@ -101,7 +104,7 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createCollection",
 		Parameters:      []interface{}{collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name},
-		ABI:             bindings.CollectionManagerABI,
+		ABI:             bindings.CollectionManagerMetaData.ABI,
 	})
 	log.Debugf("Executing CreateCollection transaction with tolerance: %d, power = %d , aggregation = %d, jobIds = %v, name = %s", collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
@@ -110,8 +113,9 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		return core.NilHash, err
 	}
 	log.Info("Creating collection...")
-	log.Info("Txn Hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {

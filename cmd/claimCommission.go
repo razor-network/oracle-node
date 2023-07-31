@@ -38,13 +38,15 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	log.Debug("ClaimCommission: Address: ", address)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	razorUtils.CheckEthBalanceIsZero(client, address)
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
@@ -65,16 +67,18 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "claimStakerReward",
 			Parameters:      []interface{}{},
-			ABI:             bindings.StakeManagerABI,
+			ABI:             bindings.StakeManagerMetaData.ABI,
 		})
 
 		log.Info("Claiming commission...")
 
 		log.Debug("Executing ClaimStakeReward transaction...")
-		txn, err := stakeManagerUtils.ClaimStakeReward(client, txnOpts)
+		txn, err := stakeManagerUtils.ClaimStakerReward(client, txnOpts)
 		utils.CheckError("Error in claiming stake reward: ", err)
 
-		err = razorUtils.WaitForBlockCompletion(client, transactionUtils.Hash(txn).String())
+		txnHash := transactionUtils.Hash(txn)
+		log.Info("Txn Hash: ", txnHash.Hex())
+		err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
 	} else {
 		log.Error("no commission to claim")

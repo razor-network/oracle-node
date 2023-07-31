@@ -46,17 +46,19 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 
 	logger.SetLoggerParameters(client, address)
+
 	log.Debug("Checking to assign log file...")
-	razorUtils.AssignLogFile(flagSet)
+	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
+	err = razorUtils.CheckPassword(address, password)
+	utils.CheckError("Error in fetching private key from given password: ", err)
+
 	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
-
-	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
@@ -72,7 +74,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txnHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unstake: ", err)
 	}
 }
@@ -93,15 +95,16 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in getting staker: ", err)
 		return core.NilHash, err
 	}
+
 	log.Debugf("Unstake: Staker info: %+v", staker)
 	log.Debug("Unstake: Calling ApproveUnstake()...")
-	approveHash, err := cmdUtils.ApproveUnstake(client, staker, txnArgs)
+	approveHash, err := cmdUtils.ApproveUnstake(client, staker.TokenAddress, txnArgs)
 	if err != nil {
 		return core.NilHash, err
 	}
 
 	if approveHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, approveHash.String())
+		err = razorUtils.WaitForBlockCompletion(client, approveHash.Hex())
 		if err != nil {
 			return core.NilHash, err
 		}
@@ -111,7 +114,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "unstake"
-	txnArgs.ABI = bindings.StakeManagerABI
+	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
 	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
 	if err != nil {
@@ -135,21 +138,23 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		log.Error("Error in un-staking: ", err)
 		return core.NilHash, err
 	}
-	log.Info("Transaction hash: ", transactionUtils.Hash(txn))
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 //This function approves the unstake
-func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, staker bindings.StructsStaker, txnArgs types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
-	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, staker, txnArgs.Amount)
+	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, stakerTokenAddress, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in approving for unstake")
 		return core.NilHash, err
 	}
-	log.Info("Transaction Hash: ", transactionUtils.Hash(txn).String())
-	return transactionUtils.Hash(txn), nil
+	txnHash := transactionUtils.Hash(txn)
+	log.Info("Txn Hash: ", txnHash.Hex())
+	return txnHash, nil
 }
 
 func init() {
