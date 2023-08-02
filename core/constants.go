@@ -53,7 +53,7 @@ var DotENVFileName = ".env"
 var BlockNumberInterval = 5
 
 //APIKeyRegex will be used as a regular expression to be matched in job Urls
-var APIKeyRegex = `$`
+var APIKeyRegex = `\$\{(.+?)\}`
 
 // Following are the constants which defines retry attempts and retry delay if there is an error in processing request
 

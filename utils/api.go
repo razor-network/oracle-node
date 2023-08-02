@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"razor/cache"
 	"razor/core"
-	"strings"
+	"regexp"
 	"time"
 
 	"razor/core/types"
@@ -95,14 +95,10 @@ func GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, selector string) 
 
 func AddHeaderToRequest(request *http.Request, headerMap map[string]string) (*http.Request, error) {
 	for key, value := range headerMap {
-		// If core.APIKeyRegex = `$` and if value starts with '$' then we need to fetch the respective value from env file
-		if strings.HasPrefix(value, core.APIKeyRegex) {
-			_, APIKey, err := GetKeyWordAndAPIKeyFromENVFile(value)
-			if err != nil {
-				log.Error("Error in getting value from env file: ", err)
-				return nil, err
-			}
-			value = APIKey
+		re := regexp.MustCompile(core.APIKeyRegex)
+		isAPIKeyRequired := re.MatchString(value)
+		if isAPIKeyRequired {
+			value = ReplaceValueWithDataFromENVFile(re, value)
 		}
 		log.Debugf("Adding key: %s, value: %s pair to header", key, value)
 		request.Header.Add(key, value)
