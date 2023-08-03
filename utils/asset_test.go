@@ -647,8 +647,8 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 
 func TestGetDataToCommitFromJob(t *testing.T) {
 	job := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
-		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
+		Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
+		Url: `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
 	}
 
 	job1 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
