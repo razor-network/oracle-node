@@ -1,14 +1,12 @@
 package utils
 
 import (
-	"errors"
+	"encoding/hex"
 	"razor/cache"
-	"razor/utils/mocks"
+	"razor/core/types"
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/mock"
 )
 
 func getAPIByteArray(index int) []byte {
@@ -31,10 +29,11 @@ func getAPIByteArray(index int) []byte {
 }
 
 func TestGetDataFromAPI(t *testing.T) {
+	//postRequestInput := `{"type": "POST","url": "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar","body": {"jsonrpc": "2.0","method": "eth_chainId","params": [],"id": 0},"header": {"content-type": "application/json"}}`
+	sampleChainId, _ := hex.DecodeString("7b226964223a302c226a736f6e727063223a22322e30222c22726573756c74223a2230783561373963343465227d")
+
 	type args struct {
-		url     string
-		body    []byte
-		bodyErr error
+		urlStruct types.DataSourceURL
 	}
 	tests := []struct {
 		name    string
@@ -45,8 +44,12 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "TODO API",
 			args: args{
-				url:  "https://jsonplaceholder.typicode.com/todos/1",
-				body: getAPIByteArray(0),
+				urlStruct: types.DataSourceURL{
+					Type:   "GET",
+					URL:    "https://jsonplaceholder.typicode.com/todos/1",
+					Body:   nil,
+					Header: nil,
+				},
 			},
 			want:    getAPIByteArray(0),
 			wantErr: false,
@@ -54,8 +57,11 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "Comments API",
 			args: args{
-				url:  "https://jsonplaceholder.typicode.com/comments/1",
-				body: getAPIByteArray(1),
+				urlStruct: types.DataSourceURL{Type: "GET",
+					URL:    "https://jsonplaceholder.typicode.com/comments/1",
+					Body:   nil,
+					Header: nil,
+				},
 			},
 			want:    getAPIByteArray(1),
 			wantErr: false,
@@ -63,8 +69,12 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "When API is invalid",
 			args: args{
-				url:  "https:api.gemini.com/v1/pubticker",
-				body: getAPIByteArray(0),
+				urlStruct: types.DataSourceURL{
+					Type:   "GET",
+					URL:    "https:api.gemini.com/v1/pubticker",
+					Body:   nil,
+					Header: nil,
+				},
 			},
 			want:    nil,
 			wantErr: true,
@@ -72,36 +82,33 @@ func TestGetDataFromAPI(t *testing.T) {
 		{
 			name: "When API is not responding",
 			args: args{
-				url:  "https://api.gemini.com/v1/pubticker/TEST",
-				body: getAPIByteArray(0),
+				urlStruct: types.DataSourceURL{
+					Type:   "GET",
+					URL:    "https://api.gemini.com/v1/pubticker/TEST",
+					Body:   nil,
+					Header: nil,
+				},
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name: "When there is an error in getting body",
+			name: "Post request to fetch chainId",
 			args: args{
-				url:     "https://jsonplaceholder.typicode.com/todos/1",
-				bodyErr: errors.New("body error"),
+				urlStruct: types.DataSourceURL{
+					Type:   "POST",
+					URL:    "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
+					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
+					Header: map[string]string{"content-type": "application/json"},
+				},
 			},
-			want:    nil,
-			wantErr: true,
+			want: sampleChainId,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-			ioMock := new(mocks.IOUtils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-				IOInterface:    ioMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			ioMock.On("ReadAll", mock.Anything).Return(tt.args.body, tt.args.bodyErr)
 			localCache := cache.NewLocalCache(time.Second * 10)
-			got, err := utils.GetDataFromAPI(tt.args.url, localCache)
+			got, err := GetDataFromAPI(tt.args.urlStruct, localCache)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -198,14 +205,7 @@ func TestGetDataFromJSON(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			got, err := utils.GetDataFromJSON(tt.args.jsonObject, tt.args.selector)
+			got, err := GetDataFromJSON(tt.args.jsonObject, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromJSON() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -219,8 +219,8 @@ func TestGetDataFromJSON(t *testing.T) {
 
 func TestGetDataFromHTML(t *testing.T) {
 	type args struct {
-		url      string
-		selector string
+		urlStruct types.DataSourceURL
+		selector  string
 	}
 	tests := []struct {
 		name    string
@@ -231,8 +231,8 @@ func TestGetDataFromHTML(t *testing.T) {
 		{
 			name: "Test 1: Test data from coin market cap",
 			args: args{
-				url:      "https://coinmarketcap.com/all/views/all/",
-				selector: `/html/body/div[1]/div[2]/div[2]/div/div[1]/h1`,
+				urlStruct: types.DataSourceURL{URL: "https://coinmarketcap.com/all/views/all/"},
+				selector:  `/html/body/div[1]/div[2]/div[2]/div/div[1]/h1`,
 			},
 			want:    "All Cryptocurrencies",
 			wantErr: false,
@@ -240,7 +240,7 @@ func TestGetDataFromHTML(t *testing.T) {
 		{
 			name: "Test 2: Test for invalid website",
 			args: args{
-				url: "http://razor-go.com/",
+				urlStruct: types.DataSourceURL{URL: "http://razor-go.com/"},
 			},
 			want:    "",
 			wantErr: true,
@@ -248,14 +248,7 @@ func TestGetDataFromHTML(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			got, err := utils.GetDataFromXHTML(tt.args.url, tt.args.selector)
+			got, err := GetDataFromXHTML(tt.args.urlStruct, tt.args.selector)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return

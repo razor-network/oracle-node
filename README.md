@@ -559,7 +559,7 @@ $ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QU
 OR
 
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
+$ ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
 ```
 
 ### Create Collection
@@ -842,30 +842,39 @@ Shown below is an example of how your `assets.json` file should be -
 
 ``` json
 {
-  "assets": {
-    "collection": {
-      "ethCollectionMean": {
-        "power": 2,
-        "official jobs": {
-          "1": {
-            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
-            "selector": "[`data`][`market_data`][`price_usd`]",
-            "power": 2,
-            "weight": 2
-          },
-        },
-        "custom jobs": [
-          {
-            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
-            "selector": "[`data`][`0`][`price`]",
-            "power": 3,
-            "weight": 2
-          },
-        ]
-      }
-    }
-  }
-}
+	"assets": {
+		"collection": {
+			"ethCollectionMedian": {
+				"power": 2,
+				"official jobs": {
+					"1": {
+					  "URL": {
+						   "type": "GET",
+						   "url": "https://data.messari.io/api/v1/assets/eth/metrics",
+						   "body": {},
+						   "content-type": ""
+						},
+						"selector": "[`data`][`market_data`][`price_usd`]",
+						"power": 2,
+						"weight": 2
+					},
+				},
+				"custom jobs": [{
+						"URL": {
+							"type": "GET",
+							"url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
+							"body": {},
+							"content-type": ""
+						},
+						 "name:" "eth_lunarCrush",
+						 "selector": "[`data`][`0`][`price`]",
+                         "power": 3,
+                         "weight": 2
+					]
+				}
+			}
+		}
+	}
 ```
 
 Breaking down into components

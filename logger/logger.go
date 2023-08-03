@@ -60,9 +60,6 @@ func InitializeLogger(fileName string, config types.Configurations) {
 			MaxBackups: config.LogFileMaxBackups,
 			MaxAge:     config.LogFileMaxAge,
 		}
-		fmt.Println(config.LogFileMaxSize)
-		fmt.Println(config.LogFileMaxBackups)
-		fmt.Println(config.LogFileMaxAge)
 
 		out := os.Stderr
 		mw := io.MultiWriter(out, lumberJackLogger)
