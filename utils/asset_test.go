@@ -653,7 +653,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 
 	job1 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=$ethusd_sample_key",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=${SAMPLE_API_KEY_NEW}",
 	}
 
 	postJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
@@ -678,7 +678,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is a case to pick up API key from .env file and env file is not present",
+			name: "Test 2: When there is a case to pick up API key from environment variable file and keyword is not present",
 			args: args{
 				job: job1,
 			},

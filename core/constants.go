@@ -47,7 +47,6 @@ var AssetsDataFile = "assets.json"
 var ConfigFile = "razor.yaml"
 var LogFileDirectory = "logs"
 var DefaultPathName = ".razor"
-var DotENVFileName = ".env"
 
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
