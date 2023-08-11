@@ -118,6 +118,7 @@ func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts 
 			log.Debugf("As there was an error from estimateGas, taking the gas limit value = %d from config", transactionData.Config.GasLimitOverride)
 			return transactionData.Config.GasLimitOverride, nil
 		}
+		log.Debugf("As there was an error from estimateGas, using the hardcoded higher gas limit value = %d", core.HigherGasLimitValue)
 		return core.HigherGasLimitValue, nil
 	}
 	log.Debug("Estimated Gas: ", gasLimit)
