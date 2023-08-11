@@ -53,3 +53,6 @@ var BlockNumberInterval = 5
 
 //SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength
+
+//HigherGasLimitValue is the gas limit which will be used when estimateGas fails
+var HigherGasLimitValue uint64 = 50000000

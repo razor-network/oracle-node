@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"razor/core"
 	"razor/core/types"
 	"strings"
 
@@ -117,7 +118,7 @@ func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts 
 			log.Debugf("As there was an error from estimateGas, taking the gas limit value = %d from config", transactionData.Config.GasLimitOverride)
 			return transactionData.Config.GasLimitOverride, nil
 		}
-		return 0, err
+		return core.HigherGasLimitValue, nil
 	}
 	log.Debug("Estimated Gas: ", gasLimit)
 	return GasInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
