@@ -466,6 +466,7 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
+				commitTxn:   common.BigToHash(big.NewInt(1)),
 				fileNameErr: errors.New("error in getting fileName"),
 			},
 			wantErr: true,
@@ -564,6 +565,7 @@ func TestInitiateReveal(t *testing.T) {
 	)
 
 	randomNum := big.NewInt(1111)
+	globalCommitDataStruct.Epoch = 5
 
 	type args struct {
 		staker                   bindings.StructsStaker
@@ -657,8 +659,8 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting fileName",
 			args: args{
-				epoch:       5,
-				lastReveal:  2,
+				epoch:       6,
+				lastReveal:  3,
 				fileNameErr: errors.New("error in getting fileName"),
 			},
 			wantErr: true,
@@ -666,7 +668,7 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 7: When there is an error in getting data from file",
 			args: args{
-				epoch:                    5,
+				epoch:                    6,
 				lastReveal:               2,
 				fileName:                 "",
 				committedDataFromFileErr: errors.New("error in reading data from file"),
@@ -676,7 +678,7 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 8: When file does not contain the latest data",
 			args: args{
-				epoch:                 5,
+				epoch:                 6,
 				lastReveal:            2,
 				fileName:              "",
 				committedDataFromFile: types.CommitFileData{Epoch: 3},
