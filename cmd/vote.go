@@ -391,6 +391,20 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	log.Debug("InitiateCommit: Commit Transaction Hash: ", commitTxn)
 	if commitTxn != core.NilHash {
+		log.Debug("Saving committed data for recovery...")
+		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
+		if err != nil {
+			return errors.New("Error in getting file name to save committed data: " + err.Error())
+		}
+		log.Debug("InitiateCommit: Commit data file path: ", fileName)
+
+		err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
+		if err != nil {
+			return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
+		}
+		log.Debug("Data saved!")
+
+		log.Debug("Checking for commit transaction status with transaction hash: ", commitTxn)
 		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
 		if waitForBlockCompletionErr != nil {
 			log.Error("Error in WaitForBlockCompletion for commit: ", waitForBlockCompletionErr)
@@ -400,19 +414,6 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		updateGlobalCommitDataStruct(commitData, epoch)
 		log.Debugf("InitiateCommit: Global commit data struct: %+v", globalCommitDataStruct)
 	}
-
-	log.Debug("Saving committed data for recovery...")
-	fileName, err := pathUtils.GetCommitDataFileName(account.Address)
-	if err != nil {
-		return errors.New("Error in getting file name to save committed data: " + err.Error())
-	}
-	log.Debug("InitiateCommit: Commit data file path: ", fileName)
-
-	err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
-	if err != nil {
-		return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
-	}
-	log.Debug("Data saved!")
 	return nil
 }
 
@@ -447,10 +448,9 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		return err
 	}
 
-	nilCommitData := globalCommitDataStruct.AssignedCollections == nil && globalCommitDataStruct.SeqAllottedCollections == nil && globalCommitDataStruct.Leaves == nil
-
-	if nilCommitData {
-		log.Debug("InitiateReveal: Global commit data is nil, getting the commit data from file...")
+	if globalCommitDataStruct.Epoch != epoch {
+		log.Debugf("InitiateReveal: Epoch in global commit data: %v is not equal to current epoch: %v", globalCommitDataStruct.Epoch, epoch)
+		log.Info("Getting the commit data from file...")
 		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to save committed data: ", err)
