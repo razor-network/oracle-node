@@ -15,6 +15,7 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/utils"
 	"reflect"
 	"testing"
 )
@@ -31,9 +32,9 @@ func TestCommit(t *testing.T) {
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {
+		values    []*big.Int
 		state     int64
 		stateErr  error
-		root      [32]byte
 		txnOpts   *bind.TransactOpts
 		commitTxn *Types.Transaction
 		commitErr error
@@ -48,6 +49,7 @@ func TestCommit(t *testing.T) {
 		{
 			name: "Test 1: When Commit function executes successfully",
 			args: args{
+				values:    []*big.Int{big.NewInt(1)},
 				state:     0,
 				stateErr:  nil,
 				txnOpts:   txnOpts,
@@ -61,6 +63,7 @@ func TestCommit(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting state",
 			args: args{
+				values:    []*big.Int{big.NewInt(1)},
 				stateErr:  errors.New("state error"),
 				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
@@ -73,6 +76,7 @@ func TestCommit(t *testing.T) {
 		{
 			name: "Test 3: When Commit transaction fails",
 			args: args{
+				values:    []*big.Int{big.NewInt(1)},
 				state:     0,
 				stateErr:  nil,
 				txnOpts:   txnOpts,
@@ -88,13 +92,16 @@ func TestCommit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
+			utils.MerkleInterface = &utils.MerkleTreeStruct{}
+			merkleUtils = utils.MerkleInterface
+
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
 			voteManagerMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(client, config, account, epoch, seed, tt.args.root)
+			got, err := utils.Commit(client, config, account, epoch, seed, tt.args.values)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
