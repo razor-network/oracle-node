@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -350,21 +349,11 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	log.Debugf("InitiateCommit: .razor directory path: %s", razorPath)
 	keystorePath := filepath.Join(razorPath, "keystore_files")
 	log.Debugf("InitiateCommit: Keystore file path: %s", keystorePath)
-	log.Debugf("InitiateCommit: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
-	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	log.Debugf("InitiateCommit: Calling CalculateSeed() with arguments keystorePath = %s, epoch = %d", keystorePath, epoch)
+	seed, err := CalculateSeed(client, account, keystorePath, epoch)
 	if err != nil {
-		return err
+		return errors.New("Error in getting seed: " + err.Error())
 	}
-	log.Debug("InitiateCommit: Secret: ", secret)
-
-	log.Debugf("Getting Salt for current epoch %d...", epoch)
-	salt, err := cmdUtils.GetSalt(client, epoch)
-	if err != nil {
-		return err
-	}
-	log.Debug("InitiateCommit: Salt: ", salt)
-
-	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt[:]), "0x" + hex.EncodeToString(secret)})
 
 	log.Debugf("InitiateCommit: Calling HandleCommitState with arguments epoch = %d, seed = %v, rogueData = %+v", epoch, seed, rogueData)
 	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
@@ -373,19 +362,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
-	log.Debug("InitiateCommit: Calling CreateMerkle() with argument Leaves = ", commitData.Leaves)
-	merkleTree, err := merkleUtils.CreateMerkle(commitData.Leaves)
-	if err != nil {
-		return errors.New("Error in getting merkle tree: " + err.Error())
-	}
-	log.Debug("InitiateCommit: Merkle Tree: ", merkleTree)
-	log.Debug("InitiateCommit: Calling GetMerkleRoot() for the merkle tree...")
-	merkleRoot, err := merkleUtils.GetMerkleRoot(merkleTree)
-	if err != nil {
-		return errors.New("Error in getting root: " + err.Error())
-	}
-	log.Debug("InitiateCommit: Merkle Tree Root: ", merkleRoot)
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, merkleRoot)
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, commitData.Leaves)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
@@ -466,6 +443,25 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		if committedDataFromFile.Epoch != epoch {
 			log.Errorf("File %s doesn't contain latest committed data", fileName)
 			return errors.New("commit data file doesn't contain latest committed data")
+		}
+		log.Debug("Verifying commit data from file...")
+		razorPath, err := pathUtils.GetDefaultPath()
+		if err != nil {
+			return err
+		}
+		log.Debugf("InitiateReveal: .razor directory path: %s", razorPath)
+		keystorePath := filepath.Join(razorPath, "keystore_files")
+		log.Debugf("InitiateReveal: Keystore file path: %s", keystorePath)
+
+		log.Debugf("InitiateReveal: Calling VerifyCommitment() for address %v with arguments epoch = %v, values = %v", account.Address, epoch, committedDataFromFile.Leaves)
+		isCommittedDataFromFileValid, err := VerifyCommitment(client, account, keystorePath, epoch, committedDataFromFile.Leaves)
+		if err != nil {
+			log.Error("Error in verifying commitment for commit data from file: ", err)
+			return err
+		}
+		if !isCommittedDataFromFileValid {
+			log.Infof("Not using data from file! as commitment calculated for data from commit data file is not equal to staker's commitment for this epoch.")
+			return errors.New("commitment verification for commit file data failed")
 		}
 		log.Debug("Updating global commit data struct...")
 		updateGlobalCommitDataStruct(types.CommitData{

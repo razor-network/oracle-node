@@ -61,7 +61,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 		return types.CommitData{}, err
 	}
 	log.Debug("HandleCommitState: Number of active collections: ", numActiveCollections)
-	log.Debugf("HandleCommitState: Calling GetAssignedCollections() with arguments number of active collections = %d, seed = %v", numActiveCollections, seed)
+	log.Debugf("HandleCommitState: Calling GetAssignedCollections() with arguments number of active collections = %d", numActiveCollections)
 	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(client, numActiveCollections, seed)
 	if err != nil {
 		return types.CommitData{}, err
@@ -112,15 +112,18 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, root [32]byte) (common.Hash, error) {
+func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, values []*big.Int) (common.Hash, error) {
 	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
 
-	commitment := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(root[:]), "0x" + hex.EncodeToString(seed)})
-	commitmentToSend := [32]byte{}
-	copy(commitmentToSend[:], commitment)
+	commitmentToSend, err := CalculateCommitment(seed, values)
+	if err != nil {
+		log.Error("Error in getting commitment: ", err)
+		return core.NilHash, err
+	}
+
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
 		Password:        account.Password,
@@ -133,8 +136,6 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 		Parameters:      []interface{}{epoch, commitmentToSend},
 	})
 
-	log.Debugf("Committing: epoch: %d, commitment: %s, seed: %s, account: %s", epoch, "0x"+hex.EncodeToString(commitment), "0x"+hex.EncodeToString(seed), account.Address)
-
 	log.Info("Commitment sent...")
 	log.Debugf("Executing Commit transaction with epoch = %d, commitmentToSend = %v", epoch, commitmentToSend)
 	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)
@@ -144,4 +145,68 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 	txnHash := transactionUtils.Hash(txn)
 	log.Info("Txn Hash: ", txnHash.Hex())
 	return txnHash, nil
+}
+
+func CalculateSeed(client *ethclient.Client, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
+	log.Debugf("CalculateSeed: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
+	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("CalculateSeed: Getting Salt for current epoch %d...", epoch)
+	salt, err := cmdUtils.GetSalt(client, epoch)
+	if err != nil {
+		log.Error("Error in getting salt: ", err)
+		return nil, err
+	}
+	seed := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(salt[:]), "0x" + hex.EncodeToString(secret)})
+	return seed, nil
+}
+
+func CalculateCommitment(seed []byte, values []*big.Int) ([32]byte, error) {
+	log.Debug("CalculateCommitment: Calling CreateMerkle() with argument Leaves = ", values)
+	merkleTree, err := merkleUtils.CreateMerkle(values)
+	if err != nil {
+		return [32]byte{}, errors.New("Error in getting merkle tree: " + err.Error())
+	}
+	log.Debug("CalculateCommitment: Merkle Tree: ", merkleTree)
+	log.Debug("CalculateCommitment: Calling GetMerkleRoot() for the merkle tree...")
+	merkleRoot, err := merkleUtils.GetMerkleRoot(merkleTree)
+	if err != nil {
+		return [32]byte{}, errors.New("Error in getting root: " + err.Error())
+	}
+	commitment := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(merkleRoot[:]), "0x" + hex.EncodeToString(seed)})
+	log.Debug("CalculateCommitment: Commitment: ", hex.EncodeToString(commitment))
+	commitmentToSend := [32]byte{}
+	copy(commitmentToSend[:], commitment)
+	return commitmentToSend, nil
+}
+
+func VerifyCommitment(client *ethclient.Client, account types.Account, keystorePath string, epoch uint32, values []*big.Int) (bool, error) {
+	commitmentStruct, err := razorUtils.GetCommitment(client, account.Address)
+	if err != nil {
+		log.Error("Error in getting commitments: ", err)
+		return false, err
+	}
+	log.Debugf("VerifyCommitment: CommitmentStruct: %+v", commitmentStruct)
+
+	seed, err := CalculateSeed(client, account, keystorePath, epoch)
+	if err != nil {
+		log.Error("Error in calculating seed: ", err)
+		return false, err
+	}
+
+	calculatedCommitment, err := CalculateCommitment(seed, values)
+	if err != nil {
+		log.Error("Error in calculating commitment for given committed values: ", err)
+		return false, err
+	}
+	log.Debug("VerifyCommitment: Calculated commitment: ", calculatedCommitment)
+
+	if calculatedCommitment == commitmentStruct.CommitmentHash {
+		log.Debug("VerifyCommitment: Calculated commitment for given values is EQUAL to commitment of the epoch")
+		return true, nil
+	}
+	log.Debug("VerifyCommitment: Calculated commitment for given values DOES NOT MATCH with commitment in the epoch")
+	return false, nil
 }
