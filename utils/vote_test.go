@@ -29,16 +29,16 @@ func TestGetCommitments(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    [32]byte
+		want    types.Commitment
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When GetCommitments() executes successfully",
+			name: "Test 1: When GetCommitment() executes successfully",
 			args: args{
 				stakerId:    1,
 				commitments: types.Commitment{},
 			},
-			want:    [32]byte{},
+			want:    types.Commitment{},
 			wantErr: false,
 		},
 		{
@@ -47,7 +47,7 @@ func TestGetCommitments(t *testing.T) {
 				stakerIdErr: errors.New("stakerId error"),
 				commitments: types.Commitment{},
 			},
-			want:    [32]byte{},
+			want:    types.Commitment{},
 			wantErr: true,
 		},
 		{
@@ -56,7 +56,7 @@ func TestGetCommitments(t *testing.T) {
 				stakerId:      1,
 				commitmentErr: errors.New("commitments error"),
 			},
-			want:    [32]byte{},
+			want:    types.Commitment{},
 			wantErr: true,
 		},
 	}
@@ -75,16 +75,16 @@ func TestGetCommitments(t *testing.T) {
 
 			utilsMock.On("GetOptions").Return(callOpts)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			voteManagerMock.On("Commitments", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.commitments, tt.args.commitmentErr)
+			voteManagerMock.On("GetCommitment", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.commitments, tt.args.commitmentErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCommitments(client, address)
+			got, err := utils.GetCommitment(client, address)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCommitments() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetCommitment() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetCommitments() got = %v, want %v", got, tt.want)
+				t.Errorf("GetCommitment() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

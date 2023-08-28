@@ -318,10 +318,6 @@ func TestInitiateCommit(t *testing.T) {
 		pathErr                   error
 		commitData                types.CommitData
 		commitDataErr             error
-		merkleTree                [][][]byte
-		merkleTreeErr             error
-		merkleRoot                [32]byte
-		merkleRootErr             error
 		commitTxn                 common.Hash
 		commitTxnErr              error
 		waitForBlockCompletionErr error
@@ -349,9 +345,8 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
-				merkleTree: [][][]byte{},
-				commitTxn:  common.BigToHash(big.NewInt(1)),
-				fileName:   "",
+				commitTxn: common.BigToHash(big.NewInt(1)),
+				fileName:  "",
 			},
 			wantErr: false,
 		},
@@ -385,9 +380,8 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
-				merkleTree: [][][]byte{},
-				commitTxn:  common.BigToHash(big.NewInt(1)),
-				fileName:   "",
+				commitTxn: common.BigToHash(big.NewInt(1)),
+				fileName:  "",
 			},
 			wantErr: false,
 		},
@@ -449,7 +443,6 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
-				merkleTree:   [][][]byte{},
 				commitTxnErr: errors.New("error in commit"),
 			},
 			wantErr: true,
@@ -466,6 +459,7 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
+				commitTxn:   common.BigToHash(big.NewInt(1)),
 				fileNameErr: errors.New("error in getting fileName"),
 			},
 			wantErr: true,
@@ -482,7 +476,6 @@ func TestInitiateCommit(t *testing.T) {
 					SeqAllottedCollections: nil,
 					Leaves:                 nil,
 				},
-				merkleTree:                [][][]byte{},
 				commitTxn:                 common.BigToHash(big.NewInt(1)),
 				waitForBlockCompletionErr: errors.New("transaction mining unsuccessful"),
 			},
@@ -497,39 +490,6 @@ func TestInitiateCommit(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "Test 14: When there is an error in getting merkle tree",
-			args: args{
-				epoch:      5,
-				lastCommit: 2,
-				secret:     []byte{1},
-				salt:       [32]byte{},
-				commitData: types.CommitData{
-					AssignedCollections:    nil,
-					SeqAllottedCollections: nil,
-					Leaves:                 nil,
-				},
-				merkleTreeErr: errors.New("merkle tree error"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 15: When there is an error in getting merkle root",
-			args: args{
-				epoch:      5,
-				lastCommit: 2,
-				secret:     []byte{1},
-				salt:       [32]byte{},
-				commitData: types.CommitData{
-					AssignedCollections:    nil,
-					SeqAllottedCollections: nil,
-					Leaves:                 nil,
-				},
-				merkleTree:    [][][]byte{},
-				merkleRootErr: errors.New("root error"),
-			},
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -541,8 +501,6 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
-			merkleUtilsMock.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
-			merkleUtilsMock.On("GetMerkleRoot", mock.Anything).Return(tt.args.merkleRoot, tt.args.merkleRootErr)
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
@@ -564,6 +522,7 @@ func TestInitiateReveal(t *testing.T) {
 	)
 
 	randomNum := big.NewInt(1111)
+	globalCommitDataStruct.Epoch = 5
 
 	type args struct {
 		staker                   bindings.StructsStaker
@@ -657,8 +616,8 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting fileName",
 			args: args{
-				epoch:       5,
-				lastReveal:  2,
+				epoch:       6,
+				lastReveal:  3,
 				fileNameErr: errors.New("error in getting fileName"),
 			},
 			wantErr: true,
@@ -666,7 +625,7 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 7: When there is an error in getting data from file",
 			args: args{
-				epoch:                    5,
+				epoch:                    6,
 				lastReveal:               2,
 				fileName:                 "",
 				committedDataFromFileErr: errors.New("error in reading data from file"),
@@ -676,7 +635,7 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 8: When file does not contain the latest data",
 			args: args{
-				epoch:                 5,
+				epoch:                 6,
 				lastReveal:            2,
 				fileName:              "",
 				committedDataFromFile: types.CommitFileData{Epoch: 3},
