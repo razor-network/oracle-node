@@ -98,7 +98,7 @@ type Utils interface {
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
-	GetCommitments(client *ethclient.Client, address string) ([32]byte, error)
+	GetCommitment(client *ethclient.Client, address string) (types.Commitment, error)
 	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
 	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
 	GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
@@ -259,7 +259,7 @@ type AssetManagerUtils interface {
 }
 
 type VoteManagerUtils interface {
-	Commitments(client *ethclient.Client, stakerId uint32) (types.Commitment, error)
+	GetCommitment(client *ethclient.Client, stakerId uint32) (types.Commitment, error)
 	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
 	GetInfluenceSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error)
 	GetStakeSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error)

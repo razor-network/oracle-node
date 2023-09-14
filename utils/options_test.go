@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"math/big"
+	"razor/core"
 	"razor/core/types"
 	"razor/utils/mocks"
 	"reflect"
@@ -400,8 +401,8 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 				inputData:   inputData,
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:    0,
-			wantErr: errors.New("gasLimit error"),
+			want:    core.HigherGasLimitValue,
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
