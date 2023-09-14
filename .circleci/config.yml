@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: cimg/go:1.17.6
+      - image: cimg/go:1.19
     steps:
       - checkout
       - setup_remote_docker:
@@ -20,8 +20,8 @@ jobs:
           name: "Installing dependencies"
           command: |
             npm i
-            go get -d github.com/ethereum/go-ethereum@v1.10.8 \
-            && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.10.8 \
+            go get -d github.com/ethereum/go-ethereum@v1.12.0 \
+            && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.12.0 \
             && go install github.com/mattn/goveralls@v0.0.11 \
             && go install github.com/ory/go-acc@v0.2.7 \
             && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2
@@ -56,7 +56,7 @@ jobs:
             - .
   push-docker-build:
     docker:
-      - image: cimg/go:1.17.6
+      - image: cimg/go:1.19
         environment:
           IMAGE_NAME: "razornetwork/razor-go"
 
@@ -92,8 +92,8 @@ jobs:
           command: | 
             sudo apt-get update
             sudo rm -rf /usr/local/go  
-            wget https://dl.google.com/go/go1.17.7.linux-amd64.tar.gz 
-            sudo tar -xvf go1.17.7.linux-amd64.tar.gz   
+            wget https://dl.google.com/go/go1.19.linux-amd64.tar.gz 
+            sudo tar -xvf go1.19.linux-amd64.tar.gz   
             sudo mv go /usr/local  
       - run:
           name: "Check Version" 
@@ -132,8 +132,8 @@ jobs:
           command: | 
             sudo apt-get update
             sudo rm -rf /usr/local/go  
-            wget https://dl.google.com/go/go1.17.7.linux-arm64.tar.gz 
-            sudo tar -xvf go1.17.7.linux-arm64.tar.gz   
+            wget https://dl.google.com/go/go1.19.linux-arm64.tar.gz 
+            sudo tar -xvf go1.19.linux-arm64.tar.gz   
             sudo mv go /usr/local  
       - run:
           name: "Check Version" 
@@ -164,7 +164,7 @@ jobs:
 
   publish-github-release:
     docker:
-      - image: cimg/go:1.17
+      - image: cimg/go:1.19
     steps:
       - checkout
       - attach_workspace:
