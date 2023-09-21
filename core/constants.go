@@ -34,7 +34,7 @@ var DefaultLogFileMaxSize = 200
 var DefaultLogFileMaxBackups = 52
 var DefaultLogFileMaxAge = 365
 
-//DisputeGasMultiplier is a constant gasLimitMultiplier to increase gas Limit for function `disputeCollectionIdShouldBeAbsent` and `disputeCollectionIdShouldBePresent`
+// DisputeGasMultiplier is a constant gasLimitMultiplier to increase gas Limit for function `disputeCollectionIdShouldBeAbsent` and `disputeCollectionIdShouldBePresent`
 var DisputeGasMultiplier float32 = 5.5
 
 // Following are the constants which will be used to derive different file paths
@@ -48,10 +48,10 @@ var ConfigFile = "razor.yaml"
 var LogFileDirectory = "logs"
 var DefaultPathName = ".razor"
 
-//BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
+// BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
 
-//APIKeyRegex will be used as a regular expression to be matched in job Urls
+// APIKeyRegex will be used as a regular expression to be matched in job Urls
 var APIKeyRegex = `\$\{(.+?)\}`
 
 // Following are the constants which defines retry attempts and retry delay if there is an error in processing request
@@ -59,7 +59,7 @@ var APIKeyRegex = `\$\{(.+?)\}`
 var ProcessRequestRetryAttempts uint = 2
 var ProcessRequestRetryDelay = 2
 
-//SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
+// SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value

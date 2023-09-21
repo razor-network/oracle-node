@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -19,12 +19,12 @@ Example:
 	Run: initialiseListAccounts,
 }
 
-//This function initialises the ExecuteListAccounts function
+// This function initialises the ExecuteListAccounts function
 func initialiseListAccounts(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteListAccounts(cmd.Flags())
 }
 
-//This function sets the flag appropriately and executes the ListAccounts function
+// This function sets the flag appropriately and executes the ListAccounts function
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -41,7 +41,7 @@ func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
 	}
 }
 
-//This function is used to list all accessible accounts
+// This function is used to list all accessible accounts
 func (*UtilsStruct) ListAccounts() ([]accounts.Account, error) {
 	path, err := pathUtils.GetDefaultPath()
 	if err != nil {
