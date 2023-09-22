@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -28,12 +28,12 @@ Note:
 	Run: initialiseCreateCollection,
 }
 
-//This function initialises the ExecuteCreateCollction function
+// This function initialises the ExecuteCreateCollction function
 func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteCreateCollection(cmd.Flags())
 }
 
-//This function sets the flags appropriately and executes the CreateCollection function
+// This function sets the flags appropriately and executes the CreateCollection function
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -86,7 +86,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in WaitForBlockCompletion for createCollection: ", err)
 }
 
-//This function allows the admin to create collction if existing jobs are present
+// This function allows the admin to create collction if existing jobs are present
 func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("CreateCollection: Uint16 jobIds: ", jobIds)

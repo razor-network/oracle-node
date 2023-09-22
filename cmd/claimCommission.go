@@ -1,4 +1,4 @@
-//This function add the following command to the root command
+// This function add the following command to the root command
 package cmd
 
 import (
@@ -25,7 +25,7 @@ Example:
 	},
 }
 
-//This function allows the staker to claim the rewards earned from delegator's pool share as commission
+// This function allows the staker to claim the rewards earned from delegator's pool share as commission
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
