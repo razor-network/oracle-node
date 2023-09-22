@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -28,12 +28,12 @@ Note:
 	Run: initialiseUpdateJob,
 }
 
-//This function initialises the ExecuteUpdateJob function
+// This function initialises the ExecuteUpdateJob function
 func initialiseUpdateJob(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUpdateJob(cmd.Flags())
 }
 
-//This function sets the flag appropriately and executes the UpdateJob function
+// This function sets the flag appropriately and executes the UpdateJob function
 func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -90,7 +90,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in WaitForBlockCompletion for updateJob: ", err)
 }
 
-//This function allows the admin to update an existing job
+// This function allows the admin to update an existing job
 func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
 	_, err := cmdUtils.WaitIfCommitState(client, "update job")
 	if err != nil {

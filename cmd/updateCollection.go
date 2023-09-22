@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -28,12 +28,12 @@ Note:
 	Run: initialiseUpdateCollection,
 }
 
-//This function initialises the ExecuteUpdateCollection function
+// This function initialises the ExecuteUpdateCollection function
 func initialiseUpdateCollection(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUpdateCollection(cmd.Flags())
 }
 
-//This function sets the flag appropriately and executes the UpdateCollection function
+// This function sets the flag appropriately and executes the UpdateCollection function
 func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -85,7 +85,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in WaitForBlockCompletion for updateCollection: ", err)
 }
 
-//This function allows the admin to update an existing collection
+// This function allows the admin to update an existing collection
 func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("UpdateCollection: Uint16 jobIds: ", jobIds)
