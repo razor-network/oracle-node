@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"errors"
 	"math/big"
 	"razor/core"
@@ -82,7 +79,7 @@ func TestCheckCurrentStatus(t *testing.T) {
 
 func TestModifyAssetStatus(t *testing.T) {
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	var config types.Configurations

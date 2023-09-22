@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"errors"
 	"math/big"
 	"razor/core"
@@ -26,7 +23,7 @@ func TestUpdateJob(t *testing.T) {
 	var jobInput types.CreateJobInput
 	var jobId uint16
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {

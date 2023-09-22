@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,7 +14,7 @@ import (
 
 func TestImportAccount(t *testing.T) {
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	var fileInfo fs.FileInfo
 
 	account := accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),

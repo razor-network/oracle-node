@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -22,7 +19,7 @@ import (
 )
 
 func TestDispute(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	var (
@@ -123,7 +120,7 @@ func TestDispute(t *testing.T) {
 }
 
 func TestHandleDispute(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	var client *ethclient.Client
@@ -538,7 +535,7 @@ func TestHandleDispute(t *testing.T) {
 }
 
 func TestGiveSorted(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	nilDisputesMapping := types.DisputesStruct{
@@ -861,7 +858,7 @@ func TestCheckDisputeForIds(t *testing.T) {
 		blockIndex      uint8
 	)
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	type args struct {
@@ -1142,7 +1139,7 @@ func BenchmarkGetCollectionIdPositionInBlock(b *testing.B) {
 }
 
 func BenchmarkHandleDispute(b *testing.B) {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := GetTestAccountPrivateKey()
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	var client *ethclient.Client
