@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"errors"
 	"math/big"
 	"razor/core"
@@ -18,7 +21,7 @@ import (
 )
 
 func TestUnstake(t *testing.T) {
-	privateKey, _ := GetTestAccountPrivateKey()
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	var config types.Configurations
@@ -323,7 +326,7 @@ func TestApproveUnstake(t *testing.T) {
 		txnArgs            types.TransactionOptions
 	)
 
-	privateKey, _ := GetTestAccountPrivateKey()
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 	type args struct {
 		txn    *Types.Transaction

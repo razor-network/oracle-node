@@ -1,10 +1,6 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"os"
-	"path/filepath"
-	"razor/accounts"
 	accountsPkgMocks "razor/accounts/mocks"
 	"razor/cmd/mocks"
 	"razor/path"
@@ -171,25 +167,4 @@ func SetUpMockInterfaces() {
 
 	accountsMock = new(accountsPkgMocks.AccountInterface)
 	accountUtils = accountsMock
-}
-
-func GetTestAccountPrivateKey() (*ecdsa.PrivateKey, error) {
-	testAccountAddress := "0xbd3e0a1d11163934df10501c9e1a18fbaa9ecaf4"
-	testAccountPassword := "Test@123"
-
-	accountUtils = accounts.AccountUtils{}
-	accounts.AccountUtilsInterface = accountUtils
-
-	currentDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal("Error in getting the current directory for test account keystore:", err)
-	}
-	parentDir := filepath.Dir(currentDir)
-	testAccountPath := filepath.Join(parentDir, "utils/test_accounts")
-
-	privateKey, err := accountUtils.GetPrivateKey(testAccountAddress, testAccountPassword, testAccountPath)
-	if err != nil {
-		log.Fatal("Error in getting test account private key: ", err)
-	}
-	return privateKey, nil
 }

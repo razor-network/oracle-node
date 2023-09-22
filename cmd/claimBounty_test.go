@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"errors"
 	"io/fs"
 	"math/big"
@@ -145,7 +148,7 @@ func TestExecuteClaimBounty(t *testing.T) {
 }
 
 func TestClaimBounty(t *testing.T) {
-	privateKey, _ := GetTestAccountPrivateKey()
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	var config types.Configurations

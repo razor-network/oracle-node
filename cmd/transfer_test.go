@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"errors"
 	"math/big"
 	"razor/core"
@@ -20,7 +23,7 @@ func TestTransfer(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
 
-	privateKey, _ := GetTestAccountPrivateKey()
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000))
 
 	type args struct {

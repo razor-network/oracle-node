@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -24,7 +27,7 @@ func TestCommit(t *testing.T) {
 		seed    []byte
 		epoch   uint32
 	)
-	privateKey, _ := GetTestAccountPrivateKey()
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {
