@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core"
@@ -20,7 +20,7 @@ import (
 func TestClaimBlockReward(t *testing.T) {
 	var options types.TransactionOptions
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {

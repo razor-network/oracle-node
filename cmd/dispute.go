@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,7 +26,7 @@ var (
 
 //blockId is id of the block
 
-//This function handles the dispute and if there is any error it returns the error
+// This function handles the dispute and if there is any error it returns the error
 func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
@@ -188,7 +188,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	return nil
 }
 
-//This function returns the local median data
+// This function returns the local median data
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	if (globalProposedDataStruct.MediansData == nil && !rogueData.IsRogue) || epoch != globalProposedDataStruct.Epoch {
 		log.Debug("Global propose data struct is not updated, getting the proposed data from file...")
@@ -251,7 +251,7 @@ CalculateMedian:
 	return globalProposedDataStruct, nil
 }
 
-//This function check for the dispute in different type of Id's
+// This function check for the dispute in different type of Id's
 func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error) {
 	//checking for hashing whether there is any dispute or not
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
@@ -317,7 +317,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 	return nil, nil
 }
 
-//This function finalizes the dispute and return the error if there is any
+// This function finalizes the dispute and return the error if there is any
 func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	blockManager := razorUtils.GetBlockManager(client)
 
@@ -420,7 +420,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	return nil
 }
 
-//This function sorts the Id's recursively
+// This function sorts the Id's recursively
 func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
 	if len(sortedValues) == 0 {
 		return errors.New("length of sortedValues is 0")
@@ -463,7 +463,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	return nil
 }
 
-//This function returns the collection Id position in block
+// This function returns the collection Id position in block
 func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ids := proposedBlock.Ids
 	idToBeDisputed, err := razorUtils.GetCollectionIdFromLeafId(client, leafId)
@@ -481,7 +481,7 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 	return nil
 }
 
-//This function saves the bountyId in disputeData file and return the error if there is any
+// This function saves the bountyId in disputeData file and return the error if there is any
 func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Account) error {
 	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
@@ -527,7 +527,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 	return nil
 }
 
-//This function resets the dispute
+// This function resets the dispute
 func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32) {
 	log.Debug("Executing ResetDispute transaction with arguments epoch = ", epoch)
 	txn, err := blockManagerUtils.ResetDispute(blockManager, txnOpts, epoch)
@@ -545,7 +545,7 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 	log.Info("Dispute has been reset")
 }
 
-//This function returns the bountyId from events
+// This function returns the bountyId from events
 func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
 	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
