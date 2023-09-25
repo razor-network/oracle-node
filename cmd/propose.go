@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -27,7 +27,7 @@ var globalProposedDataStruct types.ProposeFileData
 
 // Find iteration using salt as seed
 
-//This functions handles the propose state
+// This functions handles the propose state
 func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
 	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
@@ -197,7 +197,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	return nil
 }
 
-//This function returns the biggest stake and Id of it
+// This function returns the biggest stake and Id of it
 func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
@@ -252,7 +252,7 @@ loop:
 	return biggestStake, biggestStakerId, nil
 }
 
-//This function returns the iteration of the proposer if he is elected
+// This function returns the iteration of the proposer if he is elected
 func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
@@ -286,7 +286,7 @@ loop:
 	return -1
 }
 
-//This function returns if the elected staker is proposer or not
+// This function returns if the elected staker is proposer or not
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
 
@@ -311,14 +311,14 @@ func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentSta
 	return isElected
 }
 
-//This function returns the pseudo random number
+// This function returns the pseudo random number
 func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *big.Int {
 	hash := solsha3.SoliditySHA3([]string{"bytes32", "bytes32"}, []interface{}{"0x" + hex.EncodeToString(blockHashes), "0x" + hex.EncodeToString(seed)})
 	sum := big.NewInt(0).SetBytes(hash)
 	return sum.Mod(sum, big.NewInt(int64(max)))
 }
 
-//This function returns the sorted revealed values
+// This function returns the sorted revealed values
 func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	log.Debugf("GetSortedRevealedValues: Calling IndexRevealEventsOfCurrentEpoch with arguments blockNumber = %s, epoch = %d", blockNumber, epoch)
 	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
@@ -365,7 +365,7 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 	}, nil
 }
 
-//This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
+// This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
 func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	log.Debugf("MakeBlock: Calling GetSortedRevealedValues with arguments blockNumber = %s, epoch = %d", blockNumber, epoch)
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)

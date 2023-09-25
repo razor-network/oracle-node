@@ -11,7 +11,7 @@ var (
 	endpoint = "/metrics"
 )
 
-//Run runs metrics http server
+// Run runs metrics http server
 func Run(port string, certFile string, certKey string) error {
 	portNumber := ":" + port
 	logrus.Infof("Starting http server to serve metrics at port '%s', endpoint '%s'", portNumber, endpoint)

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -26,7 +26,7 @@ func TestUpdateJob(t *testing.T) {
 	var jobInput types.CreateJobInput
 	var jobId uint16
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {

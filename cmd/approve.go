@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -8,7 +8,7 @@ import (
 	"razor/pkg/bindings"
 )
 
-//This function approves the transaction if the user has sufficient balance otherwise it fails the transaction
+// This function approves the transaction if the user has sufficient balance otherwise it fails the transaction
 func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, error) {
 	opts := razorUtils.GetOptions()
 	allowance, err := tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
