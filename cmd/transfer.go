@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,12 +26,12 @@ Example:
 	Run: initialiseTransfer,
 }
 
-// This function initialises the ExecuteTransfer function
+//This function initialises the ExecuteTransfer function
 func initialiseTransfer(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteTransfer(cmd.Flags())
 }
 
-// This function sets the flag appropriately and executes the Transfer function
+//This function sets the flag appropriately and executes the Transfer function
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -79,7 +79,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in WaitForBlockCompletion for transfer: ", err)
 }
 
-// This function transfers the razors from your account to others account
+//This function transfers the razors from your account to others account
 func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)

@@ -1,4 +1,4 @@
-// This function add the following command to the root command
+//This function add the following command to the root command
 package cmd
 
 import (
@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// This function takes client as a parameter and returns the epoch and state
+//This function takes client as a parameter and returns the epoch and state
 func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, error) {
 	epoch, err := razorUtils.GetEpoch(client)
 	if err != nil {
@@ -32,7 +32,7 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	return epoch, state, nil
 }
 
-// This function waits for the appropriate states which are required
+//This function waits for the appropriate states which are required
 func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error) {
 	statesAllowed := GetFormattedStateNames(states)
 	for {
@@ -50,7 +50,7 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 	}
 }
 
-// This function wait if the state is commit state
+//This function wait if the state is commit state
 func (*UtilsStruct) WaitIfCommitState(client *ethclient.Client, action string) (uint32, error) {
 	for {
 		epoch, state, err := cmdUtils.GetEpochAndState(client)
@@ -67,7 +67,7 @@ func (*UtilsStruct) WaitIfCommitState(client *ethclient.Client, action string) (
 	}
 }
 
-// This function assignes amount in wei
+//This function assignes amount in wei
 func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) {
 	amount, err := flagSetUtils.GetStringValue(flagSet)
 	if err != nil {
@@ -97,7 +97,7 @@ func (*UtilsStruct) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error) 
 	return amountInWei, nil
 }
 
-// This function returns the states which are allowed
+//This function returns the states which are allowed
 func GetFormattedStateNames(states []int) string {
 	var statesAllowed string
 	for i := 0; i < len(states); i++ {

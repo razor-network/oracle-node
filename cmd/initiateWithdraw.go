@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -30,7 +30,7 @@ Example:
 	},
 }
 
-// This function sets the flags appropriately and executes the InitiateWithdraw function
+//This function sets the flags appropriately and executes the InitiateWithdraw function
 func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -70,7 +70,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	}
 }
 
-// This function handles the unstake lock
+//This function handles the unstake lock
 func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 	unstakeLock, err := razorUtils.GetLock(client, account.Address, stakerId, 0)
 	if err != nil {
@@ -139,7 +139,7 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 	return core.NilHash, errors.New("unstakeLock period not over yet! Please try after some time")
 }
 
-// This function initiate withdraw for your razors once you've unstaked
+//This function initiate withdraw for your razors once you've unstaked
 func (*UtilsStruct) InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
 	log.Info("Initiating withdrawal of funds...")
 	log.Debug("Executing InitiateWithdraw transaction for stakerId = ", stakerId)

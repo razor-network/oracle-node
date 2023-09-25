@@ -78,7 +78,7 @@ func (*UtilsStruct) AssignPassword(flagSet *pflag.FlagSet) string {
 	return UtilsInterface.PasswordPrompt()
 }
 
-// This function checks if the password is strong enough or not
+//This function checks if the password is strong enough or not
 func strongPassword(input string) bool {
 	l, u, p, d := 0, 0, 0, 0
 	if len(input) >= 8 {

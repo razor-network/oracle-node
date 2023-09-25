@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -23,12 +23,12 @@ Example:
 	Run: initialiseModifyCollectionStatus,
 }
 
-// This function initialises the ExecuteModifyCollectionStatus function
+//This function initialises the ExecuteModifyCollectionStatus function
 func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteModifyCollectionStatus(cmd.Flags())
 }
 
-// This function sets the flags appropriately and executes the ModifyCollectionStatus function
+//This function sets the flags appropriately and executes the ModifyCollectionStatus function
 func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -76,13 +76,13 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	}
 }
 
-// This function checks the current status of particular collectionId
+//This function checks the current status of particular collectionId
 func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, collectionId uint16) (bool, error) {
 	callOpts := razorUtils.GetOptions()
 	return assetManagerUtils.GetActiveStatus(client, &callOpts, collectionId)
 }
 
-// This function allows the admin to modify the active status of collection
+//This function allows the admin to modify the active status of collection
 func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
 	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyCollectionInput.CollectionId)
 	if err != nil {

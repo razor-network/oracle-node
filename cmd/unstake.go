@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -29,12 +29,12 @@ Example:
 	Run: initialiseUnstake,
 }
 
-// This function initialises the ExecuteUnstake function
+//This function initialises the ExecuteUnstake function
 func initialiseUnstake(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteUnstake(cmd.Flags())
 }
 
-// This function sets the flag appropriately and executes the Unstake function
+//This function sets the flag appropriately and executes the Unstake function
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -79,7 +79,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	}
 }
 
-// This function allows user to unstake their sRZRs in the razor network
+//This function allows user to unstake their sRZRs in the razor network
 func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:         client,
@@ -143,7 +143,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	return txnHash, nil
 }
 
-// This function approves the unstake
+//This function approves the unstake
 func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
