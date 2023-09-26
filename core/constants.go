@@ -64,3 +64,6 @@ var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value
 var HexReturnType = "hex"
+
+//HigherGasLimitValue is the gas limit which will be used when estimateGas fails
+var HigherGasLimitValue uint64 = 50000000
