@@ -1,0 +1,7 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # or another package manager if you are not using npm
+    directory: "/"
+    schedule:
+      interval: "daily" # or "weekly" or "monthly"
+    target-branch: "dependabot-alerts-fix" # specify the branch you want to scan
