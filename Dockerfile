@@ -1,5 +1,5 @@
-FROM golang:1.17-alpine AS go
-FROM ethereum/client-go:alltools-v1.10.7 AS ethereum
+FROM golang:1.21.1-alpine AS go
+FROM ethereum/client-go:alltools-v1.12.0 AS ethereum
 
 FROM node:16.2.0-alpine AS builder
 
