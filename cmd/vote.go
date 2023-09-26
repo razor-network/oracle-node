@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -37,12 +37,12 @@ Example:
 	Run: initializeVote,
 }
 
-//This function initialises the ExecuteVote function
+// This function initialises the ExecuteVote function
 func initializeVote(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteVote(cmd.Flags())
 }
 
-//This function sets the flag appropriately and executes the Vote function
+// This function sets the flag appropriately and executes the Vote function
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -96,7 +96,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 }
 
-//This function handles the exit and listens for CTRL+C
+// This function handles the exit and listens for CTRL+C
 func (*UtilsStruct) HandleExit() {
 	// listen for CTRL+C
 	ctx := context.Background()
@@ -120,7 +120,7 @@ func (*UtilsStruct) HandleExit() {
 	}()
 }
 
-//This function handles all the states of voting
+// This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
@@ -152,7 +152,7 @@ var (
 	disputeData            types.DisputeFileData
 )
 
-//This function handles the block
+// This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
@@ -312,7 +312,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	fmt.Println()
 }
 
-//This function initiates the commit
+// This function initiates the commit
 func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
 	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
@@ -394,7 +394,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	return nil
 }
 
-//This function initiates the reveal
+// This function initiates the reveal
 func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiateReveal: Staked Amount: ", stakedAmount)
@@ -524,7 +524,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 	return nil
 }
 
-//This function initiates the propose
+// This function initiates the propose
 func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiatePropose: Staked Amount: ", stakedAmount)
@@ -565,7 +565,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 	return nil
 }
 
-//This function calculates the secret
+// This function calculates the secret
 func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
 	if chainId == nil {
 		return nil, nil, errors.New("chainId is nil")

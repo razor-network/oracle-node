@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -18,12 +18,12 @@ var contractAddressesCmd = &cobra.Command{
 	Run:   initialiseContractAddresses,
 }
 
-//This function initialises the ExecuteContractAddresses function
+// This function initialises the ExecuteContractAddresses function
 func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteContractAddresses(cmd.Flags())
 }
 
-//This function sets the flag appropriatley and executes the ContractAddresses function
+// This function sets the flag appropriatley and executes the ContractAddresses function
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -34,7 +34,7 @@ func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
 
 }
 
-//This function provides the list of all contract addresses
+// This function provides the list of all contract addresses
 func (*UtilsStruct) ContractAddresses() {
 	log.Info("StakeManagerAddress :", core.StakeManagerAddress)
 	log.Info("RAZORAddress :", core.RAZORAddress)

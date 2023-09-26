@@ -64,7 +64,7 @@ docker exec -it razor-go razor <command>
 
 ### Prerequisites to building the source
 
-- Golang 1.15 or later must be installed.
+- Golang 1.21.1 or later must be installed.
 - Latest stable version of node is required.
 - Silicon chip based Mac users must go for node 15.3.0+
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
