@@ -66,7 +66,7 @@ docker exec -it razor-go razor <command>
 
 - Golang 1.21.1 or later must be installed.
 - Latest stable version of node is required.
-- Silicon chip based Mac users must go for node 15.3.0+
+- Silicon chip based Mac users must go for node 18.18.0 LTS or later versions
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
 - `solc` and `jq` must be installed.
 
