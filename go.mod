@@ -5,7 +5,7 @@ go 1.21.1
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/ethereum/go-ethereum v1.12.0
+	github.com/ethereum/go-ethereum v1.12.2
 	github.com/gocolly/colly v1.2.0
 	github.com/magiconair/properties v1.8.7
 	github.com/manifoldco/promptui v0.9.0
