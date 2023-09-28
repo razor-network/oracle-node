@@ -163,7 +163,7 @@ jobs:
 
   publish-github-release:
     docker:
-      - image: cimg/go:1.21.1
+      - image: cimg/go:1.19
     steps:
       - checkout
       - attach_workspace:
