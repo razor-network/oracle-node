@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: cimg/go:1.21.1
+      - image: cimg/go:1.21
     steps:
       - checkout
       - setup_remote_docker:
@@ -55,7 +55,7 @@ jobs:
             - .
   push-docker-build:
     docker:
-      - image: cimg/go:1.21.1
+      - image: cimg/go:1.21
         environment:
           IMAGE_NAME: "razornetwork/razor-go"
 
@@ -163,7 +163,7 @@ jobs:
 
   publish-github-release:
     docker:
-      - image: cimg/go:1.19
+      - image: cimg/go:1.17
     steps:
       - checkout
       - attach_workspace:
@@ -173,6 +173,7 @@ jobs:
       - run:
           name: "Publish Release on GitHub"
           command: |
+            go version
             go get -u github.com/tcnksm/ghr
             VERSION=$(git describe --tags --abbrev=0)
             mv razor_go.linux-amd64.tar.gz razor_go.${VERSION}.linux-amd64.tar.gz && mv razor_go.linux-arm64.tar.gz razor_go.${VERSION}.linux-arm64.tar.gz
