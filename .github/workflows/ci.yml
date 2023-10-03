@@ -167,9 +167,9 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.17.6
-      - uses: bissolli/gh-action-persist-workspace@v1
-        with:
-          action: retrieve
+      # - uses: bissolli/gh-action-persist-workspace@v1
+      #   with:
+      #     action: retrieve
 
       - name: Install Dependencies
         run: >
@@ -222,9 +222,9 @@ jobs:
         with:
           go-version: 1.17.6
 
-      - uses: bissolli/gh-action-persist-workspace@v1
-        with:
-          action: retrieve
+      # - uses: bissolli/gh-action-persist-workspace@v1
+      #   with:
+      #     action: retrieve
 
       - name: Install Dependencies
         run: >
