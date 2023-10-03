@@ -169,7 +169,11 @@ jobs:
       - name: Create AMD Artifact
         run: |
           # ... [commands to create AMD artifact]
+          npm i
+          npm run build-noargs
+          cd build/bin
           tar -czvf razor_go.linux-amd64.tar.gz razor
+          ls -la
       - name: Upload AMD Artifact
         uses: actions/upload-artifact@v2
         with:
