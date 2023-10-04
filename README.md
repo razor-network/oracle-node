@@ -842,46 +842,64 @@ Shown below is an example of how your `assets.json` file should be -
 
 ``` json
 {
-	"assets": {
-		"collection": {
-			"ethCollectionMedian": {
-				"power": 2,
-				"official jobs": {
-					"1": {
-					  "URL": {
-						   "type": "GET",
-						   "url": "https://data.messari.io/api/v1/assets/eth/metrics",
-						   "body": {},
-						   "content-type": ""
-						},
-						"selector": "[`data`][`market_data`][`price_usd`]",
-						"power": 2,
-						"weight": 2
-					},
-				},
-				"custom jobs": [{
-						"URL": {
-							"type": "GET",
-							"url": "https: //api.lunarcrush.com/v2?data=assets&symbol=ETH",
-							"body": {},
-							"content-type": ""
-						},
-						 "name:" "eth_lunarCrush",
-						 "selector": "[`data`][`0`][`price`]",
-                         "power": 3,
-                         "weight": 2
-					]
-				}
-			}
-		}
-	}
+    "assets": {
+      "collection": {
+        "ETHUSD": {
+          "official jobs": {
+            "1": {
+              "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
+              "selector": "[`data`][`market_data`][`price_usd`]",
+              "power": 2,
+              "weight": 2
+            }
+          },
+          "custom jobs": [
+            {
+              "URL": "https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH",
+              "name": "eth_kucoin_usd",
+              "selector": "data.ETH",
+              "power": 3,
+              "weight": 1
+            },
+            {
+              "URL": {
+                "type": "POST",
+                "url": "https://rpc.ankr.com/eth",
+                "body": {
+                  "jsonrpc": "2.0",
+                  "method": "eth_call",
+                  "params": [
+                    {
+                      "to": "0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6",
+                      "data": "0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"
+                    },
+                    "latest"
+                  ],
+                  "id": 5
+                },
+                "header": {
+                  "content-type": "application/json"
+                },
+                "returnType": "hex"
+              },
+              "name": "eth_postJob_usd",
+              "power": -4,
+              "selectorType": 0,
+              "selector": "result",
+              "weight": 1
+            }
+          ]
+        }
+      }
+    }
+  }
 ```
 
 Breaking down into components
 
 - The existing jobs that you want to override should be included in `official jobs` and fields like URL, selector should be replaced with your provided inputs respectively.
 
-In the above example for the collection `ethCollectionMean`, job having `jobId:1` is override by provided URL, selector, power and weight.
+In the above example for the collection `ethCollectionMean`, job having `jobId:1` is overriden by provided URL, selector, power and weight.
 
 ```
 "official jobs": {
@@ -895,18 +913,9 @@ In the above example for the collection `ethCollectionMean`, job having `jobId:1
 
 - Additional jobs that you want to add to a collection should be added in `custom jobs` field with their respective URLs and selectors.
 
-In the above example for the collection `ethCollectionMean`, new custom job having URL `https://api.lunarcrush.com/v2?data=assets&symbol=ETH` is added.
-
-```
- "custom jobs": [
-          {
-            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
-            "selector": "[`data`][`0`][`price`]",
-            "power": 3,
-            "weight": 2
-          },
-        ]
-```
+In the above example for the collection `ethCollectionMean` new custom jobs are as shown below, 
+1. Job following GET request having URL `https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH` and
+2. Job following POST request having URL `"https://rpc.ankr.com/eth"` with respective `body` and `header` will be added in jobs array.
 
 ### Logs
 
