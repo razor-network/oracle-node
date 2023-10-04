@@ -917,6 +917,24 @@ In the above example for the collection `ethCollectionMean` new custom jobs are 
 1. Job following GET request having URL `https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH` and
 2. Job following POST request having URL `"https://rpc.ankr.com/eth"` with respective `body` and `header` will be added in jobs array.
 
+If any of the custom job requires any authentication in the form of API key or authentication headers, staker can follow exporting the key with keyword as shown below,
+
+If the job is:
+```
+https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=73034021746739393292922
+```
+
+you can change the above job url to 
+```
+https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=${AUTH_KEY}
+```
+
+Now staker needs to use the same keyword defined inside `${...}` as an environment variable using `export` command and assigning it a value as users API key as shown below,
+
+```
+export AUTH_KEY="73034021746739393292922"
+```
+
 ### Logs
 
 User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in `.razor/logs` directory.
