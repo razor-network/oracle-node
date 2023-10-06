@@ -360,7 +360,7 @@ func TestGetGasLimitOverride(t *testing.T) {
 			args: args{
 				gasLimitOverride: 0,
 			},
-			want:    0,
+			want:    50000000,
 			wantErr: nil,
 		},
 		{
@@ -368,7 +368,7 @@ func TestGetGasLimitOverride(t *testing.T) {
 			args: args{
 				gasLimitOverrideErr: errors.New("gasLimitOverride error"),
 			},
-			want:    0,
+			want:    50000000,
 			wantErr: errors.New("gasLimitOverride error"),
 		},
 	}

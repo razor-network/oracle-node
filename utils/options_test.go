@@ -7,7 +7,6 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
-	"razor/core"
 	"razor/core/types"
 	"razor/utils/mocks"
 	"reflect"
@@ -395,13 +394,16 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 			args: args{
 				transactionData: types.TransactionOptions{
 					MethodName: "stake",
-					Config:     types.Configurations{GasLimitMultiplier: 2},
+					Config: types.Configurations{
+						GasLimitMultiplier: 2,
+						GasLimitOverride:   5000000,
+					},
 				},
 				parsedData:  parsedData,
 				inputData:   inputData,
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:    core.HigherGasLimitValue,
+			want:    5000000,
 			wantErr: nil,
 		},
 	}
