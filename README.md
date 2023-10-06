@@ -921,7 +921,7 @@ If any of the custom job requires any authentication in the form of API key or a
 
 If the job is:
 ```
-https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=73034021746739393292922
+https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=YOUR_AUTH_KEY
 ```
 
 you can change the above job url to 
@@ -932,7 +932,7 @@ https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=${AUTH_KEY}
 Now staker needs to use the same keyword defined inside `${...}` as an environment variable using `export` command and assigning it a value as users API key as shown below,
 
 ```
-export AUTH_KEY="73034021746739393292922"
+export AUTH_KEY="YOUR_AUTH_KEY"
 ```
 
 ### Logs
