@@ -23,7 +23,7 @@ var DefaultBufferPercent = 20
 var DefaultGasPrice = 1
 var DefaultWaitTime = 1
 var DefaultGasLimit = 2
-var DefaultGasLimitOverride = 0
+var DefaultGasLimitOverride = 50000000
 var DefaultRPCTimeout = 10
 var DefaultHTTPTimeout = 10
 var DefaultLogLevel = ""
@@ -64,6 +64,3 @@ var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value
 var HexReturnType = "hex"
-
-//HigherGasLimitValue is the gas limit which will be used when estimateGas fails
-var HigherGasLimitValue uint64 = 50000000
