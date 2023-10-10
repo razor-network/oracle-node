@@ -28,7 +28,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.0
+          go-version: 1.21
       - name: Install Dependencies
         run: >
           sudo add-apt-repository -y ppa:ethereum/ethereum
@@ -90,7 +90,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.0
+          go-version: 1.21
 
       - name: Install Dependencies
         run: >
@@ -141,7 +141,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21.0
+          go-version: 1.21
 
       - name: Install Dependencies
         run: >
