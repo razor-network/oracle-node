@@ -33,20 +33,20 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	fileUtils.AssignLogFile(flagSet, types.Configurations{})
 
 	flagDetails := []types.FlagDetail{
-		{"provider", "string"},
-		{"alternateProvider", "string"},
-		{"gasmultiplier", "float32"},
-		{"buffer", "int32"},
-		{"wait", "int32"},
-		{"gasprice", "int32"},
-		{"logLevel", "string"},
-		{"gasLimitOverride", "uint64"},
-		{"gasLimit", "float32"},
-		{"rpcTimeout", "int64"},
-		{"httpTimeout", "int64"},
-		{"logFileMaxSize", "int"},
-		{"logFileMaxBackups", "int"},
-		{"logFileMaxAge", "int"},
+		{Name: "provider", Type: "string"},
+		{Name: "alternateProvider", Type: "string"},
+		{Name: "gasmultiplier", Type: "float32"},
+		{Name: "buffer", Type: "int32"},
+		{Name: "wait", Type: "int32"},
+		{Name: "gasprice", Type: "int32"},
+		{Name: "logLevel", Type: "string"},
+		{Name: "gasLimitOverride", Type: "uint64"},
+		{Name: "gasLimit", Type: "float32"},
+		{Name: "rpcTimeout", Type: "int64"},
+		{Name: "httpTimeout", Type: "int64"},
+		{Name: "logFileMaxSize", Type: "int"},
+		{Name: "logFileMaxBackups", Type: "int"},
+		{Name: "logFileMaxAge", Type: "int"},
 	}
 
 	// Storing the fetched flag values in a map
@@ -61,20 +61,20 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	}
 
 	configDetails := []types.ConfigDetail{
-		{"provider", "provider", ""},
-		{"alternateProvider", "alternateProvider", ""},
-		{"gasmultiplier", "gasmultiplier", core.DefaultGasMultiplier},
-		{"buffer", "buffer", core.DefaultBufferPercent},
-		{"wait", "wait", core.DefaultWaitTime},
-		{"gasprice", "gasprice", core.DefaultGasPrice},
-		{"logLevel", "logLevel", core.DefaultLogLevel},
-		{"gasLimitOverride", "gasLimitOverride", core.DefaultGasLimitOverride},
-		{"gasLimit", "gasLimit", core.DefaultGasLimit},
-		{"rpcTimeout", "rpcTimeout", core.DefaultRPCTimeout},
-		{"httpTimeout", "httpTimeout", core.DefaultHTTPTimeout},
-		{"logFileMaxSize", "logFileMaxSize", core.DefaultLogFileMaxSize},
-		{"logFileMaxBackups", "logFileMaxBackups", core.DefaultLogFileMaxBackups},
-		{"logFileMaxAge", "logFileMaxAge", core.DefaultLogFileMaxAge},
+		{FlagName: "provider", Key: "provider", DefaultValue: ""},
+		{FlagName: "alternateProvider", Key: "alternateProvider", DefaultValue: ""},
+		{FlagName: "gasmultiplier", Key: "gasmultiplier", DefaultValue: core.DefaultGasMultiplier},
+		{FlagName: "buffer", Key: "buffer", DefaultValue: core.DefaultBufferPercent},
+		{FlagName: "wait", Key: "wait", DefaultValue: core.DefaultWaitTime},
+		{FlagName: "gasprice", Key: "gasprice", DefaultValue: core.DefaultGasPrice},
+		{FlagName: "logLevel", Key: "logLevel", DefaultValue: core.DefaultLogLevel},
+		{FlagName: "gasLimitOverride", Key: "gasLimitOverride", DefaultValue: core.DefaultGasLimitOverride},
+		{FlagName: "gasLimit", Key: "gasLimit", DefaultValue: core.DefaultGasLimit},
+		{FlagName: "rpcTimeout", Key: "rpcTimeout", DefaultValue: core.DefaultRPCTimeout},
+		{FlagName: "httpTimeout", Key: "httpTimeout", DefaultValue: core.DefaultHTTPTimeout},
+		{FlagName: "logFileMaxSize", Key: "logFileMaxSize", DefaultValue: core.DefaultLogFileMaxSize},
+		{FlagName: "logFileMaxBackups", Key: "logFileMaxBackups", DefaultValue: core.DefaultLogFileMaxBackups},
+		{FlagName: "logFileMaxAge", Key: "logFileMaxAge", DefaultValue: core.DefaultLogFileMaxAge},
 	}
 
 	var areConfigSet bool

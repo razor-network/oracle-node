@@ -145,8 +145,9 @@ func getConfigValue(flagName string, dataType string, defaultReturnValue interfa
 
 	// Checking if value of config parameter is present in config file
 	if viper.IsSet(viperKey) {
-		log.Debugf("Taking value of config %v = %v from config file")
-		return getConfigValueForKey(viperKey, dataType), nil
+		valueForKey := getConfigValueForKey(viperKey, dataType)
+		log.Debugf("Taking value of config %v = %v from config file", viperKey, valueForKey)
+		return valueForKey, nil
 	}
 	log.Debugf("%v config is not set, taking its default value %v", viperKey, defaultReturnValue)
 	return defaultReturnValue, nil
