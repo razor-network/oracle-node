@@ -84,7 +84,7 @@ func ExecuteTransaction(interfaceName interface{}, methodName string, args ...in
 	return returnedValues[0].Interface().(*Types.Transaction), nil
 }
 
-// FetchFlagInput fetches input value to flag of given data type with a specified flag keyword
+// FetchFlagInput fetches input value of the flag with given data type and specified flag keyword
 func (flagSetUtils FLagSetUtils) FetchFlagInput(flagSet *pflag.FlagSet, flagName string, dataType string) (interface{}, error) {
 	switch dataType {
 	case "string":
@@ -103,6 +103,28 @@ func (flagSetUtils FLagSetUtils) FetchFlagInput(flagSet *pflag.FlagSet, flagName
 		return flagSet.GetBool(flagName)
 	default:
 		return nil, errors.New("unsupported data type for flag input")
+	}
+}
+
+// FetchRootFlagInput fetches input value of the root flag with given data type and specified flag keyword
+func (flagSetUtils FLagSetUtils) FetchRootFlagInput(flagName string, dataType string) (interface{}, error) {
+	switch dataType {
+	case "string":
+		return rootCmd.PersistentFlags().GetString(flagName)
+	case "float32":
+		return rootCmd.PersistentFlags().GetFloat32(flagName)
+	case "int32":
+		return rootCmd.PersistentFlags().GetInt32(flagName)
+	case "int64":
+		return rootCmd.PersistentFlags().GetInt64(flagName)
+	case "uint64":
+		return rootCmd.PersistentFlags().GetUint64(flagName)
+	case "int":
+		return rootCmd.PersistentFlags().GetInt(flagName)
+	case "bool":
+		return rootCmd.PersistentFlags().GetBool(flagName)
+	default:
+		return nil, errors.New("unsupported data type for root flag input")
 	}
 }
 
@@ -499,76 +521,6 @@ func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Cl
 // This function returns BountyId in Uint32
 func (flagSetUtils FLagSetUtils) GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error) {
 	return flagSet.GetUint32("bountyId")
-}
-
-// This function returns the provider of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringProvider() (string, error) {
-	return rootCmd.PersistentFlags().GetString("provider")
-}
-
-// This function returns the alternate provider of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringAlternateProvider() (string, error) {
-	return rootCmd.PersistentFlags().GetString("alternateProvider")
-}
-
-// This function returns the gas multiplier of root in float32
-func (flagSetUtils FLagSetUtils) GetRootFloat32GasMultiplier() (float32, error) {
-	return rootCmd.PersistentFlags().GetFloat32("gasmultiplier")
-}
-
-// This function returns the buffer of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32Buffer() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("buffer")
-}
-
-// This function returns the wait of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32Wait() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("wait")
-}
-
-// This function returns the gas price of root in Int32
-func (flagSetUtils FLagSetUtils) GetRootInt32GasPrice() (int32, error) {
-	return rootCmd.PersistentFlags().GetInt32("gasprice")
-}
-
-// This function returns the log level of root in string
-func (flagSetUtils FLagSetUtils) GetRootStringLogLevel() (string, error) {
-	return rootCmd.PersistentFlags().GetString("logLevel")
-}
-
-// This function returns the gas limit of root in Float32
-func (flagSetUtils FLagSetUtils) GetRootFloat32GasLimit() (float32, error) {
-	return rootCmd.PersistentFlags().GetFloat32("gasLimit")
-}
-
-// This function returns the gas limit to overridr of root in Uint64
-func (flagSetUtils FLagSetUtils) GetRootUint64GasLimitOverride() (uint64, error) {
-	return rootCmd.PersistentFlags().GetUint64("gasLimitOverride")
-}
-
-// This function returns the rpcTimeout of root in Int64
-func (flagSetUtils FLagSetUtils) GetRootInt64RPCTimeout() (int64, error) {
-	return rootCmd.PersistentFlags().GetInt64("rpcTimeout")
-}
-
-// This function returns the HTTPTimeout of root in Int64
-func (flagSetUtils FLagSetUtils) GetRootInt64HTTPTimeout() (int64, error) {
-	return rootCmd.PersistentFlags().GetInt64("httpTimeout")
-}
-
-// This function returns the max size of log file for root flag in Int
-func (flagSetUtils FLagSetUtils) GetRootIntLogFileMaxSize() (int, error) {
-	return rootCmd.PersistentFlags().GetInt("logFileMaxSize")
-}
-
-// This function returns the max number of backups for logFile for root flag in Int
-func (flagSetUtils FLagSetUtils) GetRootIntLogFileMaxBackups() (int, error) {
-	return rootCmd.PersistentFlags().GetInt("logFileMaxBackups")
-}
-
-// This function returns the max age of logFle for root file in Int
-func (flagSetUtils FLagSetUtils) GetRootIntLogFileMaxAge() (int, error) {
-	return rootCmd.PersistentFlags().GetInt("logFileMaxAge")
 }
 
 // This function returns the from in string
