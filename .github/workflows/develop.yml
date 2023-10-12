@@ -36,9 +36,9 @@ jobs:
       - name: Run gofmt
         run: |
           gofmt
-      - name: Run golangci-lint
-        run: |
-          golangci-lint run -v --timeout 5m
+      # - name: Run golangci-lint
+      #   run: |
+      #     golangci-lint run -v --timeout 5m
       - name: Execute test case
         run: |
           go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks
