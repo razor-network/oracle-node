@@ -1,13 +1,14 @@
----
 name: CI/CD Develop Pipeline
 on:
   push:
     branches:
       - "develop"
 
-
+jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,36 +21,26 @@ on:
         with:
           go-version: 1.21
       - name: Install Dependencies
-        run: >
+        run: |
           sudo add-apt-repository -y ppa:ethereum/ethereum
-
           sudo apt-get update
-
           sudo apt-get install -y npm ethereum
-
           npm install
-
-          go get -d github.com/ethereum/go-ethereum@v1.12.2 \
-
-          && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.12.2 \
-
-          && go install github.com/mattn/goveralls@v0.0.11 \
-
-          && go install github.com/ory/go-acc@v0.2.7 \
-
-          && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
+          go get -d github.com/ethereum/go-ethereum@v1.12.2
+          go install github.com/ethereum/go-ethereum/cmd/abigen@v1.12.2
+          go install github.com/mattn/goveralls@v0.0.11
+          go install github.com/ory/go-acc@v0.2.7
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
       - name: Run make setup
         run: make setup
       - name: Run gofmt
         run: |
-          gofmt
-
+          test -z "$(gofmt -l .)"
       - name: Run golangci-lint
         run: |
           golangci-lint run -v --timeout 5m
-
       - name: Execute test case
-        run: >
+        run: |
           go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks
           --ignore razor/utils/mocks --ignore pkg --ignore razor/path/mocks
           --output coverage.txt
@@ -77,11 +68,9 @@ on:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Get short SHA
         id: sha
         run: echo "::set-output name=short::$(git rev-parse --short HEAD)"
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
