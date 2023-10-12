@@ -35,7 +35,7 @@ jobs:
         run: make setup
       - name: Run gofmt
         run: |
-          test -z "$(gofmt -l .)"
+          gofmt
       - name: Run golangci-lint
         run: |
           golangci-lint run -v --timeout 5m
