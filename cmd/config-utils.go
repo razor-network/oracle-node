@@ -113,7 +113,7 @@ func getConfigValueForKey(key string, dataType string) interface{} {
 	case "string":
 		return viper.GetString(key)
 	case "float32": // Note: viper doesn't have GetFloat32
-		return viper.GetFloat64(key)
+		return float32(viper.GetFloat64(key))
 	case "float64":
 		return viper.GetFloat64(key)
 	case "int":
@@ -235,7 +235,7 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 
 // This function returns the gas limit to override
 func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
-	gasLimitOverride, err := getConfigValue("gasLimitOverride", "string", core.DefaultGasLimitOverride, "gasLimitOverride")
+	gasLimitOverride, err := getConfigValue("gasLimitOverride", "uint64", core.DefaultGasLimitOverride, "gasLimitOverride")
 	if err != nil {
 		return uint64(core.DefaultGasLimitOverride), err
 	}
