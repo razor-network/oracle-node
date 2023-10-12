@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 	"os"
 	"razor/accounts"
@@ -81,6 +82,28 @@ func ExecuteTransaction(interfaceName interface{}, methodName string, args ...in
 		return nil, returnedError
 	}
 	return returnedValues[0].Interface().(*Types.Transaction), nil
+}
+
+// FetchFlagInput fetches input value to flag of given data type with a specified flag keyword
+func (flagSetUtils FLagSetUtils) FetchFlagInput(flagSet *pflag.FlagSet, flagName string, dataType string) (interface{}, error) {
+	switch dataType {
+	case "string":
+		return flagSet.GetString(flagName)
+	case "float32":
+		return flagSet.GetFloat32(flagName)
+	case "int32":
+		return flagSet.GetInt32(flagName)
+	case "int64":
+		return flagSet.GetInt64(flagName)
+	case "uint64":
+		return flagSet.GetUint64(flagName)
+	case "int":
+		return flagSet.GetInt(flagName)
+	case "bool":
+		return flagSet.GetBool(flagName)
+	default:
+		return nil, errors.New("unsupported data type for flag input")
+	}
 }
 
 // This function returns the hash
@@ -471,60 +494,6 @@ func (assetManagerUtils AssetManagerUtils) CreateCollection(client *ethclient.Cl
 func (assetManagerUtils AssetManagerUtils) UpdateCollection(client *ethclient.Client, opts *bind.TransactOpts, collectionId uint16, tolerance uint32, aggregationMethod uint32, power int8, jobIds []uint16) (*Types.Transaction, error) {
 	assetManager := razorUtils.GetCollectionManager(client)
 	return ExecuteTransaction(assetManager, "UpdateCollection", opts, collectionId, tolerance, aggregationMethod, power, jobIds)
-}
-
-// This function returns the provider in string
-func (flagSetUtils FLagSetUtils) GetStringProvider(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("provider")
-}
-
-func (flagSetUtils FLagSetUtils) GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("alternateProvider")
-}
-
-// This function returns gas multiplier in float 32
-func (flagSetUtils FLagSetUtils) GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error) {
-	return flagSet.GetFloat32("gasmultiplier")
-}
-
-// This function returns Buffer in Int32
-func (flagSetUtils FLagSetUtils) GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error) {
-	return flagSet.GetInt32("buffer")
-}
-
-// This function returns Wait in Int32
-func (flagSetUtils FLagSetUtils) GetInt32Wait(flagSet *pflag.FlagSet) (int32, error) {
-	return flagSet.GetInt32("wait")
-}
-
-// This function returns GasPrice in Int32
-func (flagSetUtils FLagSetUtils) GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error) {
-	return flagSet.GetInt32("gasprice")
-}
-
-// This function returns Log Level in string
-func (flagSetUtils FLagSetUtils) GetStringLogLevel(flagSet *pflag.FlagSet) (string, error) {
-	return flagSet.GetString("logLevel")
-}
-
-// This function returns RPC Timeout in Int64
-func (flagSetUtils FLagSetUtils) GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error) {
-	return flagSet.GetInt64("rpcTimeout")
-}
-
-// This function returns GasLimit to override in Uint64
-func (flagSetUtils FLagSetUtils) GetUint64GasLimitOverride(flagSet *pflag.FlagSet) (uint64, error) {
-	return flagSet.GetUint64("gasLimitOverride")
-}
-
-// This function returns HTTP Timeout in Int64
-func (flagSetUtils FLagSetUtils) GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error) {
-	return flagSet.GetInt64("httpTimeout")
-}
-
-// This function returns Gas Limit in Float32
-func (flagSetUtils FLagSetUtils) GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error) {
-	return flagSet.GetFloat32("gasLimit")
 }
 
 // This function returns BountyId in Uint32

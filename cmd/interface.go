@@ -110,17 +110,7 @@ type AssetManagerInterface interface {
 }
 
 type FlagSetInterface interface {
-	GetStringProvider(flagSet *pflag.FlagSet) (string, error)
-	GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error)
-	GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error)
-	GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error)
-	GetInt32Wait(flagSet *pflag.FlagSet) (int32, error)
-	GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error)
-	GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error)
-	GetUint64GasLimitOverride(flagSet *pflag.FlagSet) (uint64, error)
-	GetStringLogLevel(flagSet *pflag.FlagSet) (string, error)
-	GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error)
-	GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error)
+	FetchFlagInput(flagSet *pflag.FlagSet, flagKeyword string, dataType string) (interface{}, error)
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	GetRootStringProvider() (string, error)
 	GetRootStringAlternateProvider() (string, error)
