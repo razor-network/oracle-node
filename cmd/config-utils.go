@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"errors"
 	"github.com/sirupsen/logrus"
 	"razor/client"
 	"razor/core"
@@ -160,6 +161,9 @@ func (*UtilsStruct) GetProvider() (string, error) {
 		return "", err
 	}
 	providerString := provider.(string)
+	if providerString == "" {
+		return "", errors.New("provider not set")
+	}
 	if !strings.HasPrefix(providerString, "https") {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
