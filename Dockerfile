@@ -1,7 +1,7 @@
-FROM golang:1.17-alpine AS go
-FROM ethereum/client-go:alltools-v1.10.7 AS ethereum
+FROM golang:1.21.1-alpine AS go
+FROM ethereum/client-go:alltools-v1.12.2 AS ethereum
 
-FROM node:16.2.0-alpine AS builder
+FROM node:18.18.0-alpine AS builder
 
 COPY --from=ethereum /usr/local/bin/abigen /usr/local/bin/
 COPY --from=go /usr/local/go/ /usr/local/go/
