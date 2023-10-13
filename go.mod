@@ -2,8 +2,6 @@ module razor
 
 go 1.21
 
-toolchain go1.21.3
-
 require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
