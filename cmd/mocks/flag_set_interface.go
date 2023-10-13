@@ -12,6 +12,20 @@ type FlagSetInterface struct {
 	mock.Mock
 }
 
+// Changed provides a mock function with given fields: flagSet, flagName
+func (_m *FlagSetInterface) Changed(flagSet *pflag.FlagSet, flagName string) bool {
+	ret := _m.Called(flagSet, flagName)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(*pflag.FlagSet, string) bool); ok {
+		r0 = rf(flagSet, flagName)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // FetchFlagInput provides a mock function with given fields: flagSet, flagKeyword, dataType
 func (_m *FlagSetInterface) FetchFlagInput(flagSet *pflag.FlagSet, flagKeyword string, dataType string) (interface{}, error) {
 	ret := _m.Called(flagSet, flagKeyword, dataType)
