@@ -128,6 +128,11 @@ func (flagSetUtils FLagSetUtils) FetchRootFlagInput(flagName string, dataType st
 	}
 }
 
+// Changed returns true if flag was passed in the command else returns false
+func (flagSetUtils FLagSetUtils) Changed(flagSet *pflag.FlagSet, flagName string) bool {
+	return flagSet.Changed(flagName)
+}
+
 // This function returns the hash
 func (transactionUtils TransactionUtils) Hash(txn *Types.Transaction) common.Hash {
 	return txn.Hash()

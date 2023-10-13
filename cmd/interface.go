@@ -112,6 +112,7 @@ type AssetManagerInterface interface {
 type FlagSetInterface interface {
 	FetchFlagInput(flagSet *pflag.FlagSet, flagKeyword string, dataType string) (interface{}, error)
 	FetchRootFlagInput(flagName string, dataType string) (interface{}, error)
+	Changed(flagSet *pflag.FlagSet, flagName string) bool
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
