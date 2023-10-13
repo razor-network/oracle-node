@@ -133,7 +133,7 @@ func getConfigValueForKey(key string, dataType string) interface{} {
 
 func getConfigValue(flagName string, dataType string, defaultReturnValue interface{}, viperKey string) (interface{}, error) {
 	// Check if the config parameter was passed as a root flag in the command.
-	if rootCmd.Flags().Changed(flagName) {
+	if flagSetUtils.Changed(rootCmd.Flags(), flagName) {
 		// Getting the root flag input
 		rootFlagValue, err := flagSetUtils.FetchRootFlagInput(flagName, dataType)
 		if err != nil {
@@ -162,7 +162,7 @@ func (*UtilsStruct) GetProvider() (string, error) {
 	}
 	providerString := provider.(string)
 	if providerString == "" {
-		return "", errors.New("provider not set")
+		return "", errors.New("provider is not set")
 	}
 	if !strings.HasPrefix(providerString, "https") {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
@@ -187,7 +187,7 @@ func (*UtilsStruct) GetAlternateProvider() (string, error) {
 func (*UtilsStruct) GetMultiplier() (float32, error) {
 	gasMultiplier, err := getConfigValue("gasmultiplier", "float32", core.DefaultGasMultiplier, "gasmultiplier")
 	if err != nil {
-		return float32(core.DefaultGasMultiplier), err
+		return core.DefaultGasMultiplier, err
 	}
 	return gasMultiplier.(float32), nil
 }
@@ -196,7 +196,7 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	bufferPercent, err := getConfigValue("buffer", "int32", core.DefaultBufferPercent, "buffer")
 	if err != nil {
-		return int32(core.DefaultBufferPercent), err
+		return core.DefaultBufferPercent, err
 	}
 	return bufferPercent.(int32), nil
 }
@@ -205,7 +205,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	waitTime, err := getConfigValue("wait", "int32", core.DefaultWaitTime, "wait")
 	if err != nil {
-		return int32(core.DefaultWaitTime), err
+		return core.DefaultWaitTime, err
 	}
 	return waitTime.(int32), nil
 }
@@ -214,7 +214,7 @@ func (*UtilsStruct) GetWaitTime() (int32, error) {
 func (*UtilsStruct) GetGasPrice() (int32, error) {
 	gasPrice, err := getConfigValue("gasprice", "int32", core.DefaultGasPrice, "gasprice")
 	if err != nil {
-		return int32(core.DefaultGasPrice), err
+		return core.DefaultGasPrice, err
 	}
 	return gasPrice.(int32), nil
 }
@@ -232,7 +232,7 @@ func (*UtilsStruct) GetLogLevel() (string, error) {
 func (*UtilsStruct) GetGasLimit() (float32, error) {
 	gasLimit, err := getConfigValue("gasLimit", "float32", core.DefaultGasLimit, "gasLimit")
 	if err != nil {
-		return float32(core.DefaultGasLimit), err
+		return core.DefaultGasLimit, err
 	}
 	return gasLimit.(float32), nil
 }
@@ -241,7 +241,7 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 	gasLimitOverride, err := getConfigValue("gasLimitOverride", "uint64", core.DefaultGasLimitOverride, "gasLimitOverride")
 	if err != nil {
-		return uint64(core.DefaultGasLimitOverride), err
+		return core.DefaultGasLimitOverride, err
 	}
 	return gasLimitOverride.(uint64), nil
 }
@@ -250,7 +250,7 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")
 	if err != nil {
-		return int64(core.DefaultRPCTimeout), err
+		return core.DefaultRPCTimeout, err
 	}
 	return rpcTimeout.(int64), nil
 }
@@ -258,7 +258,7 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
 	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")
 	if err != nil {
-		return int64(core.DefaultHTTPTimeout), err
+		return core.DefaultHTTPTimeout, err
 	}
 	return httpTimeout.(int64), nil
 }
