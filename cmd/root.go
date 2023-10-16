@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -56,7 +56,7 @@ func Execute() {
 	}
 }
 
-// This function add the following command to the root command
+//This function add the following command to the root command
 func init() {
 	cobra.OnInitialize(initConfig)
 

@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -22,12 +22,12 @@ Example:
 	Run: initialiseImport,
 }
 
-// This function initialises the ExecuteImport function
+//This function initialises the ExecuteImport function
 func initialiseImport(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteImport(cmd.Flags())
 }
 
-// This function sets the flags appropriately and executes the ImportAccount function
+//This function sets the flags appropriately and executes the ImportAccount function
 func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -40,7 +40,7 @@ func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
 	log.Info("ExecuteImport: Keystore Path: ", account.URL)
 }
 
-// This function is used to import existing accounts into razor-go
+//This function is used to import existing accounts into razor-go
 func (*UtilsStruct) ImportAccount() (accounts.Account, error) {
 	log.Info("Enter the private key for the account that you want to import")
 	privateKey := razorUtils.PrivateKeyPrompt()

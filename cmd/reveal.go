@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// This function checks for epoch last committed
+//This function checks for epoch last committed
 func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
 	if err != nil {
@@ -28,7 +28,7 @@ func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindi
 	return nil
 }
 
-// This function checks if the state is reveal or not and then reveals the votes
+//This function checks if the state is reveal or not and then reveals the votes
 func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
 	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
@@ -76,7 +76,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 	return txnHash, nil
 }
 
-// This function generates the tree reveal data
+//This function generates the tree reveal data
 func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree {
 	if merkleTree == nil || commitData.SeqAllottedCollections == nil || commitData.Leaves == nil {
 		log.Error("No data present for construction of StructsMerkleTree")
@@ -111,7 +111,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 	}
 }
 
-// This function indexes the reveal events of current epoch
+//This function indexes the reveal events of current epoch
 func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
 	log.Debug("Fetching reveal events of current epoch...")
 	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)

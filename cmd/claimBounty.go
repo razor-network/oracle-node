@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -28,12 +28,12 @@ Example:
 	Run: initialiseClaimBounty,
 }
 
-// This function initialises the ExecuteClaimBounty function
+//This function initialises the ExecuteClaimBounty function
 func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteClaimBounty(cmd.Flags())
 }
 
-// This function sets the flags appropriately and executes the ClaimBounty function
+//This function sets the flags appropriately and executes the ClaimBounty function
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -86,7 +86,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 
 }
 
-// This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
+//This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
 func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
 	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
@@ -143,7 +143,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 	return nil
 }
 
-// This function allows the users who are bountyHunter to redeem their bounty in razor network
+//This function allows the users who are bountyHunter to redeem their bounty in razor network
 func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,

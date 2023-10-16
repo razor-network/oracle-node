@@ -24,7 +24,7 @@ func StartTimerForAlternateClient(switchClientAfterTime uint64) {
 	SetSwitchToAlternateClientStatus(false)
 }
 
-// ReplaceClientWithAlternateClient will replace the primary client(client from primary RPC) with secondary client which would be created using alternate RPC
+//ReplaceClientWithAlternateClient will replace the primary client(client from primary RPC) with secondary client which would be created using alternate RPC
 func ReplaceClientWithAlternateClient(arguments []reflect.Value) []reflect.Value {
 	clientDataType := reflect.TypeOf((*ethclient.Client)(nil)).Elem()
 	for i := range arguments {
