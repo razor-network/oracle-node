@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -29,12 +29,12 @@ Note:
 	Run: initialiseCreateJob,
 }
 
-// This function initialises the ExecuteCreateJob function
+//This function initialises the ExecuteCreateJob function
 func initialiseCreateJob(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteCreateJob(cmd.Flags())
 }
 
-// This function sets the flags appropriately and executes the CreateJob function
+//This function sets the flags appropriately and executes the CreateJob function
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -90,7 +90,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in WaitForBlockCompletion for createJob: ", err)
 }
 
-// This function allows the admin to create the job
+//This function allows the admin to create the job
 func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,

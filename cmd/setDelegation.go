@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -26,12 +26,12 @@ Example:
 	Run: initialiseSetDelegation,
 }
 
-// This function initialises the ExecuteSetDelegation function
+//This function initialises the ExecuteSetDelegation function
 func initialiseSetDelegation(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteSetDelegation(cmd.Flags())
 }
 
-// This function sets the flags appropriately and executes the SetDelegation function
+//This function sets the flags appropriately and executes the SetDelegation function
 func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -83,7 +83,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	}
 }
 
-// This function allows the staker to start accepting/rejecting delegation requests
+//This function allows the staker to start accepting/rejecting delegation requests
 func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
 	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.StakerId)
 	if err != nil {

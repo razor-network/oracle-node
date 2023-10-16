@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -25,12 +25,12 @@ Example:
 	Run: initialiseDelegate,
 }
 
-// This function initialises the ExecuteDelegate function
+//This function initialises the ExecuteDelegate function
 func initialiseDelegate(cmd *cobra.Command, args []string) {
 	cmdUtils.ExecuteDelegate(cmd.Flags())
 }
 
-// This function sets the flags appropriately and executes the Delegate function
+//This function sets the flags appropriately and executes the Delegate function
 func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	config, err := cmdUtils.GetConfigData()
 	utils.CheckError("Error in getting config: ", err)
@@ -94,7 +94,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in WaitForBlockCompletion for delegate: ", err)
 }
 
-// This function allows the delegator to stake coins without setting up a node
+//This function allows the delegator to stake coins without setting up a node
 func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	txnArgs.ContractAddress = core.StakeManagerAddress

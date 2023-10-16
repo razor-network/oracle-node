@@ -1,4 +1,4 @@
-// Package cmd provides all functions related to command line
+//Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -27,7 +27,7 @@ Example:
 	},
 }
 
-// This function returns the error if there is any and sets the config
+//This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, types.Configurations{})
