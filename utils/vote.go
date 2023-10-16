@@ -13,17 +13,17 @@ func (*UtilsStruct) GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.
 	return UtilsInterface.GetVoteManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetCommitments(client *ethclient.Client, address string) ([32]byte, error) {
+func (*UtilsStruct) GetCommitment(client *ethclient.Client, address string) (types.Commitment, error) {
 	stakerId, err := UtilsInterface.GetStakerId(client, address)
 	if err != nil {
-		return [32]byte{}, err
+		return types.Commitment{}, err
 	}
-	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "Commitments", client, stakerId)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(VoteManagerInterface, "GetCommitment", client, stakerId)
 	if err != nil {
-		return [32]byte{}, err
+		return types.Commitment{}, err
 	}
 	commitment := returnedValues[0].Interface().(types.Commitment)
-	return commitment.CommitmentHash, nil
+	return commitment, nil
 }
 
 func (*UtilsStruct) GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {

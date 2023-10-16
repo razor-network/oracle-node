@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -21,7 +21,7 @@ import (
 
 func TestStakeCoins(t *testing.T) {
 
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 
 	txnArgs := types.TransactionOptions{

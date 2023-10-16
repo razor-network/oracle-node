@@ -456,11 +456,11 @@ func (a AssetManagerStruct) Jobs(client *ethclient.Client, id uint16) (bindings.
 	return job, nil
 }
 
-func (v VoteManagerStruct) Commitments(client *ethclient.Client, stakerId uint32) (coretypes.Commitment, error) {
+func (v VoteManagerStruct) GetCommitment(client *ethclient.Client, stakerId uint32) (coretypes.Commitment, error) {
 	voteManager, opts := UtilsInterface.GetVoteManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(voteManager, "Commitments", &opts, stakerId)
 	returnedError := CheckIfAnyError(returnedValues)
-	if returnedValues != nil {
+	if returnedError != nil {
 		return coretypes.Commitment{}, returnedError
 	}
 	commitment := returnedValues[0].Interface().(struct {
