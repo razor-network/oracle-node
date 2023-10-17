@@ -525,10 +525,9 @@ func ReplaceValueWithDataFromENVFile(re *regexp.Regexp, value string) string {
 	// substrings denotes all the occurrences of substring which satisfies APIKeyRegex
 	substrings := re.FindAllString(value, -1)
 	log.Debug("ReplaceValueWithDataFromENVFile: Substrings array: ", substrings)
-	// Fetching keyword and respective value from env file
-	for i := 0; i < len(substrings); i++ {
-		//substring[i] would be the keyword to be used in env file to get the respective pair value.
-		keyword := substrings[i]
+
+	// Replace each found substring with its corresponding value from environment variables
+	for _, keyword := range substrings {
 		if keyword != "" {
 			log.Debug("ReplaceValueWithDataFromENVFile: Keyword to be looked for in env file: ", keyword)
 			valueForKeyword := os.ExpandEnv(keyword)

@@ -93,17 +93,22 @@ func GetDataFromXHTML(dataSourceURLStruct types.DataSourceURL, selector string) 
 	return priceData, nil
 }
 
-func AddHeaderToRequest(request *http.Request, headerMap map[string]string) (*http.Request, error) {
-	for key, value := range headerMap {
-		re := regexp.MustCompile(core.APIKeyRegex)
-		isAPIKeyRequired := re.MatchString(value)
-		if isAPIKeyRequired {
-			value = ReplaceValueWithDataFromENVFile(re, value)
-		}
-		log.Debugf("Adding key: %s, value: %s pair to header", key, value)
-		request.Header.Add(key, value)
+func processHeaderValue(value string, re *regexp.Regexp) string {
+	// check if any API authentication is required
+	if re.MatchString(value) {
+		return ReplaceValueWithDataFromENVFile(re, value)
 	}
-	return request, nil
+	return value
+}
+
+func addHeaderToRequest(request *http.Request, headerMap map[string]string) *http.Request {
+	re := regexp.MustCompile(core.APIKeyRegex)
+	for key, value := range headerMap {
+		processedValue := processHeaderValue(value, re)
+		log.Debugf("Adding key: %s, value: %s pair to header", key, value)
+		request.Header.Add(key, processedValue)
+	}
+	return request
 }
 
 func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
@@ -111,11 +116,7 @@ func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL,
 	if err != nil {
 		return nil, err
 	}
-	requestWithHeader, err := AddHeaderToRequest(request, dataSourceURLStruct.Header)
-	if err != nil {
-		log.Errorf("Error in adding header to %s request: %v", dataSourceURLStruct.Type, err)
-		return nil, err
-	}
+	requestWithHeader := addHeaderToRequest(request, dataSourceURLStruct.Header)
 	response, err := client.Do(requestWithHeader)
 	if err != nil {
 		log.Errorf("Error sending %s request URL %s: %v", dataSourceURLStruct.Type, dataSourceURLStruct.URL, err)

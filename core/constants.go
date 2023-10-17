@@ -3,15 +3,17 @@
 package core
 
 import (
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
-var ChainId = big.NewInt(0x5a79c44e)
 var StateLength = EpochLength / NumberOfStates
+
+// ChainId corresponds to the SKALE staging chain: staging-aware-chief-gianfar
+var ChainId = big.NewInt(0x5a79c44e)
+
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
