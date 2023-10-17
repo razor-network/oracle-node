@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"math"
 	"math/big"
 	"razor/utils/mocks"
 	"reflect"
@@ -51,7 +52,8 @@ func TestAllZero(t *testing.T) {
 
 func TestConvertToNumber(t *testing.T) {
 	type args struct {
-		num interface{}
+		num        interface{}
+		returnType string
 	}
 	tests := []struct {
 		name    string
@@ -105,12 +107,30 @@ func TestConvertToNumber(t *testing.T) {
 				num: big.NewInt(4),
 			},
 			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test hex value",
+			args: args{
+				num:        "3FEF5C28F5C28F5C",
+				returnType: "hex",
+			},
+			want:    big.NewFloat(0.98),
 			wantErr: false,
+		},
+		{
+			name: "Test invalid hex value",
+			args: args{
+				num:        "0xGGGGGGGGGGGGGGGG",
+				returnType: "hex",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ConvertToNumber(tt.args.num)
+			got, err := ConvertToNumber(tt.args.num, tt.args.returnType)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ConvertToNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -958,27 +978,47 @@ func IndexNotEqual(a []uint32, b []uint32) bool {
 
 }
 
-func TestConvertHexToInt(t *testing.T) {
+func TestConvertHexToFloat64(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   interface{}
-		want    int
-		wantErr bool
+		name          string
+		hexString     string
+		expectedFloat uint64
+		expectErr     bool
 	}{
-		{name: "Valid hex string with prefix", input: "0x1A", want: 26, wantErr: false},
-		{name: "Valid hex string without prefix", input: "1A", want: 26, wantErr: false},
-		{name: "Valid hex string without prefix", input: "100", want: 256, wantErr: false},
-		{name: "Invalid hex string", input: "0xZZ", want: 0, wantErr: true},
-		{name: "Integer input", input: 123, want: 0, wantErr: true},
-		{name: "Float input", input: 3.14, want: 0, wantErr: true},
-		{name: "Unsupported data type", input: struct{}{}, want: 0, wantErr: true},
+		{"Valid hex representation of PI", "0x400921FB54442D18", math.Float64bits(3.141592653589793), false},
+		{"Valid hex without 0x prefix", "400921FB54442D18", math.Float64bits(3.141592653589793), false},
+		{"Zero value", "0x0000000000000000", math.Float64bits(0.0), false},
+		{"Positive infinity", "0x7FF0000000000000", math.Float64bits(math.Inf(1)), false},
+		{"Negative infinity", "0xFFF0000000000000", math.Float64bits(math.Inf(-1)), false},
+		{"Not a Number", "0x7FF8000000000000", math.Float64bits(math.NaN()), false},
+		{"Invalid hex value", "0xGGGGGGGGGGGGGGGG", 0, true},
+		{"Empty string input", "", 0, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ConvertHexToInt(tt.input)
-			if got != tt.want || (err != nil) != tt.wantErr {
-				t.Errorf("ConvertHexToInt(%v) = %v, error: %v; want %v, error expected: %v", tt.input, got, err != nil, tt.want, tt.wantErr)
+			got, err := ConvertHexToFloat64(tt.hexString)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("expected an error but got none")
+				}
+				return
+			}
+
+			if !tt.expectErr && err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			gotBits := math.Float64bits(got)
+
+			// Special case for NaN as it's not equal to itself.
+			if math.IsNaN(math.Float64frombits(tt.expectedFloat)) && math.IsNaN(got) {
+				return // both are NaN, so the test case passes.
+			}
+
+			if gotBits != tt.expectedFloat {
+				t.Errorf("ConvertHexToFloat64(%v): got %v, want %v", tt.hexString, got, math.Float64frombits(tt.expectedFloat))
 			}
 		})
 	}

@@ -6,13 +6,14 @@ import (
 	"math"
 	"math/big"
 	mathRand "math/rand"
+	"razor/core"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func ConvertToNumber(num interface{}) (*big.Float, error) {
+func ConvertToNumber(num interface{}, returnType string) (*big.Float, error) {
 	if num == nil {
 		return big.NewFloat(0), errors.New("no data provided")
 	}
@@ -22,6 +23,14 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 	case float64:
 		return big.NewFloat(v), nil
 	case string:
+		if strings.ToLower(returnType) == core.HexReturnType {
+			hexValueFloat64, err := ConvertHexToFloat64(v)
+			if err != nil {
+				log.Error("Error in converting from hex string to float: ", err)
+				return big.NewFloat(0), err
+			}
+			return big.NewFloat(hexValueFloat64), nil
+		}
 		convertedNumber, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Error("Error in converting from string to float: ", err)
@@ -29,23 +38,17 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 		}
 		return big.NewFloat(convertedNumber), nil
 	}
-	return big.NewFloat(0), nil
+	return big.NewFloat(0), errors.New("unsupported type provided")
 }
 
-func ConvertHexToInt(num interface{}) (int, error) {
-	switch v := num.(type) {
-	case string:
-		hexValue := strings.TrimPrefix(v, "0x")
-		decimalValue, err := strconv.ParseInt(hexValue, 16, 64)
-		if err != nil {
-			log.Errorf("Error converting hex value %v to integer: %v", hexValue, err)
-			return 0, err
-		}
-		return int(decimalValue), nil
-	default:
-		log.Errorf("Input data %v is not a hex value", num)
-		return 0, errors.New("input data is not hex")
+func ConvertHexToFloat64(hexString string) (float64, error) {
+	hexValue := strings.TrimPrefix(hexString, "0x")
+	hexValueUint64, err := strconv.ParseUint(hexValue, 16, 64)
+	if err != nil {
+		log.Errorf("Error converting hex value %v to float64: %v", hexValue, err)
+		return 0, err
 	}
+	return math.Float64frombits(hexValueUint64), nil
 }
 
 func MultiplyWithPower(num *big.Float, power int8) *big.Int {

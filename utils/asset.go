@@ -335,17 +335,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		parsedData = regexp.MustCompile(`[\p{Sc}, ]`).ReplaceAllString(dataPoint, "")
 	}
 
-	if strings.ToLower(dataSourceURLStruct.ReturnType) == core.HexReturnType {
-		log.Warn("RETURN TYPE FOR DATASOURCE STRUCT IS HEX")
-		parsedDataInDecimal, err := ConvertHexToInt(parsedData)
-		if err != nil {
-			log.Error("Error in converting parsed data to decimal value: ", err)
-			return nil, err
-		}
-		parsedData = parsedDataInDecimal
-	}
-
-	datum, err := ConvertToNumber(parsedData)
+	datum, err := ConvertToNumber(parsedData, dataSourceURLStruct.ReturnType)
 	if err != nil {
 		log.Error("Result is not a number")
 		return nil, err
