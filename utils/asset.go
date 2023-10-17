@@ -278,7 +278,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		dataSourceURLStruct types.DataSourceURL
 	)
 	log.Debugf("Getting the data to commit for job %s having job Id %d", job.Name, job.Id)
-	if strings.HasPrefix(job.Url, "{") {
+	if isJSONCompatible(job.Url) {
 		log.Debug("Job URL passed is a struct containing URL along with type of request data")
 		dataSourceURLInBytes := []byte(job.Url)
 
