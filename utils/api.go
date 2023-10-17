@@ -142,9 +142,3 @@ func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL,
 	}
 	return responseBody, nil
 }
-
-func isJSONCompatible(s string) bool {
-	var temp interface{}
-	err := json.Unmarshal([]byte(s), &temp)
-	return err == nil
-}
