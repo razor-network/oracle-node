@@ -958,44 +958,27 @@ func IndexNotEqual(a []uint32, b []uint32) bool {
 
 }
 
-func TestManageReturnType(t *testing.T) {
-	type args struct {
-		num        interface{}
-		returnType string
-	}
+func TestConvertHexToInt(t *testing.T) {
 	tests := []struct {
 		name    string
-		args    args
-		want    interface{}
+		input   interface{}
+		want    int
 		wantErr bool
 	}{
-		{
-			name: "Test 1: When there is a valid hex value",
-			args: args{
-				num:        "0x0000000000000000000000000000000000000000000000000000000061a55c2e",
-				returnType: "hex",
-			},
-			want: 1638226990,
-		},
-		{
-			name: "Test 2: When the hex value is invalid",
-			args: args{
-				num:        "0xZZ",
-				returnType: "hex",
-			},
-			want:    nil,
-			wantErr: true,
-		},
+		{name: "Valid hex string with prefix", input: "0x1A", want: 26, wantErr: false},
+		{name: "Valid hex string without prefix", input: "1A", want: 26, wantErr: false},
+		{name: "Valid hex string without prefix", input: "100", want: 256, wantErr: false},
+		{name: "Invalid hex string", input: "0xZZ", want: 0, wantErr: true},
+		{name: "Integer input", input: 123, want: 0, wantErr: true},
+		{name: "Float input", input: 3.14, want: 0, wantErr: true},
+		{name: "Unsupported data type", input: struct{}{}, want: 0, wantErr: true},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ManageReturnType(tt.args.num, tt.args.returnType)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ManageReturnType() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ManageReturnType() got = %v, want %v", got, tt.want)
+			got, err := ConvertHexToInt(tt.input)
+			if got != tt.want || (err != nil) != tt.wantErr {
+				t.Errorf("ConvertHexToInt(%v) = %v, error: %v; want %v, error expected: %v", tt.input, got, err != nil, tt.want, tt.wantErr)
 			}
 		})
 	}

@@ -3,11 +3,9 @@ package utils
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	mathRand "math/rand"
-	"razor/core"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,20 +32,19 @@ func ConvertToNumber(num interface{}) (*big.Float, error) {
 	return big.NewFloat(0), nil
 }
 
-func ManageReturnType(num interface{}, returnType string) (interface{}, error) {
-	switch returnType {
-	case core.HexReturnType:
-		//removing "0x" from hex value
-		hexValue := strings.TrimPrefix(fmt.Sprint(num), "0x")
-		//Converting given hex value to decimal value
-		decimalValue, err := strconv.ParseUint(hexValue, 16, 64)
+func ConvertHexToInt(num interface{}) (int, error) {
+	switch v := num.(type) {
+	case string:
+		hexValue := strings.TrimPrefix(v, "0x")
+		decimalValue, err := strconv.ParseInt(hexValue, 16, 64)
 		if err != nil {
-			log.Errorf("%v is not of type %v, error in converting %v to decimal value", hexValue, core.HexReturnType, hexValue)
-			return nil, err
+			log.Errorf("Error converting hex value %v to integer: %v", hexValue, err)
+			return 0, err
 		}
 		return int(decimalValue), nil
 	default:
-		return num, nil
+		log.Errorf("Input data %v is not a hex value", num)
+		return 0, errors.New("input data is not hex")
 	}
 }
 
