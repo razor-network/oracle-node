@@ -7,12 +7,14 @@ import (
 	"math/big"
 	"os"
 	"razor/cache"
+	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
+	"regexp"
 	"testing"
 	"time"
 
@@ -661,6 +663,11 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
 	}
 
+	invalidXHTMLJob := bindings.StructsJob{Id: 3, SelectorType: 1, Weight: 100,
+		Power: 2, Name: "ethusd_gemini", Selector: "last",
+		Url: `{"type1": "GET","url1": "https://api.gemini.com/v1/pubticker/ethusd","body1": {},"header1": {}}`,
+	}
+
 	type args struct {
 		job bindings.StructsJob
 	}
@@ -691,6 +698,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 				job: postJob,
 			},
 			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in unmarshalling invalid dataSourceStruct for XHTML job",
+			args: args{
+				job: invalidXHTMLJob,
+			},
+			want:    nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1484,6 +1499,57 @@ func TestGetCollectionIdFromLeafId(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GetCollectionIdFromLeafId() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReplaceValueWithDataFromENVFile(t *testing.T) {
+	tests := []struct {
+		name           string
+		value          string
+		envVariables   map[string]string
+		expectedOutput string
+	}{
+		{
+			name:           "single env variable",
+			value:          "API key is ${API_KEY}",
+			envVariables:   map[string]string{"API_KEY": "12345"},
+			expectedOutput: "API key is 12345",
+		},
+		{
+			name:           "multiple env variables",
+			value:          "API key is ${API_KEY} and secret is ${SECRET}",
+			envVariables:   map[string]string{"API_KEY": "12345", "SECRET": "abcdef"},
+			expectedOutput: "API key is 12345 and secret is abcdef",
+		},
+		{
+			name:           "no env variable in value",
+			value:          "API key is present",
+			envVariables:   map[string]string{"API_KEY": "12345"},
+			expectedOutput: "API key is present",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set environment variables
+			for key, val := range tt.envVariables {
+				os.Setenv(key, val)
+			}
+
+			// Execute function
+			var re = regexp.MustCompile(core.APIKeyRegex)
+			result := ReplaceValueWithDataFromENVFile(re, tt.value)
+
+			// Check result
+			if result != tt.expectedOutput {
+				t.Errorf("Expected output: %s, but got: %s", tt.expectedOutput, result)
+			}
+
+			// Cleanup environment variables
+			for key := range tt.envVariables {
+				os.Unsetenv(key)
 			}
 		})
 	}

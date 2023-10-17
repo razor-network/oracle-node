@@ -3,6 +3,7 @@ package cmd
 import (
 	"crypto/ecdsa"
 	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -402,6 +403,164 @@ func BenchmarkHandleCommitState(b *testing.B) {
 				if err != nil {
 					log.Fatal(err)
 				}
+			}
+		})
+	}
+}
+
+func TestCalculateCommitment(t *testing.T) {
+	type args struct {
+		seed   []byte
+		values []*big.Int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string // Changed type from [32]byte to string
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When there the values for seed and values are valid",
+			args: args{
+				seed:   []byte("5ab3bd027e66773306cc8c889dc48b17753d7ac6e400e066e91c3f8119540c6c"),
+				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
+			},
+			want:    "61fc5d313bb53f669154b2778a5c93859c4eb389f799166104691135869d7947",
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When length of values array is 0",
+			args: args{
+				seed:   []byte("5ab3bd027e66773306cc8c889dc48b17753d7ac6e400e066e91c3f8119540c6c"),
+				values: []*big.Int{},
+			},
+			want:    hex.EncodeToString([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When seed is empty",
+			args: args{
+				seed:   []byte{},
+				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
+			},
+			want:    "643e39018427c8db4cc8bbfdb9f04cd485032b6bc924db1bbf6b019391d032e9",
+			wantErr: false,
+		},
+		{
+			name: "Test 4: when When length of values array is 0 and seed is empty",
+			args: args{
+				seed:   []byte{},
+				values: []*big.Int{},
+			},
+			want:    hex.EncodeToString([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			utils.MerkleInterface = &utils.MerkleTreeStruct{}
+			merkleUtils = utils.MerkleInterface
+
+			got, err := CalculateCommitment(tt.args.seed, tt.args.values)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateCommitment() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			fmt.Println(got)
+			gotString := hex.EncodeToString(got[:]) // Convert [32]byte to hex string for comparison
+			fmt.Println(gotString)
+			if !reflect.DeepEqual(gotString, tt.want) {
+				t.Errorf("CalculateCommitment() got = %v, want %v", gotString, tt.want)
+			}
+		})
+	}
+}
+
+func TestVerifyCommitment(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		account      types.Account
+		keystorePath string
+		epoch        uint32
+	)
+	type args struct {
+		values        []*big.Int
+		commitment    types.Commitment
+		commitmentErr error
+		secret        []byte
+		salt          [32]byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When commitment is verified successfully",
+			args: args{
+				commitment: types.Commitment{
+					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
+				},
+				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
+				salt:   [32]byte{3, 188, 235, 65, 42, 140, 151, 61, 187, 150, 15, 19, 83, 186, 145, 207, 108, 161, 13, 253, 226, 28, 145, 16, 84, 207, 30, 97, 240, 210, 142, 11},
+				secret: []byte{15, 127, 98, 144, 121, 77, 174, 0, 191, 124, 103, 61, 54, 250, 42, 91, 68, 125, 44, 140, 96, 233, 164, 34, 11, 122, 182, 91, 232, 5, 71, 169},
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When commitment is not verified successfully",
+			args: args{
+				commitment: types.Commitment{
+					CommitmentHash: [32]byte{145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
+				},
+				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
+				salt:   [32]byte{3, 188, 235, 65, 42, 140, 151, 61, 187, 150, 15, 19, 83, 186, 145, 207, 108, 161, 13, 253, 226, 28, 145, 16, 84, 207, 30, 97, 240, 210, 142, 11},
+				secret: []byte{15, 127, 98, 144, 121, 77, 174, 0, 191, 124, 103, 61, 54, 250, 42, 91, 68, 125, 44, 140, 96, 233, 164, 34, 11, 122, 182, 91, 232, 5, 71, 169},
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name: "Test 3: When there is an error in getting commitment",
+			args: args{
+				commitmentErr: errors.New("getCommitment error"),
+			},
+			want:    false,
+			wantErr: true,
+		},
+		{
+			name: "Test 4: When there is error in calculating commitment",
+			args: args{
+				commitment: types.Commitment{
+					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
+				},
+				values: []*big.Int{},
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			utils.MerkleInterface = &utils.MerkleTreeStruct{}
+			merkleUtils = utils.MerkleInterface
+
+			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(tt.args.commitment, tt.args.commitmentErr)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(tt.args.salt, nil)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, tt.args.secret, nil)
+			got, err := VerifyCommitment(client, account, keystorePath, epoch, tt.args.values)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("VerifyCommitment() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("VerifyCommitment() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
