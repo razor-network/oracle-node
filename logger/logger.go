@@ -60,9 +60,6 @@ func InitializeLogger(fileName string, config types.Configurations) {
 			MaxBackups: config.LogFileMaxBackups,
 			MaxAge:     config.LogFileMaxAge,
 		}
-		fmt.Println(config.LogFileMaxSize)
-		fmt.Println(config.LogFileMaxBackups)
-		fmt.Println(config.LogFileMaxAge)
 
 		out := os.Stderr
 		mw := io.MultiWriter(out, lumberJackLogger)
@@ -90,6 +87,7 @@ func (logger *StandardLogger) Error(args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	logger.WithFields(logFields).Errorln(args...)
 }
@@ -100,6 +98,7 @@ func (logger *StandardLogger) Info(args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	logger.WithFields(logFields).Infoln(args...)
 }
@@ -110,6 +109,7 @@ func (logger *StandardLogger) Debug(args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	logger.WithFields(logFields).Debugln(args...)
 }
@@ -120,6 +120,7 @@ func (logger *StandardLogger) Fatal(args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
@@ -132,6 +133,7 @@ func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	logger.WithFields(logFields).Errorf(format, args...)
 }
@@ -142,6 +144,7 @@ func (logger *StandardLogger) Infof(format string, args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	logger.WithFields(logFields).Infof(format, args...)
 }
@@ -152,6 +155,7 @@ func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	logger.WithFields(logFields).Debugf(format, args...)
 }
@@ -162,6 +166,7 @@ func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
 		"address":     Address,
 		"epoch":       Epoch,
 		"blockNumber": BlockNumber,
+		"version":     core.VersionWithMeta,
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)

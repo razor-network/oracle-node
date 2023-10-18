@@ -2,17 +2,21 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"math/big"
 	"os"
 	"razor/cache"
+	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
+	"regexp"
 	"testing"
+	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -552,10 +556,10 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 		}, {Id: 2, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 		},
 	}
 
@@ -580,7 +584,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				overrideJobData: map[string]*types.StructsJob{"1": {
 					Id: 2, SelectorType: 1, Weight: 100,
 					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: "https://api.gemini.com/v1/pubticker/ethusd",
+					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
 				}},
 				dataToAppend: big.NewInt(1),
 			},
@@ -629,8 +633,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			pathMock.On("GetJobFilePath").Return(tt.args.jobPath, tt.args.jobPathErr)
-			utilsMock.On("ReadJSONData", mock.AnythingOfType("string")).Return(tt.args.overrideJobData, tt.args.overrideJobDataErr)
 			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
 
 			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
@@ -646,33 +648,33 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJob(t *testing.T) {
-	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
-		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+	job := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
+		Url: `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
 	}
 
-	job2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
-		Power: 2, Name: "ethusd_gemini", Selector: "last",
-		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+	job1 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "last",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=${SAMPLE_API_KEY_NEW}",
 	}
 
-	response := []byte(`{
-  			"userId": 1,
-  			"id": 1,
-			"title": "delectus aut autem",
-  			"completed": false
-	}`)
+	postJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "result",
+		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+	}
+
+	invalidDataSourceStructJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "result",
+		Url: `{"type": true,"url1": {}}`,
+	}
+
+	invalidXHTMLJob := bindings.StructsJob{Id: 3, SelectorType: 1, Weight: 100,
+		Power: 2, Name: "ethusd_gemini", Selector: "last",
+		Url: `{"type1": "GET","url1": "https://api.gemini.com/v1/pubticker/ethusd","body1": {},"header1": {}}`,
+	}
 
 	type args struct {
-		job           bindings.StructsJob
-		response      []byte
-		responseErr   error
-		parsedData    interface{}
-		parsedDataErr error
-		dataPoint     string
-		dataPointErr  error
-		datum         *big.Float
-		datumErr      error
+		job bindings.StructsJob
 	}
 	tests := []struct {
 		name    string
@@ -683,95 +685,37 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		{
 			name: "Test 1: When GetDataToCommitFromJob() executes successfully",
 			args: args{
-				job:        job,
-				response:   response,
-				parsedData: "abc",
-				dataPoint:  "1",
-				datum:      big.NewFloat(0.1),
+				job: job,
 			},
-			want:    big.NewInt(10),
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting response",
+			name: "Test 2: When there is a case to pick up API key from environment variable file and keyword is not present",
 			args: args{
-				job:         job,
-				responseErr: errors.New("response error"),
-				parsedData:  "abc",
-				dataPoint:   "1",
-				datum:       big.NewFloat(0.1),
+				job: job1,
 			},
-			want:    big.NewInt(10),
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When GetDataToCommitFromJob() executes successfully for a POST Job",
+			args: args{
+				job: postJob,
+			},
 			wantErr: false,
 		},
 		{
-			name: "Test 3: When there is an error in getting parsedData",
+			name: "Test 4: When there is an error in unmarshalling invalid dataSourceStruct for XHTML job",
 			args: args{
-				job:           job,
-				response:      response,
-				parsedDataErr: errors.New("parsedData error"),
-				dataPoint:     "1",
-				datum:         big.NewFloat(0.1),
-			},
-			want:    big.NewInt(10),
-			wantErr: false,
-		},
-		{
-			name: "Test 4: When there is an error in getting dataPoint",
-			args: args{
-				job:          job,
-				response:     response,
-				parsedData:   "abc",
-				dataPointErr: errors.New("dataPoint error"),
-				datum:        big.NewFloat(0.1),
+				job: invalidXHTMLJob,
 			},
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name: "test 5: When there is an error in getting datum",
+			name: "Test 5: When there is an error in unmarshalling invalid dataSourceStruct",
 			args: args{
-				job:        job,
-				response:   response,
-				parsedData: "abc",
-				dataPoint:  "1",
-				datumErr:   errors.New("datum error"),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 6: When there is an Unmarshal error",
-			args: args{
-				job:        job2,
-				response:   []byte(""),
-				parsedData: "abc",
-				dataPoint:  "1",
-				datum:      big.NewFloat(0.1),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 7: When there is an error in getting response and selector type is 0",
-			args: args{
-				job:         job2,
-				responseErr: errors.New("API error"),
-				parsedData:  "abc",
-				dataPoint:   "1",
-				datum:       big.NewFloat(0.1),
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 8: When there is an error in getting parsedData and selector type is 0",
-			args: args{
-				job:           job2,
-				response:      response,
-				parsedDataErr: errors.New("parseData error"),
-				dataPoint:     "1",
-				datum:         big.NewFloat(0.1),
+				job: invalidDataSourceStructJob,
 			},
 			want:    nil,
 			wantErr: true,
@@ -786,18 +730,16 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetDataFromAPI", mock.AnythingOfType("string"), mock.Anything).Return(tt.args.response, tt.args.responseErr)
-			utilsMock.On("GetDataFromJSON", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.parsedData, tt.args.parsedDataErr)
-			utilsMock.On("GetDataFromXHTML", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.dataPoint, tt.args.dataPointErr)
-			utilsMock.On("ConvertToNumber", mock.Anything).Return(tt.args.datum, tt.args.datumErr)
+			pathUtilsMock := new(pathMocks.PathInterface)
+			path.PathUtilsInterface = pathUtilsMock
 
-			got, err := utils.GetDataToCommitFromJob(tt.args.job, &cache.LocalCache{})
+			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
+			lc := cache.NewLocalCache(time.Second * 10)
+			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc)
+			fmt.Println("JOB returns data: ", data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetDataToCommitFromJob() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1093,12 +1035,14 @@ func TestConvertCustomJobToStructJob(t *testing.T) {
 			args: args{
 				customJob: types.CustomJob{
 					URL:    "http://api.coinbase.com/eth2",
+					Name:   "eth_coinBase",
 					Power:  3,
 					Weight: 2,
 				},
 			},
 			want: bindings.StructsJob{
 				Url:    "http://api.coinbase.com/eth2",
+				Name:   "eth_coinBase",
 				Power:  3,
 				Weight: 2,
 			},
@@ -1568,6 +1512,110 @@ func TestGetCollectionIdFromLeafId(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GetCollectionIdFromLeafId() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReplaceValueWithDataFromENVFile(t *testing.T) {
+	tests := []struct {
+		name           string
+		value          string
+		envVariables   map[string]string
+		expectedOutput string
+	}{
+		{
+			name:           "single env variable",
+			value:          "API key is ${API_KEY}",
+			envVariables:   map[string]string{"API_KEY": "12345"},
+			expectedOutput: "API key is 12345",
+		},
+		{
+			name:           "multiple env variables",
+			value:          "API key is ${API_KEY} and secret is ${SECRET}",
+			envVariables:   map[string]string{"API_KEY": "12345", "SECRET": "abcdef"},
+			expectedOutput: "API key is 12345 and secret is abcdef",
+		},
+		{
+			name:           "no env variable in value",
+			value:          "API key is present",
+			envVariables:   map[string]string{"API_KEY": "12345"},
+			expectedOutput: "API key is present",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set environment variables
+			for key, val := range tt.envVariables {
+				os.Setenv(key, val)
+			}
+
+			// Execute function
+			var re = regexp.MustCompile(core.APIKeyRegex)
+			result := ReplaceValueWithDataFromENVFile(re, tt.value)
+
+			// Check result
+			if result != tt.expectedOutput {
+				t.Errorf("Expected output: %s, but got: %s", tt.expectedOutput, result)
+			}
+
+			// Cleanup environment variables
+			for key := range tt.envVariables {
+				os.Unsetenv(key)
+			}
+		})
+	}
+}
+
+func TestIsJSONCompatible(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected bool
+	}{
+		{
+			name:     "Valid JSON object",
+			input:    `{"key": "value"}`,
+			expected: true,
+		},
+		{
+			name:     "Valid JSON array",
+			input:    `["item1", "item2"]`,
+			expected: true,
+		},
+		{
+			name:     "Valid JSON number",
+			input:    "1234",
+			expected: true,
+		},
+		{
+			name:     "Invalid JSON missing closing brace",
+			input:    `{"key": "value"`,
+			expected: false,
+		},
+		{
+			name:     "Invalid JSON missing key",
+			input:    `{: "value"}`,
+			expected: false,
+		},
+		{
+			name:     "direct URL passed",
+			input:    "https://api.gemini.com/v1/pubticker/ethusd",
+			expected: false,
+		},
+		{
+			name:     "URL passed as a dataSourceStruct",
+			input:    `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := isJSONCompatible(tc.input)
+			if result != tc.expected {
+				t.Errorf("Expected %v, got %v for input: %s", tc.expected, result, tc.input)
 			}
 		})
 	}

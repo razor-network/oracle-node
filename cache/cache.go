@@ -1,13 +1,8 @@
 package cache
 
 import (
-	"errors"
 	"sync"
 	"time"
-)
-
-var (
-	errDataNotInCache = errors.New("data not present in cache")
 )
 
 type cachedData struct {
@@ -73,21 +68,15 @@ func (lc *LocalCache) Update(data []byte, url string, expireAtTimestamp int64) {
 	}
 }
 
-func (lc *LocalCache) Read(url string) ([]byte, error) {
+// Read fetches cached data for the given URL and indicates its presence with a boolean.
+func (lc *LocalCache) Read(url string) ([]byte, bool) {
 	lc.mu.RLock()
 	defer lc.mu.RUnlock()
 
 	cacheData, ok := lc.URLs[url]
 	if !ok {
-		return []byte{}, errDataNotInCache
+		return nil, false // Data not found, return nil and false
 	}
 
-	return cacheData.Result, nil
-}
-
-func (lc *LocalCache) Delete(url string) {
-	lc.mu.Lock()
-	defer lc.mu.Unlock()
-
-	delete(lc.URLs, url)
+	return cacheData.Result, true
 }

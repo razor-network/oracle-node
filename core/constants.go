@@ -3,15 +3,17 @@
 package core
 
 import (
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
-var ChainId = big.NewInt(0x109B4597)
 var StateLength = EpochLength / NumberOfStates
+
+// ChainId corresponds to the SKALE staging chain: staging-aware-chief-gianfar
+var ChainId = big.NewInt(0x5a79c44e)
+
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
@@ -23,7 +25,7 @@ var DefaultBufferPercent = 20
 var DefaultGasPrice = 1
 var DefaultWaitTime = 1
 var DefaultGasLimit = 2
-var DefaultGasLimitOverride = 0
+var DefaultGasLimitOverride = 50000000
 var DefaultRPCTimeout = 10
 var DefaultHTTPTimeout = 10
 var DefaultLogLevel = ""
@@ -51,5 +53,16 @@ var DefaultPathName = ".razor"
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
 
+//APIKeyRegex will be used as a regular expression to be matched in job Urls
+var APIKeyRegex = `\$\{(.+?)\}`
+
+// Following are the constants which defines retry attempts and retry delay if there is an error in processing request
+
+var ProcessRequestRetryAttempts uint = 2
+var ProcessRequestRetryDelay = 2
+
 //SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength
+
+// HexReturnType is the ReturnType for a job if that job returns a hex value
+var HexReturnType = "hex"

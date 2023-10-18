@@ -6,12 +6,14 @@ import (
 	"math"
 	"math/big"
 	mathRand "math/rand"
+	"razor/core"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
+func ConvertToNumber(num interface{}, returnType string) (*big.Float, error) {
 	if num == nil {
 		return big.NewFloat(0), errors.New("no data provided")
 	}
@@ -21,6 +23,9 @@ func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	case float64:
 		return big.NewFloat(v), nil
 	case string:
+		if strings.ToLower(returnType) == core.HexReturnType {
+			return ConvertHexToBigFloat(v)
+		}
 		convertedNumber, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Error("Error in converting from string to float: ", err)
@@ -28,7 +33,17 @@ func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 		}
 		return big.NewFloat(convertedNumber), nil
 	}
-	return big.NewFloat(0), nil
+	return big.NewFloat(0), errors.New("unsupported type provided")
+}
+
+func ConvertHexToBigFloat(hexString string) (*big.Float, error) {
+	hexValue := strings.TrimPrefix(hexString, "0x")
+	hexValueUint64, err := strconv.ParseUint(hexValue, 16, 64)
+	if err != nil {
+		log.Errorf("Error in converting hex value %v to uint64: %v", hexValue, err)
+		return big.NewFloat(0), err
+	}
+	return big.NewFloat(math.Float64frombits(hexValueUint64)), nil
 }
 
 func MultiplyWithPower(num *big.Float, power int8) *big.Int {

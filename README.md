@@ -8,7 +8,7 @@ Official node for running stakers in Golang.
 
 ### Linux quick start
 
-Install `razor-go` pre build binary directly from github and configure into host.
+Install the pre-built razor-go binary directly from GitHub and configure it on the host.
 
 For linux-amd64
 
@@ -30,7 +30,7 @@ Check installation
 razor -v
 ```
 
-> **_NOTE:_** To install the version you want, you can set VERSION:<git-tag> environment variable before running above command.
+> **_NOTE:_** To install a specific version, set the VERSION:<git-tag> environment variable before running the command above.
 
 ## Docker quick start
 
@@ -48,7 +48,7 @@ docker network create razor_network
 docker run -d -it --entrypoint /bin/sh --network=razor_network --name razor-go -v "$(echo $HOME)"/.razor:/root/.razor razornetwork/razor-go:v1.0.0-mainnet
 ```
 
-> **_NOTE:_** we are leveraging docker bind-mounts to mount `.razor` directory so that we have a shared mount of `.razor` directory between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
+> **_NOTE:_** We leverage Docker bind-mounts to mount the .razor directory, ensuring a shared mount between the host and the container. The `.razor` directory holds keys to the addresses that we use in `razor-go`, along with logs and config. We do this to persist data in the host machine, otherwise you would lose your keys once you delete the container.
 
 You need to set a provider before you can operate razor-go cli on docker:
 
@@ -64,9 +64,9 @@ docker exec -it razor-go razor <command>
 
 ### Prerequisites to building the source
 
-- Golang 1.15 or later must be installed.
+- Golang 1.21.1 or later must be installed.
 - Latest stable version of node is required.
-- Silicon chip based Mac users must go for node 15.3.0+
+- Mac users with Silicon chips should use Node 18.18.0 LTS or later versions
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
 - `solc` and `jq` must be installed.
 
@@ -127,7 +127,7 @@ Example:
 $ ./razor setConfig --provider https://mainnet.skalenodes.com/v1/turbulent-unique-scheat --alternateProvider https://ce2m-skale.chainode.tech:10200/ --gasmultiplier 1 --buffer 20 --wait 30 --gasprice 0 --logLevel debug --gasLimit 2 --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize 200 --logFileMaxBackups 52 --logFileMaxAge 365
 ```
 
-Other than setting these parameters in the config, you can use different values of these parameters in different command. Just add the same flag to any command you want to use and the new config changes will appear for that command.
+Besides, setting these parameters in the config, you can use different values for these parameters in various commands. Just add the same flag to any command you want to use and the new config changes will appear for that command.
 
 Example:
 
@@ -165,7 +165,7 @@ Password:
 
 ### Import Account
 
-If you already have an account created, and have its private key, that account can be imported into the `razor-go` client.
+If you already have an account and its private key, you can import that account into the `razor-go` client.
 To do that, you can use the `import` command. You'll be asked the private key first and then the password which you want to encrypt your keystore file with.
 
 razor cli
@@ -188,7 +188,7 @@ $ ./razor import
 Password:
 ```
 
-_Before staking on Razor Network, please ensure your account has eth and RAZOR. For testnet RAZOR, please contact us on Discord._
+_Before staking on Razor Network, please ensure your account has sFUEL and RAZOR. For testnet RAZOR, please contact us on Discord._
 
 ### Stake
 
@@ -214,15 +214,15 @@ $ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 
 
 _Note: --weiRazor flag can be passed to provide values in wei_
 
-If you have a 1000.25 razors in your account, you can stake those using the stake command with weiRazor flag.
+If you have 1000.25 razors in your account, you can stake those using the stake command with weiRazor flag.
 
 Example:
 
 ```
-$ razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000250000000000000000 --weiRazor true
+$ ./razor addStake --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 1000250000000000000000 --weiRazor true
 ```
 
-If you have a 5678.1001 razors in your account, you can stake those using the stake command with weiRazor flag.
+If you have 5678.1001 razors in your account, you can stake those using the stake command with weiRazor flag.
 
 Example:
 
@@ -254,8 +254,7 @@ $ ./razor stakerInfo --stakerId 2
 
 ### Set Delegation
 
-If you are a staker you can accept delegation from delegators and charge a commission from them.
-
+If you are a staker, you can accept delegations from delegators and charge them a commission.
 razor cli
 
 ```
@@ -321,7 +320,7 @@ $ ./razor delegate --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --value 
 
 ### Claim Commission
 
-Staker can claim the rewards earned from delegator's pool share as commission using `claimCommission`
+Stakers can claim the rewards earned from a delegator's pool share as commission using `claimCommission`
 
 razor cli
 
@@ -343,7 +342,7 @@ $ ./razor claimCommission --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c
 
 ### Vote
 
-You can start voting once you've staked some razors
+You can start voting once you've staked some RAZORs.
 
 razor cli
 
@@ -449,7 +448,7 @@ $ ./razor unlockWithdraw --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --
 
 ### Extend Lock
 
-If the withdrawal period is over, then extendLock can be called to extend the lock period.
+If the withdrawal period has ended, you can use the extendLock command to extend the lock period.
 
 razor cli
 
@@ -473,10 +472,10 @@ $ ./razor extendLock --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --stak
 
 If you want to claim your bounty after disputing a rogue staker, you can run `claimBounty` command
 
-> **_NOTE:_** bountyIds are stored in .razor directory with file name in format `YOUR_ADDRESS_disputeData.json file.`
->
+> **_NOTE:_** Bounty IDs are stored in the .razor directory with filenames in the format `YOUR_ADDRESS_disputeData.json file.`
 > e.g: `0x2EDc3c6F93e4e20590F480272AB490D2620557xY_disputeData.json`
-> If you know the bountyId, you can pass the value to `bountyId` flag.
+
+If you know the bountyId, you can pass the value to `bountyId` flag.
 
 razor cli
 
@@ -512,7 +511,7 @@ docker exec -it razor-go razor claimBounty --address <address>
 
 ### Transfer
 
-Transfers razor to other accounts.
+Transfers RAZOR to other accounts.
 
 razor cli
 
@@ -534,9 +533,9 @@ $ ./razor transfer --value 100 --to 0x91b1E6488307450f4c0442a1c35Bc314A505293e -
 
 ### Create Job
 
-Create new jobs using `createJob` command.
+Create new jobs using the `createJob` command.
 
-_Note: This command is restricted to "Admin Role"_
+_Note: This command is restricted to users with the "Admin Role"_
 
 razor cli
 
@@ -559,12 +558,12 @@ $ ./razor createJob --url https://www.alphavantage.co/query\?function\=GLOBAL_QU
 OR
 
 ```
-$  ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
+$ ./razor createJob --address 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c -n btc_gecko --power 2 -s 'table tbody tr td span[data-coin-id="1"][data-target="price.price"] span' -u https://www.coingecko.com/en --selectorType 0 --weight 100
 ```
 
 ### Create Collection
 
-Create new collections using `createCollection` command.
+Create new collections using the `createCollection` command.
 
 _Note: This command is restricted to "Admin Role"_
 
@@ -612,7 +611,7 @@ $ ./razor modifyCollectionStatus --collectionId 1 --address 0x5a0b54d5dc17e0aadc
 
 ### Update Collection
 
-Update the collection using `updateCollection` command.
+Update the collection using the `updateCollection` command.
 
 _Note: This command is restricted to "Admin Role"_
 
@@ -636,7 +635,7 @@ $ ./razor updateCollection -a 0x5a0b54d5dc17e0aadc383d2db43b0a0d3e029c4c --colle
 
 ### Update Job
 
-Update the existing parameters of the Job using `updateJob` command.
+Update the existing parameters of the Job using the `updateJob` command.
 
 _Note: This command is restricted to "Admin Role"_
 
@@ -694,7 +693,7 @@ docker
 docker exec -it razor-go razor collectionList
 ```
 
-Note : _All the commands have an additional --password flag that you can provide with the file path from which password must be picked._
+Note : _All commands include an additional --password flag. You can specify a file path to retrieve the password._
 
 ### Expose Metrics
 
@@ -728,18 +727,18 @@ docker exec -it razor-go razor setConfig --exposeMetrics 2112 --certFile /cert/f
 
 #### Configuration
 
-Clone repo and setup monitoring and alerting using Prometheus/Grafana
+Clone the repo and setup monitoring and alerting using Prometheus/Grafana
 
 ```
 git clone https://github.com/razor-network/monitoring.git
 cd monitoring
 ```
 
-- If your staker is running via binary, then
+- If your staker runs via binary, then
 
     1. In `./configs/prometheus.yml`, replace `"razor-go:2112"` with `"<private/public address of host>:2112"`
 
-- For alerting you can add webhook in `./configs/alertmanager.yml`, replace `http://127.0.0.1:5001/` with your webhook URL. This will send you an alert in every 5min if metrics stops.
+- For alerting, you can add a webhook in `./configs/alertmanager.yml`. Replace `http://127.0.0.1:5001/` with your webhook URL. This will send an alert every 5 minutes if the metrics stop.
 
 - If you are running multiple stakers and want to monitor via single grafana dashboard
 
@@ -835,44 +834,71 @@ cd monitoring
 
 ### Override Job and Adding Your Custom Jobs
 
-Jobs URLs are a placeholder from where to fetch values from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
+Job URLs act as placeholders indicating where values should be fetched from. There is a chance that these URLs might either fail, or get razor nodes blacklisted, etc.
 You can override the existing job and also add your custom jobs by adding `assets.json` file in `.razor` directory so that razor-nodes can fetch data directly from the provided jobs.
 
 Shown below is an example of how your `assets.json` file should be -
 
 ``` json
 {
-  "assets": {
-    "collection": {
-      "ethCollectionMean": {
-        "power": 2,
-        "official jobs": {
-          "1": {
-            "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
-            "selector": "[`data`][`market_data`][`price_usd`]",
-            "power": 2,
-            "weight": 2
+    "assets": {
+      "collection": {
+        "ETHUSD": {
+          "official jobs": {
+            "1": {
+              "URL": "https://data.messari.io/api/v1/assets/eth/metrics",
+              "selector": "[`data`][`market_data`][`price_usd`]",
+              "power": 2,
+              "weight": 2
+            }
           },
-        },
-        "custom jobs": [
-          {
-            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
-            "selector": "[`data`][`0`][`price`]",
-            "power": 3,
-            "weight": 2
-          },
-        ]
+          "custom jobs": [
+            {
+              "URL": "https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH",
+              "name": "eth_kucoin_usd",
+              "selector": "data.ETH",
+              "power": 3,
+              "weight": 1
+            },
+            {
+              "URL": {
+                "type": "POST",
+                "url": "https://rpc.ankr.com/eth",
+                "body": {
+                  "jsonrpc": "2.0",
+                  "method": "eth_call",
+                  "params": [
+                    {
+                      "to": "0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6",
+                      "data": "0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"
+                    },
+                    "latest"
+                  ],
+                  "id": 5
+                },
+                "header": {
+                  "content-type": "application/json"
+                },
+                "returnType": "hex"
+              },
+              "name": "eth_postJob_usd",
+              "power": -4,
+              "selectorType": 0,
+              "selector": "result",
+              "weight": 1
+            }
+          ]
+        }
       }
     }
   }
-}
 ```
 
 Breaking down into components
 
 - The existing jobs that you want to override should be included in `official jobs` and fields like URL, selector should be replaced with your provided inputs respectively.
 
-In the above example for the collection `ethCollectionMean`, job having `jobId:1` is override by provided URL, selector, power and weight.
+In the above example for the collection `ethCollectionMean`, the job with `jobId:1` is overriden by provided URL, selector, power and weight.
 
 ```
 "official jobs": {
@@ -886,22 +912,31 @@ In the above example for the collection `ethCollectionMean`, job having `jobId:1
 
 - Additional jobs that you want to add to a collection should be added in `custom jobs` field with their respective URLs and selectors.
 
-In the above example for the collection `ethCollectionMean`, new custom job having URL `https://api.lunarcrush.com/v2?data=assets&symbol=ETH` is added.
+In the above example for the collection `ethCollectionMean` new custom jobs are as shown below, 
+1. Job following GET request having URL `https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH` and
+2. Job following POST request having URL `"https://rpc.ankr.com/eth"` with respective `body` and `header` will be added in jobs array.
+
+If any custom job requires authentication via an API key or headers, the staker can export the key using the method shown below:
+
+If the job is:
+```
+https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=YOUR_AUTH_KEY
+```
+
+you can change the above job url to 
+```
+https://api.gemini.com/v1/pubticker/v1/exchangerate/BTC?apikey=${AUTH_KEY}
+```
+
+Now staker needs to use the same keyword defined inside `${...}` as an environment variable using `export` command and assigning it a value as users API key as shown below,
 
 ```
- "custom jobs": [
-          {
-            "URL": "https://api.lunarcrush.com/v2?data=assets&symbol=ETH",
-            "selector": "[`data`][`0`][`price`]",
-            "power": 3,
-            "weight": 2
-          },
-        ]
+export AUTH_KEY="YOUR_AUTH_KEY"
 ```
 
 ### Logs
 
-User can pass a separate flag --logFile followed with any name for log file along with command. The logs will be stored in `.razor/logs` directory.
+Users can pass a separate `--logFile` flag followed by any desired log file name when executing a command. The logs will be stored in `.razor/logs` directory.
 
 razor cli
 
@@ -915,7 +950,7 @@ docker
 docker exec -it razor-go razo addStake --address <address> --value <value> --logFile stakingLogs
 ```
 
-_The logs for above command will be stored at "$HOME/.razor/logs/stakingLogs.log" path_
+_The logs for the above command will be stored at the "$HOME/.razor/logs/stakingLogs.log" path_
 
 razor cli
 

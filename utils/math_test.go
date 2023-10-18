@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"math"
 	"math/big"
 	"razor/utils/mocks"
 	"reflect"
@@ -51,7 +52,8 @@ func TestAllZero(t *testing.T) {
 
 func TestConvertToNumber(t *testing.T) {
 	type args struct {
-		num interface{}
+		num        interface{}
+		returnType string
 	}
 	tests := []struct {
 		name    string
@@ -105,18 +107,30 @@ func TestConvertToNumber(t *testing.T) {
 				num: big.NewInt(4),
 			},
 			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test hex value",
+			args: args{
+				num:        "3FEF5C28F5C28F5C",
+				returnType: "hex",
+			},
+			want:    big.NewFloat(0.98),
 			wantErr: false,
+		},
+		{
+			name: "Test invalid hex value",
+			args: args{
+				num:        "0xGGGGGGGGGGGGGGGG",
+				returnType: "hex",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			UtilsMock := new(mocks.Utils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: UtilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-			got, err := utils.ConvertToNumber(tt.args.num)
+			got, err := ConvertToNumber(tt.args.num, tt.args.returnType)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ConvertToNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -962,4 +976,37 @@ func IndexNotEqual(a []uint32, b []uint32) bool {
 	}
 	return true
 
+}
+
+func TestConvertHexToBigFloat(t *testing.T) {
+	tests := []struct {
+		name      string
+		hexString string
+		expected  *big.Float
+		expectErr bool
+	}{
+		{"Valid hexadecimal without prefix", "3FF0000000000000", big.NewFloat(1), false},
+		{"Valid hexadecimal with prefix", "0x3FF0000000000000", big.NewFloat(1), false},
+		{"Invalid hexadecimal string", "0xInvalid", big.NewFloat(0), true},
+		{"Empty hexadecimal string", "", big.NewFloat(0), true},
+		{"Valid hex representation of PI", "0x400921FB54442D18", big.NewFloat(3.141592653589793), false},
+		{"Valid hex without 0x prefix", "400921FB54442D18", big.NewFloat(3.141592653589793), false},
+		{"Zero value", "0x0000000000000000", big.NewFloat(0.0), false},
+		{"Positive infinity", "0x7FF0000000000000", big.NewFloat(math.Inf(1)), false},
+		{"Negative infinity", "0xFFF0000000000000", big.NewFloat(math.Inf(-1)), false},
+		{"Invalid hex value", "0xGGGGGGGGGGGGGGGG", big.NewFloat(0), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := ConvertHexToBigFloat(tt.hexString)
+			if tt.expectErr && err == nil {
+				t.Errorf("Expected an error but got none")
+			} else if !tt.expectErr && err != nil {
+				t.Errorf("Did not expect an error but got: %v", err)
+			} else if result.Cmp(tt.expected) != 0 {
+				t.Errorf("Expected %v but got %v", tt.expected, result)
+			}
+		})
+	}
 }
