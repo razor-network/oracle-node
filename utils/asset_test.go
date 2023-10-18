@@ -1554,3 +1554,56 @@ func TestReplaceValueWithDataFromENVFile(t *testing.T) {
 		})
 	}
 }
+
+func TestIsJSONCompatible(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected bool
+	}{
+		{
+			name:     "Valid JSON object",
+			input:    `{"key": "value"}`,
+			expected: true,
+		},
+		{
+			name:     "Valid JSON array",
+			input:    `["item1", "item2"]`,
+			expected: true,
+		},
+		{
+			name:     "Valid JSON number",
+			input:    "1234",
+			expected: true,
+		},
+		{
+			name:     "Invalid JSON missing closing brace",
+			input:    `{"key": "value"`,
+			expected: false,
+		},
+		{
+			name:     "Invalid JSON missing key",
+			input:    `{: "value"}`,
+			expected: false,
+		},
+		{
+			name:     "direct URL passed",
+			input:    "https://api.gemini.com/v1/pubticker/ethusd",
+			expected: false,
+		},
+		{
+			name:     "URL passed as a dataSourceStruct",
+			input:    `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := isJSONCompatible(tc.input)
+			if result != tc.expected {
+				t.Errorf("Expected %v, got %v for input: %s", tc.expected, result, tc.input)
+			}
+		})
+	}
+}
