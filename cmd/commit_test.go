@@ -89,7 +89,7 @@ func TestCommit(t *testing.T) {
 			wantErr: errors.New("commit error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting commitment as values is nil",
+			name: "Test 4: When there is an error in getting commitmentHashString as values is nil",
 			args: args{
 				values: []*big.Int{},
 			},
@@ -442,7 +442,7 @@ func TestCalculateCommitment(t *testing.T) {
 				seed:   []byte("5ab3bd027e66773306cc8c889dc48b17753d7ac6e400e066e91c3f8119540c6c"),
 				values: []*big.Int{},
 			},
-			want:    hex.EncodeToString([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+			want:    "0000000000000000000000000000000000000000000000000000000000000000",
 			wantErr: true,
 		},
 		{
@@ -460,7 +460,7 @@ func TestCalculateCommitment(t *testing.T) {
 				seed:   []byte{},
 				values: []*big.Int{},
 			},
-			want:    hex.EncodeToString([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+			want:    "0000000000000000000000000000000000000000000000000000000000000000",
 			wantErr: true,
 		},
 	}
@@ -494,12 +494,12 @@ func TestVerifyCommitment(t *testing.T) {
 		epoch        uint32
 	)
 	type args struct {
-		values        []*big.Int
-		commitment    types.Commitment
-		commitmentErr error
-		secret        string
-		secretErr     error
-		salt          string
+		values               []*big.Int
+		commitmentHashString string
+		commitmentErr        error
+		secret               string
+		secretErr            error
+		salt                 string
 	}
 	tests := []struct {
 		name    string
@@ -508,33 +508,29 @@ func TestVerifyCommitment(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When commitment is verified successfully",
+			name: "Test 1: When commitmentHashString is verified successfully",
 			args: args{
-				commitment: types.Commitment{
-					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
-				},
-				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
-				salt:   "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
-				secret: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+				commitmentHashString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
+				values:               []*big.Int{big.NewInt(200), big.NewInt(100)},
+				salt:                 "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
+				secret:               "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When commitment is not verified successfully",
+			name: "Test 2: When commitmentHashString is not verified successfully",
 			args: args{
-				commitment: types.Commitment{
-					CommitmentHash: [32]byte{35, 202, 187, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
-				},
-				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
-				salt:   "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
-				secret: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+				commitmentHashString: "23cabb074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
+				values:               []*big.Int{big.NewInt(200), big.NewInt(100)},
+				salt:                 "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
+				secret:               "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
 			},
 			want:    false,
 			wantErr: false,
 		},
 		{
-			name: "Test 3: When there is an error in getting commitment",
+			name: "Test 3: When there is an error in getting commitmentHashString",
 			args: args{
 				commitmentErr: errors.New("getCommitment error"),
 			},
@@ -542,12 +538,10 @@ func TestVerifyCommitment(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 4: When there is error in calculating commitment",
+			name: "Test 4: When there is error in calculating commitmentHashString",
 			args: args{
-				commitment: types.Commitment{
-					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
-				},
-				values: []*big.Int{},
+				commitmentHashString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
+				values:               []*big.Int{},
 			},
 			want:    false,
 			wantErr: true,
@@ -555,11 +549,9 @@ func TestVerifyCommitment(t *testing.T) {
 		{
 			name: "Test 5: When there is error in calculating seed",
 			args: args{
-				commitment: types.Commitment{
-					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
-				},
-				values:    []*big.Int{big.NewInt(200), big.NewInt(100)},
-				secretErr: errors.New("secret error"),
+				commitmentHashString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
+				values:               []*big.Int{big.NewInt(200), big.NewInt(100)},
+				secretErr:            errors.New("secret error"),
 			},
 			want:    false,
 			wantErr: true,
@@ -567,9 +559,18 @@ func TestVerifyCommitment(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var commitmentHash [32]byte
 			var salt [32]byte
 			var secret []byte
 
+			if tt.args.commitmentHashString != "" {
+				var err error
+				commitmentHash, err = convertStringToByte32(tt.args.commitmentHashString)
+				if err != nil {
+					t.Errorf("Error in decoding commitmentHashString: %v", err)
+					return
+				}
+			}
 			if tt.args.secret != "" {
 				var err error
 				secret, err = hex.DecodeString(tt.args.secret)
@@ -592,7 +593,7 @@ func TestVerifyCommitment(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(tt.args.commitment, tt.args.commitmentErr)
+			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: commitmentHash}, tt.args.commitmentErr)
 			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(salt, nil)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
 			got, err := VerifyCommitment(client, account, keystorePath, epoch, tt.args.values)
