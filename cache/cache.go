@@ -80,10 +80,3 @@ func (lc *LocalCache) Read(url string) ([]byte, bool) {
 
 	return cacheData.Result, true
 }
-
-func (lc *LocalCache) Delete(url string) {
-	lc.mu.Lock()
-	defer lc.mu.Unlock()
-
-	delete(lc.URLs, url)
-}
