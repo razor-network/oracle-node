@@ -88,6 +88,14 @@ func TestCommit(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("commit error"),
 		},
+		{
+			name: "Test 4: When there is an error in getting commitment as values is nil",
+			args: args{
+				values: []*big.Int{},
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("Error in getting merkle tree: values are nil, cannot create merkle tree"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -489,8 +497,9 @@ func TestVerifyCommitment(t *testing.T) {
 		values        []*big.Int
 		commitment    types.Commitment
 		commitmentErr error
-		secret        []byte
-		salt          [32]byte
+		secret        string
+		secretErr     error
+		salt          string
 	}
 	tests := []struct {
 		name    string
@@ -505,8 +514,8 @@ func TestVerifyCommitment(t *testing.T) {
 					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
 				},
 				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
-				salt:   [32]byte{3, 188, 235, 65, 42, 140, 151, 61, 187, 150, 15, 19, 83, 186, 145, 207, 108, 161, 13, 253, 226, 28, 145, 16, 84, 207, 30, 97, 240, 210, 142, 11},
-				secret: []byte{15, 127, 98, 144, 121, 77, 174, 0, 191, 124, 103, 61, 54, 250, 42, 91, 68, 125, 44, 140, 96, 233, 164, 34, 11, 122, 182, 91, 232, 5, 71, 169},
+				salt:   "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
+				secret: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
 			},
 			want:    true,
 			wantErr: false,
@@ -515,11 +524,11 @@ func TestVerifyCommitment(t *testing.T) {
 			name: "Test 2: When commitment is not verified successfully",
 			args: args{
 				commitment: types.Commitment{
-					CommitmentHash: [32]byte{145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
+					CommitmentHash: [32]byte{35, 202, 187, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
 				},
 				values: []*big.Int{big.NewInt(200), big.NewInt(100)},
-				salt:   [32]byte{3, 188, 235, 65, 42, 140, 151, 61, 187, 150, 15, 19, 83, 186, 145, 207, 108, 161, 13, 253, 226, 28, 145, 16, 84, 207, 30, 97, 240, 210, 142, 11},
-				secret: []byte{15, 127, 98, 144, 121, 77, 174, 0, 191, 124, 103, 61, 54, 250, 42, 91, 68, 125, 44, 140, 96, 233, 164, 34, 11, 122, 182, 91, 232, 5, 71, 169},
+				salt:   "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
+				secret: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
 			},
 			want:    false,
 			wantErr: false,
@@ -543,17 +552,49 @@ func TestVerifyCommitment(t *testing.T) {
 			want:    false,
 			wantErr: true,
 		},
+		{
+			name: "Test 5: When there is error in calculating seed",
+			args: args{
+				commitment: types.Commitment{
+					CommitmentHash: [32]byte{34, 201, 186, 7, 78, 68, 208, 0, 145, 22, 178, 68, 165, 206, 206, 158, 154, 222, 133, 175, 72, 110, 31, 79, 141, 184, 227, 4, 230, 96, 91, 234},
+				},
+				values:    []*big.Int{big.NewInt(200), big.NewInt(100)},
+				secretErr: errors.New("secret error"),
+			},
+			want:    false,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var salt [32]byte
+			var secret []byte
+
+			if tt.args.secret != "" {
+				var err error
+				secret, err = hex.DecodeString(tt.args.secret)
+				if err != nil {
+					t.Errorf("Error in decoding secret: %v", err)
+					return
+				}
+			}
+			if tt.args.salt != "" {
+				var err error
+				salt, err = convertStringToByte32(tt.args.salt)
+				if err != nil {
+					t.Errorf("Error in decoding salt: %v", err)
+					return
+				}
+			}
+
 			SetUpMockInterfaces()
 
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
 			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(tt.args.commitment, tt.args.commitmentErr)
-			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(tt.args.salt, nil)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, tt.args.secret, nil)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(salt, nil)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
 			got, err := VerifyCommitment(client, account, keystorePath, epoch, tt.args.values)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VerifyCommitment() error = %v, wantErr %v", err, tt.wantErr)
@@ -564,4 +605,102 @@ func TestVerifyCommitment(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCalculateSeed(t *testing.T) {
+	var (
+		client       *ethclient.Client
+		account      types.Account
+		keystorePath string
+		epoch        uint32
+	)
+	type args struct {
+		secret    string
+		secretErr error
+		salt      string
+		saltErr   error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "When both secret and seed are valid",
+			args: args{
+				secret: "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+				salt:   "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
+			},
+			want:    "8f81216409d9ecf1fbbab41cc3941c504e5c3b170cb3e4de6477974de4a9fd37",
+			wantErr: false,
+		},
+		{
+			name: "When there is an error in getting secret",
+			args: args{
+				secretErr: errors.New("secret error"),
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "When there is an error in getting salt",
+			args: args{
+				secret:  "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+				saltErr: errors.New("salt error"),
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var salt [32]byte
+			var secret []byte
+
+			if tt.args.secret != "" {
+				var err error
+				secret, err = hex.DecodeString(tt.args.secret)
+				if err != nil {
+					t.Errorf("Error in decoding secret: %v", err)
+					return
+				}
+			}
+			if tt.args.salt != "" {
+				var err error
+				salt, err = convertStringToByte32(tt.args.salt)
+				if err != nil {
+					t.Errorf("Error in decoding salt: %v", err)
+					return
+				}
+			}
+
+			SetUpMockInterfaces()
+
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(salt, tt.args.saltErr)
+			got, err := CalculateSeed(client, account, keystorePath, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateSeed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(hex.EncodeToString(got), tt.want) {
+				t.Errorf("CalculateSeed() got = %v, want %v", hex.EncodeToString(got), tt.want)
+			}
+		})
+	}
+}
+
+func convertStringToByte32(value string) ([32]byte, error) {
+	decodedValue, err := hex.DecodeString(value)
+	if err != nil {
+		log.Error("Error in decoding string:", err)
+		return [32]byte{}, err
+	}
+	if len(decodedValue) != 32 {
+		return [32]byte{}, errors.New("decoded string is not 32 bytes long")
+	}
+	var decodedValueByte32 [32]byte
+	copy(decodedValueByte32[:], decodedValue)
+	return decodedValueByte32, nil
 }

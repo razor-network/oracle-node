@@ -663,6 +663,11 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
 	}
 
+	invalidDataSourceStructJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "result",
+		Url: `{"type": true,"url1": {}}`,
+	}
+
 	invalidXHTMLJob := bindings.StructsJob{Id: 3, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
 		Url: `{"type1": "GET","url1": "https://api.gemini.com/v1/pubticker/ethusd","body1": {},"header1": {}}`,
@@ -703,6 +708,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			name: "Test 4: When there is an error in unmarshalling invalid dataSourceStruct for XHTML job",
 			args: args{
 				job: invalidXHTMLJob,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in unmarshalling invalid dataSourceStruct",
+			args: args{
+				job: invalidDataSourceStructJob,
 			},
 			want:    nil,
 			wantErr: true,

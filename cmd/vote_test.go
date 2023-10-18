@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/utils"
 	"reflect"
 	"testing"
 
@@ -695,10 +696,24 @@ func TestInitiateReveal(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Test 13: When file contains latest data",
+			args: args{
+				epoch:                 6,
+				lastReveal:            2,
+				fileName:              "",
+				committedDataFromFile: types.CommitFileData{Epoch: 6},
+				path:                  "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+
+			utils.MerkleInterface = &utils.MerkleTreeStruct{}
+			merkleUtils = utils.MerkleInterface
 
 			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
 			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
@@ -708,6 +723,8 @@ func TestInitiateReveal(t *testing.T) {
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return([32]byte{}, nil)
+			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(types.Commitment{}, nil)
 			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
