@@ -978,47 +978,34 @@ func IndexNotEqual(a []uint32, b []uint32) bool {
 
 }
 
-func TestConvertHexToFloat64(t *testing.T) {
+func TestConvertHexToBigFloat(t *testing.T) {
 	tests := []struct {
-		name          string
-		hexString     string
-		expectedFloat uint64
-		expectErr     bool
+		name      string
+		hexString string
+		expected  *big.Float
+		expectErr bool
 	}{
-		{"Valid hex representation of PI", "0x400921FB54442D18", math.Float64bits(3.141592653589793), false},
-		{"Valid hex without 0x prefix", "400921FB54442D18", math.Float64bits(3.141592653589793), false},
-		{"Zero value", "0x0000000000000000", math.Float64bits(0.0), false},
-		{"Positive infinity", "0x7FF0000000000000", math.Float64bits(math.Inf(1)), false},
-		{"Negative infinity", "0xFFF0000000000000", math.Float64bits(math.Inf(-1)), false},
-		{"Not a Number", "0x7FF8000000000000", math.Float64bits(math.NaN()), false},
-		{"Invalid hex value", "0xGGGGGGGGGGGGGGGG", 0, true},
-		{"Empty string input", "", 0, true},
+		{"Valid hexadecimal without prefix", "3FF0000000000000", big.NewFloat(1), false},
+		{"Valid hexadecimal with prefix", "0x3FF0000000000000", big.NewFloat(1), false},
+		{"Invalid hexadecimal string", "0xInvalid", big.NewFloat(0), true},
+		{"Empty hexadecimal string", "", big.NewFloat(0), true},
+		{"Valid hex representation of PI", "0x400921FB54442D18", big.NewFloat(3.141592653589793), false},
+		{"Valid hex without 0x prefix", "400921FB54442D18", big.NewFloat(3.141592653589793), false},
+		{"Zero value", "0x0000000000000000", big.NewFloat(0.0), false},
+		{"Positive infinity", "0x7FF0000000000000", big.NewFloat(math.Inf(1)), false},
+		{"Negative infinity", "0xFFF0000000000000", big.NewFloat(math.Inf(-1)), false},
+		{"Invalid hex value", "0xGGGGGGGGGGGGGGGG", big.NewFloat(0), true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ConvertHexToFloat64(tt.hexString)
-			if tt.expectErr {
-				if err == nil {
-					t.Errorf("expected an error but got none")
-				}
-				return
-			}
-
-			if !tt.expectErr && err != nil {
-				t.Errorf("unexpected error: %v", err)
-				return
-			}
-
-			gotBits := math.Float64bits(got)
-
-			// Special case for NaN as it's not equal to itself.
-			if math.IsNaN(math.Float64frombits(tt.expectedFloat)) && math.IsNaN(got) {
-				return // both are NaN, so the test case passes.
-			}
-
-			if gotBits != tt.expectedFloat {
-				t.Errorf("ConvertHexToFloat64(%v): got %v, want %v", tt.hexString, got, math.Float64frombits(tt.expectedFloat))
+			result, err := ConvertHexToBigFloat(tt.hexString)
+			if tt.expectErr && err == nil {
+				t.Errorf("Expected an error but got none")
+			} else if !tt.expectErr && err != nil {
+				t.Errorf("Did not expect an error but got: %v", err)
+			} else if result.Cmp(tt.expected) != 0 {
+				t.Errorf("Expected %v but got %v", tt.expected, result)
 			}
 		})
 	}
