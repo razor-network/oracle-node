@@ -8,6 +8,7 @@
     "build": "make build",
     "build-all": "make all",
     "build-noargs": "make build-noargs",
+    "build-noargs-testnet": "make build-noargs-testnet",
     "test": "go test ./... -v"
   },
   "repository": {

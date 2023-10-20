@@ -2,7 +2,7 @@ name: CI/CD Develop Pipeline
 on:
   push:
     branches:
-      - "develop"
+      - "release/*"
 
 jobs:
   test:
@@ -89,7 +89,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          file: ./Dockerfile.testnet
+          file: ./Dockerfile.mainnet
           context: .
           platforms: linux/amd64,linux/arm64/v8
           push: true

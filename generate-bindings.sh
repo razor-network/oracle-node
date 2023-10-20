@@ -4,6 +4,8 @@ set -e -o pipefail
 
 mkdir -p ./pkg/bindings
 
+network=$2
+
 generate_binding() {
   contract=$(echo $1 | awk '{print $1}')
   go_source=$(echo $1 | awk '{print $2}')
@@ -34,4 +36,4 @@ do
     generate_binding "$c"
 done
 
-bash generate-contracts.sh
+bash generate-contracts.sh $network
