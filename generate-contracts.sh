@@ -1,6 +1,4 @@
 #!/bin/bash
-
-echo "Copying addresses/network.json to core/contracts.go"
 touch core/contracts.go
 
 echo "package core" > core/contracts.go
@@ -17,6 +15,8 @@ else
   echo "Invalid network environment specified. Please use 'mainnet' or 'testnet'."
   exit 1
 fi
+
+echo "Copying $addresses_path to core/contracts.go"
 
 generate_contract_address() {
   jsonFileKey=$(echo $1 | awk '{print $1}')
