@@ -1,4 +1,4 @@
-name: CI/CD Develop Pipeline
+name: CI/CD Release Pipeline
 on:
   push:
     branches:
@@ -48,7 +48,7 @@ jobs:
           go install github.com/ory/go-acc@v0.2.7
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
 
-      - name: Run make setup
+      - name: Run make setup for mainnet
         run: make setup
       - name: Run gofmt
         run: |

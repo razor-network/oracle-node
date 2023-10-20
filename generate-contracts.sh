@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Copying addresses.json to core/contracts.go"
+echo "Copying addresses/network.json to core/contracts.go"
 touch core/contracts.go
 
 echo "package core" > core/contracts.go

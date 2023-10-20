@@ -48,8 +48,8 @@ jobs:
           go install github.com/ory/go-acc@v0.2.7
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
 
-      - name: Run make setup
-        run: make setup
+      - name: Run make setup for testnet
+        run: make setup-testnet
       - name: Run gofmt
         run: |
           gofmt

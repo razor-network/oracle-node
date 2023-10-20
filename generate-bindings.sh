@@ -4,7 +4,7 @@ set -e -o pipefail
 
 mkdir -p ./pkg/bindings
 
-network=$2
+network=$1
 
 generate_binding() {
   contract=$(echo $1 | awk '{print $1}')

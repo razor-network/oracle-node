@@ -48,7 +48,7 @@ jobs:
           && go install github.com/ory/go-acc@v0.2.7 \
 
           && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
-      - name: Run make setup
+      - name: Run make setup for mainnet
         run: make setup
       - name: Run gofmt
         run: |
@@ -238,8 +238,9 @@ jobs:
         run: echo "::set-output name=tag_name::${GITHUB_REF#refs/tags/}"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+         uses: docker/build-push-action@v5
         with:
+          file: ./Dockerfile.mainnet
           context: .
           platforms: linux/amd64,linux/arm64/v8
           push: true
