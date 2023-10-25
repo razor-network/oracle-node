@@ -13,5 +13,5 @@ else
     exit 1
 fi
 
-sed -i "s/var ChainId = big.NewInt(0x[a-fA-F0-9]*)/var ChainId = big.NewInt($CHAINID)/" core/constants.go
+sed -i '' "s/var ChainId = big.NewInt(0x[a-fA-F0-9]*)/var ChainId = big.NewInt($CHAINID)/" core/constants.go
 
