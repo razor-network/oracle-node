@@ -13,5 +13,12 @@ else
     exit 1
 fi
 
-sed -i "s/var ChainId = big.NewInt(0x[a-fA-F0-9]*)/var ChainId = big.NewInt($CHAINID)/" core/constants.go
+# Detect the OS and set the appropriate -i option
+if [ "$(uname)" = "Darwin" ]; then  # macOS
+    SED_I_OPTION=("-i" "")
+else  # GNU/Linux and others
+    SED_I_OPTION=("-i")
+fi
 
+# Use the correct option for sed based on the detected OS
+sed "${SED_I_OPTION[@]}" "s/var ChainId = big.NewInt(0x[a-fA-F0-9]*)/var ChainId = big.NewInt($CHAINID)/" core/constants.go
