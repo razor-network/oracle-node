@@ -2,7 +2,7 @@ name: CI/CD Release Pipeline
 on:
   push:
     branches:
-      - "release/*"
+      - "releases/*"
 
 jobs:
   test:
