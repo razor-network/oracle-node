@@ -93,4 +93,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: razornetwork/razor-go:${{ steps.sha.outputs.short }}
+          tags: razornetwork/razor-go:rc-${{ steps.sha.outputs.short }}
