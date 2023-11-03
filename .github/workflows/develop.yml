@@ -66,9 +66,6 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=coverage.txt -service=github
-      - uses: bissolli/gh-action-persist-workspace@v1
-        with:
-          action: persist
 
   push-docker-build:
     runs-on: ubuntu-latest
