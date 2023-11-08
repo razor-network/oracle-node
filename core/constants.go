@@ -4,15 +4,11 @@ package core
 
 import (
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
 )
 
 var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
 var StateLength = EpochLength / NumberOfStates
-
-// ChainId corresponds to the SKALE chain
-var ChainId = big.NewInt(0x5a79c44e)
 
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
