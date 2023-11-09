@@ -246,3 +246,19 @@ jobs:
           push: true
           tags: razornetwork/razor-go:${{ steps.extract_tag.outputs.tag_name }}
 
+      - name: Update version.json
+        run: |
+            TAG_NAME=${{ steps.get_tag.outputs.tag }}
+            VERSION_ARRAY=(${TAG_NAME//-/ }) # Split 'vMajor.Minor.Patch-Meta' into 'vMajor.Minor.Patch' and 'Meta'
+            VERSION_STRING=${VERSION_ARRAY[0]} # 'vMajor.Minor.Patch'
+            VERSION_STRING=${VERSION_STRING/v/} # Remove the 'v' prefix if present
+            META=${VERSION_ARRAY[1]:-} # 'Meta', if any, default to empty
+            
+            IFS='.' read -r VERSION_MAJOR VERSION_MINOR VERSION_PATCH <<< "$VERSION_STRING"
+            
+            echo "{
+              \"VersionMajor\": $VERSION_MAJOR,
+              \"VersionMinor\": $VERSION_MINOR,
+              \"VersionPatch\": $VERSION_PATCH,
+              \"VersionMeta\": \"$META\"
+            }" > version.json
