@@ -19,7 +19,7 @@ var (
 		ConstLabels: map[string]string{
 			"Core":             osInfo.Core,
 			"Platform":         osInfo.Platform,
-			"razor_go_version": core.VersionWithMeta,
+			"razor_go_version": core.VersionWithMeta(),
 			"go_version":       runtime.Version(),
 		},
 	})
