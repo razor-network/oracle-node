@@ -111,10 +111,10 @@ func TestConvertToNumber(t *testing.T) {
 		{
 			name: "Test hex value",
 			args: args{
-				num:        "3FEF5C28F5C28F5C",
+				num:        "0x000000000000000000000000000000000000000000000000002388bcf02787f1",
 				returnType: "hex",
 			},
-			want:    big.NewFloat(0.98),
+			want:    big.NewFloat(10001969249224689),
 			wantErr: false,
 		},
 		{
