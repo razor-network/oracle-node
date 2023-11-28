@@ -43,7 +43,7 @@ func ConvertHexToBigFloat(hexString string) (*big.Float, error) {
 		log.Errorf("Error in converting hex value %v to uint64: %v", hexValue, err)
 		return big.NewFloat(0), err
 	}
-	return big.NewFloat(math.Float64frombits(hexValueUint64)), nil
+	return big.NewFloat(float64(hexValueUint64)), nil
 }
 
 func MultiplyWithPower(num *big.Float, power int8) *big.Int {
