@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -254,19 +255,29 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 }
 
 func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
-	var (
-		data   []*big.Int
-		weight []uint8
-	)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var data []*big.Int
+	var weight []uint8
+
 	for _, job := range jobs {
-		dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
-		if err != nil {
-			continue
-		}
-		log.Debugf("Job %s gives data %s", job.Url, dataToAppend)
-		data = append(data, dataToAppend)
-		weight = append(weight, job.Weight)
+		wg.Add(1)
+		go func(job bindings.StructsJob) {
+			defer wg.Done()
+			dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
+			if err != nil {
+				return
+			}
+			log.Debugf("Job ID: %d, Job %s gives data %s", job.Id, job.Url, dataToAppend)
+			mu.Lock()
+			data = append(data, dataToAppend)
+			weight = append(weight, job.Weight)
+			mu.Unlock()
+		}(job)
 	}
+
+	wg.Wait()
+
 	return data, weight, nil
 }
 
@@ -277,19 +288,19 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		apiErr              error
 		dataSourceURLStruct types.DataSourceURL
 	)
-	log.Debugf("Getting the data to commit for job %s having job Id %d", job.Name, job.Id)
+	log.Debugf("Job ID: %d, Getting the data to commit for job %s", job.Id, job.Name)
 	if isJSONCompatible(job.Url) {
-		log.Debug("Job URL passed is a struct containing URL along with type of request data")
+		log.Debugf("Job ID: %d, Job URL passed is a struct containing URL along with type of request data", job.Id)
 		dataSourceURLInBytes := []byte(job.Url)
 
 		err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
 		if err != nil {
-			log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
+			log.Errorf("Job ID: %d, Error in unmarshalling %s: %v", job.Id, job.Url, err)
 			return nil, err
 		}
-		log.Infof("URL Struct: %+v", dataSourceURLStruct)
+		log.Infof("Job ID: %d, URL Struct: %+v", job.Id, dataSourceURLStruct)
 	} else {
-		log.Debug("Job URL passed is a direct URL: ", job.Url)
+		log.Debugf("Job ID: %d, Job URL passed is a direct URL: %s", job.Id, job.Url)
 		re := regexp.MustCompile(core.APIKeyRegex)
 		isAPIKeyRequired := re.MatchString(job.Url)
 		if isAPIKeyRequired {
@@ -308,27 +319,27 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		start := time.Now()
 		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
 		if apiErr != nil {
-			log.Errorf("Error in fetching data from API %s: %v", job.Url, apiErr)
+			log.Errorf("Job ID: %d, Error in fetching data from API %s: %v", job.Id, job.Url, apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
-		log.Debugf("Time taken to fetch the data from API : %s was %f", dataSourceURLStruct.URL, elapsed)
+		log.Debugf("Job ID: %d, Time taken to fetch the data from API : %s was %f", job.Id, dataSourceURLStruct.URL, elapsed)
 
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
-			log.Error("Error in parsing data from API: ", err)
+			log.Errorf("Job ID: %d, Error in parsing data from API: %v", job.Id, err)
 			return nil, err
 		}
 		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
 		if err != nil {
-			log.Error("Error in fetching value from parsed data: ", err)
+			log.Errorf("Job ID: %d, Error in fetching value from parsed data: %v", job.Id, err)
 			return nil, err
 		}
 	} else {
 		//TODO: Add retry here.
 		dataPoint, err := GetDataFromXHTML(dataSourceURLStruct, job.Selector)
 		if err != nil {
-			log.Error("Error in fetching value from parsed XHTML: ", err)
+			log.Errorf("Job ID: %d, Error in fetching value from parsed XHTML: %v", job.Id, err)
 			return nil, err
 		}
 		// remove "," and currency symbols
@@ -337,7 +348,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 
 	datum, err := ConvertToNumber(parsedData, dataSourceURLStruct.ReturnType)
 	if err != nil {
-		log.Error("Result is not a number")
+		log.Errorf("Job ID: %d, Result is not a number", job.Id)
 		return nil, err
 	}
 
