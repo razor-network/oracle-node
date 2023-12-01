@@ -585,7 +585,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 		name            string
 		args            args
 		wantArrayLength int
-		wantErr         bool
 	}{
 		{
 			name: "Test 1: Getting values from set of jobs of length 4",
@@ -593,7 +592,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				jobs: jobsArray[:4],
 			},
 			wantArrayLength: 4,
-			wantErr:         false,
 		},
 		{
 			name: "Test 2: Getting values from set of jobs of length 2",
@@ -601,7 +599,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				jobs: jobsArray[:2],
 			},
 			wantArrayLength: 2,
-			wantErr:         false,
 		},
 		{
 			name: "Test 3: Getting values from whole set of jobs of length 5 but job at last index reports an error",
@@ -609,7 +606,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				jobs: jobsArray,
 			},
 			wantArrayLength: 4,
-			wantErr:         false,
 		},
 	}
 	for _, tt := range tests {
@@ -617,11 +613,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			UtilsInterface = &UtilsStruct{}
 			lc := cache.NewLocalCache(time.Second * 10)
 
-			gotDataArray, gotWeightArray, err := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDataToCommitFromJobs() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc)
 			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
 				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
 			}

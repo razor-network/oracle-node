@@ -212,8 +212,8 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
-	if err != nil || len(dataToCommit) == 0 {
+	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
+	if len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
@@ -254,7 +254,7 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 	return collection, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
+func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8) {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	var data []*big.Int
@@ -278,7 +278,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCac
 
 	wg.Wait()
 
-	return data, weight, nil
+	return data, weight
 }
 
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
