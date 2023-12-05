@@ -230,6 +230,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 		errChan         = make(chan error, 1)
 	)
 
+	log.Debug("Iterating over all the stakers...")
 	for i := 1; i <= int(numberOfStakers); i++ {
 		wg.Add(1)
 		go func(stakerId int) {
@@ -268,6 +269,8 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 		return nil, 0, err
 	}
 
+	log.Debug("Propose: BiggestStake: ", biggestStake)
+	log.Debug("Propose: Biggest Staker Id: ", biggestStakerId)
 	return biggestStake, biggestStakerId, nil
 }
 
