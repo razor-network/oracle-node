@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"math"
 	"math/big"
 	"razor/utils/mocks"
 	"reflect"
@@ -112,10 +111,10 @@ func TestConvertToNumber(t *testing.T) {
 		{
 			name: "Test hex value",
 			args: args{
-				num:        "3FEF5C28F5C28F5C",
+				num:        "0x000000000000000000000000000000000000000000000000002388bcf02787f1",
 				returnType: "hex",
 			},
-			want:    big.NewFloat(0.98),
+			want:    big.NewFloat(10001969249224689),
 			wantErr: false,
 		},
 		{
@@ -982,30 +981,56 @@ func TestConvertHexToBigFloat(t *testing.T) {
 	tests := []struct {
 		name      string
 		hexString string
-		expected  *big.Float
-		expectErr bool
+		want      *big.Float
+		wantErr   bool
 	}{
-		{"Valid hexadecimal without prefix", "3FF0000000000000", big.NewFloat(1), false},
-		{"Valid hexadecimal with prefix", "0x3FF0000000000000", big.NewFloat(1), false},
-		{"Invalid hexadecimal string", "0xInvalid", big.NewFloat(0), true},
-		{"Empty hexadecimal string", "", big.NewFloat(0), true},
-		{"Valid hex representation of PI", "0x400921FB54442D18", big.NewFloat(3.141592653589793), false},
-		{"Valid hex without 0x prefix", "400921FB54442D18", big.NewFloat(3.141592653589793), false},
-		{"Zero value", "0x0000000000000000", big.NewFloat(0.0), false},
-		{"Positive infinity", "0x7FF0000000000000", big.NewFloat(math.Inf(1)), false},
-		{"Negative infinity", "0xFFF0000000000000", big.NewFloat(math.Inf(-1)), false},
-		{"Invalid hex value", "0xGGGGGGGGGGGGGGGG", big.NewFloat(0), true},
+		{
+			name:      "Valid hexadecimal with prefix",
+			hexString: "0x000000000000000000000000000000000000000000000000000000007751b728",
+			want:      big.NewFloat(2001844008),
+			wantErr:   false,
+		},
+		{
+			name:      "Valid hexadecimal without prefix",
+			hexString: "3FF0000000000000",
+			want:      big.NewFloat(4607182418800017408),
+			wantErr:   false,
+		},
+		{
+			name:      "Invalid hexadecimal string",
+			hexString: "0xInvalid",
+			want:      big.NewFloat(0),
+			wantErr:   true,
+		},
+		{
+			name:      "Large Hex String",
+			hexString: "0xFFFFFFFFFFFFFFFF",
+			want:      big.NewFloat(18446744073709551615),
+			wantErr:   false,
+		},
+		{
+			name:      "No Prefix Hex String",
+			hexString: "1a",
+			want:      big.NewFloat(26),
+			wantErr:   false,
+		},
+		{
+			name:      "Empty hexadecimal string",
+			hexString: "",
+			want:      big.NewFloat(0),
+			wantErr:   true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ConvertHexToBigFloat(tt.hexString)
-			if tt.expectErr && err == nil {
-				t.Errorf("Expected an error but got none")
-			} else if !tt.expectErr && err != nil {
-				t.Errorf("Did not expect an error but got: %v", err)
-			} else if result.Cmp(tt.expected) != 0 {
-				t.Errorf("Expected %v but got %v", tt.expected, result)
+			got, err := ConvertHexToBigFloat(tt.hexString)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertHexToBigFloat() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertHexToBigFloat() = %v, want %v", got, tt.want)
 			}
 		})
 	}
