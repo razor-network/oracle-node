@@ -49,11 +49,6 @@ type AssignedAsset struct {
 	Value  *big.Int `json:"value"`
 }
 
-type MedianResult struct {
-	LeafId uint16
-	Median *big.Int
-}
-
 type CustomJob struct {
 	URL      string `json:"URL"`
 	Name     string `json:"name"`

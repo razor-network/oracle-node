@@ -11,7 +11,6 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sort"
-	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -381,42 +380,31 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 	log.Debug("MakeBlock: Active collections: ", activeCollections)
 
-	resultsChan := make(chan types.MedianResult, len(activeCollections))
-	var wg sync.WaitGroup
+	var (
+		medians                []*big.Int
+		idsRevealedInThisEpoch []uint16
+	)
 
 	log.Debug("Iterating over all the active collections for medians calculation....")
 	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
-		wg.Add(1)
-		go func(leafId uint16) {
-			defer wg.Done()
-			median := calculateMedianForLeafId(revealedDataMaps, leafId, rogueData)
-			if median != nil {
-				resultsChan <- types.MedianResult{LeafId: leafId, Median: median}
-			}
-		}(leafId)
-	}
-
-	wg.Wait()
-	close(resultsChan)
-
-	// Storing the median results temporarily in a map
-	medianResults := make(map[uint16]*big.Int)
-	for result := range resultsChan {
-		medianResults[result.LeafId] = result.Median
-	}
-
-	var medians []*big.Int
-	var idsRevealedInThisEpoch []uint16
-
-	// Storing medians in order of increasing leafIds starting from 0
-	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
-		if median, exists := medianResults[leafId]; exists {
-			medians = append(medians, median)
+		influenceSum := revealedDataMaps.InfluenceSum[leafId]
+		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
+			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
+				medians = append(medians, razorUtils.GetRogueRandomValue(10000000))
+				continue
+			}
+			accWeight := big.NewInt(0)
+			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
+				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
+				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
+				if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
+					medians = append(medians, revealedValue)
+					break
+				}
+			}
 		}
 	}
-
-	// Handling rogue data
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "missingIds") {
 		log.Warn("YOU ARE PROPOSING IDS REVEALED IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 		//Replacing the last ID: id with id+1 in idsRevealed array if rogueMode == missingIds
@@ -435,28 +423,7 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		idsRevealedInThisEpoch[0] = idsRevealedInThisEpoch[1]
 		idsRevealedInThisEpoch[1] = temp
 	}
-
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
-}
-
-func calculateMedianForLeafId(revealedDataMaps *types.RevealedDataMaps, leafId uint16, rogueData types.Rogue) *big.Int {
-	influenceSum := revealedDataMaps.InfluenceSum[leafId]
-	if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
-		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
-			return razorUtils.GetRogueRandomValue(10000000)
-		}
-		accWeight := big.NewInt(0)
-		for _, revealedValue := range revealedDataMaps.SortedRevealedValues[leafId] {
-			accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
-			if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
-				log.Debugf("LeafId: %d, Calculated value %v", leafId, revealedValue)
-				return revealedValue
-			}
-		}
-	}
-	// Returning nil if no median is found or if influenceSum is nil or zero
-	log.Debugf("No median found for LeafId %d", leafId)
-	return nil
 }
 
 func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
