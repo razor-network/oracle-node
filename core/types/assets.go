@@ -29,6 +29,12 @@ type Asset struct {
 	Collection bindings.StructsCollection
 }
 
+type AssetResult struct {
+	RevealedValuesWithIndex map[uint16][]*big.Int
+	VoteWeights             map[string]*big.Int
+	InfluenceSum            map[uint16]*big.Int
+}
+
 type Locks struct {
 	Amount      *big.Int
 	UnlockAfter *big.Int
