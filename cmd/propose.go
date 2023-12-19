@@ -391,43 +391,90 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 		return nil, err
 	}
 	log.Debugf("GetSortedRevealedValues: Revealed Data: %+v", assignedAsset)
+
+	var wg sync.WaitGroup
+	resultsChan := make(chan *types.AssetResult, len(assignedAsset))
+
+	for _, asset := range assignedAsset {
+		wg.Add(1)
+		go processAsset(asset, resultsChan, &wg)
+	}
+
+	wg.Wait()
+	close(resultsChan)
+
 	revealedValuesWithIndex := make(map[uint16][]*big.Int)
 	voteWeights := make(map[string]*big.Int)
 	influenceSum := make(map[uint16]*big.Int)
-	log.Debug("Calculating sorted revealed values, vote weights and influence sum...")
-	for _, asset := range assignedAsset {
-		for _, assetValue := range asset.RevealedValues {
-			if revealedValuesWithIndex[assetValue.LeafId] == nil {
-				revealedValuesWithIndex[assetValue.LeafId] = []*big.Int{assetValue.Value}
-			} else {
-				if !utils.ContainsBigInteger(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
-					revealedValuesWithIndex[assetValue.LeafId] = append(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value)
-				}
-			}
-			//Calculate vote weights
-			if voteWeights[assetValue.Value.String()] == nil {
-				voteWeights[assetValue.Value.String()] = big.NewInt(0)
-			}
-			voteWeights[assetValue.Value.String()] = big.NewInt(0).Add(voteWeights[assetValue.Value.String()], asset.Influence)
 
-			//Calculate influence sum
-			if influenceSum[assetValue.LeafId] == nil {
-				influenceSum[assetValue.LeafId] = big.NewInt(0)
+	for result := range resultsChan {
+		for leafId, values := range result.RevealedValuesWithIndex {
+			revealedValuesWithIndex[leafId] = append(revealedValuesWithIndex[leafId], values...)
+		}
+		for value, weight := range result.VoteWeights {
+			if voteWeights[value] == nil {
+				voteWeights[value] = weight
+			} else {
+				voteWeights[value].Add(voteWeights[value], weight)
 			}
-			influenceSum[assetValue.LeafId] = big.NewInt(0).Add(influenceSum[assetValue.LeafId], asset.Influence)
+		}
+		for leafId, sum := range result.InfluenceSum {
+			if influenceSum[leafId] == nil {
+				influenceSum[leafId] = sum
+			} else {
+				influenceSum[leafId].Add(influenceSum[leafId], sum)
+			}
 		}
 	}
-	//sort revealed values
-	for _, element := range revealedValuesWithIndex {
-		sort.Slice(element, func(i, j int) bool {
-			return element[i].Cmp(element[j]) == -1
+
+	for _, values := range revealedValuesWithIndex {
+		sort.Slice(values, func(i, j int) bool {
+			return values[i].Cmp(values[j]) == -1
 		})
 	}
+
 	return &types.RevealedDataMaps{
 		SortedRevealedValues: revealedValuesWithIndex,
 		VoteWeights:          voteWeights,
 		InfluenceSum:         influenceSum,
 	}, nil
+}
+
+func processAsset(asset types.RevealedStruct, resultsChan chan<- *types.AssetResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	revealedValuesWithIndex := make(map[uint16][]*big.Int)
+	voteWeights := make(map[string]*big.Int)
+	influenceSum := make(map[uint16]*big.Int)
+
+	for _, assetValue := range asset.RevealedValues {
+		leafId := assetValue.LeafId
+		valueStr := assetValue.Value.String()
+		influence := asset.Influence
+
+		// Append the leaf value to the revealed values slice if it's not already present
+		if !utils.ContainsBigInteger(revealedValuesWithIndex[leafId], assetValue.Value) {
+			revealedValuesWithIndex[leafId] = append(revealedValuesWithIndex[leafId], assetValue.Value)
+		}
+
+		// Calculate vote weights
+		if voteWeights[valueStr] == nil {
+			voteWeights[valueStr] = big.NewInt(0)
+		}
+		voteWeights[valueStr] = voteWeights[valueStr].Add(voteWeights[valueStr], influence)
+
+		// Calculate influence sum
+		if influenceSum[leafId] == nil {
+			influenceSum[leafId] = big.NewInt(0)
+		}
+		influenceSum[leafId] = influenceSum[leafId].Add(influenceSum[leafId], influence)
+	}
+
+	resultsChan <- &types.AssetResult{
+		RevealedValuesWithIndex: revealedValuesWithIndex,
+		VoteWeights:             voteWeights,
+		InfluenceSum:            influenceSum,
+	}
 }
 
 //This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
