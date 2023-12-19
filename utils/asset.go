@@ -255,10 +255,12 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 }
 
 func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8) {
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	var data []*big.Int
-	var weight []uint8
+	var (
+		wg     sync.WaitGroup
+		mu     sync.Mutex
+		data   []*big.Int
+		weight []uint8
+	)
 
 	for _, job := range jobs {
 		wg.Add(1)
