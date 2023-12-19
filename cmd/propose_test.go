@@ -1365,27 +1365,25 @@ func BenchmarkMakeBlock(b *testing.B) {
 	)
 
 	table := []struct {
-		numOfVotes int
+		numOfVotesPerLeafId int
+		numOfLeafIds        int
 	}{
-		{numOfVotes: 1},
-		{numOfVotes: 100},
-		{numOfVotes: 1000},
-		{numOfVotes: 10000},
-		{numOfVotes: 100000},
+		{numOfVotesPerLeafId: 5, numOfLeafIds: 10},
+		{numOfVotesPerLeafId: 50, numOfLeafIds: 100},
+		{numOfVotesPerLeafId: 100, numOfLeafIds: 500},
+		{numOfVotesPerLeafId: 500, numOfLeafIds: 1000},
+		{numOfVotesPerLeafId: 1000, numOfLeafIds: 10000},
 	}
 	for _, v := range table {
-		b.Run(fmt.Sprintf("Number_Of_Votes_%d", v.numOfVotes), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LeafIds_%d_VotesPerLeafId_%d", v.numOfLeafIds, v.numOfVotesPerLeafId), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				SetUpMockInterfaces()
 
-				votes := GetDummyVotes(v.numOfVotes)
+				revealedDataMaps := GetDummyRevealedDataMaps(v.numOfLeafIds, v.numOfVotesPerLeafId)
 
-				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(&types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]*big.Int{0: votes},
-					VoteWeights:          map[string]*big.Int{(big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))).String(): big.NewInt(100)},
-					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
-				}, nil)
-				utilsMock.On("GetActiveCollectionIds", mock.Anything).Return([]uint16{1}, nil)
+				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(revealedDataMaps, nil)
+				utilsMock.On("GetActiveCollectionIds", mock.Anything).Return(GetDummyActiveCollections(v.numOfLeafIds), nil)
+
 				ut := &UtilsStruct{}
 				_, _, _, err := ut.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 				if err != nil {
@@ -1402,6 +1400,42 @@ func GetDummyVotes(numOfVotes int) []*big.Int {
 		result = append(result, big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18)))
 	}
 	return result
+}
+
+func GetDummyActiveCollections(numOfCollections int) []uint16 {
+	var collections []uint16
+	for i := 0; i < numOfCollections; i++ {
+		collections = append(collections, uint16(i+1))
+	}
+	return collections
+}
+
+func GetDummyRevealedDataMaps(numOfLeafIds, numOfVotesPerLeafId int) *types.RevealedDataMaps {
+	sortedRevealedValues := make(map[uint16][]*big.Int)
+	voteWeights := make(map[string]*big.Int)
+	influenceSum := make(map[uint16]*big.Int)
+
+	for leafId := 0; leafId < numOfLeafIds; leafId++ {
+		var votes []*big.Int
+		totalInfluence := big.NewInt(0)
+
+		for voteId := 0; voteId < numOfVotesPerLeafId; voteId++ {
+			voteValue := big.NewInt(1).Mul(big.NewInt(int64(leafId+voteId+1)), big.NewInt(1e18)) // Example vote value
+			votes = append(votes, voteValue)
+			weight := big.NewInt(100) // Example weight
+			voteWeights[voteValue.String()] = weight
+			totalInfluence.Add(totalInfluence, weight)
+		}
+
+		sortedRevealedValues[uint16(leafId)] = votes
+		influenceSum[uint16(leafId)] = totalInfluence
+	}
+
+	return &types.RevealedDataMaps{
+		SortedRevealedValues: sortedRevealedValues,
+		VoteWeights:          voteWeights,
+		InfluenceSum:         influenceSum,
+	}
 }
 
 func GetDummyAssignedAssets(asset types.RevealedStruct, numOfAssignedAssets int) []types.RevealedStruct {
