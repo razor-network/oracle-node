@@ -66,3 +66,9 @@ var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value
 var HexReturnType = "hex"
+
+// Following are the constants which helps in calculating iteration for a staker
+
+var BatchSize = 1000
+var NumRoutines = 10
+var MaxIterations = 10000000
