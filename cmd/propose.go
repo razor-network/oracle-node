@@ -208,8 +208,6 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	if numberOfStakers == 0 {
 		return nil, 0, errors.New("numberOfStakers is 0")
 	}
-	var biggestStakerId uint32
-	biggestStake := big.NewInt(0)
 
 	bufferPercent, err := cmdUtils.GetBufferPercent()
 	if err != nil {
@@ -224,30 +222,53 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	log.Debug("GetBiggestStakeAndId: State remaining time: ", stateRemainingTime)
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 
+	var (
+		biggestStake    = big.NewInt(0)
+		biggestStakerId uint32
+		mu              sync.Mutex
+		wg              sync.WaitGroup
+		errChan         = make(chan error, 1)
+	)
+
 	log.Debug("Iterating over all the stakers...")
-loop:
 	for i := 1; i <= int(numberOfStakers); i++ {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			err = errors.New("state timeout error")
-			break loop
-		default:
-			log.Debug("Propose: Staker Id: ", i)
-			stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
-			if err != nil {
-				return nil, 0, err
+		wg.Add(1)
+		go func(stakerId int) {
+			defer wg.Done()
+
+			select {
+			case <-stateTimeout.C:
+				errChan <- errors.New("state timeout error")
+				return
+			default:
+				stake, err := razorUtils.GetStakeSnapshot(client, uint32(stakerId), epoch)
+				if err != nil {
+					errChan <- err
+					return
+				}
+
+				mu.Lock()
+				defer mu.Unlock()
+				if stake.Cmp(biggestStake) > 0 {
+					biggestStake = stake
+					biggestStakerId = uint32(stakerId)
+				}
 			}
-			log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i, stake)
-			if stake.Cmp(biggestStake) > 0 {
-				biggestStake = stake
-				biggestStakerId = uint32(i)
-			}
-		}
+		}(i)
 	}
+
+	wg.Wait()
+
+	select {
+	case err := <-errChan:
+		return nil, 0, err
+	default:
+	}
+
 	if err != nil {
 		return nil, 0, err
 	}
+
 	log.Debug("Propose: BiggestStake: ", biggestStake)
 	log.Debug("Propose: Biggest Staker Id: ", biggestStakerId)
 	return biggestStake, biggestStakerId, nil
