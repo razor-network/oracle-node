@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	mathRand "math/rand"
@@ -264,7 +263,8 @@ func decodeHexString(hexStr string) ([]*big.Int, error) {
 		n := new(big.Int)
 		n, success := n.SetString(valuesStr[start:end], 16)
 		if !success {
-			return nil, errors.New(fmt.Sprintf("invalid uint256 value at index %d", i))
+			log.Errorf("Invalid uint256 value at index %d", i)
+			return nil, errors.New("invalid uint256 value at index")
 		}
 		values = append(values, n)
 	}
@@ -277,13 +277,13 @@ func extractIndex(s string) (int, error) {
 
 	matches := re.FindStringSubmatch(s)
 	if len(matches) < 2 {
-		return 0, errors.New(fmt.Sprintf("no index found in string: %s", s))
+		return 0, errors.New("no index found in string")
 	}
 
 	// Converting the captured substring to an integer
 	index, err := strconv.Atoi(matches[1])
 	if err != nil {
-		return 0, errors.New(fmt.Sprintf("invalid index format in string: %s", s))
+		return 0, errors.New("invalid index format in string")
 	}
 
 	return index, nil
