@@ -264,23 +264,27 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCac
 
 	for _, job := range jobs {
 		wg.Add(1)
-		go func(job bindings.StructsJob) {
-			defer wg.Done()
-			dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
-			if err != nil {
-				return
-			}
-			log.Debugf("Job ID: %d, Job %s gives data %s", job.Id, job.Url, dataToAppend)
-			mu.Lock()
-			data = append(data, dataToAppend)
-			weight = append(weight, job.Weight)
-			mu.Unlock()
-		}(job)
+		go processJobConcurrently(&wg, &mu, &data, &weight, job, localCache)
 	}
 
 	wg.Wait()
 
 	return data, weight
+}
+
+func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, localCache *cache.LocalCache) {
+	defer wg.Done()
+
+	dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
+	if err != nil {
+		return
+	}
+	log.Debugf("Job ID: %d, Job %s gives data %s", job.Id, job.Url, dataToAppend)
+
+	mu.Lock()
+	defer mu.Unlock()
+	*data = append(*data, dataToAppend)
+	*weight = append(*weight, job.Weight)
 }
 
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
