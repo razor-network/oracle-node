@@ -658,9 +658,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=${SAMPLE_API_KEY_NEW}",
 	}
 
-	postJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+	postJobUniswapV3 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "result",
 		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+	}
+
+	postJobUniswapV2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 6, Name: "ethusd_sample", Selector: "result",
+		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","id":7269270904970082,"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","data":"0xd06ca61f0000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050de6856358cc35f3a9a57eaaa34bd4cb707d2cd0000000000000000000000008e870d67f660d95d5be530380d0ec0bd388289e1","to":"0x7a250d5630b4cf539739df2c5dacb4c659f2488d"},"latest"]},"header": {"content-type": "application/json"}, "returnType": "hexArray[1]"}`,
 	}
 
 	invalidDataSourceStructJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
@@ -700,7 +705,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		{
 			name: "Test 3: When GetDataToCommitFromJob() executes successfully for a POST Job",
 			args: args{
-				job: postJob,
+				job: postJobUniswapV3,
 			},
 			wantErr: false,
 		},
@@ -719,6 +724,14 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+		},
+		{
+			name: "Test 6: When GetDataToCommitFromJob() executes successfully for a POST uniswap v2 Job",
+			args: args{
+				job: postJobUniswapV2,
+			},
+			want:    nil,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

@@ -66,3 +66,9 @@ var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value
 var HexReturnType = "hex"
+
+// HexArrayReturnType is the ReturnType for a job if that job returns a hex array value
+var HexArrayReturnType = "^hexArray\\[\\d+\\]$"
+
+// HexArrayExtractIndexRegex will be used as a regular expression to extract index from hexArray return type
+var HexArrayExtractIndexRegex = `^hexArray\[(\d+)\]$`
