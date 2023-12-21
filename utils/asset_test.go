@@ -73,13 +73,13 @@ func TestAggregate(t *testing.T) {
 			args: args{
 				collection:         collection,
 				activeJob:          job,
-				dataToCommit:       []*big.Int{big.NewInt(2)},
-				weight:             []uint8{100},
+				dataToCommit:       []*big.Int{big.NewInt(3827200), big.NewInt(3828474), big.NewInt(3826440), big.NewInt(3824616), big.NewInt(3823852)},
+				weight:             []uint8{1, 1, 1, 1, 1},
 				prevCommitmentData: big.NewInt(1),
 				assetFilePath:      "",
 				statErr:            nil,
 			},
-			want:    big.NewInt(2),
+			want:    big.NewInt(3826116),
 			wantErr: false,
 		},
 		{
@@ -554,95 +554,71 @@ func TestGetAllCollections(t *testing.T) {
 
 func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
-		{Id: 1, SelectorType: 1, Weight: 100,
+		{Id: 1, SelectorType: 0, Weight: 10,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
 			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
-		}, {Id: 2, SelectorType: 1, Weight: 100,
-			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
+		},
+		{Id: 2, SelectorType: 0, Weight: 20,
+			Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
+			Url: `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
+		},
+		{Id: 3, SelectorType: 0, Weight: 30,
+			Power: 2, Name: "ethusd_kucoin", Selector: "data.ETH",
+			Url: `{"type": "GET","url": "https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH","body": {},"header": {}}`,
+		},
+		{Id: 4, SelectorType: 0, Weight: 40,
+			Power: 2, Name: "ethusd_binance", Selector: "price",
+			Url: `{"type": "GET","url": "https://api.binance.com/api/v3/avgPrice?symbol=ETHBUSD","body": {},"header": {}}`,
+		},
+		// This job returns an error which will not add any value to data or weight array
+		{Id: 5, SelectorType: 0, Weight: 10,
+			Power: 2, Name: "ethusd_gemini_incorrect", Selector: "last1",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd1","body": {},"header": {}}`,
 		},
 	}
 
 	type args struct {
-		jobPath            string
-		jobPathErr         error
-		overrideJobData    map[string]*types.StructsJob
-		overrideJobDataErr error
-		dataToAppend       *big.Int
-		dataToAppendErr    error
+		jobs []bindings.StructsJob
 	}
+
 	tests := []struct {
-		name    string
-		args    args
-		want    []*big.Int
-		wantErr bool
+		name            string
+		args            args
+		wantArrayLength int
 	}{
 		{
-			name: "Test 1: When GetDataToCommitFromJobs() executes successfully",
+			name: "Test 1: Getting values from set of jobs of length 4",
 			args: args{
-				jobPath: "",
-				overrideJobData: map[string]*types.StructsJob{"1": {
-					Id: 2, SelectorType: 1, Weight: 100,
-					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
-				}},
-				dataToAppend: big.NewInt(1),
+				jobs: jobsArray[:4],
 			},
-			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
-			wantErr: false,
+			wantArrayLength: 4,
 		},
 		{
-			name: "Test 2: When there is an error in getting overrideJobData",
+			name: "Test 2: Getting values from set of jobs of length 2",
 			args: args{
-				jobPath:            "",
-				overrideJobDataErr: errors.New("overrideJobData error"),
-				dataToAppend:       big.NewInt(1),
+				jobs: jobsArray[:2],
 			},
-			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
-			wantErr: false,
+			wantArrayLength: 2,
 		},
 		{
-			name: "Test 3: When there is an error in getting jobPath",
+			name: "Test 3: Getting values from whole set of jobs of length 5 but job at last index reports an error",
 			args: args{
-				jobPathErr:      errors.New("jobPath error"),
-				overrideJobData: map[string]*types.StructsJob{},
-				dataToAppend:    big.NewInt(1),
+				jobs: jobsArray,
 			},
-			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
-			wantErr: false,
-		},
-		{
-			name: "Test 4: When there is an error in getting dataToAppend",
-			args: args{
-				jobPath:         "",
-				overrideJobData: map[string]*types.StructsJob{},
-				dataToAppendErr: errors.New("dataToAppend error"),
-			},
-			want:    nil,
-			wantErr: false,
+			wantArrayLength: 4,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-			pathMock := new(mocks.PathUtils)
+			UtilsInterface = &UtilsStruct{}
+			lc := cache.NewLocalCache(time.Second * 10)
 
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-				PathInterface:  pathMock,
+			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc)
+			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
+				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
 			}
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
-
-			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDataToCommitFromJobs() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", got, tt.want)
-			}
+			fmt.Println("Got Data Array: ", gotDataArray)
+			fmt.Println("Got WeightArray: ", gotWeightArray)
 		})
 	}
 }
@@ -730,10 +706,6 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			pathUtilsMock := new(pathMocks.PathInterface)
-			path.PathUtilsInterface = pathUtilsMock
-
-			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
 			lc := cache.NewLocalCache(time.Second * 10)
 			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc)
 			fmt.Println("JOB returns data: ", data)
