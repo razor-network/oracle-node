@@ -199,32 +199,6 @@ func (_m *Utils) ConnectToClient(provider string) *ethclient.Client {
 	return r0
 }
 
-// ConvertToNumber provides a mock function with given fields: num
-func (_m *Utils) ConvertToNumber(num interface{}) (*big.Float, error) {
-	ret := _m.Called(num)
-
-	var r0 *big.Float
-	var r1 error
-	if rf, ok := ret.Get(0).(func(interface{}) (*big.Float, error)); ok {
-		return rf(num)
-	}
-	if rf, ok := ret.Get(0).(func(interface{}) *big.Float); ok {
-		r0 = rf(num)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Float)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(interface{}) error); ok {
-		r1 = rf(num)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // DeleteJobFromJSON provides a mock function with given fields: fileName, jobId
 func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
 	ret := _m.Called(fileName, jobId)
@@ -730,76 +704,6 @@ func (_m *Utils) GetCommitment(client *ethclient.Client, address string) (types.
 	return r0, r1
 }
 
-// GetDataFromAPI provides a mock function with given fields: urlStruct, localCache
-func (_m *Utils) GetDataFromAPI(urlStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
-	ret := _m.Called(urlStruct, localCache)
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(types.DataSourceURL, *cache.LocalCache) []byte); ok {
-		r0 = rf(urlStruct, localCache)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.DataSourceURL, *cache.LocalCache) error); ok {
-		r1 = rf(urlStruct, localCache)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetDataFromJSON provides a mock function with given fields: jsonObject, selector
-func (_m *Utils) GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
-	ret := _m.Called(jsonObject, selector)
-
-	var r0 interface{}
-	var r1 error
-	if rf, ok := ret.Get(0).(func(map[string]interface{}, string) (interface{}, error)); ok {
-		return rf(jsonObject, selector)
-	}
-	if rf, ok := ret.Get(0).(func(map[string]interface{}, string) interface{}); ok {
-		r0 = rf(jsonObject, selector)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(interface{})
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(map[string]interface{}, string) error); ok {
-		r1 = rf(jsonObject, selector)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetDataFromXHTML provides a mock function with given fields: urlStruct, selector
-func (_m *Utils) GetDataFromXHTML(urlStruct types.DataSourceURL, selector string) (string, error) {
-	ret := _m.Called(urlStruct, selector)
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func(types.DataSourceURL, string) string); ok {
-		r0 = rf(urlStruct, selector)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.DataSourceURL, string) error); ok {
-		r1 = rf(urlStruct, selector)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetDataToCommitFromJob provides a mock function with given fields: job, localCache
 func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
 	ret := _m.Called(job, localCache)
@@ -827,13 +731,12 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cac
 }
 
 // GetDataToCommitFromJobs provides a mock function with given fields: jobs, localCache
-func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
+func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8) {
 	ret := _m.Called(jobs, localCache)
 
 	var r0 []*big.Int
 	var r1 []uint8
-	var r2 error
-	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *cache.LocalCache) ([]*big.Int, []uint8, error)); ok {
+	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *cache.LocalCache) ([]*big.Int, []uint8)); ok {
 		return rf(jobs, localCache)
 	}
 	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *cache.LocalCache) []*big.Int); ok {
@@ -852,13 +755,7 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache 
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func([]bindings.StructsJob, *cache.LocalCache) error); ok {
-		r2 = rf(jobs, localCache)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // GetEpoch provides a mock function with given fields: client

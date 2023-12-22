@@ -274,7 +274,6 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	return biggestStake, biggestStakerId, nil
 }
 
-//This function returns the iteration of the proposer if he is elected
 func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(client, proposer.StakerId, proposer.Epoch)
 	if err != nil {
@@ -287,31 +286,75 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	if err != nil {
 		return -1
 	}
-	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 	log.Debug("GetIteration: State remaining time: ", stateRemainingTime)
+
+	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
+	wg := &sync.WaitGroup{}
+	wg.Add(core.NumRoutines)
+	done := make(chan bool, 10)
+	iterationResult := make(chan int, 10)
+	quit := make(chan bool, 10)
+
 	log.Debug("Calculating Iteration...")
-	log.Debugf("GetIteration: Calling IsElectedProposer() to find iteration...")
-loop:
-	for i := 0; i < 10000000; i++ {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			break loop
-		default:
-			proposer.Iteration = i
-			isElected := cmdUtils.IsElectedProposer(proposer, currentStakerStake)
-			if isElected {
-				return i
+	for routine := 0; routine < core.NumRoutines; routine++ {
+		go getIterationConcurrently(proposer, currentStakerStake, routine, wg, done, iterationResult, quit, stateTimeout)
+	}
+
+	log.Debug("Waiting for all the goroutines to finish")
+	wg.Wait()
+	log.Debug("Done")
+
+	close(done)
+	close(quit)
+	close(iterationResult)
+
+	var iterations []int
+
+	for iteration := range iterationResult {
+		iterations = append(iterations, iteration)
+	}
+
+	sort.Ints(iterations)
+	return iterations[0]
+}
+
+func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, routine int, wg *sync.WaitGroup, done chan bool, iterationResult chan int, quit chan bool, stateTimeout *time.Timer) {
+	//PARALLEL IMPLEMENTATION WITH BATCHES
+
+	defer wg.Done()
+	batchSize := core.BatchSize                  //1000
+	NumBatches := core.MaxIterations / batchSize //10000000/1000 = 10000
+	// Batch 0th - [0,1000)
+	// Batch 1th - [1000,2000)
+	for batch := 0; batch < NumBatches; batch++ {
+		for iteration := (batch * batchSize) + routine; iteration < (batch*batchSize)+batchSize; iteration = iteration + core.NumRoutines {
+			select {
+			case <-stateTimeout.C:
+				log.Error("getIterationConcurrently: State timeout!")
+				iterationResult <- -1
+				quit <- true
+				return
+			default:
+				proposer.Iteration = iteration
+				if len(done) >= 1 || len(quit) >= 1 {
+					return
+				}
+				isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
+				if isElected {
+					iterationResult <- iteration
+					done <- true
+					return
+				}
 			}
 		}
 	}
-	return -1
+	iterationResult <- -1
+	log.Debug("IsElected is never true for this batch")
 }
 
 //This function returns if the elected staker is proposer or not
 func (*UtilsStruct) IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool {
 	seed := solsha3.SoliditySHA3([]string{"uint256"}, []interface{}{big.NewInt(int64(proposer.Iteration))})
-
 	pseudoRandomNumber := pseudoRandomNumberGenerator(seed, proposer.NumberOfStakers, proposer.Salt[:])
 	//add +1 since prng returns 0 to max-1 and staker start from 1
 	pseudoRandomNumber = pseudoRandomNumber.Add(pseudoRandomNumber, big.NewInt(1))
@@ -348,43 +391,90 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 		return nil, err
 	}
 	log.Debugf("GetSortedRevealedValues: Revealed Data: %+v", assignedAsset)
+
+	var wg sync.WaitGroup
+	resultsChan := make(chan *types.AssetResult, len(assignedAsset))
+
+	for _, asset := range assignedAsset {
+		wg.Add(1)
+		go processAsset(asset, resultsChan, &wg)
+	}
+
+	wg.Wait()
+	close(resultsChan)
+
 	revealedValuesWithIndex := make(map[uint16][]*big.Int)
 	voteWeights := make(map[string]*big.Int)
 	influenceSum := make(map[uint16]*big.Int)
-	log.Debug("Calculating sorted revealed values, vote weights and influence sum...")
-	for _, asset := range assignedAsset {
-		for _, assetValue := range asset.RevealedValues {
-			if revealedValuesWithIndex[assetValue.LeafId] == nil {
-				revealedValuesWithIndex[assetValue.LeafId] = []*big.Int{assetValue.Value}
-			} else {
-				if !utils.ContainsBigInteger(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value) {
-					revealedValuesWithIndex[assetValue.LeafId] = append(revealedValuesWithIndex[assetValue.LeafId], assetValue.Value)
-				}
-			}
-			//Calculate vote weights
-			if voteWeights[assetValue.Value.String()] == nil {
-				voteWeights[assetValue.Value.String()] = big.NewInt(0)
-			}
-			voteWeights[assetValue.Value.String()] = big.NewInt(0).Add(voteWeights[assetValue.Value.String()], asset.Influence)
 
-			//Calculate influence sum
-			if influenceSum[assetValue.LeafId] == nil {
-				influenceSum[assetValue.LeafId] = big.NewInt(0)
+	for result := range resultsChan {
+		for leafId, values := range result.RevealedValuesWithIndex {
+			revealedValuesWithIndex[leafId] = append(revealedValuesWithIndex[leafId], values...)
+		}
+		for value, weight := range result.VoteWeights {
+			if voteWeights[value] == nil {
+				voteWeights[value] = weight
+			} else {
+				voteWeights[value].Add(voteWeights[value], weight)
 			}
-			influenceSum[assetValue.LeafId] = big.NewInt(0).Add(influenceSum[assetValue.LeafId], asset.Influence)
+		}
+		for leafId, sum := range result.InfluenceSum {
+			if influenceSum[leafId] == nil {
+				influenceSum[leafId] = sum
+			} else {
+				influenceSum[leafId].Add(influenceSum[leafId], sum)
+			}
 		}
 	}
-	//sort revealed values
-	for _, element := range revealedValuesWithIndex {
-		sort.Slice(element, func(i, j int) bool {
-			return element[i].Cmp(element[j]) == -1
+
+	for _, values := range revealedValuesWithIndex {
+		sort.Slice(values, func(i, j int) bool {
+			return values[i].Cmp(values[j]) == -1
 		})
 	}
+
 	return &types.RevealedDataMaps{
 		SortedRevealedValues: revealedValuesWithIndex,
 		VoteWeights:          voteWeights,
 		InfluenceSum:         influenceSum,
 	}, nil
+}
+
+func processAsset(asset types.RevealedStruct, resultsChan chan<- *types.AssetResult, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	revealedValuesWithIndex := make(map[uint16][]*big.Int)
+	voteWeights := make(map[string]*big.Int)
+	influenceSum := make(map[uint16]*big.Int)
+
+	for _, assetValue := range asset.RevealedValues {
+		leafId := assetValue.LeafId
+		valueStr := assetValue.Value.String()
+		influence := asset.Influence
+
+		// Append the leaf value to the revealed values slice if it's not already present
+		if !utils.ContainsBigInteger(revealedValuesWithIndex[leafId], assetValue.Value) {
+			revealedValuesWithIndex[leafId] = append(revealedValuesWithIndex[leafId], assetValue.Value)
+		}
+
+		// Calculate vote weights
+		if voteWeights[valueStr] == nil {
+			voteWeights[valueStr] = big.NewInt(0)
+		}
+		voteWeights[valueStr] = voteWeights[valueStr].Add(voteWeights[valueStr], influence)
+
+		// Calculate influence sum
+		if influenceSum[leafId] == nil {
+			influenceSum[leafId] = big.NewInt(0)
+		}
+		influenceSum[leafId] = influenceSum[leafId].Add(influenceSum[leafId], influence)
+	}
+
+	resultsChan <- &types.AssetResult{
+		RevealedValuesWithIndex: revealedValuesWithIndex,
+		VoteWeights:             voteWeights,
+		InfluenceSum:            influenceSum,
+	}
 }
 
 //This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
@@ -402,31 +492,42 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 	}
 	log.Debug("MakeBlock: Active collections: ", activeCollections)
 
-	var (
-		medians                []*big.Int
-		idsRevealedInThisEpoch []uint16
-	)
+	resultsChan := make(chan types.MedianResult, len(activeCollections))
+	var wg sync.WaitGroup
 
 	log.Debug("Iterating over all the active collections for medians calculation....")
 	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
-		influenceSum := revealedDataMaps.InfluenceSum[leafId]
-		if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
+		wg.Add(1)
+		go func(leafId uint16) {
+			defer wg.Done()
+			median := calculateMedianForLeafId(revealedDataMaps, leafId, rogueData)
+			if median != nil {
+				resultsChan <- types.MedianResult{LeafId: leafId, Median: median}
+			}
+		}(leafId)
+	}
+
+	wg.Wait()
+	close(resultsChan)
+
+	// Storing the median results temporarily in a map
+	medianResults := make(map[uint16]*big.Int)
+	for result := range resultsChan {
+		medianResults[result.LeafId] = result.Median
+	}
+
+	var medians []*big.Int
+	var idsRevealedInThisEpoch []uint16
+
+	// Storing medians in order of increasing leafIds starting from 0
+	for leafId := uint16(0); leafId < uint16(len(activeCollections)); leafId++ {
+		if median, exists := medianResults[leafId]; exists {
+			medians = append(medians, median)
 			idsRevealedInThisEpoch = append(idsRevealedInThisEpoch, activeCollections[leafId])
-			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
-				medians = append(medians, razorUtils.GetRogueRandomValue(10000000))
-				continue
-			}
-			accWeight := big.NewInt(0)
-			for i := 0; i < len(revealedDataMaps.SortedRevealedValues[leafId]); i++ {
-				revealedValue := revealedDataMaps.SortedRevealedValues[leafId][i]
-				accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
-				if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
-					medians = append(medians, revealedValue)
-					break
-				}
-			}
 		}
 	}
+
+	// Handling rogue data
 	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "missingIds") {
 		log.Warn("YOU ARE PROPOSING IDS REVEALED IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 		//Replacing the last ID: id with id+1 in idsRevealed array if rogueMode == missingIds
@@ -445,7 +546,28 @@ func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, ep
 		idsRevealedInThisEpoch[0] = idsRevealedInThisEpoch[1]
 		idsRevealedInThisEpoch[1] = temp
 	}
+
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
+}
+
+func calculateMedianForLeafId(revealedDataMaps *types.RevealedDataMaps, leafId uint16, rogueData types.Rogue) *big.Int {
+	influenceSum := revealedDataMaps.InfluenceSum[leafId]
+	if influenceSum != nil && influenceSum.Cmp(big.NewInt(0)) != 0 {
+		if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "medians") {
+			return razorUtils.GetRogueRandomValue(10000000)
+		}
+		accWeight := big.NewInt(0)
+		for _, revealedValue := range revealedDataMaps.SortedRevealedValues[leafId] {
+			accWeight = accWeight.Add(accWeight, revealedDataMaps.VoteWeights[revealedValue.String()])
+			if accWeight.Cmp(influenceSum.Div(influenceSum, big.NewInt(2))) > 0 {
+				log.Debugf("LeafId: %d, Calculated value %v", leafId, revealedValue)
+				return revealedValue
+			}
+		}
+	}
+	// Returning nil if no median is found or if influenceSum is nil or zero
+	log.Debugf("No median found for LeafId %d", leafId)
+	return nil
 }
 
 func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
