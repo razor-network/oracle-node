@@ -104,6 +104,17 @@ func Test_generateCacheKey(t *testing.T) {
 			want:    "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
 			wantErr: false,
 		},
+		{
+			name: "Test when marshalling fails",
+			args: args{
+				url: "http://example.com",
+				body: map[string]interface{}{
+					"key": func() {}, // functions cannot be marshaled and will cause an error
+				},
+			},
+			want:    "",
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
