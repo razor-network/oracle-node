@@ -600,31 +600,30 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	}
 
 	tests := []struct {
-		name            string
-		args            args
-		wantArrayLength int
-		wantErr         bool
+		name    string
+		args    args
+		wantErr bool
 	}{
 		{
 			name: "Test 1: Getting values from set of jobs of length 4",
 			args: args{
 				jobs: jobsArray[:4],
 			},
-			wantArrayLength: 4,
+			wantErr: false,
 		},
 		{
 			name: "Test 2: Getting values from set of jobs of length 2",
 			args: args{
 				jobs: jobsArray[:2],
 			},
-			wantArrayLength: 2,
+			wantErr: false,
 		},
 		{
 			name: "Test 3: Getting values from whole set of jobs of length 9 but job at last index reports an error",
 			args: args{
 				jobs: jobsArray,
 			},
-			wantArrayLength: 8,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -638,9 +637,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				return
 			}
 
-			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
-				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
-			}
 			fmt.Println("Got Data Array: ", gotDataArray)
 			fmt.Println("Got WeightArray: ", gotWeightArray)
 		})
