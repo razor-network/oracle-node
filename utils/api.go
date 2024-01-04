@@ -24,7 +24,13 @@ func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.L
 		Timeout: time.Duration(HTTPTimeout) * time.Second,
 	}
 
-	cachedData, found := localCache.Read(dataSourceURLStruct.URL)
+	cacheKey, err := generateCacheKey(dataSourceURLStruct.URL, dataSourceURLStruct.Body)
+	if err != nil {
+		log.Errorf("Error in generating cache key for API %s: %v", dataSourceURLStruct.URL, err)
+		return nil, err
+	}
+
+	cachedData, found := localCache.Read(cacheKey)
 	if found {
 		log.Debugf("Getting Data for URL %s from local cache...", dataSourceURLStruct.URL)
 		return cachedData, nil
@@ -32,12 +38,6 @@ func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.L
 
 	response, err := makeAPIRequest(client, dataSourceURLStruct)
 	if err != nil {
-		return nil, err
-	}
-
-	cacheKey, err := generateCacheKey(dataSourceURLStruct.URL, dataSourceURLStruct.Body)
-	if err != nil {
-		log.Errorf("Error in generating cache key for API %s: %v", dataSourceURLStruct.URL, err)
 		return nil, err
 	}
 
