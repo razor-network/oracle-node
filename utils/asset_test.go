@@ -567,8 +567,8 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			Url: `{"type": "GET","url": "https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH","body": {},"header": {}}`,
 		},
 		{Id: 4, SelectorType: 0, Weight: 40,
-			Power: 2, Name: "ethusd_binance", Selector: "price",
-			Url: `{"type": "GET","url": "https://api.binance.com/api/v3/avgPrice?symbol=ETHBUSD","body": {},"header": {}}`,
+			Power: 2, Name: "ethusd_coinbase", Selector: "data.amount",
+			Url: `{"type": "GET","url": "https://api.coinbase.com/v2/prices/ETH-USD/spot","body": {},"header": {}}`,
 		},
 		// This job returns an error which will not add any value to data or weight array
 		{Id: 5, SelectorType: 0, Weight: 10,
@@ -600,30 +600,31 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name            string
+		args            args
+		wantArrayLength int
+		wantErr         bool
 	}{
 		{
 			name: "Test 1: Getting values from set of jobs of length 4",
 			args: args{
 				jobs: jobsArray[:4],
 			},
-			wantErr: false,
+			wantArrayLength: 4,
 		},
 		{
 			name: "Test 2: Getting values from set of jobs of length 2",
 			args: args{
 				jobs: jobsArray[:2],
 			},
-			wantErr: false,
+			wantArrayLength: 2,
 		},
 		{
 			name: "Test 3: Getting values from whole set of jobs of length 9 but job at last index reports an error",
 			args: args{
 				jobs: jobsArray,
 			},
-			wantErr: false,
+			wantArrayLength: 8,
 		},
 	}
 	for _, tt := range tests {
@@ -637,6 +638,9 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 				return
 			}
 
+			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
+				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
+			}
 			fmt.Println("Got Data Array: ", gotDataArray)
 			fmt.Println("Got WeightArray: ", gotWeightArray)
 		})
