@@ -620,7 +620,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			wantArrayLength: 2,
 		},
 		{
-			name: "Test 3: Getting values from whole set of jobs of length 9 but job at last index reports an error",
+			name: "Test 3: Getting values from whole set of jobs of length 9 but job at index 5 reports an error",
 			args: args{
 				jobs: jobsArray,
 			},
