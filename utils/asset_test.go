@@ -556,7 +556,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 0, Weight: 10,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
+			Url: "https://api.gemini.com/v1/pubticker/ethusd",
 		},
 		{Id: 2, SelectorType: 0, Weight: 20,
 			Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
@@ -567,13 +567,31 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			Url: `{"type": "GET","url": "https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH","body": {},"header": {}}`,
 		},
 		{Id: 4, SelectorType: 0, Weight: 40,
-			Power: 2, Name: "ethusd_binance", Selector: "price",
-			Url: `{"type": "GET","url": "https://api.binance.com/api/v3/avgPrice?symbol=ETHBUSD","body": {},"header": {}}`,
+			Power: 2, Name: "ethusd_coinbase", Selector: "data.amount",
+			Url: `{"type": "GET","url": "https://api.coinbase.com/v2/prices/ETH-USD/spot","body": {},"header": {}}`,
 		},
 		// This job returns an error which will not add any value to data or weight array
 		{Id: 5, SelectorType: 0, Weight: 10,
 			Power: 2, Name: "ethusd_gemini_incorrect", Selector: "last1",
 			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd1","body": {},"header": {}}`,
+		},
+		{Id: 6, SelectorType: 0, Weight: 100,
+			Power: 6, Name: "ethusd_uniswapv2", Selector: "result",
+			Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","id":7269270904970082,"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","data":"0xd06ca61f0000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050de6856358cc35f3a9a57eaaa34bd4cb707d2cd0000000000000000000000008e870d67f660d95d5be530380d0ec0bd388289e1","to":"0x7a250d5630b4cf539739df2c5dacb4c659f2488d"},"latest"]},"header": {"content-type": "application/json"}, "returnType": "hexArray[1]"}`,
+		},
+		{Id: 7, SelectorType: 0, Weight: 100,
+			Power: 2, Name: "ethusd_uniswapv3", Selector: "result",
+			Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+		},
+		// This is a duplicate job to check if cache is working correctly for POST Jobs
+		{Id: 8, SelectorType: 0, Weight: 100,
+			Power: 2, Name: "ethusd_uniswapv3_duplicate", Selector: "result",
+			Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+		},
+		// This is a duplicate job to check if cache is working correctly for GET Jobs
+		{Id: 9, SelectorType: 0, Weight: 10,
+			Power: 2, Name: "ethusd_gemini_duplicate", Selector: "last",
+			Url: "https://api.gemini.com/v1/pubticker/ethusd",
 		},
 	}
 
@@ -601,11 +619,11 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			wantArrayLength: 2,
 		},
 		{
-			name: "Test 3: Getting values from whole set of jobs of length 5 but job at last index reports an error",
+			name: "Test 3: Getting values from whole set of jobs of length 9 but job at index 5 reports an error",
 			args: args{
 				jobs: jobsArray,
 			},
-			wantArrayLength: 4,
+			wantArrayLength: 8,
 		},
 	}
 	for _, tt := range tests {
