@@ -150,6 +150,19 @@ func TestGetDataFromAPI(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Gneerating cache key throws error",
+			args: args{
+				urlStruct: types.DataSourceURL{
+					URL: "http://example.com",
+					Body: map[string]interface{}{
+						"key": func() {}, // functions cannot be marshaled and will cause an error
+					},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
