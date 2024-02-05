@@ -98,7 +98,7 @@ type Utils interface {
 	GetMaxCommission(client *ethclient.Client) (uint8, error)
 	GetEpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
-	GetCommitments(client *ethclient.Client, address string) ([32]byte, error)
+	GetCommitment(client *ethclient.Client, address string) (types.Commitment, error)
 	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
 	GetInfluenceSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
 	GetStakeSnapshot(client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
@@ -124,10 +124,7 @@ type Utils interface {
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
-	GetDataFromAPI(url string, localCache *cache.LocalCache) ([]byte, error)
-	GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error)
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
-	GetDataFromXHTML(url string, selector string) (string, error)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
@@ -150,7 +147,6 @@ type Utils interface {
 	ToAssign(client *ethclient.Client) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error)
-	ConvertToNumber(num interface{}) (*big.Float, error)
 	SecondsToReadableTime(input int) string
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
@@ -263,7 +259,7 @@ type AssetManagerUtils interface {
 }
 
 type VoteManagerUtils interface {
-	Commitments(client *ethclient.Client, stakerId uint32) (types.Commitment, error)
+	GetCommitment(client *ethclient.Client, stakerId uint32) (types.Commitment, error)
 	GetVoteValue(client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
 	GetInfluenceSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error)
 	GetStakeSnapshot(client *ethclient.Client, epoch uint32, stakerId uint32) (*big.Int, error)

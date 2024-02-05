@@ -1,26 +1,28 @@
 {
-  "name": "razor-go",
-  "version": "v1.0.0",
-  "description": "Official node for running stakers in Golang.",
-  "main": "index.js",
-  "scripts": {
-    "setup": "make setup",
-    "build": "make build",
-    "build-all": "make all",
-    "build-noargs": "make build-noargs",
-    "test": "go test ./... -v"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/razor-network/razor-go"
-  },
-  "author": "Razor Network",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/razor-network/razor-go/issues"
-  },
-  "homepage": "https://github.com/razor-network/razor-go#readme",
-  "dependencies": {
-    "@razor-network/contracts": "v1.0.2"
+    "name": "razor-go",
+    "version": "v1.1.0",
+    "description": "Official node for running stakers in Golang.",
+    "main": "index.js",
+    "scripts": {
+      "setup": "make setup",
+      "build": "make build",
+      "build-all": "make all",
+      "build-noargs": "make build-noargs",
+      "build-noargs-testnet": "make build-noargs-testnet",
+      "test": "go test ./... -v"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/razor-network/razor-go"
+    },
+    "author": "Razor Network",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/razor-network/razor-go/issues"
+    },
+    "homepage": "https://github.com/razor-network/razor-go#readme",
+    "dependencies": {
+      "@razor-network/contracts": "v1.0.2"
+    }
   }
-}
+  

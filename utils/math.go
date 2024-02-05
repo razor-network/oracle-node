@@ -6,12 +6,15 @@ import (
 	"math"
 	"math/big"
 	mathRand "math/rand"
+	"razor/core"
+	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
+func ConvertToNumber(num interface{}, returnType string) (*big.Float, error) {
 	if num == nil {
 		return big.NewFloat(0), errors.New("no data provided")
 	}
@@ -21,6 +24,12 @@ func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 	case float64:
 		return big.NewFloat(v), nil
 	case string:
+		if strings.ToLower(returnType) == core.HexReturnType {
+			return ConvertHexToBigFloat(v)
+		}
+		if isHexArrayPattern(returnType) {
+			return HandleHexArray(v, returnType)
+		}
 		convertedNumber, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			log.Error("Error in converting from string to float: ", err)
@@ -28,7 +37,17 @@ func (*UtilsStruct) ConvertToNumber(num interface{}) (*big.Float, error) {
 		}
 		return big.NewFloat(convertedNumber), nil
 	}
-	return big.NewFloat(0), nil
+	return big.NewFloat(0), errors.New("unsupported type provided")
+}
+
+func ConvertHexToBigFloat(hexString string) (*big.Float, error) {
+	hexValue := strings.TrimPrefix(hexString, "0x")
+	hexValueUint64, err := strconv.ParseUint(hexValue, 16, 64)
+	if err != nil {
+		log.Errorf("Error in converting hex value %v to uint64: %v", hexValue, err)
+		return big.NewFloat(0), err
+	}
+	return big.NewFloat(float64(hexValueUint64)), nil
 }
 
 func MultiplyWithPower(num *big.Float, power int8) *big.Int {
@@ -176,4 +195,102 @@ func Shuffle(slice []uint32) []uint32 {
 		copiedSlice[n-1], copiedSlice[randIndex] = copiedSlice[randIndex], copiedSlice[n-1]
 	}
 	return copiedSlice
+}
+
+func HandleHexArray(hexStr string, returnType string) (*big.Float, error) {
+	decodedHexArray, err := decodeHexString(hexStr)
+	if err != nil {
+		log.Error("Error in decoding hex array: ", err)
+		return big.NewFloat(0), err
+	}
+	log.Info("HandleHexArray: decoded hex array: ", decodedHexArray)
+
+	index, err := extractIndex(returnType)
+	if err != nil {
+		log.Error("Error in extracting value from decoded hex array: ", err)
+		return big.NewFloat(0), err
+	}
+	log.Debug("HandleHexArray: extracted index: ", index)
+
+	// Check if index is within the bounds of decodedHexArray
+	if index < 0 || index >= len(decodedHexArray) {
+		log.Error("extracted index is out of bounds for decoded hex array")
+		return big.NewFloat(0), errors.New("extracted index is out of bounds")
+	}
+
+	// decodedHexArray[index] returns value in wei, so it needs to be converted to eth
+	valueInEth, err := ConvertWeiToEth(decodedHexArray[index])
+	if err != nil {
+		log.Error("Error in converting wei to eth: ", err)
+		return big.NewFloat(0), err
+	}
+
+	return valueInEth, nil
+}
+
+func decodeHexString(hexStr string) ([]*big.Int, error) {
+	// Remove the "0x" prefix if present
+	hexStr = strings.TrimPrefix(hexStr, "0x")
+	// The length of uint256 in hex (32 bytes)
+	const uint256HexLength = 64
+
+	// Make sure the string length is at least enough for the offset and length
+	if len(hexStr) < 2*uint256HexLength {
+		return nil, errors.New("hex string too short to contain valid data")
+	}
+
+	// Getting the starting position of the array data (skipping this step as per Ethereum ABI encoding)
+	// Skip the length of the array (next 32 bytes)
+	lengthStr := hexStr[uint256HexLength : 2*uint256HexLength]
+	length, success := new(big.Int).SetString(lengthStr, 16)
+	if !success {
+		log.Error("Invalid length of the array from the hex string")
+		return nil, errors.New("invalid length")
+	}
+
+	// The remaining part of the string are the uint256 values
+	valuesStr := hexStr[2*uint256HexLength:]
+
+	// Each value is 32 bytes long, so check if the length matches
+	if len(valuesStr) != int(length.Int64())*uint256HexLength {
+		return nil, errors.New("data length does not match length specifier")
+	}
+
+	var values []*big.Int
+	for i := 0; i < int(length.Int64()); i++ {
+		start := i * uint256HexLength
+		end := start + uint256HexLength
+		n := new(big.Int)
+		n, success := n.SetString(valuesStr[start:end], 16)
+		if !success {
+			log.Errorf("Invalid uint256 value at index %d", i)
+			return nil, errors.New("invalid uint256 value at index")
+		}
+		values = append(values, n)
+	}
+
+	return values, nil
+}
+
+func extractIndex(s string) (int, error) {
+	re := regexp.MustCompile(core.HexArrayExtractIndexRegex)
+
+	matches := re.FindStringSubmatch(s)
+	if len(matches) < 2 {
+		return 0, errors.New("no index found in string")
+	}
+
+	// Converting the captured substring to an integer
+	index, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return 0, errors.New("invalid index format in string")
+	}
+
+	return index, nil
+}
+
+func isHexArrayPattern(s string) bool {
+	pattern := core.HexArrayReturnType
+	re := regexp.MustCompile(pattern)
+	return re.MatchString(s)
 }

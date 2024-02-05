@@ -394,14 +394,17 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 			args: args{
 				transactionData: types.TransactionOptions{
 					MethodName: "stake",
-					Config:     types.Configurations{GasLimitMultiplier: 2},
+					Config: types.Configurations{
+						GasLimitMultiplier: 2,
+						GasLimitOverride:   5000000,
+					},
 				},
 				parsedData:  parsedData,
 				inputData:   inputData,
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:    0,
-			wantErr: errors.New("gasLimit error"),
+			want:    5000000,
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
