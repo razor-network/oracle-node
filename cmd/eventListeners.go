@@ -175,8 +175,8 @@ func listenForCollectionUpdates(client *ethclient.Client, fromBlock, toBlock *bi
 	for _, vLog := range logs {
 		// Check if the log is a CollectionUpdated event
 		if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == contractAbi.Events["CollectionUpdated"].ID.Hex() {
-			// Unpack the event data
 			topics := vLog.Topics
+
 			// topics[1] gives collection id in data type common.Hash
 			collectionId := utils.ConvertHashToUint16(topics[1])
 
@@ -196,6 +196,34 @@ func listenForCollectionUpdates(client *ethclient.Client, fromBlock, toBlock *bi
 
 			log.Debugf("Updating the collection with Id %v with data %+v...", collectionId, updatedCollectionData)
 			cache.UpdateCollectionCache(collectionId, updatedCollectionData)
+		} else if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == contractAbi.Events["CollectionActivityStatus"].ID.Hex() {
+			topics := vLog.Topics
+
+			// topics[1] gives collection id in data type common.Hash
+			collectionId := utils.ConvertHashToUint16(topics[1])
+
+			data, err := abiUtils.Unpack(contractAbi, "CollectionUpdated", vLog.Data)
+			if err != nil {
+				log.Error("Error in CollectionUpdated event logs: ", err)
+				return
+			}
+
+			activeStatus := data[0].(bool)
+
+			log.Debugf("Updating the activity status for collection with ID %v to %v...", collectionId, activeStatus)
+
+			// Retrieve the existing collection data from the cache
+			existingCollection, found := cache.GetCollectionFromCache(collectionId)
+			if !found {
+				log.Errorf("Collection with ID %v not found in cache", collectionId)
+				continue
+			}
+
+			// Update the 'Active' status while keeping other fields unchanged
+			existingCollection.Active = activeStatus
+
+			// Update the collection in the cache
+			cache.UpdateCollectionCache(collectionId, existingCollection)
 		}
 	}
 }
