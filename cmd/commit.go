@@ -10,6 +10,7 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -67,35 +68,71 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 		return types.CommitData{}, err
 	}
 
-	var leavesOfTree []*big.Int
+	leavesOfTree := make([]*big.Int, numActiveCollections)
+	results := make(chan types.CollectionResult, numActiveCollections)
+	errChan := make(chan error, numActiveCollections)
+
+	defer close(results)
+	defer close(errChan)
+
+	var wg sync.WaitGroup
 
 	log.Debug("Creating a local cache which will store API result and expire at the end of commit state")
 	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 
 	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
-		log.Debug("HandleCommitState: Iterating index: ", i)
-		log.Debug("HandleCommitState: Is the collection assigned: ", assignedCollections[i])
-		if assignedCollections[i] {
-			collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			var leaf *big.Int
+
+			log.Debugf("HandleCommitState: Is the collection at iterating index %v assigned: %v ", i, assignedCollections[i])
+			if assignedCollections[i] {
+				collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
+				if err != nil {
+					log.Error("Error in getting collection ID: ", err)
+					errChan <- err
+					return
+				}
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache)
+				if err != nil {
+					log.Error("Error in getting aggregated data of collection: ", err)
+					errChan <- err
+					return
+				}
+				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
+					log.Warn("YOU ARE COMMITTING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
+					collectionData = razorUtils.GetRogueRandomValue(100000)
+					log.Debug("HandleCommitState: Collection data in rogue mode: ", collectionData)
+				}
+				log.Debugf("HandleCommitState: Data of collection %d: %s", collectionId, collectionData)
+				leaf = collectionData
+			} else {
+				leaf = big.NewInt(0)
+			}
+			log.Debugf("Sending index: %v,  leaf data: %v to results channel", i, leaf)
+			results <- types.CollectionResult{Index: i, Leaf: leaf}
+		}(i)
+	}
+
+	wg.Wait()
+
+	for i := 0; i < int(numActiveCollections); i++ {
+		select {
+		case result := <-results:
+			log.Infof("Received from results: Index: %d, Leaf: %v", result.Index, result.Leaf)
+			leavesOfTree[result.Index] = result.Leaf
+		case err := <-errChan:
 			if err != nil {
+				// Returning the first error from the error channel
+				log.Error("Error in getting collection data: ", err)
+				localCache.StopCleanup()
 				return types.CommitData{}, err
 			}
-			collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache)
-			if err != nil {
-				return types.CommitData{}, err
-			}
-			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-				log.Warn("YOU ARE COMMITTING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
-				collectionData = razorUtils.GetRogueRandomValue(100000)
-				log.Debug("HandleCommitState: Collection data in rogue mode: ", collectionData)
-			}
-			log.Debugf("HandleCommitState: Data of collection %d: %s", collectionId, collectionData)
-			leavesOfTree = append(leavesOfTree, collectionData)
-		} else {
-			leavesOfTree = append(leavesOfTree, big.NewInt(0))
 		}
 	}
+
 	log.Debug("HandleCommitState: Assigned Collections: ", assignedCollections)
 	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
