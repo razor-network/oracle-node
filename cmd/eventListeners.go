@@ -16,7 +16,7 @@ import (
 )
 
 func initAssetCache(client *ethclient.Client) error {
-	log.Info("INITIALIZING JOB AND COLLECTION CACHE...")
+	log.Info("INITIALIZING JOBS AND COLLECTIONS CACHE...")
 	if err := utils.InitJobsCache(client); err != nil {
 		log.Error("Error in initializing jobs cache: ", err)
 		return err
@@ -39,35 +39,29 @@ func initAssetCache(client *ethclient.Client) error {
 		return err
 	}
 
-	go startJobUpdateListener(client, fromBlock, time.Second*time.Duration(core.AssetUpdateListenerInterval))
-	go startCollectionUpdateListener(client, fromBlock, time.Second*time.Duration(core.AssetUpdateListenerInterval))
+	// Start listeners for job and collection updates
+	go startListener(client, fromBlock, time.Second*time.Duration(core.AssetUpdateListenerInterval), listenForJobUpdates)
+	go startListener(client, fromBlock, time.Second*time.Duration(core.AssetUpdateListenerInterval), listenForCollectionUpdates)
+	go startListener(client, fromBlock, time.Second*time.Duration(core.AssetUpdateListenerInterval), listenForAssetCreation)
 
 	return nil
 }
 
-func startJobUpdateListener(client *ethclient.Client, initialFromBlockNumber *big.Int, interval time.Duration) {
-	// Initialize fromBlock to a sensible starting point, such as the contract deployment block
-	var fromBlock = initialFromBlockNumber
-
-	// Create a ticker that fires at the specified interval
+// startListener starts a generic listener for blockchain events.
+func startListener(client *ethclient.Client, fromBlock *big.Int, interval time.Duration, listenerFunc func(*ethclient.Client, *big.Int, *big.Int)) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		// Retrieve the current block number to define the toBlock
-		header, err := client.HeaderByNumber(context.Background(), nil)
+		toBlock, err := clientUtils.GetLatestBlockWithRetry(client)
 		if err != nil {
-			log.Printf("Failed to retrieve the latest block header: %v", err)
+			log.Error("Error in getting latest block to start event listener: ", err)
 			continue
 		}
 
-		toBlock := header.Number
-
-		// Listen for JobUpdated events between fromBlock and toBlock
-		listenForJobUpdates(client, fromBlock, toBlock)
-
-		// Update fromBlock for the next interval to start from the next block after toBlock
-		fromBlock = new(big.Int).Add(toBlock, big.NewInt(1))
+		listenerFunc(client, fromBlock, toBlock.Number)
+		// Update fromBlock for the next interval
+		fromBlock = new(big.Int).Add(toBlock.Number, big.NewInt(1))
 	}
 }
 
@@ -97,55 +91,19 @@ func listenForJobUpdates(client *ethclient.Client, fromBlock, toBlock *big.Int) 
 	for _, vLog := range logs {
 		// Check if the log is a JobUpdated event
 		if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == contractAbi.Events["JobUpdated"].ID.Hex() {
-			// Unpack the event data
 			topics := vLog.Topics
+
 			// topics[1] gives job id in data type common.Hash
 			jobId := utils.ConvertHashToUint16(topics[1])
-
-			data, err := abiUtils.Unpack(contractAbi, "JobUpdated", vLog.Data)
+			updatedJob, err := utils.UtilsInterface.GetActiveJob(client, jobId)
 			if err != nil {
-				log.Error("Error in JobUpdated event logs: ", err)
+				log.Errorf("Error in getting job with job Id %v: %v", jobId, err)
 				return
 			}
 
-			updatedJobData := bindings.StructsJob{
-				Id:           jobId,
-				SelectorType: data[0].(uint8),
-				Weight:       data[2].(uint8),
-				Power:        data[3].(int8),
-				Selector:     data[5].(string),
-				Url:          data[6].(string),
-			}
-
-			log.Debugf("Updating the job with Id %v with data %+v...", jobId, updatedJobData)
-			cache.UpdateJobCache(jobId, updatedJobData)
+			log.Debugf("RECEIVED ASSET UPDATE: Updating the job with Id %v with details %+v...", jobId, updatedJob)
+			cache.UpdateJobCache(jobId, updatedJob)
 		}
-	}
-}
-
-func startCollectionUpdateListener(client *ethclient.Client, initialFromBlockNumber *big.Int, interval time.Duration) {
-	// Initialize fromBlock to a sensible starting point, such as the contract deployment block
-	var fromBlock = initialFromBlockNumber
-
-	// Create a ticker that fires at the specified interval
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		// Retrieve the current block number to define the toBlock
-		header, err := client.HeaderByNumber(context.Background(), nil)
-		if err != nil {
-			log.Printf("Failed to retrieve the latest block header: %v", err)
-			continue
-		}
-
-		toBlock := header.Number
-
-		// Listen for CollectionUpdated events between fromBlock and toBlock
-		listenForCollectionUpdates(client, fromBlock, toBlock)
-
-		// Update fromBlock for the next interval to start from the next block after toBlock
-		fromBlock = new(big.Int).Add(toBlock, big.NewInt(1))
 	}
 }
 
@@ -179,51 +137,82 @@ func listenForCollectionUpdates(client *ethclient.Client, fromBlock, toBlock *bi
 
 			// topics[1] gives collection id in data type common.Hash
 			collectionId := utils.ConvertHashToUint16(topics[1])
-
-			data, err := abiUtils.Unpack(contractAbi, "CollectionUpdated", vLog.Data)
+			updatedCollection, err := utils.UtilsInterface.GetCollection(client, collectionId)
 			if err != nil {
-				log.Error("Error in CollectionUpdated event logs: ", err)
+				log.Errorf("Error in getting updated collection with collection Id %v: %v", collectionId, err)
 				return
 			}
 
-			updatedCollectionData := bindings.StructsCollection{
-				Id:                collectionId,
-				Power:             data[0].(int8),
-				AggregationMethod: data[2].(uint32),
-				Tolerance:         data[3].(uint32),
-				JobIDs:            data[4].([]uint16),
-			}
-
-			log.Debugf("Updating the collection with Id %v with data %+v...", collectionId, updatedCollectionData)
-			cache.UpdateCollectionCache(collectionId, updatedCollectionData)
+			log.Debugf("RECEIVED ASSET UPDATE: Updating the collection with Id %v with details %+v...", collectionId, updatedCollection)
+			cache.UpdateCollectionCache(collectionId, updatedCollection)
 		} else if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == contractAbi.Events["CollectionActivityStatus"].ID.Hex() {
 			topics := vLog.Topics
 
 			// topics[1] gives collection id in data type common.Hash
 			collectionId := utils.ConvertHashToUint16(topics[1])
-
-			data, err := abiUtils.Unpack(contractAbi, "CollectionUpdated", vLog.Data)
+			updatedCollection, err := utils.UtilsInterface.GetCollection(client, collectionId)
 			if err != nil {
-				log.Error("Error in CollectionUpdated event logs: ", err)
+				log.Errorf("Error in getting updated collection with collection Id %v: %v", collectionId, err)
 				return
 			}
 
-			activeStatus := data[0].(bool)
+			log.Debugf("RECEIVED ASSET UPDATE: Updating the activity status for collection with ID %v with details %+v", collectionId, updatedCollection)
+			cache.UpdateCollectionCache(collectionId, updatedCollection)
+		}
+	}
+}
 
-			log.Debugf("Updating the activity status for collection with ID %v to %v...", collectionId, activeStatus)
+func listenForAssetCreation(client *ethclient.Client, fromBlock, toBlock *big.Int) {
+	// Set up the query for filtering logs
+	query := ethereum.FilterQuery{
+		FromBlock: fromBlock,
+		ToBlock:   toBlock,
+		Addresses: []common.Address{
+			common.HexToAddress(core.CollectionManagerAddress),
+		},
+	}
 
-			// Retrieve the existing collection data from the cache
-			existingCollection, found := cache.GetCollectionFromCache(collectionId)
-			if !found {
-				log.Errorf("Collection with ID %v not found in cache", collectionId)
-				continue
+	// Retrieve the logs
+	logs, err := client.FilterLogs(context.Background(), query)
+	if err != nil {
+		log.Errorf("Failed to fetch logs for JobCreated event: %v", err)
+		return
+	}
+
+	contractAbi, err := abi.JSON(strings.NewReader(bindings.CollectionManagerMetaData.ABI))
+	if err != nil {
+		log.Errorf("Failed to parse contract ABI: %v", err)
+		return
+	}
+
+	for _, vLog := range logs {
+		// Check if the log is a JobCreated event
+		if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == contractAbi.Events["JobCreated"].ID.Hex() {
+			topics := vLog.Topics
+
+			// topics[1] gives job id in data type common.Hash
+			jobId := utils.ConvertHashToUint16(topics[1])
+			newJob, err := utils.UtilsInterface.GetActiveJob(client, jobId)
+			if err != nil {
+				log.Errorf("Error in getting job with job Id %v: %v", jobId, err)
+				return
 			}
 
-			// Update the 'Active' status while keeping other fields unchanged
-			existingCollection.Active = activeStatus
+			log.Debugf("RECEIVED ASSET UPDATE: New JobCreated event detected for job ID %v with details %+v", jobId, newJob)
+			cache.UpdateJobCache(jobId, newJob)
+		} else if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == contractAbi.Events["CollectionCreated"].ID.Hex() {
+			topics := vLog.Topics
 
-			// Update the collection in the cache
-			cache.UpdateCollectionCache(collectionId, existingCollection)
+			// topics[1] gives collection id in data type common.Hash
+			collectionId := utils.ConvertHashToUint16(topics[1])
+			newCollection, err := utils.UtilsInterface.GetCollection(client, collectionId)
+			if err != nil {
+				log.Errorf("Error in getting collection with collection Id %v: %v", collectionId, err)
+				return
+			}
+
+			log.Debugf("RECEIVED ASSET UPDATE: New CollectionCreated event detected for collection ID %v with details %+v", collectionId, newCollection)
+			cache.UpdateCollectionCache(collectionId, newCollection)
 		}
 	}
 }

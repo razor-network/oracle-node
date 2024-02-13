@@ -25,20 +25,10 @@ func GetCollectionFromCache(collectionId uint16) (bindings.StructsCollection, bo
 	return collection, exists
 }
 
-func UpdateCollectionCache(collectionId uint16, collectionData bindings.StructsCollection) {
+func UpdateCollectionCache(collectionId uint16, updatedCollection bindings.StructsCollection) {
 	CollectionsCache.Mu.Lock()
 	defer CollectionsCache.Mu.Unlock()
 
-	// Check if the collection already exists in the cache
-	existingCollection, exists := CollectionsCache.Collections[collectionId]
-	if exists {
-		// If the collection exists, keep the existing name, active status and update other fields
-		existingCollection.Power = collectionData.Power
-		existingCollection.Tolerance = collectionData.Tolerance
-		existingCollection.AggregationMethod = collectionData.AggregationMethod
-		existingCollection.JobIDs = collectionData.JobIDs
-
-		// Update the cache with the modified collection entry
-		CollectionsCache.Collections[collectionId] = existingCollection
-	}
+	// Update or add the collection in the cache with the new data
+	CollectionsCache.Collections[collectionId] = updatedCollection
 }

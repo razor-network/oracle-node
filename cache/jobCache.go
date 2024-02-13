@@ -25,21 +25,10 @@ func GetJobFromCache(jobId uint16) (bindings.StructsJob, bool) {
 	return job, exists
 }
 
-func UpdateJobCache(jobId uint16, updatedJobData bindings.StructsJob) {
+func UpdateJobCache(jobId uint16, updatedJob bindings.StructsJob) {
 	JobsCache.Mu.Lock()
 	defer JobsCache.Mu.Unlock()
 
-	// Check if the job already exists in the cache
-	existingJob, exists := JobsCache.Jobs[jobId]
-	if exists {
-		// If the job exists, keep the existing name and update other fields
-		existingJob.SelectorType = updatedJobData.SelectorType
-		existingJob.Weight = updatedJobData.Weight
-		existingJob.Power = updatedJobData.Power
-		existingJob.Selector = updatedJobData.Selector
-		existingJob.Url = updatedJobData.Url
-
-		// Update the cache with the updated job data
-		JobsCache.Jobs[jobId] = existingJob
-	}
+	// Update or add the job in the cache with the new data
+	JobsCache.Jobs[jobId] = updatedJob
 }
