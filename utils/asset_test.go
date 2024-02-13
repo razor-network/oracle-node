@@ -7,12 +7,14 @@ import (
 	"math/big"
 	"os"
 	"razor/cache"
+	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
+	"regexp"
 	"testing"
 	"time"
 
@@ -71,13 +73,13 @@ func TestAggregate(t *testing.T) {
 			args: args{
 				collection:         collection,
 				activeJob:          job,
-				dataToCommit:       []*big.Int{big.NewInt(2)},
-				weight:             []uint8{100},
+				dataToCommit:       []*big.Int{big.NewInt(3827200), big.NewInt(3828474), big.NewInt(3826440), big.NewInt(3824616), big.NewInt(3823852)},
+				weight:             []uint8{1, 1, 1, 1, 1},
 				prevCommitmentData: big.NewInt(1),
 				assetFilePath:      "",
 				statErr:            nil,
 			},
-			want:    big.NewInt(2),
+			want:    big.NewInt(3826116),
 			wantErr: false,
 		},
 		{
@@ -552,95 +554,89 @@ func TestGetAllCollections(t *testing.T) {
 
 func TestGetDataToCommitFromJobs(t *testing.T) {
 	jobsArray := []bindings.StructsJob{
-		{Id: 1, SelectorType: 1, Weight: 100,
+		{Id: 1, SelectorType: 0, Weight: 10,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
-		}, {Id: 2, SelectorType: 1, Weight: 100,
-			Power: 2, Name: "ethusd_gemini", Selector: "last",
-			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
+			Url: "https://api.gemini.com/v1/pubticker/ethusd",
+		},
+		{Id: 2, SelectorType: 0, Weight: 20,
+			Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
+			Url: `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
+		},
+		{Id: 3, SelectorType: 0, Weight: 30,
+			Power: 2, Name: "ethusd_kucoin", Selector: "data.ETH",
+			Url: `{"type": "GET","url": "https://api.kucoin.com/api/v1/prices?base=USD&currencies=ETH","body": {},"header": {}}`,
+		},
+		{Id: 4, SelectorType: 0, Weight: 40,
+			Power: 2, Name: "ethusd_coinbase", Selector: "data.amount",
+			Url: `{"type": "GET","url": "https://api.coinbase.com/v2/prices/ETH-USD/spot","body": {},"header": {}}`,
+		},
+		// This job returns an error which will not add any value to data or weight array
+		{Id: 5, SelectorType: 0, Weight: 10,
+			Power: 2, Name: "ethusd_gemini_incorrect", Selector: "last1",
+			Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd1","body": {},"header": {}}`,
+		},
+		{Id: 6, SelectorType: 0, Weight: 100,
+			Power: 6, Name: "ethusd_uniswapv2", Selector: "result",
+			Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","id":7269270904970082,"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","data":"0xd06ca61f0000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050de6856358cc35f3a9a57eaaa34bd4cb707d2cd0000000000000000000000008e870d67f660d95d5be530380d0ec0bd388289e1","to":"0x7a250d5630b4cf539739df2c5dacb4c659f2488d"},"latest"]},"header": {"content-type": "application/json"}, "returnType": "hexArray[1]"}`,
+		},
+		{Id: 7, SelectorType: 0, Weight: 100,
+			Power: 2, Name: "ethusd_uniswapv3", Selector: "result",
+			Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+		},
+		// This is a duplicate job to check if cache is working correctly for POST Jobs
+		{Id: 8, SelectorType: 0, Weight: 100,
+			Power: 2, Name: "ethusd_uniswapv3_duplicate", Selector: "result",
+			Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+		},
+		// This is a duplicate job to check if cache is working correctly for GET Jobs
+		{Id: 9, SelectorType: 0, Weight: 10,
+			Power: 2, Name: "ethusd_gemini_duplicate", Selector: "last",
+			Url: "https://api.gemini.com/v1/pubticker/ethusd",
 		},
 	}
 
 	type args struct {
-		jobPath            string
-		jobPathErr         error
-		overrideJobData    map[string]*types.StructsJob
-		overrideJobDataErr error
-		dataToAppend       *big.Int
-		dataToAppendErr    error
+		jobs []bindings.StructsJob
 	}
+
 	tests := []struct {
-		name    string
-		args    args
-		want    []*big.Int
-		wantErr bool
+		name            string
+		args            args
+		wantArrayLength int
 	}{
 		{
-			name: "Test 1: When GetDataToCommitFromJobs() executes successfully",
+			name: "Test 1: Getting values from set of jobs of length 4",
 			args: args{
-				jobPath: "",
-				overrideJobData: map[string]*types.StructsJob{"1": {
-					Id: 2, SelectorType: 1, Weight: 100,
-					Power: 2, Name: "ethusd_gemini", Selector: "last",
-					Url: `{"type": "GET","url": "https://api.gemini.com/v1/pubticker/ethusd","body": {},"header": {}}`,
-				}},
-				dataToAppend: big.NewInt(1),
+				jobs: jobsArray[:4],
 			},
-			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
-			wantErr: false,
+			wantArrayLength: 4,
 		},
 		{
-			name: "Test 2: When there is an error in getting overrideJobData",
+			name: "Test 2: Getting values from set of jobs of length 2",
 			args: args{
-				jobPath:            "",
-				overrideJobDataErr: errors.New("overrideJobData error"),
-				dataToAppend:       big.NewInt(1),
+				jobs: jobsArray[:2],
 			},
-			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
-			wantErr: false,
+			wantArrayLength: 2,
 		},
 		{
-			name: "Test 3: When there is an error in getting jobPath",
+			name: "Test 3: Getting values from whole set of jobs of length 9 but job at index 5 reports an error",
 			args: args{
-				jobPathErr:      errors.New("jobPath error"),
-				overrideJobData: map[string]*types.StructsJob{},
-				dataToAppend:    big.NewInt(1),
+				jobs: jobsArray,
 			},
-			want:    []*big.Int{big.NewInt(1), big.NewInt(1)},
-			wantErr: false,
-		},
-		{
-			name: "Test 4: When there is an error in getting dataToAppend",
-			args: args{
-				jobPath:         "",
-				overrideJobData: map[string]*types.StructsJob{},
-				dataToAppendErr: errors.New("dataToAppend error"),
-			},
-			want:    nil,
-			wantErr: false,
+			wantArrayLength: 8,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-			pathMock := new(mocks.PathUtils)
+			UtilsInterface = &UtilsStruct{}
+			lc := cache.NewLocalCache(time.Second * 10)
 
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-				PathInterface:  pathMock,
+			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc)
+			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
+				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
 			}
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetDataToCommitFromJob", mock.Anything, mock.Anything).Return(tt.args.dataToAppend, tt.args.dataToAppendErr)
-
-			got, _, err := utils.GetDataToCommitFromJobs(jobsArray, &cache.LocalCache{})
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDataToCommitFromJobs() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", got, tt.want)
-			}
+			fmt.Println("Got Data Array: ", gotDataArray)
+			fmt.Println("Got WeightArray: ", gotWeightArray)
 		})
 	}
 }
@@ -656,9 +652,24 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		Url: "https://api.gemini.com/v1/pubticker/ethusd/apiKey=${SAMPLE_API_KEY_NEW}",
 	}
 
-	postJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+	postJobUniswapV3 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "result",
 		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xb27308f9f90d607463bb33ea1bebb41c27ce5ab6","data":"0xf7729d43000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000bb80000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000"},"latest"],"id":5},"header": {"content-type": "application/json"}, "returnType": "hex"}`,
+	}
+
+	postJobUniswapV2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 6, Name: "ethusd_sample", Selector: "result",
+		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","id":7269270904970082,"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","data":"0xd06ca61f0000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050de6856358cc35f3a9a57eaaa34bd4cb707d2cd0000000000000000000000008e870d67f660d95d5be530380d0ec0bd388289e1","to":"0x7a250d5630b4cf539739df2c5dacb4c659f2488d"},"latest"]},"header": {"content-type": "application/json"}, "returnType": "hexArray[1]"}`,
+	}
+
+	invalidDataSourceStructJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_sample", Selector: "result",
+		Url: `{"type": true,"url1": {}}`,
+	}
+
+	invalidXHTMLJob := bindings.StructsJob{Id: 3, SelectorType: 1, Weight: 100,
+		Power: 2, Name: "ethusd_gemini", Selector: "last",
+		Url: `{"type1": "GET","url1": "https://api.gemini.com/v1/pubticker/ethusd","body1": {},"header1": {}}`,
 	}
 
 	type args struct {
@@ -688,8 +699,32 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		{
 			name: "Test 3: When GetDataToCommitFromJob() executes successfully for a POST Job",
 			args: args{
-				job: postJob,
+				job: postJobUniswapV3,
 			},
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in unmarshalling invalid dataSourceStruct for XHTML job",
+			args: args{
+				job: invalidXHTMLJob,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When there is an error in unmarshalling invalid dataSourceStruct",
+			args: args{
+				job: invalidDataSourceStructJob,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When GetDataToCommitFromJob() executes successfully for a POST uniswap v2 Job",
+			args: args{
+				job: postJobUniswapV2,
+			},
+			want:    nil,
 			wantErr: false,
 		},
 	}
@@ -702,10 +737,6 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			pathUtilsMock := new(pathMocks.PathInterface)
-			path.PathUtilsInterface = pathUtilsMock
-
-			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
 			lc := cache.NewLocalCache(time.Second * 10)
 			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc)
 			fmt.Println("JOB returns data: ", data)
@@ -1484,6 +1515,110 @@ func TestGetCollectionIdFromLeafId(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("GetCollectionIdFromLeafId() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReplaceValueWithDataFromENVFile(t *testing.T) {
+	tests := []struct {
+		name           string
+		value          string
+		envVariables   map[string]string
+		expectedOutput string
+	}{
+		{
+			name:           "single env variable",
+			value:          "API key is ${API_KEY}",
+			envVariables:   map[string]string{"API_KEY": "12345"},
+			expectedOutput: "API key is 12345",
+		},
+		{
+			name:           "multiple env variables",
+			value:          "API key is ${API_KEY} and secret is ${SECRET}",
+			envVariables:   map[string]string{"API_KEY": "12345", "SECRET": "abcdef"},
+			expectedOutput: "API key is 12345 and secret is abcdef",
+		},
+		{
+			name:           "no env variable in value",
+			value:          "API key is present",
+			envVariables:   map[string]string{"API_KEY": "12345"},
+			expectedOutput: "API key is present",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Set environment variables
+			for key, val := range tt.envVariables {
+				os.Setenv(key, val)
+			}
+
+			// Execute function
+			var re = regexp.MustCompile(core.APIKeyRegex)
+			result := ReplaceValueWithDataFromENVFile(re, tt.value)
+
+			// Check result
+			if result != tt.expectedOutput {
+				t.Errorf("Expected output: %s, but got: %s", tt.expectedOutput, result)
+			}
+
+			// Cleanup environment variables
+			for key := range tt.envVariables {
+				os.Unsetenv(key)
+			}
+		})
+	}
+}
+
+func TestIsJSONCompatible(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected bool
+	}{
+		{
+			name:     "Valid JSON object",
+			input:    `{"key": "value"}`,
+			expected: true,
+		},
+		{
+			name:     "Valid JSON array",
+			input:    `["item1", "item2"]`,
+			expected: true,
+		},
+		{
+			name:     "Valid JSON number",
+			input:    "1234",
+			expected: true,
+		},
+		{
+			name:     "Invalid JSON missing closing brace",
+			input:    `{"key": "value"`,
+			expected: false,
+		},
+		{
+			name:     "Invalid JSON missing key",
+			input:    `{: "value"}`,
+			expected: false,
+		},
+		{
+			name:     "direct URL passed",
+			input:    "https://api.gemini.com/v1/pubticker/ethusd",
+			expected: false,
+		},
+		{
+			name:     "URL passed as a dataSourceStruct",
+			input:    `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := isJSONCompatible(tc.input)
+			if result != tc.expected {
+				t.Errorf("Expected %v, got %v for input: %s", tc.expected, result, tc.input)
 			}
 		})
 	}

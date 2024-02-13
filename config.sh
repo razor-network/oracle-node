@@ -55,9 +55,9 @@ if [ -z "$MAX_AGE" ]; then
    MAX_AGE=365
 fi
 
-if [ -z "$ALTERNATE_PROVIDER" ]; then
-  $RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
-else
-$RAZOR setConfig -p $PROVIDER --alternateProvider "$ALTERNATE_PROVIDER" -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
-
+ALT_PROVIDER_OPTION=""
+if [ -n "$ALTERNATE_PROVIDER" ]; then
+    ALT_PROVIDER_OPTION="--alternateProvider $ALTERNATE_PROVIDER"
 fi
+
+$RAZOR setConfig -p $PROVIDER $ALT_PROVIDER_OPTION -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE

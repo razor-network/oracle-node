@@ -80,6 +80,17 @@ func TestGetDataFromAPI(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "When URL is invalid and there is an error in http.NewRequest()",
+			args: args{
+				urlStruct: types.DataSourceURL{
+					Type: "GET",
+					URL:  "\x00",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
 			name: "When API is not responding",
 			args: args{
 				urlStruct: types.DataSourceURL{
@@ -100,6 +111,53 @@ func TestGetDataFromAPI(t *testing.T) {
 					URL:    "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
 					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
 					Header: map[string]string{"content-type": "application/json"},
+				},
+			},
+			want: sampleChainId,
+		},
+		{
+			name: "Header requires API_KEY from environment but its not present",
+			args: args{
+				urlStruct: types.DataSourceURL{
+					Type:   "POST",
+					URL:    "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
+					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
+					Header: map[string]string{"auth": "${API_KEY}", "content-type": "application/json"},
+				},
+			},
+			want: sampleChainId,
+		},
+		{
+			name: "Body for POST request is incorrect",
+			args: args{
+				urlStruct: types.DataSourceURL{
+					Type: "POST",
+					URL:  "https://staging-v3.skalenodes.com/v1/staging-aware-chief-gianfar",
+					Body: map[string]interface{}{"fail": func() {}, "jsonrpc": 1},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Invalid request type",
+			args: args{
+				urlStruct: types.DataSourceURL{
+					Type: "",
+					URL:  "https://jsonplaceholder.typicode.com/todos/1",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Gneerating cache key throws error",
+			args: args{
+				urlStruct: types.DataSourceURL{
+					URL: "http://example.com",
+					Body: map[string]interface{}{
+						"key": func() {}, // functions cannot be marshaled and will cause an error
+					},
 				},
 			},
 			want: sampleChainId,

@@ -10,8 +10,11 @@ import (
 
 var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
-var ChainId = big.NewInt(0x5a79c44e)
 var StateLength = EpochLength / NumberOfStates
+
+// ChainId corresponds to the SKALE chain
+var ChainId = big.NewInt(0x109B4597)
+
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
 var BlockCompletionTimeout = 30
@@ -51,7 +54,7 @@ var DefaultPathName = ".razor"
 // BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
 var BlockNumberInterval = 5
 
-// APIKeyRegex will be used as a regular expression to be matched in job Urls
+//APIKeyRegex will be used as a regular expression to be matched in job Urls
 var APIKeyRegex = `\$\{(.+?)\}`
 
 // Following are the constants which defines retry attempts and retry delay if there is an error in processing request
@@ -59,8 +62,20 @@ var APIKeyRegex = `\$\{(.+?)\}`
 var ProcessRequestRetryAttempts uint = 2
 var ProcessRequestRetryDelay = 2
 
-// SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
+//SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
 var SwitchClientDuration = 5 * EpochLength
 
 // HexReturnType is the ReturnType for a job if that job returns a hex value
 var HexReturnType = "hex"
+
+// HexArrayReturnType is the ReturnType for a job if that job returns a hex array value
+var HexArrayReturnType = "^hexArray\\[\\d+\\]$"
+
+// HexArrayExtractIndexRegex will be used as a regular expression to extract index from hexArray return type
+var HexArrayExtractIndexRegex = `^hexArray\[(\d+)\]$`
+
+// Following are the constants which helps in calculating iteration for a staker
+
+var BatchSize = 1000
+var NumRoutines = 10
+var MaxIterations = 10000000

@@ -434,8 +434,13 @@ func TestGetGasLimitOverride(t *testing.T) {
 				isFlagSet:           true,
 				gasLimitOverrideErr: errors.New("gasLimitOverride error"),
 			},
+<<<<<<< HEAD
 			want:    core.DefaultGasLimitOverride,
 			wantErr: errors.New("gasLimitOverride error"),
+=======
+			want:    50000000,
+			wantErr: nil,
+>>>>>>> 58a608864e6d78477b41f6bd7a6ea800bad39d0a
 		},
 		{
 			name:               "Test 3: When gasLimitOverride is fetched from config",
@@ -443,6 +448,7 @@ func TestGetGasLimitOverride(t *testing.T) {
 			args: args{
 				gasLimitOverrideInConfig: 3000000,
 			},
+<<<<<<< HEAD
 			want:    3000000,
 			wantErr: nil,
 		},
@@ -450,6 +456,10 @@ func TestGetGasLimitOverride(t *testing.T) {
 			name:    "Test 4: When gasLimitOverride is not passed in root nor set in config",
 			want:    core.DefaultGasLimitOverride,
 			wantErr: nil,
+=======
+			want:    50000000,
+			wantErr: errors.New("gasLimitOverride error"),
+>>>>>>> 58a608864e6d78477b41f6bd7a6ea800bad39d0a
 		},
 	}
 	for _, tt := range tests {

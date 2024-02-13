@@ -17,7 +17,7 @@ RUN PATH="/usr/local/go/bin:${PATH}" \
     && apk add --update make gcc musl musl-dev g++ libc-dev bash linux-headers \
     && apk add --no-cache jq \
     && npm install \
-    && npm run build-noargs \
+    && npm run build-noargs-testnet \
     && cp build/bin/razor /usr/local/bin/
 
 

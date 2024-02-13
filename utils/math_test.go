@@ -51,7 +51,8 @@ func TestAllZero(t *testing.T) {
 
 func TestConvertToNumber(t *testing.T) {
 	type args struct {
-		num interface{}
+		num        interface{}
+		returnType string
 	}
 	tests := []struct {
 		name    string
@@ -105,12 +106,30 @@ func TestConvertToNumber(t *testing.T) {
 				num: big.NewInt(4),
 			},
 			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test hex value",
+			args: args{
+				num:        "0x000000000000000000000000000000000000000000000000002388bcf02787f1",
+				returnType: "hex",
+			},
+			want:    big.NewFloat(10001969249224689),
 			wantErr: false,
+		},
+		{
+			name: "Test invalid hex value",
+			args: args{
+				num:        "0xGGGGGGGGGGGGGGGG",
+				returnType: "hex",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ConvertToNumber(tt.args.num)
+			got, err := ConvertToNumber(tt.args.num, tt.args.returnType)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ConvertToNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -958,44 +977,322 @@ func IndexNotEqual(a []uint32, b []uint32) bool {
 
 }
 
-func TestManageReturnType(t *testing.T) {
+func TestConvertHexToBigFloat(t *testing.T) {
+	tests := []struct {
+		name      string
+		hexString string
+		want      *big.Float
+		wantErr   bool
+	}{
+		{
+			name:      "Valid hexadecimal with prefix",
+			hexString: "0x000000000000000000000000000000000000000000000000000000007751b728",
+			want:      big.NewFloat(2001844008),
+			wantErr:   false,
+		},
+		{
+			name:      "Valid hexadecimal without prefix",
+			hexString: "3FF0000000000000",
+			want:      big.NewFloat(4607182418800017408),
+			wantErr:   false,
+		},
+		{
+			name:      "Invalid hexadecimal string",
+			hexString: "0xInvalid",
+			want:      big.NewFloat(0),
+			wantErr:   true,
+		},
+		{
+			name:      "Large Hex String",
+			hexString: "0xFFFFFFFFFFFFFFFF",
+			want:      big.NewFloat(18446744073709551615),
+			wantErr:   false,
+		},
+		{
+			name:      "No Prefix Hex String",
+			hexString: "1a",
+			want:      big.NewFloat(26),
+			wantErr:   false,
+		},
+		{
+			name:      "Empty hexadecimal string",
+			hexString: "",
+			want:      big.NewFloat(0),
+			wantErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ConvertHexToBigFloat(tt.hexString)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ConvertHexToBigFloat() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ConvertHexToBigFloat() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHandleHexArray(t *testing.T) {
 	type args struct {
-		num        interface{}
+		hexStr     string
 		returnType string
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    interface{}
+		want    *big.Float
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When there is a valid hex value",
+			name: "Test 1: Valid token price input",
 			args: args{
-				num:        "0x0000000000000000000000000000000000000000000000000000000061a55c2e",
-				returnType: "hex",
+				hexStr:     "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000012aee97c8ee4b8",
+				returnType: "hexArray[1]",
 			},
-			want: 1638226990,
+			want:    big.NewFloat(0.00525886742),
+			wantErr: false,
 		},
 		{
-			name: "Test 2: When the hex value is invalid",
+			name: "Test 2: Valid another token price input",
 			args: args{
-				num:        "0xZZ",
-				returnType: "hex",
+				hexStr:     "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000ba121",
+				returnType: "hexArray[1]",
 			},
+			want:    big.NewFloat(0.000000000000762145),
+			wantErr: false,
+		},
+		{
+			name: "Test 3: Invalid hex string",
+			args: args{
+				hexStr:     "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002",
+				returnType: "hexArray[1]",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test 4: Invalid return type to extract index",
+			args: args{
+				hexStr:     "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000012aee97c8ee4b8",
+				returnType: "hexArray[1a]",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When decoded value of data is 0, wei to eth conversion will throw error",
+			args: args{
+				hexStr:     "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
+				returnType: "hexArray[0]",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+		{
+			name: "Test 6: When extracted index is out of bounds",
+			args: args{
+				hexStr:     "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000",
+				returnType: "hexArray[1]",
+			},
+			want:    big.NewFloat(0),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := HandleHexArray(tt.args.hexStr, tt.args.returnType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("HandleHexArray() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// Use a small tolerance for comparison
+			tolerance := big.NewFloat(1e-10).SetPrec(1024)
+
+			diff := new(big.Float).Sub(got, tt.want)
+			diff.Abs(diff)
+
+			// Check if the difference is greater than or equal to tolerance
+			if diff.Cmp(tolerance) >= 0 {
+				t.Errorf("HandleHexArray() got = %v, want %v, difference = %v", got, tt.want, diff)
+			}
+		})
+	}
+}
+
+func Test_decodeHexString(t *testing.T) {
+	type args struct {
+		hexStr string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []*big.Int
+		wantErr bool
+	}{
+		{
+			name: "Valid hex string which is a result from uniswap v2 datasource",
+			args: args{hexStr: "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000012aee97c8ee4b8"},
+			want: []*big.Int{
+				big.NewInt(1000000000000000000),
+				big.NewInt(5258867421144248),
+			},
+			wantErr: false,
+		},
+		{
+			name:    "Valid single element",
+			args:    args{hexStr: "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001"},
+			want:    []*big.Int{big.NewInt(1)},
+			wantErr: false,
+		},
+		{
+			name:    "Valid hex string is provided but length of array doesnt match",
+			args:    args{hexStr: "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000de0b6b3a7640000"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid hex string",
+			args:    args{hexStr: "0x12345"},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid length field",
+			args:    args{hexStr: "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000Z"},
 			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ManageReturnType(tt.args.num, tt.args.returnType)
+			got, err := decodeHexString(tt.args.hexStr)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ManageReturnType() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("decodeHexString() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ManageReturnType() got = %v, want %v", got, tt.want)
+				t.Errorf("decodeHexString() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_extractIndex(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name:    "Valid input with index 1",
+			args:    args{s: "hexArray[1]"},
+			want:    1,
+			wantErr: false,
+		},
+		{
+			name:    "Valid input with index 123",
+			args:    args{s: "hexArray[123]"},
+			want:    123,
+			wantErr: false,
+		},
+		{
+			name:    "Invalid input - missing brackets",
+			args:    args{s: "hexArray1"},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid input - non-numeric index",
+			args:    args{s: "hexArray[abc]"},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid input - negative index",
+			args:    args{s: "hexArray[-1]"},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid input - empty string",
+			args:    args{s: ""},
+			want:    0,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := extractIndex(tt.args.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("extractIndex() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("extractIndex() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_isHexArrayPattern(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "Valid pattern with index 0",
+			args: args{s: "hexArray[0]"},
+			want: true,
+		},
+		{
+			name: "Valid pattern with index 123",
+			args: args{s: "hexArray[123]"},
+			want: true,
+		},
+		{
+			name: "Invalid pattern - missing brackets",
+			args: args{s: "hexArray1"},
+			want: false,
+		},
+		{
+			name: "Invalid pattern - non-numeric index",
+			args: args{s: "hexArray[abc]"},
+			want: false,
+		},
+		{
+			name: "Invalid pattern - negative index",
+			args: args{s: "hexArray[-1]"},
+			want: false,
+		},
+		{
+			name: "Invalid pattern - empty string",
+			args: args{s: ""},
+			want: false,
+		},
+		{
+			name: "Invalid pattern - extra characters",
+			args: args{s: "hexArray[10]abc"},
+			want: false,
+		},
+		// Additional test cases can be added here.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isHexArrayPattern(tt.args.s); got != tt.want {
+				t.Errorf("isHexArrayPattern() = %v, want %v", got, tt.want)
 			}
 		})
 	}
