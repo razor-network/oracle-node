@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -27,65 +27,76 @@ Example:
 	},
 }
 
-//This function returns the error if there is any and sets the config
+// This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, types.Configurations{})
-	provider, err := flagSetUtils.GetStringProvider(flagSet)
-	if err != nil {
-		return err
+
+	flagDetails := []types.FlagDetail{
+		{Name: "provider", Type: "string"},
+		{Name: "alternateProvider", Type: "string"},
+		{Name: "gasmultiplier", Type: "float32"},
+		{Name: "buffer", Type: "int32"},
+		{Name: "wait", Type: "int32"},
+		{Name: "gasprice", Type: "int32"},
+		{Name: "logLevel", Type: "string"},
+		{Name: "gasLimitOverride", Type: "uint64"},
+		{Name: "gasLimit", Type: "float32"},
+		{Name: "rpcTimeout", Type: "int64"},
+		{Name: "httpTimeout", Type: "int64"},
+		{Name: "logFileMaxSize", Type: "int"},
+		{Name: "logFileMaxBackups", Type: "int"},
+		{Name: "logFileMaxAge", Type: "int"},
 	}
-	alternateProvider, err := flagSetUtils.GetStringAlternateProvider(flagSet)
-	if err != nil {
-		return err
+
+	// Storing the fetched flag values in a map
+	flagValues := make(map[string]interface{})
+	for _, flagDetail := range flagDetails {
+		flagValue, err := flagSetUtils.FetchFlagInput(flagSet, flagDetail.Name, flagDetail.Type)
+		if err != nil {
+			log.Errorf("Error in fetching value for flag %v: %v", flagDetail.Name, err)
+			return err
+		}
+		flagValues[flagDetail.Name] = flagValue
 	}
-	gasMultiplier, err := flagSetUtils.GetFloat32GasMultiplier(flagSet)
-	if err != nil {
-		return err
+
+	configDetails := []types.ConfigDetail{
+		{FlagName: "provider", Key: "provider", DefaultValue: ""},
+		{FlagName: "alternateProvider", Key: "alternateProvider", DefaultValue: ""},
+		{FlagName: "gasmultiplier", Key: "gasmultiplier", DefaultValue: core.DefaultGasMultiplier},
+		{FlagName: "buffer", Key: "buffer", DefaultValue: core.DefaultBufferPercent},
+		{FlagName: "wait", Key: "wait", DefaultValue: core.DefaultWaitTime},
+		{FlagName: "gasprice", Key: "gasprice", DefaultValue: core.DefaultGasPrice},
+		{FlagName: "logLevel", Key: "logLevel", DefaultValue: core.DefaultLogLevel},
+		{FlagName: "gasLimitOverride", Key: "gasLimitOverride", DefaultValue: core.DefaultGasLimitOverride},
+		{FlagName: "gasLimit", Key: "gasLimit", DefaultValue: core.DefaultGasLimit},
+		{FlagName: "rpcTimeout", Key: "rpcTimeout", DefaultValue: core.DefaultRPCTimeout},
+		{FlagName: "httpTimeout", Key: "httpTimeout", DefaultValue: core.DefaultHTTPTimeout},
+		{FlagName: "logFileMaxSize", Key: "logFileMaxSize", DefaultValue: core.DefaultLogFileMaxSize},
+		{FlagName: "logFileMaxBackups", Key: "logFileMaxBackups", DefaultValue: core.DefaultLogFileMaxBackups},
+		{FlagName: "logFileMaxAge", Key: "logFileMaxAge", DefaultValue: core.DefaultLogFileMaxAge},
 	}
-	bufferPercent, err := flagSetUtils.GetInt32Buffer(flagSet)
-	if err != nil {
-		return err
+
+	var areConfigSet bool
+
+	// Setting the respective config values in config file only if the flag was set with a value in `setConfig` command
+	for _, configDetail := range configDetails {
+		if flagValue, exists := flagValues[configDetail.FlagName]; exists {
+			// Check if the flag was set with a value in `setConfig` command
+			if flagSet.Changed(configDetail.FlagName) {
+				viper.Set(configDetail.Key, flagValue)
+				areConfigSet = true
+			}
+		}
 	}
-	waitTime, err := flagSetUtils.GetInt32Wait(flagSet)
-	if err != nil {
-		return err
-	}
-	gasPrice, err := flagSetUtils.GetInt32GasPrice(flagSet)
-	if err != nil {
-		return err
-	}
-	logLevel, err := flagSetUtils.GetStringLogLevel(flagSet)
-	if err != nil {
-		return err
-	}
-	gasLimitOverride, err := flagSetUtils.GetUint64GasLimitOverride(flagSet)
-	if err != nil {
-		return err
-	}
-	gasLimit, err := flagSetUtils.GetFloat32GasLimit(flagSet)
-	if err != nil {
-		return err
-	}
-	rpcTimeout, rpcTimeoutErr := flagSetUtils.GetInt64RPCTimeout(flagSet)
-	if rpcTimeoutErr != nil {
-		return rpcTimeoutErr
-	}
-	httpTimeout, httpTimeoutErr := flagSetUtils.GetInt64HTTPTimeout(flagSet)
-	if httpTimeoutErr != nil {
-		return httpTimeoutErr
-	}
-	logFileMaxSize, err := flagSetUtils.GetIntLogFileMaxSize(flagSet)
-	if err != nil {
-		return err
-	}
-	logFileMaxBackups, err := flagSetUtils.GetIntLogFileMaxBackups(flagSet)
-	if err != nil {
-		return err
-	}
-	logFileMaxAge, err := flagSetUtils.GetIntLogFileMaxAge(flagSet)
-	if err != nil {
-		return err
+
+	// If no config parameter was set than all the config parameters will be set to default config values
+	if !areConfigSet {
+		log.Info("No value is set to any flag in `setConfig` command")
+		log.Info("Setting the config values to default. Use `setConfig` again to modify the values.")
+		for _, configDetail := range configDetails {
+			viper.Set(configDetail.Key, configDetail.DefaultValue)
+		}
 	}
 
 	path, pathErr := pathUtils.GetConfigFilePath()
@@ -95,90 +106,24 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	}
 
 	if razorUtils.IsFlagPassed("exposeMetrics") {
-		port, err := flagSetUtils.GetStringExposeMetrics(flagSet)
+		port, err := flagSetUtils.FetchFlagInput(flagSet, "exposeMetrics", "string")
 		if err != nil {
 			return err
 		}
-
-		certKey, err := flagSetUtils.GetStringCertKey(flagSet)
+		certKey, err := flagSetUtils.FetchFlagInput(flagSet, "certKey", "string")
 		if err != nil {
 			return err
 		}
-		certFile, err := flagSetUtils.GetStringCertFile(flagSet)
+		certFile, err := flagSetUtils.FetchFlagInput(flagSet, "certFile", "string")
 		if err != nil {
 			return err
 		}
 		viper.Set("exposeMetricsPort", port)
 
-		configErr := viperUtils.ViperWriteConfigAs(path)
-		if configErr != nil {
-			log.Error("Error in writing config")
-			return configErr
-		}
-
-		err = metrics.Run(port, certFile, certKey)
+		err = metrics.Run(port.(string), certFile.(string), certKey.(string))
 		if err != nil {
 			log.Error("Failed to start metrics http server: ", err)
 		}
-	}
-	if provider != "" {
-		viper.Set("provider", provider)
-	}
-	if alternateProvider != "" {
-		viper.Set("alternateProvider", alternateProvider)
-	}
-	if gasMultiplier != -1 {
-		viper.Set("gasmultiplier", gasMultiplier)
-	}
-	if bufferPercent != 0 {
-		viper.Set("buffer", bufferPercent)
-	}
-	if waitTime != -1 {
-		viper.Set("wait", waitTime)
-	}
-	if gasPrice != -1 {
-		viper.Set("gasprice", gasPrice)
-	}
-	if logLevel != "" {
-		viper.Set("logLevel", logLevel)
-	}
-	if gasLimit != -1 {
-		viper.Set("gasLimit", gasLimit)
-	}
-	if gasLimitOverride != 0 {
-		viper.Set("gasLimitOverride", gasLimitOverride)
-	}
-	if rpcTimeout != 0 {
-		viper.Set("rpcTimeout", rpcTimeout)
-	}
-	if httpTimeout != 0 {
-		viper.Set("httpTimeout", httpTimeout)
-	}
-	if logFileMaxSize != 0 {
-		viper.Set("logFileMaxSize", logFileMaxSize)
-	}
-	if logFileMaxBackups != 0 {
-		viper.Set("logFileMaxBackups", logFileMaxBackups)
-	}
-	if logFileMaxAge != 0 {
-		viper.Set("logFileMaxAge", logFileMaxAge)
-	}
-	if provider == "" && alternateProvider == "" && gasMultiplier == -1 && bufferPercent == 0 && waitTime == -1 && gasPrice == -1 && logLevel == "" && gasLimit == -1 && gasLimitOverride == 0 && rpcTimeout == 0 && httpTimeout == 0 && logFileMaxSize == 0 && logFileMaxBackups == 0 && logFileMaxAge == 0 {
-		viper.Set("provider", "")
-		viper.Set("alternateProvider", "")
-		viper.Set("gasmultiplier", core.DefaultGasMultiplier)
-		viper.Set("buffer", core.DefaultBufferPercent)
-		viper.Set("wait", core.DefaultWaitTime)
-		viper.Set("gasprice", core.DefaultGasPrice)
-		viper.Set("logLevel", core.DefaultLogLevel)
-		viper.Set("gasLimit", core.DefaultGasLimit)
-		viper.Set("gasLimitOverride", core.DefaultGasLimitOverride)
-		viper.Set("rpcTimeout", core.DefaultRPCTimeout)
-		viper.Set("httpTimeout", core.DefaultHTTPTimeout)
-		viper.Set("logFileMaxSize", core.DefaultLogFileMaxSize)
-		viper.Set("logFileMaxBackups", core.DefaultLogFileMaxBackups)
-		viper.Set("logFileMaxAge", core.DefaultLogFileMaxAge)
-		log.Info("Config values set to default. Use setConfig to modify the values.")
 	}
 
 	configErr := viperUtils.ViperWriteConfigAs(path)
@@ -215,7 +160,7 @@ func init() {
 	setConfig.Flags().StringVarP(&AlternateProvider, "alternateProvider", "", "", "alternate provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
-	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time (in secs)")
+	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", 0, "wait time (in secs)")
 	setConfig.Flags().Int32VarP(&GasPrice, "gasprice", "", -1, "custom gas price")
 	setConfig.Flags().StringVarP(&LogLevel, "logLevel", "", "", "log level")
 	setConfig.Flags().Float32VarP(&GasLimitMultiplier, "gasLimit", "", -1, "gas limit percentage increase")
