@@ -83,7 +83,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	for _, configDetail := range configDetails {
 		if flagValue, exists := flagValues[configDetail.FlagName]; exists {
 			// Check if the flag was set with a value in `setConfig` command
-			if flagSet.Changed(configDetail.FlagName) {
+			if flagSetUtils.Changed(flagSet, configDetail.FlagName) {
 				viper.Set(configDetail.Key, flagValue)
 				areConfigSet = true
 			}
@@ -92,11 +92,7 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 
 	// If no config parameter was set than all the config parameters will be set to default config values
 	if !areConfigSet {
-		log.Info("No value is set to any flag in `setConfig` command")
-		log.Info("Setting the config values to default. Use `setConfig` again to modify the values.")
-		for _, configDetail := range configDetails {
-			viper.Set(configDetail.Key, configDetail.DefaultValue)
-		}
+		setDefaultConfigValues(configDetails)
 	}
 
 	path, pathErr := pathUtils.GetConfigFilePath()
@@ -106,30 +102,47 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 	}
 
 	if razorUtils.IsFlagPassed("exposeMetrics") {
-		port, err := flagSetUtils.FetchFlagInput(flagSet, "exposeMetrics", "string")
-		if err != nil {
-			return err
-		}
-		certKey, err := flagSetUtils.FetchFlagInput(flagSet, "certKey", "string")
-		if err != nil {
-			return err
-		}
-		certFile, err := flagSetUtils.FetchFlagInput(flagSet, "certFile", "string")
-		if err != nil {
-			return err
-		}
-		viper.Set("exposeMetricsPort", port)
-
-		err = metrics.Run(port.(string), certFile.(string), certKey.(string))
-		if err != nil {
-			log.Error("Failed to start metrics http server: ", err)
+		metricsErr := handleMetrics(flagSet)
+		if metricsErr != nil {
+			log.Error("Error in handling metrics: ", metricsErr)
+			return metricsErr
 		}
 	}
 
 	configErr := viperUtils.ViperWriteConfigAs(path)
 	if configErr != nil {
-		log.Error("Error in writing config")
+		log.Error("Error in writing config: ", configErr)
 		return configErr
+	}
+	return nil
+}
+
+func setDefaultConfigValues(configDetails []types.ConfigDetail) {
+	log.Info("No value is set to any flag in `setConfig` command")
+	log.Info("Setting the config values to default. Use `setConfig` again to modify the values.")
+	for _, configDetail := range configDetails {
+		viper.Set(configDetail.Key, configDetail.DefaultValue)
+	}
+}
+
+func handleMetrics(flagSet *pflag.FlagSet) error {
+	port, err := flagSetUtils.FetchFlagInput(flagSet, "exposeMetrics", "string")
+	if err != nil {
+		return err
+	}
+	certKey, err := flagSetUtils.FetchFlagInput(flagSet, "certKey", "string")
+	if err != nil {
+		return err
+	}
+	certFile, err := flagSetUtils.FetchFlagInput(flagSet, "certFile", "string")
+	if err != nil {
+		return err
+	}
+	viper.Set("exposeMetricsPort", port)
+
+	err = metrics.Run(port.(string), certFile.(string), certKey.(string))
+	if err != nil {
+		log.Error("Failed to start metrics http server: ", err)
 	}
 	return nil
 }
