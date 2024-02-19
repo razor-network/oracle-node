@@ -12,14 +12,13 @@ func TestSetConfig(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
 	type args struct {
-		flagInput                    string
-		flagInputErr                 error
-		isFlagPassed                 bool
-		path                         string
-		pathErr                      error
-		isExposeMetricsFlagPassed    bool
-		isExposeMetricsFlagPassedErr error
-		configErr                    error
+		flagInput                 string
+		flagInputErr              error
+		isFlagPassed              bool
+		path                      string
+		pathErr                   error
+		isExposeMetricsFlagPassed bool
+		configErr                 error
 	}
 	tests := []struct {
 		name    string
