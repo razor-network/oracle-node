@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func initAssetCache(client *ethclient.Client) error {
+func (*UtilsStruct) InitAssetCache(client *ethclient.Client) error {
 	log.Info("INITIALIZING JOBS AND COLLECTIONS CACHE...")
 	if err := utils.InitJobsCache(client); err != nil {
 		log.Error("Error in initializing jobs cache: ", err)

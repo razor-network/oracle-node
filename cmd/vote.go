@@ -90,7 +90,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	cmdUtils.HandleExit()
 
-	err = initAssetCache(client)
+	err = cmdUtils.InitAssetCache(client)
 	utils.CheckError("Error in initializing asset cache: ", err)
 
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
