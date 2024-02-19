@@ -165,7 +165,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		return nil, err
 	}
 	if _, err := path.OSUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
-		log.Debug("Fetching the jobs from assets.json file...")
+		log.Debugf("assets.json file is present, checking jobs for collection Id: %v...", collection.Id)
 		jsonFile, err := path.OSUtilsInterface.Open(assetsFilePath)
 		if err != nil {
 			return nil, err
@@ -191,13 +191,12 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		// Also adding custom jobs to jobs array
 		customJobs := GetCustomJobsFromJSONFile(collection.Name, dataString)
 		if len(customJobs) != 0 {
-			log.Debugf("Got Custom Jobs from asset.json file: %+v", customJobs)
+			log.Debugf("Got Custom Jobs from asset.json file for collectionId %v: %+v", collection.Id, customJobs)
 		}
 		jobs = append(jobs, customJobs...)
 	}
 
 	for _, id := range collection.JobIDs {
-
 		// Ignoring the Jobs which are already overriden and added to jobs array
 		if !Contains(overriddenJobIds, id) {
 			job, isPresent := cache.GetJobFromCache(id)
