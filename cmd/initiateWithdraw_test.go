@@ -19,9 +19,6 @@ import (
 )
 
 func TestHandleUnstakeLock(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	var client *ethclient.Client
 	var account types.Account
 	var configurations types.Configurations
@@ -34,7 +31,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 		lockErr                  error
 		withdrawReleasePeriod    uint16
 		withdrawReleasePeriodErr error
-		txnOpts                  *bind.TransactOpts
 		epoch                    uint32
 		epochErr                 error
 		time                     string
@@ -54,7 +50,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 5,
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
 			},
@@ -68,7 +63,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 5,
 				stateErr:              errors.New("error in getting state"),
 			},
@@ -80,7 +74,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 			args: args{
 				lockErr:               errors.New("lock error"),
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 5,
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
 			},
@@ -94,7 +87,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(0),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 5,
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
 			},
@@ -108,7 +100,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriodErr: errors.New("withdrawReleasePeriod error"),
-				txnOpts:                  txnOpts,
 				epoch:                    5,
 				withdrawHash:             common.BigToHash(big.NewInt(1)),
 			},
@@ -122,7 +113,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epochErr:              errors.New("epoch error"),
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
 			},
@@ -136,7 +126,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 9,
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
 			},
@@ -150,7 +139,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 3,
 				time:                  "10 minutes 0 seconds ",
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
@@ -165,7 +153,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 1,
-				txnOpts:               txnOpts,
 				epoch:                 5,
 				withdrawErr:           errors.New("withdraw error"),
 			},
@@ -179,7 +166,6 @@ func TestHandleUnstakeLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				withdrawReleasePeriod: 4,
-				txnOpts:               txnOpts,
 				epoch:                 2,
 				time:                  "20 minutes 0 seconds ",
 				withdrawHash:          common.BigToHash(big.NewInt(1)),
@@ -196,7 +182,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetWithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 

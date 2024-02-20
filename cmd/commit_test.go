@@ -1,15 +1,11 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 	"math/big"
@@ -29,14 +25,11 @@ func TestCommit(t *testing.T) {
 		seed    []byte
 		epoch   uint32
 	)
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {
 		values    []*big.Int
 		state     int64
 		stateErr  error
-		txnOpts   *bind.TransactOpts
 		commitTxn *Types.Transaction
 		commitErr error
 		hash      common.Hash
@@ -53,7 +46,6 @@ func TestCommit(t *testing.T) {
 				values:    []*big.Int{big.NewInt(1)},
 				state:     0,
 				stateErr:  nil,
-				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
 				commitErr: nil,
 				hash:      common.BigToHash(big.NewInt(1)),
@@ -66,7 +58,6 @@ func TestCommit(t *testing.T) {
 			args: args{
 				values:    []*big.Int{big.NewInt(1)},
 				stateErr:  errors.New("state error"),
-				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
 				commitErr: nil,
 				hash:      common.BigToHash(big.NewInt(1)),
@@ -80,7 +71,6 @@ func TestCommit(t *testing.T) {
 				values:    []*big.Int{big.NewInt(1)},
 				state:     0,
 				stateErr:  nil,
-				txnOpts:   txnOpts,
 				commitTxn: &Types.Transaction{},
 				commitErr: errors.New("commit error"),
 				hash:      common.BigToHash(big.NewInt(1)),
@@ -105,7 +95,7 @@ func TestCommit(t *testing.T) {
 			merkleUtils = utils.MerkleInterface
 
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			voteManagerMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 

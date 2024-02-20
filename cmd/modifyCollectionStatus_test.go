@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -81,10 +78,6 @@ func TestCheckCurrentStatus(t *testing.T) {
 }
 
 func TestModifyAssetStatus(t *testing.T) {
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
-
 	var config types.Configurations
 	var client *ethclient.Client
 
@@ -94,7 +87,6 @@ func TestModifyAssetStatus(t *testing.T) {
 		currentStatusErr    error
 		epoch               uint32
 		epochErr            error
-		txnOpts             *bind.TransactOpts
 		SetCollectionStatus *Types.Transaction
 		SetAssetStatusErr   error
 		hash                common.Hash
@@ -110,7 +102,6 @@ func TestModifyAssetStatus(t *testing.T) {
 			args: args{
 				status:              true,
 				currentStatus:       false,
-				txnOpts:             txnOpts,
 				SetCollectionStatus: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -122,7 +113,6 @@ func TestModifyAssetStatus(t *testing.T) {
 			args: args{
 				status:              true,
 				currentStatusErr:    errors.New("current status error"),
-				txnOpts:             txnOpts,
 				SetCollectionStatus: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -134,7 +124,6 @@ func TestModifyAssetStatus(t *testing.T) {
 			args: args{
 				status:              true,
 				currentStatus:       true,
-				txnOpts:             txnOpts,
 				SetCollectionStatus: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
 			},
@@ -146,7 +135,6 @@ func TestModifyAssetStatus(t *testing.T) {
 			args: args{
 				status:            true,
 				currentStatus:     false,
-				txnOpts:           txnOpts,
 				SetAssetStatusErr: errors.New("SetAssetStatus error"),
 				hash:              common.BigToHash(big.NewInt(1)),
 			},
@@ -158,7 +146,6 @@ func TestModifyAssetStatus(t *testing.T) {
 			args: args{
 				status:              true,
 				currentStatus:       false,
-				txnOpts:             txnOpts,
 				epochErr:            errors.New("WaitForAppropriateState error"),
 				SetCollectionStatus: &Types.Transaction{},
 				SetAssetStatusErr:   nil,
@@ -173,7 +160,7 @@ func TestModifyAssetStatus(t *testing.T) {
 			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("CheckCurrentStatus", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.currentStatus, tt.args.currentStatusErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			assetManagerMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)

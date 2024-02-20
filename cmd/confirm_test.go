@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core"
@@ -12,16 +9,12 @@ import (
 	"razor/pkg/bindings"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 )
 
 func TestClaimBlockReward(t *testing.T) {
 	var options types.TransactionOptions
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {
 		epoch                     uint32
@@ -32,7 +25,6 @@ func TestClaimBlockReward(t *testing.T) {
 		sortedProposedBlockIdsErr error
 		selectedBlock             bindings.StructsBlock
 		selectedBlockErr          error
-		txnOpts                   *bind.TransactOpts
 		ClaimBlockRewardTxn       *Types.Transaction
 		ClaimBlockRewardErr       error
 		hash                      common.Hash
@@ -50,7 +42,6 @@ func TestClaimBlockReward(t *testing.T) {
 				stakerId:               2,
 				sortedProposedBlockIds: []uint32{2, 1, 3},
 				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
-				txnOpts:                txnOpts,
 				ClaimBlockRewardTxn:    &Types.Transaction{},
 				ClaimBlockRewardErr:    nil,
 				hash:                   common.BigToHash(big.NewInt(1)),
@@ -65,7 +56,6 @@ func TestClaimBlockReward(t *testing.T) {
 				stakerId:               2,
 				sortedProposedBlockIds: []uint32{2, 1, 3},
 				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
-				txnOpts:                txnOpts,
 				ClaimBlockRewardTxn:    &Types.Transaction{},
 				ClaimBlockRewardErr:    errors.New("claimBlockReward error"),
 				hash:                   common.BigToHash(big.NewInt(1)),
@@ -119,7 +109,6 @@ func TestClaimBlockReward(t *testing.T) {
 				stakerId:               3,
 				sortedProposedBlockIds: []uint32{2, 1, 3},
 				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
-				txnOpts:                txnOpts,
 				ClaimBlockRewardTxn:    &Types.Transaction{},
 				ClaimBlockRewardErr:    nil,
 				hash:                   common.BigToHash(big.NewInt(1)),
@@ -144,7 +133,7 @@ func TestClaimBlockReward(t *testing.T) {
 			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.selectedBlock, tt.args.selectedBlockErr)
-			utilsMock.On("GetTxnOpts", options).Return(tt.args.txnOpts)
+			utilsMock.On("GetTxnOpts", options).Return(TxnOpts)
 			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 

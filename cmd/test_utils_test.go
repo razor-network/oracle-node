@@ -175,4 +175,4 @@ func SetUpMockInterfaces() {
 }
 
 var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000))
+var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000)) // Used any random big int for chain ID

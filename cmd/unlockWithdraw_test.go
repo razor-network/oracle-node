@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -115,9 +112,6 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 }
 
 func TestHandleWithdrawLock(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	var (
 		client         *ethclient.Client
 		account        types.Account
@@ -130,7 +124,6 @@ func TestHandleWithdrawLock(t *testing.T) {
 		withdrawLockErr   error
 		epoch             uint32
 		epochErr          error
-		txnOpts           *bind.TransactOpts
 		unlockWithdraw    common.Hash
 		unlockWithdrawErr error
 		time              string
@@ -148,7 +141,6 @@ func TestHandleWithdrawLock(t *testing.T) {
 					UnlockAfter: big.NewInt(4),
 				},
 				epoch:          5,
-				txnOpts:        txnOpts,
 				unlockWithdraw: common.BigToHash(big.NewInt(1)),
 			},
 			want:    common.BigToHash(big.NewInt(1)),
@@ -203,7 +195,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 
 			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.withdrawLock, tt.args.withdrawLockErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			cmdUtilsMock.On("UnlockWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unlockWithdraw, tt.args.unlockWithdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			ut := &UtilsStruct{}
