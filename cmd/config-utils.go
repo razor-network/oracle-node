@@ -185,29 +185,77 @@ func (*UtilsStruct) GetAlternateProvider() (string, error) {
 
 //This function returns the multiplier
 func (*UtilsStruct) GetMultiplier() (float32, error) {
+	const (
+		MinMultiplier = 1.0 // Minimum multiplier value
+		MaxMultiplier = 3.0 // Maximum multiplier value
+	)
+
 	gasMultiplier, err := getConfigValue("gasmultiplier", "float32", core.DefaultGasMultiplier, "gasmultiplier")
 	if err != nil {
 		return core.DefaultGasMultiplier, err
 	}
-	return gasMultiplier.(float32), nil
+
+	multiplierFloat32 := gasMultiplier.(float32)
+
+	// Validate multiplier range
+	if multiplierFloat32 <= MinMultiplier || multiplierFloat32 >= MaxMultiplier {
+		log.Infof("GasMultiplier %.2f is out of the valid range (%.1f-%.1f), using default value %.2f", multiplierFloat32, MinMultiplier, MaxMultiplier, core.DefaultGasMultiplier)
+		return core.DefaultGasMultiplier, nil
+	}
+
+	return multiplierFloat32, nil
 }
 
 //This function returns the buffer percent
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
+	const (
+		MinBufferPercent = 10
+		MaxBufferPercent = 30
+	)
+
 	bufferPercent, err := getConfigValue("buffer", "int32", core.DefaultBufferPercent, "buffer")
 	if err != nil {
 		return core.DefaultBufferPercent, err
 	}
-	return bufferPercent.(int32), nil
+
+	bufferPercentInt32 := bufferPercent.(int32)
+
+	// Check if bufferPercent is explicitly set and not within the valid range.
+	if bufferPercentInt32 <= MinBufferPercent || bufferPercentInt32 >= MaxBufferPercent {
+		log.Infof("BufferPercent %d is out of the valid range (%d-%d), using default value %d", bufferPercentInt32, MinBufferPercent, MaxBufferPercent, core.DefaultBufferPercent)
+		return core.DefaultBufferPercent, nil
+	}
+
+	// If bufferPercent is 0, use the default value.
+	if bufferPercentInt32 == 0 {
+		log.Debugf("BufferPercent is unset, using default value %d", core.DefaultBufferPercent)
+		return core.DefaultBufferPercent, nil
+	}
+
+	return bufferPercentInt32, nil
 }
 
 //This function returns the wait time
 func (*UtilsStruct) GetWaitTime() (int32, error) {
+	const (
+		MinWaitTime = 1  // Minimum wait time in seconds
+		MaxWaitTime = 30 // Maximum wait time in seconds
+	)
+
 	waitTime, err := getConfigValue("wait", "int32", core.DefaultWaitTime, "wait")
 	if err != nil {
 		return core.DefaultWaitTime, err
 	}
-	return waitTime.(int32), nil
+
+	waitTimeInt32 := waitTime.(int32)
+
+	// Validate waitTime range
+	if waitTimeInt32 <= MinWaitTime || waitTimeInt32 >= MaxWaitTime {
+		log.Infof("WaitTime %d is out of the valid range (%d-%d), using default value %d", waitTimeInt32, MinWaitTime, MaxWaitTime, core.DefaultWaitTime)
+		return core.DefaultWaitTime, nil
+	}
+
+	return waitTimeInt32, nil
 }
 
 //This function returns the gas price
@@ -216,7 +264,16 @@ func (*UtilsStruct) GetGasPrice() (int32, error) {
 	if err != nil {
 		return core.DefaultGasPrice, err
 	}
-	return gasPrice.(int32), nil
+
+	gasPriceInt32 := gasPrice.(int32)
+
+	// Validate gasPrice value
+	if gasPriceInt32 != 0 && gasPriceInt32 != 1 {
+		log.Infof("GasPrice %d is invalid, using default value %d", gasPriceInt32, core.DefaultGasPrice)
+		return core.DefaultGasPrice, nil
+	}
+
+	return gasPriceInt32, nil
 }
 
 //This function returns the log level
@@ -230,37 +287,93 @@ func (*UtilsStruct) GetLogLevel() (string, error) {
 
 //This function returns the gas limit
 func (*UtilsStruct) GetGasLimit() (float32, error) {
+	//gasLimit in the config acts as a gasLimit multiplier
+	const (
+		MinGasLimit = 1.0 // Minimum gas limit
+		MaxGasLimit = 3.0 // Maximum gas limit
+	)
+
 	gasLimit, err := getConfigValue("gasLimit", "float32", core.DefaultGasLimit, "gasLimit")
 	if err != nil {
 		return core.DefaultGasLimit, err
 	}
-	return gasLimit.(float32), nil
+
+	gasLimitFloat32 := gasLimit.(float32)
+
+	// Validate gasLimit range
+	if gasLimitFloat32 <= MinGasLimit || gasLimitFloat32 >= MaxGasLimit {
+		log.Warnf("GasLimit %.2f is out of the suggested range (%.1f-%.1f), using default value %.2f", gasLimitFloat32, MinGasLimit, MaxGasLimit, core.DefaultGasLimit)
+	}
+
+	return gasLimitFloat32, nil
 }
 
 //This function returns the gas limit to override
 func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
+	const (
+		MinGasLimitOverride = 10000000 // Minimum gas limit override
+		MaxGasLimitOverride = 50000000 // Maximum gas limit override
+	)
+
 	gasLimitOverride, err := getConfigValue("gasLimitOverride", "uint64", core.DefaultGasLimitOverride, "gasLimitOverride")
 	if err != nil {
 		return core.DefaultGasLimitOverride, err
 	}
-	return gasLimitOverride.(uint64), nil
+
+	gasLimitOverrideUint64 := gasLimitOverride.(uint64)
+
+	// Validate gasLimitOverride range
+	if gasLimitOverrideUint64 <= MinGasLimitOverride || gasLimitOverrideUint64 >= MaxGasLimitOverride {
+		log.Infof("GasLimitOverride %d is out of the valid range (%d-%d), using default value %d", gasLimitOverrideUint64, MinGasLimitOverride, MaxGasLimitOverride, core.DefaultGasLimitOverride)
+		return core.DefaultGasLimitOverride, nil
+	}
+
+	return gasLimitOverrideUint64, nil
 }
 
 //This function returns the RPC timeout
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
+	const (
+		MinRPCTimeout = 10 // Minimum RPC timeout in seconds
+		MaxRPCTimeout = 60 // Maximum RPC timeout in seconds
+	)
+
 	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")
 	if err != nil {
 		return core.DefaultRPCTimeout, err
 	}
-	return rpcTimeout.(int64), nil
+
+	rpcTimeoutInt64 := rpcTimeout.(int64)
+
+	// Validate rpcTimeout range
+	if rpcTimeoutInt64 < MinRPCTimeout || rpcTimeoutInt64 > MaxRPCTimeout {
+		log.Infof("RPCTimeout %d is out of the valid range (%d-%d), using default value %d", rpcTimeoutInt64, MinRPCTimeout, MaxRPCTimeout, core.DefaultRPCTimeout)
+		return core.DefaultRPCTimeout, nil
+	}
+
+	return rpcTimeoutInt64, nil
 }
 
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
+	const (
+		MinHTTPTimeout = 10 // Minimum HTTP timeout in seconds
+		MaxHTTPTimeout = 60 // Maximum HTTP timeout in seconds
+	)
+
 	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")
 	if err != nil {
 		return core.DefaultHTTPTimeout, err
 	}
-	return httpTimeout.(int64), nil
+
+	httpTimeoutInt64 := httpTimeout.(int64)
+
+	// Validate httpTimeout range
+	if httpTimeoutInt64 < MinHTTPTimeout || httpTimeoutInt64 > MaxHTTPTimeout {
+		log.Infof("HTTPTimeout %d is out of the valid range (%d-%d), using default value %d", httpTimeoutInt64, MinHTTPTimeout, MaxHTTPTimeout, core.DefaultHTTPTimeout)
+		return core.DefaultHTTPTimeout, nil
+	}
+
+	return httpTimeoutInt64, nil
 }
 
 func (*UtilsStruct) GetLogFileMaxSize() (int, error) {
