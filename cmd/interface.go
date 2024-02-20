@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -110,32 +110,10 @@ type AssetManagerInterface interface {
 }
 
 type FlagSetInterface interface {
-	GetStringProvider(flagSet *pflag.FlagSet) (string, error)
-	GetStringAlternateProvider(flagSet *pflag.FlagSet) (string, error)
-	GetFloat32GasMultiplier(flagSet *pflag.FlagSet) (float32, error)
-	GetInt32Buffer(flagSet *pflag.FlagSet) (int32, error)
-	GetInt32Wait(flagSet *pflag.FlagSet) (int32, error)
-	GetInt32GasPrice(flagSet *pflag.FlagSet) (int32, error)
-	GetFloat32GasLimit(flagSet *pflag.FlagSet) (float32, error)
-	GetUint64GasLimitOverride(flagSet *pflag.FlagSet) (uint64, error)
-	GetStringLogLevel(flagSet *pflag.FlagSet) (string, error)
-	GetInt64RPCTimeout(flagSet *pflag.FlagSet) (int64, error)
-	GetInt64HTTPTimeout(flagSet *pflag.FlagSet) (int64, error)
+	FetchFlagInput(flagSet *pflag.FlagSet, flagKeyword string, dataType string) (interface{}, error)
+	FetchRootFlagInput(flagName string, dataType string) (interface{}, error)
+	Changed(flagSet *pflag.FlagSet, flagName string) bool
 	GetUint32BountyId(flagSet *pflag.FlagSet) (uint32, error)
-	GetRootStringProvider() (string, error)
-	GetRootStringAlternateProvider() (string, error)
-	GetRootFloat32GasMultiplier() (float32, error)
-	GetRootInt32Buffer() (int32, error)
-	GetRootInt32Wait() (int32, error)
-	GetRootInt32GasPrice() (int32, error)
-	GetRootStringLogLevel() (string, error)
-	GetRootFloat32GasLimit() (float32, error)
-	GetRootUint64GasLimitOverride() (uint64, error)
-	GetRootInt64RPCTimeout() (int64, error)
-	GetRootInt64HTTPTimeout() (int64, error)
-	GetRootIntLogFileMaxSize() (int, error)
-	GetRootIntLogFileMaxBackups() (int, error)
-	GetRootIntLogFileMaxAge() (int, error)
 	GetStringFrom(flagSet *pflag.FlagSet) (string, error)
 	GetStringTo(flagSet *pflag.FlagSet) (string, error)
 	GetStringAddress(flagSet *pflag.FlagSet) (string, error)
