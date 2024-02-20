@@ -16,3 +16,9 @@ type Configurations struct {
 	LogFileMaxBackups  int
 	LogFileMaxAge      int
 }
+
+type ConfigDetail struct {
+	FlagName     string
+	Key          string
+	DefaultValue interface{}
+}
