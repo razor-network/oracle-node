@@ -29,7 +29,12 @@ func TestAggregate(t *testing.T) {
 	var previousEpoch uint32
 	var fileInfo fs.FileInfo
 
-	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
+	job1 := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
+		Power: 2, Name: "ethusd_gemini", Selector: "last",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+	}
+
+	job2 := bindings.StructsJob{Id: 2, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
 		Url: "https://api.gemini.com/v1/pubticker/ethusd",
 	}
@@ -39,14 +44,13 @@ func TestAggregate(t *testing.T) {
 		Id:                4,
 		Power:             2,
 		AggregationMethod: 2,
-		JobIDs:            []uint16{1, 2, 3},
+		JobIDs:            []uint16{1, 2},
 		Name:              "ethCollectionMean",
 	}
 
 	type args struct {
 		collection            bindings.StructsCollection
-		activeJob             bindings.StructsJob
-		activeJobErr          error
+		jobCacheError         bool
 		dataToCommit          []*big.Int
 		dataToCommitErr       error
 		weight                []uint8
@@ -72,21 +76,20 @@ func TestAggregate(t *testing.T) {
 			name: "Test 1: When Aggregate() executes successfully",
 			args: args{
 				collection:         collection,
-				activeJob:          job,
-				dataToCommit:       []*big.Int{big.NewInt(3827200), big.NewInt(3828474), big.NewInt(3826440), big.NewInt(3824616), big.NewInt(3823852)},
-				weight:             []uint8{1, 1, 1, 1, 1},
+				dataToCommit:       []*big.Int{big.NewInt(3827200), big.NewInt(3828474)},
+				weight:             []uint8{1, 1},
 				prevCommitmentData: big.NewInt(1),
 				assetFilePath:      "",
 				statErr:            nil,
 			},
-			want:    big.NewInt(3826116),
+			want:    big.NewInt(3827837),
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting activeJob",
+			name: "Test 2: When the job is not present in cache",
 			args: args{
 				collection:         collection,
-				activeJobErr:       errors.New("activeJob error"),
+				jobCacheError:      true,
 				dataToCommit:       []*big.Int{big.NewInt(2)},
 				weight:             []uint8{100},
 				prevCommitmentData: big.NewInt(1),
@@ -100,7 +103,6 @@ func TestAggregate(t *testing.T) {
 			name: "Test 3: When there is an error in getting dataToCommit",
 			args: args{
 				collection:         collection,
-				activeJob:          job,
 				dataToCommitErr:    errors.New("dataToCommit error"),
 				weight:             []uint8{100},
 				prevCommitmentData: big.NewInt(1),
@@ -112,7 +114,6 @@ func TestAggregate(t *testing.T) {
 			name: "Test 4: When there is an error in getting prevCommitmentData",
 			args: args{
 				collection:            collection,
-				activeJob:             job,
 				dataToCommit:          []*big.Int{big.NewInt(2)},
 				weight:                []uint8{100},
 				prevCommitmentDataErr: errors.New("prevCommitmentData error"),
@@ -124,7 +125,6 @@ func TestAggregate(t *testing.T) {
 			name: "Test 5: When there is an error in getting prevCommitmentData",
 			args: args{
 				collection:            collection,
-				activeJob:             job,
 				dataToCommitErr:       errors.New("dataToCommit error"),
 				weight:                []uint8{100},
 				prevCommitmentDataErr: errors.New("prevCommitmentData error"),
@@ -171,6 +171,12 @@ func TestAggregate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		if !tt.args.jobCacheError {
+			cache.JobsCache.Jobs[job1.Id] = job1
+			cache.JobsCache.Jobs[job2.Id] = job2
+			cache.CollectionsCache.Collections[collection.Id] = collection
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
 			pathUtilsMock := new(pathMocks.PathInterface)
@@ -185,7 +191,7 @@ func TestAggregate(t *testing.T) {
 			path.OSUtilsInterface = osUtilsMock
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
+			//utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
 			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
@@ -203,6 +209,9 @@ func TestAggregate(t *testing.T) {
 				t.Errorf("Aggregate() got = %v, want %v", got, tt.want)
 			}
 		})
+		delete(cache.JobsCache.Jobs, job1.Id)
+		delete(cache.JobsCache.Jobs, job2.Id)
+		delete(cache.CollectionsCache.Collections, collection.Id)
 	}
 }
 
@@ -268,9 +277,18 @@ func TestGetActiveCollectionIds(t *testing.T) {
 
 func TestGetActiveCollection(t *testing.T) {
 	var client *ethclient.Client
-	var collectionId uint16
 
-	collectionEth := bindings.StructsCollection{Active: true,
+	collectionEth := bindings.StructsCollection{
+		Active:            true,
+		Id:                1,
+		Power:             2,
+		AggregationMethod: 2,
+		JobIDs:            []uint16{1, 2},
+		Name:              "ethCollectionMean",
+	}
+
+	collectionEthInactive := bindings.StructsCollection{
+		Active:            false,
 		Id:                2,
 		Power:             2,
 		AggregationMethod: 2,
@@ -278,13 +296,9 @@ func TestGetActiveCollection(t *testing.T) {
 		Name:              "ethCollectionMean",
 	}
 
-	collectionEthInactive := bindings.StructsCollection{Active: false, Id: 2, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
-	}
-
 	type args struct {
-		collection    bindings.StructsCollection
-		collectionErr error
+		collectionId       uint16
+		collectionCacheErr bool
 	}
 	tests := []struct {
 		name    string
@@ -295,15 +309,15 @@ func TestGetActiveCollection(t *testing.T) {
 		{
 			name: "Test 1: When GetActiveCollection() executes successfully",
 			args: args{
-				collection: collectionEth,
+				collectionId: 1,
 			},
 			want:    collectionEth,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting collection",
+			name: "Test 2: When the collection is not present in cache",
 			args: args{
-				collectionErr: errors.New("collection error"),
+				collectionCacheErr: true,
 			},
 			want:    bindings.StructsCollection{},
 			wantErr: true,
@@ -311,13 +325,15 @@ func TestGetActiveCollection(t *testing.T) {
 		{
 			name: "Test 3: When there is an inactive collection",
 			args: args{
-				collection: collectionEthInactive,
+				collectionId: 2,
 			},
 			want:    bindings.StructsCollection{},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
+		cache.CollectionsCache.Collections[collectionEth.Id] = collectionEth
+		cache.CollectionsCache.Collections[collectionEthInactive.Id] = collectionEthInactive
 		t.Run(tt.name, func(t *testing.T) {
 			utilsMock := new(mocks.Utils)
 
@@ -325,10 +341,7 @@ func TestGetActiveCollection(t *testing.T) {
 				UtilsInterface: utilsMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
-
-			got, err := utils.GetActiveCollection(client, collectionId)
+			got, err := utils.GetActiveCollection(client, tt.args.collectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetActiveCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -337,6 +350,8 @@ func TestGetActiveCollection(t *testing.T) {
 				t.Errorf("GetActiveCollection() got = %v, want %v", got, tt.want)
 			}
 		})
+		delete(cache.CollectionsCache.Collections, collectionEth.Id)
+		delete(cache.CollectionsCache.Collections, collectionEthInactive.Id)
 	}
 }
 
