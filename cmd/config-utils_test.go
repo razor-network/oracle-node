@@ -251,7 +251,7 @@ func TestGetBufferPercent(t *testing.T) {
 	}
 	tests := []struct {
 		name               string
-		useDummyConfigFile bool // Add this flag to decide whether to use dummy file or viper.Set
+		useDummyConfigFile bool
 		args               args
 		want               int32
 		wantErr            error
@@ -285,6 +285,15 @@ func TestGetBufferPercent(t *testing.T) {
 		},
 		{
 			name:    "Test 4: When buffer is not passed in root nor set in config",
+			want:    core.DefaultBufferPercent,
+			wantErr: nil,
+		},
+		{
+			name:               "Test 5: When buffer value is out of a valid range",
+			useDummyConfigFile: true,
+			args: args{
+				bufferInTestConfig: 40,
+			},
 			want:    core.DefaultBufferPercent,
 			wantErr: nil,
 		},
@@ -362,14 +371,23 @@ func TestGetGasLimit(t *testing.T) {
 			name:               "Test 3: When gas value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				gasLimitInTestConfig: 3.5,
+				gasLimitInTestConfig: 2.5,
 			},
-			want:    3.5,
+			want:    2.5,
 			wantErr: nil,
 		},
 		{
 			name:    "Test 4: When gasLimit is not passed in root nor set in config",
 			want:    core.DefaultGasLimit,
+			wantErr: nil,
+		},
+		{
+			name:               "Test 5: When gas limit value is out of valid range",
+			useDummyConfigFile: true,
+			args: args{
+				gasLimitInTestConfig: 3.5,
+			},
+			want:    3.5,
 			wantErr: nil,
 		},
 	}
@@ -423,9 +441,9 @@ func TestGetGasLimitOverride(t *testing.T) {
 			name: "Test 1: When gasLimitOverride is fetched from root flag",
 			args: args{
 				isFlagSet:        true,
-				gasLimitOverride: 4000000,
+				gasLimitOverride: 40000000,
 			},
-			want:    4000000,
+			want:    40000000,
 			wantErr: nil,
 		},
 		{
@@ -441,13 +459,22 @@ func TestGetGasLimitOverride(t *testing.T) {
 			name:               "Test 3: When gasLimitOverride is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				gasLimitOverrideInConfig: 3000000,
+				gasLimitOverrideInConfig: 30000000,
 			},
-			want:    3000000,
+			want:    30000000,
 			wantErr: nil,
 		},
 		{
 			name:    "Test 4: When gasLimitOverride is not passed in root nor set in config",
+			want:    core.DefaultGasLimitOverride,
+			wantErr: nil,
+		},
+		{
+			name:               "Test 3: When gasLimitOverride is fetched from config",
+			useDummyConfigFile: true,
+			args: args{
+				gasLimitOverrideInConfig: 60000000,
+			},
 			want:    core.DefaultGasLimitOverride,
 			wantErr: nil,
 		},
@@ -521,13 +548,22 @@ func TestGetGasPrice(t *testing.T) {
 			name:               "Test 3: When gasPrice value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				gasPriceInTestConfig: 2,
+				gasPriceInTestConfig: 0,
 			},
-			want:    2,
+			want:    0,
 			wantErr: nil,
 		},
 		{
 			name:    "Test 4: When gasPrice is not passed in root nor set in config",
+			want:    core.DefaultGasPrice,
+			wantErr: nil,
+		},
+		{
+			name:               "Test 5: When gasPrice is out of valid range",
+			useDummyConfigFile: true,
+			args: args{
+				gasPriceInTestConfig: 3,
+			},
 			want:    core.DefaultGasPrice,
 			wantErr: nil,
 		},
@@ -687,6 +723,15 @@ func TestGetMultiplier(t *testing.T) {
 		},
 		{
 			name:    "Test 4: When gasMultiplier is not passed in root nor set in config",
+			want:    core.DefaultGasMultiplier,
+			wantErr: nil,
+		},
+		{
+			name:               "Test 5: When gasMultiplier is out of a valid range",
+			useDummyConfigFile: true,
+			args: args{
+				gasMultiplierInTestConfig: 4,
+			},
 			want:    core.DefaultGasMultiplier,
 			wantErr: nil,
 		},
@@ -937,6 +982,15 @@ func TestGetRPCTimeout(t *testing.T) {
 			want:    core.DefaultRPCTimeout,
 			wantErr: nil,
 		},
+		{
+			name:               "Test 5: When rpcTimeout value is out of a valid range",
+			useDummyConfigFile: true,
+			args: args{
+				rpcTimeoutInTestConfig: 70,
+			},
+			want:    core.DefaultRPCTimeout,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1016,6 +1070,15 @@ func TestGetHTTPTimeout(t *testing.T) {
 			want:    core.DefaultHTTPTimeout,
 			wantErr: nil,
 		},
+		{
+			name:               "Test 5: When httpTimeout is out of valid range",
+			useDummyConfigFile: true,
+			args: args{
+				httpTimeoutInTestConfig: 70,
+			},
+			want:    core.DefaultHTTPTimeout,
+			wantErr: nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1043,6 +1106,94 @@ func TestGetHTTPTimeout(t *testing.T) {
 			} else {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for getHTTPTimeout function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+		})
+	}
+}
+
+func TestGetWaitTime(t *testing.T) {
+	type args struct {
+		isFlagSet        bool
+		waitTime         int32
+		waitTimeErr      error
+		waitInTestConfig int32
+	}
+	tests := []struct {
+		name               string
+		useDummyConfigFile bool
+		args               args
+		want               int32
+		wantErr            error
+	}{
+		{
+			name: "Test 1: When wait time is fetched from root flag",
+			args: args{
+				isFlagSet: true,
+				waitTime:  10,
+			},
+			want:    10,
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in fetching wait time from root flag",
+			args: args{
+				isFlagSet:   true,
+				waitTimeErr: errors.New("wait time error"),
+			},
+			want:    core.DefaultWaitTime,
+			wantErr: errors.New("wait time error"),
+		},
+		{
+			name:               "Test 3: When wait time value is fetched from config",
+			useDummyConfigFile: true,
+			args: args{
+				waitInTestConfig: 20,
+			},
+			want:    20,
+			wantErr: nil,
+		},
+		{
+			name:    "Test 4: When wait time is not passed in root nor set in config",
+			want:    core.DefaultWaitTime,
+			wantErr: nil,
+		},
+		{
+			name:               "Test 5: When wait time value is out of valid range",
+			useDummyConfigFile: true,
+			args: args{
+				waitInTestConfig: 40,
+			},
+			want:    core.DefaultWaitTime,
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset() // Reset viper state
+
+			if tt.useDummyConfigFile {
+				createTestConfig(t, "wait", tt.args.waitInTestConfig)
+				defer removeTestConfig(tempConfigPath)
+			}
+
+			SetUpMockInterfaces()
+
+			flagSetMock.On("FetchRootFlagInput", mock.Anything, mock.Anything).Return(tt.args.waitTime, tt.args.waitTimeErr)
+			flagSetMock.On("Changed", mock.Anything, mock.Anything).Return(tt.args.isFlagSet)
+
+			utils := &UtilsStruct{}
+			got, err := utils.GetWaitTime()
+			if got != tt.want {
+				t.Errorf("GetWaitTime() got = %v, want %v", got, tt.want)
+			}
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetWaitTime function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetWaitTime function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
 		})
