@@ -249,6 +249,7 @@ type UtilsCmdInterface interface {
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 	StoreBountyId(client *ethclient.Client, account types.Account) error
 	CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
+	InitAssetCache(client *ethclient.Client) error
 }
 
 type TransactionInterface interface {
