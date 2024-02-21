@@ -7,12 +7,12 @@ import (
 	"math/big"
 )
 
-var EpochLength uint64 = 1200
+var EpochLength uint64 = 300
 var NumberOfStates uint64 = 5
 var StateLength = EpochLength / NumberOfStates
 
 // ChainId corresponds to the SKALE chain
-var ChainId = big.NewInt(0x5a79c44e)
+var ChainId = big.NewInt(0x561bf78b)
 
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
