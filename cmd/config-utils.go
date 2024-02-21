@@ -198,7 +198,7 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 	multiplierFloat32 := gasMultiplier.(float32)
 
 	// Validate multiplier range
-	if multiplierFloat32 <= MinMultiplier || multiplierFloat32 >= MaxMultiplier {
+	if multiplierFloat32 < MinMultiplier || multiplierFloat32 > MaxMultiplier {
 		log.Infof("GasMultiplier %.2f is out of the valid range (%.1f-%.1f), using default value %.2f", multiplierFloat32, MinMultiplier, MaxMultiplier, core.DefaultGasMultiplier)
 		return core.DefaultGasMultiplier, nil
 	}
@@ -221,7 +221,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	bufferPercentInt32 := bufferPercent.(int32)
 
 	// Check if bufferPercent is explicitly set and not within the valid range.
-	if bufferPercentInt32 <= MinBufferPercent || bufferPercentInt32 >= MaxBufferPercent {
+	if bufferPercentInt32 < MinBufferPercent || bufferPercentInt32 > MaxBufferPercent {
 		log.Infof("BufferPercent %d is out of the valid range (%d-%d), using default value %d", bufferPercentInt32, MinBufferPercent, MaxBufferPercent, core.DefaultBufferPercent)
 		return core.DefaultBufferPercent, nil
 	}
@@ -250,7 +250,7 @@ func (*UtilsStruct) GetWaitTime() (int32, error) {
 	waitTimeInt32 := waitTime.(int32)
 
 	// Validate waitTime range
-	if waitTimeInt32 <= MinWaitTime || waitTimeInt32 >= MaxWaitTime {
+	if waitTimeInt32 < MinWaitTime || waitTimeInt32 > MaxWaitTime {
 		log.Infof("WaitTime %d is out of the valid range (%d-%d), using default value %d", waitTimeInt32, MinWaitTime, MaxWaitTime, core.DefaultWaitTime)
 		return core.DefaultWaitTime, nil
 	}
@@ -301,7 +301,7 @@ func (*UtilsStruct) GetGasLimit() (float32, error) {
 	gasLimitFloat32 := gasLimit.(float32)
 
 	// Validate gasLimit range
-	if gasLimitFloat32 <= MinGasLimit || gasLimitFloat32 >= MaxGasLimit {
+	if gasLimitFloat32 < MinGasLimit || gasLimitFloat32 > MaxGasLimit {
 		log.Warnf("GasLimit %.2f is out of the suggested range (%.1f-%.1f), using default value %.2f", gasLimitFloat32, MinGasLimit, MaxGasLimit, core.DefaultGasLimit)
 	}
 
@@ -323,7 +323,7 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 	gasLimitOverrideUint64 := gasLimitOverride.(uint64)
 
 	// Validate gasLimitOverride range
-	if gasLimitOverrideUint64 <= MinGasLimitOverride || gasLimitOverrideUint64 >= MaxGasLimitOverride {
+	if gasLimitOverrideUint64 < MinGasLimitOverride || gasLimitOverrideUint64 > MaxGasLimitOverride {
 		log.Infof("GasLimitOverride %d is out of the valid range (%d-%d), using default value %d", gasLimitOverrideUint64, MinGasLimitOverride, MaxGasLimitOverride, core.DefaultGasLimitOverride)
 		return core.DefaultGasLimitOverride, nil
 	}
