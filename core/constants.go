@@ -22,10 +22,10 @@ var BlockCompletionTimeout = 30
 
 var DefaultGasMultiplier float32 = 1.0
 var DefaultBufferPercent int32 = 20
-var DefaultGasPrice int32 = 1
+var DefaultGasPrice int32 = 0
 var DefaultWaitTime int32 = 1
 var DefaultGasLimit float32 = 2
-var DefaultGasLimitOverride uint64 = 50000000
+var DefaultGasLimitOverride uint64 = 30000000
 var DefaultRPCTimeout int64 = 10
 var DefaultHTTPTimeout int64 = 10
 var DefaultLogLevel = ""
