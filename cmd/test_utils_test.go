@@ -1,6 +1,11 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"crypto/rand"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"math/big"
 	accountsPkgMocks "razor/accounts/mocks"
 	"razor/cmd/mocks"
 	"razor/path"
@@ -168,3 +173,6 @@ func SetUpMockInterfaces() {
 	accountsMock = new(accountsPkgMocks.AccountInterface)
 	accountUtils = accountsMock
 }
+
+var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
+var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000)) // Used any random big int for chain ID

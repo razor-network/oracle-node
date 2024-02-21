@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -15,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -31,9 +27,6 @@ func TestPropose(t *testing.T) {
 		epoch       uint32
 		blockNumber *big.Int
 	)
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
 	saltBytes32 := [32]byte{}
@@ -76,7 +69,6 @@ func TestPropose(t *testing.T) {
 		fileNameErr                error
 		saveDataErr                error
 		mediansBigInt              []*big.Int
-		txnOpts                    *bind.TransactOpts
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
@@ -103,7 +95,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -125,7 +116,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -147,7 +137,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -168,7 +157,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -190,7 +178,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -212,7 +199,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -234,7 +220,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -256,7 +241,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -278,7 +262,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:              big.NewInt(5),
 				lastProposedBlockStructErr: errors.New("lastProposedBlockStruct error"),
 				medians:                    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                    txnOpts,
 				proposeTxn:                 &Types.Transaction{},
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
@@ -302,7 +285,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(1),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -326,7 +308,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(2),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -351,7 +332,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(2),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -373,7 +353,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				mediansErr:              errors.New("makeBlock error"),
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -395,7 +374,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeErr:              errors.New("propose error"),
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -417,7 +395,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 				fileNameErr:             errors.New("fileName error"),
@@ -440,7 +417,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 				saveDataErr:             errors.New("error in saving data"),
@@ -481,7 +457,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -508,7 +483,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -530,7 +504,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:             big.NewInt(5),
 				lastProposedBlockStruct:   bindings.StructsBlock{},
 				medians:                   []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                   txnOpts,
 				proposeTxn:                &Types.Transaction{},
 				hash:                      common.BigToHash(big.NewInt(1)),
 				waitForBlockCompletionErr: errors.New("waitForBlockCompletion error"),
@@ -558,7 +531,7 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 		pathMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 		fileUtilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
-		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)

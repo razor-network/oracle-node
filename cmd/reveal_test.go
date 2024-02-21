@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
@@ -14,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -96,16 +92,12 @@ func TestReveal(t *testing.T) {
 	var config types.Configurations
 	var epoch uint32
 
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	type args struct {
 		state          int64
 		stateErr       error
 		merkleTree     [][][]byte
 		merkleTreeErr  error
 		treeRevealData bindings.StructsMerkleTree
-		txnOpts        *bind.TransactOpts
 		revealTxn      *Types.Transaction
 		revealErr      error
 		hash           common.Hash
@@ -121,7 +113,6 @@ func TestReveal(t *testing.T) {
 			args: args{
 				state:     1,
 				stateErr:  nil,
-				txnOpts:   txnOpts,
 				revealTxn: &Types.Transaction{},
 				revealErr: nil,
 				hash:      common.BigToHash(big.NewInt(1)),
@@ -133,7 +124,6 @@ func TestReveal(t *testing.T) {
 			name: "Test 2: When there is an error in getting state",
 			args: args{
 				stateErr:  errors.New("state error"),
-				txnOpts:   txnOpts,
 				revealTxn: &Types.Transaction{},
 				revealErr: nil,
 				hash:      common.BigToHash(big.NewInt(1)),
@@ -146,7 +136,6 @@ func TestReveal(t *testing.T) {
 			args: args{
 				state:     1,
 				stateErr:  nil,
-				txnOpts:   txnOpts,
 				revealTxn: &Types.Transaction{},
 				revealErr: errors.New("reveal error"),
 				hash:      common.BigToHash(big.NewInt(1)),
@@ -171,7 +160,7 @@ func TestReveal(t *testing.T) {
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			merkleUtilsMock.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(tt.args.txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			voteManagerMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
