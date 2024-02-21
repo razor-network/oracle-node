@@ -2,13 +2,10 @@ package cmd
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core"
@@ -17,14 +14,9 @@ import (
 )
 
 func TestApprove(t *testing.T) {
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	type args struct {
 		txnArgs         types.TransactionOptions
 		callOpts        bind.CallOpts
-		transactOpts    *bind.TransactOpts
 		allowanceAmount *big.Int
 		allowanceError  error
 		approveTxn      *Types.Transaction
@@ -50,7 +42,6 @@ func TestApprove(t *testing.T) {
 					BlockNumber: big.NewInt(1),
 					Context:     context.Background(),
 				},
-				transactOpts:    txnOpts,
 				allowanceAmount: big.NewInt(0),
 				allowanceError:  nil,
 				approveTxn:      &Types.Transaction{},
@@ -72,7 +63,6 @@ func TestApprove(t *testing.T) {
 					BlockNumber: big.NewInt(1),
 					Context:     context.Background(),
 				},
-				transactOpts:    txnOpts,
 				allowanceAmount: big.NewInt(10000),
 				allowanceError:  nil,
 				approveTxn:      &Types.Transaction{},
@@ -94,7 +84,6 @@ func TestApprove(t *testing.T) {
 					BlockNumber: big.NewInt(1),
 					Context:     context.Background(),
 				},
-				transactOpts:    txnOpts,
 				allowanceAmount: big.NewInt(0),
 				allowanceError:  errors.New("allowance error"),
 				approveTxn:      &Types.Transaction{},
@@ -117,7 +106,6 @@ func TestApprove(t *testing.T) {
 					BlockNumber: big.NewInt(1),
 					Context:     context.Background(),
 				},
-				transactOpts:    txnOpts,
 				allowanceAmount: big.NewInt(0),
 				allowanceError:  nil,
 				approveTxn:      &Types.Transaction{},
@@ -133,7 +121,7 @@ func TestApprove(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetOptions").Return(tt.args.callOpts)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			tokenManagerMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
 			tokenManagerMock.On("Approve", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveError)

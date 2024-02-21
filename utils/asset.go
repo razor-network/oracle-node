@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -164,7 +165,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		return nil, err
 	}
 	if _, err := path.OSUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
-		log.Debug("Fetching the jobs from assets.json file...")
+		log.Debugf("assets.json file is present, checking jobs for collection Id: %v...", collection.Id)
 		jsonFile, err := path.OSUtilsInterface.Open(assetsFilePath)
 		if err != nil {
 			return nil, err
@@ -190,18 +191,17 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		// Also adding custom jobs to jobs array
 		customJobs := GetCustomJobsFromJSONFile(collection.Name, dataString)
 		if len(customJobs) != 0 {
-			log.Debugf("Got Custom Jobs from asset.json file: %+v", customJobs)
+			log.Debugf("Got Custom Jobs from asset.json file for collectionId %v: %+v", collection.Id, customJobs)
 		}
 		jobs = append(jobs, customJobs...)
 	}
 
 	for _, id := range collection.JobIDs {
-
 		// Ignoring the Jobs which are already overriden and added to jobs array
 		if !Contains(overriddenJobIds, id) {
-			job, err := UtilsInterface.GetActiveJob(client, id)
-			if err != nil {
-				log.Errorf("Error in fetching job %d: %v", id, err)
+			job, isPresent := cache.GetJobFromCache(id)
+			if !isPresent {
+				log.Errorf("Job with id %v is not present in cache", id)
 				continue
 			}
 			jobs = append(jobs, job)
@@ -211,8 +211,8 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
-	if err != nil || len(dataToCommit) == 0 {
+	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
+	if len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
@@ -243,9 +243,9 @@ func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindin
 }
 
 func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	collection, err := UtilsInterface.GetCollection(client, collectionId)
-	if err != nil {
-		return bindings.StructsCollection{}, err
+	collection, isPresent := cache.GetCollectionFromCache(collectionId)
+	if !isPresent {
+		return bindings.StructsCollection{}, errors.New("collection not present in cache")
 	}
 	if !collection.Active {
 		return bindings.StructsCollection{}, errors.New("collection inactive")
@@ -253,21 +253,37 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 	return collection, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
+func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8) {
 	var (
+		wg     sync.WaitGroup
+		mu     sync.Mutex
 		data   []*big.Int
 		weight []uint8
 	)
+
 	for _, job := range jobs {
-		dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
-		if err != nil {
-			continue
-		}
-		log.Debugf("Job %s gives data %s", job.Url, dataToAppend)
-		data = append(data, dataToAppend)
-		weight = append(weight, job.Weight)
+		wg.Add(1)
+		go processJobConcurrently(&wg, &mu, &data, &weight, job, localCache)
 	}
-	return data, weight, nil
+
+	wg.Wait()
+
+	return data, weight
+}
+
+func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, localCache *cache.LocalCache) {
+	defer wg.Done()
+
+	dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
+	if err != nil {
+		return
+	}
+	log.Debugf("Job ID: %d, Job %s gives data %s", job.Id, job.Url, dataToAppend)
+
+	mu.Lock()
+	defer mu.Unlock()
+	*data = append(*data, dataToAppend)
+	*weight = append(*weight, job.Weight)
 }
 
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
@@ -277,19 +293,19 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		apiErr              error
 		dataSourceURLStruct types.DataSourceURL
 	)
-	log.Debugf("Getting the data to commit for job %s having job Id %d", job.Name, job.Id)
+	log.Debugf("Job ID: %d, Getting the data to commit for job %s", job.Id, job.Name)
 	if isJSONCompatible(job.Url) {
-		log.Debug("Job URL passed is a struct containing URL along with type of request data")
+		log.Debugf("Job ID: %d, Job URL passed is a struct containing URL along with type of request data", job.Id)
 		dataSourceURLInBytes := []byte(job.Url)
 
 		err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
 		if err != nil {
-			log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
+			log.Errorf("Job ID: %d, Error in unmarshalling %s: %v", job.Id, job.Url, err)
 			return nil, err
 		}
-		log.Infof("URL Struct: %+v", dataSourceURLStruct)
+		log.Infof("Job ID: %d, URL Struct: %+v", job.Id, dataSourceURLStruct)
 	} else {
-		log.Debug("Job URL passed is a direct URL: ", job.Url)
+		log.Debugf("Job ID: %d, Job URL passed is a direct URL: %s", job.Id, job.Url)
 		re := regexp.MustCompile(core.APIKeyRegex)
 		isAPIKeyRequired := re.MatchString(job.Url)
 		if isAPIKeyRequired {
@@ -308,27 +324,27 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		start := time.Now()
 		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
 		if apiErr != nil {
-			log.Errorf("Error in fetching data from API %s: %v", job.Url, apiErr)
+			log.Errorf("Job ID: %d, Error in fetching data from API %s: %v", job.Id, job.Url, apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
-		log.Debugf("Time taken to fetch the data from API : %s was %f", dataSourceURLStruct.URL, elapsed)
+		log.Debugf("Job ID: %d, Time taken to fetch the data from API : %s was %f", job.Id, dataSourceURLStruct.URL, elapsed)
 
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
-			log.Error("Error in parsing data from API: ", err)
+			log.Errorf("Job ID: %d, Error in parsing data from API: %v", job.Id, err)
 			return nil, err
 		}
 		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
 		if err != nil {
-			log.Error("Error in fetching value from parsed data: ", err)
+			log.Errorf("Job ID: %d, Error in fetching value from parsed data: %v", job.Id, err)
 			return nil, err
 		}
 	} else {
 		//TODO: Add retry here.
 		dataPoint, err := GetDataFromXHTML(dataSourceURLStruct, job.Selector)
 		if err != nil {
-			log.Error("Error in fetching value from parsed XHTML: ", err)
+			log.Errorf("Job ID: %d, Error in fetching value from parsed XHTML: %v", job.Id, err)
 			return nil, err
 		}
 		// remove "," and currency symbols
@@ -337,7 +353,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 
 	datum, err := ConvertToNumber(parsedData, dataSourceURLStruct.ReturnType)
 	if err != nil {
-		log.Error("Result is not a number")
+		log.Errorf("Job ID: %d, Result is not a number", job.Id)
 		return nil, err
 	}
 
@@ -513,6 +529,52 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	}
 
 	return overrideJobs, overriddenJobIds
+}
+
+func InitJobsCache(client *ethclient.Client) error {
+	cache.JobsCache.Mu.Lock()
+	defer cache.JobsCache.Mu.Unlock()
+
+	// Flush the JobsCache before initialization
+	for k := range cache.JobsCache.Jobs {
+		delete(cache.JobsCache.Jobs, k)
+	}
+
+	numJobs, err := AssetManagerInterface.GetNumJobs(client)
+	if err != nil {
+		return err
+	}
+	for i := 1; i <= int(numJobs); i++ {
+		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
+		if err != nil {
+			return err
+		}
+		cache.JobsCache.Jobs[job.Id] = job
+	}
+	return nil
+}
+
+func InitCollectionsCache(client *ethclient.Client) error {
+	cache.CollectionsCache.Mu.Lock()
+	defer cache.CollectionsCache.Mu.Unlock()
+
+	// Flush the CollectionsCacheStruct before initialization
+	for k := range cache.CollectionsCache.Collections {
+		delete(cache.CollectionsCache.Collections, k)
+	}
+
+	numCollections, err := UtilsInterface.GetNumCollections(client)
+	if err != nil {
+		return err
+	}
+	for i := 1; i <= int(numCollections); i++ {
+		collection, err := AssetManagerInterface.GetCollection(client, uint16(i))
+		if err != nil {
+			return err
+		}
+		cache.CollectionsCache.Collections[collection.Id] = collection
+	}
+	return nil
 }
 
 func ReplaceValueWithDataFromENVFile(re *regexp.Regexp, value string) string {

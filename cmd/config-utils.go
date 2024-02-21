@@ -1,4 +1,4 @@
-//Package cmd provides all functions related to command line
+// Package cmd provides all functions related to command line
 package cmd
 
 import (
@@ -109,245 +109,295 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	return config, nil
 }
 
+func getConfigValueForKey(key string, dataType string) interface{} {
+	switch dataType {
+	case "string":
+		return viper.GetString(key)
+	case "float32": // Note: viper doesn't have GetFloat32
+		return float32(viper.GetFloat64(key))
+	case "float64":
+		return viper.GetFloat64(key)
+	case "int":
+		return viper.GetInt(key)
+	case "int32":
+		return viper.GetInt32(key)
+	case "int64":
+		return viper.GetInt64(key)
+	case "uint64":
+		return viper.GetUint64(key)
+	default:
+		log.Fatalf("Unsupported data type: %s", dataType)
+		return nil
+	}
+}
+
+func getConfigValue(flagName string, dataType string, defaultReturnValue interface{}, viperKey string) (interface{}, error) {
+	// Check if the config parameter was passed as a root flag in the command.
+	if flagSetUtils.Changed(rootCmd.Flags(), flagName) {
+		// Getting the root flag input
+		rootFlagValue, err := flagSetUtils.FetchRootFlagInput(flagName, dataType)
+		if err != nil {
+			log.Errorf("Error in getting value from root flag")
+			return defaultReturnValue, err
+		}
+		log.Debugf("%v flag passed as root flag, Taking value of config %v = %v ", flagName, flagName, rootFlagValue)
+		return rootFlagValue, nil
+	}
+
+	// Checking if value of config parameter is present in config file
+	if viper.IsSet(viperKey) {
+		valueForKey := getConfigValueForKey(viperKey, dataType)
+		log.Debugf("Taking value of config %v = %v from config file", viperKey, valueForKey)
+		return valueForKey, nil
+	}
+	log.Debugf("%v config is not set, taking its default value %v", viperKey, defaultReturnValue)
+	return defaultReturnValue, nil
+}
+
 //This function returns the provider
 func (*UtilsStruct) GetProvider() (string, error) {
-	provider, err := flagSetUtils.GetRootStringProvider()
+	provider, err := getConfigValue("provider", "string", "", "provider")
 	if err != nil {
 		return "", err
 	}
-	if provider == "" {
-		if viper.IsSet("provider") {
-			provider = viper.GetString("provider")
-		} else {
-			log.Error("Provider is not set in config file")
-			return "", errors.New("provider is not set")
-		}
+	providerString := provider.(string)
+	if providerString == "" {
+		return "", errors.New("provider is not set")
 	}
-	if !strings.HasPrefix(provider, "https") {
+	if !strings.HasPrefix(providerString, "https") {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
-	return provider, nil
+	return providerString, nil
 }
 
 //This function returns the alternate provider
 func (*UtilsStruct) GetAlternateProvider() (string, error) {
-	alternateProvider, err := flagSetUtils.GetRootStringAlternateProvider()
+	alternateProvider, err := getConfigValue("alternateProvider", "string", "", "alternateProvider")
 	if err != nil {
 		return "", err
 	}
-	if alternateProvider == "" {
-		if viper.IsSet("alternateProvider") {
-			alternateProvider = viper.GetString("alternateProvider")
-		} else {
-			alternateProvider = ""
-			log.Debug("alternate provider is not set, taking its nil value ", alternateProvider)
-		}
-	}
-	if !strings.HasPrefix(alternateProvider, "https") {
+	alternateProviderString := alternateProvider.(string)
+	if !strings.HasPrefix(alternateProviderString, "https") {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
-	return alternateProvider, nil
+	return alternateProviderString, nil
 }
 
 //This function returns the multiplier
 func (*UtilsStruct) GetMultiplier() (float32, error) {
-	gasMultiplier, err := flagSetUtils.GetRootFloat32GasMultiplier()
+	const (
+		MinMultiplier = 1.0 // Minimum multiplier value
+		MaxMultiplier = 3.0 // Maximum multiplier value
+	)
+
+	gasMultiplier, err := getConfigValue("gasmultiplier", "float32", core.DefaultGasMultiplier, "gasmultiplier")
 	if err != nil {
-		return float32(core.DefaultGasMultiplier), err
+		return core.DefaultGasMultiplier, err
 	}
-	if gasMultiplier == -1 {
-		if viper.IsSet("gasmultiplier") {
-			gasMultiplier = float32(viper.GetFloat64("gasmultiplier"))
-		} else {
-			gasMultiplier = float32(core.DefaultGasMultiplier)
-			log.Debug("GasMultiplier is not set, taking its default value ", gasMultiplier)
-		}
+
+	multiplierFloat32 := gasMultiplier.(float32)
+
+	// Validate multiplier range
+	if multiplierFloat32 < MinMultiplier || multiplierFloat32 > MaxMultiplier {
+		log.Infof("GasMultiplier %.2f is out of the valid range (%.1f-%.1f), using default value %.2f", multiplierFloat32, MinMultiplier, MaxMultiplier, core.DefaultGasMultiplier)
+		return core.DefaultGasMultiplier, nil
 	}
-	return gasMultiplier, nil
+
+	return multiplierFloat32, nil
 }
 
 //This function returns the buffer percent
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
-	bufferPercent, err := flagSetUtils.GetRootInt32Buffer()
+	const (
+		MinBufferPercent = 10
+		MaxBufferPercent = 30
+	)
+
+	bufferPercent, err := getConfigValue("buffer", "int32", core.DefaultBufferPercent, "buffer")
 	if err != nil {
-		return int32(core.DefaultBufferPercent), err
+		return core.DefaultBufferPercent, err
 	}
-	if bufferPercent == 0 {
-		if viper.IsSet("buffer") {
-			bufferPercent = viper.GetInt32("buffer")
-		} else {
-			bufferPercent = int32(core.DefaultBufferPercent)
-			log.Debug("BufferPercent is not set, taking its default value ", bufferPercent)
-		}
+
+	bufferPercentInt32 := bufferPercent.(int32)
+
+	// Check if bufferPercent is explicitly set and not within the valid range.
+	if bufferPercentInt32 < MinBufferPercent || bufferPercentInt32 > MaxBufferPercent {
+		log.Infof("BufferPercent %d is out of the valid range (%d-%d), using default value %d", bufferPercentInt32, MinBufferPercent, MaxBufferPercent, core.DefaultBufferPercent)
+		return core.DefaultBufferPercent, nil
 	}
-	return bufferPercent, nil
+
+	// If bufferPercent is 0, use the default value.
+	if bufferPercentInt32 == 0 {
+		log.Debugf("BufferPercent is unset, using default value %d", core.DefaultBufferPercent)
+		return core.DefaultBufferPercent, nil
+	}
+
+	return bufferPercentInt32, nil
 }
 
 //This function returns the wait time
 func (*UtilsStruct) GetWaitTime() (int32, error) {
-	waitTime, err := flagSetUtils.GetRootInt32Wait()
+	const (
+		MinWaitTime = 1  // Minimum wait time in seconds
+		MaxWaitTime = 30 // Maximum wait time in seconds
+	)
+
+	waitTime, err := getConfigValue("wait", "int32", core.DefaultWaitTime, "wait")
 	if err != nil {
-		return int32(core.DefaultWaitTime), err
+		return core.DefaultWaitTime, err
 	}
-	if waitTime == -1 {
-		if viper.IsSet("wait") {
-			waitTime = viper.GetInt32("wait")
-		} else {
-			waitTime = int32(core.DefaultWaitTime)
-			log.Debug("WaitTime is not set, taking its default value ", waitTime)
-		}
+
+	waitTimeInt32 := waitTime.(int32)
+
+	// Validate waitTime range
+	if waitTimeInt32 < MinWaitTime || waitTimeInt32 > MaxWaitTime {
+		log.Infof("WaitTime %d is out of the valid range (%d-%d), using default value %d", waitTimeInt32, MinWaitTime, MaxWaitTime, core.DefaultWaitTime)
+		return core.DefaultWaitTime, nil
 	}
-	return waitTime, nil
+
+	return waitTimeInt32, nil
 }
 
 //This function returns the gas price
 func (*UtilsStruct) GetGasPrice() (int32, error) {
-	gasPrice, err := flagSetUtils.GetRootInt32GasPrice()
+	gasPrice, err := getConfigValue("gasprice", "int32", core.DefaultGasPrice, "gasprice")
 	if err != nil {
-		return int32(core.DefaultGasPrice), err
+		return core.DefaultGasPrice, err
 	}
-	if gasPrice == -1 {
-		if viper.IsSet("gasprice") {
-			gasPrice = viper.GetInt32("gasprice")
-		} else {
-			gasPrice = int32(core.DefaultGasPrice)
-			log.Debug("GasPrice is not set, taking its default value ", gasPrice)
 
-		}
+	gasPriceInt32 := gasPrice.(int32)
+
+	// Validate gasPrice value
+	if gasPriceInt32 != 0 && gasPriceInt32 != 1 {
+		log.Infof("GasPrice %d is invalid, using default value %d", gasPriceInt32, core.DefaultGasPrice)
+		return core.DefaultGasPrice, nil
 	}
-	return gasPrice, nil
+
+	return gasPriceInt32, nil
 }
 
 //This function returns the log level
 func (*UtilsStruct) GetLogLevel() (string, error) {
-	logLevel, err := flagSetUtils.GetRootStringLogLevel()
+	logLevel, err := getConfigValue("logLevel", "string", core.DefaultLogLevel, "logLevel")
 	if err != nil {
 		return core.DefaultLogLevel, err
 	}
-	if logLevel == "" {
-		if viper.IsSet("logLevel") {
-			logLevel = viper.GetString("logLevel")
-		} else {
-			logLevel = core.DefaultLogLevel
-			log.Debug("LogLevel is not set, taking its default value ", logLevel)
-		}
-	}
-	return logLevel, nil
+	return logLevel.(string), nil
 }
 
 //This function returns the gas limit
 func (*UtilsStruct) GetGasLimit() (float32, error) {
-	gasLimit, err := flagSetUtils.GetRootFloat32GasLimit()
+	//gasLimit in the config acts as a gasLimit multiplier
+	const (
+		MinGasLimit = 1.0 // Minimum gas limit
+		MaxGasLimit = 3.0 // Maximum gas limit
+	)
+
+	gasLimit, err := getConfigValue("gasLimit", "float32", core.DefaultGasLimit, "gasLimit")
 	if err != nil {
-		return float32(core.DefaultGasLimit), err
+		return core.DefaultGasLimit, err
 	}
-	if gasLimit == -1 {
-		if viper.IsSet("gasLimit") {
-			gasLimit = float32(viper.GetFloat64("gasLimit"))
-		} else {
-			gasLimit = float32(core.DefaultGasLimit)
-			log.Debug("GasLimit is not set, taking its default value ", gasLimit)
-		}
+
+	gasLimitFloat32 := gasLimit.(float32)
+
+	// Validate gasLimit range
+	if gasLimitFloat32 < MinGasLimit || gasLimitFloat32 > MaxGasLimit {
+		log.Warnf("GasLimit %.2f is out of the suggested range (%.1f-%.1f), using default value %.2f", gasLimitFloat32, MinGasLimit, MaxGasLimit, core.DefaultGasLimit)
 	}
-	return gasLimit, nil
+
+	return gasLimitFloat32, nil
 }
 
 //This function returns the gas limit to override
 func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
-	gasLimitOverride, err := flagSetUtils.GetRootUint64GasLimitOverride()
+	const (
+		MinGasLimitOverride = 10000000 // Minimum gas limit override
+		MaxGasLimitOverride = 50000000 // Maximum gas limit override
+	)
+
+	gasLimitOverride, err := getConfigValue("gasLimitOverride", "uint64", core.DefaultGasLimitOverride, "gasLimitOverride")
 	if err != nil {
-		return uint64(core.DefaultGasLimitOverride), err
+		return core.DefaultGasLimitOverride, err
 	}
-	if gasLimitOverride == 0 {
-		if viper.IsSet("gasLimitOverride") {
-			gasLimitOverride = viper.GetUint64("gasLimitOverride")
-		} else {
-			gasLimitOverride = uint64(core.DefaultGasLimitOverride)
-			log.Debug("GasLimitOverride is not set, taking its default value ", gasLimitOverride)
-		}
+
+	gasLimitOverrideUint64 := gasLimitOverride.(uint64)
+
+	// Validate gasLimitOverride range
+	if gasLimitOverrideUint64 < MinGasLimitOverride || gasLimitOverrideUint64 > MaxGasLimitOverride {
+		log.Infof("GasLimitOverride %d is out of the valid range (%d-%d), using default value %d", gasLimitOverrideUint64, MinGasLimitOverride, MaxGasLimitOverride, core.DefaultGasLimitOverride)
+		return core.DefaultGasLimitOverride, nil
 	}
-	return gasLimitOverride, nil
+
+	return gasLimitOverrideUint64, nil
 }
 
 //This function returns the RPC timeout
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
-	rpcTimeout, err := flagSetUtils.GetRootInt64RPCTimeout()
+	const (
+		MinRPCTimeout = 10 // Minimum RPC timeout in seconds
+		MaxRPCTimeout = 60 // Maximum RPC timeout in seconds
+	)
+
+	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")
 	if err != nil {
-		return int64(core.DefaultRPCTimeout), err
+		return core.DefaultRPCTimeout, err
 	}
-	if rpcTimeout == 0 {
-		if viper.IsSet("rpcTimeout") {
-			rpcTimeout = viper.GetInt64("rpcTimeout")
-		} else {
-			rpcTimeout = int64(core.DefaultRPCTimeout)
-			log.Debug("RPCTimeout is not set, taking its default value ", rpcTimeout)
-		}
+
+	rpcTimeoutInt64 := rpcTimeout.(int64)
+
+	// Validate rpcTimeout range
+	if rpcTimeoutInt64 < MinRPCTimeout || rpcTimeoutInt64 > MaxRPCTimeout {
+		log.Infof("RPCTimeout %d is out of the valid range (%d-%d), using default value %d", rpcTimeoutInt64, MinRPCTimeout, MaxRPCTimeout, core.DefaultRPCTimeout)
+		return core.DefaultRPCTimeout, nil
 	}
-	return rpcTimeout, nil
+
+	return rpcTimeoutInt64, nil
 }
 
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
-	httpTimeout, err := flagSetUtils.GetRootInt64HTTPTimeout()
+	const (
+		MinHTTPTimeout = 10 // Minimum HTTP timeout in seconds
+		MaxHTTPTimeout = 60 // Maximum HTTP timeout in seconds
+	)
+
+	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")
 	if err != nil {
-		return int64(core.DefaultHTTPTimeout), err
+		return core.DefaultHTTPTimeout, err
 	}
-	if httpTimeout == 0 {
-		if viper.IsSet("httpTimeout") {
-			httpTimeout = viper.GetInt64("httpTimeout")
-		} else {
-			httpTimeout = int64(core.DefaultRPCTimeout)
-			log.Debug("HTTPTimeout is not set, taking its default value ", httpTimeout)
-		}
+
+	httpTimeoutInt64 := httpTimeout.(int64)
+
+	// Validate httpTimeout range
+	if httpTimeoutInt64 < MinHTTPTimeout || httpTimeoutInt64 > MaxHTTPTimeout {
+		log.Infof("HTTPTimeout %d is out of the valid range (%d-%d), using default value %d", httpTimeoutInt64, MinHTTPTimeout, MaxHTTPTimeout, core.DefaultHTTPTimeout)
+		return core.DefaultHTTPTimeout, nil
 	}
-	return httpTimeout, nil
+
+	return httpTimeoutInt64, nil
 }
 
 func (*UtilsStruct) GetLogFileMaxSize() (int, error) {
-	logFileMaxSize, err := flagSetUtils.GetRootIntLogFileMaxSize()
+	logFileMaxSize, err := getConfigValue("logFileMaxSize", "int", core.DefaultLogFileMaxSize, "logFileMaxSize")
 	if err != nil {
 		return core.DefaultLogFileMaxSize, err
 	}
-	if logFileMaxSize == 0 {
-		if viper.IsSet("logFileMaxSize") {
-			logFileMaxSize = viper.GetInt("logFileMaxSize")
-		} else {
-			logFileMaxSize = core.DefaultLogFileMaxSize
-			log.Debug("logFileMaxSize is not set, taking its default value ", logFileMaxSize)
-		}
-	}
-	return logFileMaxSize, nil
+	return logFileMaxSize.(int), nil
 }
 
 func (*UtilsStruct) GetLogFileMaxBackups() (int, error) {
-	logFileMaxBackups, err := flagSetUtils.GetRootIntLogFileMaxBackups()
+	logFileMaxBackups, err := getConfigValue("logFileMaxBackups", "int", core.DefaultLogFileMaxBackups, "logFileMaxBackups")
 	if err != nil {
 		return core.DefaultLogFileMaxBackups, err
 	}
-	if logFileMaxBackups == 0 {
-		if viper.IsSet("logFileMaxBackups") {
-			logFileMaxBackups = viper.GetInt("logFileMaxBackups")
-		} else {
-			logFileMaxBackups = core.DefaultLogFileMaxBackups
-			log.Debug("logFileMaxBackups is not set, taking its default value ", logFileMaxBackups)
-		}
-	}
-	return logFileMaxBackups, nil
+	return logFileMaxBackups.(int), nil
 }
 
 func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
-	logFileMaxAge, err := flagSetUtils.GetRootIntLogFileMaxAge()
+	logFileMaxAge, err := getConfigValue("logFileMaxAge", "int", core.DefaultLogFileMaxAge, "logFileMaxAge")
 	if err != nil {
 		return core.DefaultLogFileMaxAge, err
 	}
-	if logFileMaxAge == 0 {
-		if viper.IsSet("logFileMaxAge") {
-			logFileMaxAge = viper.GetInt("logFileMaxAge")
-		} else {
-			logFileMaxAge = core.DefaultLogFileMaxAge
-			log.Debug("logFileMaxAge is not set, taking its default value ", logFileMaxAge)
-		}
-	}
-	return logFileMaxAge, nil
+	return logFileMaxAge.(int), nil
 }
 
 //This function sets the log level
@@ -356,18 +406,7 @@ func setLogLevel(config types.Configurations) {
 		log.SetLevel(logrus.DebugLevel)
 	}
 
-	log.Debug("Config details: ")
-	log.Debugf("Provider: %s", config.Provider)
-	log.Debugf("Alternate Provider: %s", config.AlternateProvider)
-	log.Debugf("Gas Multiplier: %.2f", config.GasMultiplier)
-	log.Debugf("Buffer Percent: %d", config.BufferPercent)
-	log.Debugf("Wait Time: %d", config.WaitTime)
-	log.Debugf("Gas Price: %d", config.GasPrice)
-	log.Debugf("Log Level: %s", config.LogLevel)
-	log.Debugf("Gas Limit: %.2f", config.GasLimitMultiplier)
-	log.Debugf("Gas Limit Override: %d", config.GasLimitOverride)
-	log.Debugf("RPC Timeout: %d", config.RPCTimeout)
-	log.Debugf("HTTP Timeout: %d", config.HTTPTimeout)
+	log.Debugf("Config details: %+v", config)
 
 	if razorUtils.IsFlagPassed("logFile") {
 		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)

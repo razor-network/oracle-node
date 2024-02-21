@@ -1,20 +1,17 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -30,9 +27,6 @@ func TestPropose(t *testing.T) {
 		epoch       uint32
 		blockNumber *big.Int
 	)
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
 	saltBytes32 := [32]byte{}
@@ -75,7 +69,6 @@ func TestPropose(t *testing.T) {
 		fileNameErr                error
 		saveDataErr                error
 		mediansBigInt              []*big.Int
-		txnOpts                    *bind.TransactOpts
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
@@ -102,7 +95,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -124,7 +116,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -146,7 +137,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -167,7 +157,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -189,7 +178,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -211,7 +199,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -233,7 +220,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -255,7 +241,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -277,7 +262,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:              big.NewInt(5),
 				lastProposedBlockStructErr: errors.New("lastProposedBlockStruct error"),
 				medians:                    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                    txnOpts,
 				proposeTxn:                 &Types.Transaction{},
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
@@ -301,7 +285,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(1),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -325,7 +308,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(2),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -350,7 +332,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(2),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -372,7 +353,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				mediansErr:              errors.New("makeBlock error"),
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -394,7 +374,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeErr:              errors.New("propose error"),
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -416,7 +395,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 				fileNameErr:             errors.New("fileName error"),
@@ -439,7 +417,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 				saveDataErr:             errors.New("error in saving data"),
@@ -480,7 +457,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -507,7 +483,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -529,7 +504,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:             big.NewInt(5),
 				lastProposedBlockStruct:   bindings.StructsBlock{},
 				medians:                   []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                   txnOpts,
 				proposeTxn:                &Types.Transaction{},
 				hash:                      common.BigToHash(big.NewInt(1)),
 				waitForBlockCompletionErr: errors.New("waitForBlockCompletion error"),
@@ -557,7 +531,7 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 		pathMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 		fileUtilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
-		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
@@ -604,7 +578,7 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 1: When GetBiggestStakeAndId function executes successfully",
 			args: args{
-				numOfStakers:  2,
+				numOfStakers:  1,
 				remainingTime: 10,
 				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			},
@@ -715,15 +689,24 @@ func stakeSnapshotValue(stake string) *big.Int {
 
 func TestGetIteration(t *testing.T) {
 	var client *ethclient.Client
-	var proposer types.ElectedProposer
 	var bufferPercent int32
 
+	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	saltBytes32 := [32]byte{}
+	copy(saltBytes32[:], salt)
+
+	proposer := types.ElectedProposer{
+		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
+		StakerId:        2,
+		NumberOfStakers: 10,
+		Salt:            saltBytes32,
+	}
+
 	type args struct {
-		stakeSnapshot     *big.Int
-		stakeSnapshotErr  error
-		isElectedProposer bool
-		remainingTime     int64
-		remainingTimeErr  error
+		stakeSnapshot    *big.Int
+		stakeSnapshotErr error
+		remainingTime    int64
+		remainingTimeErr error
 	}
 	tests := []struct {
 		name string
@@ -733,15 +716,15 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 1: When getIteration returns a valid iteration",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: true,
-				remainingTime:     100,
+				stakeSnapshot: big.NewInt(1000),
+				remainingTime: 10,
 			},
-			want: 0,
+			want: 70183,
 		},
 		{
 			name: "Test 2: When there is an error in getting stakeSnapshotValue",
 			args: args{
+				stakeSnapshot:    big.NewInt(0),
 				stakeSnapshotErr: errors.New("error in getting stakeSnapshotValue"),
 			},
 			want: -1,
@@ -749,33 +732,32 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 3: When getIteration returns an invalid iteration",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: false,
-				remainingTime:     2,
+				stakeSnapshot: big.NewInt(1),
+				remainingTime: 2,
 			},
 			want: -1,
 		},
 		{
 			name: "Test 4: When there is an error in getting remaining time for the state",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: true,
-				remainingTimeErr:  errors.New("remaining time error"),
+				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
+				remainingTimeErr: errors.New("remaining time error"),
 			},
 			want: -1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SetUpMockInterfaces()
 
-			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
-			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
+			utilsMock = new(utilsPkgMocks.Utils)
+			razorUtils = utilsMock
+
+			cmdUtils = &UtilsStruct{}
+
+			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(tt.args.stakeSnapshot, big.NewInt(1e18)), tt.args.stakeSnapshotErr)
 			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 
-			utils := &UtilsStruct{}
-
-			if got := utils.GetIteration(client, proposer, bufferPercent); got != tt.want {
+			if got := cmdUtils.GetIteration(client, proposer, bufferPercent); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1356,27 +1338,25 @@ func BenchmarkMakeBlock(b *testing.B) {
 	)
 
 	table := []struct {
-		numOfVotes int
+		numOfVotesPerLeafId int
+		numOfLeafIds        int
 	}{
-		{numOfVotes: 1},
-		{numOfVotes: 100},
-		{numOfVotes: 1000},
-		{numOfVotes: 10000},
-		{numOfVotes: 100000},
+		{numOfVotesPerLeafId: 5, numOfLeafIds: 10},
+		{numOfVotesPerLeafId: 50, numOfLeafIds: 100},
+		{numOfVotesPerLeafId: 100, numOfLeafIds: 500},
+		{numOfVotesPerLeafId: 500, numOfLeafIds: 1000},
+		{numOfVotesPerLeafId: 1000, numOfLeafIds: 10000},
 	}
 	for _, v := range table {
-		b.Run(fmt.Sprintf("Number_Of_Votes_%d", v.numOfVotes), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LeafIds_%d_VotesPerLeafId_%d", v.numOfLeafIds, v.numOfVotesPerLeafId), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				SetUpMockInterfaces()
 
-				votes := GetDummyVotes(v.numOfVotes)
+				revealedDataMaps := GetDummyRevealedDataMaps(v.numOfLeafIds, v.numOfVotesPerLeafId)
 
-				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(&types.RevealedDataMaps{
-					SortedRevealedValues: map[uint16][]*big.Int{0: votes},
-					VoteWeights:          map[string]*big.Int{(big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))).String(): big.NewInt(100)},
-					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
-				}, nil)
-				utilsMock.On("GetActiveCollectionIds", mock.Anything).Return([]uint16{1}, nil)
+				cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything).Return(revealedDataMaps, nil)
+				utilsMock.On("GetActiveCollectionIds", mock.Anything).Return(GetDummyActiveCollections(v.numOfLeafIds), nil)
+
 				ut := &UtilsStruct{}
 				_, _, _, err := ut.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 				if err != nil {
@@ -1393,6 +1373,42 @@ func GetDummyVotes(numOfVotes int) []*big.Int {
 		result = append(result, big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18)))
 	}
 	return result
+}
+
+func GetDummyActiveCollections(numOfCollections int) []uint16 {
+	var collections []uint16
+	for i := 0; i < numOfCollections; i++ {
+		collections = append(collections, uint16(i+1))
+	}
+	return collections
+}
+
+func GetDummyRevealedDataMaps(numOfLeafIds, numOfVotesPerLeafId int) *types.RevealedDataMaps {
+	sortedRevealedValues := make(map[uint16][]*big.Int)
+	voteWeights := make(map[string]*big.Int)
+	influenceSum := make(map[uint16]*big.Int)
+
+	for leafId := 0; leafId < numOfLeafIds; leafId++ {
+		var votes []*big.Int
+		totalInfluence := big.NewInt(0)
+
+		for voteId := 0; voteId < numOfVotesPerLeafId; voteId++ {
+			voteValue := big.NewInt(1).Mul(big.NewInt(int64(leafId+voteId+1)), big.NewInt(1e18)) // Example vote value
+			votes = append(votes, voteValue)
+			weight := big.NewInt(100) // Example weight
+			voteWeights[voteValue.String()] = weight
+			totalInfluence.Add(totalInfluence, weight)
+		}
+
+		sortedRevealedValues[uint16(leafId)] = votes
+		influenceSum[uint16(leafId)] = totalInfluence
+	}
+
+	return &types.RevealedDataMaps{
+		SortedRevealedValues: sortedRevealedValues,
+		VoteWeights:          voteWeights,
+		InfluenceSum:         influenceSum,
+	}
 }
 
 func GetDummyAssignedAssets(asset types.RevealedStruct, numOfAssignedAssets int) []types.RevealedStruct {

@@ -9,9 +9,11 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
+	"sync"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -135,14 +137,25 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 	if err != nil {
 		return nil, err
 	}
-	var revealedData []types.RevealedStruct
+
+	revealedDataChan := make(chan types.RevealedStruct, len(logs))
+	errorChan := make(chan error, len(logs))
+	var wg sync.WaitGroup
+
 	for _, vLog := range logs {
-		data, unpackErr := abiUtils.Unpack(contractAbi, "Revealed", vLog.Data)
-		if unpackErr != nil {
-			log.Debug(unpackErr)
-			continue
-		}
-		if epoch == data[0].(uint32) {
+		wg.Add(1)
+		go func(vLog Types.Log) {
+			defer wg.Done()
+			data, unpackErr := abiUtils.Unpack(contractAbi, "Revealed", vLog.Data)
+			if unpackErr != nil {
+				errorChan <- unpackErr
+				return
+			}
+
+			if epoch != data[0].(uint32) {
+				return
+			}
+
 			treeValues := data[2].([]struct {
 				LeafId uint16   `json:"leafId"`
 				Value  *big.Int `json:"value"`
@@ -158,9 +171,31 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 				RevealedValues: revealedValues,
 				Influence:      data[1].(*big.Int),
 			}
-			revealedData = append(revealedData, consolidatedRevealedData)
+
+			revealedDataChan <- consolidatedRevealedData
+		}(vLog)
+	}
+
+	wg.Wait()
+	close(revealedDataChan)
+	close(errorChan)
+
+	var revealedData []types.RevealedStruct
+	for {
+		select {
+		case data, ok := <-revealedDataChan:
+			if ok {
+				revealedData = append(revealedData, data)
+			}
+		case err, ok := <-errorChan:
+			if ok {
+				log.Debug(err)
+			}
+		}
+		if len(revealedDataChan) == 0 && len(errorChan) == 0 {
+			break
 		}
 	}
-	log.Debug("IndexRevealEventsOfCurrentEpoch: Revealed values: ", revealedData)
+
 	return revealedData, nil
 }

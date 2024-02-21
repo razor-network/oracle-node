@@ -7,12 +7,12 @@ import (
 	"math/big"
 )
 
-var EpochLength uint64 = 1200
+var EpochLength uint64 = 300
 var NumberOfStates uint64 = 5
 var StateLength = EpochLength / NumberOfStates
 
 // ChainId corresponds to the SKALE chain
-var ChainId = big.NewInt(0x5a79c44e)
+var ChainId = big.NewInt(0x561bf78b)
 
 var MaxRetries uint = 8
 var NilHash = common.Hash{0x00}
@@ -20,14 +20,14 @@ var BlockCompletionTimeout = 30
 
 //Following are the default config values for all the config parameters
 
-var DefaultGasMultiplier = 1.0
-var DefaultBufferPercent = 20
-var DefaultGasPrice = 1
-var DefaultWaitTime = 1
-var DefaultGasLimit = 2
-var DefaultGasLimitOverride = 50000000
-var DefaultRPCTimeout = 10
-var DefaultHTTPTimeout = 10
+var DefaultGasMultiplier float32 = 1.0
+var DefaultBufferPercent int32 = 20
+var DefaultGasPrice int32 = 0
+var DefaultWaitTime int32 = 1
+var DefaultGasLimit float32 = 2
+var DefaultGasLimitOverride uint64 = 30000000
+var DefaultRPCTimeout int64 = 10
+var DefaultHTTPTimeout int64 = 10
 var DefaultLogLevel = ""
 
 //Following are the default logFile parameters in config
@@ -72,3 +72,14 @@ var HexArrayReturnType = "^hexArray\\[\\d+\\]$"
 
 // HexArrayExtractIndexRegex will be used as a regular expression to extract index from hexArray return type
 var HexArrayExtractIndexRegex = `^hexArray\[(\d+)\]$`
+
+// Following are the constants which helps in calculating iteration for a staker
+
+var BatchSize = 1000
+var NumRoutines = 10
+var MaxIterations = 10000000
+
+// Following are the constants which determine storing jobs and collections value for time being in cache
+
+var AssetUpdateListenerInterval = 10
+var AssetCacheExpiry = 5 * EpochLength

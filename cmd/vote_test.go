@@ -25,16 +25,17 @@ func TestExecuteVote(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
-		config       types.Configurations
-		configErr    error
-		password     string
-		rogueStatus  bool
-		rogueErr     error
-		rogueMode    []string
-		rogueModeErr error
-		address      string
-		addressErr   error
-		voteErr      error
+		config            types.Configurations
+		configErr         error
+		password          string
+		rogueStatus       bool
+		rogueErr          error
+		rogueMode         []string
+		rogueModeErr      error
+		address           string
+		addressErr        error
+		initAssetCacheErr error
+		voteErr           error
 	}
 	tests := []struct {
 		name          string
@@ -115,6 +116,18 @@ func TestExecuteVote(t *testing.T) {
 			},
 			expectedFatal: false,
 		},
+		{
+			name: "Test 7: When there is an error in initializing cache",
+			args: args{
+				config:            config,
+				password:          "test",
+				address:           "0x000000000000000000000000000000000000dea1",
+				rogueStatus:       true,
+				rogueMode:         []string{},
+				initAssetCacheErr: errors.New("initAssetCache error"),
+			},
+			expectedFatal: true,
+		},
 	}
 
 	defer func() { log.ExitFunc = nil }()
@@ -134,6 +147,7 @@ func TestExecuteVote(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueStatus, tt.args.rogueErr)
 			flagSetMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
+			cmdUtilsMock.On("InitAssetCache", mock.Anything).Return(tt.args.initAssetCacheErr)
 			cmdUtilsMock.On("HandleExit").Return()
 			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()

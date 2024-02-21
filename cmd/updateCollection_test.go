@@ -1,16 +1,12 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -19,9 +15,6 @@ import (
 )
 
 func TestUpdateCollection(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	var client *ethclient.Client
 	var config types.Configurations
 	var WaitIfCommitStateStatus uint32
@@ -30,7 +23,6 @@ func TestUpdateCollection(t *testing.T) {
 	var collectionId uint16
 
 	type args struct {
-		txnOpts              *bind.TransactOpts
 		updateCollectionTxn  *Types.Transaction
 		updateCollectionErr  error
 		waitIfCommitStateErr error
@@ -46,7 +38,6 @@ func TestUpdateCollection(t *testing.T) {
 		{
 			name: "Test 1: When UpdateCollection function executes successfully",
 			args: args{
-				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
 				waitIfCommitStateErr: nil,
@@ -58,7 +49,6 @@ func TestUpdateCollection(t *testing.T) {
 		{
 			name: "Test 2: When updateCollection transaction fails",
 			args: args{
-				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  errors.New("updateCollection error"),
 				waitIfCommitStateErr: nil,
@@ -70,7 +60,6 @@ func TestUpdateCollection(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in WaitIfConfirmState",
 			args: args{
-				txnOpts:              txnOpts,
 				updateCollectionTxn:  &Types.Transaction{},
 				updateCollectionErr:  nil,
 				waitIfCommitStateErr: errors.New("waitIfCommitState error"),
@@ -85,7 +74,7 @@ func TestUpdateCollection(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(jobIdUint16)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			cmdUtilsMock.On("WaitIfCommitState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
 			assetManagerMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)

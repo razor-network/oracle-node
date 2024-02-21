@@ -29,6 +29,12 @@ type Asset struct {
 	Collection bindings.StructsCollection
 }
 
+type AssetResult struct {
+	RevealedValuesWithIndex map[uint16][]*big.Int
+	VoteWeights             map[string]*big.Int
+	InfluenceSum            map[uint16]*big.Int
+}
+
 type Locks struct {
 	Amount      *big.Int
 	UnlockAfter *big.Int
@@ -49,6 +55,11 @@ type AssignedAsset struct {
 	Value  *big.Int `json:"value"`
 }
 
+type MedianResult struct {
+	LeafId uint16
+	Median *big.Int
+}
+
 type CustomJob struct {
 	URL      string `json:"URL"`
 	Name     string `json:"name"`
@@ -63,4 +74,9 @@ type DataSourceURL struct {
 	Body       map[string]interface{} `json:"body"`
 	Header     map[string]string      `json:"header"`
 	ReturnType string                 `json:"returnType"`
+}
+
+type CollectionResult struct {
+	Index int
+	Leaf  *big.Int
 }
