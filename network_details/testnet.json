@@ -1,12 +1,16 @@
 {
-    "Governance": "0x6aC4BbACE4E38B085BA82bDA5477cc85222C2B40",
-    "BlockManager": "0x39D4B78bb09DEEC54fA2df729808b19962Cb9aae",
-    "CollectionManager": "0x7B8BF9a0B648Dd9f75D5E9e8a3054D18E8C4Cc5e",
-    "StakeManager": "0x432bDa6F3E5148898929be9d3555Ca5AA82b214b",
-    "RewardManager": "0x09FF6AB6F720F9866fe7b782566448E853c1F306",
-    "VoteManager": "0x86886e048fd0f253E6E75c13a3f924598799e06A",
-    "Delegator": "0x5755d776F77bF88d226EEEe0bA7f337F49Ac7FaE",
-    "RAZOR": "0xbF3BCf61f64C9825C7Af3f3D79817c9Cf44afBa7",
-    "StakedTokenFactory": "0x5008862c54ff6fae663Acd36E52D4614DcaF4329",
-    "RandomNoManager": "0x1495Ab19E7937e4259e3C292D906bB2e6302802f"
+    "chain_id": "0x561bf78b",
+    "chain_name": "juicy-low-small-testnet",
+    "addresses":{
+        "Governance": "0x6aC4BbACE4E38B085BA82bDA5477cc85222C2B40",
+        "BlockManager": "0x39D4B78bb09DEEC54fA2df729808b19962Cb9aae",
+        "CollectionManager": "0x7B8BF9a0B648Dd9f75D5E9e8a3054D18E8C4Cc5e",
+        "StakeManager": "0x432bDa6F3E5148898929be9d3555Ca5AA82b214b",
+        "RewardManager": "0x09FF6AB6F720F9866fe7b782566448E853c1F306",
+        "VoteManager": "0x86886e048fd0f253E6E75c13a3f924598799e06A",
+        "Delegator": "0x5755d776F77bF88d226EEEe0bA7f337F49Ac7FaE",
+        "RAZOR": "0xbF3BCf61f64C9825C7Af3f3D79817c9Cf44afBa7",
+        "StakedTokenFactory": "0x5008862c54ff6fae663Acd36E52D4614DcaF4329",
+        "RandomNoManager": "0x1495Ab19E7937e4259e3C292D906bB2e6302802f"
+    }
 }
