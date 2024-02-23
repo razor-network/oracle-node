@@ -34,7 +34,7 @@ var log = logger.NewLogger()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Version: core.VersionWithMeta,
+	Version: core.VersionWithMeta(),
 	Use:     "razor [command] [flags]",
 	Short:   "Official node for running stakers in Golang",
 	Long:    `Razor can be used by the stakers to stake, delegate and vote on the razorscan. Stakers can vote correctly and earn rewards.`,
