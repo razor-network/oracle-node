@@ -9,7 +9,7 @@ CHAIN_ID=""
 CHAIN_NAME=""
 
 # Define the path to the JSON file based on the chosen network
-JSON_FILE="./network-details/${NETWORK}.json"
+JSON_FILE="./network_details/${NETWORK}.json"
 
 # Check if the JSON file exists
 if [[ ! -f "$JSON_FILE" ]]; then
@@ -23,7 +23,7 @@ CHAIN_NAME=$(jq -r '.chain_name' "$JSON_FILE")
 
 # Check if the CHAIN_ID or CHAIN_NAME is empty
 if [[ -z "$CHAIN_ID" ]] || [[ -z "$CHAIN_NAME" ]]; then
-    echo "Chain ID or Chain Name could not be found in the network-details JSON file."
+    echo "Chain ID or Chain Name could not be found in the network_details JSON file."
     exit 1
 fi
 

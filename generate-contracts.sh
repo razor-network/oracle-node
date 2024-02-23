@@ -15,9 +15,9 @@ network=$1
 addresses_path=""
 
 if [[ "$network" == "mainnet" ]]; then
-  addresses_path="./network-details/mainnet.json"
+  addresses_path="./network_details/mainnet.json"
 elif [[ "$network" == "testnet" ]]; then
-  addresses_path="./network-details/testnet.json"
+  addresses_path="./network_details/testnet.json"
 else
   echo "Invalid network environment specified. Please use 'mainnet' or 'testnet'."
   exit 1
