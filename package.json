@@ -7,6 +7,7 @@
       "setup": "make setup",
       "build": "make build",
       "build-all": "make all",
+      "build-all-testnet": "make all-testnet",
       "build-noargs": "make build-noargs",
       "build-noargs-testnet": "make build-noargs-testnet",
       "test": "go test ./... -v"
