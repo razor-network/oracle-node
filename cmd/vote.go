@@ -132,16 +132,8 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 	for {
 		select {
 		case <-assetCacheTicker.C:
-			log.Info("ASSET CACHE EXPIRED!")
-			log.Info("INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
-			if err := utils.InitJobsCache(client); err != nil {
-				log.Error("Error in initializing jobs cache: ", err)
-				continue
-			}
-			if err := utils.InitCollectionsCache(client); err != nil {
-				log.Error("Error in initializing collections cache: ", err)
-				continue
-			}
+			log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
+			go utils.ResetAssetCache(client)
 		case <-ctx.Done():
 			return nil
 		default:
@@ -529,7 +521,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		if revealTxn != core.NilHash {
 			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 			if waitForBlockCompletionErr != nil {
-				log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+				log.Error("Error in WaitForBlockCompletionErr for reveal: ", waitForBlockCompletionErr)
 				return err
 			}
 		}
