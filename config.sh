@@ -19,10 +19,10 @@ then
   GAS_MULTIPLIER=1.0
 fi
 
-read -rp "Buffer Percent: (20) " BUFFER
+read -rp "Buffer Percent: (0) " BUFFER
 if [ -z "$BUFFER" ];
 then
-  BUFFER=20
+  BUFFER=0
 fi
 
 read -rp "Wait Time: (1) " WAIT_TIME
@@ -30,9 +30,9 @@ if [ -z "$WAIT_TIME" ]; then
    WAIT_TIME=1
 fi
 
-read -rp "Gas Price: (1) " GAS_PRICE
+read -rp "Gas Price: (0) " GAS_PRICE
 if [ -z "$GAS_PRICE" ]; then
-   GAS_PRICE=1
+   GAS_PRICE=0
 fi
 
 read -rp "Gas Limit Increment : (2) " GAS_LIMIT
