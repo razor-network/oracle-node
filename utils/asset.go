@@ -531,6 +531,17 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	return overrideJobs, overriddenJobIds
 }
 
+func ResetAssetCache(client *ethclient.Client) {
+	if err := InitJobsCache(client); err != nil {
+		log.Error("Error in initializing jobs cache: ", err)
+		return
+	}
+	if err := InitCollectionsCache(client); err != nil {
+		log.Error("Error in initializing collections cache: ", err)
+		return
+	}
+}
+
 func InitJobsCache(client *ethclient.Client) error {
 	cache.JobsCache.Mu.Lock()
 	defer cache.JobsCache.Mu.Unlock()
