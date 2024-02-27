@@ -321,8 +321,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			}
 		}
 	case -1:
-		if config.WaitTime > 5 {
-			timeUtils.Sleep(5 * time.Second)
+		if config.WaitTime >= core.BufferStateSleepTime {
+			timeUtils.Sleep(time.Second * time.Duration(core.BufferStateSleepTime))
 			return
 		}
 	}

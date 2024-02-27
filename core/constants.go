@@ -30,6 +30,9 @@ var DefaultRPCTimeout int64 = 10
 var DefaultHTTPTimeout int64 = 10
 var DefaultLogLevel = ""
 
+//BufferStateSleepTime is the sleeping time whenever buffer state hits
+var BufferStateSleepTime int32 = 2
+
 //Following are the default logFile parameters in config
 
 var DefaultLogFileMaxSize = 200
