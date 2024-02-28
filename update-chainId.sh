@@ -7,7 +7,7 @@ CHAINID=""
 if [[ "$NETWORK" == "mainnet" ]]; then
     CHAINID="0x109B4597"
 elif [[ "$NETWORK" == "testnet" ]]; then
-    CHAINID="0x561bf78b"
+    CHAINID="11155420"
 else
     echo "Invalid network specified. Please choose 'mainnet' or 'testnet'."
     exit 1
