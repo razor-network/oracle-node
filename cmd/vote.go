@@ -136,7 +136,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 		case <-assetCacheTicker.C:
 			log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
 			go func() {
-				err := utils.ResetAssetCache(client, config.BufferPercent)
+				err := razorUtils.ResetAssetCache(client, config.BufferPercent)
 				errChan <- err
 			}()
 		case err := <-errChan: // Handling the error from ResetAssetCache

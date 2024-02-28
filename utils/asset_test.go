@@ -1638,3 +1638,130 @@ func TestIsJSONCompatible(t *testing.T) {
 		})
 	}
 }
+
+func TestUtilsStruct_ResetAssetCache(t *testing.T) {
+	var (
+		client        *ethclient.Client
+		bufferPercent int32
+	)
+
+	type args struct {
+		state                 int64
+		stateErr              error
+		stateRemainingTime    int64
+		stateRemainingTimeErr error
+		numOfJobs             uint16
+		numOfJobsErr          error
+		job                   bindings.StructsJob
+		jobErr                error
+		numOfCollections      uint16
+		numOfCollectionsErr   error
+		collection            bindings.StructsCollection
+		collectionErr         error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Successful Reset",
+			args: args{
+				state:            1, // Not in commit state
+				numOfJobs:        2,
+				job:              bindings.StructsJob{Id: 1},
+				numOfCollections: 2,
+				collection:       bindings.StructsCollection{Id: 1},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Successful Reset after waiting in commit state",
+			args: args{
+				state:              0, // Not in commit state
+				stateRemainingTime: 1,
+				numOfJobs:          1,
+				job:                bindings.StructsJob{Id: 1},
+				numOfCollections:   1,
+				collection:         bindings.StructsCollection{Id: 1},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Error in getting buffered state",
+			args: args{
+				stateErr: errors.New("state error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error in getting state remaining time when resetting in commit state",
+			args: args{
+				state:                 0, // In commit state
+				stateRemainingTimeErr: errors.New("stateRemainingTime error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error in getting num Of jobs",
+			args: args{
+				state:        1,
+				numOfJobsErr: errors.New("numOfJobs error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error in getting job",
+			args: args{
+				state:     1,
+				numOfJobs: 1,
+				jobErr:    errors.New("job error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error in getting num of collections",
+			args: args{
+				state:               1,
+				numOfJobs:           2,
+				job:                 bindings.StructsJob{Id: 1},
+				numOfCollectionsErr: errors.New("numOfCollections error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Error in getting collection",
+			args: args{
+				state:            1,
+				numOfJobs:        2,
+				job:              bindings.StructsJob{Id: 1},
+				numOfCollections: 1,
+				collectionErr:    errors.New("collection error"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			utilsMock := new(mocks.Utils)
+			assetManagerMock := new(mocks.AssetManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				UtilsInterface:        utilsMock,
+				AssetManagerInterface: assetManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.stateRemainingTime, tt.args.stateRemainingTimeErr)
+			assetManagerMock.On("GetNumJobs", mock.Anything).Return(tt.args.numOfJobs, tt.args.numOfJobsErr)
+			utilsMock.On("GetNumCollections", mock.Anything).Return(tt.args.numOfCollections, tt.args.numOfCollectionsErr)
+			utilsMock.On("GetActiveJob", mock.Anything, mock.Anything).Return(tt.args.job, tt.args.jobErr)
+			assetManagerMock.On("GetCollection", mock.Anything, mock.Anything).Return(tt.args.collection, tt.args.collectionErr)
+
+			if err := utils.ResetAssetCache(client, bufferPercent); (err != nil) != tt.wantErr {
+				t.Errorf("ResetAssetCache() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

@@ -531,7 +531,7 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	return overrideJobs, overriddenJobIds
 }
 
-func ResetAssetCache(client *ethclient.Client, bufferPercent int32) error {
+func (*UtilsStruct) ResetAssetCache(client *ethclient.Client, bufferPercent int32) error {
 	state, err := UtilsInterface.GetBufferedState(client, bufferPercent)
 	if err != nil {
 		log.Error("Error in getting buffered state: ", err)
