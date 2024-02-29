@@ -1840,13 +1840,13 @@ func (_m *UtilsCmdInterface) UpdateJob(client *ethclient.Client, config types.Co
 	return r0, r1
 }
 
-// Vote provides a mock function with given fields: ctx, config, client, rogueData, account, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	ret := _m.Called(ctx, config, client, rogueData, account, backupNodeActionsToIgnore)
+// Vote provides a mock function with given fields: ctx, config, client, rogueData, account, backupNodeActionsToIgnore, resetAssetCacheChan
+func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string, resetAssetCacheChan chan bool) error {
+	ret := _m.Called(ctx, config, client, rogueData, account, backupNodeActionsToIgnore, resetAssetCacheChan)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, []string) error); ok {
-		r0 = rf(ctx, config, client, rogueData, account, backupNodeActionsToIgnore)
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, []string, chan bool) error); ok {
+		r0 = rf(ctx, config, client, rogueData, account, backupNodeActionsToIgnore, resetAssetCacheChan)
 	} else {
 		r0 = ret.Error(0)
 	}

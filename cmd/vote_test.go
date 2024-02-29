@@ -149,7 +149,7 @@ func TestExecuteVote(t *testing.T) {
 			flagSetMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("InitAssetCache", mock.Anything).Return(tt.args.initAssetCacheErr)
 			cmdUtilsMock.On("HandleExit").Return()
-			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
+			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			utils := &UtilsStruct{}
