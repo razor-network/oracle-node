@@ -130,7 +130,6 @@ func (*UtilsStruct) HandleExit() {
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string, resetAssetCacheChan chan bool) error {
 	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
-	errChan := make(chan error, 1)
 
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
@@ -139,11 +138,6 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 		case <-assetCacheTicker.C:
 			log.Info("ASSET CACHE EXPIRY TIME! Sending signal to reset asset cache")
 			resetAssetCacheChan <- true
-		case err := <-errChan: // Handling the error from ResetAssetCache
-			if err != nil {
-				log.Errorf("Error resetting asset cache: %v", err)
-				continue
-			}
 		case <-ctx.Done():
 			return nil
 		default:
