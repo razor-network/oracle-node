@@ -93,11 +93,10 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	err = cmdUtils.InitAssetCache(client)
 	utils.CheckError("Error in initializing asset cache: ", err)
 
-	resetAssetCacheChan := make(chan bool)
-	go utils.HandleResetCache(client, config.BufferPercent, resetAssetCacheChan)
+	go utils.HandleResetCache(client, config.BufferPercent)
 
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
-	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore, resetAssetCacheChan); err != nil {
+	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
 		osUtils.Exit(1)
 	}
@@ -128,16 +127,11 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string, resetAssetCacheChan chan bool) error {
-	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
-
+func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
-		case <-assetCacheTicker.C:
-			log.Info("ASSET CACHE EXPIRY TIME! Sending signal to reset asset cache")
-			resetAssetCacheChan <- true
 		case <-ctx.Done():
 			return nil
 		default:

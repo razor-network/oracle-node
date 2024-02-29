@@ -531,20 +531,20 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	return overrideJobs, overriddenJobIds
 }
 
-func HandleResetCache(client *ethclient.Client, bufferPercent int32, resetAssetCacheChan chan bool) {
+func HandleResetCache(client *ethclient.Client, bufferPercent int32) {
+	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
+	defer assetCacheTicker.Stop()
+
 	for {
-		select {
-		case <-resetAssetCacheChan:
-			// Call the ResetAssetCache function when a signal is received
-			if err := UtilsInterface.ResetAssetCache(client, bufferPercent); err != nil {
-				log.Errorf("Error resetting asset cache: %v", err)
-			}
+		<-assetCacheTicker.C // Wait for the next tick
+		log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
+		if err := UtilsInterface.ResetAssetCache(client, bufferPercent); err != nil {
+			log.Errorf("Error resetting asset cache: %v", err)
 		}
 	}
 }
 
 func (*UtilsStruct) ResetAssetCache(client *ethclient.Client, bufferPercent int32) error {
-	log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
 	state, err := UtilsInterface.GetBufferedState(client, bufferPercent)
 	if err != nil {
 		log.Error("Error in getting buffered state: ", err)
