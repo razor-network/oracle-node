@@ -260,9 +260,9 @@ func TestGetBufferPercent(t *testing.T) {
 			name: "Test 1: When buffer percent is fetched from root flag",
 			args: args{
 				isFlagSet:     true,
-				bufferPercent: 15,
+				bufferPercent: 5,
 			},
-			want:    15,
+			want:    5,
 			wantErr: nil,
 		},
 		{
@@ -278,9 +278,9 @@ func TestGetBufferPercent(t *testing.T) {
 			name:               "Test 3: When buffer value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				bufferInTestConfig: 30,
+				bufferInTestConfig: 1,
 			},
-			want:    30,
+			want:    1,
 			wantErr: nil,
 		},
 		{
@@ -1130,9 +1130,9 @@ func TestGetWaitTime(t *testing.T) {
 			name: "Test 1: When wait time is fetched from root flag",
 			args: args{
 				isFlagSet: true,
-				waitTime:  10,
+				waitTime:  2,
 			},
-			want:    10,
+			want:    2,
 			wantErr: nil,
 		},
 		{
@@ -1148,9 +1148,9 @@ func TestGetWaitTime(t *testing.T) {
 			name:               "Test 3: When wait time value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				waitInTestConfig: 20,
+				waitInTestConfig: 3,
 			},
-			want:    20,
+			want:    3,
 			wantErr: nil,
 		},
 		{

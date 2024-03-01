@@ -93,6 +93,8 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	err = cmdUtils.InitAssetCache(client)
 	utils.CheckError("Error in initializing asset cache: ", err)
 
+	go utils.HandleResetCache(client, config.BufferPercent)
+
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
 	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
@@ -126,22 +128,10 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
-		case <-assetCacheTicker.C:
-			log.Info("ASSET CACHE EXPIRED!")
-			log.Info("INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
-			if err := utils.InitJobsCache(client); err != nil {
-				log.Error("Error in initializing jobs cache: ", err)
-				continue
-			}
-			if err := utils.InitCollectionsCache(client); err != nil {
-				log.Error("Error in initializing collections cache: ", err)
-				continue
-			}
 		case <-ctx.Done():
 			return nil
 		default:
@@ -319,8 +309,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			}
 		}
 	case -1:
-		if config.WaitTime > 5 {
-			timeUtils.Sleep(5 * time.Second)
+		if config.WaitTime >= core.BufferStateSleepTime {
+			timeUtils.Sleep(time.Second * time.Duration(core.BufferStateSleepTime))
 			return
 		}
 	}
@@ -529,7 +519,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		if revealTxn != core.NilHash {
 			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 			if waitForBlockCompletionErr != nil {
-				log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+				log.Error("Error in WaitForBlockCompletionErr for reveal: ", waitForBlockCompletionErr)
 				return err
 			}
 		}

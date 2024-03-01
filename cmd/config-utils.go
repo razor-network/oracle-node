@@ -209,8 +209,8 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 //This function returns the buffer percent
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	const (
-		MinBufferPercent = 10
-		MaxBufferPercent = 30
+		MinBufferPercent = 0
+		MaxBufferPercent = 5
 	)
 
 	bufferPercent, err := getConfigValue("buffer", "int32", core.DefaultBufferPercent, "buffer")
@@ -228,7 +228,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 
 	// If bufferPercent is 0, use the default value.
 	if bufferPercentInt32 == 0 {
-		log.Debugf("BufferPercent is unset, using default value %d", core.DefaultBufferPercent)
+		log.Debugf("BufferPercent is unset or set to 0, using its default %d value", core.DefaultBufferPercent)
 		return core.DefaultBufferPercent, nil
 	}
 
@@ -238,8 +238,8 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 //This function returns the wait time
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	const (
-		MinWaitTime = 1  // Minimum wait time in seconds
-		MaxWaitTime = 30 // Maximum wait time in seconds
+		MinWaitTime = 1 // Minimum wait time in seconds
+		MaxWaitTime = 5 // Maximum wait time in seconds
 	)
 
 	waitTime, err := getConfigValue("wait", "int32", core.DefaultWaitTime, "wait")
@@ -335,7 +335,7 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	const (
 		MinRPCTimeout = 10 // Minimum RPC timeout in seconds
-		MaxRPCTimeout = 60 // Maximum RPC timeout in seconds
+		MaxRPCTimeout = 20 // Maximum RPC timeout in seconds
 	)
 
 	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")
@@ -357,7 +357,7 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
 	const (
 		MinHTTPTimeout = 10 // Minimum HTTP timeout in seconds
-		MaxHTTPTimeout = 60 // Maximum HTTP timeout in seconds
+		MaxHTTPTimeout = 20 // Maximum HTTP timeout in seconds
 	)
 
 	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")
