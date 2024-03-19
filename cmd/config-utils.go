@@ -99,7 +99,6 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.RPCTimeout = rpcTimeout
 	utils.RPCTimeout = rpcTimeout
 	config.HTTPTimeout = httpTimeout
-	utils.HTTPTimeout = httpTimeout
 	config.LogFileMaxSize = logFileMaxSize
 	config.LogFileMaxBackups = logFileMaxBackups
 	config.LogFileMaxAge = logFileMaxAge

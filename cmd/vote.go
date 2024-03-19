@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"razor/accounts"
+	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -87,6 +88,8 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 
 	account := types.Account{Address: address, Password: password}
+
+	clientPkg.InitHttpClient(config.HTTPTimeout)
 
 	cmdUtils.HandleExit()
 
