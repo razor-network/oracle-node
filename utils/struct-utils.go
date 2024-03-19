@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"math/big"
@@ -29,7 +30,6 @@ import (
 )
 
 var RPCTimeout int64
-var HTTPTimeout int64
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	UtilsInterface = optionsPackageStruct.UtilsInterface
@@ -59,30 +59,58 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 }
 
 func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, args ...interface{}) []reflect.Value {
-	var functionCall []reflect.Value
-	var gotFunction = make(chan bool)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(RPCTimeout)*time.Second)
 	defer cancel()
 
+	resultChan := make(chan []reflect.Value)
+	errChan := make(chan error)
+
 	go func() {
+		defer close(resultChan)
+		defer close(errChan)
+
 		inputs := make([]reflect.Value, len(args))
-		for i := range args {
-			inputs[i] = reflect.ValueOf(args[i])
+		for i, arg := range args {
+			inputs[i] = reflect.ValueOf(arg)
 		}
-		log.Debug("Blockchain function: ", methodName)
-		functionCall = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
-		gotFunction <- true
-	}()
-	for {
+
+		log.Debug("Invoking blockchain function: ", methodName)
+
+		// Attempt to call the function
+		var result []reflect.Value
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					errChan <- errors.New(fmt.Sprintf("panic during function call: %v", r))
+				}
+			}()
+			result = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
+		}()
+
+		// Send the result back or indicate the function has completed
 		select {
 		case <-ctx.Done():
-			log.Errorf("%s function timeout!", methodName)
-			log.Debug("Kindly check your connection")
-			return nil
-
-		case <-gotFunction:
-			return functionCall
+			// If the context is done, return the context-related error
+			errChan <- ctx.Err()
+		default:
+			resultChan <- result
 		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Errorf("%s function timeout!", methodName)
+		log.Debug("Please check your connection")
+		return nil
+
+	case err := <-errChan:
+		// Handle any errors that occurred during the function call
+		log.Errorf("Error:%v occurred in %s function!", err, methodName)
+		return nil
+
+	case result := <-resultChan:
+		// Function completed successfully
+		return result
 	}
 }
 
