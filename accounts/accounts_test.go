@@ -4,11 +4,11 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
 	"io/fs"
+	"path/filepath"
 	"razor/accounts/mocks"
 	"razor/core/types"
 	"razor/path"
@@ -116,140 +116,68 @@ func TestCreateAccount(t *testing.T) {
 	}
 }
 
-func TestGetPrivateKeyFromKeystore(t *testing.T) {
-	var password string
-	var keystorePath string
-	var privateKey *ecdsa.PrivateKey
-	var jsonBytes []byte
-
-	type args struct {
-		jsonBytes    []byte
-		jsonBytesErr error
-		key          *keystore.Key
-		keyErr       error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *ecdsa.PrivateKey
-		wantErr bool
-	}{
-		{
-			name: "Test 1: When GetPrivateKey function executes successfully",
-			args: args{
-				jsonBytes: jsonBytes,
-				key: &keystore.Key{
-					PrivateKey: privateKey,
-				},
-			},
-			want:    privateKey,
-			wantErr: false,
-		},
-		{
-			name: "Test 2: When there is an error in reading data from file",
-			args: args{
-				jsonBytesErr: errors.New("error in reading data"),
-				key: &keystore.Key{
-					PrivateKey: nil,
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When there is an error in fetching private key",
-			args: args{
-				jsonBytes: jsonBytes,
-				key: &keystore.Key{
-					PrivateKey: nil,
-				},
-				keyErr: errors.New("private key error"),
-			},
-			want:    privateKey,
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			accountsMock := new(mocks.AccountInterface)
-			AccountUtilsInterface = accountsMock
-
-			accountsMock.On("ReadFile", mock.AnythingOfType("string")).Return(tt.args.jsonBytes, tt.args.jsonBytesErr)
-			accountsMock.On("DecryptKey", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.key, tt.args.keyErr)
-
-			accountUtils := &AccountUtils{}
-			got, err := accountUtils.GetPrivateKeyFromKeystore(keystorePath, password)
-			if got != tt.want {
-				t.Errorf("Private key from GetPrivateKey, got = %v, want %v", got, tt.want)
-			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetPrivateKeyFromKeystore() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-		})
-	}
-}
-
 func TestGetPrivateKey(t *testing.T) {
-	var password string
-	var keystorePath string
-	var privateKey *ecdsa.PrivateKey
-
-	accountsList := []accounts.Account{
-		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
-			URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-		},
-		{Address: common.HexToAddress("0x000000000000000000000000000000000000dea2"),
-			URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-		},
-	}
+	password := "Razor@123"
+	keystoreDirPath := "test_accounts"
 
 	type args struct {
-		address    string
-		accounts   []accounts.Account
-		privateKey *ecdsa.PrivateKey
+		address         string
+		password        string
+		keystoreDirPath string
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *ecdsa.PrivateKey
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When input address is present in accountsList",
+			name: "Test 1: When input address with correct password is present in keystore directory",
 			args: args{
-				address:    "0x000000000000000000000000000000000000dea1",
-				accounts:   accountsList,
-				privateKey: privateKey,
+				address:         "0x911654feb423363fb771e04e18d1e7325ae10a91",
+				password:        password,
+				keystoreDirPath: keystoreDirPath,
 			},
-			want:    privateKey,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When input address is not present in accountsList",
+			name: "Test 2: When another input address with correct password is present in keystore directory",
 			args: args{
-				address:    "0x000000000000000000000000000000000000dea3",
-				accounts:   accountsList,
-				privateKey: privateKey,
+				address:         "0x2f5f59615689b706b6ad13fd03343dca28784989",
+				password:        password,
+				keystoreDirPath: keystoreDirPath,
 			},
-			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "Test 3: When provided address is not present in keystore directory",
+			args: args{
+				address:         "0x911654feb423363fb771e04e18d1e7325ae10a91_not_present",
+				keystoreDirPath: keystoreDirPath,
+			},
 			wantErr: true,
+		},
+		{
+			name: "Test 4: When input address with incorrect password is present in keystore directory",
+			args: args{
+				address:         "0x911654feb423363fb771e04e18d1e7325ae10a91",
+				password:        "incorrect password",
+				keystoreDirPath: keystoreDirPath,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 5: When a keystore file is renamed differently from the address to which it belonged",
+			args: args{
+				address:         "0x811654feb423363fb771e04e18d1e7325ae10a91",
+				password:        password,
+				keystoreDirPath: "test_accounts/incorrect_test_accounts",
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			accountsMock := new(mocks.AccountInterface)
-			AccountUtilsInterface = accountsMock
-
-			accountsMock.On("Accounts", mock.AnythingOfType("string")).Return(tt.args.accounts)
-			accountsMock.On("GetPrivateKeyFromKeystore", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey, nil)
-
 			accountUtils := &AccountUtils{}
-			got, err := accountUtils.GetPrivateKey(tt.args.address, password, keystorePath)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetPrivateKey() got = %v, want %v", got, tt.want)
-			}
+			_, err := accountUtils.GetPrivateKey(tt.args.address, tt.args.password, tt.args.keystoreDirPath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPrivateKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -315,6 +243,63 @@ func TestSignData(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Sign() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestFindKeystoreFileForAddress(t *testing.T) {
+	testAccountsKeystorePath := "test_accounts"
+
+	tests := []struct {
+		name         string
+		keystoreDir  string
+		address      string
+		expectedFile string
+		expectErr    bool
+	}{
+		{
+			name:         "Matching file exists for an address",
+			keystoreDir:  testAccountsKeystorePath,
+			address:      "0x911654feb423363fb771e04e18d1e7325ae10a91",
+			expectedFile: filepath.Join(testAccountsKeystorePath, "UTC--2024-03-20T07-03-56.358521000Z--911654feb423363fb771e04e18d1e7325ae10a91"),
+			expectErr:    false,
+		},
+		{
+			name:         "Matching file exists for another address",
+			keystoreDir:  testAccountsKeystorePath,
+			address:      "0x2f5f59615689b706b6ad13fd03343dca28784989",
+			expectedFile: filepath.Join(testAccountsKeystorePath, "UTC--2024-03-20T07-04-11.601622000Z--2f5f59615689b706b6ad13fd03343dca28784989"),
+			expectErr:    false,
+		},
+		{
+			name:        "No matching file",
+			keystoreDir: testAccountsKeystorePath,
+			address:     "nonexistentaddress",
+			expectErr:   true,
+		},
+		{
+			name:        "When keystore directory doesnt exists",
+			keystoreDir: "test_accounts_invalid",
+			address:     "0x2f5f59615689b706b6ad13fd03343dca28784989",
+			expectErr:   true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := FindKeystoreFileForAddress(tc.keystoreDir, tc.address)
+			if tc.expectErr {
+				if err == nil {
+					t.Errorf("Expected an error but got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Did not expect an error but got one: %v", err)
+				}
+				if got != tc.expectedFile {
+					t.Errorf("Expected file %v, got %v", tc.expectedFile, got)
+				}
 			}
 		})
 	}
