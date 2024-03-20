@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/hex"
 	"razor/cache"
+	clientPkg "razor/client"
 	"razor/core/types"
 	"reflect"
 	"testing"
@@ -164,6 +165,7 @@ func TestGetDataFromAPI(t *testing.T) {
 			wantErr: true,
 		},
 	}
+	clientPkg.InitHttpClient(10)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			localCache := cache.NewLocalCache(time.Second * 10)
