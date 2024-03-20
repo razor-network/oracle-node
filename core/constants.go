@@ -3,8 +3,9 @@
 package core
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var EpochLength uint64 = 300
@@ -81,3 +82,8 @@ var HexArrayExtractIndexRegex = `^hexArray\[(\d+)\]$`
 var BatchSize = 1000
 var NumRoutines = 10
 var MaxIterations = 10000000
+
+// Following are the constants used in custom http.Transport configuration for the common HTTP client that we use for all the requests
+
+var HTTPClientMaxIdleConns = 15
+var HTTPClientMaxIdleConnsPerHost = 5
