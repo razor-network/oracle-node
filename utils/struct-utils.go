@@ -81,7 +81,7 @@ func InvokeFunctionWithTimeout(interfaceName interface{}, methodName string, arg
 		func() {
 			defer func() {
 				if r := recover(); r != nil {
-					errChan <- errors.New(fmt.Sprintf("panic during function call: %v", r))
+					errChan <- fmt.Errorf("panic during function call: %v", r)
 				}
 			}()
 			result = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
