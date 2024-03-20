@@ -259,30 +259,37 @@ func TestFindKeystoreFileForAddress(t *testing.T) {
 		expectErr    bool
 	}{
 		{
-			name:         "Matching file exists for an address",
+			name:         "Test 1: Matching file exists for an address",
 			keystoreDir:  testAccountsKeystorePath,
 			address:      "0x911654feb423363fb771e04e18d1e7325ae10a91",
 			expectedFile: filepath.Join(testAccountsKeystorePath, "UTC--2024-03-20T07-03-56.358521000Z--911654feb423363fb771e04e18d1e7325ae10a91"),
 			expectErr:    false,
 		},
 		{
-			name:         "Matching file exists for another address",
+			name:         "Test 2: Matching file exists for another address",
 			keystoreDir:  testAccountsKeystorePath,
 			address:      "0x2f5f59615689b706b6ad13fd03343dca28784989",
 			expectedFile: filepath.Join(testAccountsKeystorePath, "UTC--2024-03-20T07-04-11.601622000Z--2f5f59615689b706b6ad13fd03343dca28784989"),
 			expectErr:    false,
 		},
 		{
-			name:        "No matching file",
+			name:        "Test 3: No matching file",
 			keystoreDir: testAccountsKeystorePath,
 			address:     "nonexistentaddress",
 			expectErr:   true,
 		},
 		{
-			name:        "When keystore directory doesnt exists",
+			name:        "Test 4: When keystore directory doesnt exists",
 			keystoreDir: "test_accounts_invalid",
 			address:     "0x2f5f59615689b706b6ad13fd03343dca28784989",
 			expectErr:   true,
+		},
+		{
+			name:         "Test 5: When multiple files for same account is present in the keystore directory",
+			keystoreDir:  "test_accounts/incorrect_test_accounts",
+			address:      "0x811654feb423363fb771e04e18d1e7325ae10a91",
+			expectedFile: filepath.Join("test_accounts/incorrect_test_accounts", "UTC--2024-03-20T07-04-56.358521000Z--811654feb423363fb771e04e18d1e7325ae10a91"),
+			expectErr:    true,
 		},
 	}
 
