@@ -86,3 +86,8 @@ var MaxIterations = 10000000
 
 var AssetUpdateListenerInterval = 10
 var AssetCacheExpiry = 5 * EpochLength
+
+// Following are the constants used in custom http.Transport configuration for the common HTTP client that we use for all the requests
+
+var HTTPClientMaxIdleConns = 15
+var HTTPClientMaxIdleConnsPerHost = 5

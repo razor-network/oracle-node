@@ -2,6 +2,7 @@ package client
 
 import (
 	"net/http"
+	"razor/core"
 	"time"
 )
 
@@ -11,8 +12,8 @@ func InitHttpClient(httpTimeout int64) {
 	httpClient = &http.Client{
 		Timeout: time.Duration(httpTimeout) * time.Second,
 		Transport: &http.Transport{
-			MaxIdleConns:        5,
-			MaxIdleConnsPerHost: 5,
+			MaxIdleConns:        core.HTTPClientMaxIdleConns,
+			MaxIdleConnsPerHost: core.HTTPClientMaxIdleConnsPerHost,
 		},
 	}
 }
