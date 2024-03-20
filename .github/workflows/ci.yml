@@ -60,7 +60,7 @@ jobs:
 
       - name: Execute test case
         run: >
-          go-acc ./... --ignore razor/accounts/mocks --ignore razor/cmd/mocks
+          go-acc ./... --ignore razor/accounts/mocks --ignore razor/accounts/test_accounts --ignore razor/cmd/mocks
           --ignore razor/utils/mocks --ignore pkg --ignore razor/path/mocks
           --output coverage.txt
       - name: Run benchmarks
