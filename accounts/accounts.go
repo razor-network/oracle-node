@@ -4,10 +4,15 @@ package accounts
 import (
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"os"
+	"path/filepath"
 	"razor/core/types"
 	"razor/logger"
 	"razor/path"
+	"regexp"
 	"strings"
 )
 
@@ -28,29 +33,30 @@ func (AccountUtils) CreateAccount(keystorePath string, password string) accounts
 	return newAcc
 }
 
-//This function takes and path of keystore and password as input and returns private key of account
-func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password string) (*ecdsa.PrivateKey, error) {
-	jsonBytes, err := AccountUtilsInterface.ReadFile(keystorePath)
+//This function takes address of account, password and keystore path as input and returns private key of account
+func (AccountUtils) GetPrivateKey(address string, password string, keystoreDirPath string) (*ecdsa.PrivateKey, error) {
+	fileName, err := FindKeystoreFileForAddress(keystoreDirPath, address)
+	if err != nil {
+		log.Error("Error in finding keystore file for an address: ", err)
+		return nil, err
+	}
+
+	keyJson, err := os.ReadFile(fileName)
 	if err != nil {
 		log.Error("Error in reading keystore: ", err)
 		return nil, err
 	}
-	key, err := AccountUtilsInterface.DecryptKey(jsonBytes, password)
+	key, err := keystore.DecryptKey(keyJson, password)
 	if err != nil {
-		log.Error("Error in fetching private key: ", err)
+		log.Error("Error in decrypting private key: ", err)
 		return nil, err
 	}
-	return key.PrivateKey, nil
-}
 
-//This function takes address of account, password and keystore path as input and returns private key of account
-func (AccountUtils) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
-	allAccounts := AccountUtilsInterface.Accounts(keystorePath)
-	for _, account := range allAccounts {
-		if strings.EqualFold(account.Address.Hex(), address) {
-			return AccountUtilsInterface.GetPrivateKeyFromKeystore(account.URL.Path, password)
-		}
+	// Check if the input address matches with address from keystore file in which password was matched
+	if key.Address.Hex() == address {
+		return key.PrivateKey, nil
 	}
+
 	return nil, errors.New("no keystore file found")
 }
 
@@ -61,4 +67,45 @@ func (AccountUtils) SignData(hash []byte, account types.Account, defaultPath str
 		return nil, err
 	}
 	return AccountUtilsInterface.Sign(hash, privateKey)
+}
+
+// FindKeystoreFileForAddress matches the keystore file for the given address.
+func FindKeystoreFileForAddress(keystoreDirPath, address string) (string, error) {
+	normalizedAddress := strings.ToLower(address)
+	if strings.HasPrefix(normalizedAddress, "0x") {
+		normalizedAddress = normalizedAddress[2:]
+	}
+	regexPattern := fmt.Sprintf("^UTC--.*--%s$", regexp.QuoteMeta(normalizedAddress))
+	re, err := regexp.Compile(regexPattern)
+	if err != nil {
+		log.Errorf("Error in compiling regex: %v", err)
+		return "", err
+	}
+
+	var keystoreFilePath string
+	err = filepath.WalkDir(keystoreDirPath, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err // Propagate errors encountered during traversal
+		}
+		if d.IsDir() {
+			return nil // Skip directories, continue walking
+		}
+		if re.MatchString(d.Name()) { // Check if file name matches the regex
+			keystoreFilePath = path
+			return filepath.SkipDir // File found, no need to continue
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Errorf("Error walking through keystore directory: %v", err)
+		return "", err
+	}
+
+	if keystoreFilePath == "" {
+		log.Errorf("No matching keystore file found for address %s", address)
+		return "", errors.New("no matching keystore file found")
+	}
+
+	return keystoreFilePath, nil
 }
