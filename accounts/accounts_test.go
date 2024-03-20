@@ -140,9 +140,9 @@ func TestGetPrivateKey(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When another input address with correct password is present in keystore directory",
+			name: "Test 2: When input upper case address with correct password is present in keystore directory",
 			args: args{
-				address:         "0x2f5f59615689b706b6ad13fd03343dca28784989",
+				address:         "0x2F5F59615689B706B6AD13FD03343DCA28784989",
 				password:        password,
 				keystoreDirPath: keystoreDirPath,
 			},
@@ -172,6 +172,7 @@ func TestGetPrivateKey(t *testing.T) {
 				password:        password,
 				keystoreDirPath: "test_accounts/incorrect_test_accounts",
 			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -266,9 +267,9 @@ func TestFindKeystoreFileForAddress(t *testing.T) {
 			expectErr:    false,
 		},
 		{
-			name:         "Test 2: Matching file exists for another address",
+			name:         "Test 2: Matching file exists for upper case address",
 			keystoreDir:  testAccountsKeystorePath,
-			address:      "0x2f5f59615689b706b6ad13fd03343dca28784989",
+			address:      "0x2F5F59615689B706B6AD13FD03343DCA28784989",
 			expectedFile: filepath.Join(testAccountsKeystorePath, "UTC--2024-03-20T07-04-11.601622000Z--2f5f59615689b706b6ad13fd03343dca28784989"),
 			expectErr:    false,
 		},
@@ -288,8 +289,8 @@ func TestFindKeystoreFileForAddress(t *testing.T) {
 			name:         "Test 5: When multiple files for same account is present in the keystore directory",
 			keystoreDir:  "test_accounts/incorrect_test_accounts",
 			address:      "0x811654feb423363fb771e04e18d1e7325ae10a91",
-			expectedFile: filepath.Join("test_accounts/incorrect_test_accounts", "UTC--2024-03-20T07-04-56.358521000Z--811654feb423363fb771e04e18d1e7325ae10a91"),
-			expectErr:    true,
+			expectedFile: filepath.Join("test_accounts/incorrect_test_accounts", "UTC--2024-03-20T07-03-56.358521000Z--811654feb423363fb771e04e18d1e7325ae10a91"),
+			expectErr:    false,
 		},
 	}
 

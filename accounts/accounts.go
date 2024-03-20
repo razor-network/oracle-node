@@ -53,7 +53,7 @@ func (AccountUtils) GetPrivateKey(address string, password string, keystoreDirPa
 	}
 
 	// Check if the input address matches with address from keystore file in which password was matched
-	if key.Address.Hex() == address {
+	if strings.EqualFold(key.Address.Hex(), address) {
 		return key.PrivateKey, nil
 	}
 
@@ -71,10 +71,7 @@ func (AccountUtils) SignData(hash []byte, account types.Account, defaultPath str
 
 // FindKeystoreFileForAddress matches the keystore file for the given address.
 func FindKeystoreFileForAddress(keystoreDirPath, address string) (string, error) {
-	normalizedAddress := strings.ToLower(address)
-	if strings.HasPrefix(normalizedAddress, "0x") {
-		normalizedAddress = normalizedAddress[2:]
-	}
+	normalizedAddress := strings.ToLower(strings.TrimPrefix(address, "0x"))
 	regexPattern := fmt.Sprintf("^UTC--.*--%s$", regexp.QuoteMeta(normalizedAddress))
 	re, err := regexp.Compile(regexPattern)
 	if err != nil {
