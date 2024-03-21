@@ -114,9 +114,82 @@ func performAggregation(data []*big.Int, weight []uint8, aggregationMethod uint3
 		weightedSum := CalculateWeightedSum(data, weight)
 		weightedMean := weightedSum.Div(weightedSum, big.NewInt(int64(totalWeight)))
 		return weightedMean, nil
+	// convention is 3 for probabilistic weight median
+	case 3:
+		return calculateProbabilisticWeightedMedian(data, weight), nil
+	// convention is 4 for probabilistic weight mean
+	case 4:
+		return calculateProbabilisticWeightedMean(data, weight), nil
 	}
 	return nil, errors.New("invalid aggregation method")
 }
+
+func calculateProbabilisticWeightedMean(data []*big.Int, weight []uint8) *big.Int {
+	// Create a new random number generator with a custom seed
+	source := mathRand.NewSource(time.Now().UnixNano())
+	rng := mathRand.New(source)
+
+	var selectedData []*big.Int
+	for i, w := range weight {
+		if isWeightSelected(rng, w) {
+			selectedData = append(selectedData, data[i])
+		}
+	}
+
+	if len(selectedData) == 0 {
+		return big.NewInt(0)
+	}
+
+	// Calculate the sum of selected data
+	sum := big.NewInt(0)
+	for _, num := range selectedData {
+		sum.Add(sum, num)
+	}
+
+	// Calculate the mean
+	mean := new(big.Int).Div(sum, big.NewInt(int64(len(selectedData))))
+
+	return mean
+}
+
+func calculateProbabilisticWeightedMedian(data []*big.Int, weight []uint8) *big.Int {
+	// Create a new random number generator with a custom seed
+	source := mathRand.NewSource(time.Now().UnixNano())
+	rng := mathRand.New(source)
+
+	var selectedData []*big.Int
+
+	// Filter data based on weight selection
+	for i, w := range weight {
+		if isWeightSelected(rng, w) {
+			selectedData = append(selectedData, data[i])
+		}
+	}
+
+	// Sort the selected data
+	sort.Slice(selectedData, func(i, j int) bool {
+		return selectedData[i].Cmp(selectedData[j]) < 0
+	})
+
+	// Calculate the median of selected data
+	n := len(selectedData)
+	if n == 0 {
+		return big.NewInt(0) // Return 0 if no data is selected
+	}
+	if n%2 == 1 {
+		// If odd, return the middle element
+		return selectedData[n/2]
+	}
+
+	// If even, return the average of the two middle elements
+	mid1 := selectedData[n/2-1]
+	mid2 := selectedData[n/2]
+
+	sum := new(big.Int).Add(mid1, mid2)
+	median := new(big.Int).Div(sum, big.NewInt(2))
+	return median
+}
+
 func calculateWeightedMedian(data []*big.Int, weight []uint8, totalWeight uint) *big.Int {
 	if len(data) == 0 || len(weight) == 0 || totalWeight == 0 {
 		return nil
@@ -180,11 +253,6 @@ func (*UtilsStruct) GetRogueRandomValue(value int) *big.Int {
 	}
 	rogueRandomValue, _ := rand.Int(rand.Reader, big.NewInt(int64(value)))
 	return rogueRandomValue
-}
-
-func GetRogueRandomMedianValue() uint32 {
-	rogueRandomMedianValue, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt32))
-	return uint32(rogueRandomMedianValue.Int64())
 }
 
 func Shuffle(slice []uint32) []uint32 {
@@ -302,4 +370,12 @@ func ConvertHashToUint16(hash common.Hash) uint16 {
 
 	// Convert the big integer to uint64 first (safe for down casting to uint16) and then downcast to uint16
 	return uint16(bigIntValue.Uint64())
+}
+
+func isWeightSelected(rng *mathRand.Rand, weight uint8) bool {
+	jobPercentageFactor := float64(weight) / 100.0
+
+	// Generate a random number for each job
+	randomNumber := mathRand.Float64()
+	return randomNumber <= jobPercentageFactor
 }
