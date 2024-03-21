@@ -531,49 +531,6 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	return overrideJobs, overriddenJobIds
 }
 
-func HandleResetCache(client *ethclient.Client, bufferPercent int32) {
-	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
-	defer assetCacheTicker.Stop()
-
-	for {
-		<-assetCacheTicker.C // Wait for the next tick
-		log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
-		if err := UtilsInterface.ResetAssetCache(client, bufferPercent); err != nil {
-			log.Errorf("Error resetting asset cache: %v", err)
-		}
-	}
-}
-
-func (*UtilsStruct) ResetAssetCache(client *ethclient.Client, bufferPercent int32) error {
-	state, err := UtilsInterface.GetBufferedState(client, bufferPercent)
-	if err != nil {
-		log.Error("Error in getting buffered state: ", err)
-		return err
-	}
-	// Avoiding resetting jobs/collections cache in commit state
-	if state == 0 {
-		log.Info("ResetAssetCache: Cannot reset Jobs/Collections cache in commit state!")
-		stateRemainingTime, err := UtilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
-		if err != nil {
-			log.Error("Error in getting remaining time of current state: ", err)
-			return err
-		}
-		log.Infof("ResetAssetCache: Waiting for commit state to complete, sleeping for %v seconds...", stateRemainingTime)
-		time.Sleep(time.Second * time.Duration(stateRemainingTime))
-		log.Infof("ResetAssetCache: INITIALIZING JOBS AND COLLECTIONS CACHE NOW!")
-	}
-
-	if err := InitJobsCache(client); err != nil {
-		log.Error("Error in initializing jobs cache: ", err)
-		return err
-	}
-	if err := InitCollectionsCache(client); err != nil {
-		log.Error("Error in initializing collections cache: ", err)
-		return err
-	}
-	return nil
-}
-
 func InitJobsCache(client *ethclient.Client) error {
 	cache.JobsCache.Mu.Lock()
 	defer cache.JobsCache.Mu.Unlock()
