@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/common"
 	"math"
 	"math/big"
 	mathRand "math/rand"
@@ -294,12 +293,4 @@ func isHexArrayPattern(s string) bool {
 	pattern := core.HexArrayReturnType
 	re := regexp.MustCompile(pattern)
 	return re.MatchString(s)
-}
-
-func ConvertHashToUint16(hash common.Hash) uint16 {
-	// Convert the hash to a big integer to handle the numeric value
-	bigIntValue := hash.Big()
-
-	// Convert the big integer to uint64 first (safe for down casting to uint16) and then downcast to uint16
-	return uint16(bigIntValue.Uint64())
 }

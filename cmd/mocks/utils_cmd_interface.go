@@ -1353,20 +1353,6 @@ func (_m *UtilsCmdInterface) IndexRevealEventsOfCurrentEpoch(client *ethclient.C
 	return r0, r1
 }
 
-// InitAssetCache provides a mock function with given fields: client
-func (_m *UtilsCmdInterface) InitAssetCache(client *ethclient.Client) error {
-	ret := _m.Called(client)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) error); ok {
-		r0 = rf(client)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // InitiateCommit provides a mock function with given fields: client, config, account, epoch, stakerId, rogueData
 func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
 	ret := _m.Called(client, config, account, epoch, stakerId, rogueData)

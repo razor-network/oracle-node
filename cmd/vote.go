@@ -89,10 +89,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	account := types.Account{Address: address, Password: password}
 
 	cmdUtils.HandleExit()
-
-	err = cmdUtils.InitAssetCache(client)
-	utils.CheckError("Error in initializing asset cache: ", err)
-
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
 	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
@@ -126,22 +122,10 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
-		case <-assetCacheTicker.C:
-			log.Info("ASSET CACHE EXPIRED!")
-			log.Info("INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
-			if err := utils.InitJobsCache(client); err != nil {
-				log.Error("Error in initializing jobs cache: ", err)
-				continue
-			}
-			if err := utils.InitCollectionsCache(client); err != nil {
-				log.Error("Error in initializing collections cache: ", err)
-				continue
-			}
 		case <-ctx.Done():
 			return nil
 		default:
