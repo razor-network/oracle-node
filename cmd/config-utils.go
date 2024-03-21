@@ -228,7 +228,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 
 	// If bufferPercent is 0, use the default value.
 	if bufferPercentInt32 == 0 {
-		log.Debugf("BufferPercent is unset, using default value %d", core.DefaultBufferPercent)
+		log.Debugf("BufferPercent is unset or set to 0, using its default %d value", core.DefaultBufferPercent)
 		return core.DefaultBufferPercent, nil
 	}
 
