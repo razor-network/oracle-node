@@ -303,8 +303,8 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			}
 		}
 	case -1:
-		if config.WaitTime > 5 {
-			timeUtils.Sleep(5 * time.Second)
+		if config.WaitTime >= core.BufferStateSleepTime {
+			timeUtils.Sleep(time.Second * time.Duration(core.BufferStateSleepTime))
 			return
 		}
 	}
@@ -513,7 +513,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 		if revealTxn != core.NilHash {
 			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
 			if waitForBlockCompletionErr != nil {
-				log.Error("Error in WaitForBlockCompletionErr for reveal: ", err)
+				log.Error("Error in WaitForBlockCompletionErr for reveal: ", waitForBlockCompletionErr)
 				return err
 			}
 		}
