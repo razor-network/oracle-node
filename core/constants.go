@@ -81,8 +81,3 @@ var HexArrayExtractIndexRegex = `^hexArray\[(\d+)\]$`
 var BatchSize = 1000
 var NumRoutines = 10
 var MaxIterations = 10000000
-
-// Following are the constants which determine storing jobs and collections value for time being in cache
-
-var AssetUpdateListenerInterval = 10
-var AssetCacheExpiry = 5 * EpochLength

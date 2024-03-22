@@ -199,9 +199,9 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	for _, id := range collection.JobIDs {
 		// Ignoring the Jobs which are already overriden and added to jobs array
 		if !Contains(overriddenJobIds, id) {
-			job, isPresent := cache.GetJobFromCache(id)
-			if !isPresent {
-				log.Errorf("Job with id %v is not present in cache", id)
+			job, err := UtilsInterface.GetActiveJob(client, id)
+			if err != nil {
+				log.Errorf("Error in fetching job %d: %v", id, err)
 				continue
 			}
 			jobs = append(jobs, job)
@@ -243,9 +243,9 @@ func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindin
 }
 
 func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	collection, isPresent := cache.GetCollectionFromCache(collectionId)
-	if !isPresent {
-		return bindings.StructsCollection{}, errors.New("collection not present in cache")
+	collection, err := UtilsInterface.GetCollection(client, collectionId)
+	if err != nil {
+		return bindings.StructsCollection{}, err
 	}
 	if !collection.Active {
 		return bindings.StructsCollection{}, errors.New("collection inactive")
@@ -529,95 +529,6 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	}
 
 	return overrideJobs, overriddenJobIds
-}
-
-func HandleResetCache(client *ethclient.Client, bufferPercent int32) {
-	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
-	defer assetCacheTicker.Stop()
-
-	for {
-		<-assetCacheTicker.C // Wait for the next tick
-		log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
-		if err := UtilsInterface.ResetAssetCache(client, bufferPercent); err != nil {
-			log.Errorf("Error resetting asset cache: %v", err)
-		}
-	}
-}
-
-func (*UtilsStruct) ResetAssetCache(client *ethclient.Client, bufferPercent int32) error {
-	state, err := UtilsInterface.GetBufferedState(client, bufferPercent)
-	if err != nil {
-		log.Error("Error in getting buffered state: ", err)
-		return err
-	}
-	// Avoiding resetting jobs/collections cache in commit state
-	if state == 0 {
-		log.Info("ResetAssetCache: Cannot reset Jobs/Collections cache in commit state!")
-		stateRemainingTime, err := UtilsInterface.GetRemainingTimeOfCurrentState(client, bufferPercent)
-		if err != nil {
-			log.Error("Error in getting remaining time of current state: ", err)
-			return err
-		}
-		log.Infof("ResetAssetCache: Waiting for commit state to complete, sleeping for %v seconds...", stateRemainingTime)
-		time.Sleep(time.Second * time.Duration(stateRemainingTime))
-		log.Infof("ResetAssetCache: INITIALIZING JOBS AND COLLECTIONS CACHE NOW!")
-	}
-
-	if err := InitJobsCache(client); err != nil {
-		log.Error("Error in initializing jobs cache: ", err)
-		return err
-	}
-	if err := InitCollectionsCache(client); err != nil {
-		log.Error("Error in initializing collections cache: ", err)
-		return err
-	}
-	return nil
-}
-
-func InitJobsCache(client *ethclient.Client) error {
-	cache.JobsCache.Mu.Lock()
-	defer cache.JobsCache.Mu.Unlock()
-
-	// Flush the JobsCache before initialization
-	for k := range cache.JobsCache.Jobs {
-		delete(cache.JobsCache.Jobs, k)
-	}
-
-	numJobs, err := AssetManagerInterface.GetNumJobs(client)
-	if err != nil {
-		return err
-	}
-	for i := 1; i <= int(numJobs); i++ {
-		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
-		if err != nil {
-			return err
-		}
-		cache.JobsCache.Jobs[job.Id] = job
-	}
-	return nil
-}
-
-func InitCollectionsCache(client *ethclient.Client) error {
-	cache.CollectionsCache.Mu.Lock()
-	defer cache.CollectionsCache.Mu.Unlock()
-
-	// Flush the CollectionsCacheStruct before initialization
-	for k := range cache.CollectionsCache.Collections {
-		delete(cache.CollectionsCache.Collections, k)
-	}
-
-	numCollections, err := UtilsInterface.GetNumCollections(client)
-	if err != nil {
-		return err
-	}
-	for i := 1; i <= int(numCollections); i++ {
-		collection, err := AssetManagerInterface.GetCollection(client, uint16(i))
-		if err != nil {
-			return err
-		}
-		cache.CollectionsCache.Collections[collection.Id] = collection
-	}
-	return nil
 }
 
 func ReplaceValueWithDataFromENVFile(re *regexp.Regexp, value string) string {
