@@ -1191,9 +1191,9 @@ func (_m *UtilsCmdInterface) GiveSorted(_a0 *ethclient.Client, blockManager *bin
 	return r0
 }
 
-// HandleBlock provides a mock function with given fields: _a0, account, blockNumber, config, httpClient, rogueData, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) HandleBlock(_a0 *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
-	_m.Called(_a0, account, blockNumber, config, httpClient, rogueData, backupNodeActionsToIgnore)
+// HandleBlock provides a mock function with given fields: _a0, account, stakerId, blockNumber, config, httpClient, rogueData, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) HandleBlock(_a0 *ethclient.Client, account types.Account, stakerId uint32, blockNumber *big.Int, config types.Configurations, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+	_m.Called(_a0, account, stakerId, blockNumber, config, httpClient, rogueData, backupNodeActionsToIgnore)
 }
 
 // HandleClaimBounty provides a mock function with given fields: _a0, config, account
@@ -1828,13 +1828,13 @@ func (_m *UtilsCmdInterface) UpdateJob(_a0 *ethclient.Client, config types.Confi
 	return r0, r1
 }
 
-// Vote provides a mock function with given fields: ctx, config, _a2, account, httpClient, rogueData, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, _a2 *ethclient.Client, account types.Account, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
-	ret := _m.Called(ctx, config, _a2, account, httpClient, rogueData, backupNodeActionsToIgnore)
+// Vote provides a mock function with given fields: ctx, config, _a2, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, _a2 *ethclient.Client, account types.Account, stakerId uint32, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+	ret := _m.Called(ctx, config, _a2, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Account, *client.HttpClient, types.Rogue, []string) error); ok {
-		r0 = rf(ctx, config, _a2, account, httpClient, rogueData, backupNodeActionsToIgnore)
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Account, uint32, *client.HttpClient, types.Rogue, []string) error); ok {
+		r0 = rf(ctx, config, _a2, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -232,9 +232,9 @@ type UtilsCmdInterface interface {
 	GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
-	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string)
+	HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, blockNumber *big.Int, config types.Configurations, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string)
 	ExecuteVote(flagSet *pflag.FlagSet)
-	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
+	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, httpClient *client.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	HandleExit()
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)

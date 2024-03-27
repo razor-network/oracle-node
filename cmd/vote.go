@@ -98,9 +98,16 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		MaxIdleConnectionsPerHost: core.HTTPClientMaxIdleConnsPerHost,
 	})
 
+	stakerId, err := razorUtils.GetStakerId(client, address)
+	utils.CheckError("Error in getting staker id: ", err)
+
+	if stakerId == 0 {
+		log.Fatal("Staker doesn't exist")
+	}
+
 	cmdUtils.HandleExit()
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
-	if err := cmdUtils.Vote(context.Background(), config, client, account, httpClient, rogueData, backupNodeActionsToIgnore); err != nil {
+	if err := cmdUtils.Vote(context.Background(), config, client, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
 		osUtils.Exit(1)
 	}
@@ -131,7 +138,7 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
@@ -148,7 +155,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			log.Debugf("Vote: Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, httpClient, rogueData, backupNodeActionsToIgnore)
+				cmdUtils.HandleBlock(client, account, stakerId, latestHeader.Number, config, httpClient, rogueData, backupNodeActionsToIgnore)
 			}
 			time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 		}
@@ -163,7 +170,7 @@ var (
 )
 
 //This function handles the block
-func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, blockNumber *big.Int, config types.Configurations, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -175,15 +182,6 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		return
 	}
 
-	stakerId, err := razorUtils.GetStakerId(client, account.Address)
-	if err != nil {
-		log.Error("Error in getting staker id: ", err)
-		return
-	}
-	if stakerId == 0 {
-		log.Error("Staker doesn't exist")
-		return
-	}
 	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)

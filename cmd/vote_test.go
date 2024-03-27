@@ -36,6 +36,8 @@ func TestExecuteVote(t *testing.T) {
 		rogueModeErr error
 		address      string
 		addressErr   error
+		stakerId     uint32
+		stakerIdErr  error
 		voteErr      error
 	}
 	tests := []struct {
@@ -49,6 +51,7 @@ func TestExecuteVote(t *testing.T) {
 				config:      config,
 				password:    "test",
 				address:     "0x000000000000000000000000000000000000dea1",
+				stakerId:    1,
 				rogueStatus: true,
 				rogueMode:   []string{"propose", "commit"},
 				voteErr:     nil,
@@ -111,11 +114,36 @@ func TestExecuteVote(t *testing.T) {
 				config:      config,
 				password:    "test",
 				address:     "0x000000000000000000000000000000000000dea1",
+				stakerId:    1,
 				rogueStatus: true,
 				rogueMode:   []string{"propose", "commit"},
 				voteErr:     errors.New("vote error"),
 			},
 			expectedFatal: false,
+		},
+		{
+			name: "Test 7: When there is an error in getting stakerId",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				stakerIdErr: errors.New("stakerId error"),
+				rogueStatus: true,
+				rogueMode:   []string{"propose", "commit"},
+			},
+			expectedFatal: true,
+		},
+		{
+			name: "Test 8: When stakerId is 0",
+			args: args{
+				config:      config,
+				password:    "test",
+				address:     "0x000000000000000000000000000000000000dea1",
+				stakerId:    0,
+				rogueStatus: true,
+				rogueMode:   []string{"propose", "commit"},
+			},
+			expectedFatal: true,
 		},
 	}
 
@@ -136,9 +164,10 @@ func TestExecuteVote(t *testing.T) {
 			flagSetMock.On("GetStringSliceBackupNode", mock.Anything).Return([]string{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueStatus, tt.args.rogueErr)
+			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			flagSetMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("HandleExit").Return()
-			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
+			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			utils := &UtilsStruct{}
@@ -860,6 +889,7 @@ func TestHandleBlock(t *testing.T) {
 	var (
 		client                    *ethclient.Client
 		account                   types.Account
+		stakerId                  uint32
 		blockNumber               *big.Int
 		rogueData                 types.Rogue
 		backupNodeActionsToIgnore []string
@@ -872,8 +902,6 @@ func TestHandleBlock(t *testing.T) {
 		epoch                uint32
 		epochErr             error
 		stateName            string
-		stakerId             uint32
-		stakerIdErr          error
 		staker               bindings.StructsStaker
 		stakerErr            error
 		ethBalance           *big.Int
@@ -904,7 +932,6 @@ func TestHandleBlock(t *testing.T) {
 				state:         0,
 				epoch:         1,
 				stateName:     "commit",
-				stakerId:      1,
 				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:    big.NewInt(1000),
 				actualStake:   big.NewFloat(10000),
@@ -927,29 +954,11 @@ func TestHandleBlock(t *testing.T) {
 			},
 		},
 		{
-			name: "Test 4: When there is an error in getting stakerId",
-			args: args{
-				state:       0,
-				epoch:       1,
-				stakerIdErr: errors.New("error in getting stakerId"),
-			},
-		},
-		{
-			name: "Test 5: When stakerId is 0",
-			args: args{
-				state:     0,
-				epoch:     1,
-				stateName: "commit",
-				stakerId:  0,
-			},
-		},
-		{
 			name: "Test 6: When there is an error in getting staker",
 			args: args{
 				state:     0,
 				epoch:     1,
 				stateName: "commit",
-				stakerId:  1,
 				stakerErr: errors.New("error in getting staker"),
 			},
 		},
@@ -959,7 +968,6 @@ func TestHandleBlock(t *testing.T) {
 				state:         0,
 				epoch:         1,
 				stateName:     "commit",
-				stakerId:      1,
 				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalanceErr: errors.New("error in getting ethBalance"),
 			},
@@ -970,7 +978,6 @@ func TestHandleBlock(t *testing.T) {
 				state:          0,
 				epoch:          1,
 				stateName:      "commit",
-				stakerId:       1,
 				sRZRBalance:    big.NewInt(1000),
 				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:     big.NewInt(1000),
@@ -984,7 +991,6 @@ func TestHandleBlock(t *testing.T) {
 				state:          0,
 				epoch:          1,
 				stateName:      "commit",
-				stakerId:       1,
 				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:     big.NewInt(1000),
 				actualStake:    big.NewFloat(10000),
@@ -998,7 +1004,6 @@ func TestHandleBlock(t *testing.T) {
 				state:         0,
 				epoch:         1,
 				stateName:     "commit",
-				stakerId:      1,
 				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(100)},
 				ethBalance:    big.NewInt(1000),
 				actualStake:   big.NewFloat(100),
@@ -1013,7 +1018,6 @@ func TestHandleBlock(t *testing.T) {
 				state:         0,
 				epoch:         1,
 				stateName:     "commit",
-				stakerId:      1,
 				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(0)},
 				ethBalance:    big.NewInt(1000),
 				actualStake:   big.NewFloat(0),
@@ -1028,7 +1032,6 @@ func TestHandleBlock(t *testing.T) {
 				state:         0,
 				epoch:         1,
 				stateName:     "commit",
-				stakerId:      1,
 				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000), IsSlashed: true},
 				ethBalance:    big.NewInt(1000),
 				actualStake:   big.NewFloat(10000),
@@ -1043,7 +1046,6 @@ func TestHandleBlock(t *testing.T) {
 				state:             0,
 				epoch:             1,
 				stateName:         "commit",
-				stakerId:          1,
 				staker:            bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:        big.NewInt(1000),
 				actualStake:       big.NewFloat(10000),
@@ -1059,7 +1061,6 @@ func TestHandleBlock(t *testing.T) {
 				state:             1,
 				epoch:             1,
 				stateName:         "reveal",
-				stakerId:          1,
 				staker:            bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:        big.NewInt(1000),
 				actualStake:       big.NewFloat(10000),
@@ -1075,7 +1076,6 @@ func TestHandleBlock(t *testing.T) {
 				state:              2,
 				epoch:              1,
 				stateName:          "propose",
-				stakerId:           1,
 				staker:             bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:         big.NewInt(1000),
 				actualStake:        big.NewFloat(10000),
@@ -1091,7 +1091,6 @@ func TestHandleBlock(t *testing.T) {
 				state:            3,
 				epoch:            1,
 				stateName:        "dispute",
-				stakerId:         1,
 				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:       big.NewInt(1000),
 				actualStake:      big.NewFloat(10000),
@@ -1107,7 +1106,6 @@ func TestHandleBlock(t *testing.T) {
 				state:         3,
 				epoch:         1,
 				stateName:     "dispute",
-				stakerId:      1,
 				staker:        bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:    big.NewInt(1000),
 				actualStake:   big.NewFloat(10000),
@@ -1123,7 +1121,6 @@ func TestHandleBlock(t *testing.T) {
 				state:                3,
 				epoch:                1,
 				stateName:            "dispute",
-				stakerId:             1,
 				staker:               bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:           big.NewInt(1000),
 				actualStake:          big.NewFloat(10000),
@@ -1141,7 +1138,6 @@ func TestHandleBlock(t *testing.T) {
 				epoch:               1,
 				stateName:           "confirm",
 				lastVerification:    1,
-				stakerId:            1,
 				staker:              bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:          big.NewInt(1000),
 				actualStake:         big.NewFloat(10000),
@@ -1158,7 +1154,6 @@ func TestHandleBlock(t *testing.T) {
 				epoch:               2,
 				stateName:           "confirm",
 				lastVerification:    1,
-				stakerId:            2,
 				staker:              bindings.StructsStaker{Id: 2, Stake: big.NewInt(10000)},
 				ethBalance:          big.NewInt(1000),
 				actualStake:         big.NewFloat(10000),
@@ -1175,7 +1170,6 @@ func TestHandleBlock(t *testing.T) {
 				epoch:            1,
 				lastVerification: 4,
 				stateName:        "dispute",
-				stakerId:         1,
 				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:       big.NewInt(1000),
 				actualStake:      big.NewFloat(10000),
@@ -1191,7 +1185,6 @@ func TestHandleBlock(t *testing.T) {
 				epoch:            1,
 				lastVerification: 4,
 				stateName:        "",
-				stakerId:         1,
 				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				ethBalance:       big.NewInt(1000),
 				actualStake:      big.NewFloat(10000),
@@ -1208,7 +1201,6 @@ func TestHandleBlock(t *testing.T) {
 
 			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			clientUtilsMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZRBalance, tt.args.sRZRBalanceErr)
@@ -1225,7 +1217,7 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
-			ut.HandleBlock(client, account, blockNumber, tt.args.config, &clientPkg.HttpClient{}, rogueData, backupNodeActionsToIgnore)
+			ut.HandleBlock(client, account, stakerId, blockNumber, tt.args.config, &clientPkg.HttpClient{}, rogueData, backupNodeActionsToIgnore)
 		})
 	}
 }
