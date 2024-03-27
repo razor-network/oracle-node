@@ -17,22 +17,6 @@ type AccountInterface struct {
 	mock.Mock
 }
 
-// Accounts provides a mock function with given fields: path
-func (_m *AccountInterface) Accounts(path string) []accounts.Account {
-	ret := _m.Called(path)
-
-	var r0 []accounts.Account
-	if rf, ok := ret.Get(0).(func(string) []accounts.Account); ok {
-		r0 = rf(path)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]accounts.Account)
-		}
-	}
-
-	return r0
-}
-
 // CreateAccount provides a mock function with given fields: path, password
 func (_m *AccountInterface) CreateAccount(path string, password string) accounts.Account {
 	ret := _m.Called(path, password)
