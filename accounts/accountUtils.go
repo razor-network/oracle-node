@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
-	"os"
 	"razor/core/types"
 )
 
@@ -16,14 +15,11 @@ var AccountUtilsInterface AccountInterface
 
 type AccountInterface interface {
 	CreateAccount(path string, password string) accounts.Account
-	GetPrivateKeyFromKeystore(keystorePath string, password string) (*ecdsa.PrivateKey, error)
 	GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error)
 	SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error)
 	Accounts(path string) []accounts.Account
 	NewAccount(path string, passphrase string) (accounts.Account, error)
-	DecryptKey(jsonBytes []byte, password string) (*keystore.Key, error)
 	Sign(digestHash []byte, prv *ecdsa.PrivateKey) ([]byte, error)
-	ReadFile(filename string) ([]byte, error)
 }
 
 type AccountUtils struct{}
@@ -41,17 +37,7 @@ func (accountUtils AccountUtils) NewAccount(path string, passphrase string) (acc
 	return ks.NewAccount(passphrase)
 }
 
-//This function takes json bytes array and password as input and returns the decrypted key
-func (accountUtils AccountUtils) DecryptKey(jsonBytes []byte, password string) (*keystore.Key, error) {
-	return keystore.DecryptKey(jsonBytes, password)
-}
-
 //This function takes hash in form of byte array and private key as input and returns signature as byte array
 func (accountUtils AccountUtils) Sign(digestHash []byte, prv *ecdsa.PrivateKey) (sig []byte, err error) {
 	return crypto.Sign(digestHash, prv)
-}
-
-//This function takes name of the file as input and returns the file data as byte array
-func (accountUtils AccountUtils) ReadFile(filename string) ([]byte, error) {
-	return os.ReadFile(filename)
 }

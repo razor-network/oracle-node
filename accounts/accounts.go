@@ -5,13 +5,24 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"os"
 	"razor/core/types"
 	"razor/logger"
 	"razor/path"
 	"strings"
 )
 
-var log = logger.NewLogger()
+var (
+	log        = logger.NewLogger()
+	ksInstance *keystore.KeyStore
+)
+
+// InitializeKeystore directly initializes the global keystore instance.
+func initializeKeystore(keystorePath string) {
+	log.Info("Initialising keystoreInstance...")
+	ksInstance = keystore.NewKeyStore(keystorePath, keystore.StandardScryptN, keystore.StandardScryptP)
+}
 
 //This function takes path and password as input and returns new account
 func (AccountUtils) CreateAccount(keystorePath string, password string) accounts.Account {
@@ -29,13 +40,13 @@ func (AccountUtils) CreateAccount(keystorePath string, password string) accounts
 }
 
 //This function takes and path of keystore and password as input and returns private key of account
-func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password string) (*ecdsa.PrivateKey, error) {
-	jsonBytes, err := AccountUtilsInterface.ReadFile(keystorePath)
+func getPrivateKeyFromKeystore(keystoreFilePath string, password string) (*ecdsa.PrivateKey, error) {
+	jsonBytes, err := os.ReadFile(keystoreFilePath)
 	if err != nil {
 		log.Error("Error in reading keystore: ", err)
 		return nil, err
 	}
-	key, err := AccountUtilsInterface.DecryptKey(jsonBytes, password)
+	key, err := keystore.DecryptKey(jsonBytes, password)
 	if err != nil {
 		log.Error("Error in fetching private key: ", err)
 		return nil, err
@@ -44,11 +55,15 @@ func (AccountUtils) GetPrivateKeyFromKeystore(keystorePath string, password stri
 }
 
 //This function takes address of account, password and keystore path as input and returns private key of account
-func (AccountUtils) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
-	allAccounts := AccountUtilsInterface.Accounts(keystorePath)
+func (AccountUtils) GetPrivateKey(address string, password string, keystoreDirPath string) (*ecdsa.PrivateKey, error) {
+	if ksInstance == nil {
+		initializeKeystore(keystoreDirPath)
+	}
+
+	allAccounts := ksInstance.Accounts()
 	for _, account := range allAccounts {
 		if strings.EqualFold(account.Address.Hex(), address) {
-			return AccountUtilsInterface.GetPrivateKeyFromKeystore(account.URL.Path, password)
+			return getPrivateKeyFromKeystore(account.URL.Path, password)
 		}
 	}
 	return nil, errors.New("no keystore file found")
