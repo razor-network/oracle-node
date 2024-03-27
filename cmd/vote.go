@@ -89,12 +89,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	account := types.Account{Address: address, Password: password}
 
 	cmdUtils.HandleExit()
-
-	err = cmdUtils.InitAssetCache(client)
-	utils.CheckError("Error in initializing asset cache: ", err)
-
-	go utils.HandleResetCache(client, config.BufferPercent)
-
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
 	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
