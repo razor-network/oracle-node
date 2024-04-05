@@ -6,13 +6,6 @@ import (
 	"razor/core/types"
 )
 
-//type AccountInterface interface {
-//	CreateAccount(keystorePath, password string) accounts.Account
-//	GetPrivateKey(address, password string) (*ecdsa.PrivateKey, error)
-//	SignData(hash []byte, account types.Account) ([]byte, error)
-//	NewAccount(passphrase string) (accounts.Account, error)
-//}
-
 type AccountManager struct {
 	Keystore *keystore.KeyStore
 }
