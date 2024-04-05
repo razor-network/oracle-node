@@ -62,7 +62,12 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	isRogue, err := flagSetUtils.GetBoolRogue(flagSet)
@@ -85,8 +90,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	if rogueData.IsRogue {
 		log.Warn("YOU ARE RUNNING VOTE IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 	}
-
-	account := types.Account{Address: address, Password: password}
 
 	cmdUtils.HandleExit()
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
@@ -280,13 +283,12 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
 				Client:          client,
-				Password:        account.Password,
-				AccountAddress:  account.Address,
 				ChainId:         core.ChainId,
 				Config:          config,
 				ContractAddress: core.BlockManagerAddress,
 				MethodName:      "claimBlockReward",
 				ABI:             bindings.BlockManagerMetaData.ABI,
+				Account:         account,
 			})
 
 			if err != nil {
@@ -575,7 +577,7 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	ethHash := utils.SignHash(hash)
 	log.Debug("Hash generated for secret")
 	log.Debug("CalculateSecret: Ethereum signed hash: ", ethHash)
-	signedData, err := accounts.AccountUtilsInterface.SignData(ethHash, account, keystorePath)
+	signedData, err := account.AccountManager.SignData(ethHash, account.Address, account.Password)
 	if err != nil {
 		return nil, nil, errors.New("Error in signing the data: " + err.Error())
 	}

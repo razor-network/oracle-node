@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -50,18 +51,22 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 
 	extendLockInput := types.ExtendLockInput{
-		Address:  address,
-		Password: password,
 		StakerId: stakerId,
+		Account:  account,
 	}
-	log.Debugf("ExecuteExtendLock: Calling ResetUnstakeLock with arguments extendLockInput = %+v", extendLockInput)
+
 	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -72,14 +77,13 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        extendLockInput.Password,
-		AccountAddress:  extendLockInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "resetUnstakeLock",
 		Parameters:      []interface{}{extendLockInput.StakerId},
 		ABI:             bindings.StakeManagerMetaData.ABI,
+		Account:         extendLockInput.Account,
 	})
 
 	log.Info("Extending lock...")

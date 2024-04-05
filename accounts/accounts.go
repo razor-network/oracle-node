@@ -6,37 +6,48 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/crypto"
 	"os"
-	"razor/core/types"
 	"razor/logger"
 	"razor/path"
 	"strings"
 )
 
 var (
-	log        = logger.NewLogger()
-	ksInstance *keystore.KeyStore
+	log = logger.NewLogger()
 )
 
-// InitializeKeystore directly initializes the global keystore instance.
-func initializeKeystore(keystorePath string) {
-	log.Info("Initialising keystoreInstance...")
-	ksInstance = keystore.NewKeyStore(keystorePath, keystore.StandardScryptN, keystore.StandardScryptP)
-}
-
 //This function takes path and password as input and returns new account
-func (AccountUtils) CreateAccount(keystorePath string, password string) accounts.Account {
+func (am *AccountManager) CreateAccount(keystorePath string, password string) accounts.Account {
 	if _, err := path.OSUtilsInterface.Stat(keystorePath); path.OSUtilsInterface.IsNotExist(err) {
 		mkdirErr := path.OSUtilsInterface.Mkdir(keystorePath, 0700)
 		if mkdirErr != nil {
 			log.Fatal("Error in creating directory: ", mkdirErr)
 		}
 	}
-	newAcc, err := AccountUtilsInterface.NewAccount(keystorePath, password)
+	newAcc, err := am.NewAccount(password)
 	if err != nil {
 		log.Fatal("Error in creating account: ", err)
 	}
 	return newAcc
+}
+
+//This function takes path and pass phrase as input and returns the new account
+func (am *AccountManager) NewAccount(passphrase string) (accounts.Account, error) {
+	ks := am.Keystore
+	accounts.NewManager(&accounts.Config{InsecureUnlockAllowed: false}, ks)
+	return ks.NewAccount(passphrase)
+}
+
+//This function takes address of account, password and keystore path as input and returns private key of account
+func (am *AccountManager) GetPrivateKey(address string, password string) (*ecdsa.PrivateKey, error) {
+	allAccounts := am.Keystore.Accounts()
+	for _, account := range allAccounts {
+		if strings.EqualFold(account.Address.Hex(), address) {
+			return getPrivateKeyFromKeystore(account.URL.Path, password)
+		}
+	}
+	return nil, errors.New("no keystore file found")
 }
 
 //This function takes and path of keystore and password as input and returns private key of account
@@ -54,26 +65,11 @@ func getPrivateKeyFromKeystore(keystoreFilePath string, password string) (*ecdsa
 	return key.PrivateKey, nil
 }
 
-//This function takes address of account, password and keystore path as input and returns private key of account
-func (AccountUtils) GetPrivateKey(address string, password string, keystoreDirPath string) (*ecdsa.PrivateKey, error) {
-	if ksInstance == nil {
-		initializeKeystore(keystoreDirPath)
-	}
-
-	allAccounts := ksInstance.Accounts()
-	for _, account := range allAccounts {
-		if strings.EqualFold(account.Address.Hex(), address) {
-			return getPrivateKeyFromKeystore(account.URL.Path, password)
-		}
-	}
-	return nil, errors.New("no keystore file found")
-}
-
 //This function takes hash, account and path as input and returns the signed data as array of byte
-func (AccountUtils) SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error) {
-	privateKey, err := AccountUtilsInterface.GetPrivateKey(account.Address, account.Password, defaultPath)
+func (am *AccountManager) SignData(hash []byte, address string, password string) ([]byte, error) {
+	privateKey, err := am.GetPrivateKey(address, password)
 	if err != nil {
 		return nil, err
 	}
-	return AccountUtilsInterface.Sign(hash, privateKey)
+	return crypto.Sign(hash, privateKey)
 }

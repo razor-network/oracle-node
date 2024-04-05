@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -49,7 +50,12 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
@@ -70,15 +76,13 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	razorUtils.CheckEthBalanceIsZero(client, address)
 
 	txnArgs := types.TransactionOptions{
-		Client:         client,
-		Password:       password,
-		Amount:         valueInWei,
-		AccountAddress: address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:  client,
+		Amount:  valueInWei,
+		ChainId: core.ChainId,
+		Config:  config,
+		Account: account,
 	}
 
-	log.Debugf("ExecuteDelegate: Calling Approve() with transaction arguments: %+v", txnArgs)
 	approveTxnHash, err := cmdUtils.Approve(txnArgs)
 	utils.CheckError("Approve error: ", err)
 

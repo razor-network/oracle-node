@@ -2,35 +2,33 @@
 package accounts
 
 import (
-	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/crypto"
 	"razor/core/types"
 )
 
-//go:generate mockery --name AccountInterface --output ./mocks/ --case=underscore
+//type AccountInterface interface {
+//	CreateAccount(keystorePath, password string) accounts.Account
+//	GetPrivateKey(address, password string) (*ecdsa.PrivateKey, error)
+//	SignData(hash []byte, account types.Account) ([]byte, error)
+//	NewAccount(passphrase string) (accounts.Account, error)
+//}
 
-var AccountUtilsInterface AccountInterface
-
-type AccountInterface interface {
-	CreateAccount(path string, password string) accounts.Account
-	GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error)
-	SignData(hash []byte, account types.Account, defaultPath string) ([]byte, error)
-	NewAccount(path string, passphrase string) (accounts.Account, error)
-	Sign(digestHash []byte, prv *ecdsa.PrivateKey) ([]byte, error)
+type AccountManager struct {
+	Keystore *keystore.KeyStore
 }
 
-type AccountUtils struct{}
-
-//This function takes path and pass phrase as input and returns the new account
-func (accountUtils AccountUtils) NewAccount(path string, passphrase string) (accounts.Account, error) {
-	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
-	accounts.NewManager(&accounts.Config{InsecureUnlockAllowed: false}, ks)
-	return ks.NewAccount(passphrase)
+func NewAccountManager(keystorePath string) *AccountManager {
+	ks := keystore.NewKeyStore(keystorePath, keystore.StandardScryptN, keystore.StandardScryptP)
+	return &AccountManager{
+		Keystore: ks,
+	}
 }
 
-//This function takes hash in form of byte array and private key as input and returns signature as byte array
-func (accountUtils AccountUtils) Sign(digestHash []byte, prv *ecdsa.PrivateKey) (sig []byte, err error) {
-	return crypto.Sign(digestHash, prv)
+// InitAccountStruct initializes an Account struct with provided details.
+func InitAccountStruct(address, password string, accountManager types.AccountManagerInterface) types.Account {
+	return types.Account{
+		Address:        address,
+		Password:       password,
+		AccountManager: accountManager,
+	}
 }

@@ -52,7 +52,7 @@ var (
 	osMock                *mocks.OSInterface
 	pathMock              *pathPkgMocks.PathInterface
 	osPathMock            *pathPkgMocks.OSInterface
-	accountsMock          *accountsPkgMocks.AccountInterface
+	accountsMock          *accountsPkgMocks.AccountManagerInterface
 )
 
 func SetUpMockInterfaces() {
@@ -88,9 +88,6 @@ func SetUpMockInterfaces() {
 
 	bindUtilsMock = new(utilsPkgMocks.BindUtils)
 	utils.BindingsInterface = bindingUtilsMock
-
-	accountUtilsMock = new(utilsPkgMocks.AccountsUtils)
-	utils.AccountsInterface = accountUtilsMock
 
 	blockManagerUtilsMock = new(utilsPkgMocks.BlockManagerUtils)
 	utils.BlockManagerInterface = blockManagerUtilsMock
@@ -169,9 +166,6 @@ func SetUpMockInterfaces() {
 
 	osPathMock = new(pathPkgMocks.OSInterface)
 	path.OSUtilsInterface = osPathMock
-
-	accountsMock = new(accountsPkgMocks.AccountInterface)
-	accountUtils = accountsMock
 }
 
 var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)

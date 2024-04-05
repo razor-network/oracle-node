@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"razor/core/types"
 	"strings"
 
@@ -28,14 +27,14 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 
 func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
 	log.Debug("Getting transaction options...")
-	defaultPath, err := PathInterface.GetDefaultPath()
-	CheckError("Error in fetching default path: ", err)
-	keystorePath := filepath.Join(defaultPath, "keystore_files")
-	privateKey, err := AccountsInterface.GetPrivateKey(transactionData.AccountAddress, transactionData.Password, keystorePath)
-	if privateKey == nil || err != nil {
-		CheckError("Error in fetching private key: ", errors.New(transactionData.AccountAddress+" not present in razor-go"))
+	account := transactionData.Account
+	if account.AccountManager == nil {
+		log.Fatal("Account Manager in transaction data is not initialised")
 	}
-	nonce, err := ClientInterface.GetNonceAtWithRetry(transactionData.Client, common.HexToAddress(transactionData.AccountAddress))
+	privateKey, err := account.AccountManager.GetPrivateKey(account.Address, account.Password)
+	CheckError("Error in fetching private key: ", err)
+
+	nonce, err := ClientInterface.GetNonceAtWithRetry(transactionData.Client, common.HexToAddress(account.Address))
 	CheckError("Error in fetching nonce: ", err)
 
 	gasPrice := GasInterface.GetGasPrice(transactionData.Client, transactionData.Config)
@@ -103,7 +102,7 @@ func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts 
 	}
 	contractAddress := common.HexToAddress(transactionData.ContractAddress)
 	msg := ethereum.CallMsg{
-		From:     common.HexToAddress(transactionData.AccountAddress),
+		From:     common.HexToAddress(transactionData.Account.Address),
 		To:       &contractAddress,
 		GasPrice: txnOpts.GasPrice,
 		Value:    txnOpts.Value,

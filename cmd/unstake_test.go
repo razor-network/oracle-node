@@ -23,8 +23,7 @@ import (
 func TestUnstake(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
-	var address string
-	var password string
+	var account types.Account
 	var stakerId uint32
 
 	type args struct {
@@ -134,8 +133,7 @@ func TestUnstake(t *testing.T) {
 			utils := &UtilsStruct{}
 			_, gotErr := utils.Unstake(config, client,
 				types.UnstakeInput{
-					Address:    address,
-					Password:   password,
+					Account:    account,
 					StakerId:   stakerId,
 					ValueInWei: tt.args.amount,
 				})
