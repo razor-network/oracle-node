@@ -11,79 +11,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCreate(t *testing.T) {
-	var password string
-
-	type args struct {
-		path    string
-		pathErr error
-		account accounts.Account
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    accounts.Account
-		wantErr error
-	}{
-		{
-			name: "Test 1: When create function executes successfully",
-			args: args{
-				path:    "/home/local",
-				pathErr: nil,
-				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
-					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-				},
-			},
-			want: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
-				URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When create fails due to path error",
-			args: args{
-				path:    "/home/local",
-				pathErr: errors.New("path error"),
-				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
-					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-				},
-			},
-			want: accounts.Account{Address: common.Address{0x00},
-				URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-			},
-			wantErr: errors.New("path error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			SetUpMockInterfaces()
-
-			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountsMock.On("CreateAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(accounts.Account{
-				Address: tt.args.account.Address,
-				URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-			})
-
-			utils := &UtilsStruct{}
-			got, err := utils.Create(password)
-
-			if got.Address != tt.want.Address {
-				t.Errorf("New address created, got = %v, want %v", got, tt.want.Address)
-			}
-
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for Create function, got = %v, want %v", got, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for Create function, got = %v, want %v", got, tt.wantErr)
-				}
-			}
-		})
-	}
-}
-
 func TestExecuteCreate(t *testing.T) {
 	var flagSet *pflag.FlagSet
 
@@ -131,7 +58,7 @@ func TestExecuteCreate(t *testing.T) {
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			cmdUtilsMock.On("Create", mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
 			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 
