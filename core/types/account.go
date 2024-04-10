@@ -5,6 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 )
 
+//go:generate mockery --name=AccountManagerInterface --output=../../accounts/mocks --case=underscore
+
 type Account struct {
 	Address        string
 	Password       string

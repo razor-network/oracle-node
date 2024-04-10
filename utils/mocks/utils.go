@@ -4,11 +4,9 @@ package mocks
 
 import (
 	big "math/big"
-	accounts "razor/accounts"
+	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
-
-	bindings "razor/pkg/bindings"
 
 	cache "razor/cache"
 
@@ -29,19 +27,19 @@ type Utils struct {
 }
 
 // AccountManagerForKeystore provides a mock function with given fields:
-func (_m *Utils) AccountManagerForKeystore() (*accounts.AccountManager, error) {
+func (_m *Utils) AccountManagerForKeystore() (types.AccountManagerInterface, error) {
 	ret := _m.Called()
 
-	var r0 *accounts.AccountManager
+	var r0 types.AccountManagerInterface
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (*accounts.AccountManager, error)); ok {
+	if rf, ok := ret.Get(0).(func() (types.AccountManagerInterface, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() *accounts.AccountManager); ok {
+	if rf, ok := ret.Get(0).(func() types.AccountManagerInterface); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*accounts.AccountManager)
+			r0 = ret.Get(0).(types.AccountManagerInterface)
 		}
 	}
 

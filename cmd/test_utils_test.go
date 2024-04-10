@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
-	//accountsPkgMocks "razor/accounts/mocks"
 	"razor/cmd/mocks"
 	"razor/path"
 	pathPkgMocks "razor/path/mocks"
@@ -51,7 +50,6 @@ var (
 	osMock                *mocks.OSInterface
 	pathMock              *pathPkgMocks.PathInterface
 	osPathMock            *pathPkgMocks.OSInterface
-	//accountsMock          *accountsPkgMocks.AccountManagerInterface
 )
 
 func SetUpMockInterfaces() {
@@ -165,8 +163,6 @@ func SetUpMockInterfaces() {
 
 	osPathMock = new(pathPkgMocks.OSInterface)
 	path.OSUtilsInterface = osPathMock
-
-	//accountsMock = new(accountsPkgMocks.AccountManagerInterface)
 }
 
 var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
