@@ -390,11 +390,11 @@ func (*UtilsStruct) CheckPassword(account types.Account) error {
 	return nil
 }
 
-func (*UtilsStruct) AccountManagerForKeystore() (*accounts.AccountManager, error) {
+func (*UtilsStruct) AccountManagerForKeystore() (types.AccountManagerInterface, error) {
 	razorPath, err := PathInterface.GetDefaultPath()
 	if err != nil {
 		log.Error("GetKeystorePath: Error in getting .razor path: ", err)
-		return &accounts.AccountManager{}, err
+		return nil, err
 	}
 	keystorePath := filepath.Join(razorPath, "keystore_files")
 

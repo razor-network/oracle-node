@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/accounts"
 	"razor/cache"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -157,7 +156,7 @@ type Utils interface {
 	GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	CheckPassword(account types.Account) error
-	AccountManagerForKeystore() (*accounts.AccountManager, error)
+	AccountManagerForKeystore() (types.AccountManagerInterface, error)
 }
 
 type EthClientUtils interface {
