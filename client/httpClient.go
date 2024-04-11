@@ -2,22 +2,25 @@ package client
 
 import (
 	"net/http"
-	"razor/core"
+	"razor/core/types"
 	"time"
 )
 
-var httpClient *http.Client
-
-func InitHttpClient(httpTimeout int64) {
-	httpClient = &http.Client{
-		Timeout: time.Duration(httpTimeout) * time.Second,
-		Transport: &http.Transport{
-			MaxIdleConns:        core.HTTPClientMaxIdleConns,
-			MaxIdleConnsPerHost: core.HTTPClientMaxIdleConnsPerHost,
-		},
-	}
+type HttpClient struct {
+	Client *http.Client
 }
 
-func GetHttpClient() *http.Client {
-	return httpClient
+func NewHttpClient(config types.HttpClientConfig) *HttpClient {
+	client := &http.Client{
+		Timeout: time.Duration(config.Timeout) * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        config.MaxIdleConnections,
+			MaxIdleConnsPerHost: config.MaxIdleConnectionsPerHost,
+		},
+	}
+	return &HttpClient{client}
+}
+
+func (hc *HttpClient) Do(request *http.Request) (*http.Response, error) {
+	return hc.Client.Do(request)
 }
