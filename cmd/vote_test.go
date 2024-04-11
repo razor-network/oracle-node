@@ -280,18 +280,19 @@ func TestCalculateSecret(t *testing.T) {
 			accountManager := accounts.NewAccountManager(testKeystorePath)
 			account := accounts.InitAccountStruct(tt.args.address, tt.args.password, accountManager)
 			gotSignature, gotSecret, err := cmdUtils.CalculateSecret(account, tt.args.epoch, testKeystorePath, tt.args.chainId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateSecret() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
 			gotSignatureInHash := hex.EncodeToString(gotSignature)
 			gotSecretInHash := hex.EncodeToString(gotSecret)
+
 			if !reflect.DeepEqual(gotSignatureInHash, tt.wantSignature) {
 				t.Errorf("CalculateSecret() Signature = %v, want %v", gotSignatureInHash, tt.wantSignature)
 			}
 			if !reflect.DeepEqual(gotSecretInHash, tt.wantSecret) {
 				t.Errorf("CalculateSecret() Secret = %v, want %v", gotSecretInHash, tt.wantSecret)
-			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateSecret() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 		})
 	}
