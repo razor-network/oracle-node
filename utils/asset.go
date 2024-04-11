@@ -323,7 +323,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 	var parsedData interface{}
 	if job.SelectorType == 0 {
 		start := time.Now()
-		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache, httpClient)
+		response, apiErr = GetDataFromAPI(httpClient, dataSourceURLStruct, localCache)
 		if apiErr != nil {
 			log.Errorf("Job ID: %d, Error in fetching data from API %s: %v", job.Id, job.Url, apiErr)
 			return nil, apiErr

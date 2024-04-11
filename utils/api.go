@@ -20,7 +20,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache, httpClient *client.HttpClient) ([]byte, error) {
+func GetDataFromAPI(httpClient *client.HttpClient, dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
 	cacheKey, err := generateCacheKey(dataSourceURLStruct.URL, dataSourceURLStruct.Body)
 	if err != nil {
 		log.Errorf("Error in generating cache key for API %s: %v", dataSourceURLStruct.URL, err)
@@ -33,7 +33,7 @@ func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.L
 		return cachedData, nil
 	}
 
-	response, err := makeAPIRequest(dataSourceURLStruct, httpClient)
+	response, err := makeAPIRequest(httpClient, dataSourceURLStruct)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.L
 	return response, nil
 }
 
-func makeAPIRequest(dataSourceURLStruct types.DataSourceURL, httpClient *client.HttpClient) ([]byte, error) {
+func makeAPIRequest(httpClient *client.HttpClient, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	var requestBody io.Reader // Using the broader io.Reader interface here
 
 	switch dataSourceURLStruct.Type {
@@ -65,7 +65,7 @@ func makeAPIRequest(dataSourceURLStruct types.DataSourceURL, httpClient *client.
 	var response []byte
 	err := retry.Do(
 		func() error {
-			responseBody, err := ProcessRequest(dataSourceURLStruct, requestBody, httpClient)
+			responseBody, err := ProcessRequest(httpClient, dataSourceURLStruct, requestBody)
 			if err != nil {
 				log.Errorf("Error in processing %s request: %v", dataSourceURLStruct.Type, err)
 				return err
@@ -121,7 +121,7 @@ func addHeaderToRequest(request *http.Request, headerMap map[string]string) *htt
 	return request
 }
 
-func ProcessRequest(dataSourceURLStruct types.DataSourceURL, requestBody io.Reader, httpClient *client.HttpClient) ([]byte, error) {
+func ProcessRequest(httpClient *client.HttpClient, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
 	request, err := http.NewRequest(dataSourceURLStruct.Type, dataSourceURLStruct.URL, requestBody)
 	if err != nil {
 		return nil, err
