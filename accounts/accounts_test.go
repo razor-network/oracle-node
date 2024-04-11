@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+func privateKeyToHex(privateKey *ecdsa.PrivateKey) string {
+	return hex.EncodeToString(privateKey.D.Bytes())
+}
+
 func Test_getPrivateKeyFromKeystore(t *testing.T) {
 	password := "Razor@123"
 
@@ -17,7 +21,7 @@ func Test_getPrivateKeyFromKeystore(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *ecdsa.PrivateKey
+		want    string
 		wantErr bool
 	}{
 		{
@@ -26,6 +30,7 @@ func Test_getPrivateKeyFromKeystore(t *testing.T) {
 				keystoreFilePath: "test_accounts/UTC--2024-03-20T07-03-56.358521000Z--911654feb423363fb771e04e18d1e7325ae10a91",
 				password:         password,
 			},
+			want:    "b110b1f06b7b64323a6fb768ceab966abe9f65f4e6ab3c39382bd446122f7b01",
 			wantErr: false,
 		},
 		{
@@ -34,7 +39,7 @@ func Test_getPrivateKeyFromKeystore(t *testing.T) {
 				keystoreFilePath: "test_accounts/UTC--2024-03-20T07-03-56.358521000Z--211654feb423363fb771e04e18d1e7325ae10a91",
 				password:         password,
 			},
-			want:    nil,
+			want:    "",
 			wantErr: true,
 		},
 		{
@@ -43,16 +48,25 @@ func Test_getPrivateKeyFromKeystore(t *testing.T) {
 				keystoreFilePath: "test_accounts/UTC--2024-03-20T07-03-56.358521000Z--911654feb423363fb771e04e18d1e7325ae10a91",
 				password:         "Razor@456",
 			},
+			want:    "",
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := getPrivateKeyFromKeystore(tt.args.keystoreFilePath, tt.args.password)
+			gotPrivateKey, err := getPrivateKeyFromKeystore(tt.args.keystoreFilePath, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPrivateKeyFromKeystore() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+
+			// If there's no error and a private key is expected, compare the keys
+			if !tt.wantErr && tt.want != "" {
+				gotPrivateKeyHex := privateKeyToHex(gotPrivateKey)
+				if gotPrivateKeyHex != tt.want {
+					t.Errorf("GetPrivateKey() got private key = %v, want %v", gotPrivateKeyHex, tt.want)
+				}
 			}
 		})
 	}
@@ -69,6 +83,7 @@ func TestGetPrivateKey(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
+		want    string
 		wantErr bool
 	}{
 		{
@@ -77,6 +92,7 @@ func TestGetPrivateKey(t *testing.T) {
 				address:  "0x911654feb423363fb771e04e18d1e7325ae10a91",
 				password: password,
 			},
+			want:    "b110b1f06b7b64323a6fb768ceab966abe9f65f4e6ab3c39382bd446122f7b01",
 			wantErr: false,
 		},
 		{
@@ -85,6 +101,7 @@ func TestGetPrivateKey(t *testing.T) {
 				address:  "0x2F5F59615689B706B6AD13FD03343DCA28784989",
 				password: password,
 			},
+			want:    "726223b8b95628edef6cf2774ddde39fb3ea482949c8847fabf74cd994219b50",
 			wantErr: false,
 		},
 		{
@@ -92,6 +109,7 @@ func TestGetPrivateKey(t *testing.T) {
 			args: args{
 				address: "0x911654feb423363fb771e04e18d1e7325ae10a91_not_present",
 			},
+			want:    "",
 			wantErr: true,
 		},
 		{
@@ -100,16 +118,25 @@ func TestGetPrivateKey(t *testing.T) {
 				address:  "0x911654feb423363fb771e04e18d1e7325ae10a91",
 				password: "incorrect password",
 			},
+			want:    "",
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			am := NewAccountManager(keystoreDirPath)
-			_, err := am.GetPrivateKey(tt.args.address, tt.args.password)
+			gotPrivateKey, err := am.GetPrivateKey(tt.args.address, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetPrivateKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+
+			// If there's no error and a private key is expected, compare the keys
+			if !tt.wantErr && tt.want != "" {
+				gotPrivateKeyHex := privateKeyToHex(gotPrivateKey)
+				if gotPrivateKeyHex != tt.want {
+					t.Errorf("GetPrivateKey() got private key = %v, want %v", gotPrivateKeyHex, tt.want)
+				}
 			}
 		})
 	}
