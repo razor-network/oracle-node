@@ -7,7 +7,7 @@ import (
 )
 
 type HttpClient struct {
-	Client *http.Client
+	client *http.Client
 }
 
 func NewHttpClient(config types.HttpClientConfig) *HttpClient {
@@ -22,5 +22,5 @@ func NewHttpClient(config types.HttpClientConfig) *HttpClient {
 }
 
 func (hc *HttpClient) Do(request *http.Request) (*http.Response, error) {
-	return hc.Client.Do(request)
+	return hc.client.Do(request)
 }
