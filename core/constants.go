@@ -85,5 +85,5 @@ var MaxIterations = 10000000
 
 // Following are the constants used in custom http.Transport configuration for the common HTTP client that we use for all the requests
 
-var HTTPClientMaxIdleConns = 15
-var HTTPClientMaxIdleConnsPerHost = 5
+const HTTPClientMaxIdleConns = 15
+const HTTPClientMaxIdleConnsPerHost = 5
