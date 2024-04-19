@@ -32,9 +32,9 @@ func CalculateLatestBlock(client *ethclient.Client) {
 			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
 			if err != nil {
 				logrus.Error("CalculateBlockNumber: Error in fetching block: ", err)
-				continue
+			} else {
+				SetLatestBlock(latestHeader)
 			}
-			SetLatestBlock(latestHeader)
 		}
 		time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 	}
