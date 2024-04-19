@@ -4,6 +4,7 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"math"
 	"math/big"
 	"razor/core"
@@ -29,8 +30,8 @@ var globalProposedDataStruct types.ProposeFileData
 // Find iteration using salt as seed
 
 //This functions handles the propose state
-func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 2 {
+func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, rogueData types.Rogue) error {
+	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return err
 	}
@@ -132,8 +133,8 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		}
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
-	log.Debugf("Propose: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", blockNumber, epoch, rogueData)
-	medians, ids, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, rogueData)
+	log.Debugf("Propose: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", latestHeader.Number, epoch, rogueData)
+	medians, ids, revealedDataMaps, err := cmdUtils.MakeBlock(client, latestHeader.Number, epoch, rogueData)
 	if err != nil {
 		log.Error(err)
 		return err

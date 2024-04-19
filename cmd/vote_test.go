@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path"
@@ -330,11 +331,12 @@ func TestCalculateSecret(t *testing.T) {
 
 func TestInitiateCommit(t *testing.T) {
 	var (
-		client    *ethclient.Client
-		config    types.Configurations
-		account   types.Account
-		stakerId  uint32
-		rogueData types.Rogue
+		client       *ethclient.Client
+		config       types.Configurations
+		latestHeader *Types.Header
+		account      types.Account
+		stakerId     uint32
+		rogueData    types.Rogue
 	)
 	type args struct {
 		staker                    bindings.StructsStaker
@@ -542,7 +544,7 @@ func TestInitiateCommit(t *testing.T) {
 			pathMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
 			ut := &UtilsStruct{}
-			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, &clientPkg.HttpClient{}, rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, latestHeader, &clientPkg.HttpClient{}, rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiateCommit() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -551,9 +553,10 @@ func TestInitiateCommit(t *testing.T) {
 
 func TestInitiateReveal(t *testing.T) {
 	var (
-		client  *ethclient.Client
-		config  types.Configurations
-		account types.Account
+		client       *ethclient.Client
+		config       types.Configurations
+		account      types.Account
+		latestHeader *Types.Header
 	)
 
 	randomNum := big.NewInt(1111)
@@ -762,7 +765,7 @@ func TestInitiateReveal(t *testing.T) {
 			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
-			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, tt.args.staker, tt.args.rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, tt.args.staker, latestHeader, tt.args.rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiateReveal() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -771,11 +774,10 @@ func TestInitiateReveal(t *testing.T) {
 
 func TestInitiatePropose(t *testing.T) {
 	var (
-		client      *ethclient.Client
-		config      types.Configurations
-		account     types.Account
-		blockNumber *big.Int
-		rogueData   types.Rogue
+		client    *ethclient.Client
+		config    types.Configurations
+		account   types.Account
+		rogueData types.Rogue
 	)
 	type args struct {
 		staker            bindings.StructsStaker
@@ -787,6 +789,10 @@ func TestInitiatePropose(t *testing.T) {
 		lastReveal        uint32
 		lastRevealErr     error
 		proposeTxnErr     error
+	}
+
+	latestHeader := &Types.Header{
+		Number: big.NewInt(1),
 	}
 	tests := []struct {
 		name    string
@@ -878,7 +884,7 @@ func TestInitiatePropose(t *testing.T) {
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxnErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			ut := &UtilsStruct{}
-			if err := ut.InitiatePropose(client, config, account, tt.args.epoch, tt.args.staker, blockNumber, rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiatePropose(client, config, account, tt.args.epoch, tt.args.staker, latestHeader, rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiatePropose() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -890,11 +896,13 @@ func TestHandleBlock(t *testing.T) {
 		client                    *ethclient.Client
 		account                   types.Account
 		stakerId                  uint32
-		blockNumber               *big.Int
 		rogueData                 types.Rogue
 		backupNodeActionsToIgnore []string
 	)
 
+	latestHeader := &Types.Header{
+		Number: big.NewInt(1),
+	}
 	type args struct {
 		config               types.Configurations
 		state                int64
@@ -1217,7 +1225,7 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
-			ut.HandleBlock(client, account, stakerId, blockNumber, tt.args.config, &clientPkg.HttpClient{}, rogueData, backupNodeActionsToIgnore)
+			ut.HandleBlock(client, account, stakerId, latestHeader, tt.args.config, &clientPkg.HttpClient{}, rogueData, backupNodeActionsToIgnore)
 		})
 	}
 }

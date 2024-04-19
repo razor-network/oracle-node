@@ -14,6 +14,8 @@ import (
 
 	common "github.com/ethereum/go-ethereum/common"
 
+	coretypes "github.com/ethereum/go-ethereum/core/types"
+
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
 	mock "github.com/stretchr/testify/mock"
@@ -570,23 +572,23 @@ func (_m *Utils) GetBlockManagerWithOpts(_a0 *ethclient.Client) (*bindings.Block
 	return r0, r1
 }
 
-// GetBufferedState provides a mock function with given fields: _a0, buffer
-func (_m *Utils) GetBufferedState(_a0 *ethclient.Client, buffer int32) (int64, error) {
-	ret := _m.Called(_a0, buffer)
+// GetBufferedState provides a mock function with given fields: _a0, header, buffer
+func (_m *Utils) GetBufferedState(_a0 *ethclient.Client, header *coretypes.Header, buffer int32) (int64, error) {
+	ret := _m.Called(_a0, header, buffer)
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) (int64, error)); ok {
-		return rf(_a0, buffer)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *coretypes.Header, int32) (int64, error)); ok {
+		return rf(_a0, header, buffer)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, int32) int64); ok {
-		r0 = rf(_a0, buffer)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *coretypes.Header, int32) int64); ok {
+		r0 = rf(_a0, header, buffer)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, int32) error); ok {
-		r1 = rf(_a0, buffer)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *coretypes.Header, int32) error); ok {
+		r1 = rf(_a0, header, buffer)
 	} else {
 		r1 = ret.Error(1)
 	}

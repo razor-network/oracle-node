@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -52,21 +53,17 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	return balance, nil
 }
 
-func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
-	block, err := ClientInterface.GetLatestBlockWithRetry(client)
-	if err != nil {
-		return -1, err
-	}
+func (*UtilsStruct) GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error) {
 	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
 	if err != nil {
 		return -1, err
 	}
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if block.Time%(core.StateLength) > upperLimit-stateBuffer || block.Time%(core.StateLength) < lowerLimit+stateBuffer {
+	if header.Time%(core.StateLength) > upperLimit-stateBuffer || header.Time%(core.StateLength) < lowerLimit+stateBuffer {
 		return -1, nil
 	}
-	state := block.Time / core.StateLength
+	state := header.Time / core.StateLength
 	return int64(state % core.NumberOfStates), nil
 }
 

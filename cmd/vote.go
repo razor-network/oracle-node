@@ -18,6 +18,8 @@ import (
 	"razor/utils"
 	"time"
 
+	Types "github.com/ethereum/go-ethereum/core/types"
+
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/spf13/pflag"
@@ -155,7 +157,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			log.Debugf("Vote: Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				cmdUtils.HandleBlock(client, account, stakerId, latestHeader.Number, config, httpClient, rogueData, backupNodeActionsToIgnore)
+				cmdUtils.HandleBlock(client, account, stakerId, latestHeader, config, httpClient, rogueData, backupNodeActionsToIgnore)
 			}
 			time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 		}
@@ -170,8 +172,8 @@ var (
 )
 
 //This function handles the block
-func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, blockNumber *big.Int, config types.Configurations, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
-	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
+func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, latestHeader *Types.Header, config types.Configurations, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+	state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
@@ -238,21 +240,21 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	switch state {
 	case 0:
 		log.Debugf("Starting commit...")
-		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, httpClient, rogueData)
+		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, latestHeader, httpClient, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 1:
 		log.Debugf("Starting reveal...")
-		err := cmdUtils.InitiateReveal(client, config, account, epoch, staker, rogueData)
+		err := cmdUtils.InitiateReveal(client, config, account, epoch, staker, latestHeader, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 2:
 		log.Debugf("Starting propose...")
-		err := cmdUtils.InitiatePropose(client, config, account, epoch, staker, blockNumber, rogueData)
+		err := cmdUtils.InitiatePropose(client, config, account, epoch, staker, latestHeader, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
@@ -265,7 +267,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 
-		err := cmdUtils.HandleDispute(client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
+		err := cmdUtils.HandleDispute(client, config, account, epoch, latestHeader.Number, rogueData, backupNodeActionsToIgnore)
 		if err != nil {
 			log.Error(err)
 			break
@@ -320,7 +322,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 }
 
 //This function initiates the commit
-func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, httpClient *clientPkg.HttpClient, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, httpClient *clientPkg.HttpClient, rogueData types.Rogue) error {
 	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)
@@ -369,7 +371,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, seed, commitData.Leaves)
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, latestHeader, seed, commitData.Leaves)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
@@ -402,7 +404,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 }
 
 //This function initiates the reveal
-func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiateReveal: Staked Amount: ", stakedAmount)
 	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
@@ -513,7 +515,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			SeqAllottedCollections: globalCommitDataStruct.SeqAllottedCollections,
 		}
 		log.Debugf("InitiateReveal: Calling Reveal() with arguments epoch = %d, commitDataToSend = %+v, signature = %v", epoch, commitDataToSend, signature)
-		revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, commitDataToSend, signature)
+		revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, latestHeader, commitDataToSend, signature)
 		if err != nil {
 			return errors.New("Reveal error: " + err.Error())
 		}
@@ -532,7 +534,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 }
 
 //This function initiates the propose
-func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiatePropose: Staked Amount: ", stakedAmount)
 	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
@@ -564,8 +566,8 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 		return nil
 	}
 
-	log.Debugf("InitiatePropose: Calling Propose() with arguments staker = %+v, epoch = %d, blockNumber = %s, rogueData = %+v", staker, epoch, blockNumber, rogueData)
-	err = cmdUtils.Propose(client, config, account, staker, epoch, blockNumber, rogueData)
+	log.Debugf("InitiatePropose: Calling Propose() with arguments staker = %+v, epoch = %d, blockNumber = %s, rogueData = %+v", staker, epoch, latestHeader.Number, rogueData)
+	err = cmdUtils.Propose(client, config, account, staker, epoch, latestHeader, rogueData)
 	if err != nil {
 		return errors.New("Propose error: " + err.Error())
 	}
