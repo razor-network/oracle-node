@@ -69,8 +69,8 @@ const APIKeyRegex = `\$\{(.+?)\}`
 
 // Following are the constants which defines retry attempts and retry delay if there is an error in processing request
 const (
-	ProcessRequestRetryAttempts uint = 2
-	ProcessRequestRetryDelay         = 2
+	ProcessRequestRetryAttempts uint  = 2
+	ProcessRequestRetryDelay    int64 = 2
 )
 
 //SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
