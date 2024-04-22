@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -14,6 +15,7 @@ import (
 	"razor/utils"
 	"reflect"
 	"testing"
+	"time"
 
 	Types "github.com/ethereum/go-ethereum/core/types"
 
@@ -1227,6 +1229,65 @@ func TestHandleBlock(t *testing.T) {
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
 			ut.HandleBlock(client, account, stakerId, latestHeader, tt.args.config, &clientPkg.HttpClient{}, rogueData, backupNodeActionsToIgnore)
+		})
+	}
+}
+
+func TestVote(t *testing.T) {
+	var (
+		config                    types.Configurations
+		client                    *ethclient.Client
+		rogueData                 types.Rogue
+		account                   types.Account
+		stakerId                  uint32
+		backupNodeActionsToIgnore []string
+	)
+	type args struct {
+		header *Types.Header
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test when context is cancelled",
+			args: args{
+				header: &Types.Header{
+					Number: big.NewInt(101),
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			SetUpMockInterfaces()
+
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.header, nil)
+			cmdUtilsMock.On("HandleBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+
+			ut := &UtilsStruct{}
+			errChan := make(chan error)
+			// Run Vote function in a goroutine
+			go func() {
+				errChan <- ut.Vote(ctx, config, client, rogueData, account, stakerId, backupNodeActionsToIgnore)
+			}()
+
+			// Wait for some time to allow Vote function to execute
+			time.Sleep(time.Second * 2)
+
+			// Cancel the context to simulate its done
+			cancel()
+
+			// Check the error returned from the function
+			err := <-errChan
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Vote() error = %v, wantErr %v", err, tt.wantErr)
+			}
 		})
 	}
 }
