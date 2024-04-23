@@ -60,6 +60,11 @@ func startListener(client *ethclient.Client, fromBlock *big.Int, interval time.D
 		log.Errorf("Error in waiting for appropriate state for starting event listener: ", err)
 		return
 	}
+
+	// Sleeping till half of the confirm state to start listening for events in interval of duration core.AssetUpdateListenerInterval
+	log.Debug("Will start listening for asset update events after half of the confirm state passes, sleeping till then...")
+	time.Sleep(time.Second * time.Duration(core.StateLength/2))
+
 	collectionManagerContractABI, err := abi.JSON(strings.NewReader(bindings.CollectionManagerMetaData.ABI))
 	if err != nil {
 		log.Errorf("Error in parsing contract ABI: %v", err)
@@ -71,7 +76,9 @@ func startListener(client *ethclient.Client, fromBlock *big.Int, interval time.D
 
 	eventNames := []string{"JobUpdated", "CollectionUpdated", "CollectionActivityStatus", "JobCreated", "CollectionCreated"}
 
+	log.Debugf("Starting to listen for asset update events from now in interval of every %v seconds...", interval)
 	for range ticker.C {
+		log.Debug("Checking for asset update events...")
 		toBlock, err := clientUtils.GetLatestBlockWithRetry(client)
 		if err != nil {
 			log.Error("Error in getting latest block to start event listener: ", err)
