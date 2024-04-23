@@ -110,8 +110,8 @@ type Utils interface {
 	GetNumCollections(client *ethclient.Client) (uint16, error)
 	GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error)
 	GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
-	GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
-	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error)
+	GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error)
+	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache, commitParams types.CommitParams) (*big.Int, error)
 	GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) ([]*big.Int, []uint8)
 	GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error)
 	GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
@@ -119,11 +119,11 @@ type Utils interface {
 	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
 	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
-	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error)
+	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache, commitParams types.CommitParams) (*big.Int, error)
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
-	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
+	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams types.CommitParams) ([]bindings.StructsJob, []uint16)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
 	GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error)
@@ -158,6 +158,7 @@ type Utils interface {
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	CheckPassword(account types.Account) error
 	AccountManagerForKeystore() (types.AccountManagerInterface, error)
+	ResetAssetCache(client *ethclient.Client, bufferPercent int32, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) error
 }
 
 type EthClientUtils interface {
