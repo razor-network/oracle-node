@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -121,9 +120,10 @@ func TestCommit(t *testing.T) {
 
 func TestHandleCommitState(t *testing.T) {
 	var (
-		client *ethclient.Client
-		epoch  uint32
-		seed   []byte
+		client       *ethclient.Client
+		epoch        uint32
+		seed         []byte
+		commitParams types.CommitParams
 	)
 
 	rogueValue := big.NewInt(1111)
@@ -234,7 +234,7 @@ func TestHandleCommitState(t *testing.T) {
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, seed, &clientPkg.HttpClient{}, tt.args.rogueData)
+			got, err := utils.HandleCommitState(client, epoch, seed, commitParams, tt.args.rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}
@@ -372,9 +372,10 @@ func TestGetSalt(t *testing.T) {
 
 func BenchmarkHandleCommitState(b *testing.B) {
 	var (
-		client *ethclient.Client
-		epoch  uint32
-		seed   []byte
+		client       *ethclient.Client
+		epoch        uint32
+		seed         []byte
+		commitParams types.CommitParams
 	)
 
 	rogueValue := big.NewInt(1111)
@@ -399,7 +400,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 				ut := &UtilsStruct{}
-				_, err := ut.HandleCommitState(client, epoch, seed, &clientPkg.HttpClient{}, types.Rogue{IsRogue: false})
+				_, err := ut.HandleCommitState(client, epoch, seed, commitParams, types.Rogue{IsRogue: false})
 				if err != nil {
 					log.Fatal(err)
 				}

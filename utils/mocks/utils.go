@@ -70,25 +70,25 @@ func (_m *Utils) AddJobToJSON(fileName string, job *types.StructsJob) error {
 	return r0
 }
 
-// Aggregate provides a mock function with given fields: _a0, previousEpoch, collection, localCache, httpClient
-func (_m *Utils) Aggregate(_a0 *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error) {
-	ret := _m.Called(_a0, previousEpoch, collection, localCache, httpClient)
+// Aggregate provides a mock function with given fields: _a0, previousEpoch, collection, localCache, commitParams
+func (_m *Utils) Aggregate(_a0 *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache, commitParams types.CommitParams) (*big.Int, error) {
+	ret := _m.Called(_a0, previousEpoch, collection, localCache, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache, *client.HttpClient) (*big.Int, error)); ok {
-		return rf(_a0, previousEpoch, collection, localCache, httpClient)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache, types.CommitParams) (*big.Int, error)); ok {
+		return rf(_a0, previousEpoch, collection, localCache, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache, *client.HttpClient) *big.Int); ok {
-		r0 = rf(_a0, previousEpoch, collection, localCache, httpClient)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache, types.CommitParams) *big.Int); ok {
+		r0 = rf(_a0, previousEpoch, collection, localCache, commitParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache, *client.HttpClient) error); ok {
-		r1 = rf(_a0, previousEpoch, collection, localCache, httpClient)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection, *cache.LocalCache, types.CommitParams) error); ok {
+		r1 = rf(_a0, previousEpoch, collection, localCache, commitParams)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -321,23 +321,23 @@ func (_m *Utils) FetchPreviousValue(_a0 *ethclient.Client, epoch uint32, assetId
 	return r0, r1
 }
 
-// GetActiveCollection provides a mock function with given fields: _a0, collectionId
-func (_m *Utils) GetActiveCollection(_a0 *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	ret := _m.Called(_a0, collectionId)
+// GetActiveCollection provides a mock function with given fields: collectionsCache, collectionId
+func (_m *Utils) GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error) {
+	ret := _m.Called(collectionsCache, collectionId)
 
 	var r0 bindings.StructsCollection
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) (bindings.StructsCollection, error)); ok {
-		return rf(_a0, collectionId)
+	if rf, ok := ret.Get(0).(func(*cache.CollectionsCache, uint16) (bindings.StructsCollection, error)); ok {
+		return rf(collectionsCache, collectionId)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16) bindings.StructsCollection); ok {
-		r0 = rf(_a0, collectionId)
+	if rf, ok := ret.Get(0).(func(*cache.CollectionsCache, uint16) bindings.StructsCollection); ok {
+		r0 = rf(collectionsCache, collectionId)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsCollection)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16) error); ok {
-		r1 = rf(_a0, collectionId)
+	if rf, ok := ret.Get(1).(func(*cache.CollectionsCache, uint16) error); ok {
+		r1 = rf(collectionsCache, collectionId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -395,25 +395,25 @@ func (_m *Utils) GetActiveJob(_a0 *ethclient.Client, jobId uint16) (bindings.Str
 	return r0, r1
 }
 
-// GetAggregatedDataOfCollection provides a mock function with given fields: _a0, collectionId, epoch, localCache, httpClient
-func (_m *Utils) GetAggregatedDataOfCollection(_a0 *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error) {
-	ret := _m.Called(_a0, collectionId, epoch, localCache, httpClient)
+// GetAggregatedDataOfCollection provides a mock function with given fields: _a0, collectionId, epoch, localCache, commitParams
+func (_m *Utils) GetAggregatedDataOfCollection(_a0 *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache, commitParams types.CommitParams) (*big.Int, error) {
+	ret := _m.Called(_a0, collectionId, epoch, localCache, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache, *client.HttpClient) (*big.Int, error)); ok {
-		return rf(_a0, collectionId, epoch, localCache, httpClient)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache, types.CommitParams) (*big.Int, error)); ok {
+		return rf(_a0, collectionId, epoch, localCache, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache, *client.HttpClient) *big.Int); ok {
-		r0 = rf(_a0, collectionId, epoch, localCache, httpClient)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache, types.CommitParams) *big.Int); ok {
+		r0 = rf(_a0, collectionId, epoch, localCache, commitParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache, *client.HttpClient) error); ok {
-		r1 = rf(_a0, collectionId, epoch, localCache, httpClient)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32, *cache.LocalCache, types.CommitParams) error); ok {
+		r1 = rf(_a0, collectionId, epoch, localCache, commitParams)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1740,25 +1740,25 @@ func (_m *Utils) GetWithdrawInitiationPeriod(_a0 *ethclient.Client) (uint16, err
 	return r0, r1
 }
 
-// HandleOfficialJobsFromJSONFile provides a mock function with given fields: _a0, collection, dataString
-func (_m *Utils) HandleOfficialJobsFromJSONFile(_a0 *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16) {
-	ret := _m.Called(_a0, collection, dataString)
+// HandleOfficialJobsFromJSONFile provides a mock function with given fields: _a0, collection, dataString, commitParams
+func (_m *Utils) HandleOfficialJobsFromJSONFile(_a0 *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams types.CommitParams) ([]bindings.StructsJob, []uint16) {
+	ret := _m.Called(_a0, collection, dataString, commitParams)
 
 	var r0 []bindings.StructsJob
 	var r1 []uint16
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string) ([]bindings.StructsJob, []uint16)); ok {
-		return rf(_a0, collection, dataString)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, types.CommitParams) ([]bindings.StructsJob, []uint16)); ok {
+		return rf(_a0, collection, dataString, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string) []bindings.StructsJob); ok {
-		r0 = rf(_a0, collection, dataString)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, types.CommitParams) []bindings.StructsJob); ok {
+		r0 = rf(_a0, collection, dataString, commitParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]bindings.StructsJob)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsCollection, string) []uint16); ok {
-		r1 = rf(_a0, collection, dataString)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsCollection, string, types.CommitParams) []uint16); ok {
+		r1 = rf(_a0, collection, dataString, commitParams)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).([]uint16)
@@ -1866,6 +1866,20 @@ func (_m *Utils) ReadJSONData(fileName string) (map[string]*types.StructsJob, er
 	}
 
 	return r0, r1
+}
+
+// ResetAssetCache provides a mock function with given fields: _a0, jobsCache, collectionsCache
+func (_m *Utils) ResetAssetCache(_a0 *ethclient.Client, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) error {
+	ret := _m.Called(_a0, jobsCache, collectionsCache)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *cache.JobsCache, *cache.CollectionsCache) error); ok {
+		r0 = rf(_a0, jobsCache, collectionsCache)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // SecondsToReadableTime provides a mock function with given fields: input
