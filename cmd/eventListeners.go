@@ -59,7 +59,7 @@ func startListener(client *ethclient.Client, fromBlock *big.Int, interval time.D
 	// Will start listening for asset update events from confirm state
 	_, err := cmdUtils.WaitForAppropriateState(client, "start event listener for asset update events", 4)
 	if err != nil {
-		log.Errorf("Error in waiting for appropriate state for starting event listener: ", err)
+		log.Error("Error in waiting for appropriate state for starting event listener: ", err)
 		return
 	}
 
@@ -158,7 +158,7 @@ func scheduleResetCache(client *ethclient.Client, jobsCache *cache.JobsCache, co
 	// As in commit state, fetching of jobs/collection from cache takes place
 	_, err := cmdUtils.WaitForAppropriateState(client, "schedule resetting cache", 1, 2, 3)
 	if err != nil {
-		log.Errorf("Error in waiting for appropriate state to scedule reset cache: ", err)
+		log.Error("Error in waiting for appropriate state to schedule reset cache: ", err)
 		return
 	}
 
