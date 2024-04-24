@@ -33,6 +33,8 @@ func (*UtilsStruct) InitAssetCache(client *ethclient.Client) (*cache.JobsCache, 
 		return nil, nil, err
 	}
 
+	go scheduleResetCache(client, jobsCache, collectionsCache)
+
 	latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
@@ -76,7 +78,7 @@ func startListener(client *ethclient.Client, fromBlock *big.Int, interval time.D
 
 	eventNames := []string{"JobUpdated", "CollectionUpdated", "CollectionActivityStatus", "JobCreated", "CollectionCreated"}
 
-	log.Debugf("Starting to listen for asset update events from now in interval of every %v seconds...", interval)
+	log.Debugf("Starting to listen for asset update events from now in interval of every %v ...", interval)
 	for range ticker.C {
 		log.Debug("Checking for asset update events...")
 		toBlock, err := clientUtils.GetLatestBlockWithRetry(client)
@@ -148,4 +150,26 @@ func getEventLogs(client *ethclient.Client, fromBlock *big.Int, toBlock *big.Int
 	}
 
 	return logs, nil
+}
+
+func scheduleResetCache(client *ethclient.Client, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) {
+	// Will not allow to start scheduling reset cache in confirm and commit state
+	// As in confirm state, updating jobs/collections cache takes place
+	// As in commit state, fetching of jobs/collection from cache takes place
+	_, err := cmdUtils.WaitForAppropriateState(client, "schedule resetting cache", 1, 2, 3)
+	if err != nil {
+		log.Errorf("Error in waiting for appropriate state to scedule reset cache: ", err)
+		return
+	}
+
+	log.Debugf("Scheduling reset asset cache now in interval of every %v ...", core.AssetCacheExpiry)
+	assetCacheTicker := time.NewTicker(time.Second * time.Duration(core.AssetCacheExpiry))
+	defer assetCacheTicker.Stop()
+
+	for range assetCacheTicker.C {
+		log.Info("ASSET CACHE EXPIRED! INITIALIZING JOBS AND COLLECTIONS CACHE AGAIN...")
+		if err := razorUtils.ResetAssetCache(client, jobsCache, collectionsCache); err != nil {
+			log.Errorf("Error resetting asset cache: %v", err)
+		}
+	}
 }

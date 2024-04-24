@@ -112,8 +112,6 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	jobsCache, collectionsCache, err := cmdUtils.InitAssetCache(client)
 	utils.CheckError("Error in initializing asset cache: ", err)
 
-	go utils.HandleResetCache(client, config.BufferPercent, jobsCache, collectionsCache)
-
 	commitParams := types.CommitParams{
 		JobsCache:        jobsCache,
 		CollectionsCache: collectionsCache,
