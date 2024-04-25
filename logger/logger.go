@@ -20,20 +20,19 @@ import (
 
 type StandardLogger struct {
 	*logrus.Logger
+	address      string
+	epoch        uint32
+	blockNumber  *big.Int
+	client       *ethclient.Client
+	blockManager *block.BlockManager
 }
 
-var standardLogger = &StandardLogger{logrus.New()}
-
-var Address string
-var Epoch uint32
-var BlockNumber *big.Int
-var FileName string
-var Client *ethclient.Client
+var standardLogger *StandardLogger
 
 func init() {
 	path.PathUtilsInterface = &path.PathUtils{}
 	path.OSUtilsInterface = &path.OSUtils{}
-	InitializeLogger(FileName, types.Configurations{})
+	standardLogger = initLogger()
 
 	osInfo := goInfo.GetInfo()
 	standardLogger.WithFields(logrus.Fields{
@@ -47,7 +46,15 @@ func init() {
 
 }
 
-func InitializeLogger(fileName string, config types.Configurations) {
+func initLogger() *StandardLogger {
+	logger := &StandardLogger{
+		Logger: logrus.New(),
+	}
+	logger.Formatter = &logrus.JSONFormatter{}
+	return logger
+}
+
+func SetupLogFile(fileName string, config types.Configurations) {
 	if fileName != "" {
 		logFilePath, err := path.PathUtilsInterface.GetLogFilePath(fileName)
 		if err != nil {
@@ -65,7 +72,6 @@ func InitializeLogger(fileName string, config types.Configurations) {
 		mw := io.MultiWriter(out, lumberJackLogger)
 		standardLogger.SetOutput(mw)
 	}
-	standardLogger.Formatter = &logrus.JSONFormatter{}
 }
 
 func NewLogger() *StandardLogger {
@@ -81,111 +87,76 @@ func joinString(args ...interface{}) string {
 	return str
 }
 
-func (logger *StandardLogger) Error(args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
+// Helper function to prepare log fields
+func (logger *StandardLogger) prepareLogFields() logrus.Fields {
+	logger.SetEpochAndBlockNumber(logger.client)
+	return logrus.Fields{
+		"address":     logger.address,
+		"epoch":       logger.epoch,
+		"blockNumber": logger.blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	logger.WithFields(logFields).Errorln(args...)
+}
+
+func (logger *StandardLogger) Error(args ...interface{}) {
+	logger.WithFields(logger.prepareLogFields()).Errorln(args...)
 }
 
 func (logger *StandardLogger) Info(args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
-	logger.WithFields(logFields).Infoln(args...)
+	logger.WithFields(logger.prepareLogFields()).Infoln(args...)
 }
 
 func (logger *StandardLogger) Debug(args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
-	logger.WithFields(logFields).Debugln(args...)
+	logger.WithFields(logger.prepareLogFields()).Debugln(args...)
+}
+
+func (logger *StandardLogger) Warn(args ...interface{}) {
+	logger.WithFields(logger.prepareLogFields()).Warnln(args...)
 }
 
 func (logger *StandardLogger) Fatal(args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
-	logger.WithFields(logFields).Fatalln(err)
+	logger.WithFields(logger.prepareLogFields()).Fatalln(err)
 }
 
 func (logger *StandardLogger) Errorf(format string, args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
-	logger.WithFields(logFields).Errorf(format, args...)
+	logger.WithFields(logger.prepareLogFields()).Errorf(format, args...)
 }
 
 func (logger *StandardLogger) Infof(format string, args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
-	logger.WithFields(logFields).Infof(format, args...)
+	logger.WithFields(logger.prepareLogFields()).Infof(format, args...)
 }
 
 func (logger *StandardLogger) Debugf(format string, args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
-	logger.WithFields(logFields).Debugf(format, args...)
+	logger.WithFields(logger.prepareLogFields()).Debugf(format, args...)
+}
+
+func (logger *StandardLogger) Warnf(format string, args ...interface{}) {
+	logger.WithFields(logger.prepareLogFields()).Warnf(format, args...)
 }
 
 func (logger *StandardLogger) Fatalf(format string, args ...interface{}) {
-	SetEpochAndBlockNumber(Client)
-	var logFields = logrus.Fields{
-		"address":     Address,
-		"epoch":       Epoch,
-		"blockNumber": BlockNumber,
-		"version":     core.VersionWithMeta,
-	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
-	logger.WithFields(logFields).Fatalf(format, err)
+	logger.WithFields(logger.prepareLogFields()).Fatalf(format, err)
 }
 
-func SetEpochAndBlockNumber(client *ethclient.Client) {
+func (logger *StandardLogger) SetEpochAndBlockNumber(client *ethclient.Client) {
 	if client != nil {
-		latestBlock := block.GetLatestBlock()
+		latestBlock := logger.blockManager.GetLatestBlock()
 		if latestBlock != nil {
-			BlockNumber = latestBlock.Number
+			logger.blockNumber = latestBlock.Number
 			epoch := latestBlock.Time / core.EpochLength
-			Epoch = uint32(epoch)
+			logger.epoch = uint32(epoch)
 		}
 	}
 }
 
-func SetLoggerParameters(client *ethclient.Client, address string) {
-	Address = address
-	Client = client
-	go block.CalculateLatestBlock(client)
+func (logger *StandardLogger) SetLoggerParameters(client *ethclient.Client, address string) {
+	logger.address = address
+	logger.client = client
+	blockManager := block.NewBlockManager(client)
+	logger.blockManager = blockManager
+	go blockManager.CalculateLatestBlock()
 }
