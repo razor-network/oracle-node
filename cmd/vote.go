@@ -12,7 +12,6 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"time"
@@ -54,7 +53,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 	log.Debug("ExecuteVote: Address: ", address)
 
-	logger.SetLoggerParameters(client, address)
+	log.SetLoggerParameters(client, address)
 
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, config)

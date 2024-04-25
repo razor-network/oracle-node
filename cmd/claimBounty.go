@@ -7,7 +7,6 @@ import (
 	"os"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
@@ -45,7 +44,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 	log.Debug("ExecuteClaimBounty: Address: ", address)
 
-	logger.SetLoggerParameters(client, address)
+	log.SetLoggerParameters(client, address)
 
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, config)

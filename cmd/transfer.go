@@ -4,7 +4,6 @@ package cmd
 import (
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -42,7 +41,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
 
-	logger.SetLoggerParameters(client, fromAddress)
+	log.SetLoggerParameters(client, fromAddress)
 
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, config)

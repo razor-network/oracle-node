@@ -4,7 +4,6 @@ package cmd
 import (
 	"encoding/json"
 	"os"
-	"razor/logger"
 	"razor/utils"
 	"strconv"
 	"strings"
@@ -37,7 +36,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 	log.Debugf("ExecuteCollectionList: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
+	log.SetLoggerParameters(client, "")
 
 	log.Debug("Calling GetCollectionList()")
 	err = cmdUtils.GetCollectionList(client)

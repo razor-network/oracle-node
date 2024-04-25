@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -42,7 +41,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting address: ", err)
 	log.Debug("ExecuteUnlockWithdraw: Address: ", address)
 
-	logger.SetLoggerParameters(client, address)
+	log.SetLoggerParameters(client, address)
 
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, config)

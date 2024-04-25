@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
-	"razor/logger"
 	"razor/utils"
 	"strconv"
 )
@@ -35,7 +34,7 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	log.Debugf("ExecuteJobList: Config: %+v", config)
 
 	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
+	log.SetLoggerParameters(client, "")
 
 	log.Debug("ExecuteJobList: Calling JobList()...")
 	err = cmdUtils.GetJobList(client)

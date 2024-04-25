@@ -295,7 +295,7 @@ func (*FileStruct) AssignLogFile(flagSet *pflag.FlagSet, configurations types.Co
 			log.Fatal("Error in getting file name: ", err)
 		}
 		log.Debug("Log file name: ", fileName)
-		logger.InitializeLogger(fileName, configurations)
+		logger.SetupLogFile(fileName, configurations)
 	} else {
 		log.Debug("No `logFile` flag passed, not storing logs in any file")
 	}
