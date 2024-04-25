@@ -11,30 +11,41 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var latestBlock *types.Header
-var mu = sync.Mutex{}
-
-func GetLatestBlock() *types.Header {
-	mu.Lock()
-	defer mu.Unlock()
-	return latestBlock
+// BlockManager manages the latest block information
+type BlockManager struct {
+	latestBlock *types.Header
+	mu          sync.Mutex
+	client      *ethclient.Client
 }
 
-func SetLatestBlock(block *types.Header) {
-	mu.Lock()
-	latestBlock = block
-	mu.Unlock()
+// NewBlockManager creates a new BlockManager instance
+func NewBlockManager(client *ethclient.Client) *BlockManager {
+	return &BlockManager{
+		client: client,
+	}
 }
 
-func CalculateLatestBlock(client *ethclient.Client) {
+func (bm *BlockManager) GetLatestBlock() *types.Header {
+	bm.mu.Lock()
+	defer bm.mu.Unlock()
+	return bm.latestBlock
+}
+
+func (bm *BlockManager) SetLatestBlock(block *types.Header) {
+	bm.mu.Lock()
+	bm.latestBlock = block
+	bm.mu.Unlock()
+}
+
+func (bm *BlockManager) CalculateLatestBlock() {
 	for {
-		if client != nil {
-			latestHeader, err := client.HeaderByNumber(context.Background(), nil)
+		if bm.client != nil {
+			latestHeader, err := bm.client.HeaderByNumber(context.Background(), nil)
 			if err != nil {
-				logrus.Error("CalculateBlockNumber: Error in fetching block: ", err)
+				logrus.Error("CalculateLatestBlock: Error in fetching block: ", err)
 				continue
 			}
-			SetLatestBlock(latestHeader)
+			bm.SetLatestBlock(latestHeader)
 		}
 		time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 	}
