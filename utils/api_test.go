@@ -30,7 +30,7 @@ func getAPIByteArray(index int) []byte {
 
 func TestGetDataFromAPI(t *testing.T) {
 	//postRequestInput := `{"type": "POST","url": "https://rpc.ankr.com/polygon_mumbai","body": {"jsonrpc": "2.0","method": "eth_chainId","params": [],"id": 0},"header": {"content-type": "application/json"}}`
-	sampleChainId, _ := hex.DecodeString("7b226a736f6e727063223a22322e30222c226964223a302c22726573756c74223a2230783133383831227d")
+	sampleChainId, _ := hex.DecodeString("7b226a736f6e727063223a22322e30222c22726573756c74223a223078616133376463222c226964223a307d0a")
 
 	type args struct {
 		urlStruct types.DataSourceURL
@@ -108,7 +108,7 @@ func TestGetDataFromAPI(t *testing.T) {
 			args: args{
 				urlStruct: types.DataSourceURL{
 					Type:   "POST",
-					URL:    "https://rpc.ankr.com/polygon_mumbai",
+					URL:    "https://sepolia.optimism.io",
 					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
 					Header: map[string]string{"content-type": "application/json"},
 				},
@@ -120,7 +120,7 @@ func TestGetDataFromAPI(t *testing.T) {
 			args: args{
 				urlStruct: types.DataSourceURL{
 					Type:   "POST",
-					URL:    "https://rpc.ankr.com/polygon_mumbai",
+					URL:    "https://sepolia.optimism.io",
 					Body:   map[string]interface{}{"jsonrpc": "2.0", "method": "eth_chainId", "params": nil, "id": 0},
 					Header: map[string]string{"auth": "${API_KEY}", "content-type": "application/json"},
 				},
