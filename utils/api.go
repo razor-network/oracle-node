@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"razor/cache"
+	"razor/client"
 	"razor/core"
 	"regexp"
 	"time"
@@ -19,11 +20,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
-	client := http.Client{
-		Timeout: time.Duration(HTTPTimeout) * time.Second,
-	}
-
+func GetDataFromAPI(httpClient *client.HttpClient, dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
 	cacheKey, err := generateCacheKey(dataSourceURLStruct.URL, dataSourceURLStruct.Body)
 	if err != nil {
 		log.Errorf("Error in generating cache key for API %s: %v", dataSourceURLStruct.URL, err)
@@ -36,7 +33,7 @@ func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.L
 		return cachedData, nil
 	}
 
-	response, err := makeAPIRequest(client, dataSourceURLStruct)
+	response, err := makeAPIRequest(httpClient, dataSourceURLStruct)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +43,7 @@ func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.L
 	return response, nil
 }
 
-func makeAPIRequest(client http.Client, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
+func makeAPIRequest(httpClient *client.HttpClient, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	var requestBody io.Reader // Using the broader io.Reader interface here
 
 	switch dataSourceURLStruct.Type {
@@ -68,7 +65,7 @@ func makeAPIRequest(client http.Client, dataSourceURLStruct types.DataSourceURL)
 	var response []byte
 	err := retry.Do(
 		func() error {
-			responseBody, err := ProcessRequest(client, dataSourceURLStruct, requestBody)
+			responseBody, err := ProcessRequest(httpClient, dataSourceURLStruct, requestBody)
 			if err != nil {
 				log.Errorf("Error in processing %s request: %v", dataSourceURLStruct.Type, err)
 				return err
@@ -124,13 +121,13 @@ func addHeaderToRequest(request *http.Request, headerMap map[string]string) *htt
 	return request
 }
 
-func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
+func ProcessRequest(httpClient *client.HttpClient, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
 	request, err := http.NewRequest(dataSourceURLStruct.Type, dataSourceURLStruct.URL, requestBody)
 	if err != nil {
 		return nil, err
 	}
 	requestWithHeader := addHeaderToRequest(request, dataSourceURLStruct.Header)
-	response, err := client.Do(requestWithHeader)
+	response, err := httpClient.Do(requestWithHeader)
 	if err != nil {
 		log.Errorf("Error sending %s request URL %s: %v", dataSourceURLStruct.Type, dataSourceURLStruct.URL, err)
 		return nil, err

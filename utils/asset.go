@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 	"razor/cache"
+	"razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -141,21 +142,21 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error) {
+func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(client, collectionId)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	//Supply previous epoch to Aggregate in case if last reported value is required.
-	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, localCache)
+	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, localCache, httpClient)
 	if aggregationError != nil {
 		return nil, aggregationError
 	}
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -211,7 +212,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
+	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache, httpClient)
 	if len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
@@ -253,7 +254,7 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 	return collection, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8) {
+func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) ([]*big.Int, []uint8) {
 	var (
 		wg     sync.WaitGroup
 		mu     sync.Mutex
@@ -263,7 +264,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCac
 
 	for _, job := range jobs {
 		wg.Add(1)
-		go processJobConcurrently(&wg, &mu, &data, &weight, job, localCache)
+		go processJobConcurrently(&wg, &mu, &data, &weight, job, localCache, httpClient)
 	}
 
 	wg.Wait()
@@ -271,10 +272,10 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCac
 	return data, weight
 }
 
-func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, localCache *cache.LocalCache) {
+func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) {
 	defer wg.Done()
 
-	dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
+	dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache, httpClient)
 	if err != nil {
 		return
 	}
@@ -286,7 +287,7 @@ func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int
 	*weight = append(*weight, job.Weight)
 }
 
-func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
+func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error) {
 	var parsedJSON map[string]interface{}
 	var (
 		response            []byte
@@ -322,7 +323,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 	var parsedData interface{}
 	if job.SelectorType == 0 {
 		start := time.Now()
-		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
+		response, apiErr = GetDataFromAPI(httpClient, dataSourceURLStruct, localCache)
 		if apiErr != nil {
 			log.Errorf("Job ID: %d, Error in fetching data from API %s: %v", job.Id, job.Url, apiErr)
 			return nil, apiErr

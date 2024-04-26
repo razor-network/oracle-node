@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"razor/accounts"
+	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -91,9 +92,15 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		log.Warn("YOU ARE RUNNING VOTE IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 	}
 
+	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
+		Timeout:                   config.HTTPTimeout,
+		MaxIdleConnections:        core.HTTPClientMaxIdleConns,
+		MaxIdleConnectionsPerHost: core.HTTPClientMaxIdleConnsPerHost,
+	})
+
 	cmdUtils.HandleExit()
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
-	if err := cmdUtils.Vote(context.Background(), config, client, rogueData, account, backupNodeActionsToIgnore); err != nil {
+	if err := cmdUtils.Vote(context.Background(), config, client, account, httpClient, rogueData, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
 		osUtils.Exit(1)
 	}
@@ -124,7 +131,7 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
+func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
@@ -141,7 +148,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			log.Debugf("Vote: Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, rogueData, backupNodeActionsToIgnore)
+				cmdUtils.HandleBlock(client, account, latestHeader.Number, config, httpClient, rogueData, backupNodeActionsToIgnore)
 			}
 			time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 		}
@@ -156,7 +163,7 @@ var (
 )
 
 //This function handles the block
-func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	state, err := razorUtils.GetBufferedState(client, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -233,7 +240,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	switch state {
 	case 0:
 		log.Debugf("Starting commit...")
-		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, rogueData)
+		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, httpClient, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
@@ -315,7 +322,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 }
 
 //This function initiates the commit
-func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, httpClient *clientPkg.HttpClient, rogueData types.Rogue) error {
 	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)
@@ -358,7 +365,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 
 	log.Debugf("InitiateCommit: Calling HandleCommitState with arguments epoch = %d, seed = %v, rogueData = %+v", epoch, seed, rogueData)
-	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, rogueData)
+	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, httpClient, rogueData)
 	if err != nil {
 		return errors.New("Error in getting active assets: " + err.Error())
 	}

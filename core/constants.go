@@ -3,8 +3,9 @@
 package core
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
@@ -92,4 +93,10 @@ const (
 	BatchSize     = 1000
 	NumRoutines   = 10
 	MaxIterations = 10000000
+)
+
+// Following are the constants used in custom http.Transport configuration for the common HTTP client that we use for all the requests
+const (
+	HTTPClientMaxIdleConns        = 15
+	HTTPClientMaxIdleConnsPerHost = 5
 )

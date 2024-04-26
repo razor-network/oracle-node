@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"razor/cache"
+	"razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -56,7 +57,7 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
+func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, httpClient *client.HttpClient, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
@@ -95,7 +96,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 					errChan <- err
 					return
 				}
-				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache)
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache, httpClient)
 				if err != nil {
 					log.Error("Error in getting aggregated data of collection: ", err)
 					errChan <- err

@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	"razor/cache"
+	"razor/client"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"time"
@@ -110,15 +111,15 @@ type Utils interface {
 	GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error)
 	GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
 	GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
-	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error)
-	GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8)
-	GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error)
+	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error)
+	GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) ([]*big.Int, []uint8)
+	GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error)
 	GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
 	GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
 	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
-	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error)
+	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error)
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)

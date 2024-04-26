@@ -28,7 +28,6 @@ import (
 )
 
 var RPCTimeout int64
-var HTTPTimeout int64
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	UtilsInterface = optionsPackageStruct.UtilsInterface

@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 	"razor/cache"
+	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -186,7 +187,7 @@ func TestAggregate(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
-			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
+			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
@@ -194,7 +195,7 @@ func TestAggregate(t *testing.T) {
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
 			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
-			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, &cache.LocalCache{})
+			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, &cache.LocalCache{}, &clientPkg.HttpClient{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Aggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -553,6 +554,12 @@ func TestGetAllCollections(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJobs(t *testing.T) {
+	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
+		Timeout:                   10,
+		MaxIdleConnections:        2,
+		MaxIdleConnectionsPerHost: 1,
+	})
+
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 0, Weight: 10,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
@@ -631,7 +638,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 			UtilsInterface = &UtilsStruct{}
 			lc := cache.NewLocalCache(time.Second * 10)
 
-			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc)
+			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc, httpClient)
 			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
 				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
 			}
@@ -642,6 +649,12 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJob(t *testing.T) {
+	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
+		Timeout:                   10,
+		MaxIdleConnections:        2,
+		MaxIdleConnectionsPerHost: 1,
+	})
+
 	job := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
 		Url: `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
@@ -738,7 +751,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			lc := cache.NewLocalCache(time.Second * 10)
-			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc)
+			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc, httpClient)
 			fmt.Println("JOB returns data: ", data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
@@ -1271,9 +1284,9 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
-			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
+			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &cache.LocalCache{})
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &cache.LocalCache{}, &clientPkg.HttpClient{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
