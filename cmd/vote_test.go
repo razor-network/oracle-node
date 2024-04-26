@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"razor/accounts"
 	clientPkg "razor/client"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -129,7 +130,8 @@ func TestExecuteVote(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			flagSetMock.On("GetStringSliceBackupNode", mock.Anything).Return([]string{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
@@ -276,20 +278,22 @@ func TestCalculateSecret(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			InitializeInterfaces()
-			gotSignature, gotSecret, err := cmdUtils.CalculateSecret(types.Account{Address: tt.args.address,
-				Password: tt.args.password}, tt.args.epoch, testKeystorePath, tt.args.chainId)
+			accountManager := accounts.NewAccountManager(testKeystorePath)
+			account := accounts.InitAccountStruct(tt.args.address, tt.args.password, accountManager)
+			gotSignature, gotSecret, err := cmdUtils.CalculateSecret(account, tt.args.epoch, testKeystorePath, tt.args.chainId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CalculateSecret() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
 			gotSignatureInHash := hex.EncodeToString(gotSignature)
 			gotSecretInHash := hex.EncodeToString(gotSecret)
+
 			if !reflect.DeepEqual(gotSignatureInHash, tt.wantSignature) {
 				t.Errorf("CalculateSecret() Signature = %v, want %v", gotSignatureInHash, tt.wantSignature)
 			}
 			if !reflect.DeepEqual(gotSecretInHash, tt.wantSecret) {
 				t.Errorf("CalculateSecret() Secret = %v, want %v", gotSecretInHash, tt.wantSecret)
-			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateSecret() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 		})
 	}

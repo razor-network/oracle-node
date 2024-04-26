@@ -164,14 +164,13 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "commit",
 		Parameters:      []interface{}{epoch, commitmentToSend},
+		Account:         account,
 	})
 
 	log.Info("Commitment sent...")

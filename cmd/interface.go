@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
-	Accounts "razor/accounts"
 	"razor/client"
 	"razor/core/types"
 	"razor/path"
@@ -314,7 +313,6 @@ func InitializeInterfaces() {
 	abiUtils = AbiUtils{}
 	osUtils = OSUtils{}
 
-	Accounts.AccountUtilsInterface = Accounts.AccountUtils{}
 	path.PathUtilsInterface = path.PathUtils{}
 	path.OSUtilsInterface = path.OSUtils{}
 	InitializeUtils()

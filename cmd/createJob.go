@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -52,7 +53,12 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
@@ -74,16 +80,15 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting selectorType: ", err)
 
 	jobInput := types.CreateJobInput{
-		Address:      address,
-		Password:     password,
 		Url:          url,
 		Name:         name,
 		Selector:     selector,
 		SelectorType: selectorType,
 		Weight:       weight,
 		Power:        power,
+		Account:      account,
 	}
-	log.Debugf("ExecuteCreateJob: Calling CreateJob() with argument jobInput: %+v", jobInput)
+
 	txn, err := cmdUtils.CreateJob(client, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -94,14 +99,13 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        jobInput.Password,
-		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "createJob",
 		Parameters:      []interface{}{jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.CollectionManagerMetaData.ABI,
+		Account:         jobInput.Account,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

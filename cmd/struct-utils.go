@@ -6,7 +6,6 @@ import (
 	"errors"
 	"math/big"
 	"os"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -29,13 +28,12 @@ import (
 )
 
 var (
-	razorUtils   = utils.UtilsInterface
-	pathUtils    = path.PathUtilsInterface
-	clientUtils  = utils.ClientInterface
-	fileUtils    = utils.FileInterface
-	gasUtils     = utils.GasInterface
-	merkleUtils  = utils.MerkleInterface
-	accountUtils = accounts.AccountUtilsInterface
+	razorUtils  = utils.UtilsInterface
+	pathUtils   = path.PathUtilsInterface
+	clientUtils = utils.ClientInterface
+	fileUtils   = utils.FileInterface
+	gasUtils    = utils.GasInterface
+	merkleUtils = utils.MerkleInterface
 )
 
 //This function initializes the utils
@@ -52,7 +50,6 @@ func InitializeUtils() {
 	utils.ABIInterface = &utils.ABIStruct{}
 	utils.PathInterface = &utils.PathStruct{}
 	utils.BindInterface = &utils.BindStruct{}
-	utils.AccountsInterface = &utils.AccountsStruct{}
 	utils.BlockManagerInterface = &utils.BlockManagerStruct{}
 	utils.StakeManagerInterface = &utils.StakeManagerStruct{}
 	utils.AssetManagerInterface = &utils.AssetManagerStruct{}
@@ -71,8 +68,6 @@ func InitializeUtils() {
 	utils.GasInterface = &utils.GasStruct{}
 	merkleUtils = &utils.MerkleTreeStruct{}
 	utils.MerkleInterface = &utils.MerkleTreeStruct{}
-	accountUtils = &accounts.AccountUtils{}
-	accounts.AccountUtilsInterface = &accounts.AccountUtils{}
 }
 
 func ExecuteTransaction(interfaceName interface{}, methodName string, args ...interface{}) (*Types.Transaction, error) {

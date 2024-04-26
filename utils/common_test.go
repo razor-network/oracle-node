@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"razor/accounts"
 	Types "razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
@@ -1555,6 +1556,104 @@ func TestReadFromDisputeJsonFile(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ReadFromDisputeJsonFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUtilsStruct_CheckPassword(t *testing.T) {
+	type args struct {
+		account Types.Account
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When password is correct",
+			args: args{
+				account: Types.Account{
+					Address:        "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+					Password:       "Test@123",
+					AccountManager: accounts.NewAccountManager("test_accounts"),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When password is incorrect",
+			args: args{
+				account: Types.Account{
+					Address:        "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+					Password:       "Test@456",
+					AccountManager: accounts.NewAccountManager("test_accounts"),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When address or keystore path provided is not present",
+			args: args{
+				account: Types.Account{
+					Address:        "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+					Password:       "Test@123",
+					AccountManager: accounts.NewAccountManager("test_accounts_1"),
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ut := &UtilsStruct{}
+			if err := ut.CheckPassword(tt.args.account); (err != nil) != tt.wantErr {
+				t.Errorf("CheckPassword() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUtilsStruct_AccountManagerForKeystore(t *testing.T) {
+	type args struct {
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When account manager for keystore is returned successfully",
+			args: args{
+				path: "test_accounts",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				pathErr: errors.New("path error"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pathMock := new(mocks.PathUtils)
+			optionsPackageStruct := OptionsPackageStruct{
+				PathInterface: pathMock,
+			}
+
+			utils := StartRazor(optionsPackageStruct)
+
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			_, err := utils.AccountManagerForKeystore()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AccountManagerForKeystore() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}

@@ -58,14 +58,13 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
+		Account:         account,
 	})
 	log.Debugf("Executing Reveal transaction wih epoch = %d, treeRevealData = %v, signature = %v", epoch, treeRevealData, signature)
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)

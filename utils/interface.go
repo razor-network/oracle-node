@@ -33,7 +33,6 @@ import (
 //go:generate mockery --name ABIUtils --output ./mocks --case=underscore
 //go:generate mockery --name PathUtils --output ./mocks --case=underscore
 //go:generate mockery --name BindUtils --output ./mocks --case=underscore
-//go:generate mockery --name AccountsUtils --output ./mocks --case=underscore
 //go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name AssetManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
@@ -57,7 +56,6 @@ var IOInterface IOUtils
 var ABIInterface ABIUtils
 var PathInterface PathUtils
 var BindInterface BindUtils
-var AccountsInterface AccountsUtils
 var BlockManagerInterface BlockManagerUtils
 var StakeManagerInterface StakeManagerUtils
 var AssetManagerInterface AssetManagerUtils
@@ -158,7 +156,8 @@ type Utils interface {
 	GetRogueRandomValue(value int) *big.Int
 	GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
-	CheckPassword(address string, password string) error
+	CheckPassword(account types.Account) error
+	AccountManagerForKeystore() (types.AccountManagerInterface, error)
 }
 
 type EthClientUtils interface {
@@ -217,10 +216,6 @@ type PathUtils interface {
 
 type BindUtils interface {
 	NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error)
-}
-
-type AccountsUtils interface {
-	GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error)
 }
 
 type BlockManagerUtils interface {
@@ -323,7 +318,6 @@ type IOStruct struct{}
 type ABIStruct struct{}
 type PathStruct struct{}
 type BindStruct struct{}
-type AccountsStruct struct{}
 type BlockManagerStruct struct{}
 type StakeManagerStruct struct{}
 type AssetManagerStruct struct{}
@@ -348,7 +342,6 @@ type OptionsPackageStruct struct {
 	ABIInterface          ABIUtils
 	PathInterface         PathUtils
 	BindInterface         BindUtils
-	AccountsInterface     AccountsUtils
 	BlockManagerInterface BlockManagerUtils
 	StakeManagerInterface StakeManagerUtils
 	AssetManagerInterface AssetManagerUtils
