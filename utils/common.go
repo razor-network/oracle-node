@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -379,18 +380,24 @@ func (*FileStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileDa
 	return disputeData, nil
 }
 
-func (*UtilsStruct) CheckPassword(address string, password string) error {
-	razorPath, err := PathInterface.GetDefaultPath()
-	if err != nil {
-		log.Error("CheckPassword: Error in getting .razor path: ", err)
-		return err
-	}
-	keystorePath := filepath.Join(razorPath, "keystore_files")
-	_, err = AccountsInterface.GetPrivateKey(address, password, keystorePath)
+func (*UtilsStruct) CheckPassword(account types.Account) error {
+	_, err := account.AccountManager.GetPrivateKey(account.Address, account.Password)
 	if err != nil {
 		log.Info("Kindly check your password!")
 		log.Error("CheckPassword: Error in getting private key: ", err)
 		return err
 	}
 	return nil
+}
+
+func (*UtilsStruct) AccountManagerForKeystore() (types.AccountManagerInterface, error) {
+	razorPath, err := PathInterface.GetDefaultPath()
+	if err != nil {
+		log.Error("GetKeystorePath: Error in getting .razor path: ", err)
+		return nil, err
+	}
+	keystorePath := filepath.Join(razorPath, "keystore_files")
+
+	accountManager := accounts.NewAccountManager(keystorePath)
+	return accountManager, nil
 }

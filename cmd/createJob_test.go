@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"testing"
@@ -297,7 +298,8 @@ func TestExecuteCreateJob(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagSetMock.On("GetStringUrl", flagSet).Return(tt.args.url, tt.args.urlErr)

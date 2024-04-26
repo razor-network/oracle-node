@@ -26,6 +26,32 @@ type Utils struct {
 	mock.Mock
 }
 
+// AccountManagerForKeystore provides a mock function with given fields:
+func (_m *Utils) AccountManagerForKeystore() (types.AccountManagerInterface, error) {
+	ret := _m.Called()
+
+	var r0 types.AccountManagerInterface
+	var r1 error
+	if rf, ok := ret.Get(0).(func() (types.AccountManagerInterface, error)); ok {
+		return rf()
+	}
+	if rf, ok := ret.Get(0).(func() types.AccountManagerInterface); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(types.AccountManagerInterface)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // AddJobToJSON provides a mock function with given fields: fileName, job
 func (_m *Utils) AddJobToJSON(fileName string, job *types.StructsJob) error {
 	ret := _m.Called(fileName, job)
@@ -155,13 +181,13 @@ func (_m *Utils) CheckEthBalanceIsZero(client *ethclient.Client, address string)
 	_m.Called(client, address)
 }
 
-// CheckPassword provides a mock function with given fields: address, password
-func (_m *Utils) CheckPassword(address string, password string) error {
-	ret := _m.Called(address, password)
+// CheckPassword provides a mock function with given fields: account
+func (_m *Utils) CheckPassword(account types.Account) error {
+	ret := _m.Called(account)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = rf(address, password)
+	if rf, ok := ret.Get(0).(func(types.Account) error); ok {
+		r0 = rf(account)
 	} else {
 		r0 = ret.Error(0)
 	}

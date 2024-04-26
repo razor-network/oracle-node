@@ -49,8 +49,14 @@ func (*UtilsStruct) Create(password string) (accounts.Account, error) {
 		return accounts.Account{Address: common.Address{0x00}}, err
 	}
 	log.Debug("Create: .razor directory path: ", razorPath)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	if err != nil {
+		log.Error("Error in getting accounts manager for keystore: ", err)
+		return accounts.Account{Address: common.Address{0x00}}, err
+	}
+
 	keystorePath := filepath.Join(razorPath, "keystore_files")
-	account := accountUtils.CreateAccount(keystorePath, password)
+	account := accountManager.CreateAccount(keystorePath, password)
 	return account, nil
 }
 

@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"errors"
+	accountsPkgMocks "razor/accounts/mocks"
 	"razor/core/types"
+	pathPkgMocks "razor/path/mocks"
+	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -14,10 +17,15 @@ import (
 func TestCreate(t *testing.T) {
 	var password string
 
+	nilAccount := accounts.Account{Address: common.Address{0x00},
+		URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+	}
+
 	type args struct {
-		path    string
-		pathErr error
-		account accounts.Account
+		path              string
+		pathErr           error
+		accountManagerErr error
+		account           accounts.Account
 	}
 	tests := []struct {
 		name    string
@@ -48,21 +56,40 @@ func TestCreate(t *testing.T) {
 					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
 				},
 			},
-			want: accounts.Account{Address: common.Address{0x00},
-				URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-			},
+			want:    nilAccount,
 			wantErr: errors.New("path error"),
+		},
+		{
+			name: "Test 3: When there is an error in getting account manager",
+			args: args{
+				path:              "/home/local",
+				pathErr:           nil,
+				accountManagerErr: errors.New("account manager error"),
+				account: accounts.Account{Address: common.HexToAddress("0x000000000000000000000000000000000000dea1"),
+					URL: accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
+				},
+			},
+			want:    nilAccount,
+			wantErr: errors.New("account manager error"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SetUpMockInterfaces()
+			accountsMock := new(accountsPkgMocks.AccountManagerInterface)
+
+			var pathMock *pathPkgMocks.PathInterface
+			var utilsMock *utilsPkgMocks.Utils
+
+			pathMock = new(pathPkgMocks.PathInterface)
+			pathUtils = pathMock
+
+			utilsMock = new(utilsPkgMocks.Utils)
+			razorUtils = utilsMock
 
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountsMock.On("CreateAccount", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(accounts.Account{
-				Address: tt.args.account.Address,
-				URL:     accounts.URL{Scheme: "TestKeyScheme", Path: "test/key/path"},
-			})
+			utilsMock.On("AccountManagerForKeystore").Return(accountsMock, tt.args.accountManagerErr)
+
+			accountsMock.On("CreateAccount", mock.Anything, mock.Anything).Return(tt.args.account)
 
 			utils := &UtilsStruct{}
 			got, err := utils.Create(password)
@@ -131,7 +158,7 @@ func TestExecuteCreate(t *testing.T) {
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			cmdUtilsMock.On("Create", mock.AnythingOfType("string")).Return(tt.args.account, tt.args.accountErr)
 			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
 

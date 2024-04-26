@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -50,7 +51,12 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(fromAddress, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(fromAddress, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
@@ -64,14 +70,12 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting amount: ", err)
 
 	transferInput := types.TransferInput{
-		FromAddress: fromAddress,
-		ToAddress:   toAddress,
-		Password:    password,
-		ValueInWei:  valueInWei,
-		Balance:     balance,
+		ToAddress:  toAddress,
+		ValueInWei: valueInWei,
+		Balance:    balance,
+		Account:    account,
 	}
 
-	log.Debugf("Calling Transfer() with arguments transferInput = %+v", transferInput)
 	txn, err := cmdUtils.Transfer(client, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 
@@ -86,16 +90,15 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        transferInput.Password,
-		AccountAddress:  transferInput.FromAddress,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.RAZORAddress,
 		MethodName:      "transfer",
 		Parameters:      []interface{}{common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei},
 		ABI:             bindings.RAZORMetaData.ABI,
+		Account:         transferInput.Account,
 	})
-	log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.FromAddress, transferInput.ToAddress)
+	log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.Account.Address, transferInput.ToAddress)
 
 	log.Debugf("Executing Transfer transaction with toAddress: %s, amount: %s", transferInput.ToAddress, transferInput.ValueInWei)
 	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)

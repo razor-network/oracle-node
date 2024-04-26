@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -53,7 +54,12 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	if razorUtils.IsFlagPassed("bountyId") {
@@ -62,12 +68,10 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		log.Debug("ExecuteClaimBounty: BountyId: ", bountyId)
 
 		redeemBountyInput := types.RedeemBountyInput{
-			Address:  address,
-			Password: password,
 			BountyId: bountyId,
+			Account:  account,
 		}
 
-		log.Debugf("ExecuteClaimBounty: Calling ClaimBounty() with arguments redeem bounty input: %+v", redeemBountyInput)
 		txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
 		utils.CheckError("ClaimBounty error: ", err)
 
@@ -77,10 +81,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 		}
 	} else {
 		log.Debug("ExecuteClaimBounty: Calling HandleClaimBounty()")
-		err := cmdUtils.HandleClaimBounty(client, config, types.Account{
-			Address:  address,
-			Password: password,
-		})
+		err := cmdUtils.HandleClaimBounty(client, config, account)
 		utils.CheckError("HandleClaimBounty error: ", err)
 	}
 
@@ -114,8 +115,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 		log.Info("Claiming bounty for bountyId ", disputeData.BountyIdQueue[length-1])
 		redeemBountyInput := types.RedeemBountyInput{
 			BountyId: disputeData.BountyIdQueue[length-1],
-			Address:  account.Address,
-			Password: account.Password,
+			Account:  account,
 		}
 		log.Debugf("HandleClaimBounty: Calling ClaimBounty() with arguments redeemBountyInput: %+v", redeemBountyInput)
 		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
@@ -147,8 +147,7 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		AccountAddress:  redeemBountyInput.Address,
-		Password:        redeemBountyInput.Password,
+		Account:         redeemBountyInput.Account,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
