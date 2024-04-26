@@ -1216,7 +1216,7 @@ func TestHandleBlock(t *testing.T) {
 			clientUtilsMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZRBalance, tt.args.sRZRBalanceErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
-			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
+			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
 			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
 			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
@@ -1240,6 +1240,7 @@ func TestVote(t *testing.T) {
 		rogueData                 types.Rogue
 		account                   types.Account
 		stakerId                  uint32
+		httpClient                *clientPkg.HttpClient
 		backupNodeActionsToIgnore []string
 	)
 	type args struct {
@@ -1274,7 +1275,7 @@ func TestVote(t *testing.T) {
 			errChan := make(chan error)
 			// Run Vote function in a goroutine
 			go func() {
-				errChan <- ut.Vote(ctx, config, client, rogueData, account, stakerId, backupNodeActionsToIgnore)
+				errChan <- ut.Vote(ctx, config, client, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore)
 			}()
 
 			// Wait for some time to allow Vote function to execute
