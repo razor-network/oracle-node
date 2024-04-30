@@ -20,18 +20,20 @@ import (
 func TestPropose(t *testing.T) {
 
 	var (
-		client      *ethclient.Client
-		account     types.Account
-		config      types.Configurations
-		staker      bindings.StructsStaker
-		epoch       uint32
-		blockNumber *big.Int
+		client  *ethclient.Client
+		account types.Account
+		config  types.Configurations
+		staker  bindings.StructsStaker
+		epoch   uint32
 	)
 
 	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
 	saltBytes32 := [32]byte{}
 	copy(saltBytes32[:], salt)
 
+	latestHeader := &Types.Header{
+		Number: big.NewInt(1001),
+	}
 	type args struct {
 		rogueData                  types.Rogue
 		state                      int64
@@ -514,7 +516,7 @@ func TestPropose(t *testing.T) {
 	for _, tt := range tests {
 		SetUpMockInterfaces()
 
-		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
 		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
@@ -539,7 +541,7 @@ func TestPropose(t *testing.T) {
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
-			err := utils.Propose(client, config, account, staker, epoch, blockNumber, tt.args.rogueData)
+			err := utils.Propose(client, config, account, staker, epoch, latestHeader, tt.args.rogueData)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for Propose function, got = %v, want %v", err, tt.wantErr)

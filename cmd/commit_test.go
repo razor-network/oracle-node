@@ -20,11 +20,12 @@ import (
 
 func TestCommit(t *testing.T) {
 	var (
-		client  *ethclient.Client
-		account types.Account
-		config  types.Configurations
-		seed    []byte
-		epoch   uint32
+		client       *ethclient.Client
+		account      types.Account
+		config       types.Configurations
+		latestHeader *Types.Header
+		seed         []byte
+		epoch        uint32
 	)
 
 	type args struct {
@@ -95,13 +96,13 @@ func TestCommit(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			voteManagerMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(client, config, account, epoch, seed, tt.args.values)
+			got, err := utils.Commit(client, config, account, epoch, latestHeader, seed, tt.args.values)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}

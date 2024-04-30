@@ -31,8 +31,8 @@ func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindi
 }
 
 //This function checks if the state is reveal or not and then reveals the votes
-func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
-	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 1 {
+func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, commitData types.CommitData, signature []byte) (common.Hash, error) {
+	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}

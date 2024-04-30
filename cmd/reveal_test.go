@@ -85,12 +85,15 @@ func TestCheckForLastCommitted(t *testing.T) {
 }
 
 func TestReveal(t *testing.T) {
-	var client *ethclient.Client
-	var commitData types.CommitData
-	var signature []byte
-	var account types.Account
-	var config types.Configurations
-	var epoch uint32
+	var (
+		client       *ethclient.Client
+		commitData   types.CommitData
+		signature    []byte
+		account      types.Account
+		config       types.Configurations
+		epoch        uint32
+		latestHeader *Types.Header
+	)
 
 	type args struct {
 		state          int64
@@ -157,7 +160,7 @@ func TestReveal(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			merkleUtilsMock.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
@@ -166,7 +169,7 @@ func TestReveal(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(client, config, account, epoch, commitData, signature)
+			got, err := utils.Reveal(client, config, account, epoch, latestHeader, commitData, signature)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}

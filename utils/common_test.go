@@ -366,7 +366,6 @@ func TestGetBufferedState(t *testing.T) {
 
 	type args struct {
 		block          *types.Header
-		blockErr       error
 		buffer         int32
 		stateBuffer    uint64
 		stateBufferErr error
@@ -391,18 +390,7 @@ func TestGetBufferedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting block",
-			args: args{
-				block: &types.Header{
-					Number: big.NewInt(100),
-				},
-				blockErr: errors.New("block error"),
-			},
-			want:    -1,
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When blockNumber%(core.StateLength) is greater than lowerLimit",
+			name: "Test 2: When blockNumber%(core.StateLength) is greater than lowerLimit",
 			args: args{
 				block: &types.Header{
 					Time: 1080,
@@ -414,7 +402,7 @@ func TestGetBufferedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 4: When GetBufferedState() executes successfully and state we get is other than 0",
+			name: "Test 3: When GetBufferedState() executes successfully and state we get is other than 0",
 			args: args{
 				block: &types.Header{
 					Time: 900,
@@ -427,7 +415,7 @@ func TestGetBufferedState(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 5: When there is an error in getting stateBuffer",
+			name: "Test 4: When there is an error in getting stateBuffer",
 			args: args{
 				block: &types.Header{
 					Time: 100,
@@ -454,9 +442,8 @@ func TestGetBufferedState(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetBufferedState(client, tt.args.buffer)
+			got, err := utils.GetBufferedState(client, tt.args.block, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
