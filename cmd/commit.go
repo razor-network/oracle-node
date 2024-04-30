@@ -80,7 +80,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	var wg sync.WaitGroup
 
 	log.Debug("Creating a local cache which will store API result and expire at the end of commit state")
-	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
+	commitParams.LocalCache = cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 
 	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
@@ -97,7 +97,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 					errChan <- err
 					return
 				}
-				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache, commitParams)
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, commitParams)
 				if err != nil {
 					log.Error("Error in getting aggregated data of collection: ", err)
 					errChan <- err
@@ -129,7 +129,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 			if err != nil {
 				// Returning the first error from the error channel
 				log.Error("Error in getting collection data: ", err)
-				localCache.StopCleanup()
+				commitParams.LocalCache.StopCleanup()
 				return types.CommitData{}, err
 			}
 		}
@@ -139,7 +139,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
 
-	localCache.StopCleanup()
+	commitParams.LocalCache.StopCleanup()
 
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,

@@ -206,7 +206,8 @@ func TestAggregate(t *testing.T) {
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
 			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
-			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, &cache.LocalCache{}, types.CommitParams{HttpClient: &clientPkg.HttpClient{}})
+			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, commitParams)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Aggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -640,9 +641,12 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsInterface = &UtilsStruct{}
-			lc := cache.NewLocalCache(time.Second * 10)
+			commitParams := types.CommitParams{
+				LocalCache: cache.NewLocalCache(time.Second * 10),
+				HttpClient: httpClient,
+			}
 
-			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc, httpClient)
+			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, commitParams)
 			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
 				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
 			}
@@ -754,8 +758,12 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			lc := cache.NewLocalCache(time.Second * 10)
-			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc, httpClient)
+			commitParams := types.CommitParams{
+				LocalCache: cache.NewLocalCache(time.Second * 10),
+				HttpClient: httpClient,
+			}
+
+			data, err := utils.GetDataToCommitFromJob(tt.args.job, commitParams)
 			fmt.Println("JOB returns data: ", data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
@@ -1294,7 +1302,7 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
 			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &cache.LocalCache{}, types.CommitParams{HttpClient: &clientPkg.HttpClient{}})
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, types.CommitParams{HttpClient: &clientPkg.HttpClient{}})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

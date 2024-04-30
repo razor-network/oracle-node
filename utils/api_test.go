@@ -174,7 +174,11 @@ func TestGetDataFromAPI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			localCache := cache.NewLocalCache(time.Second * 10)
-			got, err := GetDataFromAPI(httpClient, tt.args.urlStruct, localCache)
+			commitParams := types.CommitParams{
+				LocalCache: localCache,
+				HttpClient: httpClient,
+			}
+			got, err := GetDataFromAPI(commitParams, tt.args.urlStruct)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return

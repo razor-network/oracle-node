@@ -3,7 +3,6 @@ package types
 import (
 	"math/big"
 	"razor/cache"
-	"razor/client"
 )
 
 type ElectedProposer struct {
@@ -70,5 +69,6 @@ type ProposeFileData struct {
 type CommitParams struct {
 	JobsCache        *cache.JobsCache
 	CollectionsCache *cache.CollectionsCache
-	HttpClient       *client.HttpClient
+	LocalCache       *cache.LocalCache
+	HttpClient       HttpClientInterface
 }
