@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	EpochLength    uint64 = 300
+	EpochLength    uint64 = 1200
 	NumberOfStates uint64 = 5
 	StateLength           = EpochLength / NumberOfStates
 )
 
 // ChainId corresponds to the SKALE chain
-var ChainId = big.NewInt(0x561bf78b)
+var ChainId = big.NewInt(1444673419)
 
 const MaxRetries uint = 8
 
