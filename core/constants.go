@@ -26,9 +26,9 @@ const BlockCompletionTimeout = 30
 //Following are the default config values for all the config parameters
 const (
 	DefaultGasMultiplier    float32 = 1.0
-	DefaultBufferPercent    int32   = 0
+	DefaultBufferPercent    int32   = 20
 	DefaultGasPrice         int32   = 0
-	DefaultWaitTime         int32   = 1
+	DefaultWaitTime         int32   = 5
 	DefaultGasLimit         float32 = 2
 	DefaultGasLimitOverride uint64  = 30000000
 	DefaultRPCTimeout       int64   = 10
