@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-var EpochLength uint64 = 300
+var EpochLength uint64 = 1200
 var NumberOfStates uint64 = 5
 var StateLength = EpochLength / NumberOfStates
 

@@ -1,7 +1,7 @@
 package core
 
-var StakeManagerAddress = "0x432bDa6F3E5148898929be9d3555Ca5AA82b214b"
-var RAZORAddress = "0xbF3BCf61f64C9825C7Af3f3D79817c9Cf44afBa7"
-var CollectionManagerAddress = "0x7B8BF9a0B648Dd9f75D5E9e8a3054D18E8C4Cc5e"
-var VoteManagerAddress = "0x86886e048fd0f253E6E75c13a3f924598799e06A"
-var BlockManagerAddress = "0x39D4B78bb09DEEC54fA2df729808b19962Cb9aae"
+var StakeManagerAddress = "0xf99a873a6afdF1b24388ac02ea0f1CFE3c70A80b"
+var RAZORAddress = "0x504C6635af1e7E6fdc586c8A89973783b9281A77"
+var CollectionManagerAddress = "0x83f4D7ad6dD366c3F04Af45a1437c77636b03388"
+var VoteManagerAddress = "0x2399D4d92b4D8762971605d0bC9597F780852CC4"
+var BlockManagerAddress = "0x076df1c2d81C40D30DF115Ab68A13251fBD3FFA4"
