@@ -21,9 +21,9 @@ var BlockCompletionTimeout = 30
 //Following are the default config values for all the config parameters
 
 var DefaultGasMultiplier float32 = 1.0
-var DefaultBufferPercent int32 = 0
+var DefaultBufferPercent int32 = 20
 var DefaultGasPrice int32 = 0
-var DefaultWaitTime int32 = 1
+var DefaultWaitTime int32 = 5
 var DefaultGasLimit float32 = 2
 var DefaultGasLimitOverride uint64 = 30000000
 var DefaultRPCTimeout int64 = 10
