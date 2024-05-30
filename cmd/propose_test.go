@@ -1099,17 +1099,145 @@ func TestGetSortedRevealedValues(t *testing.T) {
 		{
 			name: "Test 1: When GetSortedRevealedValues executes successfully",
 			args: args{
-				assignedAssets: []types.RevealedStruct{{RevealedValues: []types.AssignedAsset{{LeafId: 1, Value: big.NewInt(100)}}, Influence: big.NewInt(100)}},
+				assignedAssets: []types.RevealedStruct{
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 3, Value: big.NewInt(601)},
+							{LeafId: 6, Value: big.NewInt(750)},
+							{LeafId: 1, Value: big.NewInt(400)},
+						},
+						Influence: big.NewInt(10000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 10, Value: big.NewInt(1100)},
+							{LeafId: 5, Value: big.NewInt(900)},
+							{LeafId: 7, Value: big.NewInt(302)},
+						},
+						Influence: big.NewInt(20000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 3, Value: big.NewInt(600)},
+							{LeafId: 7, Value: big.NewInt(300)},
+							{LeafId: 9, Value: big.NewInt(1600)},
+						},
+						Influence: big.NewInt(30000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 10, Value: big.NewInt(1105)},
+							{LeafId: 8, Value: big.NewInt(950)},
+							{LeafId: 7, Value: big.NewInt(300)},
+						},
+						Influence: big.NewInt(40000000),
+					},
+				},
 			},
 			want: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(100)}},
-				VoteWeights:          map[string]*big.Int{big.NewInt(100).String(): big.NewInt(100)},
-				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+				SortedRevealedValues: map[uint16][]*big.Int{
+					1:  {big.NewInt(400)},
+					3:  {big.NewInt(600), big.NewInt(601)},
+					5:  {big.NewInt(900)},
+					6:  {big.NewInt(750)},
+					7:  {big.NewInt(300), big.NewInt(302)},
+					8:  {big.NewInt(950)},
+					9:  {big.NewInt(1600)},
+					10: {big.NewInt(1100), big.NewInt(1105)},
+				},
+				VoteWeights: map[string]*big.Int{
+					"1600": big.NewInt(30000000),
+					"300":  big.NewInt(70000000),
+					"302":  big.NewInt(20000000),
+					"400":  big.NewInt(10000000),
+					"600":  big.NewInt(30000000),
+					"601":  big.NewInt(10000000),
+					"750":  big.NewInt(10000000),
+					"1100": big.NewInt(20000000),
+					"1105": big.NewInt(40000000),
+					"950":  big.NewInt(40000000),
+					"900":  big.NewInt(20000000),
+				},
+				InfluenceSum: map[uint16]*big.Int{
+					1:  big.NewInt(10000000),
+					3:  big.NewInt(40000000),
+					5:  big.NewInt(20000000),
+					6:  big.NewInt(10000000),
+					7:  big.NewInt(90000000),
+					8:  big.NewInt(40000000),
+					9:  big.NewInt(30000000),
+					10: big.NewInt(60000000),
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting assignedAssets",
+			name: "Test 2: When there are multiple equal and unequal vote values for single leafId",
+			args: args{
+				assignedAssets: []types.RevealedStruct{
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 1, Value: big.NewInt(600)},
+							{LeafId: 2, Value: big.NewInt(750)},
+							{LeafId: 3, Value: big.NewInt(400)},
+						},
+						Influence: big.NewInt(10000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 1, Value: big.NewInt(601)},
+							{LeafId: 2, Value: big.NewInt(752)},
+						},
+						Influence: big.NewInt(20000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 1, Value: big.NewInt(601)},
+							{LeafId: 2, Value: big.NewInt(756)},
+							{LeafId: 4, Value: big.NewInt(1600)},
+						},
+						Influence: big.NewInt(30000000),
+					},
+				},
+			},
+			want: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]*big.Int{
+					1: {big.NewInt(600), big.NewInt(601)},
+					2: {big.NewInt(750), big.NewInt(752), big.NewInt(756)},
+					3: {big.NewInt(400)},
+					4: {big.NewInt(1600)},
+				},
+				VoteWeights: map[string]*big.Int{
+					"1600": big.NewInt(30000000),
+					"400":  big.NewInt(10000000),
+					"600":  big.NewInt(10000000),
+					"601":  big.NewInt(50000000),
+					"750":  big.NewInt(10000000),
+					"752":  big.NewInt(20000000),
+					"756":  big.NewInt(30000000),
+				},
+				InfluenceSum: map[uint16]*big.Int{
+					1: big.NewInt(60000000),
+					2: big.NewInt(60000000),
+					3: big.NewInt(10000000),
+					4: big.NewInt(30000000),
+				},
+			},
+		},
+		{
+			name: "Test 3: When assignedAssets is empty",
+			args: args{
+				assignedAssets: []types.RevealedStruct{},
+			},
+			want: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]*big.Int{},
+				VoteWeights:          map[string]*big.Int{},
+				InfluenceSum:         map[uint16]*big.Int{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in getting assignedAssets",
 			args: args{
 				assignedAssetsErr: errors.New("error in getting assets"),
 			},
