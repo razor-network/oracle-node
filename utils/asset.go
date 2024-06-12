@@ -287,12 +287,8 @@ func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int
 }
 
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
-	var parsedJSON map[string]interface{}
-	var (
-		response            []byte
-		apiErr              error
-		dataSourceURLStruct types.DataSourceURL
-	)
+	var dataSourceURLStruct types.DataSourceURL
+
 	log.Debugf("Job ID: %d, Getting the data to commit for job %s", job.Id, job.Name)
 	if isJSONCompatible(job.Url) {
 		log.Debugf("Job ID: %d, Job URL passed is a struct containing URL along with type of request data", job.Id)
@@ -322,7 +318,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 	var parsedData interface{}
 	if job.SelectorType == 0 {
 		start := time.Now()
-		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
+		response, apiErr := GetDataFromAPI(dataSourceURLStruct, localCache)
 		if apiErr != nil {
 			log.Errorf("Job ID: %d, Error in fetching data from API %s: %v", job.Id, job.Url, apiErr)
 			return nil, apiErr
@@ -330,14 +326,15 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		elapsed := time.Since(start).Seconds()
 		log.Debugf("Job ID: %d, Time taken to fetch the data from API : %s was %f", job.Id, dataSourceURLStruct.URL, elapsed)
 
+		var parsedJSON interface{}
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Errorf("Job ID: %d, Error in parsing data from API: %v", job.Id, err)
 			return nil, err
 		}
-		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
+		parsedData, err = parseJSONData(parsedJSON, job.Selector)
 		if err != nil {
-			log.Errorf("Job ID: %d, Error in fetching value from parsed data: %v", job.Id, err)
+			log.Errorf("Job ID: %d, Error in parsing JSON data: %v", job.Id, err)
 			return nil, err
 		}
 	} else {
