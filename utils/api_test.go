@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/hex"
+	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"razor/cache"
 	"razor/core/types"
 	"reflect"
@@ -174,6 +176,57 @@ func TestGetDataFromAPI(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetDataFromAPI() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseJSONData(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		selector    string
+		expected    interface{}
+		expectedErr string
+	}{
+		{
+			name:     "JSON Object",
+			input:    `{"key1": "value1", "key2": "value2"}`,
+			selector: "key1",
+			expected: "value1",
+		},
+		{
+			name:     "Array of JSON Objects",
+			input:    `[{"key1": "value1", "key2": "value2"}, {"key1": "value3", "key2": "value4"}]`,
+			selector: "key2",
+			expected: "value2",
+		},
+		{
+			name:        "Empty JSON Array",
+			input:       `[]`,
+			selector:    "key1",
+			expectedErr: "empty JSON array",
+		},
+		{
+			name:        "Unexpected JSON Structure",
+			input:       `"unexpected structure"`,
+			selector:    "key1",
+			expectedErr: "unexpected JSON structure",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var parsedJSON interface{}
+			err := json.Unmarshal([]byte(tt.input), &parsedJSON)
+			assert.NoError(t, err)
+
+			result, err := parseJSONData(parsedJSON, tt.selector)
+			if tt.expectedErr != "" {
+				assert.EqualError(t, err, tt.expectedErr)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, result)
 			}
 		})
 	}
