@@ -227,7 +227,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 		biggestStakerId uint32
 		mu              sync.Mutex
 		wg              sync.WaitGroup
-		errChan         = make(chan error, numberOfStakers)
+		errChan         = make(chan error, 1)
 	)
 
 	log.Debug("Iterating over all the stakers...")

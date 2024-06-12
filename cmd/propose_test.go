@@ -578,7 +578,7 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 1: When GetBiggestStakeAndId function executes successfully",
 			args: args{
-				numOfStakers:  1,
+				numOfStakers:  2,
 				remainingTime: 10,
 				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
 			},
