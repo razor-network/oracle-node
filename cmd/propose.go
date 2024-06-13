@@ -2,9 +2,10 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
-	Types "github.com/ethereum/go-ethereum/core/types"
+	"fmt"
 	"math"
 	"math/big"
 	"razor/core"
@@ -12,8 +13,14 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sort"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -224,9 +231,14 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	log.Debug("GetBiggestStakeAndId: State remaining time: ", stateRemainingTime)
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 
+	stakeSnapshotArray, err := BatchGetStakeSnapshotCalls(client, epoch, numberOfStakers)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	log.Debug("Iterating over all the stakers...")
 loop:
-	for i := 1; i <= int(numberOfStakers); i++ {
+	for i := 0; i < len(stakeSnapshotArray); i++ {
 		select {
 		case <-stateTimeout.C:
 			log.Error("State timeout!")
@@ -234,14 +246,11 @@ loop:
 			break loop
 		default:
 			log.Debug("Propose: Staker Id: ", i)
-			stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
-			if err != nil {
-				return nil, 0, err
-			}
+			stake := stakeSnapshotArray[i]
 			log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i, stake)
 			if stake.Cmp(biggestStake) > 0 {
 				biggestStake = stake
-				biggestStakerId = uint32(i)
+				biggestStakerId = uint32(i + 1)
 			}
 		}
 	}
@@ -492,6 +501,102 @@ func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32
 		}
 	}
 	return smallestStake, smallestStakerId, nil
+}
+
+func BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+	voteManagerABI, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerMetaData.ABI))
+	if err != nil {
+		log.Errorf("Error in parsed voteManager ABI: %v", err)
+		return nil, err
+	}
+
+	calls, err := createGetStakeSnapshotBatchCalls(voteManagerABI, epoch, numberOfStakers)
+	if err != nil {
+		log.Errorf("Error in creating batch calls: %v", err)
+		return nil, err
+	}
+
+	// Perform batch call
+	err = client.Client().BatchCallContext(context.Background(), calls)
+	if err != nil {
+		log.Errorf("Error in performing getStakeSnapshot batch call: %v", err)
+		return nil, err
+	}
+
+	stakeArray, err := processGetStakeSnapshotBatchResult(voteManagerABI, calls)
+	if err != nil {
+		log.Errorf("Error in processing getStakeSnapshot batch call result: %v", err)
+		return nil, err
+	}
+
+	log.Debugf("Stake Snapshot Array: %+v", stakeArray)
+	return stakeArray, nil
+}
+
+func createGetStakeSnapshotBatchCalls(voteManagerABI abi.ABI, epoch uint32, numberOfStakers uint32) ([]rpc.BatchElem, error) {
+	var calls []rpc.BatchElem
+
+	for i := 1; i <= int(numberOfStakers); i++ {
+		log.Debugf("Adding GetStakeSnapshot for Staker Id %v to the batch calls", i)
+		data, err := voteManagerABI.Pack("getStakeSnapshot", epoch, uint32(i))
+		if err != nil {
+			log.Errorf("Failed to pack data for Staker Id %d: %v", i, err)
+			return nil, err
+		}
+
+		calls = append(calls, rpc.BatchElem{
+			Method: "eth_call",
+			Args: []interface{}{
+				map[string]interface{}{
+					"to":   core.VoteManagerAddress,
+					"data": fmt.Sprintf("%x", data),
+				},
+				"latest",
+			},
+			Result: new(string),
+		})
+	}
+	return calls, nil
+}
+
+func processGetStakeSnapshotBatchResult(voteManagerABI abi.ABI, calls []rpc.BatchElem) ([]*big.Int, error) {
+	var stakeArray []*big.Int
+
+	// Process each call result
+	for i, call := range calls {
+		if call.Error != nil {
+			log.Errorf("Error in call result: %v", call.Error)
+			return nil, call.Error
+		}
+
+		result, ok := call.Result.(*string)
+		if !ok {
+			log.Error("Failed to type assert call result to *string")
+			return nil, errors.New("type asserting of batch call result error")
+		}
+
+		if result == nil || *result == "" {
+			log.Errorf("Empty result for Staker Id %d", i+1)
+			return nil, errors.New("empty batch call result")
+		}
+
+		// Decode the response directly into *big.Int
+		data := common.FromHex(*result)
+		if len(data) == 0 {
+			log.Errorf("Empty hex data for Staker Id %d", i+1)
+			return nil, errors.New("empty hex data")
+		}
+
+		// Correctly unpack the result using the ABI
+		unpackedData, err := voteManagerABI.Unpack("getStakeSnapshot", data)
+		if err != nil {
+			log.Errorf("Failed to unpack data for Staker Id %d: %v", i+1, err)
+			return nil, errors.New("unpacking getStakeSnapshot data error")
+		}
+
+		stakeArray = append(stakeArray, unpackedData[0].(*big.Int))
+	}
+	return stakeArray, nil
 }
 
 func updateGlobalProposedDataStruct(proposedData types.ProposeFileData) types.ProposeFileData {
