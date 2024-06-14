@@ -202,6 +202,12 @@ func TestParseJSONData(t *testing.T) {
 			expected: "value2",
 		},
 		{
+			name:        "Empty JSON Object",
+			input:       `{}`,
+			selector:    "key1",
+			expectedErr: "unknown key key1",
+		},
+		{
 			name:        "Empty JSON Array",
 			input:       `[]`,
 			selector:    "key1",
