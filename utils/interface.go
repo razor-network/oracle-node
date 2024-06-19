@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/rpc"
 	"io"
 	"io/fs"
 	"math/big"
@@ -172,6 +173,7 @@ type ClientUtils interface {
 	SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error)
 	EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error)
 	FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]Types.Log, error)
+	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
 	SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error)
 	EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error)
 	GetLatestBlockWithRetry(client *ethclient.Client) (*Types.Header, error)

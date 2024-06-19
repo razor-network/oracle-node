@@ -4,6 +4,7 @@ package cmd
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/rpc"
 	"math/big"
 	"razor/client"
 	"razor/core/types"
@@ -249,6 +250,8 @@ type UtilsCmdInterface interface {
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 	StoreBountyId(client *ethclient.Client, account types.Account) error
 	CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
+	CreateGetStakeSnapshotBatchCalls(voteManagerABI abi.ABI, epoch uint32, numberOfStakers uint32) ([]rpc.BatchElem, error)
+	BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error)
 }
 
 type TransactionInterface interface {

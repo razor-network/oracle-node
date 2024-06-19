@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
+	"github.com/ethereum/go-ethereum/rpc"
 	"io"
 	"io/fs"
 	"math/big"
@@ -659,6 +660,14 @@ func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, 
 		return []types.Log{}, returnedError
 	}
 	return returnedValues[0].Interface().([]types.Log), nil
+}
+
+func (c ClientStruct) PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error {
+	err := client.Client().BatchCallContext(context.Background(), calls)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {

@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -231,7 +230,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	log.Debug("GetBiggestStakeAndId: State remaining time: ", stateRemainingTime)
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
 
-	stakeSnapshotArray, err := BatchGetStakeSnapshotCalls(client, epoch, numberOfStakers)
+	stakeSnapshotArray, err := cmdUtils.BatchGetStakeSnapshotCalls(client, epoch, numberOfStakers)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -503,21 +502,21 @@ func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32
 	return smallestStake, smallestStakerId, nil
 }
 
-func BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+func (*UtilsStruct) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
 	voteManagerABI, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerMetaData.ABI))
 	if err != nil {
 		log.Errorf("Error in parsed voteManager ABI: %v", err)
 		return nil, err
 	}
 
-	calls, err := createGetStakeSnapshotBatchCalls(voteManagerABI, epoch, numberOfStakers)
+	calls, err := cmdUtils.CreateGetStakeSnapshotBatchCalls(voteManagerABI, epoch, numberOfStakers)
 	if err != nil {
 		log.Errorf("Error in creating batch calls: %v", err)
 		return nil, err
 	}
 
 	// Perform batch call
-	err = client.Client().BatchCallContext(context.Background(), calls)
+	err = clientUtils.PerformBatchCall(client, calls)
 	if err != nil {
 		log.Errorf("Error in performing getStakeSnapshot batch call: %v", err)
 		return nil, err
@@ -533,7 +532,7 @@ func BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOf
 	return stakeArray, nil
 }
 
-func createGetStakeSnapshotBatchCalls(voteManagerABI abi.ABI, epoch uint32, numberOfStakers uint32) ([]rpc.BatchElem, error) {
+func (*UtilsStruct) CreateGetStakeSnapshotBatchCalls(voteManagerABI abi.ABI, epoch uint32, numberOfStakers uint32) ([]rpc.BatchElem, error) {
 	var calls []rpc.BatchElem
 
 	for i := 1; i <= int(numberOfStakers); i++ {
