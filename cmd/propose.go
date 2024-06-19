@@ -246,7 +246,7 @@ loop:
 		default:
 			log.Debug("Propose: Staker Id: ", i)
 			stake := stakeSnapshotArray[i]
-			log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i, stake)
+			log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i+1, stake)
 			if stake.Cmp(biggestStake) > 0 {
 				biggestStake = stake
 				biggestStakerId = uint32(i + 1)
