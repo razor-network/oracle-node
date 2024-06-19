@@ -3,11 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/stretchr/testify/assert"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -567,7 +570,7 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		bufferPercentErr error
 		remainingTime    int64
 		remainingTimeErr error
-		stake            *big.Int
+		stakeArray       []*big.Int
 		stakeErr         error
 	}
 	tests := []struct {
@@ -580,12 +583,12 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 1: When GetBiggestStakeAndId function executes successfully",
 			args: args{
-				numOfStakers:  2,
+				numOfStakers:  7,
 				remainingTime: 10,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+				stakeArray:    []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
 			},
-			wantStake: big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
-			wantId:    1,
+			wantStake: big.NewInt(200030),
+			wantId:    5,
 			wantErr:   nil,
 		},
 		{
@@ -608,15 +611,15 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			wantErr:   errors.New("numOfStakers error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting stake",
+			name: "Test 4: When there is an error in getting stakeArray from batch calls",
 			args: args{
 				numOfStakers:  5,
 				remainingTime: 10,
-				stakeErr:      errors.New("stake error"),
+				stakeErr:      errors.New("batch calls error"),
 			},
 			wantStake: nil,
 			wantId:    0,
-			wantErr:   errors.New("stake error"),
+			wantErr:   errors.New("batch calls error"),
 		},
 		{
 			name: "Test 5: When there is an error in getting remaining time",
@@ -632,10 +635,10 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 6: When there is a timeout case",
 			args: args{
-				numOfStakers:  100000,
+				numOfStakers:  7,
 				bufferPercent: 10,
 				remainingTime: 0,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+				stakeArray:    []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
 			},
 			wantStake: nil,
 			wantId:    0,
@@ -651,13 +654,25 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			wantId:    0,
 			wantErr:   errors.New("buffer error"),
 		},
+		{
+			name: "Test 8: When there are large number of stakers and remaining time is less but biggest staker gets executed successfully",
+			args: args{
+				numOfStakers:  999,
+				bufferPercent: 10,
+				remainingTime: 2,
+				stakeArray:    GenerateDummyStakeSnapshotArray(999),
+			},
+			wantStake: big.NewInt(999000),
+			wantId:    999,
+			wantErr:   nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
-			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
+			cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeArray, tt.args.stakeErr)
 			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
@@ -1352,6 +1367,221 @@ func TestGetSmallestStakeAndId(t *testing.T) {
 	}
 }
 
+func TestBatchGetStakeCalls(t *testing.T) {
+	var client *ethclient.Client
+	var epoch uint32
+
+	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
+	stakeManagerABI, _ := abi.JSON(strings.NewReader(bindings.StakeManagerMetaData.ABI))
+
+	type args struct {
+		ABI                 abi.ABI
+		numberOfStakers     uint32
+		parseErr            error
+		createBatchCallsErr error
+		batchCallError      error
+		results             []interface{}
+		callErrors          []error
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStakes []*big.Int
+		wantErr    error
+	}{
+		{
+			name: "Test 1: When BatchGetStakeCalls executes successfully",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 3,
+				results: []interface{}{
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000a"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
+				},
+				callErrors: []error{nil, nil, nil},
+			},
+			wantStakes: []*big.Int{
+				big.NewInt(10),
+				big.NewInt(11),
+				big.NewInt(12),
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When one of the batch calls throws error",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 3,
+				results: []interface{}{
+					nil,
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
+				},
+				callErrors: []error{errors.New("batch call error"), nil, nil},
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("batch call error"),
+		},
+		{
+			name: "Test 3: When BatchGetStakeCalls receives an result of invalid type which cannot be type asserted to *string",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 3,
+				results: []interface{}{
+					42, // intentionally incorrect data type,
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
+				},
+				callErrors: []error{nil, nil, nil},
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("type asserting of batch call result error"),
+		},
+		{
+			name: "Test 4: When BatchGetStakeCalls receives a nil result",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 2,
+				results: []interface{}{
+					nil,
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
+				},
+				callErrors: []error{nil, nil, nil},
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("empty batch call result"),
+		},
+		{
+			name: "Test 5: When BatchGetStakeCalls receives an empty result",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 3,
+				results: []interface{}{
+					ptrString("0x"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
+				},
+				callErrors: []error{nil, nil, nil},
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("empty hex data"),
+		},
+		{
+			name: "Test 6: When incorrect ABI is provided for unpacking",
+			args: args{
+				ABI:             stakeManagerABI,
+				numberOfStakers: 3,
+				results: []interface{}{
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000a"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
+					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
+				},
+				callErrors: []error{nil, nil, nil},
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("unpacking getStakeSnapshot data error"),
+		},
+		{
+			name: "Test 7: When there is an error in parsing voteManager ABI",
+			args: args{
+				parseErr: errors.New("parse error"),
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("parse error"),
+		},
+		{
+			name: "Test 8: When there is an error in creating batch calls",
+			args: args{
+				ABI:                 voteManagerABI,
+				createBatchCallsErr: errors.New("create batch calls error"),
+			},
+			wantStakes: nil,
+			wantErr:    errors.New("create batch calls error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmdUtils = &UtilsStruct{}
+			calls, _ := cmdUtils.CreateGetStakeSnapshotBatchCalls(voteManagerABI, epoch, tt.args.numberOfStakers)
+			// Mock batch call responses
+			for i, result := range tt.args.results {
+				if result != nil {
+					calls[i].Result = result
+				}
+				calls[i].Error = tt.args.callErrors[i]
+			}
+
+			SetUpMockInterfaces()
+
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.ABI, tt.args.parseErr)
+			clientUtilsMock.On("PerformBatchCall", mock.Anything, mock.Anything).Return(tt.args.batchCallError)
+			cmdUtilsMock.On("CreateGetStakeSnapshotBatchCalls", mock.Anything, mock.Anything, mock.Anything).Return(calls, tt.args.createBatchCallsErr)
+
+			ut := &UtilsStruct{}
+			gotStakes, err := ut.BatchGetStakeSnapshotCalls(client, epoch, tt.args.numberOfStakers)
+
+			if err == nil || tt.wantErr == nil {
+				assert.Equal(t, tt.wantErr, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr.Error())
+			}
+
+			assert.Equal(t, tt.wantStakes, gotStakes)
+		})
+	}
+}
+
+func ptrString(s string) *string {
+	return &s
+}
+
+func TestCreateGetStakeSnapshotBatchCalls(t *testing.T) {
+	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
+	stakeManagerABI, _ := abi.JSON(strings.NewReader(bindings.StakeManagerMetaData.ABI))
+
+	type args struct {
+		voteManagerABI  abi.ABI
+		epoch           uint32
+		numberOfStakers uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "Test 1: When CreateGetStakeSnapshotBatchCalls executes successfully with correct voteManager ABI being provided",
+			args: args{
+				voteManagerABI:  voteManagerABI,
+				epoch:           5,
+				numberOfStakers: 3,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When incorrect voteManager ABI is provided",
+			args: args{
+				voteManagerABI:  stakeManagerABI,
+				epoch:           5,
+				numberOfStakers: 3,
+			},
+			wantErr: errors.New("method 'getStakeSnapshot' not found"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ut := &UtilsStruct{}
+			_, err := ut.CreateGetStakeSnapshotBatchCalls(tt.args.voteManagerABI, tt.args.epoch, tt.args.numberOfStakers)
+			if err == nil || tt.wantErr == nil {
+				assert.Equal(t, tt.wantErr, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr.Error())
+			}
+		})
+	}
+}
+
 func BenchmarkGetIteration(b *testing.B) {
 	var client *ethclient.Client
 	var bufferPercent int32
@@ -1413,7 +1643,7 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
-				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
+				cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.Anything, mock.Anything, mock.Anything).Return(GenerateDummyStakeSnapshotArray(v.numOfStakers), nil)
 				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
 				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
 
@@ -1497,6 +1727,15 @@ func BenchmarkMakeBlock(b *testing.B) {
 			}
 		})
 	}
+}
+
+func GenerateDummyStakeSnapshotArray(numOfStakers uint32) []*big.Int {
+	stakeSnapshotArray := make([]*big.Int, numOfStakers)
+	for i := 0; i < int(numOfStakers); i++ {
+		// For testing purposes, we will assign a stake value of (i + 1) * 1000
+		stakeSnapshotArray[i] = big.NewInt(int64(i+1) * 1000)
+	}
+	return stakeSnapshotArray
 }
 
 func GetDummyVotes(numOfVotes int) []*big.Int {

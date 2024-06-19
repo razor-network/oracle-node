@@ -3,9 +3,10 @@
 package mocks
 
 import (
-	big "math/big"
-
 	accounts "github.com/ethereum/go-ethereum/accounts"
+	abi "github.com/ethereum/go-ethereum/accounts/abi"
+
+	big "math/big"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 
@@ -24,6 +25,8 @@ import (
 	mock "github.com/stretchr/testify/mock"
 
 	pflag "github.com/spf13/pflag"
+
+	rpc "github.com/ethereum/go-ethereum/rpc"
 
 	types "razor/core/types"
 )
@@ -104,6 +107,32 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
 		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BatchGetStakeSnapshotCalls provides a mock function with given fields: client, epoch, numberOfStakers
+func (_m *UtilsCmdInterface) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+	ret := _m.Called(client, epoch, numberOfStakers)
+
+	var r0 []*big.Int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) ([]*big.Int, error)); ok {
+		return rf(client, epoch, numberOfStakers)
+	}
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) []*big.Int); ok {
+		r0 = rf(client, epoch, numberOfStakers)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
+		r1 = rf(client, epoch, numberOfStakers)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -346,6 +375,32 @@ func (_m *UtilsCmdInterface) CreateCollection(_a0 *ethclient.Client, config type
 
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.CreateCollectionInput) error); ok {
 		r1 = rf(_a0, config, collectionInput)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateGetStakeSnapshotBatchCalls provides a mock function with given fields: voteManagerABI, epoch, numberOfStakers
+func (_m *UtilsCmdInterface) CreateGetStakeSnapshotBatchCalls(voteManagerABI abi.ABI, epoch uint32, numberOfStakers uint32) ([]rpc.BatchElem, error) {
+	ret := _m.Called(voteManagerABI, epoch, numberOfStakers)
+
+	var r0 []rpc.BatchElem
+	var r1 error
+	if rf, ok := ret.Get(0).(func(abi.ABI, uint32, uint32) ([]rpc.BatchElem, error)); ok {
+		return rf(voteManagerABI, epoch, numberOfStakers)
+	}
+	if rf, ok := ret.Get(0).(func(abi.ABI, uint32, uint32) []rpc.BatchElem); ok {
+		r0 = rf(voteManagerABI, epoch, numberOfStakers)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rpc.BatchElem)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(abi.ABI, uint32, uint32) error); ok {
+		r1 = rf(voteManagerABI, epoch, numberOfStakers)
 	} else {
 		r1 = ret.Error(1)
 	}
