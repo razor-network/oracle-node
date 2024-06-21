@@ -110,7 +110,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
-					break
 				}
 				continue
 			}
@@ -124,6 +123,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
 		if err != nil {
 			log.Error("Error in disputing: ", err)
+			continue
 		}
 		if idDisputeTxn != nil {
 			idDisputeTxnHash := transactionUtils.Hash(idDisputeTxn)
@@ -136,7 +136,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
-					break
 				}
 				continue
 			}
