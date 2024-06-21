@@ -153,6 +153,11 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				log.Debug("HandleDispute: Mismatch index while iterating: ", mismatchIndex)
+				if mismatchIndex < 0 || mismatchIndex >= len(proposedBlock.Ids) {
+					log.Error("Mismatch index is out of bounds, cannot continue dispute for medians")
+					continue
+				}
+
 				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
 				log.Debug("HandleDispute: Collection Id of wrong median: ", collectionIdOfWrongMedian)
 
