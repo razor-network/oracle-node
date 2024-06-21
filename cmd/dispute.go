@@ -153,30 +153,25 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				log.Debug("HandleDispute: Mismatch index while iterating: ", mismatchIndex)
-				if mismatchIndex >= 0 && mismatchIndex < len(proposedBlock.Ids) {
-					collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
-					log.Debug("HandleDispute: Collection Id of wrong median: ", collectionIdOfWrongMedian)
+				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
+				log.Debug("HandleDispute: Collection Id of wrong median: ", collectionIdOfWrongMedian)
 
-					//collectionId starts from 1 and in SortedRevealedValues, the keys start from 0 which are collectionId-1 mapping to respective revealed data for that collectionId.
-					//e.g. collectionId = [1,2,3,4] & Sorted Reveal Votes: map[0:[100] 1:[200 202] 2:[300]]
-					//Here 0th key in map represents collectionId 1.
+				//collectionId starts from 1 and in SortedRevealedValues, the keys start from 0 which are collectionId-1 mapping to respective revealed data for that collectionId.
+				//e.g. collectionId = [1,2,3,4] & Sorted Reveal Votes: map[0:[100] 1:[200 202] 2:[300]]
+				//Here 0th key in map represents collectionId 1.
 
-					sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
-					log.Debug("HandleDispute: Sorted values: ", sortedValues)
-					leafId, err := razorUtils.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
-					if err != nil {
-						log.Error("Error in leaf id: ", err)
-						continue
-					}
-					log.Debug("HandleDispute: Leaf Id: ", leafId)
-					log.Debugf("Calling Dispute() with arguments epoch = %d, blockIndex = %d, proposed block = %+v, leafId = %d, sortedValues = %s", epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
-					disputeErr := cmdUtils.Dispute(client, config, account, epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
-					if disputeErr != nil {
-						log.Error("Error in disputing...", disputeErr)
-						continue
-					}
-				} else {
-					log.Error("HandleDispute: mismatch index out of bounds: ", mismatchIndex)
+				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
+				log.Debug("HandleDispute: Sorted values: ", sortedValues)
+				leafId, err := razorUtils.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
+				if err != nil {
+					log.Error("Error in leaf id: ", err)
+					continue
+				}
+				log.Debug("HandleDispute: Leaf Id: ", leafId)
+				log.Debugf("Calling Dispute() with arguments epoch = %d, blockIndex = %d, proposed block = %+v, leafId = %d, sortedValues = %s", epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
+				disputeErr := cmdUtils.Dispute(client, config, account, epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
+				if disputeErr != nil {
+					log.Error("Error in disputing...", disputeErr)
 					continue
 				}
 			} else {
