@@ -537,7 +537,7 @@ func (*UtilsStruct) CreateGetStakeSnapshotBatchCalls(voteManagerABI abi.ABI, epo
 
 	for i := 1; i <= int(numberOfStakers); i++ {
 		log.Debugf("Adding GetStakeSnapshot for Staker Id %v to the batch calls", i)
-		data, err := voteManagerABI.Pack("getStakeSnapshot", epoch, uint32(i))
+		data, err := voteManagerABI.Pack(core.GetStakeSnapshotMethod, epoch, uint32(i))
 		if err != nil {
 			log.Errorf("Failed to pack data for Staker Id %d: %v", i, err)
 			return nil, err
@@ -587,7 +587,7 @@ func processGetStakeSnapshotBatchResult(voteManagerABI abi.ABI, calls []rpc.Batc
 		}
 
 		// Correctly unpack the result using the ABI
-		unpackedData, err := voteManagerABI.Unpack("getStakeSnapshot", data)
+		unpackedData, err := voteManagerABI.Unpack(core.GetStakeSnapshotMethod, data)
 		if err != nil {
 			log.Errorf("Failed to unpack data for Staker Id %d: %v", i+1, err)
 			return nil, errors.New("unpacking getStakeSnapshot data error")

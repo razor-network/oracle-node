@@ -100,3 +100,5 @@ const (
 	HTTPClientMaxIdleConns        = 15
 	HTTPClientMaxIdleConnsPerHost = 5
 )
+
+const GetStakeSnapshotMethod = "getStakeSnapshot"
