@@ -209,7 +209,7 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
 	const (
 		MinBufferPercent = 0
-		MaxBufferPercent = 5
+		MaxBufferPercent = 30
 	)
 
 	bufferPercent, err := getConfigValue("buffer", "int32", core.DefaultBufferPercent, "buffer")
@@ -237,8 +237,8 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 //This function returns the wait time
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	const (
-		MinWaitTime = 1 // Minimum wait time in seconds
-		MaxWaitTime = 5 // Maximum wait time in seconds
+		MinWaitTime = 1  // Minimum wait time in seconds
+		MaxWaitTime = 30 // Maximum wait time in seconds
 	)
 
 	waitTime, err := getConfigValue("wait", "int32", core.DefaultWaitTime, "wait")
@@ -334,7 +334,7 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	const (
 		MinRPCTimeout = 10 // Minimum RPC timeout in seconds
-		MaxRPCTimeout = 20 // Maximum RPC timeout in seconds
+		MaxRPCTimeout = 60 // Maximum RPC timeout in seconds
 	)
 
 	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")
@@ -356,7 +356,7 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
 	const (
 		MinHTTPTimeout = 10 // Minimum HTTP timeout in seconds
-		MaxHTTPTimeout = 20 // Maximum HTTP timeout in seconds
+		MaxHTTPTimeout = 60 // Maximum HTTP timeout in seconds
 	)
 
 	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")

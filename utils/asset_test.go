@@ -683,6 +683,16 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","id":7269270904970082,"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","data":"0xd06ca61f0000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050de6856358cc35f3a9a57eaaa34bd4cb707d2cd0000000000000000000000008e870d67f660d95d5be530380d0ec0bd388289e1","to":"0x7a250d5630b4cf539739df2c5dacb4c659f2488d"},"latest"]},"header": {"content-type": "application/json"}, "returnType": "hexArray[1]"}`,
 	}
 
+	arrayOfObjectsJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_bitfinex", Selector: "last_price",
+		Url: "https://api.bitfinex.com/v1/pubticker/ethusd",
+	}
+
+	arrayOfArraysJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_bitfinex_v2", Selector: "last_price",
+		Url: "https://api-pub.bitfinex.com/v2/tickers?symbols=tXDCUSD",
+	}
+
 	invalidDataSourceStructJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_sample", Selector: "result",
 		Url: `{"type": true,"url1": {}}`,
@@ -747,6 +757,20 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: false,
+		},
+		{
+			name: "Test 7: When GetDataToCommitFromJob() executes successfully for job returning response of type array of objects",
+			args: args{
+				job: arrayOfObjectsJob,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 8: When GetDataToCommitFromJob() fails for job returning response of type arrays of arrays as element in array is not a json object",
+			args: args{
+				job: arrayOfArraysJob,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {

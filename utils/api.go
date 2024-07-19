@@ -79,6 +79,28 @@ func makeAPIRequest(httpClient types.HttpClientInterface, dataSourceURLStruct ty
 	return response, nil
 }
 
+func parseJSONData(parsedJSON interface{}, selector string) (interface{}, error) {
+	switch v := parsedJSON.(type) {
+	case map[string]interface{}: // Handling JSON object response case
+		return GetDataFromJSON(v, selector)
+
+	case []interface{}: // Handling JSON array of objects response case
+		if len(v) > 0 {
+			// The first element from JSON array is fetched
+			if elem, ok := v[0].(map[string]interface{}); ok {
+				return GetDataFromJSON(elem, selector)
+			}
+			log.Error("Element in array is not a JSON object")
+			return nil, errors.New("element in array is not a JSON object")
+		}
+		log.Error("Empty JSON array")
+		return nil, errors.New("empty JSON array")
+	default:
+		log.Error("Unexpected JSON structure")
+		return nil, errors.New("unexpected JSON structure")
+	}
+}
+
 func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
 	if selector[0] == '[' {
 		selector = "$" + selector
