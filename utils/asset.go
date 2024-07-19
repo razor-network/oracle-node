@@ -288,7 +288,6 @@ func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int
 }
 
 func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache, httpClient *client.HttpClient) (*big.Int, error) {
-	var parsedJSON map[string]interface{}
 	var (
 		response            []byte
 		apiErr              error
@@ -331,14 +330,15 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 		elapsed := time.Since(start).Seconds()
 		log.Debugf("Job ID: %d, Time taken to fetch the data from API : %s was %f", job.Id, dataSourceURLStruct.URL, elapsed)
 
+		var parsedJSON interface{}
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
 			log.Errorf("Job ID: %d, Error in parsing data from API: %v", job.Id, err)
 			return nil, err
 		}
-		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
+		parsedData, err = parseJSONData(parsedJSON, job.Selector)
 		if err != nil {
-			log.Errorf("Job ID: %d, Error in fetching value from parsed data: %v", job.Id, err)
+			log.Errorf("Job ID: %d, Error in parsing JSON data: %v", job.Id, err)
 			return nil, err
 		}
 	} else {
