@@ -173,13 +173,15 @@ type ClientUtils interface {
 	SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error)
 	EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error)
 	FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]Types.Log, error)
-	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
 	SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error)
 	EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error)
 	GetLatestBlockWithRetry(client *ethclient.Client) (*Types.Header, error)
 	FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]Types.Log, error)
 	BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error)
 	GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error)
+	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
+	CreateBatchCalls(contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([]rpc.BatchElem, error)
+	BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error)
 }
 
 type TimeUtils interface {
