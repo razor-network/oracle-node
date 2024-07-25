@@ -679,12 +679,6 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			utils := &UtilsStruct{}
 
 			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, address, epoch)
-			if gotStake.Cmp(tt.wantStake) != 0 {
-				t.Errorf("Biggest Stake from GetBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
-			}
-			if gotId != tt.wantId {
-				t.Errorf("Staker Id of staker having biggest Influence from GetBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
-			}
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
@@ -693,6 +687,12 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
 				}
+			}
+			if gotStake.Cmp(tt.wantStake) != 0 {
+				t.Errorf("Biggest Stake from GetBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
+			}
+			if gotId != tt.wantId {
+				t.Errorf("Staker Id of staker having biggest Influence from GetBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
 			}
 
 		})
@@ -1372,16 +1372,13 @@ func TestBatchGetStakeCalls(t *testing.T) {
 	var epoch uint32
 
 	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
-	stakeManagerABI, _ := abi.JSON(strings.NewReader(bindings.StakeManagerMetaData.ABI))
 
 	type args struct {
-		ABI                 abi.ABI
-		numberOfStakers     uint32
-		parseErr            error
-		createBatchCallsErr error
-		batchCallError      error
-		results             []interface{}
-		callErrors          []error
+		ABI              abi.ABI
+		numberOfStakers  uint32
+		parseErr         error
+		batchCallResults [][]interface{}
+		batchCallError   error
 	}
 	tests := []struct {
 		name       string
@@ -1394,12 +1391,11 @@ func TestBatchGetStakeCalls(t *testing.T) {
 			args: args{
 				ABI:             voteManagerABI,
 				numberOfStakers: 3,
-				results: []interface{}{
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000a"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
+				batchCallResults: [][]interface{}{
+					{big.NewInt(10)},
+					{big.NewInt(11)},
+					{big.NewInt(12)},
 				},
-				callErrors: []error{nil, nil, nil},
 			},
 			wantStakes: []*big.Int{
 				big.NewInt(10),
@@ -1409,114 +1405,19 @@ func TestBatchGetStakeCalls(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 2: When one of the batch calls throws error",
-			args: args{
-				ABI:             voteManagerABI,
-				numberOfStakers: 3,
-				results: []interface{}{
-					nil,
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
-				},
-				callErrors: []error{errors.New("batch call error"), nil, nil},
-			},
-			wantStakes: nil,
-			wantErr:    errors.New("batch call error"),
-		},
-		{
-			name: "Test 3: When BatchGetStakeCalls receives an result of invalid type which cannot be type asserted to *string",
-			args: args{
-				ABI:             voteManagerABI,
-				numberOfStakers: 3,
-				results: []interface{}{
-					42, // intentionally incorrect data type,
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
-				},
-				callErrors: []error{nil, nil, nil},
-			},
-			wantStakes: nil,
-			wantErr:    errors.New("type asserting of batch call result error"),
-		},
-		{
-			name: "Test 4: When BatchGetStakeCalls receives a nil result",
-			args: args{
-				ABI:             voteManagerABI,
-				numberOfStakers: 2,
-				results: []interface{}{
-					nil,
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
-				},
-				callErrors: []error{nil, nil, nil},
-			},
-			wantStakes: nil,
-			wantErr:    errors.New("empty batch call result"),
-		},
-		{
-			name: "Test 5: When BatchGetStakeCalls receives an empty result",
-			args: args{
-				ABI:             voteManagerABI,
-				numberOfStakers: 3,
-				results: []interface{}{
-					ptrString("0x"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
-				},
-				callErrors: []error{nil, nil, nil},
-			},
-			wantStakes: nil,
-			wantErr:    errors.New("empty hex data"),
-		},
-		{
-			name: "Test 6: When incorrect ABI is provided for unpacking",
-			args: args{
-				ABI:             stakeManagerABI,
-				numberOfStakers: 3,
-				results: []interface{}{
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000a"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000b"),
-					ptrString("0x000000000000000000000000000000000000000000000000000000000000000c"),
-				},
-				callErrors: []error{nil, nil, nil},
-			},
-			wantStakes: nil,
-			wantErr:    errors.New("unpacking getStakeSnapshot data error"),
-		},
-		{
-			name: "Test 7: When there is an error in parsing voteManager ABI",
+			name: "Test 2: When there is an error in parsing voteManager ABI",
 			args: args{
 				parseErr: errors.New("parse error"),
 			},
-			wantStakes: nil,
-			wantErr:    errors.New("parse error"),
-		},
-		{
-			name: "Test 8: When there is an error in creating batch calls",
-			args: args{
-				ABI:                 voteManagerABI,
-				createBatchCallsErr: errors.New("create batch calls error"),
-			},
-			wantStakes: nil,
-			wantErr:    errors.New("create batch calls error"),
+			wantErr: errors.New("parse error"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmdUtils = &UtilsStruct{}
-			calls, _ := cmdUtils.CreateGetStakeSnapshotBatchCalls(voteManagerABI, epoch, tt.args.numberOfStakers)
-			// Mock batch call responses
-			for i, result := range tt.args.results {
-				if result != nil {
-					calls[i].Result = result
-				}
-				calls[i].Error = tt.args.callErrors[i]
-			}
-
 			SetUpMockInterfaces()
 
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.ABI, tt.args.parseErr)
-			clientUtilsMock.On("PerformBatchCall", mock.Anything, mock.Anything).Return(tt.args.batchCallError)
-			cmdUtilsMock.On("CreateGetStakeSnapshotBatchCalls", mock.Anything, mock.Anything, mock.Anything).Return(calls, tt.args.createBatchCallsErr)
+			clientUtilsMock.On("BatchCall", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.batchCallResults, tt.args.batchCallError)
 
 			ut := &UtilsStruct{}
 			gotStakes, err := ut.BatchGetStakeSnapshotCalls(client, epoch, tt.args.numberOfStakers)
@@ -1528,56 +1429,6 @@ func TestBatchGetStakeCalls(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.wantStakes, gotStakes)
-		})
-	}
-}
-
-func ptrString(s string) *string {
-	return &s
-}
-
-func TestCreateGetStakeSnapshotBatchCalls(t *testing.T) {
-	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
-	stakeManagerABI, _ := abi.JSON(strings.NewReader(bindings.StakeManagerMetaData.ABI))
-
-	type args struct {
-		voteManagerABI  abi.ABI
-		epoch           uint32
-		numberOfStakers uint32
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr error
-	}{
-		{
-			name: "Test 1: When CreateGetStakeSnapshotBatchCalls executes successfully with correct voteManager ABI being provided",
-			args: args{
-				voteManagerABI:  voteManagerABI,
-				epoch:           5,
-				numberOfStakers: 3,
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When incorrect voteManager ABI is provided",
-			args: args{
-				voteManagerABI:  stakeManagerABI,
-				epoch:           5,
-				numberOfStakers: 3,
-			},
-			wantErr: errors.New("method 'getStakeSnapshot' not found"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ut := &UtilsStruct{}
-			_, err := ut.CreateGetStakeSnapshotBatchCalls(tt.args.voteManagerABI, tt.args.epoch, tt.args.numberOfStakers)
-			if err == nil || tt.wantErr == nil {
-				assert.Equal(t, tt.wantErr, err)
-			} else {
-				assert.EqualError(t, err, tt.wantErr.Error())
-			}
 		})
 	}
 }

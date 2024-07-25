@@ -3,10 +3,13 @@
 package mocks
 
 import (
-	context "context"
 	big "math/big"
 
+	abi "github.com/ethereum/go-ethereum/accounts/abi"
+
 	common "github.com/ethereum/go-ethereum/common"
+
+	context "context"
 
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
 
@@ -69,6 +72,58 @@ func (_m *ClientUtils) BalanceAtWithRetry(client *ethclient.Client, account comm
 
 	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
 		r1 = rf(client, account)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BatchCall provides a mock function with given fields: client, contractABI, contractAddress, methodName, args
+func (_m *ClientUtils) BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress string, methodName string, args [][]interface{}) ([][]interface{}, error) {
+	ret := _m.Called(client, contractABI, contractAddress, methodName, args)
+
+	var r0 [][]interface{}
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *abi.ABI, string, string, [][]interface{}) ([][]interface{}, error)); ok {
+		return rf(client, contractABI, contractAddress, methodName, args)
+	}
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, *abi.ABI, string, string, [][]interface{}) [][]interface{}); ok {
+		r0 = rf(client, contractABI, contractAddress, methodName, args)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]interface{})
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, *abi.ABI, string, string, [][]interface{}) error); ok {
+		r1 = rf(client, contractABI, contractAddress, methodName, args)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateBatchCalls provides a mock function with given fields: contractABI, contractAddress, methodName, args
+func (_m *ClientUtils) CreateBatchCalls(contractABI *abi.ABI, contractAddress string, methodName string, args [][]interface{}) ([]rpc.BatchElem, error) {
+	ret := _m.Called(contractABI, contractAddress, methodName, args)
+
+	var r0 []rpc.BatchElem
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*abi.ABI, string, string, [][]interface{}) ([]rpc.BatchElem, error)); ok {
+		return rf(contractABI, contractAddress, methodName, args)
+	}
+	if rf, ok := ret.Get(0).(func(*abi.ABI, string, string, [][]interface{}) []rpc.BatchElem); ok {
+		r0 = rf(contractABI, contractAddress, methodName, args)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]rpc.BatchElem)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*abi.ABI, string, string, [][]interface{}) error); ok {
+		r1 = rf(contractABI, contractAddress, methodName, args)
 	} else {
 		r1 = ret.Error(1)
 	}
