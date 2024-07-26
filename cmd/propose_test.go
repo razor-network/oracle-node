@@ -521,7 +521,7 @@ func TestPropose(t *testing.T) {
 
 		utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
-		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
+		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
 		utilsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.randaoHash, tt.args.randaoHashErr)
 		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
@@ -560,18 +560,13 @@ func TestPropose(t *testing.T) {
 
 func TestGetBiggestStakeAndId(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	var epoch uint32
 
 	type args struct {
-		numOfStakers     uint32
-		numOfStakersErr  error
-		bufferPercent    int32
-		bufferPercentErr error
-		remainingTime    int64
-		remainingTimeErr error
-		stakeArray       []*big.Int
-		stakeErr         error
+		numOfStakers    uint32
+		numOfStakersErr error
+		stakeArray      []*big.Int
+		stakeErr        error
 	}
 	tests := []struct {
 		name      string
@@ -583,9 +578,8 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 1: When GetBiggestStakeAndId function executes successfully",
 			args: args{
-				numOfStakers:  7,
-				remainingTime: 10,
-				stakeArray:    []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
+				numOfStakers: 7,
+				stakeArray:   []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
 			},
 			wantStake: big.NewInt(200030),
 			wantId:    5,
@@ -604,7 +598,6 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			name: "Test 3: When there is an error in getting numOfStakers",
 			args: args{
 				numOfStakersErr: errors.New("numOfStakers error"),
-				remainingTime:   10,
 			},
 			wantStake: nil,
 			wantId:    0,
@@ -613,54 +606,18 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting stakeArray from batch calls",
 			args: args{
-				numOfStakers:  5,
-				remainingTime: 10,
-				stakeErr:      errors.New("batch calls error"),
+				numOfStakers: 5,
+				stakeErr:     errors.New("batch calls error"),
 			},
 			wantStake: nil,
 			wantId:    0,
 			wantErr:   errors.New("batch calls error"),
 		},
 		{
-			name: "Test 5: When there is an error in getting remaining time",
+			name: "Test 5: When there are large number of stakers",
 			args: args{
-				numOfStakers:     2,
-				remainingTime:    10,
-				remainingTimeErr: errors.New("time error"),
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("time error"),
-		},
-		{
-			name: "Test 6: When there is a timeout case",
-			args: args{
-				numOfStakers:  7,
-				bufferPercent: 10,
-				remainingTime: 0,
-				stakeArray:    []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("state timeout error"),
-		},
-		{
-			name: "Test 7: When there is an error in getting buffer percent",
-			args: args{
-				numOfStakers:     2,
-				bufferPercentErr: errors.New("buffer error"),
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("buffer error"),
-		},
-		{
-			name: "Test 8: When there are large number of stakers and remaining time is less but biggest staker gets executed successfully",
-			args: args{
-				numOfStakers:  999,
-				bufferPercent: 10,
-				remainingTime: 2,
-				stakeArray:    GenerateDummyStakeSnapshotArray(999),
+				numOfStakers: 999,
+				stakeArray:   GenerateDummyStakeSnapshotArray(999),
 			},
 			wantStake: big.NewInt(999000),
 			wantId:    999,
@@ -673,12 +630,10 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
 			cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeArray, tt.args.stakeErr)
-			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 
 			utils := &UtilsStruct{}
 
-			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, address, epoch)
+			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, epoch)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
@@ -1476,7 +1431,6 @@ func BenchmarkGetIteration(b *testing.B) {
 
 func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 	var client *ethclient.Client
-	var address string
 	var epoch uint32
 
 	var table = []struct {
@@ -1495,11 +1449,9 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
 				cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.Anything, mock.Anything, mock.Anything).Return(GenerateDummyStakeSnapshotArray(v.numOfStakers), nil)
-				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
-				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
 
 				ut := &UtilsStruct{}
-				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)
+				_, _, err := ut.GetBiggestStakeAndId(client, epoch)
 				if err != nil {
 					log.Fatal(err)
 				}

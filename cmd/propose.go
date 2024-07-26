@@ -62,7 +62,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		biggestStakerId = smallestStakerId
 		log.Debugf("Propose: In rogue mode, Biggest Stake: %s, Biggest Staker Id: %d", biggestStake, biggestStakerId)
 	} else {
-		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
+		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, epoch)
 		if biggestStakerErr != nil {
 			log.Error("Error in calculating biggest staker: ", biggestStakerErr)
 			return biggestStakerErr
@@ -200,7 +200,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 }
 
 //This function returns the biggest stake and Id of it
-func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
+func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		return nil, 0, err
@@ -212,19 +212,6 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
-	if err != nil {
-		return nil, 0, err
-	}
-	log.Debug("GetBiggestStakeAndId: Buffer Percent: ", bufferPercent)
-
-	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
-	if err != nil {
-		return nil, 0, err
-	}
-	log.Debug("GetBiggestStakeAndId: State remaining time: ", stateRemainingTime)
-	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
-
 	stakeSnapshotArray, err := cmdUtils.BatchGetStakeSnapshotCalls(client, epoch, numberOfStakers)
 	if err != nil {
 		return nil, 0, err
@@ -232,21 +219,13 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 
 	log.Debugf("Stake Snapshot Array: %+v", stakeSnapshotArray)
 	log.Debug("Iterating over all the stakers...")
-loop:
 	for i := 0; i < len(stakeSnapshotArray); i++ {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			err = errors.New("state timeout error")
-			break loop
-		default:
-			log.Debug("Propose: Staker Id: ", i)
-			stake := stakeSnapshotArray[i]
-			log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i+1, stake)
-			if stake.Cmp(biggestStake) > 0 {
-				biggestStake = stake
-				biggestStakerId = uint32(i + 1)
-			}
+		log.Debug("Propose: Staker Id: ", i)
+		stake := stakeSnapshotArray[i]
+		log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i+1, stake)
+		if stake.Cmp(biggestStake) > 0 {
+			biggestStake = stake
+			biggestStakerId = uint32(i + 1)
 		}
 	}
 	if err != nil {

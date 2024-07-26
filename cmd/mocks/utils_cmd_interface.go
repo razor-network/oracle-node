@@ -598,32 +598,32 @@ func (_m *UtilsCmdInterface) GetAlternateProvider() (string, error) {
 	return r0, r1
 }
 
-// GetBiggestStakeAndId provides a mock function with given fields: _a0, address, epoch
-func (_m *UtilsCmdInterface) GetBiggestStakeAndId(_a0 *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
-	ret := _m.Called(_a0, address, epoch)
+// GetBiggestStakeAndId provides a mock function with given fields: _a0, epoch
+func (_m *UtilsCmdInterface) GetBiggestStakeAndId(_a0 *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
+	ret := _m.Called(_a0, epoch)
 
 	var r0 *big.Int
 	var r1 uint32
 	var r2 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) (*big.Int, uint32, error)); ok {
-		return rf(_a0, address, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) (*big.Int, uint32, error)); ok {
+		return rf(_a0, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) *big.Int); ok {
-		r0 = rf(_a0, address, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) *big.Int); ok {
+		r0 = rf(_a0, epoch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) uint32); ok {
-		r1 = rf(_a0, address, epoch)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) uint32); ok {
+		r1 = rf(_a0, epoch)
 	} else {
 		r1 = ret.Get(1).(uint32)
 	}
 
-	if rf, ok := ret.Get(2).(func(*ethclient.Client, string, uint32) error); ok {
-		r2 = rf(_a0, address, epoch)
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, uint32) error); ok {
+		r2 = rf(_a0, epoch)
 	} else {
 		r2 = ret.Error(2)
 	}
