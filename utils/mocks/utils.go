@@ -69,15 +69,15 @@ func (_m *Utils) AddJobToJSON(fileName string, job *types.StructsJob) error {
 }
 
 // Aggregate provides a mock function with given fields: client, previousEpoch, collection, commitParams
-func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams types.CommitParams) (*big.Int, error) {
+func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
 	ret := _m.Called(client, previousEpoch, collection, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, types.CommitParams) (*big.Int, error)); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *types.CommitParams) (*big.Int, error)); ok {
 		return rf(client, previousEpoch, collection, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, types.CommitParams) *big.Int); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, bindings.StructsCollection, *types.CommitParams) *big.Int); ok {
 		r0 = rf(client, previousEpoch, collection, commitParams)
 	} else {
 		if ret.Get(0) != nil {
@@ -85,7 +85,7 @@ func (_m *Utils) Aggregate(client *ethclient.Client, previousEpoch uint32, colle
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection, types.CommitParams) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, bindings.StructsCollection, *types.CommitParams) error); ok {
 		r1 = rf(client, previousEpoch, collection, commitParams)
 	} else {
 		r1 = ret.Error(1)
@@ -394,15 +394,15 @@ func (_m *Utils) GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.
 }
 
 // GetAggregatedDataOfCollection provides a mock function with given fields: client, collectionId, epoch, commitParams
-func (_m *Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams types.CommitParams) (*big.Int, error) {
+func (_m *Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
 	ret := _m.Called(client, collectionId, epoch, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, types.CommitParams) (*big.Int, error)); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *types.CommitParams) (*big.Int, error)); ok {
 		return rf(client, collectionId, epoch, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, types.CommitParams) *big.Int); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, uint32, *types.CommitParams) *big.Int); ok {
 		r0 = rf(client, collectionId, epoch, commitParams)
 	} else {
 		if ret.Get(0) != nil {
@@ -410,7 +410,7 @@ func (_m *Utils) GetAggregatedDataOfCollection(client *ethclient.Client, collect
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32, types.CommitParams) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint16, uint32, *types.CommitParams) error); ok {
 		r1 = rf(client, collectionId, epoch, commitParams)
 	} else {
 		r1 = ret.Error(1)
@@ -733,15 +733,15 @@ func (_m *Utils) GetCommitment(client *ethclient.Client, address string) (types.
 }
 
 // GetDataToCommitFromJob provides a mock function with given fields: job, commitParams
-func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, commitParams types.CommitParams) (*big.Int, error) {
+func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error) {
 	ret := _m.Called(job, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(bindings.StructsJob, types.CommitParams) (*big.Int, error)); ok {
+	if rf, ok := ret.Get(0).(func(bindings.StructsJob, *types.CommitParams) (*big.Int, error)); ok {
 		return rf(job, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(bindings.StructsJob, types.CommitParams) *big.Int); ok {
+	if rf, ok := ret.Get(0).(func(bindings.StructsJob, *types.CommitParams) *big.Int); ok {
 		r0 = rf(job, commitParams)
 	} else {
 		if ret.Get(0) != nil {
@@ -749,7 +749,7 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, commitParams ty
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(bindings.StructsJob, types.CommitParams) error); ok {
+	if rf, ok := ret.Get(1).(func(bindings.StructsJob, *types.CommitParams) error); ok {
 		r1 = rf(job, commitParams)
 	} else {
 		r1 = ret.Error(1)
@@ -759,15 +759,15 @@ func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, commitParams ty
 }
 
 // GetDataToCommitFromJobs provides a mock function with given fields: jobs, commitParams
-func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams types.CommitParams) ([]*big.Int, []uint8) {
+func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams *types.CommitParams) ([]*big.Int, []uint8) {
 	ret := _m.Called(jobs, commitParams)
 
 	var r0 []*big.Int
 	var r1 []uint8
-	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, types.CommitParams) ([]*big.Int, []uint8)); ok {
+	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *types.CommitParams) ([]*big.Int, []uint8)); ok {
 		return rf(jobs, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, types.CommitParams) []*big.Int); ok {
+	if rf, ok := ret.Get(0).(func([]bindings.StructsJob, *types.CommitParams) []*big.Int); ok {
 		r0 = rf(jobs, commitParams)
 	} else {
 		if ret.Get(0) != nil {
@@ -775,7 +775,7 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParam
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func([]bindings.StructsJob, types.CommitParams) []uint8); ok {
+	if rf, ok := ret.Get(1).(func([]bindings.StructsJob, *types.CommitParams) []uint8); ok {
 		r1 = rf(jobs, commitParams)
 	} else {
 		if ret.Get(1) != nil {
@@ -1739,15 +1739,15 @@ func (_m *Utils) GetWithdrawInitiationPeriod(client *ethclient.Client) (uint16, 
 }
 
 // HandleOfficialJobsFromJSONFile provides a mock function with given fields: client, collection, dataString, commitParams
-func (_m *Utils) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams types.CommitParams) ([]bindings.StructsJob, []uint16) {
+func (_m *Utils) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
 	ret := _m.Called(client, collection, dataString, commitParams)
 
 	var r0 []bindings.StructsJob
 	var r1 []uint16
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, types.CommitParams) ([]bindings.StructsJob, []uint16)); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, *types.CommitParams) ([]bindings.StructsJob, []uint16)); ok {
 		return rf(client, collection, dataString, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, types.CommitParams) []bindings.StructsJob); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, *types.CommitParams) []bindings.StructsJob); ok {
 		r0 = rf(client, collection, dataString, commitParams)
 	} else {
 		if ret.Get(0) != nil {
@@ -1755,7 +1755,7 @@ func (_m *Utils) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collec
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsCollection, string, types.CommitParams) []uint16); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsCollection, string, *types.CommitParams) []uint16); ok {
 		r1 = rf(client, collection, dataString, commitParams)
 	} else {
 		if ret.Get(1) != nil {

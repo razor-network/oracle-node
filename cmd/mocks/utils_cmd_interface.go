@@ -1192,7 +1192,7 @@ func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *
 }
 
 // HandleBlock provides a mock function with given fields: client, account, stakerId, header, config, commitParams, rogueData, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, header *coretypes.Header, config types.Configurations, commitParams types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, header *coretypes.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	_m.Called(client, account, stakerId, header, config, commitParams, rogueData, backupNodeActionsToIgnore)
 }
 
@@ -1211,21 +1211,21 @@ func (_m *UtilsCmdInterface) HandleClaimBounty(client *ethclient.Client, config 
 }
 
 // HandleCommitState provides a mock function with given fields: client, epoch, seed, commitParams, rogueData
-func (_m *UtilsCmdInterface) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
+func (_m *UtilsCmdInterface) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
 	ret := _m.Called(client, epoch, seed, commitParams, rogueData)
 
 	var r0 types.CommitData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, types.CommitParams, types.Rogue) (types.CommitData, error)); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, *types.CommitParams, types.Rogue) (types.CommitData, error)); ok {
 		return rf(client, epoch, seed, commitParams, rogueData)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, types.CommitParams, types.Rogue) types.CommitData); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, *types.CommitParams, types.Rogue) types.CommitData); ok {
 		r0 = rf(client, epoch, seed, commitParams, rogueData)
 	} else {
 		r0 = ret.Get(0).(types.CommitData)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, []byte, types.CommitParams, types.Rogue) error); ok {
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, []byte, *types.CommitParams, types.Rogue) error); ok {
 		r1 = rf(client, epoch, seed, commitParams, rogueData)
 	} else {
 		r1 = ret.Error(1)
@@ -1355,14 +1355,15 @@ func (_m *UtilsCmdInterface) IndexRevealEventsOfCurrentEpoch(client *ethclient.C
 	return r0, r1
 }
 
-// InitAssetCache provides a mock function with given fields: client
-func (_m *UtilsCmdInterface) InitAssetCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, error) {
+// InitJobAndCollectionCache provides a mock function with given fields: client
+func (_m *UtilsCmdInterface) InitJobAndCollectionCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
 	ret := _m.Called(client)
 
 	var r0 *cache.JobsCache
 	var r1 *cache.CollectionsCache
-	var r2 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, error)); ok {
+	var r2 *big.Int
+	var r3 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)); ok {
 		return rf(client)
 	}
 	if rf, ok := ret.Get(0).(func(*ethclient.Client) *cache.JobsCache); ok {
@@ -1381,21 +1382,29 @@ func (_m *UtilsCmdInterface) InitAssetCache(client *ethclient.Client) (*cache.Jo
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(*ethclient.Client) error); ok {
+	if rf, ok := ret.Get(2).(func(*ethclient.Client) *big.Int); ok {
 		r2 = rf(client)
 	} else {
-		r2 = ret.Error(2)
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(*big.Int)
+		}
 	}
 
-	return r0, r1, r2
+	if rf, ok := ret.Get(3).(func(*ethclient.Client) error); ok {
+		r3 = rf(client)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
 }
 
 // InitiateCommit provides a mock function with given fields: client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData
-func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *coretypes.Header, commitParams types.CommitParams, rogueData types.Rogue) error {
+func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *coretypes.Header, commitParams *types.CommitParams, rogueData types.Rogue) error {
 	ret := _m.Called(client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint32, *coretypes.Header, types.CommitParams, types.Rogue) error); ok {
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint32, *coretypes.Header, *types.CommitParams, types.Rogue) error); ok {
 		r0 = rf(client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData)
 	} else {
 		r0 = ret.Error(0)
@@ -1864,11 +1873,11 @@ func (_m *UtilsCmdInterface) UpdateJob(client *ethclient.Client, config types.Co
 }
 
 // Vote provides a mock function with given fields: ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, commitParams types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 	ret := _m.Called(ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Account, uint32, types.CommitParams, types.Rogue, []string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Account, uint32, *types.CommitParams, types.Rogue, []string) error); ok {
 		r0 = rf(ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 	} else {
 		r0 = ret.Error(0)

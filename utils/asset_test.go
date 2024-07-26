@@ -175,7 +175,7 @@ func TestAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			commitParams := types.CommitParams{
+			commitParams := &types.CommitParams{
 				JobsCache:        cache.NewJobsCache(),
 				CollectionsCache: cache.NewCollectionsCache(),
 			}
@@ -641,7 +641,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsInterface = &UtilsStruct{}
-			commitParams := types.CommitParams{
+			commitParams := &types.CommitParams{
 				LocalCache: cache.NewLocalCache(time.Second * 10),
 				HttpClient: httpClient,
 			}
@@ -782,7 +782,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			commitParams := types.CommitParams{
+			commitParams := &types.CommitParams{
 				LocalCache: cache.NewLocalCache(time.Second * 10),
 				HttpClient: httpClient,
 			}
@@ -1211,7 +1211,7 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			commitParams := types.CommitParams{
+			commitParams := &types.CommitParams{
 				JobsCache: cache.NewJobsCache(),
 			}
 			if tt.args.addJobToCache {
@@ -1326,7 +1326,7 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
 			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, types.CommitParams{HttpClient: &clientPkg.HttpClient{}})
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &types.CommitParams{HttpClient: &clientPkg.HttpClient{}})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

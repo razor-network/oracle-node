@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -126,7 +125,7 @@ func getEventLogs(client *ethclient.Client, fromBlock *big.Int, toBlock *big.Int
 	}
 
 	// Retrieve the logs
-	logs, err := client.FilterLogs(context.Background(), query)
+	logs, err := clientUtils.FilterLogsWithRetry(client, query)
 	if err != nil {
 		log.Errorf("Error in filter logs: %v", err)
 		return []Types.Log{}, err

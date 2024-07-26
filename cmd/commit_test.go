@@ -9,12 +9,14 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestCommit(t *testing.T) {
@@ -120,10 +122,9 @@ func TestCommit(t *testing.T) {
 
 func TestHandleCommitState(t *testing.T) {
 	var (
-		client       *ethclient.Client
-		epoch        uint32
-		seed         []byte
-		commitParams types.CommitParams
+		client *ethclient.Client
+		epoch  uint32
+		seed   []byte
 	)
 
 	rogueValue := big.NewInt(1111)
@@ -225,6 +226,11 @@ func TestHandleCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			localCache := cache.NewLocalCache(time.Second * 10)
+			commitParams := &types.CommitParams{
+				LocalCache: localCache,
+			}
+
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
@@ -375,7 +381,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 		client       *ethclient.Client
 		epoch        uint32
 		seed         []byte
-		commitParams types.CommitParams
+		commitParams *types.CommitParams
 	)
 
 	rogueValue := big.NewInt(1111)
