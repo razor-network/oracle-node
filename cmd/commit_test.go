@@ -378,10 +378,9 @@ func TestGetSalt(t *testing.T) {
 
 func BenchmarkHandleCommitState(b *testing.B) {
 	var (
-		client       *ethclient.Client
-		epoch        uint32
-		seed         []byte
-		commitParams *types.CommitParams
+		client *ethclient.Client
+		epoch  uint32
+		seed   []byte
 	)
 
 	rogueValue := big.NewInt(1111)
@@ -397,6 +396,11 @@ func BenchmarkHandleCommitState(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Active_Collections%d", v.numActiveCollections), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
+				localCache := cache.NewLocalCache(time.Second * 10)
+				commitParams := &types.CommitParams{
+					LocalCache: localCache,
+				}
+
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
