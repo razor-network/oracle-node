@@ -67,8 +67,9 @@ type ProposeFileData struct {
 }
 
 type CommitParams struct {
-	JobsCache        *cache.JobsCache
-	CollectionsCache *cache.CollectionsCache
-	LocalCache       *cache.LocalCache
-	HttpClient       HttpClientInterface
+	JobsCache                 *cache.JobsCache
+	CollectionsCache          *cache.CollectionsCache
+	LocalCache                *cache.LocalCache
+	HttpClient                HttpClientInterface
+	FromBlockToCheckForEvents *big.Int
 }

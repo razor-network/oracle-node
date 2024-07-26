@@ -18,7 +18,7 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func GetDataFromAPI(commitParams types.CommitParams, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
+func GetDataFromAPI(commitParams *types.CommitParams, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	cacheKey, err := generateCacheKey(dataSourceURLStruct.URL, dataSourceURLStruct.Body)
 	if err != nil {
 		log.Errorf("Error in generating cache key for API %s: %v", dataSourceURLStruct.URL, err)

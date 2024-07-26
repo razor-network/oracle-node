@@ -10,13 +10,20 @@ import (
 	"math/big"
 	"razor/cache"
 	"razor/core"
+	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"strings"
-	"time"
 )
 
-func (*UtilsStruct) InitAssetCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, error) {
+func (*UtilsStruct) InitJobAndCollectionCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
+	initAssetCacheBlock, err := clientUtils.GetLatestBlockWithRetry(client)
+	if err != nil {
+		log.Error("Error in fetching block: ", err)
+		return nil, nil, nil, err
+	}
+	log.Debugf("InitJobAndCollectionCache: Latest header value when initializing jobs and collections cache: %d", initAssetCacheBlock.Number)
+
 	log.Info("INITIALIZING JOBS AND COLLECTIONS CACHE...")
 
 	// Create instances of cache
@@ -26,78 +33,51 @@ func (*UtilsStruct) InitAssetCache(client *ethclient.Client) (*cache.JobsCache, 
 	// Initialize caches
 	if err := utils.InitJobsCache(client, jobsCache); err != nil {
 		log.Error("Error in initializing jobs cache: ", err)
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	if err := utils.InitCollectionsCache(client, collectionsCache); err != nil {
 		log.Error("Error in initializing collections cache: ", err)
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
-	if err != nil {
-		log.Error("Error in fetching block: ", err)
-		return nil, nil, err
-	}
-	log.Debugf("initAssetCache: Latest header value: %d", latestHeader.Number)
-
-	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, latestHeader.Number)
-	if err != nil {
-		log.Error("Error in estimating block number at epoch beginning: ", err)
-		return nil, nil, err
-	}
-
-	// Start listeners for job and collection updates, passing the caches as arguments
-	go startListener(client, fromBlock, time.Second*time.Duration(core.AssetUpdateListenerInterval), jobsCache, collectionsCache)
-
-	return jobsCache, collectionsCache, nil
+	return jobsCache, collectionsCache, initAssetCacheBlock.Number, nil
 }
 
-// startListener starts a generic listener for blockchain events that handles multiple event types.
-func startListener(client *ethclient.Client, fromBlock *big.Int, interval time.Duration, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) {
-	// Will start listening for asset update events from confirm state
-	_, err := cmdUtils.WaitForAppropriateState(client, "start event listener for asset update events", 4)
-	if err != nil {
-		log.Error("Error in waiting for appropriate state for starting event listener: ", err)
-		return
-	}
-
-	// Sleeping till half of the confirm state to start listening for events in interval of duration core.AssetUpdateListenerInterval
-	log.Debug("Will start listening for asset update events after half of the confirm state passes, sleeping till then...")
-	time.Sleep(time.Second * time.Duration(core.StateLength/2))
-
+// CheckForJobAndCollectionEvents checks for specific job and collections event that were emitted.
+func CheckForJobAndCollectionEvents(client *ethclient.Client, commitParams *types.CommitParams) error {
 	collectionManagerContractABI, err := abi.JSON(strings.NewReader(bindings.CollectionManagerMetaData.ABI))
 	if err != nil {
-		log.Errorf("Error in parsing contract ABI: %v", err)
-		return
+		log.Errorf("Error in parsing collection manager contract ABI: %v", err)
+		return err
 	}
-
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
 
 	eventNames := []string{"JobUpdated", "CollectionUpdated", "CollectionActivityStatus", "JobCreated", "CollectionCreated"}
 
-	log.Debugf("Starting to listen for asset update events from now in interval of every %v ...", interval)
-	for range ticker.C {
-		log.Debug("Checking for asset update events...")
-		toBlock, err := clientUtils.GetLatestBlockWithRetry(client)
-		if err != nil {
-			log.Error("Error in getting latest block to start event listener: ", err)
-			continue
-		}
-
-		processEvents(client, collectionManagerContractABI, fromBlock, toBlock.Number, eventNames, jobsCache, collectionsCache)
-
-		// Update fromBlock for the next interval
-		fromBlock = new(big.Int).Add(toBlock.Number, big.NewInt(1))
+	log.Debug("Checking for Job/Collection update events...")
+	toBlock, err := clientUtils.GetLatestBlockWithRetry(client)
+	if err != nil {
+		log.Error("Error in getting latest block to start event listener: ", err)
+		return err
 	}
+
+	// Process events and update the fromBlock for the next iteration
+	newFromBlock, err := processEvents(client, collectionManagerContractABI, commitParams.FromBlockToCheckForEvents, toBlock.Number, eventNames, commitParams.JobsCache, commitParams.CollectionsCache)
+	if err != nil {
+		return err
+	}
+
+	// Update the commitParams with the new fromBlock
+	commitParams.FromBlockToCheckForEvents = new(big.Int).Add(newFromBlock, big.NewInt(1))
+
+	return nil
 }
 
 // processEvents fetches and processes logs for multiple event types.
-func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toBlock *big.Int, eventNames []string, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) {
+func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toBlock *big.Int, eventNames []string, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) (*big.Int, error) {
 	logs, err := getEventLogs(client, fromBlock, toBlock)
 	if err != nil {
 		log.Errorf("Failed to fetch logs: %v", err)
-		return
+		return nil, err
 	}
 
 	for _, eventName := range eventNames {
@@ -112,7 +92,7 @@ func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toB
 						log.Errorf("Error in getting job with job Id %v: %v", jobId, err)
 						continue
 					}
-					log.Debugf("RECEIVED ASSET UPDATE: Updating the job with Id %v with details %+v...", jobId, updatedJob)
+					log.Debugf("RECEIVED JOB EVENT: Updating the job with Id %v with details %+v...", jobId, updatedJob)
 					jobsCache.UpdateJob(jobId, updatedJob)
 				case "CollectionUpdated", "CollectionCreated", "CollectionActivityStatus":
 					collectionId := utils.ConvertHashToUint16(vLog.Topics[1])
@@ -121,16 +101,21 @@ func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toB
 						log.Errorf("Error in getting collection with collection Id %v: %v", collectionId, err)
 						continue
 					}
-					log.Debugf("RECEIVED ASSET UPDATE: Updating the collection with ID %v with details %+v", collectionId, newCollection)
+					log.Debugf("RECEIVED COLLECTION EVENT: Updating the collection with ID %v with details %+v", collectionId, newCollection)
 					collectionsCache.UpdateCollection(collectionId, newCollection)
 				}
 			}
 		}
 	}
+
+	// Return the new toBlock for the next iteration
+	return toBlock, nil
 }
 
 // getEventLogs is a utility function to fetch the event logs
 func getEventLogs(client *ethclient.Client, fromBlock *big.Int, toBlock *big.Int) ([]Types.Log, error) {
+	log.Debugf("Checking for events from block %v to block %v...", fromBlock, toBlock)
+
 	// Set up the query for filtering logs
 	query := ethereum.FilterQuery{
 		FromBlock: fromBlock,

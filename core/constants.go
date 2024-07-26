@@ -100,9 +100,3 @@ const (
 	HTTPClientMaxIdleConns        = 15
 	HTTPClientMaxIdleConnsPerHost = 5
 )
-
-// Following are the constants which determine storing jobs and collections value for time being in cache
-const (
-	AssetUpdateListenerInterval = 1 * EpochLength
-	AssetCacheExpiry            = 5 * EpochLength
-)

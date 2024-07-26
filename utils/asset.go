@@ -141,7 +141,7 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(commitParams.CollectionsCache, collectionId)
 	if err != nil {
 		log.Error(err)
@@ -155,7 +155,7 @@ func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, coll
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -253,7 +253,7 @@ func (*UtilsStruct) GetActiveCollection(collectionsCache *cache.CollectionsCache
 	return collection, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams types.CommitParams) ([]*big.Int, []uint8) {
+func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams *types.CommitParams) ([]*big.Int, []uint8) {
 	var (
 		wg     sync.WaitGroup
 		mu     sync.Mutex
@@ -271,7 +271,7 @@ func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitPa
 	return data, weight
 }
 
-func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, commitParams types.CommitParams) {
+func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, commitParams *types.CommitParams) {
 	defer wg.Done()
 
 	dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, commitParams)
@@ -286,7 +286,7 @@ func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int
 	*weight = append(*weight, job.Weight)
 }
 
-func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, commitParams types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error) {
 	var (
 		response            []byte
 		apiErr              error
@@ -486,7 +486,7 @@ func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob 
 	}
 }
 
-func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams types.CommitParams) ([]bindings.StructsJob, []uint16) {
+func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
 	var overrideJobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
