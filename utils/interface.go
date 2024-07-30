@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/rpc"
 	"io"
 	"io/fs"
 	"math/big"
@@ -178,6 +179,9 @@ type ClientUtils interface {
 	FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]Types.Log, error)
 	BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error)
 	GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error)
+	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
+	CreateBatchCalls(contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([]rpc.BatchElem, error)
+	BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error)
 }
 
 type TimeUtils interface {

@@ -36,7 +36,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 	log.Debug("HandleDispute: SortedProposedBlockIds: ", sortedProposedBlockIds)
 
-	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
+	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, epoch)
 	if err != nil {
 		return err
 	}

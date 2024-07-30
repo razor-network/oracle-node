@@ -4,7 +4,6 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	Types "github.com/ethereum/go-ethereum/core/types"
 	"math"
 	"math/big"
 	"razor/core"
@@ -12,9 +11,11 @@ import (
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
@@ -61,7 +62,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		biggestStakerId = smallestStakerId
 		log.Debugf("Propose: In rogue mode, Biggest Stake: %s, Biggest Staker Id: %d", biggestStake, biggestStakerId)
 	} else {
-		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
+		biggestStake, biggestStakerId, biggestStakerErr = cmdUtils.GetBiggestStakeAndId(client, epoch)
 		if biggestStakerErr != nil {
 			log.Error("Error in calculating biggest staker: ", biggestStakerErr)
 			return biggestStakerErr
@@ -199,7 +200,7 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 }
 
 //This function returns the biggest stake and Id of it
-func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
+func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(client)
 	if err != nil {
 		return nil, 0, err
@@ -211,38 +212,20 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, address strin
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 
-	bufferPercent, err := cmdUtils.GetBufferPercent()
+	stakeSnapshotArray, err := cmdUtils.BatchGetStakeSnapshotCalls(client, epoch, numberOfStakers)
 	if err != nil {
 		return nil, 0, err
 	}
-	log.Debug("GetBiggestStakeAndId: Buffer Percent: ", bufferPercent)
 
-	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
-	if err != nil {
-		return nil, 0, err
-	}
-	log.Debug("GetBiggestStakeAndId: State remaining time: ", stateRemainingTime)
-	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
-
+	log.Debugf("Stake Snapshot Array: %+v", stakeSnapshotArray)
 	log.Debug("Iterating over all the stakers...")
-loop:
-	for i := 1; i <= int(numberOfStakers); i++ {
-		select {
-		case <-stateTimeout.C:
-			log.Error("State timeout!")
-			err = errors.New("state timeout error")
-			break loop
-		default:
-			log.Debug("Propose: Staker Id: ", i)
-			stake, err := razorUtils.GetStakeSnapshot(client, uint32(i), epoch)
-			if err != nil {
-				return nil, 0, err
-			}
-			log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i, stake)
-			if stake.Cmp(biggestStake) > 0 {
-				biggestStake = stake
-				biggestStakerId = uint32(i)
-			}
+	for i := 0; i < len(stakeSnapshotArray); i++ {
+		log.Debug("Propose: Staker Id: ", i)
+		stake := stakeSnapshotArray[i]
+		log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i+1, stake)
+		if stake.Cmp(biggestStake) > 0 {
+			biggestStake = stake
+			biggestStakerId = uint32(i + 1)
 		}
 	}
 	if err != nil {
@@ -492,6 +475,32 @@ func (*UtilsStruct) GetSmallestStakeAndId(client *ethclient.Client, epoch uint32
 		}
 	}
 	return smallestStake, smallestStakerId, nil
+}
+
+func (*UtilsStruct) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+	voteManagerABI, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerMetaData.ABI))
+	if err != nil {
+		log.Errorf("Error in parsed voteManager ABI: %v", err)
+		return nil, err
+	}
+
+	args := make([][]interface{}, numberOfStakers)
+	for i := uint32(1); i <= numberOfStakers; i++ {
+		args[i-1] = []interface{}{epoch, i}
+	}
+
+	results, err := clientUtils.BatchCall(client, &voteManagerABI, core.VoteManagerAddress, core.GetStakeSnapshotMethod, args)
+	if err != nil {
+		log.Error("Error in performing getStakeSnapshot batch calls: ", err)
+		return nil, err
+	}
+
+	var stakeArray []*big.Int
+	for _, result := range results {
+		stakeArray = append(stakeArray, result[0].(*big.Int))
+	}
+
+	return stakeArray, nil
 }
 
 func updateGlobalProposedDataStruct(proposedData types.ProposeFileData) types.ProposeFileData {
