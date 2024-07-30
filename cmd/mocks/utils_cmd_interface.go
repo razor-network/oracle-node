@@ -111,6 +111,32 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 	return r0, r1
 }
 
+// BatchGetStakeSnapshotCalls provides a mock function with given fields: client, epoch, numberOfStakers
+func (_m *UtilsCmdInterface) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+	ret := _m.Called(client, epoch, numberOfStakers)
+
+	var r0 []*big.Int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) ([]*big.Int, error)); ok {
+		return rf(client, epoch, numberOfStakers)
+	}
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) []*big.Int); ok {
+		r0 = rf(client, epoch, numberOfStakers)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
+		r1 = rf(client, epoch, numberOfStakers)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CalculateSecret provides a mock function with given fields: account, epoch, keystorePath, chainId
 func (_m *UtilsCmdInterface) CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error) {
 	ret := _m.Called(account, epoch, keystorePath, chainId)
@@ -572,32 +598,32 @@ func (_m *UtilsCmdInterface) GetAlternateProvider() (string, error) {
 	return r0, r1
 }
 
-// GetBiggestStakeAndId provides a mock function with given fields: client, address, epoch
-func (_m *UtilsCmdInterface) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
-	ret := _m.Called(client, address, epoch)
+// GetBiggestStakeAndId provides a mock function with given fields: client, epoch
+func (_m *UtilsCmdInterface) GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
+	ret := _m.Called(client, epoch)
 
 	var r0 *big.Int
 	var r1 uint32
 	var r2 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) (*big.Int, uint32, error)); ok {
-		return rf(client, address, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) (*big.Int, uint32, error)); ok {
+		return rf(client, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) *big.Int); ok {
-		r0 = rf(client, address, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) *big.Int); ok {
+		r0 = rf(client, epoch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) uint32); ok {
-		r1 = rf(client, address, epoch)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) uint32); ok {
+		r1 = rf(client, epoch)
 	} else {
 		r1 = ret.Get(1).(uint32)
 	}
 
-	if rf, ok := ret.Get(2).(func(*ethclient.Client, string, uint32) error); ok {
-		r2 = rf(client, address, epoch)
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, uint32) error); ok {
+		r2 = rf(client, epoch)
 	} else {
 		r2 = ret.Error(2)
 	}
