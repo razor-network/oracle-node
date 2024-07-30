@@ -84,7 +84,7 @@ func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toB
 		for _, vLog := range logs {
 			if len(vLog.Topics) > 0 && vLog.Topics[0].Hex() == eventID {
 				switch eventName {
-				case "JobUpdated", "JobCreated":
+				case core.JobUpdatedEvent, core.JobCreatedEvent:
 					jobId := utils.ConvertHashToUint16(vLog.Topics[1])
 					updatedJob, err := utils.UtilsInterface.GetActiveJob(client, jobId)
 					if err != nil {
@@ -93,7 +93,7 @@ func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toB
 					}
 					log.Debugf("RECEIVED JOB EVENT: Updating the job with Id %v with details %+v...", jobId, updatedJob)
 					jobsCache.UpdateJob(jobId, updatedJob)
-				case "CollectionUpdated", "CollectionCreated", "CollectionActivityStatus":
+				case core.CollectionUpdatedEvent, core.CollectionCreatedEvent, core.CollectionActivityStatusEvent:
 					collectionId := utils.ConvertHashToUint16(vLog.Topics[1])
 					newCollection, err := utils.UtilsInterface.GetCollection(client, collectionId)
 					if err != nil {
