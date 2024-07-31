@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"razor/accounts"
-	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -94,11 +94,13 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		log.Warn("YOU ARE RUNNING VOTE IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 	}
 
-	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
-		Timeout:                   config.HTTPTimeout,
-		MaxIdleConnections:        core.HTTPClientMaxIdleConns,
-		MaxIdleConnectionsPerHost: core.HTTPClientMaxIdleConnsPerHost,
-	})
+	httpClient := &http.Client{
+		Timeout: time.Duration(config.HTTPTimeout) * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        core.HTTPClientMaxIdleConns,
+			MaxIdleConnsPerHost: core.HTTPClientMaxIdleConnsPerHost,
+		},
+	}
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting staker id: ", err)

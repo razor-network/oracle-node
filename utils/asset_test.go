@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/fs"
 	"math/big"
+	"net/http"
 	"os"
 	"razor/cache"
-	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -559,11 +559,13 @@ func TestGetAllCollections(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJobs(t *testing.T) {
-	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
-		Timeout:                   10,
-		MaxIdleConnections:        2,
-		MaxIdleConnectionsPerHost: 1,
-	})
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        2,
+			MaxIdleConnsPerHost: 1,
+		},
+	}
 
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 0, Weight: 10,
@@ -657,11 +659,13 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJob(t *testing.T) {
-	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
-		Timeout:                   10,
-		MaxIdleConnections:        2,
-		MaxIdleConnectionsPerHost: 1,
-	})
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        2,
+			MaxIdleConnsPerHost: 1,
+		},
+	}
 
 	job := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
@@ -1326,7 +1330,7 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
 			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &types.CommitParams{HttpClient: &clientPkg.HttpClient{}})
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &types.CommitParams{HttpClient: &http.Client{}})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

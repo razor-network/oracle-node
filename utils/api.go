@@ -41,7 +41,7 @@ func GetDataFromAPI(commitParams *types.CommitParams, dataSourceURLStruct types.
 	return response, nil
 }
 
-func makeAPIRequest(httpClient types.HttpClientInterface, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
+func makeAPIRequest(httpClient *http.Client, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	var requestBody io.Reader // Using the broader io.Reader interface here
 
 	switch dataSourceURLStruct.Type {
@@ -141,7 +141,7 @@ func addHeaderToRequest(request *http.Request, headerMap map[string]string) *htt
 	return request
 }
 
-func ProcessRequest(httpClient types.HttpClientInterface, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
+func ProcessRequest(httpClient *http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
 	request, err := http.NewRequest(dataSourceURLStruct.Type, dataSourceURLStruct.URL, requestBody)
 	if err != nil {
 		return nil, err

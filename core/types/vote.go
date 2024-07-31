@@ -2,6 +2,7 @@ package types
 
 import (
 	"math/big"
+	"net/http"
 	"razor/cache"
 )
 
@@ -70,6 +71,6 @@ type CommitParams struct {
 	JobsCache                 *cache.JobsCache
 	CollectionsCache          *cache.CollectionsCache
 	LocalCache                *cache.LocalCache
-	HttpClient                HttpClientInterface
+	HttpClient                *http.Client
 	FromBlockToCheckForEvents *big.Int
 }
