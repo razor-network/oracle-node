@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"razor/accounts"
-	clientPkg "razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -94,11 +94,13 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 		log.Warn("YOU ARE RUNNING VOTE IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
 	}
 
-	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
-		Timeout:                   config.HTTPTimeout,
-		MaxIdleConnections:        core.HTTPClientMaxIdleConns,
-		MaxIdleConnectionsPerHost: core.HTTPClientMaxIdleConnsPerHost,
-	})
+	httpClient := &http.Client{
+		Timeout: time.Duration(config.HTTPTimeout) * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        core.HTTPClientMaxIdleConns,
+			MaxIdleConnsPerHost: core.HTTPClientMaxIdleConnsPerHost,
+		},
+	}
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
 	utils.CheckError("Error in getting staker id: ", err)
@@ -108,8 +110,19 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 
 	cmdUtils.HandleExit()
+
+	jobsCache, collectionsCache, initCacheBlockNumber, err := cmdUtils.InitJobAndCollectionCache(client)
+	utils.CheckError("Error in initializing asset cache: ", err)
+
+	commitParams := &types.CommitParams{
+		JobsCache:                 jobsCache,
+		CollectionsCache:          collectionsCache,
+		HttpClient:                httpClient,
+		FromBlockToCheckForEvents: initCacheBlockNumber,
+	}
+
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
-	if err := cmdUtils.Vote(context.Background(), config, client, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore); err != nil {
+	if err := cmdUtils.Vote(context.Background(), config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
 		osUtils.Exit(1)
 	}
@@ -140,7 +153,7 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 	header, err := clientUtils.GetLatestBlockWithRetry(client)
 	utils.CheckError("Error in getting block: ", err)
 	for {
@@ -157,7 +170,7 @@ func (*UtilsStruct) Vote(ctx context.Context, config types.Configurations, clien
 			log.Debugf("Vote: Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
-				cmdUtils.HandleBlock(client, account, stakerId, latestHeader, config, httpClient, rogueData, backupNodeActionsToIgnore)
+				cmdUtils.HandleBlock(client, account, stakerId, latestHeader, config, commitParams, rogueData, backupNodeActionsToIgnore)
 			}
 			time.Sleep(time.Second * time.Duration(core.BlockNumberInterval))
 		}
@@ -172,7 +185,7 @@ var (
 )
 
 //This function handles the block
-func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, latestHeader *Types.Header, config types.Configurations, httpClient *clientPkg.HttpClient, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, latestHeader *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
@@ -240,7 +253,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	switch state {
 	case 0:
 		log.Debugf("Starting commit...")
-		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, latestHeader, httpClient, rogueData)
+		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
@@ -322,7 +335,24 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 }
 
 //This function initiates the commit
-func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, httpClient *clientPkg.HttpClient, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, rogueData types.Rogue) error {
+	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
+	if err != nil {
+		return errors.New("Error in fetching last commit: " + err.Error())
+	}
+	log.Debug("InitiateCommit: Epoch last committed: ", lastCommit)
+
+	if lastCommit >= epoch {
+		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
+		return nil
+	}
+
+	err = CheckForJobAndCollectionEvents(client, commitParams)
+	if err != nil {
+		log.Error("Error in checking for asset events: ", err)
+		return err
+	}
+
 	staker, err := razorUtils.GetStaker(client, stakerId)
 	if err != nil {
 		log.Error(err)
@@ -340,17 +370,6 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Error("Stake is below minimum required. Kindly add stake to continue voting.")
 		return nil
 	}
-
-	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
-	if err != nil {
-		return errors.New("Error in fetching last commit: " + err.Error())
-	}
-	log.Debug("InitiateCommit: Epoch last committed: ", lastCommit)
-
-	if lastCommit >= epoch {
-		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
-		return nil
-	}
 	razorPath, err := pathUtils.GetDefaultPath()
 	if err != nil {
 		return err
@@ -365,7 +384,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 
 	log.Debugf("InitiateCommit: Calling HandleCommitState with arguments epoch = %d, seed = %v, rogueData = %+v", epoch, seed, rogueData)
-	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, httpClient, rogueData)
+	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, commitParams, rogueData)
 	if err != nil {
 		return errors.New("Error in getting active assets: " + err.Error())
 	}

@@ -9,13 +9,14 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	clientPkg "razor/client"
+	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestCommit(t *testing.T) {
@@ -225,6 +226,11 @@ func TestHandleCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			localCache := cache.NewLocalCache(time.Second * 10)
+			commitParams := &types.CommitParams{
+				LocalCache: localCache,
+			}
+
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
@@ -234,7 +240,7 @@ func TestHandleCommitState(t *testing.T) {
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, seed, &clientPkg.HttpClient{}, tt.args.rogueData)
+			got, err := utils.HandleCommitState(client, epoch, seed, commitParams, tt.args.rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}
@@ -390,6 +396,11 @@ func BenchmarkHandleCommitState(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Active_Collections%d", v.numActiveCollections), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
+				localCache := cache.NewLocalCache(time.Second * 10)
+				commitParams := &types.CommitParams{
+					LocalCache: localCache,
+				}
+
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
@@ -399,7 +410,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 				ut := &UtilsStruct{}
-				_, err := ut.HandleCommitState(client, epoch, seed, &clientPkg.HttpClient{}, types.Rogue{IsRogue: false})
+				_, err := ut.HandleCommitState(client, epoch, seed, commitParams, types.Rogue{IsRogue: false})
 				if err != nil {
 					log.Fatal(err)
 				}

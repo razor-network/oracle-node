@@ -3,8 +3,8 @@ package utils
 import (
 	"encoding/hex"
 	"encoding/json"
+	"net/http"
 	"razor/cache"
-	clientPkg "razor/client"
 	"razor/core/types"
 	"reflect"
 	"testing"
@@ -36,11 +36,13 @@ func TestGetDataFromAPI(t *testing.T) {
 	//postRequestInput := `{"type": "POST","url": "https://rpc.ankr.com/polygon_mumbai","body": {"jsonrpc": "2.0","method": "eth_chainId","params": [],"id": 0},"header": {"content-type": "application/json"}}`
 	sampleChainId, _ := hex.DecodeString("7b226a736f6e727063223a22322e30222c22726573756c74223a223078616133376463222c226964223a307d0a")
 
-	httpClient := clientPkg.NewHttpClient(types.HttpClientConfig{
-		Timeout:                   10,
-		MaxIdleConnections:        2,
-		MaxIdleConnectionsPerHost: 1,
-	})
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        2,
+			MaxIdleConnsPerHost: 1,
+		},
+	}
 
 	type args struct {
 		urlStruct types.DataSourceURL
@@ -177,7 +179,11 @@ func TestGetDataFromAPI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			localCache := cache.NewLocalCache(time.Second * 10)
-			got, err := GetDataFromAPI(httpClient, tt.args.urlStruct, localCache)
+			commitParams := &types.CommitParams{
+				LocalCache: localCache,
+				HttpClient: httpClient,
+			}
+			got, err := GetDataFromAPI(commitParams, tt.args.urlStruct)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataFromAPI() error = %v, wantErr %v", err, tt.wantErr)
 				return

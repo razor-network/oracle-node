@@ -9,7 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"razor/accounts"
-	clientPkg "razor/client"
+	"razor/cache"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
@@ -170,6 +170,7 @@ func TestExecuteVote(t *testing.T) {
 			flagSetMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueStatus, tt.args.rogueErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			flagSetMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
+			cmdUtilsMock.On("InitJobAndCollectionCache", mock.Anything).Return(&cache.JobsCache{}, &cache.CollectionsCache{}, big.NewInt(100), nil)
 			cmdUtilsMock.On("HandleExit").Return()
 			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
@@ -341,6 +342,13 @@ func TestInitiateCommit(t *testing.T) {
 		stakerId     uint32
 		rogueData    types.Rogue
 	)
+
+	commitParams := &types.CommitParams{
+		JobsCache:                 cache.NewJobsCache(),
+		CollectionsCache:          cache.NewCollectionsCache(),
+		FromBlockToCheckForEvents: big.NewInt(1),
+	}
+
 	type args struct {
 		staker                    bindings.StructsStaker
 		stakerErr                 error
@@ -393,13 +401,17 @@ func TestInitiateCommit(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting staker",
 			args: args{
-				stakerErr: errors.New("error in getting staker"),
+				epoch:      5,
+				lastCommit: 2,
+				stakerErr:  errors.New("error in getting staker"),
 			},
 			wantErr: true,
 		},
 		{
 			name: "Test 3: When there is an error in getting minStakeAmount",
 			args: args{
+				epoch:             5,
+				lastCommit:        2,
 				staker:            bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
 				minStakeAmountErr: errors.New("error in getting minStakeAmount"),
 			},
@@ -546,8 +558,10 @@ func TestInitiateCommit(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 			pathMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(&Types.Header{Number: big.NewInt(100)}, nil)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything).Return([]Types.Log{}, nil)
 			ut := &UtilsStruct{}
-			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, latestHeader, &clientPkg.HttpClient{}, rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, latestHeader, commitParams, rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiateCommit() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -899,6 +913,7 @@ func TestHandleBlock(t *testing.T) {
 		client                    *ethclient.Client
 		account                   types.Account
 		stakerId                  uint32
+		commitParams              *types.CommitParams
 		rogueData                 types.Rogue
 		backupNodeActionsToIgnore []string
 	)
@@ -1228,7 +1243,7 @@ func TestHandleBlock(t *testing.T) {
 			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
-			ut.HandleBlock(client, account, stakerId, latestHeader, tt.args.config, &clientPkg.HttpClient{}, rogueData, backupNodeActionsToIgnore)
+			ut.HandleBlock(client, account, stakerId, latestHeader, tt.args.config, commitParams, rogueData, backupNodeActionsToIgnore)
 		})
 	}
 }
@@ -1240,7 +1255,7 @@ func TestVote(t *testing.T) {
 		rogueData                 types.Rogue
 		account                   types.Account
 		stakerId                  uint32
-		httpClient                *clientPkg.HttpClient
+		commitParams              *types.CommitParams
 		backupNodeActionsToIgnore []string
 	)
 	type args struct {
@@ -1275,7 +1290,7 @@ func TestVote(t *testing.T) {
 			errChan := make(chan error)
 			// Run Vote function in a goroutine
 			go func() {
-				errChan <- ut.Vote(ctx, config, client, account, stakerId, httpClient, rogueData, backupNodeActionsToIgnore)
+				errChan <- ut.Vote(ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 			}()
 
 			// Wait for some time to allow Vote function to execute

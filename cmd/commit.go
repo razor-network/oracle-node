@@ -4,16 +4,16 @@ package cmd
 import (
 	"encoding/hex"
 	"errors"
-	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"razor/cache"
-	"razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"sync"
 	"time"
+
+	Types "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -58,7 +58,7 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, httpClient *client.HttpClient, rogueData types.Rogue) (types.CommitData, error) {
+func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
@@ -80,7 +80,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	var wg sync.WaitGroup
 
 	log.Debug("Creating a local cache which will store API result and expire at the end of commit state")
-	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
+	commitParams.LocalCache = cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 
 	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
@@ -97,7 +97,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 					errChan <- err
 					return
 				}
-				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache, httpClient)
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, commitParams)
 				if err != nil {
 					log.Error("Error in getting aggregated data of collection: ", err)
 					errChan <- err
@@ -129,7 +129,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 			if err != nil {
 				// Returning the first error from the error channel
 				log.Error("Error in getting collection data: ", err)
-				localCache.StopCleanup()
+				commitParams.LocalCache.StopCleanup()
 				return types.CommitData{}, err
 			}
 		}
@@ -139,7 +139,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
 
-	localCache.StopCleanup()
+	commitParams.LocalCache.StopCleanup()
 
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,
