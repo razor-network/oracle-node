@@ -42,8 +42,8 @@ const BufferStateSleepTime int32 = 2
 //Following are the default logFile parameters in config
 const (
 	DefaultLogFileMaxSize    = 200
-	DefaultLogFileMaxBackups = 52
-	DefaultLogFileMaxAge     = 365
+	DefaultLogFileMaxBackups = 10
+	DefaultLogFileMaxAge     = 60
 )
 
 //DisputeGasMultiplier is a constant gasLimitMultiplier to increase gas Limit for function `disputeCollectionIdShouldBeAbsent` and `disputeCollectionIdShouldBePresent`
