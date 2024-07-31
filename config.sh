@@ -45,14 +45,14 @@ if [ -z "$MAX_SIZE" ]; then
    MAX_SIZE=200
 fi
 
-read -rp "Log Files Max Backups: (52) " MAX_BACKUPS
+read -rp "Log Files Max Backups: (10) " MAX_BACKUPS
 if [ -z "$MAX_BACKUPS" ]; then
-   MAX_BACKUPS=52
+   MAX_BACKUPS=10
 fi
 
-read -rp "Log Files Max Age: (365) " MAX_AGE
+read -rp "Log Files Max Age: (60) " MAX_AGE
 if [ -z "$MAX_AGE" ]; then
-   MAX_AGE=365
+   MAX_AGE=60
 fi
 
 ALT_PROVIDER_OPTION=""
