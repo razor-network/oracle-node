@@ -50,7 +50,7 @@ func CheckForJobAndCollectionEvents(client *ethclient.Client, commitParams *type
 		return err
 	}
 
-	eventNames := []string{"JobUpdated", "CollectionUpdated", "CollectionActivityStatus", "JobCreated", "CollectionCreated"}
+	eventNames := []string{core.JobUpdatedEvent, core.CollectionUpdatedEvent, core.CollectionActivityStatusEvent, core.JobCreatedEvent, core.CollectionCreatedEvent}
 
 	log.Debug("Checking for Job/Collection update events...")
 	toBlock, err := clientUtils.GetLatestBlockWithRetry(client)

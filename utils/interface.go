@@ -158,7 +158,6 @@ type Utils interface {
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
 	CheckPassword(account types.Account) error
 	AccountManagerForKeystore() (types.AccountManagerInterface, error)
-	ResetAssetCache(client *ethclient.Client, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) error
 }
 
 type EthClientUtils interface {

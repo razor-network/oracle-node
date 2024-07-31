@@ -1866,20 +1866,6 @@ func (_m *Utils) ReadJSONData(fileName string) (map[string]*types.StructsJob, er
 	return r0, r1
 }
 
-// ResetAssetCache provides a mock function with given fields: client, jobsCache, collectionsCache
-func (_m *Utils) ResetAssetCache(client *ethclient.Client, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) error {
-	ret := _m.Called(client, jobsCache, collectionsCache)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *cache.JobsCache, *cache.CollectionsCache) error); ok {
-		r0 = rf(client, jobsCache, collectionsCache)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // SecondsToReadableTime provides a mock function with given fields: input
 func (_m *Utils) SecondsToReadableTime(input int) string {
 	ret := _m.Called(input)

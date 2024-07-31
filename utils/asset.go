@@ -532,18 +532,6 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	return overrideJobs, overriddenJobIds
 }
 
-func (*UtilsStruct) ResetAssetCache(client *ethclient.Client, jobsCache *cache.JobsCache, collectionCache *cache.CollectionsCache) error {
-	if err := InitJobsCache(client, jobsCache); err != nil {
-		log.Error("Error in initializing jobs cache: ", err)
-		return err
-	}
-	if err := InitCollectionsCache(client, collectionCache); err != nil {
-		log.Error("Error in initializing collections cache: ", err)
-		return err
-	}
-	return nil
-}
-
 // InitJobsCache initializes the jobs cache with data fetched from the blockchain
 func InitJobsCache(client *ethclient.Client, jobsCache *cache.JobsCache) error {
 	jobsCache.Mu.Lock()
