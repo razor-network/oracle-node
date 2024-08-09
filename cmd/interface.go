@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
-	Accounts "razor/accounts"
+	"razor/cache"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
@@ -165,14 +165,14 @@ type UtilsCmdInterface interface {
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(options types.TransactionOptions) (common.Hash, error)
 	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
-	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error)
-	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, values []*big.Int) (common.Hash, error)
+	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
+	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, seed []byte, values []*big.Int) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(flagSet *pflag.FlagSet)
 	Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error)
 	CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
-	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error)
+	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, commitData types.CommitData, signature []byte) (common.Hash, error)
 	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
 	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
 	ExecuteCreateJob(flagSet *pflag.FlagSet)
@@ -207,7 +207,7 @@ type UtilsCmdInterface interface {
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
 	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
-	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error
+	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, rogueData types.Rogue) error
 	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
 	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
 	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
@@ -228,20 +228,20 @@ type UtilsCmdInterface interface {
 	ImportAccount() (accounts.Account, error)
 	ExecuteUpdateCommission(flagSet *pflag.FlagSet)
 	UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error
-	GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error)
+	GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
-	HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string)
+	HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, header *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string)
 	ExecuteVote(flagSet *pflag.FlagSet)
-	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error
+	Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	HandleExit()
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
 	ExecuteStake(flagSet *pflag.FlagSet)
-	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error
-	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error
-	InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error
+	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, rogueData types.Rogue) error
+	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error
+	InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error
 	GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
 	HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
 	ExecuteContractAddresses(flagSet *pflag.FlagSet)
@@ -249,6 +249,8 @@ type UtilsCmdInterface interface {
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
 	StoreBountyId(client *ethclient.Client, account types.Account) error
 	CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
+	InitJobAndCollectionCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)
+	BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error)
 }
 
 type TransactionInterface interface {
@@ -313,7 +315,6 @@ func InitializeInterfaces() {
 	abiUtils = AbiUtils{}
 	osUtils = OSUtils{}
 
-	Accounts.AccountUtilsInterface = Accounts.AccountUtils{}
 	path.PathUtilsInterface = path.PathUtils{}
 	path.OSUtilsInterface = path.OSUtils{}
 	InitializeUtils()

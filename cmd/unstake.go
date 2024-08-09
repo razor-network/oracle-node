@@ -4,6 +4,7 @@ package cmd
 import (
 	"errors"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -53,7 +54,12 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	log.Debug("Getting amount in wei...")
@@ -64,13 +70,11 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	utils.CheckError("StakerId error: ", err)
 
 	unstakeInput := types.UnstakeInput{
-		Address:    address,
-		Password:   password,
 		ValueInWei: valueInWei,
 		StakerId:   stakerId,
+		Account:    account,
 	}
 
-	log.Debugf("ExecuteUnstake: Calling Unstake() with arguments unstakeInput: %+v", unstakeInput)
 	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
@@ -82,12 +86,11 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 //This function allows user to unstake their sRZRs in the razor network
 func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
-		Client:         client,
-		Password:       input.Password,
-		AccountAddress: input.Address,
-		Amount:         input.ValueInWei,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:  client,
+		Amount:  input.ValueInWei,
+		ChainId: core.ChainId,
+		Config:  config,
+		Account: input.Account,
 	}
 	stakerId := input.StakerId
 	staker, err := razorUtils.GetStaker(client, stakerId)
@@ -116,7 +119,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	txnArgs.MethodName = "unstake"
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
-	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.AccountAddress, stakerId, 0)
+	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.Account.Address, stakerId, 0)
 	if err != nil {
 		log.Error("Error in getting unstakeLock: ", err)
 		return core.NilHash, err

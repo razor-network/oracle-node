@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"razor/accounts"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
@@ -334,7 +335,8 @@ func TestExecuteUpdateCommission(t *testing.T) {
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)

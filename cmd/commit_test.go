@@ -9,21 +9,24 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 	"math/big"
+	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestCommit(t *testing.T) {
 	var (
-		client  *ethclient.Client
-		account types.Account
-		config  types.Configurations
-		seed    []byte
-		epoch   uint32
+		client       *ethclient.Client
+		account      types.Account
+		config       types.Configurations
+		latestHeader *Types.Header
+		seed         []byte
+		epoch        uint32
 	)
 
 	type args struct {
@@ -94,13 +97,13 @@ func TestCommit(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			voteManagerMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(client, config, account, epoch, seed, tt.args.values)
+			got, err := utils.Commit(client, config, account, epoch, latestHeader, seed, tt.args.values)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -223,16 +226,21 @@ func TestHandleCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			localCache := cache.NewLocalCache(time.Second * 10)
+			commitParams := &types.CommitParams{
+				LocalCache: localCache,
+			}
+
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
 			utilsMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
 			utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
-			utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
+			utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, seed, tt.args.rogueData)
+			got, err := utils.HandleCommitState(client, epoch, seed, commitParams, tt.args.rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}
@@ -388,16 +396,21 @@ func BenchmarkHandleCommitState(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Active_Collections%d", v.numActiveCollections), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
+				localCache := cache.NewLocalCache(time.Second * 10)
+				commitParams := &types.CommitParams{
+					LocalCache: localCache,
+				}
+
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
 				utilsMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
 				utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(uint16(1), nil)
-				utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
+				utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 				ut := &UtilsStruct{}
-				_, err := ut.HandleCommitState(client, epoch, seed, types.Rogue{IsRogue: false})
+				_, err := ut.HandleCommitState(client, epoch, seed, commitParams, types.Rogue{IsRogue: false})
 				if err != nil {
 					log.Fatal(err)
 				}

@@ -9,7 +9,6 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/accounts"
 	"razor/client"
 	"razor/core"
 	coretypes "razor/core/types"
@@ -29,7 +28,6 @@ import (
 )
 
 var RPCTimeout int64
-var HTTPTimeout int64
 
 func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	UtilsInterface = optionsPackageStruct.UtilsInterface
@@ -42,7 +40,6 @@ func StartRazor(optionsPackageStruct OptionsPackageStruct) Utils {
 	ABIInterface = optionsPackageStruct.ABIInterface
 	PathInterface = optionsPackageStruct.PathInterface
 	BindInterface = optionsPackageStruct.BindInterface
-	AccountsInterface = optionsPackageStruct.AccountsInterface
 	BlockManagerInterface = optionsPackageStruct.BlockManagerInterface
 	StakeManagerInterface = optionsPackageStruct.StakeManagerInterface
 	AssetManagerInterface = optionsPackageStruct.AssetManagerInterface
@@ -247,10 +244,6 @@ func (v VoteManagerStruct) GetSaltFromBlockchain(client *ethclient.Client) ([32]
 		return [32]byte{}, returnedError
 	}
 	return returnedValues[0].Interface().([32]byte), nil
-}
-
-func (a AccountsStruct) GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error) {
-	return accounts.AccountUtilsInterface.GetPrivateKey(address, password, keystorePath)
 }
 
 func (b BlockManagerStruct) GetNumProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {

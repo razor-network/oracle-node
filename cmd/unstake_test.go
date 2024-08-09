@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -23,8 +24,7 @@ import (
 func TestUnstake(t *testing.T) {
 	var config types.Configurations
 	var client *ethclient.Client
-	var address string
-	var password string
+	var account types.Account
 	var stakerId uint32
 
 	type args struct {
@@ -134,8 +134,7 @@ func TestUnstake(t *testing.T) {
 			utils := &UtilsStruct{}
 			_, gotErr := utils.Unstake(config, client,
 				types.UnstakeInput{
-					Address:    address,
-					Password:   password,
+					Account:    account,
 					StakerId:   stakerId,
 					ValueInWei: tt.args.amount,
 				})
@@ -294,7 +293,8 @@ func TestExecuteUnstake(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)

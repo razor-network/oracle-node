@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -52,7 +53,12 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	jobId, err := flagSetUtils.GetUint16JobId(flagSet)
@@ -74,16 +80,14 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting selector type: ", err)
 
 	jobInput := types.CreateJobInput{
-		Address:      address,
-		Password:     password,
 		Power:        power,
 		Selector:     selector,
 		Url:          url,
 		Weight:       weight,
 		SelectorType: selectorType,
+		Account:      account,
 	}
 
-	log.Debugf("ExecuteUpdateJob: Calling UpdateJob() with arguments jobInput = %+v, jobId = %d", jobInput, jobId)
 	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -99,14 +103,13 @@ func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurati
 	}
 	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        jobInput.Password,
-		AccountAddress:  jobInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "updateJob",
 		Parameters:      []interface{}{jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url},
 		ABI:             bindings.CollectionManagerMetaData.ABI,
+		Account:         jobInput.Account,
 	})
 	log.Info("Updating Job...")
 	log.Debugf("Executing UpdateJob transaction with arguments jobId = %d, weight = %d, power = %d, selector type = %d, selector = %s, URL = %s", jobId, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Selector, jobInput.Url)

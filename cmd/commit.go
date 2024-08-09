@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	Types "github.com/ethereum/go-ethereum/core/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -56,7 +58,7 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
+func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
@@ -78,7 +80,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	var wg sync.WaitGroup
 
 	log.Debug("Creating a local cache which will store API result and expire at the end of commit state")
-	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
+	commitParams.LocalCache = cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 
 	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
@@ -95,7 +97,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 					errChan <- err
 					return
 				}
-				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache)
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, commitParams)
 				if err != nil {
 					log.Error("Error in getting aggregated data of collection: ", err)
 					errChan <- err
@@ -127,7 +129,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 			if err != nil {
 				// Returning the first error from the error channel
 				log.Error("Error in getting collection data: ", err)
-				localCache.StopCleanup()
+				commitParams.LocalCache.StopCleanup()
 				return types.CommitData{}, err
 			}
 		}
@@ -137,7 +139,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
 
-	localCache.StopCleanup()
+	commitParams.LocalCache.StopCleanup()
 
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,
@@ -149,8 +151,8 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, values []*big.Int) (common.Hash, error) {
-	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 0 {
+func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, seed []byte, values []*big.Int) (common.Hash, error) {
+	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
@@ -163,14 +165,13 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "commit",
 		Parameters:      []interface{}{epoch, commitmentToSend},
+		Account:         account,
 	})
 
 	log.Info("Commitment sent...")

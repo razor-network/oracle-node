@@ -3,11 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/stretchr/testify/assert"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -20,18 +23,20 @@ import (
 func TestPropose(t *testing.T) {
 
 	var (
-		client      *ethclient.Client
-		account     types.Account
-		config      types.Configurations
-		staker      bindings.StructsStaker
-		epoch       uint32
-		blockNumber *big.Int
+		client  *ethclient.Client
+		account types.Account
+		config  types.Configurations
+		staker  bindings.StructsStaker
+		epoch   uint32
 	)
 
 	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
 	saltBytes32 := [32]byte{}
 	copy(saltBytes32[:], salt)
 
+	latestHeader := &Types.Header{
+		Number: big.NewInt(1001),
+	}
 	type args struct {
 		rogueData                  types.Rogue
 		state                      int64
@@ -514,9 +519,9 @@ func TestPropose(t *testing.T) {
 	for _, tt := range tests {
 		SetUpMockInterfaces()
 
-		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
-		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
+		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
 		utilsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.randaoHash, tt.args.randaoHashErr)
 		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
@@ -539,7 +544,7 @@ func TestPropose(t *testing.T) {
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
-			err := utils.Propose(client, config, account, staker, epoch, blockNumber, tt.args.rogueData)
+			err := utils.Propose(client, config, account, staker, epoch, latestHeader, tt.args.rogueData)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for Propose function, got = %v, want %v", err, tt.wantErr)
@@ -555,18 +560,13 @@ func TestPropose(t *testing.T) {
 
 func TestGetBiggestStakeAndId(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	var epoch uint32
 
 	type args struct {
-		numOfStakers     uint32
-		numOfStakersErr  error
-		bufferPercent    int32
-		bufferPercentErr error
-		remainingTime    int64
-		remainingTimeErr error
-		stake            *big.Int
-		stakeErr         error
+		numOfStakers    uint32
+		numOfStakersErr error
+		stakeArray      []*big.Int
+		stakeErr        error
 	}
 	tests := []struct {
 		name      string
@@ -578,12 +578,11 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 1: When GetBiggestStakeAndId function executes successfully",
 			args: args{
-				numOfStakers:  2,
-				remainingTime: 10,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+				numOfStakers: 7,
+				stakeArray:   []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
 			},
-			wantStake: big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
-			wantId:    1,
+			wantStake: big.NewInt(200030),
+			wantId:    5,
 			wantErr:   nil,
 		},
 		{
@@ -599,55 +598,30 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			name: "Test 3: When there is an error in getting numOfStakers",
 			args: args{
 				numOfStakersErr: errors.New("numOfStakers error"),
-				remainingTime:   10,
 			},
 			wantStake: nil,
 			wantId:    0,
 			wantErr:   errors.New("numOfStakers error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting stake",
+			name: "Test 4: When there is an error in getting stakeArray from batch calls",
 			args: args{
-				numOfStakers:  5,
-				remainingTime: 10,
-				stakeErr:      errors.New("stake error"),
+				numOfStakers: 5,
+				stakeErr:     errors.New("batch calls error"),
 			},
 			wantStake: nil,
 			wantId:    0,
-			wantErr:   errors.New("stake error"),
+			wantErr:   errors.New("batch calls error"),
 		},
 		{
-			name: "Test 5: When there is an error in getting remaining time",
+			name: "Test 5: When there are large number of stakers",
 			args: args{
-				numOfStakers:     2,
-				remainingTime:    10,
-				remainingTimeErr: errors.New("time error"),
+				numOfStakers: 999,
+				stakeArray:   GenerateDummyStakeSnapshotArray(999),
 			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("time error"),
-		},
-		{
-			name: "Test 6: When there is a timeout case",
-			args: args{
-				numOfStakers:  100000,
-				bufferPercent: 10,
-				remainingTime: 0,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("state timeout error"),
-		},
-		{
-			name: "Test 7: When there is an error in getting buffer percent",
-			args: args{
-				numOfStakers:     2,
-				bufferPercentErr: errors.New("buffer error"),
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("buffer error"),
+			wantStake: big.NewInt(999000),
+			wantId:    999,
+			wantErr:   nil,
 		},
 	}
 	for _, tt := range tests {
@@ -655,19 +629,11 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
-			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
-			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeArray, tt.args.stakeErr)
 
 			utils := &UtilsStruct{}
 
-			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, address, epoch)
-			if gotStake.Cmp(tt.wantStake) != 0 {
-				t.Errorf("Biggest Stake from GetBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
-			}
-			if gotId != tt.wantId {
-				t.Errorf("Staker Id of staker having biggest Influence from GetBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
-			}
+			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, epoch)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
@@ -676,6 +642,12 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
 				}
+			}
+			if gotStake.Cmp(tt.wantStake) != 0 {
+				t.Errorf("Biggest Stake from GetBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
+			}
+			if gotId != tt.wantId {
+				t.Errorf("Staker Id of staker having biggest Influence from GetBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
 			}
 
 		})
@@ -1350,6 +1322,72 @@ func TestGetSmallestStakeAndId(t *testing.T) {
 	}
 }
 
+func TestBatchGetStakeCalls(t *testing.T) {
+	var client *ethclient.Client
+	var epoch uint32
+
+	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
+
+	type args struct {
+		ABI              abi.ABI
+		numberOfStakers  uint32
+		parseErr         error
+		batchCallResults [][]interface{}
+		batchCallError   error
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStakes []*big.Int
+		wantErr    error
+	}{
+		{
+			name: "Test 1: When BatchGetStakeCalls executes successfully",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 3,
+				batchCallResults: [][]interface{}{
+					{big.NewInt(10)},
+					{big.NewInt(11)},
+					{big.NewInt(12)},
+				},
+			},
+			wantStakes: []*big.Int{
+				big.NewInt(10),
+				big.NewInt(11),
+				big.NewInt(12),
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in parsing voteManager ABI",
+			args: args{
+				parseErr: errors.New("parse error"),
+			},
+			wantErr: errors.New("parse error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.ABI, tt.args.parseErr)
+			clientUtilsMock.On("BatchCall", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.batchCallResults, tt.args.batchCallError)
+
+			ut := &UtilsStruct{}
+			gotStakes, err := ut.BatchGetStakeSnapshotCalls(client, epoch, tt.args.numberOfStakers)
+
+			if err == nil || tt.wantErr == nil {
+				assert.Equal(t, tt.wantErr, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr.Error())
+			}
+
+			assert.Equal(t, tt.wantStakes, gotStakes)
+		})
+	}
+}
+
 func BenchmarkGetIteration(b *testing.B) {
 	var client *ethclient.Client
 	var bufferPercent int32
@@ -1393,7 +1431,6 @@ func BenchmarkGetIteration(b *testing.B) {
 
 func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 	var client *ethclient.Client
-	var address string
 	var epoch uint32
 
 	var table = []struct {
@@ -1411,12 +1448,10 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
-				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
-				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
-				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
+				cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.Anything, mock.Anything, mock.Anything).Return(GenerateDummyStakeSnapshotArray(v.numOfStakers), nil)
 
 				ut := &UtilsStruct{}
-				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)
+				_, _, err := ut.GetBiggestStakeAndId(client, epoch)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -1495,6 +1530,15 @@ func BenchmarkMakeBlock(b *testing.B) {
 			}
 		})
 	}
+}
+
+func GenerateDummyStakeSnapshotArray(numOfStakers uint32) []*big.Int {
+	stakeSnapshotArray := make([]*big.Int, numOfStakers)
+	for i := 0; i < int(numOfStakers); i++ {
+		// For testing purposes, we will assign a stake value of (i + 1) * 1000
+		stakeSnapshotArray[i] = big.NewInt(int64(i+1) * 1000)
+	}
+	return stakeSnapshotArray
 }
 
 func GetDummyVotes(numOfVotes int) []*big.Int {

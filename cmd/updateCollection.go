@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -52,7 +53,12 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
@@ -71,14 +77,12 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in getting tolerance: ", err)
 
 	collectionInput := types.CreateCollectionInput{
-		Address:     address,
-		Password:    password,
 		Aggregation: aggregation,
 		Power:       power,
 		JobIds:      jobIdInUint,
 		Tolerance:   tolerance,
+		Account:     account,
 	}
-	log.Debugf("ExecuteUpdateCollection: Calling UpdateCollection() with arguments collectionInput: %+v, collectionId: %d", collectionInput, collectionId)
 	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -96,14 +100,13 @@ func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Conf
 	}
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        collectionInput.Password,
-		AccountAddress:  collectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "updateCollection",
 		Parameters:      []interface{}{collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds},
 		ABI:             bindings.CollectionManagerMetaData.ABI,
+		Account:         collectionInput.Account,
 	})
 	log.Info("Updating collection...")
 	log.Debugf("Executing UpdateCollection transaction with collectionId = %d, tolerance = %d, aggregation method = %d, power = %d, jobIds = %v", collectionId, collectionInput.Tolerance, collectionInput.Aggregation, collectionInput.Power, jobIds)

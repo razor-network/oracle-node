@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"razor/accounts"
 	Types "razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
@@ -365,7 +366,6 @@ func TestGetBufferedState(t *testing.T) {
 
 	type args struct {
 		block          *types.Header
-		blockErr       error
 		buffer         int32
 		stateBuffer    uint64
 		stateBufferErr error
@@ -386,22 +386,11 @@ func TestGetBufferedState(t *testing.T) {
 				stateBuffer: 5,
 			},
 
-			want:    1,
+			want:    0,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting block",
-			args: args{
-				block: &types.Header{
-					Number: big.NewInt(100),
-				},
-				blockErr: errors.New("block error"),
-			},
-			want:    -1,
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When blockNumber%(core.StateLength) is greater than lowerLimit",
+			name: "Test 2: When blockNumber%(core.StateLength) is greater than lowerLimit",
 			args: args{
 				block: &types.Header{
 					Time: 1080,
@@ -409,11 +398,11 @@ func TestGetBufferedState(t *testing.T) {
 				buffer:      2,
 				stateBuffer: 5,
 			},
-			want:    -1,
+			want:    4,
 			wantErr: false,
 		},
 		{
-			name: "Test 4: When GetBufferedState() executes successfully and state we get is other than 0",
+			name: "Test 3: When GetBufferedState() executes successfully and state we get is other than 0",
 			args: args{
 				block: &types.Header{
 					Time: 900,
@@ -422,11 +411,11 @@ func TestGetBufferedState(t *testing.T) {
 				stateBuffer: 5,
 			},
 
-			want:    -1,
+			want:    3,
 			wantErr: false,
 		},
 		{
-			name: "Test 5: When there is an error in getting stateBuffer",
+			name: "Test 4: When there is an error in getting stateBuffer",
 			args: args{
 				block: &types.Header{
 					Time: 100,
@@ -453,9 +442,8 @@ func TestGetBufferedState(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
 
-			got, err := utils.GetBufferedState(client, tt.args.buffer)
+			got, err := utils.GetBufferedState(client, tt.args.block, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -971,7 +959,7 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 				block:       &types.Header{},
 				stateBuffer: 5,
 			},
-			want:    55,
+			want:    235,
 			wantErr: false,
 		},
 		{
@@ -1098,7 +1086,7 @@ func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
 			},
-			want:    big.NewInt(-59),
+			want:    big.NewInt(-239),
 			wantErr: false,
 		},
 		{
@@ -1555,6 +1543,104 @@ func TestReadFromDisputeJsonFile(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ReadFromDisputeJsonFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUtilsStruct_CheckPassword(t *testing.T) {
+	type args struct {
+		account Types.Account
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When password is correct",
+			args: args{
+				account: Types.Account{
+					Address:        "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+					Password:       "Test@123",
+					AccountManager: accounts.NewAccountManager("test_accounts"),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When password is incorrect",
+			args: args{
+				account: Types.Account{
+					Address:        "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+					Password:       "Test@456",
+					AccountManager: accounts.NewAccountManager("test_accounts"),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When address or keystore path provided is not present",
+			args: args{
+				account: Types.Account{
+					Address:        "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+					Password:       "Test@123",
+					AccountManager: accounts.NewAccountManager("test_accounts_1"),
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ut := &UtilsStruct{}
+			if err := ut.CheckPassword(tt.args.account); (err != nil) != tt.wantErr {
+				t.Errorf("CheckPassword() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUtilsStruct_AccountManagerForKeystore(t *testing.T) {
+	type args struct {
+		path    string
+		pathErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When account manager for keystore is returned successfully",
+			args: args{
+				path: "test_accounts",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting path",
+			args: args{
+				pathErr: errors.New("path error"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pathMock := new(mocks.PathUtils)
+			optionsPackageStruct := OptionsPackageStruct{
+				PathInterface: pathMock,
+			}
+
+			utils := StartRazor(optionsPackageStruct)
+
+			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
+
+			_, err := utils.AccountManagerForKeystore()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AccountManagerForKeystore() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}

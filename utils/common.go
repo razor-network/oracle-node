@@ -3,9 +3,11 @@ package utils
 import (
 	"context"
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path/filepath"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -51,21 +53,17 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	return balance, nil
 }
 
-func (*UtilsStruct) GetBufferedState(client *ethclient.Client, buffer int32) (int64, error) {
-	block, err := ClientInterface.GetLatestBlockWithRetry(client)
-	if err != nil {
-		return -1, err
-	}
+func (*UtilsStruct) GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error) {
 	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
 	if err != nil {
 		return -1, err
 	}
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
-	if block.Time%(core.StateLength) > upperLimit-stateBuffer || block.Time%(core.StateLength) < lowerLimit+stateBuffer {
+	if header.Time%(core.StateLength) > upperLimit-stateBuffer || header.Time%(core.StateLength) < lowerLimit+stateBuffer {
 		return -1, nil
 	}
-	state := block.Time / core.StateLength
+	state := header.Time / core.StateLength
 	return int64(state % core.NumberOfStates), nil
 }
 
@@ -379,18 +377,24 @@ func (*FileStruct) ReadFromDisputeJsonFile(filePath string) (types.DisputeFileDa
 	return disputeData, nil
 }
 
-func (*UtilsStruct) CheckPassword(address string, password string) error {
-	razorPath, err := PathInterface.GetDefaultPath()
-	if err != nil {
-		log.Error("CheckPassword: Error in getting .razor path: ", err)
-		return err
-	}
-	keystorePath := filepath.Join(razorPath, "keystore_files")
-	_, err = AccountsInterface.GetPrivateKey(address, password, keystorePath)
+func (*UtilsStruct) CheckPassword(account types.Account) error {
+	_, err := account.AccountManager.GetPrivateKey(account.Address, account.Password)
 	if err != nil {
 		log.Info("Kindly check your password!")
 		log.Error("CheckPassword: Error in getting private key: ", err)
 		return err
 	}
 	return nil
+}
+
+func (*UtilsStruct) AccountManagerForKeystore() (types.AccountManagerInterface, error) {
+	razorPath, err := PathInterface.GetDefaultPath()
+	if err != nil {
+		log.Error("GetKeystorePath: Error in getting .razor path: ", err)
+		return nil, err
+	}
+	keystorePath := filepath.Join(razorPath, "keystore_files")
+
+	accountManager := accounts.NewAccountManager(keystorePath)
+	return accountManager, nil
 }
