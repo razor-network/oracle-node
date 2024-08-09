@@ -156,7 +156,7 @@ func TestGetDataFromAPI(t *testing.T) {
 			args: args{
 				urlStruct: types.DataSourceURL{
 					Type: "",
-					URL:  "https://jsonplaceholder.typicode.com/todos/1",
+					URL:  "https://sepolia.optimism.io",
 				},
 			},
 			want:    nil,

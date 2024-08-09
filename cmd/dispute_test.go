@@ -494,6 +494,30 @@ func TestHandleDispute(t *testing.T) {
 			},
 			want: nil,
 		},
+		{
+			name: "Test 19: When the mismatch id index is out of range",
+			args: args{
+				sortedProposedBlockIds: []uint32{45, 65, 23, 64, 12},
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakeId:         2,
+				medians:                []*big.Int{big.NewInt(6901548), big.NewInt(498307)},
+				revealedCollectionIds:  []uint16{1},
+				revealedDataMaps: &types.RevealedDataMaps{
+					SortedRevealedValues: nil,
+					VoteWeights:          nil,
+					InfluenceSum:         nil,
+				},
+				proposedBlock: bindings.StructsBlock{
+					Medians:      []*big.Int{big.NewInt(6901548)},
+					Ids:          []uint16{1},
+					Valid:        true,
+					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				},
+				idDisputeTxn: nil,
+				disputeErr:   nil,
+			},
+			want: nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -656,7 +680,6 @@ func TestGetLocalMediansData(t *testing.T) {
 		client      *ethclient.Client
 		account     types.Account
 		blockNumber *big.Int
-		rogueData   types.Rogue
 	)
 	type args struct {
 		epoch                 uint32
@@ -670,8 +693,7 @@ func TestGetLocalMediansData(t *testing.T) {
 		mediansErr            error
 		stakerId              uint32
 		stakerIdErr           error
-		lastProposedEpoch     uint32
-		lastProposedEpochErr  error
+		isRogue               bool
 	}
 	tests := []struct {
 		name    string
@@ -717,7 +739,8 @@ func TestGetLocalMediansData(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting medians",
 			args: args{
-				mediansErr: errors.New("error in fetching medians"),
+				fileNameErr: errors.New("error in getting fileName"),
+				mediansErr:  errors.New("error in fetching medians"),
 			},
 			want:    nil,
 			want1:   nil,
@@ -725,8 +748,9 @@ func TestGetLocalMediansData(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 5: When GetLocalMediansData executes successfully",
+			name: "Test 5: When GetLocalMediansData executes successfully when there is an error in getting file name",
 			args: args{
+				fileNameErr:           errors.New("error in getting fileName"),
 				medians:               []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
 				revealedCollectionIds: []uint16{1, 2, 3},
 				revealedDataMaps:      &types.RevealedDataMaps{},
@@ -739,6 +763,7 @@ func TestGetLocalMediansData(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting stakerId",
 			args: args{
+				fileNameErr:           errors.New("error in getting fileName"),
 				medians:               []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
 				revealedCollectionIds: []uint16{1, 2, 3},
 				revealedDataMaps:      &types.RevealedDataMaps{},
@@ -750,19 +775,17 @@ func TestGetLocalMediansData(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 7: When there is an error in getting last proposed epoch",
+			name: "Test 7: When staker votes in rogue mode and needs to calculate median again",
 			args: args{
+				isRogue:               true,
 				medians:               []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
 				revealedCollectionIds: []uint16{1, 2, 3},
 				revealedDataMaps:      &types.RevealedDataMaps{},
-				stakerId:              2,
-				epoch:                 5,
-				lastProposedEpochErr:  errors.New("lastProposedEpoch error"),
 			},
-			want:    nil,
-			want1:   nil,
-			want2:   nil,
-			wantErr: true,
+			want:    []*big.Int{big.NewInt(100), big.NewInt(200), big.NewInt(300)},
+			want1:   []uint16{1, 2, 3},
+			want2:   &types.RevealedDataMaps{},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -773,9 +796,8 @@ func TestGetLocalMediansData(t *testing.T) {
 			fileUtilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
 			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
 			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposedEpoch, tt.args.lastProposedEpochErr)
 			ut := &UtilsStruct{}
-			localProposedData, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, rogueData)
+			localProposedData, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, types.Rogue{IsRogue: tt.args.isRogue})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLocalMediansData() error = %v, wantErr %v", err, tt.wantErr)
 				return

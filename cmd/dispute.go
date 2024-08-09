@@ -108,7 +108,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
-					break
 				}
 				continue
 			}
@@ -122,6 +121,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
 		if err != nil {
 			log.Error("Error in disputing: ", err)
+			continue
 		}
 		if idDisputeTxn != nil {
 			idDisputeTxnHash := transactionUtils.Hash(idDisputeTxn)
@@ -134,7 +134,6 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				err = cmdUtils.StoreBountyId(client, account)
 				if err != nil {
 					log.Error(err)
-					break
 				}
 				continue
 			}
@@ -151,6 +150,11 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				// ids [1, 2, 3, 4]
 				// Sorted revealed values would be the vote values for the wrong median, here 230
 				log.Debug("HandleDispute: Mismatch index while iterating: ", mismatchIndex)
+				if mismatchIndex < 0 || mismatchIndex >= len(proposedBlock.Ids) {
+					log.Error("Mismatch index is out of bounds, cannot continue dispute for medians")
+					continue
+				}
+
 				collectionIdOfWrongMedian := proposedBlock.Ids[mismatchIndex]
 				log.Debug("HandleDispute: Collection Id of wrong median: ", collectionIdOfWrongMedian)
 
@@ -188,65 +192,63 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 //This function returns the local median data
 func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
-	if (globalProposedDataStruct.MediansData == nil && !rogueData.IsRogue) || epoch != globalProposedDataStruct.Epoch {
+	if rogueData.IsRogue {
+		// As the staker has proposed with incorrect medians in rogue mode so those values needs to be compared with the correct calculated medians
+		log.Debug("Staker proposed in rogue mode, now calculating medians correctly...")
+		return calculateMedian(client, account, epoch, blockNumber)
+	}
+
+	// Fetching the data from file only if the node is not in rogue mode and
+	// the proposed data in memory is nil or epoch in propose data from memory doesn't match with current epoch
+	nilProposedData := globalProposedDataStruct.MediansData == nil || globalProposedDataStruct.RevealedDataMaps == nil || globalProposedDataStruct.RevealedCollectionIds == nil
+	if nilProposedData || epoch != globalProposedDataStruct.Epoch {
 		log.Debug("Global propose data struct is not updated, getting the proposed data from file...")
 		fileName, err := pathUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
-			goto CalculateMedian
+			return calculateMedian(client, account, epoch, blockNumber)
 		}
 		log.Debug("GetLocalMediansData: Propose data file path: ", fileName)
 		proposedData, err := fileUtils.ReadFromProposeJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting propose data from file %s: %v", fileName, err)
-			goto CalculateMedian
+			return calculateMedian(client, account, epoch, blockNumber)
 		}
 		log.Debugf("GetLocalMediansData: Proposed data from file: %+v", proposedData)
 		if proposedData.Epoch != epoch {
 			log.Errorf("File %s doesn't contain latest median data", fileName)
-			goto CalculateMedian
+			return calculateMedian(client, account, epoch, blockNumber)
 		}
-		log.Debug("Updating global proposed data struct...")
-		updateGlobalProposedDataStruct(proposedData)
-		log.Debugf("GetLocalMediansData: Global proposed data struct: %+v", globalProposedDataStruct)
+		return proposedData, err
 	}
-CalculateMedian:
+
+	return globalProposedDataStruct, nil
+}
+
+func calculateMedian(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int) (types.ProposeFileData, error) {
 	stakerId, err := razorUtils.GetStakerId(client, account.Address)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
 		return types.ProposeFileData{}, err
 	}
 	log.Debug("GetLocalMediansData: Staker Id: ", stakerId)
-	lastProposedEpoch, err := razorUtils.GetEpochLastProposed(client, stakerId)
+
+	log.Debug("Calculating the medians data again...")
+	log.Debugf("GetLocalMediansData: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", blockNumber, epoch, types.Rogue{IsRogue: false})
+	medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
 	if err != nil {
-		log.Error("Error in getting last proposed epoch: ", err)
+		log.Error("Error in calculating block medians: ", err)
 		return types.ProposeFileData{}, err
 	}
-	log.Debug("GetLocalMediansData: Last proposed epoch: ", lastProposedEpoch)
-
-	nilProposedData := globalProposedDataStruct.MediansData == nil || globalProposedDataStruct.RevealedDataMaps == nil || globalProposedDataStruct.RevealedCollectionIds == nil
-	epochCheck := epoch != lastProposedEpoch
-
-	if nilProposedData || rogueData.IsRogue || epochCheck {
-		log.Debug("Calculating the medians data again...")
-		log.Debugf("GetLocalMediansData: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", blockNumber, epoch, types.Rogue{IsRogue: false})
-		medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
-		if err != nil {
-			log.Error("Error in calculating block medians")
-			return types.ProposeFileData{}, err
-		}
-		log.Debug("Updating global proposed data struct...")
-		updateGlobalProposedDataStruct(types.ProposeFileData{
-			MediansData:           medians,
-			RevealedCollectionIds: revealedCollectionIds,
-			RevealedDataMaps:      revealedDataMaps,
-			Epoch:                 epoch,
-		})
-		log.Debugf("GetLocalMediansData: Global proposed data struct: %+v", globalProposedDataStruct)
+	calculatedProposedData := types.ProposeFileData{
+		MediansData:           medians,
+		RevealedCollectionIds: revealedCollectionIds,
+		RevealedDataMaps:      revealedDataMaps,
+		Epoch:                 epoch,
 	}
 
-	log.Debugf("Locally calculated data, Medians: %s", globalProposedDataStruct.MediansData)
-	return globalProposedDataStruct, nil
+	log.Debugf("Locally calculated data, Medians: %s", calculatedProposedData.MediansData)
+	return calculatedProposedData, nil
 }
 
 //This function check for the dispute in different type of Id's
