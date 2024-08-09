@@ -220,7 +220,6 @@ func (*UtilsStruct) GetBiggestStakeAndId(client *ethclient.Client, epoch uint32)
 	log.Debugf("Stake Snapshot Array: %+v", stakeSnapshotArray)
 	log.Debug("Iterating over all the stakers...")
 	for i := 0; i < len(stakeSnapshotArray); i++ {
-		log.Debug("Propose: Staker Id: ", i)
 		stake := stakeSnapshotArray[i]
 		log.Debugf("Stake Snapshot of staker having stakerId %d is %s", i+1, stake)
 		if stake.Cmp(biggestStake) > 0 {
