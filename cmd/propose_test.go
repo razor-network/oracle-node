@@ -52,8 +52,6 @@ func TestPropose(t *testing.T) {
 		smallestStakerIdErr        error
 		randaoHash                 [32]byte
 		randaoHashErr              error
-		bufferPercent              int32
-		bufferPercentErr           error
 		salt                       [32]byte
 		saltErr                    error
 		iteration                  int
