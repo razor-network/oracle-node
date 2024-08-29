@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"os"
@@ -292,10 +293,10 @@ func TestGetBufferPercent(t *testing.T) {
 			name:               "Test 5: When buffer value is out of a valid range",
 			useDummyConfigFile: true,
 			args: args{
-				bufferInTestConfig: 40,
+				bufferInTestConfig: 0,
 			},
 			want:    core.DefaultBufferPercent,
-			wantErr: nil,
+			wantErr: errors.New("invalid buffer percent"),
 		},
 	}
 	for _, tt := range tests {
@@ -1196,6 +1197,65 @@ func TestGetWaitTime(t *testing.T) {
 					t.Errorf("Error for GetWaitTime function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestValidateBufferPercentLimit(t *testing.T) {
+	var client *ethclient.Client
+
+	type args struct {
+		bufferPercent  int32
+		stateBuffer    uint64
+		stateBufferErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "Buffer percent less than max buffer percent",
+			args: args{
+				stateBuffer:   10,
+				bufferPercent: 20,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Buffer percent greater than max buffer percent",
+			args: args{
+				stateBuffer:   10,
+				bufferPercent: 60,
+			},
+			wantErr: errors.New("buffer percent exceeds limit"),
+		},
+		{
+			name: "GetStateBuffer returns an error",
+			args: args{
+				stateBufferErr: errors.New("state buffer error"),
+				bufferPercent:  10,
+			},
+			wantErr: errors.New("state buffer error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			utilsMock.On("GetStateBuffer", mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
+
+			err := ValidateBufferPercentLimit(client, tt.args.bufferPercent)
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetEpochAndState function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetEpochAndState function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+
 		})
 	}
 }

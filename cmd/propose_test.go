@@ -429,19 +429,7 @@ func TestPropose(t *testing.T) {
 			wantErr: errors.New("error in saving data"),
 		},
 		{
-			name: "Test 17: When there is an error in getting buffer percent",
-			args: args{
-				state:            2,
-				staker:           bindings.StructsStaker{},
-				numStakers:       5,
-				biggestStake:     big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestStakerId:  2,
-				bufferPercentErr: errors.New("buffer error"),
-			},
-			wantErr: errors.New("buffer error"),
-		},
-		{
-			name: "Test 18: When rogue mode is on for biggestStakerId and propose exceutes successfully",
+			name: "Test 17: When rogue mode is on for biggestStakerId and propose exceutes successfully",
 			args: args{
 				rogueData: types.Rogue{
 					IsRogue:   true,
@@ -468,7 +456,7 @@ func TestPropose(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Test 19: When rogue mode is on for biggestStakerId and there is an error in getting smallestStakerId",
+			name: "Test 18: When rogue mode is on for biggestStakerId and there is an error in getting smallestStakerId",
 			args: args{
 				rogueData: types.Rogue{
 					IsRogue:   true,
@@ -494,7 +482,7 @@ func TestPropose(t *testing.T) {
 			wantErr: errors.New("smallestStakerId error"),
 		},
 		{
-			name: "Test 20: When there is an error in waitForCompletion",
+			name: "Test 19: When there is an error in waitForCompletion",
 			args: args{
 				state:                     2,
 				staker:                    bindings.StructsStaker{},
@@ -539,7 +527,6 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
-		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
 		utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 
 		utils := &UtilsStruct{}
