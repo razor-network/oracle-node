@@ -19,10 +19,10 @@ then
   GAS_MULTIPLIER=1.0
 fi
 
-read -rp "Buffer Percent: (20) " BUFFER
+read -rp "Buffer Percent: (5) " BUFFER
 if [ -z "$BUFFER" ];
 then
-  BUFFER=20
+  BUFFER=5
 fi
 
 read -rp "Wait Time: (5) " WAIT_TIME
