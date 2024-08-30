@@ -424,7 +424,7 @@ func calculateMaxBufferPercent(stateBuffer, stateLength uint64) int32 {
 	}
 
 	// The formula is derived from the condition:
-	// 2(maxBuffer % stateBuffer) < (stateLength - 2*StateBuffer)
+	// 2(maxBuffer % stateLength) < (stateLength - 2*StateBuffer)
 
 	// Perform the calculation with float64 for precision
 	maxBufferPercent := 50 * (1 - (float64(2*stateBuffer) / float64(stateLength)))
