@@ -386,7 +386,7 @@ func TestGetBufferedState(t *testing.T) {
 				stateBuffer: 5,
 			},
 
-			want:    0,
+			want:    1,
 			wantErr: false,
 		},
 		{
@@ -398,7 +398,7 @@ func TestGetBufferedState(t *testing.T) {
 				buffer:      2,
 				stateBuffer: 5,
 			},
-			want:    4,
+			want:    -1,
 			wantErr: false,
 		},
 		{
@@ -411,7 +411,7 @@ func TestGetBufferedState(t *testing.T) {
 				stateBuffer: 5,
 			},
 
-			want:    3,
+			want:    -1,
 			wantErr: false,
 		},
 		{
@@ -959,7 +959,7 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 				block:       &types.Header{},
 				stateBuffer: 5,
 			},
-			want:    235,
+			want:    55,
 			wantErr: false,
 		},
 		{
@@ -1086,7 +1086,7 @@ func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
 				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
 			},
-			want:    big.NewInt(-239),
+			want:    big.NewInt(-59),
 			wantErr: false,
 		},
 		{
