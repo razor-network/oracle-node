@@ -37,7 +37,7 @@ const (
 )
 
 //BufferStateSleepTime is the sleeping time whenever buffer state hits
-const BufferStateSleepTime int32 = 2
+const BufferStateSleepTime int32 = 5
 
 //Following are the default logFile parameters in config
 const (
