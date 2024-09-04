@@ -3,13 +3,14 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/sirupsen/logrus"
 	"razor/client"
 	"razor/core"
 	"razor/core/types"
 	"razor/utils"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
 )
