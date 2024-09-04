@@ -20,6 +20,8 @@ func TestGetEpochAndState(t *testing.T) {
 		latestHeaderErr  error
 		bufferPercent    int32
 		bufferPercentErr error
+		stateBuffer      uint64
+		stateBufferErr   error
 		state            int64
 		stateErr         error
 		stateName        string
@@ -37,6 +39,7 @@ func TestGetEpochAndState(t *testing.T) {
 				epoch:         4,
 				latestHeader:  &Types.Header{},
 				bufferPercent: 20,
+				stateBuffer:   5,
 				state:         0,
 				stateName:     "commit",
 			},
@@ -50,6 +53,7 @@ func TestGetEpochAndState(t *testing.T) {
 				epochErr:      errors.New("epoch error"),
 				latestHeader:  &Types.Header{},
 				bufferPercent: 20,
+				stateBuffer:   5,
 				state:         0,
 				stateName:     "commit",
 			},
@@ -76,6 +80,7 @@ func TestGetEpochAndState(t *testing.T) {
 				epoch:         4,
 				latestHeader:  &Types.Header{},
 				bufferPercent: 20,
+				stateBuffer:   5,
 				stateErr:      errors.New("state error"),
 			},
 			wantEpoch: 0,
@@ -88,12 +93,37 @@ func TestGetEpochAndState(t *testing.T) {
 				epoch:           4,
 				latestHeaderErr: errors.New("header error"),
 				bufferPercent:   20,
+				stateBuffer:     5,
 				state:           0,
 				stateName:       "commit",
 			},
 			wantEpoch: 0,
 			wantState: 0,
 			wantErr:   errors.New("header error"),
+		},
+		{
+			name: "Test 6: When validating buffer percent limit fails",
+			args: args{
+				epoch:         4,
+				latestHeader:  &Types.Header{},
+				bufferPercent: 50,
+				stateBuffer:   10,
+			},
+			wantEpoch: 0,
+			wantState: 0,
+			wantErr:   errors.New("buffer percent exceeds limit"),
+		},
+		{
+			name: "Test 7: When there is an error in validating buffer percent limit",
+			args: args{
+				epoch:          4,
+				latestHeader:   &Types.Header{},
+				bufferPercent:  50,
+				stateBufferErr: errors.New("state buffer error"),
+			},
+			wantEpoch: 0,
+			wantState: 0,
+			wantErr:   errors.New("state buffer error"),
 		},
 	}
 	for _, tt := range tests {
@@ -102,6 +132,7 @@ func TestGetEpochAndState(t *testing.T) {
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			utilsMock.On("GetStateBuffer", mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 

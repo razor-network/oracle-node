@@ -53,6 +53,9 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
+	err = ValidateBufferPercentLimit(client, config.BufferPercent)
+	utils.CheckError("Error in validating buffer percent: ", err)
+
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	utils.CheckError("Error in getting address: ", err)
 	log.Debug("ExecuteVote: Address: ", address)

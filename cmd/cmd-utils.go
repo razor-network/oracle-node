@@ -23,6 +23,10 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	if err != nil {
 		return 0, 0, err
 	}
+	err = ValidateBufferPercentLimit(client, bufferPercent)
+	if err != nil {
+		return 0, 0, err
+	}
 	latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)

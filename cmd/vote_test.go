@@ -161,6 +161,7 @@ func TestExecuteVote(t *testing.T) {
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
+			utilsMock.On("GetStateBuffer", mock.Anything).Return(uint64(5), nil)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
