@@ -644,7 +644,7 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsInterface = &UtilsStruct{}
 			commitParams := &types.CommitParams{
-				LocalCache: cache.NewLocalCache(time.Second * 10),
+				LocalCache: cache.NewLocalCache(),
 				HttpClient: httpClient,
 			}
 
@@ -787,7 +787,7 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			commitParams := &types.CommitParams{
-				LocalCache: cache.NewLocalCache(time.Second * 10),
+				LocalCache: cache.NewLocalCache(),
 				HttpClient: httpClient,
 			}
 

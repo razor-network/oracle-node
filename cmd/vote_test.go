@@ -345,6 +345,7 @@ func TestInitiateCommit(t *testing.T) {
 	)
 
 	commitParams := &types.CommitParams{
+		LocalCache:                cache.NewLocalCache(),
 		JobsCache:                 cache.NewJobsCache(),
 		CollectionsCache:          cache.NewCollectionsCache(),
 		FromBlockToCheckForEvents: big.NewInt(1),
