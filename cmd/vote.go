@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"razor/accounts"
+	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -118,6 +119,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in initializing asset cache: ", err)
 
 	commitParams := &types.CommitParams{
+		LocalCache:                cache.NewLocalCache(), // Creating a local cache which will store API results
 		JobsCache:                 jobsCache,
 		CollectionsCache:          collectionsCache,
 		HttpClient:                httpClient,
@@ -421,6 +423,9 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 		log.Debug("Updating GlobalCommitDataStruct with latest commitData and epoch...")
 		updateGlobalCommitDataStruct(commitData, epoch)
 		log.Debugf("InitiateCommit: Global commit data struct: %+v", globalCommitDataStruct)
+
+		log.Debug("Clearing up the cache storing API results after successful commit...")
+		commitParams.LocalCache.ClearAll()
 	}
 	return nil
 }
