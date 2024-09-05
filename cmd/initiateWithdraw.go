@@ -4,6 +4,7 @@ package cmd
 import (
 	"errors"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -50,7 +51,12 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
@@ -58,12 +64,9 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteInitiateWithdraw: Staker Id: ", stakerId)
 
 	log.Debugf("ExecuteInitiateWithdraw: Calling HandleUnstakeLock() with arguments account address: %s, stakerId: %d", address, stakerId)
-	txn, err := cmdUtils.HandleUnstakeLock(client, types.Account{
-		Address:  address,
-		Password: password,
-	}, config, stakerId)
-
+	txn, err := cmdUtils.HandleUnstakeLock(client, account, config, stakerId)
 	utils.CheckError("InitiateWithdraw error: ", err)
+
 	if txn != core.NilHash {
 		err := razorUtils.WaitForBlockCompletion(client, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for initiateWithdraw: ", err)
@@ -121,14 +124,13 @@ func (*UtilsStruct) HandleUnstakeLock(client *ethclient.Client, account types.Ac
 
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
 		ChainId:         core.ChainId,
 		Config:          configurations,
 		ContractAddress: core.StakeManagerAddress,
 		MethodName:      "initiateWithdraw",
 		ABI:             bindings.StakeManagerMetaData.ABI,
 		Parameters:      []interface{}{stakerId},
+		Account:         account,
 	}
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
 

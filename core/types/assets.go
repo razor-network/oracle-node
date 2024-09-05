@@ -64,3 +64,8 @@ type DataSourceURL struct {
 	Header     map[string]string      `json:"header"`
 	ReturnType string                 `json:"returnType"`
 }
+
+type CollectionResult struct {
+	Index int
+	Leaf  *big.Int
+}

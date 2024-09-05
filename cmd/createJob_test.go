@@ -1,16 +1,13 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -23,11 +20,7 @@ func TestCreateJob(t *testing.T) {
 	var jobInput types.CreateJobInput
 	var config types.Configurations
 
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	type args struct {
-		txnOpts      *bind.TransactOpts
 		createJobTxn *Types.Transaction
 		createJobErr error
 		hash         common.Hash
@@ -41,7 +34,6 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "Test 1:  When createJob function executes successfully",
 			args: args{
-				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				hash:         common.BigToHash(big.NewInt(1)),
 			},
@@ -51,7 +43,6 @@ func TestCreateJob(t *testing.T) {
 		{
 			name: "Test 2:  When createJob transaction fails",
 			args: args{
-				txnOpts:      txnOpts,
 				createJobTxn: &Types.Transaction{},
 				createJobErr: errors.New("createJob error"),
 				hash:         common.BigToHash(big.NewInt(1)),
@@ -64,7 +55,7 @@ func TestCreateJob(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			assetManagerMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
@@ -307,7 +298,8 @@ func TestExecuteCreateJob(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagSetMock.On("GetStringUrl", flagSet).Return(tt.args.url, tt.args.urlErr)

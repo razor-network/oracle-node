@@ -10,7 +10,10 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils"
+	"sync"
 	"time"
+
+	Types "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -55,7 +58,7 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
+func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
@@ -67,40 +70,76 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 		return types.CommitData{}, err
 	}
 
-	var leavesOfTree []*big.Int
+	leavesOfTree := make([]*big.Int, numActiveCollections)
+	results := make(chan types.CollectionResult, numActiveCollections)
+	errChan := make(chan error, numActiveCollections)
+
+	defer close(results)
+	defer close(errChan)
+
+	var wg sync.WaitGroup
 
 	log.Debug("Creating a local cache which will store API result and expire at the end of commit state")
-	localCache := cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
+	commitParams.LocalCache = cache.NewLocalCache(time.Second * time.Duration(core.StateLength))
 
 	log.Debug("Iterating over all the collections...")
 	for i := 0; i < int(numActiveCollections); i++ {
-		log.Debug("HandleCommitState: Iterating index: ", i)
-		log.Debug("HandleCommitState: Is the collection assigned: ", assignedCollections[i])
-		if assignedCollections[i] {
-			collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			var leaf *big.Int
+
+			log.Debugf("HandleCommitState: Is the collection at iterating index %v assigned: %v ", i, assignedCollections[i])
+			if assignedCollections[i] {
+				collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
+				if err != nil {
+					log.Error("Error in getting collection ID: ", err)
+					errChan <- err
+					return
+				}
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, commitParams)
+				if err != nil {
+					log.Error("Error in getting aggregated data of collection: ", err)
+					errChan <- err
+					return
+				}
+				if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
+					log.Warn("YOU ARE COMMITTING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
+					collectionData = razorUtils.GetRogueRandomValue(100000)
+					log.Debug("HandleCommitState: Collection data in rogue mode: ", collectionData)
+				}
+				log.Debugf("HandleCommitState: Data of collection %d: %s", collectionId, collectionData)
+				leaf = collectionData
+			} else {
+				leaf = big.NewInt(0)
+			}
+			log.Debugf("Sending index: %v,  leaf data: %v to results channel", i, leaf)
+			results <- types.CollectionResult{Index: i, Leaf: leaf}
+		}(i)
+	}
+
+	wg.Wait()
+
+	for i := 0; i < int(numActiveCollections); i++ {
+		select {
+		case result := <-results:
+			log.Infof("Received from results: Index: %d, Leaf: %v", result.Index, result.Leaf)
+			leavesOfTree[result.Index] = result.Leaf
+		case err := <-errChan:
 			if err != nil {
+				// Returning the first error from the error channel
+				log.Error("Error in getting collection data: ", err)
+				commitParams.LocalCache.StopCleanup()
 				return types.CommitData{}, err
 			}
-			collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, localCache)
-			if err != nil {
-				return types.CommitData{}, err
-			}
-			if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "commit") {
-				log.Warn("YOU ARE COMMITTING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
-				collectionData = razorUtils.GetRogueRandomValue(100000)
-				log.Debug("HandleCommitState: Collection data in rogue mode: ", collectionData)
-			}
-			log.Debugf("HandleCommitState: Data of collection %d: %s", collectionId, collectionData)
-			leavesOfTree = append(leavesOfTree, collectionData)
-		} else {
-			leavesOfTree = append(leavesOfTree, big.NewInt(0))
 		}
 	}
+
 	log.Debug("HandleCommitState: Assigned Collections: ", assignedCollections)
 	log.Debug("HandleCommitState: SeqAllottedCollections: ", seqAllottedCollections)
 	log.Debug("HandleCommitState: Leaves: ", leavesOfTree)
 
-	localCache.StopCleanup()
+	commitParams.LocalCache.StopCleanup()
 
 	return types.CommitData{
 		AssignedCollections:    assignedCollections,
@@ -112,8 +151,8 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, values []*big.Int) (common.Hash, error) {
-	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 0 {
+func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, seed []byte, values []*big.Int) (common.Hash, error) {
+	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
@@ -126,14 +165,13 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "commit",
 		Parameters:      []interface{}{epoch, commitmentToSend},
+		Account:         account,
 	})
 
 	log.Info("Commitment sent...")

@@ -1,17 +1,14 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -20,17 +17,12 @@ import (
 )
 
 func TestStakeCoins(t *testing.T) {
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
-
 	txnArgs := types.TransactionOptions{
 		Amount: big.NewInt(10000),
 	}
 
 	type args struct {
 		txnArgs     types.TransactionOptions
-		txnOpts     *bind.TransactOpts
 		epoch       uint32
 		getEpochErr error
 		stakeTxn    *Types.Transaction
@@ -49,7 +41,6 @@ func TestStakeCoins(t *testing.T) {
 				txnArgs: types.TransactionOptions{
 					Amount: big.NewInt(1000),
 				},
-				txnOpts:     txnOpts,
 				epoch:       2,
 				getEpochErr: nil,
 				stakeTxn:    &Types.Transaction{},
@@ -65,7 +56,6 @@ func TestStakeCoins(t *testing.T) {
 				txnArgs: types.TransactionOptions{
 					Amount: big.NewInt(1000),
 				},
-				txnOpts:     txnOpts,
 				epoch:       2,
 				getEpochErr: errors.New("waitForAppropriateState error"),
 				stakeTxn:    &Types.Transaction{},
@@ -81,7 +71,6 @@ func TestStakeCoins(t *testing.T) {
 				txnArgs: types.TransactionOptions{
 					Amount: big.NewInt(1000),
 				},
-				txnOpts:     txnOpts,
 				epoch:       2,
 				getEpochErr: nil,
 				stakeTxn:    &Types.Transaction{},
@@ -96,7 +85,7 @@ func TestStakeCoins(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.getEpochErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			stakeManagerMock.On("Stake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
@@ -330,7 +319,8 @@ func TestExecuteStake(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)

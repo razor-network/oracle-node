@@ -3,29 +3,25 @@ package types
 import "math/big"
 
 type UnstakeInput struct {
-	Address    string
-	Password   string
+	Account    Account
 	ValueInWei *big.Int
 	StakerId   uint32
 }
 
 type RedeemBountyInput struct {
-	Address  string
-	Password string
+	Account  Account
 	BountyId uint32
 }
 
 type TransferInput struct {
-	FromAddress string
-	ToAddress   string
-	Password    string
-	ValueInWei  *big.Int
-	Balance     *big.Int
+	Account    Account
+	ToAddress  string
+	ValueInWei *big.Int
+	Balance    *big.Int
 }
 
 type CreateJobInput struct {
-	Address      string
-	Password     string
+	Account      Account
 	Name         string
 	Url          string
 	Selector     string
@@ -35,9 +31,8 @@ type CreateJobInput struct {
 }
 
 type CreateCollectionInput struct {
-	Address     string
+	Account     Account
 	Name        string
-	Password    string
 	Aggregation uint32
 	Power       int8
 	JobIds      []uint
@@ -45,21 +40,18 @@ type CreateCollectionInput struct {
 }
 
 type ExtendLockInput struct {
-	Address  string
-	Password string
+	Account  Account
 	StakerId uint32
 }
 
 type ModifyCollectionInput struct {
-	Address      string
-	Password     string
+	Account      Account
 	CollectionId uint16
 	Status       bool
 }
 
 type SetDelegationInput struct {
-	Address      string
-	Password     string
+	Account      Account
 	Status       bool
 	StatusString string
 	StakerId     uint32
@@ -67,8 +59,7 @@ type SetDelegationInput struct {
 }
 
 type UpdateCommissionInput struct {
-	Address    string
-	Password   string
+	Account    Account
 	Commission uint8
 	StakerId   uint32
 }

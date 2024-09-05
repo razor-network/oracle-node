@@ -11,6 +11,8 @@ import (
 
 	bindings "razor/pkg/bindings"
 
+	cache "razor/cache"
+
 	common "github.com/ethereum/go-ethereum/common"
 
 	context "context"
@@ -102,6 +104,32 @@ func (_m *UtilsCmdInterface) AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int
 
 	if rf, ok := ret.Get(1).(func(*pflag.FlagSet) error); ok {
 		r1 = rf(flagSet)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// BatchGetStakeSnapshotCalls provides a mock function with given fields: client, epoch, numberOfStakers
+func (_m *UtilsCmdInterface) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+	ret := _m.Called(client, epoch, numberOfStakers)
+
+	var r0 []*big.Int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) ([]*big.Int, error)); ok {
+		return rf(client, epoch, numberOfStakers)
+	}
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, uint32) []*big.Int); ok {
+		r0 = rf(client, epoch, numberOfStakers)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, uint32) error); ok {
+		r1 = rf(client, epoch, numberOfStakers)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -270,25 +298,25 @@ func (_m *UtilsCmdInterface) ClaimCommission(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
-// Commit provides a mock function with given fields: client, config, account, epoch, seed, values
-func (_m *UtilsCmdInterface) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, seed []byte, values []*big.Int) (common.Hash, error) {
-	ret := _m.Called(client, config, account, epoch, seed, values)
+// Commit provides a mock function with given fields: client, config, account, epoch, latestHeader, seed, values
+func (_m *UtilsCmdInterface) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *coretypes.Header, seed []byte, values []*big.Int) (common.Hash, error) {
+	ret := _m.Called(client, config, account, epoch, latestHeader, seed, values)
 
 	var r0 common.Hash
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, []byte, []*big.Int) (common.Hash, error)); ok {
-		return rf(client, config, account, epoch, seed, values)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, []byte, []*big.Int) (common.Hash, error)); ok {
+		return rf(client, config, account, epoch, latestHeader, seed, values)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, []byte, []*big.Int) common.Hash); ok {
-		r0 = rf(client, config, account, epoch, seed, values)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, []byte, []*big.Int) common.Hash); ok {
+		r0 = rf(client, config, account, epoch, latestHeader, seed, values)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, uint32, []byte, []*big.Int) error); ok {
-		r1 = rf(client, config, account, epoch, seed, values)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, []byte, []*big.Int) error); ok {
+		r1 = rf(client, config, account, epoch, latestHeader, seed, values)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -570,32 +598,32 @@ func (_m *UtilsCmdInterface) GetAlternateProvider() (string, error) {
 	return r0, r1
 }
 
-// GetBiggestStakeAndId provides a mock function with given fields: client, address, epoch
-func (_m *UtilsCmdInterface) GetBiggestStakeAndId(client *ethclient.Client, address string, epoch uint32) (*big.Int, uint32, error) {
-	ret := _m.Called(client, address, epoch)
+// GetBiggestStakeAndId provides a mock function with given fields: client, epoch
+func (_m *UtilsCmdInterface) GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error) {
+	ret := _m.Called(client, epoch)
 
 	var r0 *big.Int
 	var r1 uint32
 	var r2 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) (*big.Int, uint32, error)); ok {
-		return rf(client, address, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) (*big.Int, uint32, error)); ok {
+		return rf(client, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string, uint32) *big.Int); ok {
-		r0 = rf(client, address, epoch)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32) *big.Int); ok {
+		r0 = rf(client, epoch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string, uint32) uint32); ok {
-		r1 = rf(client, address, epoch)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32) uint32); ok {
+		r1 = rf(client, epoch)
 	} else {
 		r1 = ret.Get(1).(uint32)
 	}
 
-	if rf, ok := ret.Get(2).(func(*ethclient.Client, string, uint32) error); ok {
-		r2 = rf(client, address, epoch)
+	if rf, ok := ret.Get(2).(func(*ethclient.Client, uint32) error); ok {
+		r2 = rf(client, epoch)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -1189,9 +1217,9 @@ func (_m *UtilsCmdInterface) GiveSorted(client *ethclient.Client, blockManager *
 	return r0
 }
 
-// HandleBlock provides a mock function with given fields: client, account, blockNumber, config, rogueData, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types.Account, blockNumber *big.Int, config types.Configurations, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
-	_m.Called(client, account, blockNumber, config, rogueData, backupNodeActionsToIgnore)
+// HandleBlock provides a mock function with given fields: client, account, stakerId, header, config, commitParams, rogueData, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, header *coretypes.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+	_m.Called(client, account, stakerId, header, config, commitParams, rogueData, backupNodeActionsToIgnore)
 }
 
 // HandleClaimBounty provides a mock function with given fields: client, config, account
@@ -1208,23 +1236,23 @@ func (_m *UtilsCmdInterface) HandleClaimBounty(client *ethclient.Client, config 
 	return r0
 }
 
-// HandleCommitState provides a mock function with given fields: client, epoch, seed, rogueData
-func (_m *UtilsCmdInterface) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, rogueData types.Rogue) (types.CommitData, error) {
-	ret := _m.Called(client, epoch, seed, rogueData)
+// HandleCommitState provides a mock function with given fields: client, epoch, seed, commitParams, rogueData
+func (_m *UtilsCmdInterface) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
+	ret := _m.Called(client, epoch, seed, commitParams, rogueData)
 
 	var r0 types.CommitData
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, types.Rogue) (types.CommitData, error)); ok {
-		return rf(client, epoch, seed, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, *types.CommitParams, types.Rogue) (types.CommitData, error)); ok {
+		return rf(client, epoch, seed, commitParams, rogueData)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, types.Rogue) types.CommitData); ok {
-		r0 = rf(client, epoch, seed, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint32, []byte, *types.CommitParams, types.Rogue) types.CommitData); ok {
+		r0 = rf(client, epoch, seed, commitParams, rogueData)
 	} else {
 		r0 = ret.Get(0).(types.CommitData)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, []byte, types.Rogue) error); ok {
-		r1 = rf(client, epoch, seed, rogueData)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, uint32, []byte, *types.CommitParams, types.Rogue) error); ok {
+		r1 = rf(client, epoch, seed, commitParams, rogueData)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1353,13 +1381,57 @@ func (_m *UtilsCmdInterface) IndexRevealEventsOfCurrentEpoch(client *ethclient.C
 	return r0, r1
 }
 
-// InitiateCommit provides a mock function with given fields: client, config, account, epoch, stakerId, rogueData
-func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, rogueData types.Rogue) error {
-	ret := _m.Called(client, config, account, epoch, stakerId, rogueData)
+// InitJobAndCollectionCache provides a mock function with given fields: client
+func (_m *UtilsCmdInterface) InitJobAndCollectionCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
+	ret := _m.Called(client)
+
+	var r0 *cache.JobsCache
+	var r1 *cache.CollectionsCache
+	var r2 *big.Int
+	var r3 error
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)); ok {
+		return rf(client)
+	}
+	if rf, ok := ret.Get(0).(func(*ethclient.Client) *cache.JobsCache); ok {
+		r0 = rf(client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*cache.JobsCache)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*ethclient.Client) *cache.CollectionsCache); ok {
+		r1 = rf(client)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*cache.CollectionsCache)
+		}
+	}
+
+	if rf, ok := ret.Get(2).(func(*ethclient.Client) *big.Int); ok {
+		r2 = rf(client)
+	} else {
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(3).(func(*ethclient.Client) error); ok {
+		r3 = rf(client)
+	} else {
+		r3 = ret.Error(3)
+	}
+
+	return r0, r1, r2, r3
+}
+
+// InitiateCommit provides a mock function with given fields: client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData
+func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *coretypes.Header, commitParams *types.CommitParams, rogueData types.Rogue) error {
+	ret := _m.Called(client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint32, types.Rogue) error); ok {
-		r0 = rf(client, config, account, epoch, stakerId, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, uint32, *coretypes.Header, *types.CommitParams, types.Rogue) error); ok {
+		r0 = rf(client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1367,13 +1439,13 @@ func (_m *UtilsCmdInterface) InitiateCommit(client *ethclient.Client, config typ
 	return r0
 }
 
-// InitiatePropose provides a mock function with given fields: client, config, account, epoch, staker, blockNumber, rogueData
-func (_m *UtilsCmdInterface) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, blockNumber *big.Int, rogueData types.Rogue) error {
-	ret := _m.Called(client, config, account, epoch, staker, blockNumber, rogueData)
+// InitiatePropose provides a mock function with given fields: client, config, account, epoch, staker, latestHeader, rogueData
+func (_m *UtilsCmdInterface) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *coretypes.Header, rogueData types.Rogue) error {
+	ret := _m.Called(client, config, account, epoch, staker, latestHeader, rogueData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, bindings.StructsStaker, *big.Int, types.Rogue) error); ok {
-		r0 = rf(client, config, account, epoch, staker, blockNumber, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, bindings.StructsStaker, *coretypes.Header, types.Rogue) error); ok {
+		r0 = rf(client, config, account, epoch, staker, latestHeader, rogueData)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1381,13 +1453,13 @@ func (_m *UtilsCmdInterface) InitiatePropose(client *ethclient.Client, config ty
 	return r0
 }
 
-// InitiateReveal provides a mock function with given fields: client, config, account, epoch, staker, rogueData
-func (_m *UtilsCmdInterface) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, rogueData types.Rogue) error {
-	ret := _m.Called(client, config, account, epoch, staker, rogueData)
+// InitiateReveal provides a mock function with given fields: client, config, account, epoch, staker, latestHeader, rogueData
+func (_m *UtilsCmdInterface) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *coretypes.Header, rogueData types.Rogue) error {
+	ret := _m.Called(client, config, account, epoch, staker, latestHeader, rogueData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, bindings.StructsStaker, types.Rogue) error); ok {
-		r0 = rf(client, config, account, epoch, staker, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, bindings.StructsStaker, *coretypes.Header, types.Rogue) error); ok {
+		r0 = rf(client, config, account, epoch, staker, latestHeader, rogueData)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1531,13 +1603,13 @@ func (_m *UtilsCmdInterface) ModifyCollectionStatus(client *ethclient.Client, co
 	return r0, r1
 }
 
-// Propose provides a mock function with given fields: client, config, account, staker, epoch, blockNumber, rogueData
-func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) error {
-	ret := _m.Called(client, config, account, staker, epoch, blockNumber, rogueData)
+// Propose provides a mock function with given fields: client, config, account, staker, epoch, latestHeader, rogueData
+func (_m *UtilsCmdInterface) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *coretypes.Header, rogueData types.Rogue) error {
+	ret := _m.Called(client, config, account, staker, epoch, latestHeader, rogueData)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *big.Int, types.Rogue) error); ok {
-		r0 = rf(client, config, account, staker, epoch, blockNumber, rogueData)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, bindings.StructsStaker, uint32, *coretypes.Header, types.Rogue) error); ok {
+		r0 = rf(client, config, account, staker, epoch, latestHeader, rogueData)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1576,25 +1648,25 @@ func (_m *UtilsCmdInterface) ResetUnstakeLock(client *ethclient.Client, config t
 	return r0, r1
 }
 
-// Reveal provides a mock function with given fields: client, config, account, epoch, commitData, signature
-func (_m *UtilsCmdInterface) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
-	ret := _m.Called(client, config, account, epoch, commitData, signature)
+// Reveal provides a mock function with given fields: client, config, account, epoch, latestHeader, commitData, signature
+func (_m *UtilsCmdInterface) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *coretypes.Header, commitData types.CommitData, signature []byte) (common.Hash, error) {
+	ret := _m.Called(client, config, account, epoch, latestHeader, commitData, signature)
 
 	var r0 common.Hash
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, types.CommitData, []byte) (common.Hash, error)); ok {
-		return rf(client, config, account, epoch, commitData, signature)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, types.CommitData, []byte) (common.Hash, error)); ok {
+		return rf(client, config, account, epoch, latestHeader, commitData, signature)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, types.CommitData, []byte) common.Hash); ok {
-		r0 = rf(client, config, account, epoch, commitData, signature)
+	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, types.CommitData, []byte) common.Hash); ok {
+		r0 = rf(client, config, account, epoch, latestHeader, commitData, signature)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, uint32, types.CommitData, []byte) error); ok {
-		r1 = rf(client, config, account, epoch, commitData, signature)
+	if rf, ok := ret.Get(1).(func(*ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, types.CommitData, []byte) error); ok {
+		r1 = rf(client, config, account, epoch, latestHeader, commitData, signature)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1826,13 +1898,13 @@ func (_m *UtilsCmdInterface) UpdateJob(client *ethclient.Client, config types.Co
 	return r0, r1
 }
 
-// Vote provides a mock function with given fields: ctx, config, client, rogueData, account, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, rogueData types.Rogue, account types.Account, backupNodeActionsToIgnore []string) error {
-	ret := _m.Called(ctx, config, client, rogueData, account, backupNodeActionsToIgnore)
+// Vote provides a mock function with given fields: ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore
+func (_m *UtilsCmdInterface) Vote(ctx context.Context, config types.Configurations, client *ethclient.Client, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+	ret := _m.Called(ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Rogue, types.Account, []string) error); ok {
-		r0 = rf(ctx, config, client, rogueData, account, backupNodeActionsToIgnore)
+	if rf, ok := ret.Get(0).(func(context.Context, types.Configurations, *ethclient.Client, types.Account, uint32, *types.CommitParams, types.Rogue, []string) error); ok {
+		r0 = rf(ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 	} else {
 		r0 = ret.Error(0)
 	}

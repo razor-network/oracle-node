@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -50,7 +51,12 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)
@@ -66,15 +72,13 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in fetching commission: ", err)
 
 	delegationInput := types.SetDelegationInput{
-		Address:      address,
-		Password:     password,
 		Status:       status,
 		StatusString: statusString,
 		StakerId:     stakerId,
 		Commission:   commission,
+		Account:      account,
 	}
 
-	log.Debugf("ExecuteSetDelegation: Calling SetDelegation() with argument delegationInput = %+v", delegationInput)
 	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
@@ -93,11 +97,9 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 	if delegationInput.Commission != 0 {
 		updateCommissionInput := types.UpdateCommissionInput{
 			StakerId:   delegationInput.StakerId,
-			Address:    delegationInput.Address,
-			Password:   delegationInput.Password,
 			Commission: delegationInput.Commission,
+			Account:    delegationInput.Account,
 		}
-		log.Debugf("Calling UpdateCommission() with argument updateCommissionInput = %+v", updateCommissionInput)
 		err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
 		if err != nil {
 			return core.NilHash, err
@@ -106,14 +108,13 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 
 	txnOpts := types.TransactionOptions{
 		Client:          client,
-		Password:        delegationInput.Password,
-		AccountAddress:  delegationInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "setDelegationAcceptance",
 		Parameters:      []interface{}{delegationInput.Status},
+		Account:         delegationInput.Account,
 	}
 
 	if stakerInfo.AcceptDelegation == delegationInput.Status {

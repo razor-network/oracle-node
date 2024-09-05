@@ -1,20 +1,20 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/stretchr/testify/assert"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	utilsPkgMocks "razor/utils/mocks"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -23,21 +23,20 @@ import (
 func TestPropose(t *testing.T) {
 
 	var (
-		client      *ethclient.Client
-		account     types.Account
-		config      types.Configurations
-		staker      bindings.StructsStaker
-		epoch       uint32
-		blockNumber *big.Int
+		client  *ethclient.Client
+		account types.Account
+		config  types.Configurations
+		staker  bindings.StructsStaker
+		epoch   uint32
 	)
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
 	saltBytes32 := [32]byte{}
 	copy(saltBytes32[:], salt)
 
+	latestHeader := &Types.Header{
+		Number: big.NewInt(1001),
+	}
 	type args struct {
 		rogueData                  types.Rogue
 		state                      int64
@@ -75,7 +74,6 @@ func TestPropose(t *testing.T) {
 		fileNameErr                error
 		saveDataErr                error
 		mediansBigInt              []*big.Int
-		txnOpts                    *bind.TransactOpts
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
@@ -102,7 +100,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -124,7 +121,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -146,7 +142,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -167,7 +162,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -189,7 +183,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -211,7 +204,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -233,7 +225,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -255,7 +246,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -277,7 +267,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:              big.NewInt(5),
 				lastProposedBlockStructErr: errors.New("lastProposedBlockStruct error"),
 				medians:                    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                    txnOpts,
 				proposeTxn:                 &Types.Transaction{},
 				hash:                       common.BigToHash(big.NewInt(1)),
 			},
@@ -301,7 +290,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(1),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -325,7 +313,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(2),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -350,7 +337,6 @@ func TestPropose(t *testing.T) {
 					Iteration: big.NewInt(2),
 				},
 				medians:    []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:    txnOpts,
 				proposeTxn: &Types.Transaction{},
 				hash:       common.BigToHash(big.NewInt(1)),
 			},
@@ -372,7 +358,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				mediansErr:              errors.New("makeBlock error"),
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -394,7 +379,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeErr:              errors.New("propose error"),
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -416,7 +400,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 				fileNameErr:             errors.New("fileName error"),
@@ -439,7 +422,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 				saveDataErr:             errors.New("error in saving data"),
@@ -480,7 +462,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -507,7 +488,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:           big.NewInt(5),
 				lastProposedBlockStruct: bindings.StructsBlock{},
 				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                 txnOpts,
 				proposeTxn:              &Types.Transaction{},
 				hash:                    common.BigToHash(big.NewInt(1)),
 			},
@@ -529,7 +509,6 @@ func TestPropose(t *testing.T) {
 				lastIteration:             big.NewInt(5),
 				lastProposedBlockStruct:   bindings.StructsBlock{},
 				medians:                   []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				txnOpts:                   txnOpts,
 				proposeTxn:                &Types.Transaction{},
 				hash:                      common.BigToHash(big.NewInt(1)),
 				waitForBlockCompletionErr: errors.New("waitForBlockCompletion error"),
@@ -540,9 +519,9 @@ func TestPropose(t *testing.T) {
 	for _, tt := range tests {
 		SetUpMockInterfaces()
 
-		utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+		utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 		utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numStakers, tt.args.numStakerErr)
-		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
+		cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakerId, tt.args.biggestStakerIdErr)
 		cmdUtilsMock.On("GetSmallestStakeAndId", mock.Anything, mock.Anything).Return(tt.args.smallestStake, tt.args.smallestStakerId, tt.args.smallestStakerIdErr)
 		utilsMock.On("GetRandaoHash", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.randaoHash, tt.args.randaoHashErr)
 		cmdUtilsMock.On("GetIteration", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.iteration)
@@ -557,7 +536,7 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 		pathMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 		fileUtilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
-		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+		utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 		cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
@@ -565,7 +544,7 @@ func TestPropose(t *testing.T) {
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
-			err := utils.Propose(client, config, account, staker, epoch, blockNumber, tt.args.rogueData)
+			err := utils.Propose(client, config, account, staker, epoch, latestHeader, tt.args.rogueData)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for Propose function, got = %v, want %v", err, tt.wantErr)
@@ -581,18 +560,13 @@ func TestPropose(t *testing.T) {
 
 func TestGetBiggestStakeAndId(t *testing.T) {
 	var client *ethclient.Client
-	var address string
 	var epoch uint32
 
 	type args struct {
-		numOfStakers     uint32
-		numOfStakersErr  error
-		bufferPercent    int32
-		bufferPercentErr error
-		remainingTime    int64
-		remainingTimeErr error
-		stake            *big.Int
-		stakeErr         error
+		numOfStakers    uint32
+		numOfStakersErr error
+		stakeArray      []*big.Int
+		stakeErr        error
 	}
 	tests := []struct {
 		name      string
@@ -604,12 +578,11 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 		{
 			name: "Test 1: When GetBiggestStakeAndId function executes successfully",
 			args: args{
-				numOfStakers:  2,
-				remainingTime: 10,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
+				numOfStakers: 7,
+				stakeArray:   []*big.Int{big.NewInt(89999), big.NewInt(70000), big.NewInt(72000), big.NewInt(99999), big.NewInt(200030), big.NewInt(67777), big.NewInt(100011)},
 			},
-			wantStake: big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
-			wantId:    1,
+			wantStake: big.NewInt(200030),
+			wantId:    5,
 			wantErr:   nil,
 		},
 		{
@@ -625,55 +598,30 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			name: "Test 3: When there is an error in getting numOfStakers",
 			args: args{
 				numOfStakersErr: errors.New("numOfStakers error"),
-				remainingTime:   10,
 			},
 			wantStake: nil,
 			wantId:    0,
 			wantErr:   errors.New("numOfStakers error"),
 		},
 		{
-			name: "Test 4: When there is an error in getting stake",
+			name: "Test 4: When there is an error in getting stakeArray from batch calls",
 			args: args{
-				numOfStakers:  5,
-				remainingTime: 10,
-				stakeErr:      errors.New("stake error"),
+				numOfStakers: 5,
+				stakeErr:     errors.New("batch calls error"),
 			},
 			wantStake: nil,
 			wantId:    0,
-			wantErr:   errors.New("stake error"),
+			wantErr:   errors.New("batch calls error"),
 		},
 		{
-			name: "Test 5: When there is an error in getting remaining time",
+			name: "Test 5: When there are large number of stakers",
 			args: args{
-				numOfStakers:     2,
-				remainingTime:    10,
-				remainingTimeErr: errors.New("time error"),
+				numOfStakers: 999,
+				stakeArray:   GenerateDummyStakeSnapshotArray(999),
 			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("time error"),
-		},
-		{
-			name: "Test 6: When there is a timeout case",
-			args: args{
-				numOfStakers:  100000,
-				bufferPercent: 10,
-				remainingTime: 0,
-				stake:         big.NewInt(1).Mul(big.NewInt(5326), big.NewInt(1e18)),
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("state timeout error"),
-		},
-		{
-			name: "Test 7: When there is an error in getting buffer percent",
-			args: args{
-				numOfStakers:     2,
-				bufferPercentErr: errors.New("buffer error"),
-			},
-			wantStake: nil,
-			wantId:    0,
-			wantErr:   errors.New("buffer error"),
+			wantStake: big.NewInt(999000),
+			wantId:    999,
+			wantErr:   nil,
 		},
 	}
 	for _, tt := range tests {
@@ -681,19 +629,11 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.numOfStakers, tt.args.numOfStakersErr)
-			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stake, tt.args.stakeErr)
-			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
-			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
+			cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeArray, tt.args.stakeErr)
 
 			utils := &UtilsStruct{}
 
-			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, address, epoch)
-			if gotStake.Cmp(tt.wantStake) != 0 {
-				t.Errorf("Biggest Stake from GetBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
-			}
-			if gotId != tt.wantId {
-				t.Errorf("Staker Id of staker having biggest Influence from GetBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
-			}
+			gotStake, gotId, err := utils.GetBiggestStakeAndId(client, epoch)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
@@ -702,6 +642,12 @@ func TestGetBiggestStakeAndId(t *testing.T) {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("Error for GetBiggestStakeAndId function, got = %v, want %v", err, tt.wantErr)
 				}
+			}
+			if gotStake.Cmp(tt.wantStake) != 0 {
+				t.Errorf("Biggest Stake from GetBiggestStakeAndId function, got = %v, want %v", gotStake, tt.wantStake)
+			}
+			if gotId != tt.wantId {
+				t.Errorf("Staker Id of staker having biggest Influence from GetBiggestStakeAndId function, got = %v, want %v", gotId, tt.wantId)
 			}
 
 		})
@@ -715,15 +661,24 @@ func stakeSnapshotValue(stake string) *big.Int {
 
 func TestGetIteration(t *testing.T) {
 	var client *ethclient.Client
-	var proposer types.ElectedProposer
 	var bufferPercent int32
 
+	salt := []byte{142, 170, 157, 83, 109, 43, 34, 152, 21, 154, 159, 12, 195, 119, 50, 186, 218, 57, 39, 173, 228, 135, 20, 100, 149, 27, 169, 158, 34, 113, 66, 64}
+	saltBytes32 := [32]byte{}
+	copy(saltBytes32[:], salt)
+
+	proposer := types.ElectedProposer{
+		BiggestStake:    big.NewInt(1).Mul(big.NewInt(10000000), big.NewInt(1e18)),
+		StakerId:        2,
+		NumberOfStakers: 10,
+		Salt:            saltBytes32,
+	}
+
 	type args struct {
-		stakeSnapshot     *big.Int
-		stakeSnapshotErr  error
-		isElectedProposer bool
-		remainingTime     int64
-		remainingTimeErr  error
+		stakeSnapshot    *big.Int
+		stakeSnapshotErr error
+		remainingTime    int64
+		remainingTimeErr error
 	}
 	tests := []struct {
 		name string
@@ -733,15 +688,15 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 1: When getIteration returns a valid iteration",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: true,
-				remainingTime:     100,
+				stakeSnapshot: big.NewInt(1000),
+				remainingTime: 10,
 			},
-			want: 0,
+			want: 70183,
 		},
 		{
 			name: "Test 2: When there is an error in getting stakeSnapshotValue",
 			args: args{
+				stakeSnapshot:    big.NewInt(0),
 				stakeSnapshotErr: errors.New("error in getting stakeSnapshotValue"),
 			},
 			want: -1,
@@ -749,33 +704,32 @@ func TestGetIteration(t *testing.T) {
 		{
 			name: "Test 3: When getIteration returns an invalid iteration",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: false,
-				remainingTime:     2,
+				stakeSnapshot: big.NewInt(1),
+				remainingTime: 2,
 			},
 			want: -1,
 		},
 		{
 			name: "Test 4: When there is an error in getting remaining time for the state",
 			args: args{
-				stakeSnapshot:     stakeSnapshotValue("2592145500000000000000000"),
-				isElectedProposer: true,
-				remainingTimeErr:  errors.New("remaining time error"),
+				stakeSnapshot:    stakeSnapshotValue("2592145500000000000000000"),
+				remainingTimeErr: errors.New("remaining time error"),
 			},
 			want: -1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			SetUpMockInterfaces()
 
-			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.stakeSnapshotErr)
-			cmdUtilsMock.On("IsElectedProposer", mock.Anything, mock.Anything).Return(tt.args.isElectedProposer)
+			utilsMock = new(utilsPkgMocks.Utils)
+			razorUtils = utilsMock
+
+			cmdUtils = &UtilsStruct{}
+
+			utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(tt.args.stakeSnapshot, big.NewInt(1e18)), tt.args.stakeSnapshotErr)
 			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(tt.args.remainingTime, tt.args.remainingTimeErr)
 
-			utils := &UtilsStruct{}
-
-			if got := utils.GetIteration(client, proposer, bufferPercent); got != tt.want {
+			if got := cmdUtils.GetIteration(client, proposer, bufferPercent); got != tt.want {
 				t.Errorf("getIteration() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1117,17 +1071,145 @@ func TestGetSortedRevealedValues(t *testing.T) {
 		{
 			name: "Test 1: When GetSortedRevealedValues executes successfully",
 			args: args{
-				assignedAssets: []types.RevealedStruct{{RevealedValues: []types.AssignedAsset{{LeafId: 1, Value: big.NewInt(100)}}, Influence: big.NewInt(100)}},
+				assignedAssets: []types.RevealedStruct{
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 3, Value: big.NewInt(601)},
+							{LeafId: 6, Value: big.NewInt(750)},
+							{LeafId: 1, Value: big.NewInt(400)},
+						},
+						Influence: big.NewInt(10000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 10, Value: big.NewInt(1100)},
+							{LeafId: 5, Value: big.NewInt(900)},
+							{LeafId: 7, Value: big.NewInt(302)},
+						},
+						Influence: big.NewInt(20000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 3, Value: big.NewInt(600)},
+							{LeafId: 7, Value: big.NewInt(300)},
+							{LeafId: 9, Value: big.NewInt(1600)},
+						},
+						Influence: big.NewInt(30000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 10, Value: big.NewInt(1105)},
+							{LeafId: 8, Value: big.NewInt(950)},
+							{LeafId: 7, Value: big.NewInt(300)},
+						},
+						Influence: big.NewInt(40000000),
+					},
+				},
 			},
 			want: &types.RevealedDataMaps{
-				SortedRevealedValues: map[uint16][]*big.Int{1: {big.NewInt(100)}},
-				VoteWeights:          map[string]*big.Int{big.NewInt(100).String(): big.NewInt(100)},
-				InfluenceSum:         map[uint16]*big.Int{1: big.NewInt(100)},
+				SortedRevealedValues: map[uint16][]*big.Int{
+					1:  {big.NewInt(400)},
+					3:  {big.NewInt(600), big.NewInt(601)},
+					5:  {big.NewInt(900)},
+					6:  {big.NewInt(750)},
+					7:  {big.NewInt(300), big.NewInt(302)},
+					8:  {big.NewInt(950)},
+					9:  {big.NewInt(1600)},
+					10: {big.NewInt(1100), big.NewInt(1105)},
+				},
+				VoteWeights: map[string]*big.Int{
+					"1600": big.NewInt(30000000),
+					"300":  big.NewInt(70000000),
+					"302":  big.NewInt(20000000),
+					"400":  big.NewInt(10000000),
+					"600":  big.NewInt(30000000),
+					"601":  big.NewInt(10000000),
+					"750":  big.NewInt(10000000),
+					"1100": big.NewInt(20000000),
+					"1105": big.NewInt(40000000),
+					"950":  big.NewInt(40000000),
+					"900":  big.NewInt(20000000),
+				},
+				InfluenceSum: map[uint16]*big.Int{
+					1:  big.NewInt(10000000),
+					3:  big.NewInt(40000000),
+					5:  big.NewInt(20000000),
+					6:  big.NewInt(10000000),
+					7:  big.NewInt(90000000),
+					8:  big.NewInt(40000000),
+					9:  big.NewInt(30000000),
+					10: big.NewInt(60000000),
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting assignedAssets",
+			name: "Test 2: When there are multiple equal and unequal vote values for single leafId",
+			args: args{
+				assignedAssets: []types.RevealedStruct{
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 1, Value: big.NewInt(600)},
+							{LeafId: 2, Value: big.NewInt(750)},
+							{LeafId: 3, Value: big.NewInt(400)},
+						},
+						Influence: big.NewInt(10000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 1, Value: big.NewInt(601)},
+							{LeafId: 2, Value: big.NewInt(752)},
+						},
+						Influence: big.NewInt(20000000),
+					},
+					{
+						RevealedValues: []types.AssignedAsset{
+							{LeafId: 1, Value: big.NewInt(601)},
+							{LeafId: 2, Value: big.NewInt(756)},
+							{LeafId: 4, Value: big.NewInt(1600)},
+						},
+						Influence: big.NewInt(30000000),
+					},
+				},
+			},
+			want: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]*big.Int{
+					1: {big.NewInt(600), big.NewInt(601)},
+					2: {big.NewInt(750), big.NewInt(752), big.NewInt(756)},
+					3: {big.NewInt(400)},
+					4: {big.NewInt(1600)},
+				},
+				VoteWeights: map[string]*big.Int{
+					"1600": big.NewInt(30000000),
+					"400":  big.NewInt(10000000),
+					"600":  big.NewInt(10000000),
+					"601":  big.NewInt(50000000),
+					"750":  big.NewInt(10000000),
+					"752":  big.NewInt(20000000),
+					"756":  big.NewInt(30000000),
+				},
+				InfluenceSum: map[uint16]*big.Int{
+					1: big.NewInt(60000000),
+					2: big.NewInt(60000000),
+					3: big.NewInt(10000000),
+					4: big.NewInt(30000000),
+				},
+			},
+		},
+		{
+			name: "Test 3: When assignedAssets is empty",
+			args: args{
+				assignedAssets: []types.RevealedStruct{},
+			},
+			want: &types.RevealedDataMaps{
+				SortedRevealedValues: map[uint16][]*big.Int{},
+				VoteWeights:          map[string]*big.Int{},
+				InfluenceSum:         map[uint16]*big.Int{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 4: When there is an error in getting assignedAssets",
 			args: args{
 				assignedAssetsErr: errors.New("error in getting assets"),
 			},
@@ -1240,6 +1322,72 @@ func TestGetSmallestStakeAndId(t *testing.T) {
 	}
 }
 
+func TestBatchGetStakeCalls(t *testing.T) {
+	var client *ethclient.Client
+	var epoch uint32
+
+	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
+
+	type args struct {
+		ABI              abi.ABI
+		numberOfStakers  uint32
+		parseErr         error
+		batchCallResults [][]interface{}
+		batchCallError   error
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStakes []*big.Int
+		wantErr    error
+	}{
+		{
+			name: "Test 1: When BatchGetStakeCalls executes successfully",
+			args: args{
+				ABI:             voteManagerABI,
+				numberOfStakers: 3,
+				batchCallResults: [][]interface{}{
+					{big.NewInt(10)},
+					{big.NewInt(11)},
+					{big.NewInt(12)},
+				},
+			},
+			wantStakes: []*big.Int{
+				big.NewInt(10),
+				big.NewInt(11),
+				big.NewInt(12),
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Test 2: When there is an error in parsing voteManager ABI",
+			args: args{
+				parseErr: errors.New("parse error"),
+			},
+			wantErr: errors.New("parse error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.ABI, tt.args.parseErr)
+			clientUtilsMock.On("BatchCall", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.batchCallResults, tt.args.batchCallError)
+
+			ut := &UtilsStruct{}
+			gotStakes, err := ut.BatchGetStakeSnapshotCalls(client, epoch, tt.args.numberOfStakers)
+
+			if err == nil || tt.wantErr == nil {
+				assert.Equal(t, tt.wantErr, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr.Error())
+			}
+
+			assert.Equal(t, tt.wantStakes, gotStakes)
+		})
+	}
+}
+
 func BenchmarkGetIteration(b *testing.B) {
 	var client *ethclient.Client
 	var bufferPercent int32
@@ -1283,7 +1431,6 @@ func BenchmarkGetIteration(b *testing.B) {
 
 func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 	var client *ethclient.Client
-	var address string
 	var epoch uint32
 
 	var table = []struct {
@@ -1301,12 +1448,10 @@ func BenchmarkGetBiggestStakeAndId(b *testing.B) {
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumberOfStakers", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(v.numOfStakers, nil)
-				utilsMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(big.NewInt(10000), nil)
-				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(150), nil)
-				cmdUtilsMock.On("GetBufferPercent").Return(int32(60), nil)
+				cmdUtilsMock.On("BatchGetStakeSnapshotCalls", mock.Anything, mock.Anything, mock.Anything).Return(GenerateDummyStakeSnapshotArray(v.numOfStakers), nil)
 
 				ut := &UtilsStruct{}
-				_, _, err := ut.GetBiggestStakeAndId(client, address, epoch)
+				_, _, err := ut.GetBiggestStakeAndId(client, epoch)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -1385,6 +1530,15 @@ func BenchmarkMakeBlock(b *testing.B) {
 			}
 		})
 	}
+}
+
+func GenerateDummyStakeSnapshotArray(numOfStakers uint32) []*big.Int {
+	stakeSnapshotArray := make([]*big.Int, numOfStakers)
+	for i := 0; i < int(numOfStakers); i++ {
+		// For testing purposes, we will assign a stake value of (i + 1) * 1000
+		stakeSnapshotArray[i] = big.NewInt(int64(i+1) * 1000)
+	}
+	return stakeSnapshotArray
 }
 
 func GetDummyVotes(numOfVotes int) []*big.Int {

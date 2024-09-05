@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"razor/utils/mocks"
 	"reflect"
@@ -1293,6 +1294,49 @@ func Test_isHexArrayPattern(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := isHexArrayPattern(tt.args.s); got != tt.want {
 				t.Errorf("isHexArrayPattern() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConvertHashToUint16(t *testing.T) {
+	tests := []struct {
+		name     string
+		hash     common.Hash
+		expected uint16
+	}{
+		{
+			name:     "ZeroHash",
+			hash:     common.Hash{},
+			expected: 0,
+		},
+		{
+			name:     "SmallNumber",
+			hash:     common.BigToHash(big.NewInt(42)),
+			expected: 42,
+		},
+		{
+			name:     "MaxUint16",
+			hash:     common.BigToHash(big.NewInt(65535)),
+			expected: 65535,
+		},
+		{
+			name:     "OverflowUint16",
+			hash:     common.BigToHash(big.NewInt(65536)),
+			expected: 0, // 65536 % 65536 == 0
+		},
+		{
+			name:     "LargeNumber",
+			hash:     common.BigToHash(big.NewInt(123456789)),
+			expected: 52501, // 123456789 % 65536
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ConvertHashToUint16(tt.hash)
+			if result != tt.expected {
+				t.Errorf("ConvertHashToUint16(%v) = %v, expected %v", tt.hash, result, tt.expected)
 			}
 		})
 	}

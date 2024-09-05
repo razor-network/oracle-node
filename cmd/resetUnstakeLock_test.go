@@ -1,16 +1,13 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -19,16 +16,11 @@ import (
 )
 
 func TestExtendLock(t *testing.T) {
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
-
 	var extendLockInput types.ExtendLockInput
 	var config types.Configurations
 	var client *ethclient.Client
 
 	type args struct {
-		txnOpts      *bind.TransactOpts
 		resetLockTxn *Types.Transaction
 		resetLockErr error
 		hash         common.Hash
@@ -42,7 +34,6 @@ func TestExtendLock(t *testing.T) {
 		{
 			name: "Test 1: When resetLock function executes successfully",
 			args: args{
-				txnOpts:      txnOpts,
 				resetLockTxn: &Types.Transaction{},
 				resetLockErr: nil,
 				hash:         common.BigToHash(big.NewInt(1)),
@@ -53,7 +44,6 @@ func TestExtendLock(t *testing.T) {
 		{
 			name: "Test 2: When ResetLock transaction fails",
 			args: args{
-				txnOpts:      txnOpts,
 				resetLockTxn: &Types.Transaction{},
 				resetLockErr: errors.New("resetLock error"),
 				hash:         common.BigToHash(big.NewInt(1)),
@@ -66,7 +56,7 @@ func TestExtendLock(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			stakeManagerMock.On("ResetUnstakeLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
@@ -183,7 +173,8 @@ func TestExecuteExtendLock(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)

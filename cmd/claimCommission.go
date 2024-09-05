@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -45,7 +46,12 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	stakerId, err := razorUtils.GetStakerId(client, address)
@@ -60,14 +66,13 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
 		txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 			Client:          client,
-			AccountAddress:  address,
-			Password:        password,
 			ChainId:         core.ChainId,
 			Config:          config,
 			ContractAddress: core.StakeManagerAddress,
 			MethodName:      "claimStakerReward",
 			Parameters:      []interface{}{},
 			ABI:             bindings.StakeManagerMetaData.ABI,
+			Account:         account,
 		})
 
 		log.Info("Claiming commission...")

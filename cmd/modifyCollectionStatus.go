@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -48,7 +49,12 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
@@ -61,13 +67,11 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 	utils.CheckError("Error in parsing status: ", err)
 
 	modifyCollectionInput := types.ModifyCollectionInput{
-		Address:      address,
-		Password:     password,
 		Status:       status,
 		CollectionId: collectionId,
+		Account:      account,
 	}
 
-	log.Debugf("Calling ModifyCollectionStatus() with arguments modifyCollectionInput = %+v", modifyCollectionInput)
 	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
@@ -101,14 +105,13 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 
 	txnArgs := types.TransactionOptions{
 		Client:          client,
-		Password:        modifyCollectionInput.Password,
-		AccountAddress:  modifyCollectionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
 		MethodName:      "setCollectionStatus",
 		Parameters:      []interface{}{modifyCollectionInput.Status, modifyCollectionInput.CollectionId},
 		ABI:             bindings.CollectionManagerMetaData.ABI,
+		Account:         modifyCollectionInput.Account,
 	}
 
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)

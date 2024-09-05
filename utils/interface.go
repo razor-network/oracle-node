@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/rpc"
 	"io"
 	"io/fs"
 	"math/big"
@@ -32,7 +33,6 @@ import (
 //go:generate mockery --name ABIUtils --output ./mocks --case=underscore
 //go:generate mockery --name PathUtils --output ./mocks --case=underscore
 //go:generate mockery --name BindUtils --output ./mocks --case=underscore
-//go:generate mockery --name AccountsUtils --output ./mocks --case=underscore
 //go:generate mockery --name BlockManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name AssetManagerUtils --output ./mocks --case=underscore
 //go:generate mockery --name VoteManagerUtils --output ./mocks --case=underscore
@@ -56,7 +56,6 @@ var IOInterface IOUtils
 var ABIInterface ABIUtils
 var PathInterface PathUtils
 var BindInterface BindUtils
-var AccountsInterface AccountsUtils
 var BlockManagerInterface BlockManagerUtils
 var StakeManagerInterface StakeManagerUtils
 var AssetManagerInterface AssetManagerUtils
@@ -111,23 +110,23 @@ type Utils interface {
 	GetNumCollections(client *ethclient.Client) (uint16, error)
 	GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error)
 	GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
-	GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
-	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error)
-	GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error)
-	GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error)
+	GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error)
+	Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error)
+	GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams *types.CommitParams) ([]*big.Int, []uint8)
+	GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error)
 	GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
 	GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
 	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
 	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
-	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error)
+	GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error)
 	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
 	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
 	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
-	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16)
+	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
-	GetBufferedState(client *ethclient.Client, buffer int32) (int64, error)
+	GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error)
 	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
 	CheckEthBalanceIsZero(client *ethclient.Client, address string)
 	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
@@ -157,7 +156,8 @@ type Utils interface {
 	GetRogueRandomValue(value int) *big.Int
 	GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
 	GetStakerSRZRBalance(client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
-	CheckPassword(address string, password string) error
+	CheckPassword(account types.Account) error
+	AccountManagerForKeystore() (types.AccountManagerInterface, error)
 }
 
 type EthClientUtils interface {
@@ -178,6 +178,9 @@ type ClientUtils interface {
 	FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]Types.Log, error)
 	BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error)
 	GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error)
+	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
+	CreateBatchCalls(contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([]rpc.BatchElem, error)
+	BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error)
 }
 
 type TimeUtils interface {
@@ -216,10 +219,6 @@ type PathUtils interface {
 
 type BindUtils interface {
 	NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error)
-}
-
-type AccountsUtils interface {
-	GetPrivateKey(address string, password string, keystorePath string) (*ecdsa.PrivateKey, error)
 }
 
 type BlockManagerUtils interface {
@@ -322,7 +321,6 @@ type IOStruct struct{}
 type ABIStruct struct{}
 type PathStruct struct{}
 type BindStruct struct{}
-type AccountsStruct struct{}
 type BlockManagerStruct struct{}
 type StakeManagerStruct struct{}
 type AssetManagerStruct struct{}
@@ -347,7 +345,6 @@ type OptionsPackageStruct struct {
 	ABIInterface          ABIUtils
 	PathInterface         PathUtils
 	BindInterface         BindUtils
-	AccountsInterface     AccountsUtils
 	BlockManagerInterface BlockManagerUtils
 	StakeManagerInterface StakeManagerUtils
 	AssetManagerInterface AssetManagerUtils

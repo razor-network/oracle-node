@@ -1,16 +1,13 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -19,17 +16,12 @@ import (
 )
 
 func TestCreateCollection(t *testing.T) {
-
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	var client *ethclient.Client
 	var WaitForDisputeOrConfirmStateStatus uint32
 	var config types.Configurations
 	var collectionInput types.CreateCollectionInput
 
 	type args struct {
-		txnOpts                    *bind.TransactOpts
 		jobIdUint8                 []uint16
 		waitForAppropriateStateErr error
 		createCollectionTxn        *Types.Transaction
@@ -45,7 +37,6 @@ func TestCreateCollection(t *testing.T) {
 		{
 			name: "Test 1: When CreateCollection function executes successfully",
 			args: args{
-				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				hash:                common.BigToHash(big.NewInt(1)),
@@ -56,7 +47,6 @@ func TestCreateCollection(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in WaitForConfirmState",
 			args: args{
-				txnOpts:                    txnOpts,
 				jobIdUint8:                 []uint16{1, 2},
 				waitForAppropriateStateErr: errors.New("waitForDisputeOrConfirmState error"),
 				createCollectionTxn:        &Types.Transaction{},
@@ -68,7 +58,6 @@ func TestCreateCollection(t *testing.T) {
 		{
 			name: "Test 3: When CreateCollection transaction fails",
 			args: args{
-				txnOpts:             txnOpts,
 				jobIdUint8:          []uint16{1, 2},
 				createCollectionTxn: &Types.Transaction{},
 				createCollectionErr: errors.New("createCollection error"),
@@ -83,7 +72,7 @@ func TestCreateCollection(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
 			assetManagerMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
@@ -287,7 +276,8 @@ func TestExecuteCreateCollection(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetMock.On("GetStringName", flagSet).Return(tt.args.name, tt.args.nameErr)
 			flagSetMock.On("GetUintSliceJobIds", flagSet).Return(tt.args.jobId, tt.args.jobIdErr)

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
@@ -15,6 +16,8 @@ func TestGetEpochAndState(t *testing.T) {
 	type args struct {
 		epoch            uint32
 		epochErr         error
+		latestHeader     *Types.Header
+		latestHeaderErr  error
 		bufferPercent    int32
 		bufferPercentErr error
 		state            int64
@@ -32,6 +35,7 @@ func TestGetEpochAndState(t *testing.T) {
 			name: "Test 1: When GetEpochAndState function executes successfully",
 			args: args{
 				epoch:         4,
+				latestHeader:  &Types.Header{},
 				bufferPercent: 20,
 				state:         0,
 				stateName:     "commit",
@@ -44,6 +48,7 @@ func TestGetEpochAndState(t *testing.T) {
 			name: "Test 2: When there is an error in getting epoch",
 			args: args{
 				epochErr:      errors.New("epoch error"),
+				latestHeader:  &Types.Header{},
 				bufferPercent: 20,
 				state:         0,
 				stateName:     "commit",
@@ -56,6 +61,7 @@ func TestGetEpochAndState(t *testing.T) {
 			name: "Test 3: When there is an error in getting bufferPercent",
 			args: args{
 				epoch:            4,
+				latestHeader:     &Types.Header{},
 				bufferPercentErr: errors.New("bufferPercent error"),
 				state:            0,
 				stateName:        "commit",
@@ -68,12 +74,26 @@ func TestGetEpochAndState(t *testing.T) {
 			name: "Test 4: When there is an error in getting state",
 			args: args{
 				epoch:         4,
+				latestHeader:  &Types.Header{},
 				bufferPercent: 20,
 				stateErr:      errors.New("state error"),
 			},
 			wantEpoch: 0,
 			wantState: 0,
 			wantErr:   errors.New("state error"),
+		},
+		{
+			name: "Test 5: When there is an error in getting latest header",
+			args: args{
+				epoch:           4,
+				latestHeaderErr: errors.New("header error"),
+				bufferPercent:   20,
+				state:           0,
+				stateName:       "commit",
+			},
+			wantEpoch: 0,
+			wantState: 0,
+			wantErr:   errors.New("header error"),
 		},
 	}
 	for _, tt := range tests {
@@ -82,7 +102,8 @@ func TestGetEpochAndState(t *testing.T) {
 
 			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("int32")).Return(tt.args.state, tt.args.stateErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 
 			utils := &UtilsStruct{}
 			gotEpoch, gotState, err := utils.GetEpochAndState(client)
