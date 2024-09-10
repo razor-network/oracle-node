@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -21,15 +22,15 @@ import (
 GetSalt calculates the salt on the basis of previous epoch and the medians of the previous epoch.
 If the previous epoch doesn't contain any medians, then the value is fetched from the smart contract.
 */
-func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
+func (*UtilsStruct) GetSalt(ctx context.Context, client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
 	log.Debug("GetSalt: Previous epoch: ", previousEpoch)
-	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(client, previousEpoch)
+	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(ctx, client, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
 	log.Debug("GetSalt: Number of proposed blocks: ", numProposedBlock)
-	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
+	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(ctx, client)
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -37,12 +38,12 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
+	blockId, err := razorUtils.GetSortedProposedBlockId(ctx, client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
 	log.Debug("GetSalt: Block Id: ", blockId)
-	previousBlock, err := razorUtils.GetProposedBlock(client, previousEpoch, blockId)
+	previousBlock, err := razorUtils.GetProposedBlock(ctx, client, previousEpoch, blockId)
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
 	}

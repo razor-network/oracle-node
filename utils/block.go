@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/pkg/bindings"
@@ -13,24 +14,24 @@ func (*UtilsStruct) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings
 	return UtilsInterface.GetBlockManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetNumberOfProposedBlocks(client *ethclient.Client, epoch uint32) (uint8, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "GetNumProposedBlocks", client, epoch)
+func (*UtilsStruct) GetNumberOfProposedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (uint8, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetNumProposedBlocks", client, epoch)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint8), nil
 }
 
-func (*UtilsStruct) GetProposedBlock(client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "GetProposedBlock", client, epoch, proposedBlockId)
+func (*UtilsStruct) GetProposedBlock(ctx context.Context, client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetProposedBlock", client, epoch, proposedBlockId)
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
 	return returnedValues[0].Interface().(bindings.StructsBlock), nil
 }
 
-func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error) {
-	block, err := UtilsInterface.GetBlock(client, epoch)
+func (*UtilsStruct) FetchPreviousValue(ctx context.Context, client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error) {
+	block, err := UtilsInterface.GetBlock(ctx, client, epoch)
 	if err != nil {
 		return big.NewInt(0), err
 	}
@@ -40,24 +41,24 @@ func (*UtilsStruct) FetchPreviousValue(client *ethclient.Client, epoch uint32, a
 	return block.Medians[assetId-1], nil
 }
 
-func (*UtilsStruct) GetBlock(client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "GetBlock", client, epoch)
+func (*UtilsStruct) GetBlock(ctx context.Context, client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetBlock", client, epoch)
 	if err != nil {
 		return bindings.StructsBlock{}, err
 	}
 	return returnedValues[0].Interface().(bindings.StructsBlock), nil
 }
 
-func (*UtilsStruct) GetMinStakeAmount(client *ethclient.Client) (*big.Int, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "MinStake", client)
+func (*UtilsStruct) GetMinStakeAmount(ctx context.Context, client *ethclient.Client) (*big.Int, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "MinStake", client)
 	if err != nil {
 		return nil, err
 	}
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetStateBuffer(client *ethclient.Client) (uint64, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "StateBuffer", client)
+func (*UtilsStruct) GetStateBuffer(ctx context.Context, client *ethclient.Client) (uint64, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "StateBuffer", client)
 	if err != nil {
 		return 0, err
 	}
@@ -65,31 +66,31 @@ func (*UtilsStruct) GetStateBuffer(client *ethclient.Client) (uint64, error) {
 	return uint64(stateBufferUint8), nil
 }
 
-func (*UtilsStruct) GetMaxAltBlocks(client *ethclient.Client) (uint8, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "MaxAltBlocks", client)
+func (*UtilsStruct) GetMaxAltBlocks(ctx context.Context, client *ethclient.Client) (uint8, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "MaxAltBlocks", client)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint8), nil
 }
 
-func (*UtilsStruct) GetSortedProposedBlockId(client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "SortedProposedBlockIds", client, epoch, index)
+func (*UtilsStruct) GetSortedProposedBlockId(ctx context.Context, client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "SortedProposedBlockIds", client, epoch, index)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint32), nil
 }
 
-func (*UtilsStruct) GetSortedProposedBlockIds(client *ethclient.Client, epoch uint32) ([]uint32, error) {
-	numberOfProposedBlocks, err := UtilsInterface.GetNumberOfProposedBlocks(client, epoch)
+func (*UtilsStruct) GetSortedProposedBlockIds(ctx context.Context, client *ethclient.Client, epoch uint32) ([]uint32, error) {
+	numberOfProposedBlocks, err := UtilsInterface.GetNumberOfProposedBlocks(ctx, client, epoch)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	var sortedProposedBlockIds []uint32
 	for i := 0; i < int(numberOfProposedBlocks); i++ {
-		id, err := UtilsInterface.GetSortedProposedBlockId(client, epoch, big.NewInt(int64(i)))
+		id, err := UtilsInterface.GetSortedProposedBlockId(ctx, client, epoch, big.NewInt(int64(i)))
 		if err != nil {
 			log.Error(err)
 			return nil, err
@@ -99,16 +100,16 @@ func (*UtilsStruct) GetSortedProposedBlockIds(client *ethclient.Client, epoch ui
 	return sortedProposedBlockIds, nil
 }
 
-func (*UtilsStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "GetBlockIndexToBeConfirmed", client)
+func (*UtilsStruct) GetBlockIndexToBeConfirmed(ctx context.Context, client *ethclient.Client) (int8, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetBlockIndexToBeConfirmed", client)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(int8), nil
 }
 
-func (*UtilsStruct) GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(BlockManagerInterface, "GetEpochLastProposed", client, stakerId)
+func (*UtilsStruct) GetEpochLastProposed(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetEpochLastProposed", client, stakerId)
 	if err != nil {
 		return 0, err
 	}

@@ -164,7 +164,7 @@ type UtilsCmdInterface interface {
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
 	ClaimBlockReward(options types.TransactionOptions) (common.Hash, error)
-	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
+	GetSalt(ctx context.Context, client *ethclient.Client, epoch uint32) ([32]byte, error)
 	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
 	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, seed []byte, values []*big.Int) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
@@ -206,8 +206,8 @@ type UtilsCmdInterface interface {
 	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
 	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
-	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
-	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	GetIteration(ctx context.Context, client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
+	Propose(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
 	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
 	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
 	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
@@ -228,8 +228,8 @@ type UtilsCmdInterface interface {
 	ImportAccount() (accounts.Account, error)
 	ExecuteUpdateCommission(flagSet *pflag.FlagSet)
 	UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error
-	GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
-	GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
+	GetBiggestStakeAndId(ctx context.Context, client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
+	GetSmallestStakeAndId(ctx context.Context, client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
 	HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, header *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string)
@@ -239,9 +239,9 @@ type UtilsCmdInterface interface {
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
 	ExecuteStake(flagSet *pflag.FlagSet)
-	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error
-	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
-	InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	InitiateCommit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error
+	InitiateReveal(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	InitiatePropose(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
 	GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
 	HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
 	ExecuteContractAddresses(flagSet *pflag.FlagSet)
