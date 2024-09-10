@@ -110,9 +110,10 @@ func CheckIfAnyError(result []reflect.Value) error {
 	return nil
 }
 
-func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
+func InvokeFunctionWithRetryAttempts(ctx context.Context, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
 	var returnedValues []reflect.Value
 	var err error
+	var contextError bool
 	inputs := make([]reflect.Value, len(args))
 	for i := range args {
 		inputs[i] = reflect.ValueOf(args[i])
@@ -126,16 +127,31 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 	}
 	err = retry.Do(
 		func() error {
-			returnedValues = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
-			err = CheckIfAnyError(returnedValues)
-			if err != nil {
-				log.Debug("Function to retry: ", methodName)
-				log.Errorf("Error in %v....Retrying", methodName)
-				return err
+			// Check if the context has been cancelled or timed out
+			select {
+			case <-ctx.Done():
+				// If context is done, return the context error timeout
+				log.Debugf("Context timed out for method: %s", methodName)
+				contextError = true
+				return retry.Unrecoverable(ctx.Err())
+			default:
+				// Proceed with the RPC call
+				returnedValues = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
+				err = CheckIfAnyError(returnedValues)
+				if err != nil {
+					log.Debug("Function to retry: ", methodName)
+					log.Errorf("Error in %v....Retrying", methodName)
+					return err
+				}
+				return nil
 			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries), retry.Delay(time.Second*time.Duration(core.RetryDelayDuration)), retry.DelayType(retry.FixedDelay))
+		}, RetryInterface.RetryAttempts(core.MaxRetries))
 	if err != nil {
+		if contextError {
+			// Skip the alternate client switch when the error is context-related
+			log.Warnf("Skipping alternate client switch due to context error: %v", err)
+			return returnedValues, err
+		}
 		if !switchToAlternateClient && alternateProvider != "" {
 			log.Errorf("%v error after retries: %v", methodName, err)
 			log.Info("Switching RPC to alternate RPC")
