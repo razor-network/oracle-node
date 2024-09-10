@@ -25,9 +25,9 @@ then
   BUFFER=5
 fi
 
-read -rp "Wait Time: (5) " WAIT_TIME
+read -rp "Wait Time: (1) " WAIT_TIME
 if [ -z "$WAIT_TIME" ]; then
-   WAIT_TIME=5
+   WAIT_TIME=1
 fi
 
 read -rp "Gas Price: (1) " GAS_PRICE
