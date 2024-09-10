@@ -126,7 +126,7 @@ type Utils interface {
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
-	GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error)
+	GetBufferedState(header *Types.Header, stateBuffer uint64, buffer int32) (int64, error)
 	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
 	CheckEthBalanceIsZero(client *ethclient.Client, address string)
 	AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
@@ -145,7 +145,7 @@ type Utils interface {
 	CalculateSalt(epoch uint32, medians []*big.Int) [32]byte
 	ToAssign(client *ethclient.Client) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
-	GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error)
+	GetRemainingTimeOfCurrentState(client *ethclient.Client, stateBuffer uint64, bufferPercent int32) (int64, error)
 	SecondsToReadableTime(input int) string
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)

@@ -31,8 +31,8 @@ var globalProposedDataStruct types.ProposeFileData
 // Find iteration using salt as seed
 
 //This functions handles the propose state
-func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, rogueData types.Rogue) error {
-	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 2 {
+func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
+	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return err
 	}
@@ -238,7 +238,12 @@ func (*UtilsStruct) GetIteration(client *ethclient.Client, proposer types.Electe
 	}
 	log.Debug("GetIteration: Stake: ", stake)
 	currentStakerStake := big.NewInt(1).Mul(stake, big.NewInt(int64(math.Exp2(32))))
-	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, bufferPercent)
+	stateBuffer, err := razorUtils.GetStateBuffer(client)
+	if err != nil {
+		log.Error("Error in getting state buffer: ", err)
+		return -1
+	}
+	stateRemainingTime, err := razorUtils.GetRemainingTimeOfCurrentState(client, stateBuffer, bufferPercent)
 	if err != nil {
 		return -1
 	}

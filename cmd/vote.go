@@ -191,7 +191,12 @@ var (
 
 //This function handles the block
 func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, latestHeader *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
-	state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent)
+	stateBuffer, err := razorUtils.GetStateBuffer(client)
+	if err != nil {
+		log.Error("Error in getting state buffer: ", err)
+		return
+	}
+	state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent)
 	if err != nil {
 		log.Error("Error in getting state: ", err)
 		return
@@ -255,24 +260,33 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		osUtils.Exit(0)
 	}
 
+	remainingTimeOfTheCurrentState, err := razorUtils.GetRemainingTimeOfCurrentState(client, stateBuffer, config.BufferPercent)
+	if err != nil {
+		log.Error("Error in getting remaining time of the current state: ", err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(remainingTimeOfTheCurrentState)*time.Second)
+	defer cancel()
+
 	switch state {
 	case 0:
 		log.Debugf("Starting commit...")
-		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, latestHeader, commitParams, rogueData)
+		err := cmdUtils.InitiateCommit(client, config, account, epoch, stakerId, latestHeader, commitParams, stateBuffer, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 1:
 		log.Debugf("Starting reveal...")
-		err := cmdUtils.InitiateReveal(client, config, account, epoch, staker, latestHeader, rogueData)
+		err := cmdUtils.InitiateReveal(client, config, account, epoch, staker, latestHeader, stateBuffer, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
 		}
 	case 2:
 		log.Debugf("Starting propose...")
-		err := cmdUtils.InitiatePropose(client, config, account, epoch, staker, latestHeader, rogueData)
+		err := cmdUtils.InitiatePropose(client, config, account, epoch, staker, latestHeader, stateBuffer, rogueData)
 		if err != nil {
 			log.Error(err)
 			break
@@ -340,7 +354,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 }
 
 //This function initiates the commit
-func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error {
 	lastCommit, err := razorUtils.GetEpochLastCommitted(client, stakerId)
 	if err != nil {
 		return errors.New("Error in fetching last commit: " + err.Error())
@@ -395,7 +409,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 	}
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, latestHeader, seed, commitData.Leaves)
+	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, latestHeader, stateBuffer, seed, commitData.Leaves)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
@@ -431,7 +445,7 @@ func (*UtilsStruct) InitiateCommit(client *ethclient.Client, config types.Config
 }
 
 //This function initiates the reveal
-func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiateReveal: Staked Amount: ", stakedAmount)
 	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
@@ -542,7 +556,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 			SeqAllottedCollections: globalCommitDataStruct.SeqAllottedCollections,
 		}
 		log.Debugf("InitiateReveal: Calling Reveal() with arguments epoch = %d, commitDataToSend = %+v, signature = %v", epoch, commitDataToSend, signature)
-		revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, latestHeader, commitDataToSend, signature)
+		revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, latestHeader, stateBuffer, commitDataToSend, signature)
 		if err != nil {
 			return errors.New("Reveal error: " + err.Error())
 		}
@@ -561,7 +575,7 @@ func (*UtilsStruct) InitiateReveal(client *ethclient.Client, config types.Config
 }
 
 //This function initiates the propose
-func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiatePropose: Staked Amount: ", stakedAmount)
 	minStakeAmount, err := razorUtils.GetMinStakeAmount(client)
@@ -594,7 +608,7 @@ func (*UtilsStruct) InitiatePropose(client *ethclient.Client, config types.Confi
 	}
 
 	log.Debugf("InitiatePropose: Calling Propose() with arguments staker = %+v, epoch = %d, blockNumber = %s, rogueData = %+v", staker, epoch, latestHeader.Number, rogueData)
-	err = cmdUtils.Propose(client, config, account, staker, epoch, latestHeader, rogueData)
+	err = cmdUtils.Propose(client, config, account, staker, epoch, latestHeader, stateBuffer, rogueData)
 	if err != nil {
 		return errors.New("Propose error: " + err.Error())
 	}

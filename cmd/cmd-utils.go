@@ -32,7 +32,12 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 		log.Error("Error in fetching block: ", err)
 		return 0, 0, err
 	}
-	state, err := razorUtils.GetBufferedState(client, latestHeader, bufferPercent)
+	stateBuffer, err := razorUtils.GetStateBuffer(client)
+	if err != nil {
+		log.Error("Error in getting state buffer: ", err)
+		return 0, 0, err
+	}
+	state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, bufferPercent)
 	if err != nil {
 		return 0, 0, err
 	}

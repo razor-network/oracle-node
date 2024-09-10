@@ -53,11 +53,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	return balance, nil
 }
 
-func (*UtilsStruct) GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error) {
-	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
-	if err != nil {
-		return -1, err
-	}
+func (*UtilsStruct) GetBufferedState(header *Types.Header, stateBuffer uint64, buffer int32) (int64, error) {
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if header.Time%(core.StateLength) > upperLimit-stateBuffer || header.Time%(core.StateLength) < lowerLimit+stateBuffer {
@@ -191,12 +187,8 @@ func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
 
-func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
+func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, stateBuffer uint64, bufferPercent int32) (int64, error) {
 	block, err := ClientInterface.GetLatestBlockWithRetry(client)
-	if err != nil {
-		return 0, err
-	}
-	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
 	if err != nil {
 		return 0, err
 	}
