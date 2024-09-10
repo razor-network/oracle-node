@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -66,7 +67,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
-	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(context.Background(), flagSet, client, address)
 	utils.CheckError("StakerId error: ", err)
 
 	unstakeInput := types.UnstakeInput{
@@ -75,7 +76,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 		Account:    account,
 	}
 
-	txnHash, err := cmdUtils.Unstake(config, client, unstakeInput)
+	txnHash, err := cmdUtils.Unstake(context.Background(), config, client, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
 		err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
@@ -84,7 +85,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 }
 
 //This function allows user to unstake their sRZRs in the razor network
-func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
+func (*UtilsStruct) Unstake(ctx context.Context, config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Client:  client,
 		Amount:  input.ValueInWei,
@@ -93,7 +94,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 		Account: input.Account,
 	}
 	stakerId := input.StakerId
-	staker, err := razorUtils.GetStaker(client, stakerId)
+	staker, err := razorUtils.GetStaker(ctx, client, stakerId)
 	if err != nil {
 		log.Error("Error in getting staker: ", err)
 		return core.NilHash, err
@@ -119,7 +120,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	txnArgs.MethodName = "unstake"
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
-	unstakeLock, err := razorUtils.GetLock(txnArgs.Client, txnArgs.Account.Address, stakerId, 0)
+	unstakeLock, err := razorUtils.GetLock(ctx, txnArgs.Client, txnArgs.Account.Address, stakerId, 0)
 	if err != nil {
 		log.Error("Error in getting unstakeLock: ", err)
 		return core.NilHash, err
@@ -133,7 +134,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 	}
 
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(ctx, txnArgs)
 	log.Info("Unstaking coins")
 	log.Debugf("Executing Unstake transaction with stakerId = %d, amount = %s", stakerId, txnArgs.Amount)
 	txn, err := stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, txnArgs.Amount)
@@ -148,7 +149,7 @@ func (*UtilsStruct) Unstake(config types.Configurations, client *ethclient.Clien
 
 //This function approves the unstake
 func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
 	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, stakerTokenAddress, txnArgs.Amount)
 	if err != nil {

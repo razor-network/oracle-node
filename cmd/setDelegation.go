@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -65,7 +66,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 	status, err := stringUtils.ParseBool(statusString)
 	utils.CheckError("Error in parsing status to boolean: ", err)
 
-	stakerId, err := razorUtils.GetStakerId(client, address)
+	stakerId, err := razorUtils.GetStakerId(context.Background(), client, address)
 	utils.CheckError("StakerId error: ", err)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
@@ -79,7 +80,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 		Account:      account,
 	}
 
-	txn, err := cmdUtils.SetDelegation(client, config, delegationInput)
+	txn, err := cmdUtils.SetDelegation(context.Background(), client, config, delegationInput)
 	utils.CheckError("SetDelegation error: ", err)
 	if txn != core.NilHash {
 		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -88,8 +89,8 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the staker to start accepting/rejecting delegation requests
-func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
-	stakerInfo, err := razorUtils.GetStaker(client, delegationInput.StakerId)
+func (*UtilsStruct) SetDelegation(ctx context.Context, client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
+	stakerInfo, err := razorUtils.GetStaker(ctx, client, delegationInput.StakerId)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -100,7 +101,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 			Commission: delegationInput.Commission,
 			Account:    delegationInput.Account,
 		}
-		err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
+		err = cmdUtils.UpdateCommission(ctx, config, client, updateCommissionInput)
 		if err != nil {
 			return core.NilHash, err
 		}
@@ -122,7 +123,7 @@ func (*UtilsStruct) SetDelegation(client *ethclient.Client, config types.Configu
 		return core.NilHash, nil
 	}
 	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
-	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(ctx, txnOpts)
 	log.Debug("Executing SetDelegationAcceptance transaction with status ", delegationInput.Status)
 	delegationAcceptanceTxn, err := stakeManagerUtils.SetDelegationAcceptance(client, setDelegationAcceptanceTxnOpts, delegationInput.Status)
 	if err != nil {

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"razor/client"
 	"razor/core"
@@ -405,8 +406,8 @@ func setLogLevel(config types.Configurations) {
 	}
 }
 
-func ValidateBufferPercentLimit(client *ethclient.Client, bufferPercent int32) error {
-	stateBuffer, err := razorUtils.GetStateBuffer(client)
+func ValidateBufferPercentLimit(ctx context.Context, client *ethclient.Client, bufferPercent int32) error {
+	stateBuffer, err := razorUtils.GetStateBuffer(ctx, client)
 	if err != nil {
 		return err
 	}

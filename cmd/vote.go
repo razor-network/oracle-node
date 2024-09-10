@@ -54,7 +54,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	client := razorUtils.ConnectToClient(config.Provider)
 
-	err = ValidateBufferPercentLimit(client, config.BufferPercent)
+	err = ValidateBufferPercentLimit(context.Background(), client, config.BufferPercent)
 	utils.CheckError("Error in validating buffer percent: ", err)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
@@ -115,7 +115,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 
 	cmdUtils.HandleExit()
 
-	jobsCache, collectionsCache, initCacheBlockNumber, err := cmdUtils.InitJobAndCollectionCache(client)
+	jobsCache, collectionsCache, initCacheBlockNumber, err := cmdUtils.InitJobAndCollectionCache(context.Background(), client)
 	utils.CheckError("Error in initializing asset cache: ", err)
 
 	commitParams := &types.CommitParams{
@@ -298,7 +298,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			break
 		}
 
-		err := cmdUtils.HandleDispute(client, config, account, epoch, latestHeader.Number, rogueData, backupNodeActionsToIgnore)
+		err := cmdUtils.HandleDispute(ctx, client, config, account, epoch, latestHeader.Number, rogueData, backupNodeActionsToIgnore)
 		if err != nil {
 			log.Error(err)
 			break
@@ -319,7 +319,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Debugf("Last verification: %d", lastVerification)
 		log.Debugf("Block confirmed: %d", blockConfirmed)
 		if lastVerification == epoch && blockConfirmed < epoch {
-			txn, err := cmdUtils.ClaimBlockReward(types.TransactionOptions{
+			txn, err := cmdUtils.ClaimBlockReward(ctx, types.TransactionOptions{
 				Client:          client,
 				ChainId:         core.ChainId,
 				Config:          config,
@@ -365,7 +365,7 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 		return nil
 	}
 
-	err = CheckForJobAndCollectionEvents(client, commitParams)
+	err = CheckForJobAndCollectionEvents(ctx, client, commitParams)
 	if err != nil {
 		log.Error("Error in checking for asset events: ", err)
 		return err
@@ -396,19 +396,19 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 	keystorePath := filepath.Join(razorPath, "keystore_files")
 	log.Debugf("InitiateCommit: Keystore file path: %s", keystorePath)
 	log.Debugf("InitiateCommit: Calling CalculateSeed() with arguments keystorePath = %s, epoch = %d", keystorePath, epoch)
-	seed, err := CalculateSeed(client, account, keystorePath, epoch)
+	seed, err := CalculateSeed(ctx, client, account, keystorePath, epoch)
 	if err != nil {
 		return errors.New("Error in getting seed: " + err.Error())
 	}
 
 	log.Debugf("InitiateCommit: Calling HandleCommitState with arguments epoch = %d, seed = %v, rogueData = %+v", epoch, seed, rogueData)
-	commitData, err := cmdUtils.HandleCommitState(client, epoch, seed, commitParams, rogueData)
+	commitData, err := cmdUtils.HandleCommitState(ctx, client, epoch, seed, commitParams, rogueData)
 	if err != nil {
 		return errors.New("Error in getting active assets: " + err.Error())
 	}
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
-	commitTxn, err := cmdUtils.Commit(client, config, account, epoch, latestHeader, stateBuffer, seed, commitData.Leaves)
+	commitTxn, err := cmdUtils.Commit(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, commitData.Leaves)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
@@ -469,7 +469,7 @@ func (*UtilsStruct) InitiateReveal(ctx context.Context, client *ethclient.Client
 	}
 
 	log.Debugf("InitiateReveal: Calling CheckForLastCommitted with arguments staker = %+v, epoch = %d", staker, epoch)
-	if err := cmdUtils.CheckForLastCommitted(client, staker, epoch); err != nil {
+	if err := cmdUtils.CheckForLastCommitted(ctx, client, staker, epoch); err != nil {
 		log.Error(err)
 		return err
 	}
@@ -503,7 +503,7 @@ func (*UtilsStruct) InitiateReveal(ctx context.Context, client *ethclient.Client
 		log.Debugf("InitiateReveal: Keystore file path: %s", keystorePath)
 
 		log.Debugf("InitiateReveal: Calling VerifyCommitment() for address %v with arguments epoch = %v, values = %v", account.Address, epoch, committedDataFromFile.Leaves)
-		isCommittedDataFromFileValid, err := VerifyCommitment(client, account, keystorePath, epoch, committedDataFromFile.Leaves)
+		isCommittedDataFromFileValid, err := VerifyCommitment(ctx, client, account, keystorePath, epoch, committedDataFromFile.Leaves)
 		if err != nil {
 			log.Error("Error in verifying commitment for commit data from file: ", err)
 			return err
@@ -555,7 +555,7 @@ func (*UtilsStruct) InitiateReveal(ctx context.Context, client *ethclient.Client
 			SeqAllottedCollections: globalCommitDataStruct.SeqAllottedCollections,
 		}
 		log.Debugf("InitiateReveal: Calling Reveal() with arguments epoch = %d, commitDataToSend = %+v, signature = %v", epoch, commitDataToSend, signature)
-		revealTxn, err := cmdUtils.Reveal(client, config, account, epoch, latestHeader, stateBuffer, commitDataToSend, signature)
+		revealTxn, err := cmdUtils.Reveal(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitDataToSend, signature)
 		if err != nil {
 			return errors.New("Reveal error: " + err.Error())
 		}

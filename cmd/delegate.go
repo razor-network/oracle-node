@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -73,7 +74,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
 	log.Debug("Checking whether sFuel balance is not 0...")
-	razorUtils.CheckEthBalanceIsZero(client, address)
+	razorUtils.CheckEthBalanceIsZero(context.Background(), client, address)
 
 	txnArgs := types.TransactionOptions{
 		Client:  client,
@@ -105,7 +106,7 @@ func (*UtilsStruct) Delegate(txnArgs types.TransactionOptions, stakerId uint32) 
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
-	delegationTxnOpts := razorUtils.GetTxnOpts(txnArgs)
+	delegationTxnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
 	log.Info("Sending Delegate transaction...")
 	log.Debugf("Executing Delegate transaction with stakerId = %d, amount = %s", stakerId, txnArgs.Amount)
 	txn, err := stakeManagerUtils.Delegate(txnArgs.Client, delegationTxnOpts, stakerId, txnArgs.Amount)

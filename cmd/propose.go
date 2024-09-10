@@ -131,7 +131,7 @@ func (*UtilsStruct) Propose(ctx context.Context, client *ethclient.Client, confi
 		log.Info("Current iteration is less than iteration of last proposed block, can propose")
 	}
 	log.Debugf("Propose: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", latestHeader.Number, epoch, rogueData)
-	medians, ids, revealedDataMaps, err := cmdUtils.MakeBlock(client, latestHeader.Number, epoch, rogueData)
+	medians, ids, revealedDataMaps, err := cmdUtils.MakeBlock(ctx, client, latestHeader.Number, epoch, rogueData)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -351,9 +351,9 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 }
 
 //This function returns the sorted revealed values
-func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
+func (*UtilsStruct) GetSortedRevealedValues(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	log.Debugf("GetSortedRevealedValues: Calling IndexRevealEventsOfCurrentEpoch with arguments blockNumber = %s, epoch = %d", blockNumber, epoch)
-	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
+	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(ctx, client, blockNumber, epoch)
 	if err != nil {
 		return nil, err
 	}
@@ -398,9 +398,9 @@ func (*UtilsStruct) GetSortedRevealedValues(client *ethclient.Client, blockNumbe
 }
 
 //This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
-func (*UtilsStruct) MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
+func (*UtilsStruct) MakeBlock(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	log.Debugf("MakeBlock: Calling GetSortedRevealedValues with arguments blockNumber = %s, epoch = %d", blockNumber, epoch)
-	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(client, blockNumber, epoch)
+	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(ctx, client, blockNumber, epoch)
 	if err != nil {
 		return nil, nil, nil, err
 	}

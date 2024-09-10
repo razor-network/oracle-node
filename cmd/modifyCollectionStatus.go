@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -72,7 +73,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 		Account:      account,
 	}
 
-	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
+	txn, err := cmdUtils.ModifyCollectionStatus(context.Background(), client, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
 		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
@@ -87,7 +88,7 @@ func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, collectionId ui
 }
 
 //This function allows the admin to modify the active status of collection
-func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
+func (*UtilsStruct) ModifyCollectionStatus(ctx context.Context, client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
 	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyCollectionInput.CollectionId)
 	if err != nil {
 		log.Error("Error in fetching active status")
@@ -98,7 +99,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		log.Errorf("Collection %d has the active status already set to %t", modifyCollectionInput.CollectionId, modifyCollectionInput.Status)
 		return core.NilHash, nil
 	}
-	_, err = cmdUtils.WaitForAppropriateState(client, "modify collection status", 4)
+	_, err = cmdUtils.WaitForAppropriateState(ctx, client, "modify collection status", 4)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -114,7 +115,7 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		Account:         modifyCollectionInput.Account,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(ctx, txnArgs)
 	log.Infof("Changing active status of collection: %d from %t to %t", modifyCollectionInput.CollectionId, !modifyCollectionInput.Status, modifyCollectionInput.Status)
 	log.Debugf("Executing SetCollectionStatus transaction with status = %v, collectionId = %d", modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
 	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyCollectionInput.Status, modifyCollectionInput.CollectionId)

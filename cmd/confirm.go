@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/core"
 	"razor/core/types"
 
@@ -9,15 +10,15 @@ import (
 )
 
 //This function allows the user to claim the block reward and returns the hash
-func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
-	epoch, err := razorUtils.GetEpoch(options.Client)
+func (*UtilsStruct) ClaimBlockReward(ctx context.Context, options types.TransactionOptions) (common.Hash, error) {
+	epoch, err := razorUtils.GetEpoch(ctx, options.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("ClaimBlockReward: Epoch: ", epoch)
 
-	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(options.Client, epoch)
+	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(ctx, options.Client, epoch)
 	if err != nil {
 		log.Error("Error in getting sortedProposedBlockIds: ", err)
 		return core.NilHash, err
@@ -29,14 +30,14 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 		return core.NilHash, nil
 	}
 
-	stakerID, err := razorUtils.GetStakerId(options.Client, options.Account.Address)
+	stakerID, err := razorUtils.GetStakerId(ctx, options.Client, options.Account.Address)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("ClaimBlockReward: Staker Id: ", stakerID)
 
-	selectedProposedBlock, err := razorUtils.GetProposedBlock(options.Client, epoch, sortedProposedBlockIds[0])
+	selectedProposedBlock, err := razorUtils.GetProposedBlock(ctx, options.Client, epoch, sortedProposedBlockIds[0])
 	if err != nil {
 		log.Error("Error in getting selectedProposedBlock: ", err)
 		return core.NilHash, err
@@ -45,7 +46,7 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 
 	if selectedProposedBlock.ProposerId == stakerID {
 		log.Info("Claiming block reward...")
-		txnOpts := razorUtils.GetTxnOpts(options)
+		txnOpts := razorUtils.GetTxnOpts(ctx, options)
 		log.Debug("Executing ClaimBlockReward transaction...")
 		txn, err := blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
 		if err != nil {

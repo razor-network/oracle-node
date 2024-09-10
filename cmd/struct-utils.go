@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"errors"
 	"math/big"
@@ -693,8 +694,8 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 }
 
 //This function is used to give the sorted Ids
-func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
-	return GiveSorted(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
+func (*UtilsStruct) GiveSorted(ctx context.Context, client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	return GiveSorted(ctx, client, blockManager, txnArgs, epoch, assetId, sortedStakers)
 }
 
 //This function is used to write config as

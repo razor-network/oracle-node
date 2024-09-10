@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"os"
@@ -27,23 +28,23 @@ var (
 //blockId is id of the block
 
 //This function handles the dispute and if there is any error it returns the error
-func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+func (*UtilsStruct) HandleDispute(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 
-	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(client, epoch)
+	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(ctx, client, epoch)
 	if err != nil {
 		log.Error("Error in fetching sorted proposed block id: ", err)
 		return err
 	}
 	log.Debug("HandleDispute: SortedProposedBlockIds: ", sortedProposedBlockIds)
 
-	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, epoch)
+	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(ctx, client, epoch)
 	if err != nil {
 		return err
 	}
 	log.Debugf("HandleDispute: Biggest stake: %s, Biggest staker Id: %d", biggestStake, biggestStakerId)
 
 	log.Debugf("HandleDispute: Calling GetLocalMediansData() with arguments epoch = %d, blockNumber = %d, rogueData = %+v", epoch, blockNumber, rogueData)
-	locallyCalculatedData, err := cmdUtils.GetLocalMediansData(client, account, epoch, blockNumber, rogueData)
+	locallyCalculatedData, err := cmdUtils.GetLocalMediansData(ctx, client, account, epoch, blockNumber, rogueData)
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 	log.Debug("Iterating over random sorted proposed blocks to check dispute...")
 	for _, blockId := range randomSortedProposedBlockIds {
-		proposedBlock, err := razorUtils.GetProposedBlock(client, epoch, blockId)
+		proposedBlock, err := razorUtils.GetProposedBlock(ctx, client, epoch, blockId)
 		if err != nil {
 			log.Error(err)
 			continue
@@ -86,7 +87,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Debug("Biggest Stake in proposed block: ", proposedBlock.BiggestStake)
 			log.Warn("PROPOSED BIGGEST STAKE DOES NOT MATCH WITH ACTUAL BIGGEST STAKE")
 			log.Info("Disputing BiggestStakeProposed...")
-			txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+			txnOpts := razorUtils.GetTxnOpts(ctx, types.TransactionOptions{
 				Client:  client,
 				ChainId: core.ChainId,
 				Config:  config,
@@ -105,7 +106,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
 				log.Debug("Storing bounty Id in dispute data file....")
-				err = cmdUtils.StoreBountyId(client, account)
+				err = cmdUtils.StoreBountyId(ctx, client, account)
 				if err != nil {
 					log.Error(err)
 				}
@@ -118,7 +119,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 		log.Debug("HandleDispute: Revealed collection ids in the block ", proposedBlock.Ids)
 
 		log.Debugf("HandleDispute: Calling CheckDisputeForIds() with arguments epoch = %d, blockIndex = %d, proposed revealed Ids = %v, locally calculated revealed Ids = %v", epoch, blockIndex, proposedBlock.Ids, revealedCollectionIds)
-		idDisputeTxn, err := cmdUtils.CheckDisputeForIds(client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
+		idDisputeTxn, err := cmdUtils.CheckDisputeForIds(ctx, client, transactionOptions, epoch, uint8(blockIndex), proposedBlock.Ids, revealedCollectionIds)
 		if err != nil {
 			log.Error("Error in disputing: ", err)
 			continue
@@ -131,7 +132,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			//If dispute happens, then storing the bountyId into disputeData file
 			if WaitForBlockCompletionErr == nil {
 				log.Debug("Storing bounty Id in dispute data file...")
-				err = cmdUtils.StoreBountyId(client, account)
+				err = cmdUtils.StoreBountyId(ctx, client, account)
 				if err != nil {
 					log.Error(err)
 				}
@@ -171,7 +172,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 				}
 				log.Debug("HandleDispute: Leaf Id: ", leafId)
 				log.Debugf("Calling Dispute() with arguments epoch = %d, blockIndex = %d, proposed block = %+v, leafId = %d, sortedValues = %s", epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
-				disputeErr := cmdUtils.Dispute(client, config, account, epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
+				disputeErr := cmdUtils.Dispute(ctx, client, config, account, epoch, uint8(blockIndex), proposedBlock, leafId, sortedValues)
 				if disputeErr != nil {
 					log.Error("Error in disputing...", disputeErr)
 					continue
@@ -191,11 +192,11 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 }
 
 //This function returns the local median data
-func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
+func (*UtilsStruct) GetLocalMediansData(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	if rogueData.IsRogue {
 		// As the staker has proposed with incorrect medians in rogue mode so those values needs to be compared with the correct calculated medians
 		log.Debug("Staker proposed in rogue mode, now calculating medians correctly...")
-		return calculateMedian(client, account, epoch, blockNumber)
+		return calculateMedian(ctx, client, account, epoch, blockNumber)
 	}
 
 	// Fetching the data from file only if the node is not in rogue mode and
@@ -206,18 +207,18 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 		fileName, err := pathUtils.GetProposeDataFileName(account.Address)
 		if err != nil {
 			log.Error("Error in getting file name to read median data: ", err)
-			return calculateMedian(client, account, epoch, blockNumber)
+			return calculateMedian(ctx, client, account, epoch, blockNumber)
 		}
 		log.Debug("GetLocalMediansData: Propose data file path: ", fileName)
 		proposedData, err := fileUtils.ReadFromProposeJsonFile(fileName)
 		if err != nil {
 			log.Errorf("Error in getting propose data from file %s: %v", fileName, err)
-			return calculateMedian(client, account, epoch, blockNumber)
+			return calculateMedian(ctx, client, account, epoch, blockNumber)
 		}
 		log.Debugf("GetLocalMediansData: Proposed data from file: %+v", proposedData)
 		if proposedData.Epoch != epoch {
 			log.Errorf("File %s doesn't contain latest median data", fileName)
-			return calculateMedian(client, account, epoch, blockNumber)
+			return calculateMedian(ctx, client, account, epoch, blockNumber)
 		}
 		return proposedData, err
 	}
@@ -225,8 +226,8 @@ func (*UtilsStruct) GetLocalMediansData(client *ethclient.Client, account types.
 	return globalProposedDataStruct, nil
 }
 
-func calculateMedian(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int) (types.ProposeFileData, error) {
-	stakerId, err := razorUtils.GetStakerId(client, account.Address)
+func calculateMedian(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int) (types.ProposeFileData, error) {
+	stakerId, err := razorUtils.GetStakerId(ctx, client, account.Address)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
 		return types.ProposeFileData{}, err
@@ -235,7 +236,7 @@ func calculateMedian(client *ethclient.Client, account types.Account, epoch uint
 
 	log.Debug("Calculating the medians data again...")
 	log.Debugf("GetLocalMediansData: Calling MakeBlock() with arguments blockNumber = %s, epoch = %d, rogueData = %+v", blockNumber, epoch, types.Rogue{IsRogue: false})
-	medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(client, blockNumber, epoch, types.Rogue{IsRogue: false})
+	medians, revealedCollectionIds, revealedDataMaps, err := cmdUtils.MakeBlock(ctx, client, blockNumber, epoch, types.Rogue{IsRogue: false})
 	if err != nil {
 		log.Error("Error in calculating block medians: ", err)
 		return types.ProposeFileData{}, err
@@ -252,7 +253,7 @@ func calculateMedian(client *ethclient.Client, account types.Account, epoch uint
 }
 
 //This function check for the dispute in different type of Id's
-func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error) {
+func (*UtilsStruct) CheckDisputeForIds(ctx context.Context, client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error) {
 	//checking for hashing whether there is any dispute or not
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
 	log.Debug("CheckDisputeForIds: Hash of reveal Ids in proposed block: ", hashIdsInProposedBlock)
@@ -272,7 +273,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeOnOrderOfIds"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, index0, index1}
-		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		txnOpts := razorUtils.GetTxnOpts(ctx, transactionOpts)
 		log.Debug("Disputing sorted order of ids!")
 		log.Debugf("CheckDisputeForIds: Executing DisputeOnOrderOfIds transaction with arguments epoch: %d, blockIndex: %d, index0: %d, index1: %d", epoch, blockIndex, index0, index1)
 		return blockManagerUtils.DisputeOnOrderOfIds(client, txnOpts, epoch, blockIndex, big.NewInt(int64(index0)), big.NewInt(int64(index1)))
@@ -284,9 +285,9 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
-		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		txnOpts := razorUtils.GetTxnOpts(ctx, transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(ctx, client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -302,9 +303,9 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
-		txnOpts := razorUtils.GetTxnOpts(transactionOpts)
+		txnOpts := razorUtils.GetTxnOpts(ctx, transactionOpts)
 		gasLimit := txnOpts.GasLimit
-		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(client, gasLimit, core.DisputeGasMultiplier)
+		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(ctx, client, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -318,7 +319,7 @@ func (*UtilsStruct) CheckDisputeForIds(client *ethclient.Client, transactionOpts
 }
 
 //This function finalizes the dispute and return the error if there is any
-func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
+func (*UtilsStruct) Dispute(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	blockManager := razorUtils.GetBlockManager(client)
 
 	txnArgs := types.TransactionOptions{
@@ -342,13 +343,13 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 				end = lenOfSortedValues
 			}
 			log.Debugf("Dispute: Calling GiveSorted with arguments epoch = %d, leafId = %d, sortedValues = %s", epoch, leafId, sortedValues[start:end])
-			err := cmdUtils.GiveSorted(client, blockManager, txnArgs, epoch, leafId, sortedValues[start:end])
+			err := cmdUtils.GiveSorted(ctx, client, blockManager, txnArgs, epoch, leafId, sortedValues[start:end])
 			if err != nil {
 				if err.Error() == errors.New("gas limit reached").Error() {
 					end = end / 2
 				} else {
 					log.Error("Error in GiveSorted: ", err)
-					txnOpts := razorUtils.GetTxnOpts(txnArgs)
+					txnOpts := razorUtils.GetTxnOpts(ctx, txnArgs)
 					log.Debugf("Dispute: Calling CheckToDoResetDispute with arguments epoch = %d, sortedValues = %s", epoch, sortedValues)
 					cmdUtils.CheckToDoResetDispute(client, blockManager, txnOpts, epoch, sortedValues)
 					return err
@@ -377,7 +378,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	finalizeDisputeTxnArgs.MethodName = "finalizeDispute"
 	finalizeDisputeTxnArgs.ABI = bindings.BlockManagerMetaData.ABI
 	finalizeDisputeTxnArgs.Parameters = []interface{}{epoch, blockIndex, positionOfCollectionInBlock}
-	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(finalizeDisputeTxnArgs)
+	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(ctx, finalizeDisputeTxnArgs)
 
 	log.Debugf("Executing FinalizeDispute transaction with arguments epoch = %d, blockIndex = %d, positionOfCollectionInBlock = %d", epoch, blockIndex, positionOfCollectionInBlock)
 	finalizeTxn, err := blockManagerUtils.FinalizeDispute(client, finalizeDisputeTxnOpts, epoch, blockIndex, positionOfCollectionInBlock)
@@ -395,7 +396,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 		//If dispute happens, then storing the bountyId into disputeData file
 		if WaitForBlockCompletionErr == nil {
 			log.Debug("Storing bounty Id in dispute data file...")
-			err = cmdUtils.StoreBountyId(client, account)
+			err = cmdUtils.StoreBountyId(ctx, client, account)
 			if err != nil {
 				return err
 			}
@@ -412,7 +413,7 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	resetDisputeTxnArgs.MethodName = "resetDispute"
 	resetDisputeTxnArgs.ABI = bindings.BlockManagerMetaData.ABI
 	resetDisputeTxnArgs.Parameters = []interface{}{epoch}
-	resetDisputeTxnOpts := razorUtils.GetTxnOpts(resetDisputeTxnArgs)
+	resetDisputeTxnOpts := razorUtils.GetTxnOpts(ctx, resetDisputeTxnArgs)
 
 	cmdUtils.ResetDispute(client, blockManager, resetDisputeTxnOpts, epoch)
 
@@ -420,12 +421,12 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 }
 
 //This function sorts the Id's recursively
-func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
+func GiveSorted(ctx context.Context, client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
 	if len(sortedValues) == 0 {
 		return errors.New("length of sortedValues is 0")
 	}
 	callOpts := razorUtils.GetOptions()
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(ctx, txnArgs)
 	disputesMapping, err := blockManagerUtils.Disputes(client, &callOpts, epoch, common.HexToAddress(txnArgs.Account.Address))
 	if err != nil {
 		log.Error("Error in getting disputes mapping: ", disputesMapping)
@@ -481,7 +482,7 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, lea
 }
 
 //This function saves the bountyId in disputeData file and return the error if there is any
-func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Account) error {
+func (*UtilsStruct) StoreBountyId(ctx context.Context, client *ethclient.Client, account types.Account) error {
 	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
@@ -490,7 +491,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 
 	var latestBountyId uint32
 
-	latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
+	latestHeader, err := clientUtils.GetLatestBlockWithRetry(ctx, client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return err
@@ -498,7 +499,7 @@ func (*UtilsStruct) StoreBountyId(client *ethclient.Client, account types.Accoun
 	log.Debug("StoreBountyId: Latest header: ", latestHeader)
 
 	log.Debugf("StoreBountyId: Calling GetBountyIdFromEvents with arguments blockNumber = %d, address = %s", latestHeader.Number, account.Address)
-	latestBountyId, err = cmdUtils.GetBountyIdFromEvents(client, latestHeader.Number, account.Address)
+	latestBountyId, err = cmdUtils.GetBountyIdFromEvents(ctx, client, latestHeader.Number, account.Address)
 	if err != nil {
 		return err
 	}
@@ -545,7 +546,7 @@ func (*UtilsStruct) ResetDispute(client *ethclient.Client, blockManager *binding
 }
 
 //This function returns the bountyId from events
-func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+func (*UtilsStruct) GetBountyIdFromEvents(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error) {
 	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
 	if err != nil {
 		log.Error(err)
@@ -560,7 +561,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(client *ethclient.Client, blockNumber 
 		},
 	}
 	log.Debugf("GetBountyIdFromEvents: Query to send in filter logs: %+v", query)
-	logs, err := clientUtils.FilterLogsWithRetry(client, query)
+	logs, err := clientUtils.FilterLogsWithRetry(ctx, client, query)
 	if err != nil {
 		return 0, err
 	}

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -41,13 +42,13 @@ func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 	log.Debug("ExecuteStakerinfo: StakerId: ", stakerId)
 
 	log.Debug("ExecuteStakerinfo: Calling GetStakerInfo() with argument stakerId = ", stakerId)
-	err = cmdUtils.GetStakerInfo(client, stakerId)
+	err = cmdUtils.GetStakerInfo(context.Background(), client, stakerId)
 	utils.CheckError("Error in getting staker info: ", err)
 
 }
 
 //This function provides the staker details like age, stake, maturity etc.
-func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) error {
+func (*UtilsStruct) GetStakerInfo(ctx context.Context, client *ethclient.Client, stakerId uint32) error {
 	callOpts := razorUtils.GetOptions()
 	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
 	if err != nil {
@@ -57,11 +58,11 @@ func (*UtilsStruct) GetStakerInfo(client *ethclient.Client, stakerId uint32) err
 	if err != nil {
 		return err
 	}
-	epoch, err := razorUtils.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(ctx, client)
 	if err != nil {
 		return err
 	}
-	influence, err := razorUtils.GetInfluenceSnapshot(client, stakerId, epoch)
+	influence, err := razorUtils.GetInfluenceSnapshot(ctx, client, stakerId, epoch)
 	if err != nil {
 		return err
 	}
