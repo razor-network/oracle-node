@@ -16,7 +16,6 @@ import (
 	"razor/utils"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestCommit(t *testing.T) {
@@ -226,7 +225,7 @@ func TestHandleCommitState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			localCache := cache.NewLocalCache(time.Second * 10)
+			localCache := cache.NewLocalCache()
 			commitParams := &types.CommitParams{
 				LocalCache: localCache,
 			}
@@ -396,7 +395,7 @@ func BenchmarkHandleCommitState(b *testing.B) {
 	for _, v := range table {
 		b.Run(fmt.Sprintf("Number_Of_Active_Collections%d", v.numActiveCollections), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				localCache := cache.NewLocalCache(time.Second * 10)
+				localCache := cache.NewLocalCache()
 				commitParams := &types.CommitParams{
 					LocalCache: localCache,
 				}

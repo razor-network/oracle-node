@@ -11,51 +11,15 @@ type cachedData struct {
 }
 
 type LocalCache struct {
-	stop chan struct{}
-
-	wg   sync.WaitGroup
 	mu   sync.RWMutex
 	URLs map[string]cachedData //URLs
 }
 
-func NewLocalCache(cleanupInterval time.Duration) *LocalCache {
-	lc := &LocalCache{
+// NewLocalCache creates a new LocalCache instance
+func NewLocalCache() *LocalCache {
+	return &LocalCache{
 		URLs: make(map[string]cachedData),
-		stop: make(chan struct{}),
 	}
-
-	lc.wg.Add(1)
-	go func(cleanupInterval time.Duration) {
-		defer lc.wg.Done()
-		lc.cleanupLoop(cleanupInterval)
-	}(cleanupInterval)
-
-	return lc
-}
-
-func (lc *LocalCache) cleanupLoop(interval time.Duration) {
-	t := time.NewTicker(interval)
-	defer t.Stop()
-
-	for {
-		select {
-		case <-lc.stop:
-			return
-		case <-t.C:
-			lc.mu.Lock()
-			for url, cu := range lc.URLs {
-				if cu.expireAtTimestamp <= time.Now().Unix() {
-					delete(lc.URLs, url)
-				}
-			}
-			lc.mu.Unlock()
-		}
-	}
-}
-
-func (lc *LocalCache) StopCleanup() {
-	close(lc.stop)
-	lc.wg.Wait()
 }
 
 func (lc *LocalCache) Update(data []byte, url string, expireAtTimestamp int64) {
@@ -79,4 +43,27 @@ func (lc *LocalCache) Read(url string) ([]byte, bool) {
 	}
 
 	return cacheData.Result, true
+}
+
+// ClearAll deletes all entries in the cache
+func (lc *LocalCache) ClearAll() {
+	lc.mu.Lock()
+	defer lc.mu.Unlock()
+
+	for key := range lc.URLs {
+		delete(lc.URLs, key)
+	}
+}
+
+// Cleanup removes expired cache entries
+func (lc *LocalCache) Cleanup() {
+	lc.mu.Lock()
+	defer lc.mu.Unlock()
+
+	for url, data := range lc.URLs {
+		// Remove expired data after the expireAtTimestamp is passed
+		if data.expireAtTimestamp <= time.Now().Unix() {
+			delete(lc.URLs, url)
+		}
+	}
 }

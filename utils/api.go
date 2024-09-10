@@ -36,7 +36,7 @@ func GetDataFromAPI(commitParams *types.CommitParams, dataSourceURLStruct types.
 		return nil, err
 	}
 
-	// Storing the data into cache
+	// Storing the API results data into cache
 	commitParams.LocalCache.Update(response, cacheKey, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
 	return response, nil
 }
