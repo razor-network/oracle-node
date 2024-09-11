@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -75,13 +76,13 @@ func TestUpdateCollection(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(jobIdUint16)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			cmdUtilsMock.On("WaitIfCommitState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			cmdUtilsMock.On("WaitIfCommitState", mock.Anything, mock.Anything, mock.Anything).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
 			assetManagerMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.UpdateCollection(client, config, collectionInput, collectionId)
+			got, err := utils.UpdateCollection(context.Background(), client, config, collectionInput, collectionId)
 
 			if got != tt.want {
 				t.Errorf("Txn hash for updateCollection function, got = %v, want = %v", got, tt.want)
@@ -285,7 +286,7 @@ func TestExecuteUpdateCollection(t *testing.T) {
 			flagSetMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
 			flagSetMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("UpdateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
+			cmdUtilsMock.On("UpdateCollection", mock.Anything, mock.Anything, config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
 			flagSetMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 

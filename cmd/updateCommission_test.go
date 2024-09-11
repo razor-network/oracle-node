@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"razor/accounts"
 	"razor/core/types"
@@ -190,18 +191,18 @@ func TestUpdateCommission(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			utilsMock.On("GetMaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
-			utilsMock.On("GetEpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
+			utilsMock.On("GetMaxCommission", mock.Anything, mock.Anything).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
+			utilsMock.On("GetEpochLimitForUpdateCommission", mock.Anything, mock.Anything).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			stakeManagerMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionTxn, tt.args.UpdateCommissionErr)
 
 			utils := &UtilsStruct{}
-			gotErr := utils.UpdateCommission(config, client, types.UpdateCommissionInput{
+			gotErr := utils.UpdateCommission(context.Background(), config, client, types.UpdateCommissionInput{
 				Commission: tt.args.commission,
 			})
 			if gotErr == nil || tt.wantErr == nil {
@@ -338,9 +339,9 @@ func TestExecuteUpdateCommission(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
+			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

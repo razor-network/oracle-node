@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -130,14 +131,14 @@ func TestGetEpochAndState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsMock.On("GetStateBuffer", mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			utilsMock.On("GetStateBuffer", mock.Anything, mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 
 			utils := &UtilsStruct{}
-			gotEpoch, gotState, err := utils.GetEpochAndState(client)
+			gotEpoch, gotState, err := utils.GetEpochAndState(context.Background(), client)
 			if gotEpoch != tt.wantEpoch {
 				t.Errorf("GetEpochAndState() got epoch = %v, want %v", gotEpoch, tt.wantEpoch)
 			}
@@ -221,10 +222,10 @@ func TestWaitForAppropriateState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
+			cmdUtilsMock.On("GetEpochAndState", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
 			utils := &UtilsStruct{}
-			got, err := utils.WaitForAppropriateState(client, tt.args.action, tt.args.states)
+			got, err := utils.WaitForAppropriateState(context.Background(), client, tt.args.action, tt.args.states)
 			if got != tt.want {
 				t.Errorf("WaitForAppropriateState() function, got = %v, want = %v", got, tt.want)
 			}
@@ -278,12 +279,12 @@ func TestWaitIfCommitState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			cmdUtilsMock.On("GetEpochAndState", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
+			cmdUtilsMock.On("GetEpochAndState", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.WaitIfCommitState(client, action)
+			got, err := utils.WaitIfCommitState(context.Background(), client, action)
 			if got != tt.want {
 				t.Errorf("WaitIfCommitState() function, got = %v, want = %v", got, tt.want)
 			}

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/viper"
@@ -1243,9 +1244,9 @@ func TestValidateBufferPercentLimit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetStateBuffer", mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
+			utilsMock.On("GetStateBuffer", mock.Anything, mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 
-			err := ValidateBufferPercentLimit(client, tt.args.bufferPercent)
+			err := ValidateBufferPercentLimit(context.Background(), client, tt.args.bufferPercent)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for GetEpochAndState function, got = %v, want = %v", err, tt.wantErr)

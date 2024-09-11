@@ -213,19 +213,15 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(utilsPkgMocks.Utils)
-			stakeManagerMock := new(mocks.StakeManagerInterface)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetOptions").Return(callOpts)
 			stakeManagerMock.On("StakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
 			stakeManagerMock.On("GetMaturity", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.maturity, tt.args.maturityErr)
-			utilsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influence, tt.args.influenceErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetInfluenceSnapshot", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.influence, tt.args.influenceErr)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			utils := &UtilsStruct{}
-			err := utils.GetStakerInfo(tt.args.client, tt.args.stakerId)
+			err := utils.GetStakerInfo(context.Background(), tt.args.client, tt.args.stakerId)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for StakerInfo function, got = %v, want %v", err, tt.wantErr)
