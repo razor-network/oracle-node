@@ -182,7 +182,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 
 			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
-			utilsMock.On("GetWithdrawInitiationPeriod", mock.Anything).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
+			utilsMock.On("GetWithdrawInitiationPeriod", mock.Anything, mock.Anything).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)

@@ -317,7 +317,7 @@ func TestUtilsStruct_ExecuteStakerinfo(t *testing.T) {
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("GetStakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfoErr)
+			cmdUtilsMock.On("GetStakerInfo", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerInfoErr)
 
 			utils := &UtilsStruct{}
 			fatal = false
