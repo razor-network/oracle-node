@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -61,7 +62,7 @@ func TestGetStakerSRZRBalance(t *testing.T) {
 			stakedTokenMock.On("BalanceOf", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sRZR, tt.args.sRZRErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetStakerSRZRBalance(client, staker)
+			got, err := utils.GetStakerSRZRBalance(context.Background(), client, staker)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakerSRZRBalance() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/core/types"
@@ -63,7 +64,7 @@ func TestGetEpochLimitForUpdateCommission(t *testing.T) {
 			stakeManagerMock.On("EpochLimitForUpdateCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epochLimitForUpdateCommission, tt.args.epochLimitForUpdateCommissionErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetEpochLimitForUpdateCommission(client)
+			got, err := utils.GetEpochLimitForUpdateCommission(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEpochLimitForUpdateCommission() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -135,11 +136,11 @@ func TestGetLock(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 			stakeManagerMock.On("Locks", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.AnythingOfType("uint8")).Return(tt.args.locks, tt.args.locksErr)
 
-			got, err := utils.GetLock(client, address, stakerId, lockType)
+			got, err := utils.GetLock(context.Background(), client, address, stakerId, lockType)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLock() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -197,7 +198,7 @@ func TestGetMaxCommission(t *testing.T) {
 			stakeManagerMock.On("MaxCommission", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxCommission, tt.args.maxCommissionErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetMaxCommission(client)
+			got, err := utils.GetMaxCommission(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetMaxCommission() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -255,7 +256,7 @@ func TestGetNumberOfStakers(t *testing.T) {
 			stakeManagerMock.On("GetNumStakers", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numStakers, tt.args.numStakersErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumberOfStakers(client)
+			got, err := utils.GetNumberOfStakers(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumberOfStakers() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -314,7 +315,7 @@ func TestGetStake(t *testing.T) {
 			stakeManagerMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetStake(client, stakerId)
+			got, err := utils.GetStake(context.Background(), client, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStake() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -373,7 +374,7 @@ func TestGetStaker(t *testing.T) {
 			stakeManagerMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetStaker(client, stakerId)
+			got, err := utils.GetStaker(context.Background(), client, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStaker() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -432,7 +433,7 @@ func TestGetStakerId(t *testing.T) {
 			stakeManagerMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetStakerId(client, account)
+			got, err := utils.GetStakerId(context.Background(), client, account)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakerId() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -490,7 +491,7 @@ func TestGetWithdrawReleasePeriod(t *testing.T) {
 			stakeManagerMock.On("WithdrawInitiationPeriod", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetWithdrawInitiationPeriod(client)
+			got, err := utils.GetWithdrawInitiationPeriod(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetWithdrawInitiationPeriod() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -569,7 +570,7 @@ func TestGetMinSafeRazor(t *testing.T) {
 			stakeManagerMock.On("MinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetMinSafeRazor(client)
+			got, err := utils.GetMinSafeRazor(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetMinSafeRazor() error = %v, wantErr %v", err, tt.wantErr)
 				return

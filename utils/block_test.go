@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/pkg/bindings"
@@ -63,10 +64,10 @@ func TestFetchPreviousValue(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.block, tt.args.blockErr)
+			utilsMock.On("GetBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.block, tt.args.blockErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.FetchPreviousValue(client, epoch, tt.args.assetId)
+			got, err := utils.FetchPreviousValue(context.Background(), client, epoch, tt.args.assetId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FetchPreviousValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -126,7 +127,7 @@ func TestGetMaxAltBlocks(t *testing.T) {
 			blockManagerMock.On("MaxAltBlocks", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.maxAltBlocks, tt.args.maxAltBlocksErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetMaxAltBlocks(client)
+			got, err := utils.GetMaxAltBlocks(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MaxAltBlocks() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -186,7 +187,7 @@ func TestGetMinStakeAmount(t *testing.T) {
 			blockManagerMock.On("MinStake", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStake, tt.args.minStakeErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetMinStakeAmount(client)
+			got, err := utils.GetMinStakeAmount(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetMinStakeAmount() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -247,7 +248,7 @@ func TestGetNumberOfProposedBlocks(t *testing.T) {
 			blockManagerMock.On("GetNumProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumberOfProposedBlocks(client, epoch)
+			got, err := utils.GetNumberOfProposedBlocks(context.Background(), client, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumberOfProposedBlocks() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -313,7 +314,7 @@ func TestGetProposedBlock(t *testing.T) {
 			blockManagerMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.block, tt.args.blockErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetProposedBlock(client, epoch, proposedBlockId)
+			got, err := utils.GetProposedBlock(context.Background(), client, epoch, proposedBlockId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetProposedBlock() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -375,7 +376,7 @@ func TestGetSortedProposedBlockId(t *testing.T) {
 			blockManagerMock.On("SortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("*big.Int")).Return(tt.args.sortedProposedBlockId, tt.args.sortedProposedBlockIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetSortedProposedBlockId(client, epoch, index)
+			got, err := utils.GetSortedProposedBlockId(context.Background(), client, epoch, index)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSortedProposedBlockId() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -439,10 +440,10 @@ func TestGetSortedProposedBlockIds(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr)
-			utilsMock.On("GetSortedProposedBlockId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("*big.Int")).Return(tt.args.sortedProposedBlockId, tt.args.sortedProposedBlockIdErr)
+			utilsMock.On("GetNumberOfProposedBlocks", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.numOfProposedBlocks, tt.args.numOfProposedBlocksErr)
+			utilsMock.On("GetSortedProposedBlockId", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sortedProposedBlockId, tt.args.sortedProposedBlockIdErr)
 
-			got, err := utils.GetSortedProposedBlockIds(client, epoch)
+			got, err := utils.GetSortedProposedBlockIds(context.Background(), client, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSortedProposedBlockIds() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -525,7 +526,7 @@ func TestGetBlock(t *testing.T) {
 			blockManagerMock.On("GetBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.block, tt.args.blockErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetBlock(client, epoch)
+			got, err := utils.GetBlock(context.Background(), client, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetBlock() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -580,7 +581,7 @@ func TestGetBlockIndexToBeConfirmed(t *testing.T) {
 			blockManagerMock.On("GetBlockIndexToBeConfirmed", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockIndex, tt.args.blockIndexErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetBlockIndexToBeConfirmed(client)
+			got, err := utils.GetBlockIndexToBeConfirmed(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetBlockIndexToBeConfirmed() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -635,7 +636,7 @@ func TestGetStateBuffer(t *testing.T) {
 			blockManagerMock.On("StateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetStateBuffer(client)
+			got, err := utils.GetStateBuffer(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStateBuffer() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -696,7 +697,7 @@ func TestGetEpochLastProposed(t *testing.T) {
 			blockManagerMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastProposed, tt.args.epochLastProposedErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetEpochLastProposed(client, stakerId)
+			got, err := utils.GetEpochLastProposed(context.Background(), client, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEpochLastProposed() error = %v, wantErr %v", err, tt.wantErr)
 				return
