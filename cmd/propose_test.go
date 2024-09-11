@@ -1434,7 +1434,9 @@ func BenchmarkGetIteration(b *testing.B) {
 				cmdUtils = &UtilsStruct{}
 
 				utilsMock.On("GetStakeSnapshot", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1).Mul(v.stakeSnapshot, big.NewInt(1e18)), nil)
-				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything).Return(int64(100), nil)
+				utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything, mock.Anything).Return(int64(100), nil)
+				utilsMock.On("GetStateBuffer", mock.Anything, mock.Anything).Return(uint64(5), nil)
+				clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(&Types.Header{}, nil)
 
 				cmdUtils.GetIteration(context.Background(), client, proposer, bufferPercent)
 			}
@@ -1495,7 +1497,7 @@ func BenchmarkGetSortedRevealedValues(b *testing.B) {
 
 				asset := GetDummyRevealedValues(v.numOfRevealedValues)
 
-				cmdUtilsMock.On("IndexRevealEventsOfCurrentEpoch", mock.Anything, mock.Anything, mock.Anything).Return(GetDummyAssignedAssets(asset, v.numOfAssignedAssets), nil)
+				cmdUtilsMock.On("IndexRevealEventsOfCurrentEpoch", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(GetDummyAssignedAssets(asset, v.numOfAssignedAssets), nil)
 				ut := &UtilsStruct{}
 				_, err := ut.GetSortedRevealedValues(context.Background(), client, blockNumber, epoch)
 				if err != nil {

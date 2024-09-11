@@ -1203,16 +1203,16 @@ func BenchmarkHandleDispute(b *testing.B) {
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))}
 
-				utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
-				cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
+				utilsMock.On("GetSortedProposedBlockIds", mock.Anything, mock.Anything, mock.Anything).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
+				cmdUtilsMock.On("GetBiggestStakeAndId", mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
 				cmdUtilsMock.On("GetLocalMediansData", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedData, nil)
-				utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(proposedBlock, nil)
-				utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+				utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedBlock, nil)
+				utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts)
 				blockManagerMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				transactionMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
 				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-				cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
-				utilsMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
+				cmdUtilsMock.On("CheckDisputeForIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
+				utilsMock.On("GetLeafIdOfACollection", mock.Anything, mock.Anything, mock.Anything).Return(0, nil)
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything, mock.Anything).Return(nil)
