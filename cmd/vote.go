@@ -201,6 +201,9 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		log.Error("Error in getting remaining time of the current state: ", err)
 		return
 	}
+	if remainingTimeOfTheCurrentState <= 0 {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(remainingTimeOfTheCurrentState)*time.Second)
 	defer cancel()
