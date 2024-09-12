@@ -197,12 +197,12 @@ jobs:
           node-version: "18"
 
       - name: Download Artifacts AMD
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: razor_go.linux-amd64.tar.gz
 
       - name: Download Artifacts ARM
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: razor_go.linux-arm64.tar.gz
 
