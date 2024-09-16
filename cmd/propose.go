@@ -76,11 +76,6 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 	}
 
 	log.Debugf("Biggest staker Id: %d Biggest stake: %s, Stake: %s, Staker Id: %d, Number of Stakers: %d, Salt: %s", biggestStakerId, biggestStake, staker.Stake, staker.Id, numStakers, hex.EncodeToString(salt[:]))
-
-	bufferPercent, err := cmdUtils.GetBufferPercent()
-	if err != nil {
-		return err
-	}
 	proposer := types.ElectedProposer{
 		Stake:           staker.Stake,
 		StakerId:        staker.Id,
@@ -89,8 +84,8 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		Salt:            salt,
 		Epoch:           epoch,
 	}
-	log.Debugf("Propose: Calling GetIteration with arguments proposer = %+v, buffer percent = %d", proposer, bufferPercent)
-	iteration := cmdUtils.GetIteration(client, proposer, bufferPercent)
+	log.Debugf("Propose: Calling GetIteration with arguments proposer = %+v, buffer percent = %d", proposer, config.BufferPercent)
+	iteration := cmdUtils.GetIteration(client, proposer, config.BufferPercent)
 
 	log.Debug("Iteration: ", iteration)
 

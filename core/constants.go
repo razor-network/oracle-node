@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	EpochLength    uint64 = 1200
+	EpochLength    uint64 = 300
 	NumberOfStates uint64 = 5
 	StateLength           = EpochLength / NumberOfStates
 )
 
-// ChainId corresponds to the SKALE chain
-var ChainId = big.NewInt(0x109B4597)
+// ChainId corresponds to the EUROPA chain
+var ChainId = big.NewInt(0x79f99296)
 
 const MaxRetries uint = 8
 
@@ -26,9 +26,9 @@ const BlockCompletionTimeout = 30
 //Following are the default config values for all the config parameters
 const (
 	DefaultGasMultiplier    float32 = 1.0
-	DefaultBufferPercent    int32   = 20
+	DefaultBufferPercent    int32   = 5
 	DefaultGasPrice         int32   = 1
-	DefaultWaitTime         int32   = 5
+	DefaultWaitTime         int32   = 1
 	DefaultGasLimit         float32 = 2
 	DefaultGasLimitOverride uint64  = 30000000
 	DefaultRPCTimeout       int64   = 10
@@ -37,7 +37,7 @@ const (
 )
 
 //BufferStateSleepTime is the sleeping time whenever buffer state hits
-const BufferStateSleepTime int32 = 5
+const BufferStateSleepTime int32 = 2
 
 //Following are the default logFile parameters in config
 const (

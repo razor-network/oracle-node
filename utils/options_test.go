@@ -345,6 +345,8 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 		parseErr            error
 		inputData           []byte
 		packErr             error
+		toAssign            uint16
+		toAssignErr         error
 		gasLimit            uint64
 		gasLimitErr         error
 		increaseGasLimit    uint64
@@ -423,6 +425,41 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 			want:    5000000,
 			wantErr: nil,
 		},
+		{
+			name: "Test 6: When the transaction is reveal and we get the calculated gasLimit for reveal txn",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "reveal",
+					Config: types.Configurations{
+						GasLimitMultiplier: 2,
+						GasLimitOverride:   5000000,
+					},
+				},
+				parsedData:       parsedData,
+				inputData:        inputData,
+				toAssign:         3,
+				increaseGasLimit: 963728,
+			},
+			want:    963728,
+			wantErr: nil,
+		},
+		{
+			name: "Test 6: When the transaction is reveal and we get the error in getting toAssign during calculating gasLimit for reveal txn",
+			args: args{
+				transactionData: types.TransactionOptions{
+					MethodName: "reveal",
+					Config: types.Configurations{
+						GasLimitMultiplier: 2,
+						GasLimitOverride:   5000000,
+					},
+				},
+				parsedData:  parsedData,
+				inputData:   inputData,
+				toAssignErr: errors.New("toAssign error"),
+			},
+			want:    5000000,
+			wantErr: errors.New("toAssign error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -445,6 +482,7 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
 			clientUtilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			gasUtilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
+			utilsMock.On("ToAssign", mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
 
 			gasUtils := GasStruct{}
 			got, err := gasUtils.GetGasLimit(tt.args.transactionData, txnOpts)
