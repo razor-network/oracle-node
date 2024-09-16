@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/cmd/mocks"
 	"razor/core"
 	"razor/core/types"
@@ -13,7 +11,6 @@ import (
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -31,12 +28,8 @@ func TestSetDelegation(t *testing.T) {
 		WaitTime:      1,
 	}
 
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
-
 	type args struct {
 		status                     bool
-		txnOpts                    *bind.TransactOpts
 		staker                     bindings.StructsStaker
 		stakerErr                  error
 		setDelegationAcceptanceTxn *Types.Transaction
@@ -54,7 +47,6 @@ func TestSetDelegation(t *testing.T) {
 		{
 			name: "Test 1: When SetDelegation function executes successfully",
 			args: args{
-				txnOpts: txnOpts,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: true,
 				},
@@ -69,7 +61,6 @@ func TestSetDelegation(t *testing.T) {
 		{
 			name: "Test 2: When setDelegationAcceptance transaction fails",
 			args: args{
-				txnOpts: txnOpts,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: true,
 				},
@@ -84,7 +75,6 @@ func TestSetDelegation(t *testing.T) {
 		{
 			name: "Test 3: When there is an error in getting staker",
 			args: args{
-				txnOpts:                    txnOpts,
 				stakerErr:                  errors.New("staker error"),
 				setDelegationAcceptanceTxn: &Types.Transaction{},
 				setDelegationAcceptanceErr: nil,
@@ -96,8 +86,7 @@ func TestSetDelegation(t *testing.T) {
 		{
 			name: "Test 4: When stakerInfo.AcceptDelegation == delegationInput.Status",
 			args: args{
-				status:  true,
-				txnOpts: txnOpts,
+				status: true,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: true,
 				},
@@ -112,7 +101,6 @@ func TestSetDelegation(t *testing.T) {
 		{
 			name: "Test 5: When commission is non zero and UpdateCommission executes successfully",
 			args: args{
-				txnOpts: txnOpts,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: true,
 				},
@@ -129,7 +117,6 @@ func TestSetDelegation(t *testing.T) {
 		{
 			name: "Test 6: When commission is non zero and UpdateCommission does not executes successfully",
 			args: args{
-				txnOpts: txnOpts,
 				staker: bindings.StructsStaker{
 					AcceptDelegation: true,
 				},
@@ -159,7 +146,7 @@ func TestSetDelegation(t *testing.T) {
 
 			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
 			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			stakeManagerUtilsMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.setDelegationAcceptanceTxn, tt.args.setDelegationAcceptanceErr)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
@@ -418,7 +405,8 @@ func TestExecuteSetDelegation(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetUtilsMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			flagSetUtilsMock.On("GetStringStatus", flagSet).Return(tt.args.status, tt.args.statusErr)
 			flagSetUtilsMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)

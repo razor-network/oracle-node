@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"math/big"
+	"net/http"
 	"os"
 	"razor/cache"
 	"razor/core"
@@ -25,11 +26,18 @@ import (
 )
 
 func TestAggregate(t *testing.T) {
-	var client *ethclient.Client
-	var previousEpoch uint32
-	var fileInfo fs.FileInfo
+	var (
+		client        *ethclient.Client
+		previousEpoch uint32
+		fileInfo      fs.FileInfo
+	)
 
-	job := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
+	job1 := bindings.StructsJob{Id: 1, SelectorType: 1, Weight: 100,
+		Power: 2, Name: "ethusd_gemini", Selector: "last",
+		Url: "https://api.gemini.com/v1/pubticker/ethusd",
+	}
+
+	job2 := bindings.StructsJob{Id: 2, SelectorType: 1, Weight: 100,
 		Power: 2, Name: "ethusd_gemini", Selector: "last",
 		Url: "https://api.gemini.com/v1/pubticker/ethusd",
 	}
@@ -39,14 +47,13 @@ func TestAggregate(t *testing.T) {
 		Id:                4,
 		Power:             2,
 		AggregationMethod: 2,
-		JobIDs:            []uint16{1, 2, 3},
+		JobIDs:            []uint16{1, 2},
 		Name:              "ethCollectionMean",
 	}
 
 	type args struct {
 		collection            bindings.StructsCollection
-		activeJob             bindings.StructsJob
-		activeJobErr          error
+		jobCacheError         bool
 		dataToCommit          []*big.Int
 		dataToCommitErr       error
 		weight                []uint8
@@ -72,21 +79,20 @@ func TestAggregate(t *testing.T) {
 			name: "Test 1: When Aggregate() executes successfully",
 			args: args{
 				collection:         collection,
-				activeJob:          job,
-				dataToCommit:       []*big.Int{big.NewInt(2)},
-				weight:             []uint8{100},
+				dataToCommit:       []*big.Int{big.NewInt(3827200), big.NewInt(3828474)},
+				weight:             []uint8{1, 1},
 				prevCommitmentData: big.NewInt(1),
 				assetFilePath:      "",
 				statErr:            nil,
 			},
-			want:    big.NewInt(2),
+			want:    big.NewInt(3827837),
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting activeJob",
+			name: "Test 2: When the job is not present in cache",
 			args: args{
 				collection:         collection,
-				activeJobErr:       errors.New("activeJob error"),
+				jobCacheError:      true,
 				dataToCommit:       []*big.Int{big.NewInt(2)},
 				weight:             []uint8{100},
 				prevCommitmentData: big.NewInt(1),
@@ -100,7 +106,6 @@ func TestAggregate(t *testing.T) {
 			name: "Test 3: When there is an error in getting dataToCommit",
 			args: args{
 				collection:         collection,
-				activeJob:          job,
 				dataToCommitErr:    errors.New("dataToCommit error"),
 				weight:             []uint8{100},
 				prevCommitmentData: big.NewInt(1),
@@ -112,7 +117,6 @@ func TestAggregate(t *testing.T) {
 			name: "Test 4: When there is an error in getting prevCommitmentData",
 			args: args{
 				collection:            collection,
-				activeJob:             job,
 				dataToCommit:          []*big.Int{big.NewInt(2)},
 				weight:                []uint8{100},
 				prevCommitmentDataErr: errors.New("prevCommitmentData error"),
@@ -124,7 +128,6 @@ func TestAggregate(t *testing.T) {
 			name: "Test 5: When there is an error in getting prevCommitmentData",
 			args: args{
 				collection:            collection,
-				activeJob:             job,
 				dataToCommitErr:       errors.New("dataToCommit error"),
 				weight:                []uint8{100},
 				prevCommitmentDataErr: errors.New("prevCommitmentData error"),
@@ -172,6 +175,16 @@ func TestAggregate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			commitParams := &types.CommitParams{
+				JobsCache:        cache.NewJobsCache(),
+				CollectionsCache: cache.NewCollectionsCache(),
+			}
+			if !tt.args.jobCacheError {
+				commitParams.JobsCache.Jobs[job1.Id] = job1
+				commitParams.JobsCache.Jobs[job2.Id] = job2
+				commitParams.CollectionsCache.Collections[collection.Id] = collection
+			}
+
 			utilsMock := new(mocks.Utils)
 			pathUtilsMock := new(pathMocks.PathInterface)
 			osUtilsMock := new(pathMocks.OSInterface)
@@ -185,16 +198,16 @@ func TestAggregate(t *testing.T) {
 			path.OSUtilsInterface = osUtilsMock
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
-			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
+			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
 			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			osUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
-			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
+			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
-			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, &cache.LocalCache{})
+			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, commitParams)
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Aggregate() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -267,24 +280,21 @@ func TestGetActiveCollectionIds(t *testing.T) {
 }
 
 func TestGetActiveCollection(t *testing.T) {
-	var client *ethclient.Client
-	var collectionId uint16
-
-	collectionEth := bindings.StructsCollection{Active: true,
-		Id:                2,
-		Power:             2,
-		AggregationMethod: 2,
-		JobIDs:            []uint16{1, 2},
-		Name:              "ethCollectionMean",
+	collectionEth := bindings.StructsCollection{
+		Active: true, Id: 1, Power: 2,
+		AggregationMethod: 2, JobIDs: []uint16{1, 2},
+		Name: "ethCollectionMean",
 	}
 
-	collectionEthInactive := bindings.StructsCollection{Active: false, Id: 2, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollectionMean",
+	collectionEthInactive := bindings.StructsCollection{
+		Active: false, Id: 2, Power: 2,
+		AggregationMethod: 2, JobIDs: []uint16{1, 2},
+		Name: "ethCollectionMean",
 	}
 
 	type args struct {
-		collection    bindings.StructsCollection
-		collectionErr error
+		collectionId       uint16
+		collectionCacheErr bool
 	}
 	tests := []struct {
 		name    string
@@ -295,15 +305,15 @@ func TestGetActiveCollection(t *testing.T) {
 		{
 			name: "Test 1: When GetActiveCollection() executes successfully",
 			args: args{
-				collection: collectionEth,
+				collectionId: 1,
 			},
 			want:    collectionEth,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting collection",
+			name: "Test 2: When the collection is not present in cache",
 			args: args{
-				collectionErr: errors.New("collection error"),
+				collectionCacheErr: true,
 			},
 			want:    bindings.StructsCollection{},
 			wantErr: true,
@@ -311,7 +321,7 @@ func TestGetActiveCollection(t *testing.T) {
 		{
 			name: "Test 3: When there is an inactive collection",
 			args: args{
-				collection: collectionEthInactive,
+				collectionId: 2,
 			},
 			want:    bindings.StructsCollection{},
 			wantErr: true,
@@ -319,16 +329,12 @@ func TestGetActiveCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
+			collectionCache := cache.NewCollectionsCache()
+			collectionCache.Collections[collectionEth.Id] = collectionEth
+			collectionCache.Collections[collectionEthInactive.Id] = collectionEthInactive
 
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
-
-			got, err := utils.GetActiveCollection(client, collectionId)
+			utils := UtilsStruct{}
+			got, err := utils.GetActiveCollection(collectionCache, tt.args.collectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetActiveCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -553,6 +559,14 @@ func TestGetAllCollections(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJobs(t *testing.T) {
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        2,
+			MaxIdleConnsPerHost: 1,
+		},
+	}
+
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 0, Weight: 10,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
@@ -603,7 +617,6 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 		name            string
 		args            args
 		wantArrayLength int
-		wantErr         bool
 	}{
 		{
 			name: "Test 1: Getting values from set of jobs of length 4",
@@ -630,14 +643,12 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsInterface = &UtilsStruct{}
-			lc := cache.NewLocalCache(time.Second * 20)
-
-			gotDataArray, gotWeightArray, err := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, lc)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			commitParams := &types.CommitParams{
+				LocalCache: cache.NewLocalCache(time.Second * 10),
+				HttpClient: httpClient,
 			}
 
+			gotDataArray, gotWeightArray := UtilsInterface.GetDataToCommitFromJobs(tt.args.jobs, commitParams)
 			if len(gotDataArray) != tt.wantArrayLength || len(gotWeightArray) != tt.wantArrayLength {
 				t.Errorf("GetDataToCommitFromJobs() got = %v, want %v", gotDataArray, tt.wantArrayLength)
 			}
@@ -648,6 +659,14 @@ func TestGetDataToCommitFromJobs(t *testing.T) {
 }
 
 func TestGetDataToCommitFromJob(t *testing.T) {
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        2,
+			MaxIdleConnsPerHost: 1,
+		},
+	}
+
 	job := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 2, Name: "ethusd_kraken", Selector: "result.XETHZUSD.c[0]",
 		Url: `{"type": "GET","url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD","body": {},"header": {}}`,
@@ -666,6 +685,16 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 	postJobUniswapV2 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
 		Power: 6, Name: "ethusd_sample", Selector: "result",
 		Url: `{"type": "POST","url": "https://rpc.ankr.com/eth","body": {"jsonrpc":"2.0","id":7269270904970082,"method":"eth_call","params":[{"from":"0x0000000000000000000000000000000000000000","data":"0xd06ca61f0000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000200000000000000000000000050de6856358cc35f3a9a57eaaa34bd4cb707d2cd0000000000000000000000008e870d67f660d95d5be530380d0ec0bd388289e1","to":"0x7a250d5630b4cf539739df2c5dacb4c659f2488d"},"latest"]},"header": {"content-type": "application/json"}, "returnType": "hexArray[1]"}`,
+	}
+
+	arrayOfObjectsJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_bitfinex", Selector: "last_price",
+		Url: "https://api.bitfinex.com/v1/pubticker/ethusd",
+	}
+
+	arrayOfArraysJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
+		Power: 2, Name: "ethusd_bitfinex_v2", Selector: "last_price",
+		Url: "https://api-pub.bitfinex.com/v2/tickers?symbols=tXDCUSD",
 	}
 
 	invalidDataSourceStructJob := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 100,
@@ -733,6 +762,20 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			want:    nil,
 			wantErr: false,
 		},
+		{
+			name: "Test 7: When GetDataToCommitFromJob() executes successfully for job returning response of type array of objects",
+			args: args{
+				job: arrayOfObjectsJob,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 8: When GetDataToCommitFromJob() fails for job returning response of type arrays of arrays as element in array is not a json object",
+			args: args{
+				job: arrayOfArraysJob,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -743,12 +786,12 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			pathUtilsMock := new(pathMocks.PathInterface)
-			path.PathUtilsInterface = pathUtilsMock
+			commitParams := &types.CommitParams{
+				LocalCache: cache.NewLocalCache(time.Second * 10),
+				HttpClient: httpClient,
+			}
 
-			pathUtilsMock.On("GetDotENVFilePath", mock.Anything).Return("$HOME/.razor/.env", nil)
-			lc := cache.NewLocalCache(time.Second * 10)
-			data, err := utils.GetDataToCommitFromJob(tt.args.job, lc)
+			data, err := utils.GetDataToCommitFromJob(tt.args.job, commitParams)
 			fmt.Println("JOB returns data: ", data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetDataToCommitFromJob() error = %v, wantErr %v", err, tt.wantErr)
@@ -1079,14 +1122,23 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 
 	ethCollection1 := bindings.StructsCollection{
 		Active: true, Id: 7, Power: 2,
-		AggregationMethod: 2, JobIDs: []uint16{1, 2, 3}, Name: "ethCollection",
+		AggregationMethod: 2, JobIDs: []uint16{1, 2}, Name: "ethCollection",
+	}
+
+	job1 := bindings.StructsJob{Id: 1, SelectorType: 0, Weight: 0,
+		Power: 2, Name: "ethusd_kucoin", Selector: "last",
+		Url: "http://kucoin.com/eth",
+	}
+
+	job2 := bindings.StructsJob{Id: 2, SelectorType: 0, Weight: 2,
+		Power: 3, Name: "ethusd_coinbase", Selector: "eth2",
+		Url: "http://api.coinbase.com/eth",
 	}
 
 	type args struct {
-		collection bindings.StructsCollection
-		dataString string
-		job        bindings.StructsJob
-		jobErr     error
+		collection    bindings.StructsCollection
+		dataString    string
+		addJobToCache bool
 	}
 	tests := []struct {
 		name               string
@@ -1097,19 +1149,19 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 		{
 			name: "Test 1: When officialJobs for collection is present in assets.json",
 			args: args{
-				collection: ethCollection,
-				dataString: jsonDataString,
-				job: bindings.StructsJob{
-					Id: 1,
-				},
+				collection:    ethCollection,
+				dataString:    jsonDataString,
+				addJobToCache: true,
 			},
 			want: []bindings.StructsJob{
 				{
-					Id:       1,
-					Url:      "http://kucoin.com/eth1",
-					Selector: "eth1",
-					Power:    2,
-					Weight:   2,
+					Id:           1,
+					SelectorType: 0,
+					Name:         "ethusd_kucoin",
+					Url:          "http://kucoin.com/eth1",
+					Selector:     "eth1",
+					Power:        2,
+					Weight:       2,
 				},
 			},
 			wantOverrideJobIds: []uint16{1},
@@ -1119,9 +1171,6 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 			args: args{
 				collection: ethCollection,
 				dataString: "",
-				job: bindings.StructsJob{
-					Id: 1,
-				},
 			},
 			want:               nil,
 			wantOverrideJobIds: nil,
@@ -1129,9 +1178,9 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 		{
 			name: "Test 3: When there is an error from GetActiveJob()",
 			args: args{
-				collection: ethCollection,
-				dataString: jsonDataString,
-				jobErr:     errors.New("job error"),
+				collection:    ethCollection,
+				dataString:    jsonDataString,
+				addJobToCache: false,
 			},
 			want:               nil,
 			wantOverrideJobIds: nil,
@@ -1139,26 +1188,22 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 		{
 			name: "Test 4: When multiple jobIds are needed to be overridden from official jobs",
 			args: args{
-				collection: ethCollection1,
-				dataString: jsonDataString,
-				job: bindings.StructsJob{
-					Id:       1,
-					Url:      "http://kraken.com/eth1",
-					Selector: "data.ETH",
-					Power:    3,
-					Weight:   1,
-				},
+				collection:    ethCollection1,
+				dataString:    jsonDataString,
+				addJobToCache: true,
 			},
 			want: []bindings.StructsJob{
 				{
 					Id:       1,
+					Name:     "ethusd_kucoin",
 					Url:      "http://kucoin.com/eth1",
 					Selector: "eth1",
 					Power:    2,
 					Weight:   2,
 				},
 				{
-					Id:       1,
+					Id:       2,
+					Name:     "ethusd_coinbase",
 					Url:      "http://api.coinbase.com/eth2",
 					Selector: "eth2",
 					Power:    3,
@@ -1170,15 +1215,17 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface: utilsMock,
+			commitParams := &types.CommitParams{
+				JobsCache: cache.NewJobsCache(),
 			}
-			utils := StartRazor(optionsPackageStruct)
+			if tt.args.addJobToCache {
+				commitParams.JobsCache.Jobs[job1.Id] = job1
+				commitParams.JobsCache.Jobs[job2.Id] = job2
+			}
 
-			gotJobs, gotOverrideJobIds := utils.HandleOfficialJobsFromJSONFile(client, tt.args.collection, tt.args.dataString)
+			utils := &UtilsStruct{}
+
+			gotJobs, gotOverrideJobIds := utils.HandleOfficialJobsFromJSONFile(client, tt.args.collection, tt.args.dataString, commitParams)
 			if !reflect.DeepEqual(gotJobs, tt.want) {
 				t.Errorf("HandleOfficialJobsFromJSONFile() gotJobs = %v, want %v", gotJobs, tt.want)
 			}
@@ -1281,9 +1328,9 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
-			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
+			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &cache.LocalCache{})
+			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &types.CommitParams{HttpClient: &http.Client{}})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return

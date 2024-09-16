@@ -36,7 +36,7 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 	}
 	log.Debug("HandleDispute: SortedProposedBlockIds: ", sortedProposedBlockIds)
 
-	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, account.Address, epoch)
+	biggestStake, biggestStakerId, err := cmdUtils.GetBiggestStakeAndId(client, epoch)
 	if err != nil {
 		return err
 	}
@@ -57,11 +57,10 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 
 	randomSortedProposedBlockIds := utils.Shuffle(sortedProposedBlockIds) //shuffles the sortedProposedBlockIds array
 	transactionOptions := types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:  client,
+		ChainId: core.ChainId,
+		Config:  config,
+		Account: account,
 	}
 	log.Debug("HandleDispute: Shuffled sorted proposed blocks: ", randomSortedProposedBlockIds)
 
@@ -88,11 +87,10 @@ func (*UtilsStruct) HandleDispute(client *ethclient.Client, config types.Configu
 			log.Warn("PROPOSED BIGGEST STAKE DOES NOT MATCH WITH ACTUAL BIGGEST STAKE")
 			log.Info("Disputing BiggestStakeProposed...")
 			txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-				Client:         client,
-				Password:       account.Password,
-				AccountAddress: account.Address,
-				ChainId:        core.ChainId,
-				Config:         config,
+				Client:  client,
+				ChainId: core.ChainId,
+				Config:  config,
+				Account: account,
 			})
 			log.Debugf("Executing DisputeBiggestStakeProposed transaction with arguments epoch = %d, blockIndex = %d, biggest staker Id = %d", epoch, blockIndex, biggestStakerId)
 			disputeBiggestStakeProposedTxn, err := blockManagerUtils.DisputeBiggestStakeProposed(client, txnOpts, epoch, uint8(blockIndex), biggestStakerId)
@@ -324,11 +322,10 @@ func (*UtilsStruct) Dispute(client *ethclient.Client, config types.Configuration
 	blockManager := razorUtils.GetBlockManager(client)
 
 	txnArgs := types.TransactionOptions{
-		Client:         client,
-		Password:       account.Password,
-		AccountAddress: account.Address,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:  client,
+		ChainId: core.ChainId,
+		Config:  config,
+		Account: account,
 	}
 
 	if !utils.Contains(giveSortedLeafIds, leafId) {
@@ -429,7 +426,7 @@ func GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, t
 	}
 	callOpts := razorUtils.GetOptions()
 	txnOpts := razorUtils.GetTxnOpts(txnArgs)
-	disputesMapping, err := blockManagerUtils.Disputes(client, &callOpts, epoch, common.HexToAddress(txnArgs.AccountAddress))
+	disputesMapping, err := blockManagerUtils.Disputes(client, &callOpts, epoch, common.HexToAddress(txnArgs.Account.Address))
 	if err != nil {
 		log.Error("Error in getting disputes mapping: ", disputesMapping)
 		return err

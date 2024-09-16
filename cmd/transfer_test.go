@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -23,13 +20,9 @@ func TestTransfer(t *testing.T) {
 	var client *ethclient.Client
 	var config types.Configurations
 
-	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
-	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000))
-
 	type args struct {
 		amount        *big.Int
 		decimalAmount *big.Float
-		txnOpts       *bind.TransactOpts
 		transferTxn   *Types.Transaction
 		transferErr   error
 		transferHash  common.Hash
@@ -45,7 +38,6 @@ func TestTransfer(t *testing.T) {
 			args: args{
 				amount:        big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 				decimalAmount: big.NewFloat(1000),
-				txnOpts:       txnOpts,
 				transferTxn:   &Types.Transaction{},
 				transferErr:   nil,
 				transferHash:  common.BigToHash(big.NewInt(1)),
@@ -58,7 +50,6 @@ func TestTransfer(t *testing.T) {
 			args: args{
 				amount:        big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
 				decimalAmount: big.NewFloat(1000),
-				txnOpts:       txnOpts,
 				transferTxn:   &Types.Transaction{},
 				transferErr:   errors.New("transfer error"),
 				transferHash:  common.BigToHash(big.NewInt(1)),
@@ -72,7 +63,7 @@ func TestTransfer(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("GetTxnOpts", mock.Anything).Return(tt.args.txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything).Return(TxnOpts)
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.decimalAmount)
 			tokenManagerMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.transferTxn, tt.args.transferErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.transferHash)
@@ -255,7 +246,8 @@ func TestExecuteTransfer(t *testing.T) {
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
-			utilsMock.On("CheckPassword", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
+			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringFrom", flagSet).Return(tt.args.from, tt.args.fromErr)
 			flagSetMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)

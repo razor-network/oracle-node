@@ -1,7 +1,11 @@
 package cmd
 
 import (
-	accountsPkgMocks "razor/accounts/mocks"
+	"crypto/ecdsa"
+	"crypto/rand"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"math/big"
 	"razor/cmd/mocks"
 	"razor/path"
 	pathPkgMocks "razor/path/mocks"
@@ -19,7 +23,6 @@ var (
 	ioUtilsMock           *utilsPkgMocks.IOUtils
 	abiUtilsMock          *utilsPkgMocks.ABIUtils
 	bindUtilsMock         *utilsPkgMocks.BindUtils
-	accountUtilsMock      *utilsPkgMocks.AccountsUtils
 	blockManagerUtilsMock *utilsPkgMocks.BlockManagerUtils
 	stakeManagerUtilsMock *utilsPkgMocks.StakeManagerUtils
 	assetManagerUtilsMock *utilsPkgMocks.AssetManagerUtils
@@ -47,7 +50,6 @@ var (
 	osMock                *mocks.OSInterface
 	pathMock              *pathPkgMocks.PathInterface
 	osPathMock            *pathPkgMocks.OSInterface
-	accountsMock          *accountsPkgMocks.AccountInterface
 )
 
 func SetUpMockInterfaces() {
@@ -83,9 +85,6 @@ func SetUpMockInterfaces() {
 
 	bindUtilsMock = new(utilsPkgMocks.BindUtils)
 	utils.BindingsInterface = bindingUtilsMock
-
-	accountUtilsMock = new(utilsPkgMocks.AccountsUtils)
-	utils.AccountsInterface = accountUtilsMock
 
 	blockManagerUtilsMock = new(utilsPkgMocks.BlockManagerUtils)
 	utils.BlockManagerInterface = blockManagerUtilsMock
@@ -164,7 +163,7 @@ func SetUpMockInterfaces() {
 
 	osPathMock = new(pathPkgMocks.OSInterface)
 	path.OSUtilsInterface = osPathMock
-
-	accountsMock = new(accountsPkgMocks.AccountInterface)
-	accountUtils = accountsMock
 }
+
+var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
+var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000)) // Used any random big int for chain ID

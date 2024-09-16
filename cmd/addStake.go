@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -49,7 +50,12 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	balance, err := razorUtils.FetchBalance(client, address)
@@ -87,12 +93,11 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	}
 
 	txnArgs := types.TransactionOptions{
-		Client:         client,
-		AccountAddress: address,
-		Password:       password,
-		Amount:         valueInWei,
-		ChainId:        core.ChainId,
-		Config:         config,
+		Client:  client,
+		Amount:  valueInWei,
+		ChainId: core.ChainId,
+		Config:  config,
+		Account: account,
 	}
 
 	log.Debug("ExecuteStake: Calling Approve() for amount: ", txnArgs.Amount)

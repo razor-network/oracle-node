@@ -1,6 +1,10 @@
 package types
 
-import "math/big"
+import (
+	"math/big"
+	"net/http"
+	"razor/cache"
+)
 
 type ElectedProposer struct {
 	Iteration       int
@@ -61,4 +65,12 @@ type ProposeFileData struct {
 	MediansData           []*big.Int
 	RevealedCollectionIds []uint16
 	RevealedDataMaps      *RevealedDataMaps
+}
+
+type CommitParams struct {
+	JobsCache                 *cache.JobsCache
+	CollectionsCache          *cache.CollectionsCache
+	LocalCache                *cache.LocalCache
+	HttpClient                *http.Client
+	FromBlockToCheckForEvents *big.Int
 }

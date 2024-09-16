@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
@@ -49,7 +50,12 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
 
-	err = razorUtils.CheckPassword(address, password)
+	accountManager, err := razorUtils.AccountManagerForKeystore()
+	utils.CheckError("Error in getting accounts manager for keystore: ", err)
+
+	account := accounts.InitAccountStruct(address, password, accountManager)
+
+	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
@@ -60,14 +66,12 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 
 	updateCommissionInput := types.UpdateCommissionInput{
 		Commission: commission,
-		Address:    address,
-		Password:   password,
 		StakerId:   stakerId,
+		Account:    account,
 	}
 
-	log.Debugf("ExecuteUpdateCommission: calling UpdateCommission() with argument UpdateCommissionInput: %+v", updateCommissionInput)
 	err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
-	utils.CheckError("SetDelegation error: ", err)
+	utils.CheckError("UpdateCommission error: ", err)
 }
 
 //This function allows a staker to add/update the commission value
@@ -114,14 +118,13 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 	txnOpts := types.TransactionOptions{
 		Client:          client,
-		Password:        updateCommissionInput.Password,
-		AccountAddress:  updateCommissionInput.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
 		ABI:             bindings.StakeManagerMetaData.ABI,
 		MethodName:      "updateCommission",
 		Parameters:      []interface{}{updateCommissionInput.Commission},
+		Account:         updateCommissionInput.Account,
 	}
 	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)

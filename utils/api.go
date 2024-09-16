@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"razor/cache"
 	"razor/core"
 	"regexp"
 	"time"
@@ -19,34 +18,30 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func GetDataFromAPI(dataSourceURLStruct types.DataSourceURL, localCache *cache.LocalCache) ([]byte, error) {
-	client := http.Client{
-		Timeout: time.Duration(HTTPTimeout) * time.Second,
-	}
-
+func GetDataFromAPI(commitParams *types.CommitParams, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	cacheKey, err := generateCacheKey(dataSourceURLStruct.URL, dataSourceURLStruct.Body)
 	if err != nil {
 		log.Errorf("Error in generating cache key for API %s: %v", dataSourceURLStruct.URL, err)
 		return nil, err
 	}
 
-	cachedData, found := localCache.Read(cacheKey)
+	cachedData, found := commitParams.LocalCache.Read(cacheKey)
 	if found {
 		log.Debugf("Getting Data for URL %s from local cache...", dataSourceURLStruct.URL)
 		return cachedData, nil
 	}
 
-	response, err := makeAPIRequest(client, dataSourceURLStruct)
+	response, err := makeAPIRequest(commitParams.HttpClient, dataSourceURLStruct)
 	if err != nil {
 		return nil, err
 	}
 
 	// Storing the data into cache
-	localCache.Update(response, cacheKey, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
+	commitParams.LocalCache.Update(response, cacheKey, time.Now().Add(time.Second*time.Duration(core.StateLength)).Unix())
 	return response, nil
 }
 
-func makeAPIRequest(client http.Client, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
+func makeAPIRequest(httpClient *http.Client, dataSourceURLStruct types.DataSourceURL) ([]byte, error) {
 	var requestBody io.Reader // Using the broader io.Reader interface here
 
 	switch dataSourceURLStruct.Type {
@@ -68,7 +63,7 @@ func makeAPIRequest(client http.Client, dataSourceURLStruct types.DataSourceURL)
 	var response []byte
 	err := retry.Do(
 		func() error {
-			responseBody, err := ProcessRequest(client, dataSourceURLStruct, requestBody)
+			responseBody, err := ProcessRequest(httpClient, dataSourceURLStruct, requestBody)
 			if err != nil {
 				log.Errorf("Error in processing %s request: %v", dataSourceURLStruct.Type, err)
 				return err
@@ -82,6 +77,28 @@ func makeAPIRequest(client http.Client, dataSourceURLStruct types.DataSourceURL)
 	}
 
 	return response, nil
+}
+
+func parseJSONData(parsedJSON interface{}, selector string) (interface{}, error) {
+	switch v := parsedJSON.(type) {
+	case map[string]interface{}: // Handling JSON object response case
+		return GetDataFromJSON(v, selector)
+
+	case []interface{}: // Handling JSON array of objects response case
+		if len(v) > 0 {
+			// The first element from JSON array is fetched
+			if elem, ok := v[0].(map[string]interface{}); ok {
+				return GetDataFromJSON(elem, selector)
+			}
+			log.Error("Element in array is not a JSON object")
+			return nil, errors.New("element in array is not a JSON object")
+		}
+		log.Error("Empty JSON array")
+		return nil, errors.New("empty JSON array")
+	default:
+		log.Error("Unexpected JSON structure")
+		return nil, errors.New("unexpected JSON structure")
+	}
 }
 
 func GetDataFromJSON(jsonObject map[string]interface{}, selector string) (interface{}, error) {
@@ -124,13 +141,13 @@ func addHeaderToRequest(request *http.Request, headerMap map[string]string) *htt
 	return request
 }
 
-func ProcessRequest(client http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
+func ProcessRequest(httpClient *http.Client, dataSourceURLStruct types.DataSourceURL, requestBody io.Reader) ([]byte, error) {
 	request, err := http.NewRequest(dataSourceURLStruct.Type, dataSourceURLStruct.URL, requestBody)
 	if err != nil {
 		return nil, err
 	}
 	requestWithHeader := addHeaderToRequest(request, dataSourceURLStruct.Header)
-	response, err := client.Do(requestWithHeader)
+	response, err := httpClient.Do(requestWithHeader)
 	if err != nil {
 		log.Errorf("Error sending %s request URL %s: %v", dataSourceURLStruct.Type, dataSourceURLStruct.URL, err)
 		return nil, err

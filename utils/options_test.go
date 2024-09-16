@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
+	"razor/accounts"
 	"razor/core/types"
 	"razor/utils/mocks"
 	"reflect"
@@ -17,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -134,16 +134,13 @@ func Test_getGasPrice(t *testing.T) {
 }
 
 func Test_utils_GetTxnOpts(t *testing.T) {
-	var transactionData types.TransactionOptions
 	var gasPrice *big.Int
 
 	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
 	type args struct {
-		path            string
-		pathErr         error
-		privateKey      *ecdsa.PrivateKey
+		address         string
 		nonce           uint64
 		nonceErr        error
 		txnOpts         *bind.TransactOpts
@@ -162,36 +159,32 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		{
 			name: "Test 1: When GetTxnOptions execute successfully",
 			args: args{
-				path:       "/home/local",
-				privateKey: privateKey,
-				nonce:      2,
-				txnOpts:    txnOpts,
-				gasLimit:   1,
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				nonce:    2,
+				txnOpts:  txnOpts,
+				gasLimit: 1,
 			},
 			want:          txnOpts,
 			expectedFatal: false,
 		},
 		{
-			name: "Test 2: When there is an error in getting path",
+			name: "Test 2: When there is an error in getting private key as address is not present in keystore",
 			args: args{
-				path:       "/home/local",
-				pathErr:    errors.New("path error"),
-				privateKey: privateKey,
-				nonce:      2,
-				txnOpts:    txnOpts,
-				gasLimit:   1,
+				address:  "0x77Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				nonce:    2,
+				txnOpts:  txnOpts,
+				gasLimit: 1,
 			},
 			want:          txnOpts,
 			expectedFatal: true,
 		},
 		{
-			name: "Test 3: When the privateKey is nil",
+			name: "Test 3: When the accountManager is nil",
 			args: args{
-				path:       "/home/local",
-				privateKey: nil,
-				nonce:      2,
-				txnOpts:    txnOpts,
-				gasLimit:   1,
+				address:  "",
+				nonce:    2,
+				txnOpts:  txnOpts,
+				gasLimit: 1,
 			},
 			want:          txnOpts,
 			expectedFatal: true,
@@ -199,12 +192,11 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		{
 			name: "Test 4: When there is an error in getting nonce",
 			args: args{
-				path:       "/home/local",
-				privateKey: privateKey,
-				nonce:      2,
-				nonceErr:   errors.New("nonce error"),
-				txnOpts:    txnOpts,
-				gasLimit:   1,
+				address:  "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				nonce:    2,
+				nonceErr: errors.New("nonce error"),
+				txnOpts:  txnOpts,
+				gasLimit: 1,
 			},
 			want:          txnOpts,
 			expectedFatal: true,
@@ -212,8 +204,7 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		{
 			name: "Test 5: When there is an error in getting transactor",
 			args: args{
-				path:       "/home/local",
-				privateKey: privateKey,
+				address:    "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
 				nonce:      2,
 				txnOpts:    txnOpts,
 				txnOptsErr: errors.New("transactor error"),
@@ -225,8 +216,7 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		{
 			name: "Test 6: When there is an error in getting gasLimit",
 			args: args{
-				path:        "/home/local",
-				privateKey:  privateKey,
+				address:     "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
 				nonce:       2,
 				txnOpts:     txnOpts,
 				gasLimitErr: errors.New("gasLimit error"),
@@ -235,10 +225,9 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			expectedFatal: false,
 		},
 		{
-			name: "Test 6: When there is an rpc error in getting gasLimit",
+			name: "Test 7: When there is an rpc error in getting gasLimit",
 			args: args{
-				path:        "/home/local",
-				privateKey:  privateKey,
+				address:     "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
 				nonce:       2,
 				txnOpts:     txnOpts,
 				gasLimitErr: errors.New("504 gateway error"),
@@ -250,10 +239,9 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			expectedFatal: false,
 		},
 		{
-			name: "Test 7: When there is an rpc error in getting gasLimit and than error in getting latest header",
+			name: "Test 8: When there is an rpc error in getting gasLimit and than error in getting latest header",
 			args: args{
-				path:        "/home/local",
-				privateKey:  privateKey,
+				address:     "0x57Baf83BAD5bee0F7F44d84669A50C35c57E3576",
 				nonce:       2,
 				txnOpts:     txnOpts,
 				gasLimitErr: errors.New("504 gateway error"),
@@ -267,32 +255,42 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
-	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	originalExitFunc := log.ExitFunc                   // Preserve the original ExitFunc
+	defer func() { log.ExitFunc = originalExitFunc }() // Ensure it's reset after tests
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			fatalOccurred := false
+
+			// Override log.ExitFunc to induce a panic for testing the fatal scenario
+			log.ExitFunc = func(int) { panic("log.Fatal called") }
+
+			var account types.Account
+			accountManager := accounts.NewAccountManager("test_accounts")
+			if tt.args.address != "" {
+				account = accounts.InitAccountStruct(tt.args.address, "Test@123", accountManager)
+			} else {
+				account = types.Account{}
+			}
+			transactionData := types.TransactionOptions{
+				Account: account,
+			}
 			utilsMock := new(mocks.Utils)
 			pathMock := new(mocks.PathUtils)
 			bindMock := new(mocks.BindUtils)
-			accountsMock := new(mocks.AccountsUtils)
 			clientMock := new(mocks.ClientUtils)
 			gasMock := new(mocks.GasUtils)
 
 			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface:    utilsMock,
-				PathInterface:     pathMock,
-				BindInterface:     bindMock,
-				AccountsInterface: accountsMock,
-				ClientInterface:   clientMock,
-				GasInterface:      gasMock,
+				UtilsInterface:  utilsMock,
+				PathInterface:   pathMock,
+				BindInterface:   bindMock,
+				ClientInterface: clientMock,
+				GasInterface:    gasMock,
 			}
 
 			utils := StartRazor(optionsPackageStruct)
 
-			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			accountsMock.On("GetPrivateKey", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(tt.args.privateKey, nil)
 			clientMock.On("GetNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
 			gasMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
 			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
@@ -301,10 +299,29 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
 			clientMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
-			fatal = false
+			// Defer a function to recover from the panic and check if it matches the expectedFatal condition
+			defer func() {
+				if r := recover(); r != nil {
+					// A panic occurred, check if it was expected
+					if tt.expectedFatal {
+						// Panic (fatal) was expected and occurred, so this is correct
+						fatalOccurred = true
+					} else {
+						// Panic occurred but was not expected, fail the test
+						t.Errorf("Unexpected log.Fatal call")
+					}
+				} else {
+					// No panic occurred, check if it was expected
+					if tt.expectedFatal {
+						// Expected a fatal condition but it didn't occur, fail the test
+						t.Errorf("Expected log.Fatal call did not occur")
+					}
+				}
+			}()
+
 			got := utils.GetTxnOpts(transactionData)
-			if tt.expectedFatal {
-				assert.Equal(t, tt.expectedFatal, fatal)
+			if !tt.expectedFatal && fatalOccurred {
+				t.Fatalf("Test exited due to an unexpected fatal condition")
 			}
 			if got != tt.want {
 				t.Errorf("GetTxnOpts() function, got = %v, want = %v", got, tt.want)

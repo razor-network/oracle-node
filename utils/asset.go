@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -140,21 +141,21 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, localCache *cache.LocalCache) (*big.Int, error) {
-	activeCollection, err := UtilsInterface.GetActiveCollection(client, collectionId)
+func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
+	activeCollection, err := UtilsInterface.GetActiveCollection(commitParams.CollectionsCache, collectionId)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	//Supply previous epoch to Aggregate in case if last reported value is required.
-	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, localCache)
+	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, commitParams)
 	if aggregationError != nil {
 		return nil, aggregationError
 	}
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, localCache *cache.LocalCache) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -164,7 +165,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		return nil, err
 	}
 	if _, err := path.OSUtilsInterface.Stat(assetsFilePath); !errors.Is(err, os.ErrNotExist) {
-		log.Debug("Fetching the jobs from assets.json file...")
+		log.Debugf("assets.json file is present, checking jobs for collection Id: %v...", collection.Id)
 		jsonFile, err := path.OSUtilsInterface.Open(assetsFilePath)
 		if err != nil {
 			return nil, err
@@ -183,25 +184,24 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 		}
 
 		// Overriding the jobs from contracts with official jobs present in asset.go
-		overrideJobs, overriddenJobIdsFromJSONfile := UtilsInterface.HandleOfficialJobsFromJSONFile(client, collection, dataString)
+		overrideJobs, overriddenJobIdsFromJSONfile := UtilsInterface.HandleOfficialJobsFromJSONFile(client, collection, dataString, commitParams)
 		jobs = append(jobs, overrideJobs...)
 		overriddenJobIds = append(overriddenJobIds, overriddenJobIdsFromJSONfile...)
 
 		// Also adding custom jobs to jobs array
 		customJobs := GetCustomJobsFromJSONFile(collection.Name, dataString)
 		if len(customJobs) != 0 {
-			log.Debugf("Got Custom Jobs from asset.json file: %+v", customJobs)
+			log.Debugf("Got Custom Jobs from asset.json file for collectionId %v: %+v", collection.Id, customJobs)
 		}
 		jobs = append(jobs, customJobs...)
 	}
 
 	for _, id := range collection.JobIDs {
-
 		// Ignoring the Jobs which are already overriden and added to jobs array
 		if !Contains(overriddenJobIds, id) {
-			job, err := UtilsInterface.GetActiveJob(client, id)
-			if err != nil {
-				log.Errorf("Error in fetching job %d: %v", id, err)
+			job, isPresent := commitParams.JobsCache.GetJob(id)
+			if !isPresent {
+				log.Errorf("Job with id %v is not present in cache", id)
 				continue
 			}
 			jobs = append(jobs, job)
@@ -211,8 +211,8 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	if len(jobs) == 0 {
 		return nil, errors.New("no jobs present in the collection")
 	}
-	dataToCommit, weight, err := UtilsInterface.GetDataToCommitFromJobs(jobs, localCache)
-	if err != nil || len(dataToCommit) == 0 {
+	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, commitParams)
+	if len(dataToCommit) == 0 {
 		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
@@ -242,10 +242,10 @@ func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindin
 	return job, nil
 }
 
-func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	collection, err := UtilsInterface.GetCollection(client, collectionId)
-	if err != nil {
-		return bindings.StructsCollection{}, err
+func (*UtilsStruct) GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error) {
+	collection, isPresent := collectionsCache.GetCollection(collectionId)
+	if !isPresent {
+		return bindings.StructsCollection{}, errors.New("collection not present in cache")
 	}
 	if !collection.Active {
 		return bindings.StructsCollection{}, errors.New("collection inactive")
@@ -253,43 +253,58 @@ func (*UtilsStruct) GetActiveCollection(client *ethclient.Client, collectionId u
 	return collection, nil
 }
 
-func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, localCache *cache.LocalCache) ([]*big.Int, []uint8, error) {
+func (*UtilsStruct) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams *types.CommitParams) ([]*big.Int, []uint8) {
 	var (
+		wg     sync.WaitGroup
+		mu     sync.Mutex
 		data   []*big.Int
 		weight []uint8
 	)
+
 	for _, job := range jobs {
-		dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, localCache)
-		if err != nil {
-			continue
-		}
-		log.Debugf("Job %s gives data %s", job.Url, dataToAppend)
-		data = append(data, dataToAppend)
-		weight = append(weight, job.Weight)
+		wg.Add(1)
+		go processJobConcurrently(&wg, &mu, &data, &weight, job, commitParams)
 	}
-	return data, weight, nil
+
+	wg.Wait()
+
+	return data, weight
 }
 
-func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *cache.LocalCache) (*big.Int, error) {
-	var parsedJSON map[string]interface{}
+func processJobConcurrently(wg *sync.WaitGroup, mu *sync.Mutex, data *[]*big.Int, weight *[]uint8, job bindings.StructsJob, commitParams *types.CommitParams) {
+	defer wg.Done()
+
+	dataToAppend, err := UtilsInterface.GetDataToCommitFromJob(job, commitParams)
+	if err != nil {
+		return
+	}
+	log.Debugf("Job ID: %d, Job %s gives data %s", job.Id, job.Url, dataToAppend)
+
+	mu.Lock()
+	defer mu.Unlock()
+	*data = append(*data, dataToAppend)
+	*weight = append(*weight, job.Weight)
+}
+
+func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error) {
 	var (
 		response            []byte
 		apiErr              error
 		dataSourceURLStruct types.DataSourceURL
 	)
-	log.Debugf("Getting the data to commit for job %s having job Id %d", job.Name, job.Id)
+	log.Debugf("Job ID: %d, Getting the data to commit for job %s", job.Id, job.Name)
 	if isJSONCompatible(job.Url) {
-		log.Debug("Job URL passed is a struct containing URL along with type of request data")
+		log.Debugf("Job ID: %d, Job URL passed is a struct containing URL along with type of request data", job.Id)
 		dataSourceURLInBytes := []byte(job.Url)
 
 		err := json.Unmarshal(dataSourceURLInBytes, &dataSourceURLStruct)
 		if err != nil {
-			log.Errorf("Error in unmarshalling %s: %v", job.Url, err)
+			log.Errorf("Job ID: %d, Error in unmarshalling %s: %v", job.Id, job.Url, err)
 			return nil, err
 		}
-		log.Infof("URL Struct: %+v", dataSourceURLStruct)
+		log.Infof("Job ID: %d, URL Struct: %+v", job.Id, dataSourceURLStruct)
 	} else {
-		log.Debug("Job URL passed is a direct URL: ", job.Url)
+		log.Debugf("Job ID: %d, Job URL passed is a direct URL: %s", job.Id, job.Url)
 		re := regexp.MustCompile(core.APIKeyRegex)
 		isAPIKeyRequired := re.MatchString(job.Url)
 		if isAPIKeyRequired {
@@ -306,29 +321,30 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 	var parsedData interface{}
 	if job.SelectorType == 0 {
 		start := time.Now()
-		response, apiErr = GetDataFromAPI(dataSourceURLStruct, localCache)
+		response, apiErr = GetDataFromAPI(commitParams, dataSourceURLStruct)
 		if apiErr != nil {
-			log.Errorf("Error in fetching data from API %s: %v", job.Url, apiErr)
+			log.Errorf("Job ID: %d, Error in fetching data from API %s: %v", job.Id, job.Url, apiErr)
 			return nil, apiErr
 		}
 		elapsed := time.Since(start).Seconds()
-		log.Debugf("Time taken to fetch the data from API : %s was %f", dataSourceURLStruct.URL, elapsed)
+		log.Debugf("Job ID: %d, Time taken to fetch the data from API : %s was %f", job.Id, dataSourceURLStruct.URL, elapsed)
 
+		var parsedJSON interface{}
 		err := json.Unmarshal(response, &parsedJSON)
 		if err != nil {
-			log.Error("Error in parsing data from API: ", err)
+			log.Errorf("Job ID: %d, Error in parsing data from API: %v", job.Id, err)
 			return nil, err
 		}
-		parsedData, err = GetDataFromJSON(parsedJSON, job.Selector)
+		parsedData, err = parseJSONData(parsedJSON, job.Selector)
 		if err != nil {
-			log.Error("Error in fetching value from parsed data: ", err)
+			log.Errorf("Job ID: %d, Error in parsing JSON data: %v", job.Id, err)
 			return nil, err
 		}
 	} else {
 		//TODO: Add retry here.
 		dataPoint, err := GetDataFromXHTML(dataSourceURLStruct, job.Selector)
 		if err != nil {
-			log.Error("Error in fetching value from parsed XHTML: ", err)
+			log.Errorf("Job ID: %d, Error in fetching value from parsed XHTML: %v", job.Id, err)
 			return nil, err
 		}
 		// remove "," and currency symbols
@@ -337,7 +353,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, localCache *
 
 	datum, err := ConvertToNumber(parsedData, dataSourceURLStruct.ReturnType)
 	if err != nil {
-		log.Error("Result is not a number")
+		log.Errorf("Job ID: %d, Result is not a number", job.Id)
 		return nil, err
 	}
 
@@ -470,7 +486,7 @@ func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob 
 	}
 }
 
-func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string) ([]bindings.StructsJob, []uint16) {
+func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
 	var overrideJobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -483,8 +499,9 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 		if officialJobsJSONResult.Exists() {
 			officialJobs := officialJobsJSONResult.String()
 			if officialJobs != "" {
-				job, err := UtilsInterface.GetActiveJob(client, jobIds[i])
-				if err != nil {
+				job, isPresent := commitParams.JobsCache.GetJob(jobIds[i])
+				if !isPresent {
+					log.Errorf("Job with id %v is not present in cache", jobIds[i])
 					continue
 				}
 				log.Debugf("Overriding job %s having jobId %d from official job present in assets.json file...", job.Url, job.Id)
@@ -513,6 +530,54 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 	}
 
 	return overrideJobs, overriddenJobIds
+}
+
+// InitJobsCache initializes the jobs cache with data fetched from the blockchain
+func InitJobsCache(client *ethclient.Client, jobsCache *cache.JobsCache) error {
+	jobsCache.Mu.Lock()
+	defer jobsCache.Mu.Unlock()
+
+	// Flush the jobsCache before initialization
+	for k := range jobsCache.Jobs {
+		delete(jobsCache.Jobs, k)
+	}
+
+	numJobs, err := AssetManagerInterface.GetNumJobs(client)
+	if err != nil {
+		return err
+	}
+	for i := 1; i <= int(numJobs); i++ {
+		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
+		if err != nil {
+			return err
+		}
+		jobsCache.Jobs[job.Id] = job
+	}
+	return nil
+}
+
+// InitCollectionsCache initializes the collections cache with data fetched from the blockchain
+func InitCollectionsCache(client *ethclient.Client, collectionsCache *cache.CollectionsCache) error {
+	collectionsCache.Mu.Lock()
+	defer collectionsCache.Mu.Unlock()
+
+	// Flush the collectionsCache before initialization
+	for k := range collectionsCache.Collections {
+		delete(collectionsCache.Collections, k)
+	}
+
+	numCollections, err := AssetManagerInterface.GetNumCollections(client)
+	if err != nil {
+		return err
+	}
+	for i := 1; i <= int(numCollections); i++ {
+		collection, err := AssetManagerInterface.GetCollection(client, uint16(i))
+		if err != nil {
+			return err
+		}
+		collectionsCache.Collections[collection.Id] = collection
+	}
+	return nil
 }
 
 func ReplaceValueWithDataFromENVFile(re *regexp.Regexp, value string) string {

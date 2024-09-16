@@ -12,6 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -29,8 +30,8 @@ func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindi
 }
 
 //This function checks if the state is reveal or not and then reveals the votes
-func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, commitData types.CommitData, signature []byte) (common.Hash, error) {
-	if state, err := razorUtils.GetBufferedState(client, config.BufferPercent); err != nil || state != 1 {
+func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, commitData types.CommitData, signature []byte) (common.Hash, error) {
+	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}
@@ -56,14 +57,13 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 
 	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
 		Client:          client,
-		Password:        account.Password,
-		AccountAddress:  account.Address,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
 		ABI:             bindings.VoteManagerMetaData.ABI,
 		MethodName:      "reveal",
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
+		Account:         account,
 	})
 	log.Debugf("Executing Reveal transaction wih epoch = %d, treeRevealData = %v, signature = %v", epoch, treeRevealData, signature)
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)

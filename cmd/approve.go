@@ -11,7 +11,7 @@ import (
 //This function approves the transaction if the user has sufficient balance otherwise it fails the transaction
 func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, error) {
 	opts := razorUtils.GetOptions()
-	allowance, err := tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.AccountAddress), common.HexToAddress(core.StakeManagerAddress))
+	allowance, err := tokenManagerUtils.Allowance(txnArgs.Client, &opts, common.HexToAddress(txnArgs.Account.Address), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		return core.NilHash, err
 	}
