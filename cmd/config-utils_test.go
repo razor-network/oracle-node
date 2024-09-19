@@ -955,9 +955,9 @@ func TestGetRPCTimeout(t *testing.T) {
 			name: "Test 1: When rpcTimeout is fetched from root flag",
 			args: args{
 				isFlagSet:  true,
-				rpcTimeout: 12,
+				rpcTimeout: 6,
 			},
-			want:    12,
+			want:    6,
 			wantErr: nil,
 		},
 		{
@@ -973,9 +973,9 @@ func TestGetRPCTimeout(t *testing.T) {
 			name:               "Test 3: When rpcTimeout value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				rpcTimeoutInTestConfig: 20,
+				rpcTimeoutInTestConfig: 7,
 			},
-			want:    20,
+			want:    7,
 			wantErr: nil,
 		},
 		{
@@ -1043,9 +1043,9 @@ func TestGetHTTPTimeout(t *testing.T) {
 			name: "Test 1: When httpTimeout is fetched from root flag",
 			args: args{
 				isFlagSet:   true,
-				httpTimeout: 12,
+				httpTimeout: 6,
 			},
-			want:    12,
+			want:    6,
 			wantErr: nil,
 		},
 		{
@@ -1061,9 +1061,9 @@ func TestGetHTTPTimeout(t *testing.T) {
 			name:               "Test 3: When httpTimeout value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				httpTimeoutInTestConfig: 20,
+				httpTimeoutInTestConfig: 7,
 			},
-			want:    20,
+			want:    7,
 			wantErr: nil,
 		},
 		{
