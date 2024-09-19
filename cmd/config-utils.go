@@ -323,8 +323,8 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 //This function returns the RPC timeout
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	const (
-		MinRPCTimeout = 10 // Minimum RPC timeout in seconds
-		MaxRPCTimeout = 20 // Maximum RPC timeout in seconds
+		MinRPCTimeout = 5  // Minimum RPC timeout in seconds
+		MaxRPCTimeout = 10 // Maximum RPC timeout in seconds
 	)
 
 	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")

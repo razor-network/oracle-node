@@ -31,7 +31,7 @@ const (
 	DefaultWaitTime         int32   = 1
 	DefaultGasLimit         float32 = 2
 	DefaultGasLimitOverride uint64  = 30000000
-	DefaultRPCTimeout       int64   = 10
+	DefaultRPCTimeout       int64   = 5
 	DefaultHTTPTimeout      int64   = 5
 	DefaultLogLevel                 = ""
 )
