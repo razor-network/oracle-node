@@ -134,7 +134,7 @@ func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName strin
 				return err
 			}
 			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries), retry.Delay(time.Second*time.Duration(core.RetryDelayDuration)))
 	if err != nil {
 		if !switchToAlternateClient && alternateProvider != "" {
 			log.Errorf("%v error after retries: %v", methodName, err)
