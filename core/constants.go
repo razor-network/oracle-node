@@ -24,7 +24,7 @@ const (
 
 var NilHash = common.Hash{0x00}
 
-const BlockCompletionTimeout = 30
+const BlockCompletionTimeout = 20
 
 //Following are the default config values for all the config parameters
 const (
