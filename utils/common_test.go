@@ -605,7 +605,7 @@ func TestWaitForBlockCompletion(t *testing.T) {
 			args: args{
 				transactionStatus: 2,
 			},
-			want: errors.New("timeout passed for transaction mining"),
+			want: errors.New("maximum attempts failed for transaction mining"),
 		},
 	}
 	for _, tt := range tests {
