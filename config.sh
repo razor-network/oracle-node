@@ -60,4 +60,4 @@ if [ -n "$ALTERNATE_PROVIDER" ]; then
     ALT_PROVIDER_OPTION="--alternateProvider $ALTERNATE_PROVIDER"
 fi
 
-$RAZOR setConfig -p $PROVIDER $ALT_PROVIDER_OPTION -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
+$RAZOR setConfig -p $PROVIDER $ALT_PROVIDER_OPTION -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 5 --httpTimeout 5 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
