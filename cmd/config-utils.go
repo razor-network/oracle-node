@@ -345,8 +345,8 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
 	const (
-		MinHTTPTimeout = 10 // Minimum HTTP timeout in seconds
-		MaxHTTPTimeout = 20 // Maximum HTTP timeout in seconds
+		MinHTTPTimeout = 5 // Minimum HTTP timeout in seconds
+		MaxHTTPTimeout = 8 // Maximum HTTP timeout in seconds
 	)
 
 	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")
