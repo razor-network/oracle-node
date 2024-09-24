@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	EpochLength    uint64 = 300
+	EpochLength    uint64 = 450
 	NumberOfStates uint64 = 5
 	StateLength           = EpochLength / NumberOfStates
 )
