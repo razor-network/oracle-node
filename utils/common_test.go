@@ -959,7 +959,7 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 				block:       &types.Header{},
 				stateBuffer: 5,
 			},
-			want:    55,
+			want:    85,
 			wantErr: false,
 		},
 		{
@@ -1083,10 +1083,10 @@ func TestEstimateBlockNumberAtEpochBeginning(t *testing.T) {
 		{
 			name: "Test 1: When EstimateBlockNumberAtEpochBeginning() is executed successfully",
 			args: args{
-				block:         &types.Header{Time: 1, Number: big.NewInt(1)},
-				previousBlock: &types.Header{Time: 20, Number: big.NewInt(1)},
+				block:         &types.Header{Time: 1, Number: big.NewInt(100)},
+				previousBlock: &types.Header{Time: 20, Number: big.NewInt(12)},
 			},
-			want:    big.NewInt(-59),
+			want:    big.NewInt(10),
 			wantErr: false,
 		},
 		{
