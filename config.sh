@@ -19,15 +19,15 @@ then
   GAS_MULTIPLIER=1.0
 fi
 
-read -rp "Buffer Percent: (20) " BUFFER
+read -rp "Buffer Percent: (5) " BUFFER
 if [ -z "$BUFFER" ];
 then
-  BUFFER=20
+  BUFFER=5
 fi
 
-read -rp "Wait Time: (5) " WAIT_TIME
+read -rp "Wait Time: (1) " WAIT_TIME
 if [ -z "$WAIT_TIME" ]; then
-   WAIT_TIME=5
+   WAIT_TIME=1
 fi
 
 read -rp "Gas Price: (1) " GAS_PRICE
@@ -60,4 +60,4 @@ if [ -n "$ALTERNATE_PROVIDER" ]; then
     ALT_PROVIDER_OPTION="--alternateProvider $ALTERNATE_PROVIDER"
 fi
 
-$RAZOR setConfig -p $PROVIDER $ALT_PROVIDER_OPTION -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 10 --httpTimeout 10 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
+$RAZOR setConfig -p $PROVIDER $ALT_PROVIDER_OPTION -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 5 --httpTimeout 5 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE

@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
 	"razor/client"
 	"razor/core"
@@ -207,11 +208,6 @@ func (*UtilsStruct) GetMultiplier() (float32, error) {
 
 //This function returns the buffer percent
 func (*UtilsStruct) GetBufferPercent() (int32, error) {
-	const (
-		MinBufferPercent = 0
-		MaxBufferPercent = 30
-	)
-
 	bufferPercent, err := getConfigValue("buffer", "int32", core.DefaultBufferPercent, "buffer")
 	if err != nil {
 		return core.DefaultBufferPercent, err
@@ -219,16 +215,10 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 
 	bufferPercentInt32 := bufferPercent.(int32)
 
-	// Check if bufferPercent is explicitly set and not within the valid range.
-	if bufferPercentInt32 < MinBufferPercent || bufferPercentInt32 > MaxBufferPercent {
-		log.Infof("BufferPercent %d is out of the valid range (%d-%d), using default value %d", bufferPercentInt32, MinBufferPercent, MaxBufferPercent, core.DefaultBufferPercent)
-		return core.DefaultBufferPercent, nil
-	}
-
-	// If bufferPercent is 0, use the default value.
-	if bufferPercentInt32 == 0 {
-		log.Debugf("BufferPercent is unset or set to 0, using its default %d value", core.DefaultBufferPercent)
-		return core.DefaultBufferPercent, nil
+	// bufferPercent cannot be less than core.DefaultBufferPercent else through an error
+	if bufferPercentInt32 < core.DefaultBufferPercent {
+		log.Infof("BufferPercent should be greater than or equal to %v", core.DefaultBufferPercent)
+		return core.DefaultBufferPercent, errors.New("invalid buffer percent")
 	}
 
 	return bufferPercentInt32, nil
@@ -333,8 +323,8 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 //This function returns the RPC timeout
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	const (
-		MinRPCTimeout = 10 // Minimum RPC timeout in seconds
-		MaxRPCTimeout = 60 // Maximum RPC timeout in seconds
+		MinRPCTimeout = 5  // Minimum RPC timeout in seconds
+		MaxRPCTimeout = 10 // Maximum RPC timeout in seconds
 	)
 
 	rpcTimeout, err := getConfigValue("rpcTimeout", "int64", core.DefaultRPCTimeout, "rpcTimeout")
@@ -355,8 +345,8 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
 	const (
-		MinHTTPTimeout = 10 // Minimum HTTP timeout in seconds
-		MaxHTTPTimeout = 60 // Maximum HTTP timeout in seconds
+		MinHTTPTimeout = 5 // Minimum HTTP timeout in seconds
+		MaxHTTPTimeout = 8 // Maximum HTTP timeout in seconds
 	)
 
 	httpTimeout, err := getConfigValue("httpTimeout", "int64", core.DefaultHTTPTimeout, "httpTimeout")
@@ -412,4 +402,31 @@ func setLogLevel(config types.Configurations) {
 		log.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)
 		log.Debugf("Log File Max Age (max number of days to retain old log files): %d", config.LogFileMaxAge)
 	}
+}
+
+func ValidateBufferPercentLimit(client *ethclient.Client, bufferPercent int32) error {
+	stateBuffer, err := razorUtils.GetStateBuffer(client)
+	if err != nil {
+		return err
+	}
+	maxBufferPercent := calculateMaxBufferPercent(stateBuffer, core.StateLength)
+	if bufferPercent >= maxBufferPercent {
+		log.Errorf("Buffer percent %v is greater than or equal to maximum possible buffer percent", maxBufferPercent)
+		return errors.New("buffer percent exceeds limit")
+	}
+	return nil
+}
+
+// calculateMaxBuffer calculates the maximum buffer percent value.
+func calculateMaxBufferPercent(stateBuffer, stateLength uint64) int32 {
+	if stateLength == 0 {
+		return 0
+	}
+
+	// The formula is derived from the condition:
+	// 2(maxBuffer % stateLength) < (stateLength - 2*StateBuffer)
+
+	// Perform the calculation with float64 for precision
+	maxBufferPercent := 50 * (1 - (float64(2*stateBuffer) / float64(stateLength)))
+	return int32(maxBufferPercent)
 }

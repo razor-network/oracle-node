@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/mock"
 	"os"
@@ -260,9 +261,9 @@ func TestGetBufferPercent(t *testing.T) {
 			name: "Test 1: When buffer percent is fetched from root flag",
 			args: args{
 				isFlagSet:     true,
-				bufferPercent: 5,
+				bufferPercent: 10,
 			},
-			want:    5,
+			want:    10,
 			wantErr: nil,
 		},
 		{
@@ -278,9 +279,9 @@ func TestGetBufferPercent(t *testing.T) {
 			name:               "Test 3: When buffer value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				bufferInTestConfig: 1,
+				bufferInTestConfig: 6,
 			},
-			want:    1,
+			want:    6,
 			wantErr: nil,
 		},
 		{
@@ -292,10 +293,10 @@ func TestGetBufferPercent(t *testing.T) {
 			name:               "Test 5: When buffer value is out of a valid range",
 			useDummyConfigFile: true,
 			args: args{
-				bufferInTestConfig: 40,
+				bufferInTestConfig: 0,
 			},
 			want:    core.DefaultBufferPercent,
-			wantErr: nil,
+			wantErr: errors.New("invalid buffer percent"),
 		},
 	}
 	for _, tt := range tests {
@@ -954,9 +955,9 @@ func TestGetRPCTimeout(t *testing.T) {
 			name: "Test 1: When rpcTimeout is fetched from root flag",
 			args: args{
 				isFlagSet:  true,
-				rpcTimeout: 12,
+				rpcTimeout: 6,
 			},
-			want:    12,
+			want:    6,
 			wantErr: nil,
 		},
 		{
@@ -972,9 +973,9 @@ func TestGetRPCTimeout(t *testing.T) {
 			name:               "Test 3: When rpcTimeout value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				rpcTimeoutInTestConfig: 20,
+				rpcTimeoutInTestConfig: 7,
 			},
-			want:    20,
+			want:    7,
 			wantErr: nil,
 		},
 		{
@@ -1042,9 +1043,9 @@ func TestGetHTTPTimeout(t *testing.T) {
 			name: "Test 1: When httpTimeout is fetched from root flag",
 			args: args{
 				isFlagSet:   true,
-				httpTimeout: 12,
+				httpTimeout: 6,
 			},
-			want:    12,
+			want:    6,
 			wantErr: nil,
 		},
 		{
@@ -1060,9 +1061,9 @@ func TestGetHTTPTimeout(t *testing.T) {
 			name:               "Test 3: When httpTimeout value is fetched from config",
 			useDummyConfigFile: true,
 			args: args{
-				httpTimeoutInTestConfig: 20,
+				httpTimeoutInTestConfig: 7,
 			},
-			want:    20,
+			want:    7,
 			wantErr: nil,
 		},
 		{
@@ -1196,6 +1197,65 @@ func TestGetWaitTime(t *testing.T) {
 					t.Errorf("Error for GetWaitTime function, got = %v, want = %v", err, tt.wantErr)
 				}
 			}
+		})
+	}
+}
+
+func TestValidateBufferPercentLimit(t *testing.T) {
+	var client *ethclient.Client
+
+	type args struct {
+		bufferPercent  int32
+		stateBuffer    uint64
+		stateBufferErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "Buffer percent less than max buffer percent",
+			args: args{
+				stateBuffer:   10,
+				bufferPercent: 20,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Buffer percent greater than max buffer percent",
+			args: args{
+				stateBuffer:   10,
+				bufferPercent: 60,
+			},
+			wantErr: errors.New("buffer percent exceeds limit"),
+		},
+		{
+			name: "GetStateBuffer returns an error",
+			args: args{
+				stateBufferErr: errors.New("state buffer error"),
+				bufferPercent:  10,
+			},
+			wantErr: errors.New("state buffer error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetUpMockInterfaces()
+
+			utilsMock.On("GetStateBuffer", mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
+
+			err := ValidateBufferPercentLimit(client, tt.args.bufferPercent)
+			if err == nil || tt.wantErr == nil {
+				if err != tt.wantErr {
+					t.Errorf("Error for GetEpochAndState function, got = %v, want = %v", err, tt.wantErr)
+				}
+			} else {
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("Error for GetEpochAndState function, got = %v, want = %v", err, tt.wantErr)
+				}
+			}
+
 		})
 	}
 }

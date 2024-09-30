@@ -108,14 +108,24 @@ func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts 
 		Value:    txnOpts.Value,
 		Data:     inputData,
 	}
-	gasLimit, err := ClientInterface.EstimateGasWithRetry(transactionData.Client, msg)
-	if err != nil {
-		log.Error("GetGasLimit: Error in getting gasLimit: ", err)
-		//If estimateGas throws an error for a transaction than gasLimit should be picked up from the config
-		log.Debugf("As there was an error from estimateGas, taking the gas limit value = %d from config", transactionData.Config.GasLimitOverride)
-		return transactionData.Config.GasLimitOverride, nil
+	var gasLimit uint64
+	if transactionData.MethodName == "reveal" {
+		gasLimit, err = getGasLimitForReveal(transactionData.Client)
+		if err != nil {
+			log.Error("GetGasLimit: Error in getting gasLimit for reveal transaction: ", err)
+			return transactionData.Config.GasLimitOverride, err
+		}
+		log.Debug("Calculated gas limit for reveal: ", gasLimit)
+	} else {
+		gasLimit, err = ClientInterface.EstimateGasWithRetry(transactionData.Client, msg)
+		if err != nil {
+			log.Error("GetGasLimit: Error in getting gasLimit: ", err)
+			//If estimateGas throws an error for a transaction than gasLimit should be picked up from the config
+			log.Debugf("As there was an error from estimateGas, taking the gas limit value = %d from config", transactionData.Config.GasLimitOverride)
+			return transactionData.Config.GasLimitOverride, nil
+		}
+		log.Debug("Estimated Gas: ", gasLimit)
 	}
-	log.Debug("Estimated Gas: ", gasLimit)
 	return GasInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
 }
 
@@ -136,5 +146,16 @@ func (*GasStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint6
 		return latestBlock.GasLimit, nil
 	}
 
+	return gasLimit, nil
+}
+
+func getGasLimitForReveal(client *ethclient.Client) (uint64, error) {
+	toAssign, err := UtilsInterface.ToAssign(client)
+	if err != nil {
+		return 0, err
+	}
+
+	// Apply the formula: gasLimit = 226864 + n * 85000
+	gasLimit := 226864 + (uint64(toAssign) * 85000)
 	return gasLimit, nil
 }
