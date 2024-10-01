@@ -89,7 +89,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 	log.Debug("UpdateCommission: Maximum Commission: ", maxCommission)
 
-	if updateCommissionInput.Commission == 0 || updateCommissionInput.Commission > maxCommission {
+	if updateCommissionInput.Commission > maxCommission {
 		return errors.New("commission out of range")
 	}
 
@@ -159,4 +159,7 @@ func init() {
 
 	addrErr := updateCommissionCmd.MarkFlagRequired("address")
 	utils.CheckError("Address error: ", addrErr)
+
+	commissionErr := updateCommissionCmd.MarkFlagRequired("commission")
+	utils.CheckError("Commission error: ", commissionErr)
 }
