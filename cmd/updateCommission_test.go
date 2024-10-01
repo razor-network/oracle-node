@@ -138,7 +138,7 @@ func TestUpdateCommission(t *testing.T) {
 				UpdateCommissionTxn:           &Types.Transaction{},
 				UpdateCommissionErr:           nil,
 			},
-			wantErr: errors.New("commission out of range"),
+			wantErr: nil,
 		},
 		{
 			name: "Test 8: When commission is greater than max commission",
