@@ -145,7 +145,7 @@ func InvokeFunctionWithRetryAttempts(ctx context.Context, interfaceName interfac
 				}
 				return nil
 			}
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+		}, RetryInterface.RetryAttempts(core.MaxRetries), retry.Delay(time.Second*time.Duration(core.RetryDelayDuration)), retry.DelayType(retry.FixedDelay))
 	if err != nil {
 		if contextError {
 			// Skip the alternate client switch when the error is context-related

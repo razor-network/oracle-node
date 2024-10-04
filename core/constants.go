@@ -17,7 +17,10 @@ const (
 // ChainId corresponds to the EUROPA chain
 var ChainId = big.NewInt(0x79f99296)
 
-const MaxRetries uint = 4
+const (
+	MaxRetries         uint  = 3
+	RetryDelayDuration int64 = 1
+)
 
 var NilHash = common.Hash{0x00}
 
