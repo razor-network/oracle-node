@@ -231,9 +231,9 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		return
 	}
 
-	// Warning the staker if ETH balance is less than 0.1 ETH
-	if ethBalance.Cmp(big.NewInt(1e17)) == -1 {
-		log.Warn("sFuel balance is lower than 0.1 sFuel, kindly add more SKL to be safe for executing transactions successfully")
+	// Warning the staker if sFuel balance is less than 0.001 sFuel
+	if ethBalance.Cmp(big.NewInt(1e15)) == -1 {
+		log.Warn("sFuel balance is lower than 0.001 sFuel, kindly add more sFuel to be safe for executing transactions successfully")
 	}
 
 	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
