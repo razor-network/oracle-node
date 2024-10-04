@@ -35,7 +35,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 
 	returnedValues, err := InvokeFunctionWithRetryAttempts(CoinInterface, "BalanceOf", erc20Contract, &opts, address)
 	if err != nil {
-		return big.NewInt(0), err
+		return nil, err
 	}
 	return returnedValues[0].Interface().(*big.Int), nil
 }
