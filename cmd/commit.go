@@ -243,3 +243,80 @@ func VerifyCommitment(ctx context.Context, client *ethclient.Client, account typ
 	log.Debug("VerifyCommitment: Calculated commitment for given values DOES NOT MATCH with commitment in the epoch")
 	return false, nil
 }
+
+func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, keystorePath string, rogueData types.Rogue) (types.CommitFileData, error) {
+	// Check if global data is for the correct epoch
+	if globalCommitDataStruct.Epoch == epoch {
+		// Verify commitment data from memory
+		log.Debug("Verifying commit data from file...")
+		log.Debugf("GetCommittedDataForEpoch: Calling VerifyCommitment() for address %v with arguments epoch = %v, values = %v", account.Address, epoch, globalCommitDataStruct.Leaves)
+		isCommittedDataFromMemoryValid, err := VerifyCommitment(ctx, client, account, keystorePath, epoch, globalCommitDataStruct.Leaves)
+		if err != nil {
+			log.Error("Error in verifying commitment for commit data from file: ", err)
+			return types.CommitFileData{}, err
+		}
+		if !isCommittedDataFromMemoryValid {
+			log.Infof("Not using commit data from memory! As commitment calculated for commit data from memory is not equal to staker's commitment for this epoch.")
+			return types.CommitFileData{}, errors.New("commitment verification for commit data from memory failed")
+		}
+
+		return globalCommitDataStruct, nil
+	}
+
+	log.Debugf("GetCommittedDataForEpoch: Epoch in global commit data: %v is not equal to current epoch: %v", globalCommitDataStruct.Epoch, epoch)
+	log.Info("Getting the commit data from file...")
+
+	// Fetch and verify commitment data from file
+	fileName, err := pathUtils.GetCommitDataFileName(account.Address)
+	if err != nil {
+		log.Error("Error in getting file name to save committed data: ", err)
+		return types.CommitFileData{}, err
+	}
+	log.Debug("GetCommittedDataForEpoch: Commit data file path: ", fileName)
+
+	committedDataFromFile, err := fileUtils.ReadFromCommitJsonFile(fileName)
+	if err != nil {
+		log.Errorf("Error in getting committed data from file %s: %v", fileName, err)
+		return types.CommitFileData{}, err
+	}
+	log.Debug("committedDataFromFile: Committed data from file: ", committedDataFromFile)
+
+	if committedDataFromFile.Epoch != epoch {
+		log.Errorf("File %s doesn't contain latest committed data", fileName)
+		return types.CommitFileData{}, errors.New("commit data file doesn't contain latest committed data")
+	}
+
+	log.Debug("Verifying commit data from file...")
+	log.Debugf("GetCommittedDataForEpoch: Calling VerifyCommitment() for address %v with arguments epoch = %v, values = %v", account.Address, epoch, committedDataFromFile.Leaves)
+	isCommittedDataFromFileValid, err := VerifyCommitment(ctx, client, account, keystorePath, epoch, committedDataFromFile.Leaves)
+	if err != nil {
+		log.Error("Error in verifying commitment for commit data from file: ", err)
+		return types.CommitFileData{}, err
+	}
+
+	if !isCommittedDataFromFileValid {
+		log.Infof("Not using commit data from file! As commitment calculated for data from commit data file is not equal to staker's commitment for this epoch.")
+		return types.CommitFileData{}, errors.New("commitment verification for commit file data failed")
+	}
+
+	log.Debug("Updating global commit data struct...")
+	updateGlobalCommitDataStruct(types.CommitData{
+		Leaves:                 committedDataFromFile.Leaves,
+		SeqAllottedCollections: committedDataFromFile.SeqAllottedCollections,
+		AssignedCollections:    committedDataFromFile.AssignedCollections,
+	}, epoch)
+	log.Debugf("GetCommittedDataForEpoch: Global Commit data struct: %+v", globalCommitDataStruct)
+
+	// If rogue mode is enabled, alter the commitment data
+	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
+		log.Warn("YOU ARE REVEALING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
+		var rogueCommittedData []*big.Int
+		for i := 0; i < len(globalCommitDataStruct.Leaves); i++ {
+			rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
+		}
+		globalCommitDataStruct.Leaves = rogueCommittedData
+		log.Debugf("GetCommittedDataForEpoch: Global Commit data struct in rogue mode: %+v", globalCommitDataStruct)
+	}
+
+	return globalCommitDataStruct, nil
+}

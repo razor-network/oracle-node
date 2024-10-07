@@ -67,3 +67,11 @@ func (lc *LocalCache) Cleanup() {
 		}
 	}
 }
+
+// Len returns the number of cached items
+func (lc *LocalCache) Len() int {
+	lc.mu.RLock() // Use a read lock to ensure safe concurrent access
+	defer lc.mu.RUnlock()
+
+	return len(lc.URLs) // Return the number of entries in the map
+}
