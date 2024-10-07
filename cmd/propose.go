@@ -159,37 +159,31 @@ func (*UtilsStruct) Propose(ctx context.Context, client *ethclient.Client, confi
 		return err
 	}
 	proposeTxn := transactionUtils.Hash(txn)
-	log.Info("Txn Hash: ", proposeTxn.Hex())
+	log.Info("Propose Transaction Hash: ", proposeTxn.Hex())
 	if proposeTxn != core.NilHash {
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, proposeTxn.Hex())
-		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletionErr for propose: ", waitForBlockCompletionErr)
-			return waitForBlockCompletionErr
-		} else {
-			// Saving proposed data after successful propose
-			log.Debug("Updating global propose data struct...")
-			updateGlobalProposedDataStruct(types.ProposeFileData{
-				MediansData:           medians,
-				RevealedDataMaps:      revealedDataMaps,
-				RevealedCollectionIds: ids,
-				Epoch:                 epoch,
-			})
-			log.Debugf("Propose: Global propose data struct: %+v", globalProposedDataStruct)
+		// Saving proposed data after getting the transaction hash
+		log.Debug("Updating global propose data struct...")
+		updateGlobalProposedDataStruct(types.ProposeFileData{
+			MediansData:           medians,
+			RevealedDataMaps:      revealedDataMaps,
+			RevealedCollectionIds: ids,
+			Epoch:                 epoch,
+		})
+		log.Debugf("Propose: Global propose data struct: %+v", globalProposedDataStruct)
 
-			log.Debug("Saving proposed data for recovery...")
-			fileName, err := pathUtils.GetProposeDataFileName(account.Address)
-			if err != nil {
-				log.Error("Error in getting file name to save median data: ", err)
-				return err
-			}
-			log.Debug("Propose: Propose data file path: ", fileName)
-			err = fileUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
-			if err != nil {
-				log.Errorf("Error in saving data to file %s: %v", fileName, err)
-				return err
-			}
-			log.Debug("Data saved!")
+		log.Debug("Saving proposed data for recovery...")
+		fileName, err := pathUtils.GetProposeDataFileName(account.Address)
+		if err != nil {
+			log.Error("Error in getting file name to save median data: ", err)
+			return err
 		}
+		log.Debug("Propose: Propose data file path: ", fileName)
+		err = fileUtils.SaveDataToProposeJsonFile(fileName, globalProposedDataStruct)
+		if err != nil {
+			log.Errorf("Error in saving data to file %s: %v", fileName, err)
+			return err
+		}
+		log.Debug("Data saved!")
 	}
 
 	return nil

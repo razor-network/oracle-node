@@ -321,6 +321,23 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	case 4:
 		log.Debugf("Last verification: %d", lastVerification)
 		log.Debugf("Block confirmed: %d", blockConfirmed)
+
+		if blockConfirmed >= epoch {
+			log.Debug("Block is already confirmed for this epoch!")
+			break
+		}
+
+		confirmedBlock, err := razorUtils.GetConfirmedBlocks(ctx, client, epoch)
+		if err != nil {
+			log.Error(err)
+			break
+		}
+
+		if confirmedBlock.ProposerId != 0 {
+			log.Infof("Block is already confirmed, setting blockConfirmed (%d) to current epoch (%d)", blockConfirmed, epoch)
+			blockConfirmed = epoch
+			break
+		}
 		if lastVerification == epoch && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(ctx, types.TransactionOptions{
 				Client:          client,
@@ -337,12 +354,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				break
 			}
 			if txn != core.NilHash {
-				waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, txn.Hex())
-				if waitForBlockCompletionErr != nil {
-					log.Error("Error in WaitForBlockCompletion for claimBlockReward: ", err)
-					break
-				}
-				blockConfirmed = epoch
+				log.Info("Confirm Transaction Hash: ", txn)
 			}
 		}
 	case -1:

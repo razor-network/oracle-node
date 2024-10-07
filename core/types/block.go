@@ -16,3 +16,10 @@ type DisputesStruct struct {
 	AccWeight        *big.Int
 	Median           *big.Int
 }
+
+type ConfirmedBlock struct {
+	Valid        bool
+	ProposerId   uint32
+	Iteration    *big.Int
+	BiggestStake *big.Int
+}
