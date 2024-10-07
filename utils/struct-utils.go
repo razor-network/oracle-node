@@ -342,6 +342,16 @@ func (b BlockManagerStruct) GetEpochLastProposed(client *ethclient.Client, stake
 	return returnedValues[0].Interface().(uint32), nil
 }
 
+func (b BlockManagerStruct) GetConfirmedBlocks(client *ethclient.Client, epoch uint32) (coretypes.ConfirmedBlock, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "Blocks", &opts, epoch)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.ConfirmedBlock{}, returnedError
+	}
+	return returnedValues[0].Interface().(coretypes.ConfirmedBlock), nil
+}
+
 func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(stakeManager, "GetStakerId", &opts, address)

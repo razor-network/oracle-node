@@ -248,7 +248,7 @@ func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, acc
 	// Check if global data is for the correct epoch
 	if globalCommitDataStruct.Epoch == epoch {
 		// Verify commitment data from memory
-		log.Debug("Verifying commit data from file...")
+		log.Debug("Verifying commit data from memory...")
 		log.Debugf("GetCommittedDataForEpoch: Calling VerifyCommitment() for address %v with arguments epoch = %v, values = %v", account.Address, epoch, globalCommitDataStruct.Leaves)
 		isCommittedDataFromMemoryValid, err := VerifyCommitment(ctx, client, account, keystorePath, epoch, globalCommitDataStruct.Leaves)
 		if err != nil {

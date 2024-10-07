@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/big"
+	Types "razor/core/types"
 	"razor/pkg/bindings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -114,4 +115,12 @@ func (*UtilsStruct) GetEpochLastProposed(ctx context.Context, client *ethclient.
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint32), nil
+}
+
+func (*UtilsStruct) GetConfirmedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (Types.ConfirmedBlock, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetConfirmedBlocks", client, epoch)
+	if err != nil {
+		return Types.ConfirmedBlock{}, nil
+	}
+	return returnedValues[0].Interface().(Types.ConfirmedBlock), nil
 }
