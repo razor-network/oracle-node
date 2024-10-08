@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/big"
+	"razor/core/types"
 	"razor/pkg/bindings"
 	"razor/utils/mocks"
 	"reflect"
@@ -708,3 +709,96 @@ func TestGetEpochLastProposed(t *testing.T) {
 		})
 	}
 }
+
+func TestGetConfirmedBlocks(t *testing.T) {
+	var client *ethclient.Client
+	var callOpts bind.CallOpts
+	var epoch uint32
+
+	type args struct {
+		confirmedBlock    types.ConfirmedBlock
+		confirmedBlockErr error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    types.ConfirmedBlock
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetConfirmedBlocks() executes successfully",
+			args: args{
+				confirmedBlock: types.ConfirmedBlock{
+					ProposerId: 1,
+				},
+			},
+			want: types.ConfirmedBlock{
+				ProposerId: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting confirmedBlock",
+			args: args{
+				confirmedBlockErr: errors.New("confirmedBlock error"),
+			},
+			want:    types.ConfirmedBlock{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			utilsMock := new(mocks.Utils)
+			blockManagerMock := new(mocks.BlockManagerUtils)
+
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:        retryMock,
+				UtilsInterface:        utilsMock,
+				BlockManagerInterface: blockManagerMock,
+			}
+			utils := StartRazor(optionsPackageStruct)
+
+			utilsMock.On("GetOptions").Return(callOpts)
+			blockManagerMock.On("GetConfirmedBlocks", mock.Anything, mock.Anything).Return(tt.args.confirmedBlock, tt.args.confirmedBlockErr)
+			retryMock.On("RetryAttempts", mock.Anything).Return(retry.Attempts(1))
+
+			got, err := utils.GetConfirmedBlocks(client, epoch)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetConfirmedBlocks() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetConfirmedBlocks() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+//func TestGetConfirmedBlocks(t *testing.T) {
+//	var (
+//		client *ethclient.Client
+//		epoch  uint32
+//	)
+//
+//	type args struct {
+//	}
+//	tests := []struct {
+//		name    string
+//		args    args
+//		want    types.ConfirmedBlock
+//		wantErr assert.ErrorAssertionFunc
+//	}{
+//		// TODO: Add test cases.
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			ut := &UtilsStruct{}
+//			got, err := ut.GetConfirmedBlocks(client, epoch)
+//			if !tt.wantErr(t, err, fmt.Sprintf("GetConfirmedBlocks(%v, %v)", tt.args.client, tt.args.epoch)) {
+//				return
+//			}
+//			assert.Equalf(t, tt.want, got, "GetConfirmedBlocks(%v, %v)", tt.args.client, tt.args.epoch)
+//		})
+//	}
+//}
