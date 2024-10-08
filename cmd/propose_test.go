@@ -76,7 +76,6 @@ func TestPropose(t *testing.T) {
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
-		waitForBlockCompletionErr  error
 	}
 	tests := []struct {
 		name    string
