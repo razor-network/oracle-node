@@ -120,7 +120,7 @@ func (*UtilsStruct) GetEpochLastProposed(ctx context.Context, client *ethclient.
 func (*UtilsStruct) GetConfirmedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (Types.ConfirmedBlock, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, BlockManagerInterface, "GetConfirmedBlocks", client, epoch)
 	if err != nil {
-		return Types.ConfirmedBlock{}, nil
+		return Types.ConfirmedBlock{}, err
 	}
 	return returnedValues[0].Interface().(Types.ConfirmedBlock), nil
 }
