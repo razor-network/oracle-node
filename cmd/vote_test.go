@@ -353,28 +353,27 @@ func TestInitiateCommit(t *testing.T) {
 	}
 
 	type args struct {
-		staker                    bindings.StructsStaker
-		stakerErr                 error
-		minStakeAmount            *big.Int
-		minStakeAmountErr         error
-		epoch                     uint32
-		lastCommit                uint32
-		lastCommitErr             error
-		secret                    []byte
-		secretErr                 error
-		signature                 []byte
-		salt                      [32]byte
-		saltErr                   error
-		path                      string
-		pathErr                   error
-		commitData                types.CommitData
-		commitDataErr             error
-		commitTxn                 common.Hash
-		commitTxnErr              error
-		waitForBlockCompletionErr error
-		fileName                  string
-		fileNameErr               error
-		saveErr                   error
+		staker            bindings.StructsStaker
+		stakerErr         error
+		minStakeAmount    *big.Int
+		minStakeAmountErr error
+		epoch             uint32
+		lastCommit        uint32
+		lastCommitErr     error
+		secret            []byte
+		secretErr         error
+		signature         []byte
+		salt              [32]byte
+		saltErr           error
+		path              string
+		pathErr           error
+		commitData        types.CommitData
+		commitDataErr     error
+		commitTxn         common.Hash
+		commitTxnErr      error
+		fileName          string
+		fileNameErr       error
+		saveErr           error
 	}
 	tests := []struct {
 		name    string
