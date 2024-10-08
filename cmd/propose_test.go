@@ -480,28 +480,6 @@ func TestPropose(t *testing.T) {
 			},
 			wantErr: errors.New("smallestStakerId error"),
 		},
-		{
-			name: "Test 19: When there is an error in waitForCompletion",
-			args: args{
-				state:                     2,
-				staker:                    bindings.StructsStaker{},
-				numStakers:                5,
-				biggestStake:              big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
-				biggestStakerId:           2,
-				salt:                      saltBytes32,
-				iteration:                 1,
-				numOfProposedBlocks:       3,
-				sortedProposedBlockIds:    []uint32{2, 0, 1},
-				maxAltBlocks:              4,
-				lastIteration:             big.NewInt(5),
-				lastProposedBlockStruct:   bindings.StructsBlock{},
-				medians:                   []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
-				proposeTxn:                &Types.Transaction{},
-				hash:                      common.BigToHash(big.NewInt(1)),
-				waitForBlockCompletionErr: errors.New("waitForBlockCompletion error"),
-			},
-			wantErr: errors.New("waitForBlockCompletion error"),
-		},
 	}
 	for _, tt := range tests {
 		SetUpMockInterfaces()
@@ -526,7 +504,6 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
-		utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 
 		utils := &UtilsStruct{}
 		t.Run(tt.name, func(t *testing.T) {
