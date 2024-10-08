@@ -25,8 +25,8 @@ const (
 var NilHash = common.Hash{0x00}
 
 const (
-	BlockCompletionAttempts          = 3
-	BlockCompletionAttemptRetryDelay = 1
+	BlockCompletionAttempts          = 4
+	BlockCompletionAttemptRetryDelay = 2
 )
 
 //Following are the default config values for all the config parameters
