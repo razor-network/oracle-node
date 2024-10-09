@@ -404,9 +404,9 @@ func BenchmarkHandleCommitState(b *testing.B) {
 
 				SetUpMockInterfaces()
 
-				utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
+				utilsMock.On("GetNumActiveCollections", mock.Anything, mock.Anything).Return(v.numActiveCollections, nil)
 				utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
-				utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(uint16(1), nil)
+				utilsMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything, mock.Anything).Return(uint16(1), nil)
 				utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 

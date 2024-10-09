@@ -1536,7 +1536,7 @@ func BenchmarkMakeBlock(b *testing.B) {
 					VoteWeights:          map[string]*big.Int{(big.NewInt(1).Mul(big.NewInt(697718000), big.NewInt(1e18))).String(): big.NewInt(100)},
 					InfluenceSum:         map[uint16]*big.Int{0: big.NewInt(100)},
 				}, nil)
-				utilsMock.On("GetActiveCollectionIds", mock.Anything).Return([]uint16{1}, nil)
+				utilsMock.On("GetActiveCollectionIds", mock.Anything, mock.Anything).Return([]uint16{1}, nil)
 				ut := &UtilsStruct{}
 				_, _, _, err := ut.MakeBlock(context.Background(), client, blockNumber, epoch, types.Rogue{IsRogue: false})
 				if err != nil {

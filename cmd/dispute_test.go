@@ -1212,7 +1212,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 				transactionMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
 				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 				cmdUtilsMock.On("CheckDisputeForIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
-				utilsMock.On("GetLeafIdOfACollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(0, nil)
+				utilsMock.On("GetLeafIdOfACollection", mock.Anything, mock.Anything, mock.Anything).Return(0, nil)
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
 				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything, mock.Anything).Return(nil)
