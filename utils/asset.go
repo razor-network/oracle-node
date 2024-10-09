@@ -29,22 +29,22 @@ func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bin
 	return UtilsInterface.GetCollectionManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetNumCollections", client)
+func (*UtilsStruct) GetNumCollections(ctx context.Context, client *ethclient.Client) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetNumCollections", client)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
+func (*UtilsStruct) GetJobs(ctx context.Context, client *ethclient.Client) ([]bindings.StructsJob, error) {
 	var jobs []bindings.StructsJob
 	numJobs, err := AssetManagerInterface.GetNumJobs(client)
 	if err != nil {
 		return nil, err
 	}
 	for i := 1; i <= int(numJobs); i++ {
-		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
+		job, err := UtilsInterface.GetActiveJob(ctx, client, uint16(i))
 		if err != nil {
 			return nil, err
 		}
@@ -53,17 +53,17 @@ func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, er
 	return jobs, nil
 }
 
-func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetNumActiveCollections", client)
+func (*UtilsStruct) GetNumActiveCollections(ctx context.Context, client *ethclient.Client) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetNumActiveCollections", client)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
+func (*UtilsStruct) GetAllCollections(ctx context.Context, client *ethclient.Client) ([]bindings.StructsCollection, error) {
 	var collections []bindings.StructsCollection
-	numCollections, err := UtilsInterface.GetNumCollections(client)
+	numCollections, err := UtilsInterface.GetNumCollections(ctx, client)
 	if err != nil {
 		return nil, err
 	}
@@ -77,16 +77,16 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 	return collections, nil
 }
 
-func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetCollection", client, collectionId)
+func (*UtilsStruct) GetCollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetCollection", client, collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}
 	return returnedValues[0].Interface().(bindings.StructsCollection), nil
 }
 
-func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetActiveCollections", client)
+func (*UtilsStruct) GetActiveCollectionIds(ctx context.Context, client *ethclient.Client) ([]uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetActiveCollections", client)
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +174,8 @@ func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, pre
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
-func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "Jobs", client, jobId)
+func (*UtilsStruct) GetActiveJob(ctx context.Context, client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "Jobs", client, jobId)
 	if err != nil {
 		return bindings.StructsJob{}, err
 	}
@@ -315,24 +315,24 @@ func (*UtilsStruct) GetAssignedCollections(ctx context.Context, client *ethclien
 	return assignedCollections, seqAllottedCollections, nil
 }
 
-func (*UtilsStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetLeafIdOfACollection", client, collectionId)
+func (*UtilsStruct) GetLeafIdOfACollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetLeafIdOfACollection", client, collectionId)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetCollectionIdFromIndex", client, medianIndex)
+func (*UtilsStruct) GetCollectionIdFromIndex(ctx context.Context, client *ethclient.Client, medianIndex uint16) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetCollectionIdFromIndex", client, medianIndex)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetCollectionIdFromLeafId", client, leafId)
+func (*UtilsStruct) GetCollectionIdFromLeafId(ctx context.Context, client *ethclient.Client, leafId uint16) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetCollectionIdFromLeafId", client, leafId)
 	if err != nil {
 		return 0, err
 	}
@@ -437,7 +437,7 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 }
 
 // InitJobsCache initializes the jobs cache with data fetched from the blockchain
-func InitJobsCache(client *ethclient.Client, jobsCache *cache.JobsCache) error {
+func InitJobsCache(ctx context.Context, client *ethclient.Client, jobsCache *cache.JobsCache) error {
 	jobsCache.Mu.Lock()
 	defer jobsCache.Mu.Unlock()
 
@@ -451,7 +451,7 @@ func InitJobsCache(client *ethclient.Client, jobsCache *cache.JobsCache) error {
 		return err
 	}
 	for i := 1; i <= int(numJobs); i++ {
-		job, err := UtilsInterface.GetActiveJob(client, uint16(i))
+		job, err := UtilsInterface.GetActiveJob(ctx, client, uint16(i))
 		if err != nil {
 			return err
 		}

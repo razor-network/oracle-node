@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -44,7 +45,7 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 
 //This function provides the list of all jobs
 func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
-	jobs, err := razorUtils.GetJobs(client)
+	jobs, err := razorUtils.GetJobs(context.Background(), client)
 	log.Debugf("JobList: Jobs: %+v", jobs)
 	if err != nil {
 		return err

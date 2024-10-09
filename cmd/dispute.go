@@ -165,7 +165,7 @@ func (*UtilsStruct) HandleDispute(ctx context.Context, client *ethclient.Client,
 
 				sortedValues := revealedDataMaps.SortedRevealedValues[collectionIdOfWrongMedian-1]
 				log.Debug("HandleDispute: Sorted values: ", sortedValues)
-				leafId, err := razorUtils.GetLeafIdOfACollection(client, collectionIdOfWrongMedian)
+				leafId, err := razorUtils.GetLeafIdOfACollection(ctx, client, collectionIdOfWrongMedian)
 				if err != nil {
 					log.Error("Error in leaf id: ", err)
 					continue
@@ -369,7 +369,7 @@ func (*UtilsStruct) Dispute(ctx context.Context, client *ethclient.Client, confi
 		giveSortedLeafIds = append(giveSortedLeafIds, int(leafId))
 	}
 	log.Debugf("Dispute: Calling GetCollectionIdPositionInBlock with arguments leafId = %d, proposed block = %+v", leafId, proposedBlock)
-	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(client, leafId, proposedBlock)
+	positionOfCollectionInBlock := cmdUtils.GetCollectionIdPositionInBlock(ctx, client, leafId, proposedBlock)
 	log.Debug("Dispute: Position of collection id in block: ", positionOfCollectionInBlock)
 
 	log.Info("Finalizing dispute...")
@@ -464,9 +464,9 @@ func GiveSorted(ctx context.Context, client *ethclient.Client, blockManager *bin
 }
 
 //This function returns the collection Id position in block
-func (*UtilsStruct) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
+func (*UtilsStruct) GetCollectionIdPositionInBlock(ctx context.Context, client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ids := proposedBlock.Ids
-	idToBeDisputed, err := razorUtils.GetCollectionIdFromLeafId(client, leafId)
+	idToBeDisputed, err := razorUtils.GetCollectionIdFromLeafId(ctx, client, leafId)
 	if err != nil {
 		log.Error("Error in fetching collection id from leaf id")
 		return nil

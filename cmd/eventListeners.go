@@ -31,7 +31,7 @@ func (*UtilsStruct) InitJobAndCollectionCache(ctx context.Context, client *ethcl
 	collectionsCache := cache.NewCollectionsCache()
 
 	// Initialize caches
-	if err := utils.InitJobsCache(client, jobsCache); err != nil {
+	if err := utils.InitJobsCache(ctx, client, jobsCache); err != nil {
 		log.Error("Error in initializing jobs cache: ", err)
 		return nil, nil, nil, err
 	}
@@ -87,7 +87,7 @@ func processEvents(ctx context.Context, client *ethclient.Client, contractABI ab
 				switch eventName {
 				case core.JobUpdatedEvent, core.JobCreatedEvent:
 					jobId := utils.ConvertHashToUint16(vLog.Topics[1])
-					updatedJob, err := utils.UtilsInterface.GetActiveJob(client, jobId)
+					updatedJob, err := utils.UtilsInterface.GetActiveJob(ctx, client, jobId)
 					if err != nil {
 						log.Errorf("Error in getting job with job Id %v: %v", jobId, err)
 						continue
@@ -96,7 +96,7 @@ func processEvents(ctx context.Context, client *ethclient.Client, contractABI ab
 					jobsCache.UpdateJob(jobId, updatedJob)
 				case core.CollectionUpdatedEvent, core.CollectionCreatedEvent, core.CollectionActivityStatusEvent:
 					collectionId := utils.ConvertHashToUint16(vLog.Topics[1])
-					newCollection, err := utils.UtilsInterface.GetCollection(client, collectionId)
+					newCollection, err := utils.UtilsInterface.GetCollection(ctx, client, collectionId)
 					if err != nil {
 						log.Errorf("Error in getting collection with collection Id %v: %v", collectionId, err)
 						continue

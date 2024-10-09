@@ -26,16 +26,16 @@ func (*ClientStruct) GetLatestBlockWithRetry(ctx context.Context, client *ethcli
 	return returnedValues[0].Interface().(*types.Header), nil
 }
 
-func (*ClientStruct) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "SuggestGasPrice", client, context.Background())
+func (*ClientStruct) SuggestGasPriceWithRetry(ctx context.Context, client *ethclient.Client) (*big.Int, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, ClientInterface, "SuggestGasPrice", client, context.Background())
 	if err != nil {
 		return nil, err
 	}
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*ClientStruct) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "EstimateGas", client, context.Background(), message)
+func (*ClientStruct) EstimateGasWithRetry(ctx context.Context, client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, ClientInterface, "EstimateGas", client, context.Background(), message)
 	if err != nil {
 		return 0, err
 	}

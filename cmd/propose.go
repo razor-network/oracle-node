@@ -406,7 +406,7 @@ func (*UtilsStruct) MakeBlock(ctx context.Context, client *ethclient.Client, blo
 	}
 	log.Debugf("MakeBlock: Revealed data map: %+v", revealedDataMaps)
 
-	activeCollections, err := razorUtils.GetActiveCollectionIds(client)
+	activeCollections, err := razorUtils.GetActiveCollectionIds(ctx, client)
 	if err != nil {
 		return nil, nil, nil, err
 	}

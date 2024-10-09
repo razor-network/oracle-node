@@ -37,7 +37,7 @@ func (*UtilsStruct) GetTxnOpts(ctx context.Context, transactionData types.Transa
 	nonce, err := ClientInterface.GetNonceAtWithRetry(ctx, transactionData.Client, common.HexToAddress(account.Address))
 	CheckError("Error in fetching nonce: ", err)
 
-	gasPrice := GasInterface.GetGasPrice(transactionData.Client, transactionData.Config)
+	gasPrice := GasInterface.GetGasPrice(ctx, transactionData.Client, transactionData.Config)
 	txnOpts, err := BindInterface.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
 	CheckError("Error in getting transactor: ", err)
 	txnOpts.Nonce = big.NewInt(int64(nonce))
@@ -63,7 +63,7 @@ func (*UtilsStruct) GetTxnOpts(ctx context.Context, transactionData types.Transa
 	return txnOpts
 }
 
-func (*GasStruct) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
+func (*GasStruct) GetGasPrice(ctx context.Context, client *ethclient.Client, config types.Configurations) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
@@ -71,7 +71,7 @@ func (*GasStruct) GetGasPrice(client *ethclient.Client, config types.Configurati
 		gas = big.NewInt(0)
 	}
 	var err error
-	suggestedGasPrice, err := ClientInterface.SuggestGasPriceWithRetry(client)
+	suggestedGasPrice, err := ClientInterface.SuggestGasPriceWithRetry(ctx, client)
 	if err != nil {
 		log.Error(err)
 		return UtilsInterface.MultiplyFloatAndBigInt(gas, float64(config.GasMultiplier))
@@ -117,7 +117,7 @@ func (*GasStruct) GetGasLimit(ctx context.Context, transactionData types.Transac
 		}
 		log.Debug("Calculated gas limit for reveal: ", gasLimit)
 	} else {
-		gasLimit, err = ClientInterface.EstimateGasWithRetry(transactionData.Client, msg)
+		gasLimit, err = ClientInterface.EstimateGasWithRetry(ctx, transactionData.Client, msg)
 		if err != nil {
 			log.Error("GetGasLimit: Error in getting gasLimit: ", err)
 			//If estimateGas throws an error for a transaction than gasLimit should be picked up from the config
