@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"razor/accounts"
 	"razor/core"
@@ -61,7 +62,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
 
-	stakerId, err := razorUtils.GetStakerId(client, address)
+	stakerId, err := razorUtils.GetStakerId(context.Background(), client, address)
 	utils.CheckError("Error in getting stakerId", err)
 
 	updateCommissionInput := types.UpdateCommissionInput{
@@ -70,20 +71,20 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 		Account:    account,
 	}
 
-	err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
+	err = cmdUtils.UpdateCommission(context.Background(), config, client, updateCommissionInput)
 	utils.CheckError("UpdateCommission error: ", err)
 }
 
 //This function allows a staker to add/update the commission value
-func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
-	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.StakerId)
+func (*UtilsStruct) UpdateCommission(ctx context.Context, config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
+	stakerInfo, err := razorUtils.GetStaker(ctx, client, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
 	}
 	log.Debugf("UpdateCommission: Staker Info: %+v", stakerInfo)
 
-	maxCommission, err := razorUtils.GetMaxCommission(client)
+	maxCommission, err := razorUtils.GetMaxCommission(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -93,13 +94,13 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		return errors.New("commission out of range")
 	}
 
-	epochLimitForUpdateCommission, err := razorUtils.GetEpochLimitForUpdateCommission(client)
+	epochLimitForUpdateCommission, err := razorUtils.GetEpochLimitForUpdateCommission(ctx, client)
 	if err != nil {
 		return err
 	}
 	log.Debug("UpdateCommission: Epoch limit to update commission: ", epochLimitForUpdateCommission)
 
-	epoch, err := razorUtils.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -126,7 +127,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 		Account:         updateCommissionInput.Account,
 	}
-	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+	updateCommissionTxnOpts := razorUtils.GetTxnOpts(ctx, txnOpts)
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
 	log.Debug("Executing UpdateCommission transaction with commission = ", updateCommissionInput.Commission)
 	txn, err := stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)

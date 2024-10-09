@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"github.com/stretchr/testify/mock"
 	"math/big"
@@ -129,16 +130,16 @@ func TestClaimBlockReward(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.selectedBlock, tt.args.selectedBlockErr)
-			utilsMock.On("GetTxnOpts", options).Return(TxnOpts)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetSortedProposedBlockIds", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.selectedBlock, tt.args.selectedBlockErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, options).Return(TxnOpts)
 			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.ClaimBlockReward(options)
+			got, err := utils.ClaimBlockReward(context.Background(), options)
 			if got != tt.want {
 				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)
 			}

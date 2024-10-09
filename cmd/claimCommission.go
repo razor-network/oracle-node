@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"math/big"
 	"razor/accounts"
 	"razor/core"
@@ -54,7 +55,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
-	stakerId, err := razorUtils.GetStakerId(client, address)
+	stakerId, err := razorUtils.GetStakerId(context.Background(), client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ClaimCommission: Staker Id: ", stakerId)
 	callOpts := razorUtils.GetOptions()
@@ -64,7 +65,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	log.Debugf("ClaimCommission: Staker Info: %+v", stakerInfo)
 
 	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
-		txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+		txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
 			Client:          client,
 			ChainId:         core.ChainId,
 			Config:          config,

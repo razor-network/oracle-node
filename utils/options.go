@@ -25,7 +25,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 	}
 }
 
-func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.TransactOpts {
+func (*UtilsStruct) GetTxnOpts(ctx context.Context, transactionData types.TransactionOptions) *bind.TransactOpts {
 	log.Debug("Getting transaction options...")
 	account := transactionData.Account
 	if account.AccountManager == nil {
@@ -34,7 +34,7 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	privateKey, err := account.AccountManager.GetPrivateKey(account.Address, account.Password)
 	CheckError("Error in fetching private key: ", err)
 
-	nonce, err := ClientInterface.GetNonceAtWithRetry(transactionData.Client, common.HexToAddress(account.Address))
+	nonce, err := ClientInterface.GetNonceAtWithRetry(ctx, transactionData.Client, common.HexToAddress(account.Address))
 	CheckError("Error in fetching nonce: ", err)
 
 	gasPrice := GasInterface.GetGasPrice(transactionData.Client, transactionData.Config)
@@ -44,11 +44,11 @@ func (*UtilsStruct) GetTxnOpts(transactionData types.TransactionOptions) *bind.T
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
 
-	gasLimit, err := GasInterface.GetGasLimit(transactionData, txnOpts)
+	gasLimit, err := GasInterface.GetGasLimit(ctx, transactionData, txnOpts)
 	if err != nil {
 		errString := err.Error()
 		if ContainsStringFromArray(errString, []string{"500", "501", "502", "503", "504"}) || errString == errors.New("intrinsic gas too low").Error() {
-			latestBlock, err := ClientInterface.GetLatestBlockWithRetry(transactionData.Client)
+			latestBlock, err := ClientInterface.GetLatestBlockWithRetry(ctx, transactionData.Client)
 			CheckError("Error in fetching block: ", err)
 
 			txnOpts.GasLimit = latestBlock.GasLimit
@@ -86,7 +86,7 @@ func (*GasStruct) GetGasPrice(client *ethclient.Client, config types.Configurati
 	return gasPrice
 }
 
-func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+func (*GasStruct) GetGasLimit(ctx context.Context, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
@@ -110,7 +110,7 @@ func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts 
 	}
 	var gasLimit uint64
 	if transactionData.MethodName == "reveal" {
-		gasLimit, err = getGasLimitForReveal(transactionData.Client)
+		gasLimit, err = getGasLimitForReveal(ctx, transactionData.Client)
 		if err != nil {
 			log.Error("GetGasLimit: Error in getting gasLimit for reveal transaction: ", err)
 			return transactionData.Config.GasLimitOverride, err
@@ -126,17 +126,17 @@ func (*GasStruct) GetGasLimit(transactionData types.TransactionOptions, txnOpts 
 		}
 		log.Debug("Estimated Gas: ", gasLimit)
 	}
-	return GasInterface.IncreaseGasLimitValue(transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
+	return GasInterface.IncreaseGasLimitValue(ctx, transactionData.Client, gasLimit, transactionData.Config.GasLimitMultiplier)
 }
 
-func (*GasStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+func (*GasStruct) IncreaseGasLimitValue(ctx context.Context, client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil
 	}
 	gasLimitIncremented := float64(gasLimitMultiplier) * float64(gasLimit)
 	gasLimit = uint64(gasLimitIncremented)
 
-	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(client)
+	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(ctx, client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -149,8 +149,8 @@ func (*GasStruct) IncreaseGasLimitValue(client *ethclient.Client, gasLimit uint6
 	return gasLimit, nil
 }
 
-func getGasLimitForReveal(client *ethclient.Client) (uint64, error) {
-	toAssign, err := UtilsInterface.ToAssign(client)
+func getGasLimitForReveal(ctx context.Context, client *ethclient.Client) (uint64, error) {
+	toAssign, err := UtilsInterface.ToAssign(ctx, client)
 	if err != nil {
 		return 0, err
 	}

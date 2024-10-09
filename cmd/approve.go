@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"razor/core"
 	"razor/core/types"
@@ -25,7 +26,7 @@ func (*UtilsStruct) Approve(txnArgs types.TransactionOptions) (common.Hash, erro
 		txnArgs.MethodName = "approve"
 		txnArgs.ABI = bindings.RAZORMetaData.ABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
-		txnOpts := razorUtils.GetTxnOpts(txnArgs)
+		txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
 		log.Debug("Executing Approve transaction with amount: ", txnArgs.Amount)
 		txn, err := tokenManagerUtils.Approve(txnArgs.Client, txnOpts, common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount)
 		if err != nil {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -101,8 +102,8 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("HandleWithdrawLock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
+			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("HandleWithdrawLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
 			utils := &UtilsStruct{}
 			utils.ExecuteUnlockWithdraw(flagSet)
@@ -195,13 +196,13 @@ func TestHandleWithdrawLock(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.withdrawLock, tt.args.withdrawLockErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawLock, tt.args.withdrawLockErr)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			cmdUtilsMock.On("UnlockWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unlockWithdraw, tt.args.unlockWithdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			ut := &UtilsStruct{}
-			got, err := ut.HandleWithdrawLock(client, account, configurations, stakerId)
+			got, err := ut.HandleWithdrawLock(context.Background(), client, account, configurations, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleWithdrawLock() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -120,7 +120,7 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.BalanceAtWithRetry(client, account)
+			got, err := clientUtils.BalanceAtWithRetry(context.Background(), client, account)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BalanceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -235,7 +235,7 @@ func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.FilterLogsWithRetry(client, query)
+			got, err := clientUtils.FilterLogsWithRetry(context.Background(), client, query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FilterLogsWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -291,7 +291,7 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.GetLatestBlockWithRetry(client)
+			got, err := clientUtils.GetLatestBlockWithRetry(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLatestBlockWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -348,7 +348,7 @@ func TestUtilsStruct_GetNonceAtWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.GetNonceAtWithRetry(client, accountAddress)
+			got, err := clientUtils.GetNonceAtWithRetry(context.Background(), client, accountAddress)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNonceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return

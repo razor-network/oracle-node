@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -69,13 +70,13 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
 	log.Debug("Checking whether sFuel balance is not 0...")
-	razorUtils.CheckEthBalanceIsZero(client, address)
+	razorUtils.CheckEthBalanceIsZero(context.Background(), client, address)
 
-	minSafeRazor, err := razorUtils.GetMinSafeRazor(client)
+	minSafeRazor, err := razorUtils.GetMinSafeRazor(context.Background(), client)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 	log.Debug("ExecuteStake: Minimum razor that you can stake for first time: ", minSafeRazor)
 
-	stakerId, err := razorUtils.GetStakerId(client, address)
+	stakerId, err := razorUtils.GetStakerId(context.Background(), client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ExecuteStake: Staker Id: ", stakerId)
 
@@ -84,7 +85,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	}
 
 	if stakerId != 0 {
-		staker, err := razorUtils.GetStaker(client, stakerId)
+		staker, err := razorUtils.GetStaker(context.Background(), client, stakerId)
 		utils.CheckError("Error in getting staker: ", err)
 
 		if staker.IsSlashed {
@@ -119,7 +120,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 
 //This function allows the user to stake razors in the razor network and returns the hash
 func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
-	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
+	epoch, err := razorUtils.GetEpoch(context.Background(), txnArgs.Client)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -129,7 +130,7 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
 	log.Debugf("Executing Stake transaction with epoch = %d, amount = %d", epoch, txnArgs.Amount)
 	txn, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {

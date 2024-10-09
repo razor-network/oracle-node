@@ -11,17 +11,17 @@ import (
 	"razor/core"
 )
 
-func (*ClientStruct) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "NonceAt", client, context.Background(), accountAddress)
+func (*ClientStruct) GetNonceAtWithRetry(ctx context.Context, client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, ClientInterface, "NonceAt", client, context.Background(), accountAddress)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint64), nil
 }
 
-func (*ClientStruct) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
+func (*ClientStruct) GetLatestBlockWithRetry(ctx context.Context, client *ethclient.Client) (*types.Header, error) {
 	var blockNumberArgument *big.Int
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "HeaderByNumber", client, context.Background(), blockNumberArgument)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, ClientInterface, "HeaderByNumber", client, context.Background(), blockNumberArgument)
 	if err != nil {
 		return nil, err
 	}
@@ -68,17 +68,17 @@ func (*ClientStruct) EstimateGasWithRetry(client *ethclient.Client, message ethe
 	return gasLimit, nil
 }
 
-func (*ClientStruct) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "FilterLogs", client, context.Background(), query)
+func (*ClientStruct) FilterLogsWithRetry(ctx context.Context, client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, ClientInterface, "FilterLogs", client, context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
 	return returnedValues[0].Interface().([]types.Log), nil
 }
 
-func (*ClientStruct) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
+func (*ClientStruct) BalanceAtWithRetry(ctx context.Context, client *ethclient.Client, account common.Address) (*big.Int, error) {
 	var blockNumberArgument *big.Int
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ClientInterface, "BalanceAt", client, context.Background(), account, blockNumberArgument)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, ClientInterface, "BalanceAt", client, context.Background(), account, blockNumberArgument)
 	if err != nil {
 		return nil, err
 	}

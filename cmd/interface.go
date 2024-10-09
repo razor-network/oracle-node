@@ -163,62 +163,62 @@ type UtilsCmdInterface interface {
 	GetConfigData() (types.Configurations, error)
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
 	ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
-	ClaimBlockReward(options types.TransactionOptions) (common.Hash, error)
-	GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error)
-	HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
-	Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, seed []byte, values []*big.Int) (common.Hash, error)
+	ClaimBlockReward(ctx context.Context, options types.TransactionOptions) (common.Hash, error)
+	GetSalt(ctx context.Context, client *ethclient.Client, epoch uint32) ([32]byte, error)
+	HandleCommitState(ctx context.Context, client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
+	Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, seed []byte, values []*big.Int) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(flagSet *pflag.FlagSet)
 	Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error)
-	CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
-	Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, commitData types.CommitData, signature []byte) (common.Hash, error)
+	CheckForLastCommitted(ctx context.Context, client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error
+	Reveal(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitData types.CommitData, signature []byte) (common.Hash, error)
 	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
-	IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
+	IndexRevealEventsOfCurrentEpoch(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
 	ExecuteCreateJob(flagSet *pflag.FlagSet)
 	CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error)
 	ExecuteCreateCollection(flagSet *pflag.FlagSet)
 	CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error)
-	GetEpochAndState(client *ethclient.Client) (uint32, int64, error)
-	WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error)
+	GetEpochAndState(ctx context.Context, client *ethclient.Client) (uint32, int64, error)
+	WaitForAppropriateState(ctx context.Context, client *ethclient.Client, action string, states ...int) (uint32, error)
 	ExecuteJobList(flagSet *pflag.FlagSet)
 	GetJobList(client *ethclient.Client) error
 	ExecuteUnstake(flagSet *pflag.FlagSet)
-	Unstake(config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
+	Unstake(ctx context.Context, config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error)
 	ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error)
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
 	InitiateWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
 	UnlockWithdraw(client *ethclient.Client, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
-	HandleUnstakeLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
-	HandleWithdrawLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
+	HandleUnstakeLock(ctx context.Context, client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
+	HandleWithdrawLock(ctx context.Context, client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
 	ExecuteUpdateJob(flagSet *pflag.FlagSet)
-	UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error)
-	WaitIfCommitState(client *ethclient.Client, action string) (uint32, error)
+	UpdateJob(ctx context.Context, client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error)
+	WaitIfCommitState(ctx context.Context, client *ethclient.Client, action string) (uint32, error)
 	ExecuteCollectionList(flagSet *pflag.FlagSet)
 	GetCollectionList(client *ethclient.Client) error
 	ExecuteStakerinfo(flagSet *pflag.FlagSet)
 	ExecuteSetDelegation(flagSet *pflag.FlagSet)
-	SetDelegation(client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error)
-	GetStakerInfo(client *ethclient.Client, stakerId uint32) error
+	SetDelegation(ctx context.Context, client *ethclient.Client, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error)
+	GetStakerInfo(ctx context.Context, client *ethclient.Client, stakerId uint32) error
 	ExecuteUpdateCollection(flagSet *pflag.FlagSet)
-	UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error)
-	MakeBlock(client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
+	UpdateCollection(ctx context.Context, client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error)
+	MakeBlock(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
-	GetSortedRevealedValues(client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
-	GetIteration(client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
-	Propose(client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, rogueData types.Rogue) error
-	GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
-	GetLocalMediansData(client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
-	CheckDisputeForIds(client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
-	Dispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
+	GetSortedRevealedValues(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
+	GetIteration(ctx context.Context, client *ethclient.Client, proposer types.ElectedProposer, bufferPercent int32) int
+	Propose(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	GiveSorted(ctx context.Context, client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
+	GetLocalMediansData(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
+	CheckDisputeForIds(ctx context.Context, client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
+	Dispute(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
 	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
-	HandleDispute(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
+	HandleDispute(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	ExecuteExtendLock(flagSet *pflag.FlagSet)
 	ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
 	CheckCurrentStatus(client *ethclient.Client, collectionId uint16) (bool, error)
 	ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet)
-	ModifyCollectionStatus(client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error)
+	ModifyCollectionStatus(ctx context.Context, client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error)
 	Approve(txnArgs types.TransactionOptions) (common.Hash, error)
 	ExecuteDelegate(flagSet *pflag.FlagSet)
 	Delegate(txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error)
@@ -227,9 +227,9 @@ type UtilsCmdInterface interface {
 	ExecuteImport(flagSet *pflag.FlagSet)
 	ImportAccount() (accounts.Account, error)
 	ExecuteUpdateCommission(flagSet *pflag.FlagSet)
-	UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error
-	GetBiggestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
-	GetSmallestStakeAndId(client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
+	UpdateCommission(ctx context.Context, config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error
+	GetBiggestStakeAndId(ctx context.Context, client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
+	GetSmallestStakeAndId(ctx context.Context, client *ethclient.Client, epoch uint32) (*big.Int, uint32, error)
 	StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
 	HandleBlock(client *ethclient.Client, account types.Account, stakerId uint32, header *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string)
@@ -239,17 +239,17 @@ type UtilsCmdInterface interface {
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
 	ExecuteStake(flagSet *pflag.FlagSet)
-	InitiateCommit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, rogueData types.Rogue) error
-	InitiateReveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error
-	InitiatePropose(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, rogueData types.Rogue) error
-	GetBountyIdFromEvents(client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
+	InitiateCommit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error
+	InitiateReveal(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	InitiatePropose(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	GetBountyIdFromEvents(ctx context.Context, client *ethclient.Client, blockNumber *big.Int, bountyHunter string) (uint32, error)
 	HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error
 	ExecuteContractAddresses(flagSet *pflag.FlagSet)
 	ContractAddresses()
 	ResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32)
-	StoreBountyId(client *ethclient.Client, account types.Account) error
+	StoreBountyId(ctx context.Context, client *ethclient.Client, account types.Account) error
 	CheckToDoResetDispute(client *ethclient.Client, blockManager *bindings.BlockManager, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
-	InitJobAndCollectionCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)
+	InitJobAndCollectionCache(ctx context.Context, client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)
 	BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error)
 }
 

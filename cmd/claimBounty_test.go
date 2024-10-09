@@ -264,12 +264,12 @@ func TestClaimBounty(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 			timeUtils = timeMock
 
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetOptions").Return(callOpts)
 			stakeManagerMock.On("GetBountyLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.bountyLock, tt.args.bountyLockErr)
 			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
 			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)

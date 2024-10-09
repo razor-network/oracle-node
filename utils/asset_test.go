@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -199,14 +200,14 @@ func TestAggregate(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
-			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
+			utilsMock.On("FetchPreviousValue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			osUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
 			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
-			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, commitParams)
+			got, err := utils.Aggregate(context.Background(), client, previousEpoch, tt.args.collection, commitParams)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Aggregate() error = %v, wantErr %v", err, tt.wantErr)
@@ -1328,9 +1329,9 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
-			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
+			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &types.CommitParams{HttpClient: &http.Client{}})
+			got, err := utils.GetAggregatedDataOfCollection(context.Background(), client, collectionId, epoch, &types.CommitParams{HttpClient: &http.Client{}})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1388,10 +1389,10 @@ func TestGetAssignedCollections(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("ToAssign", mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
+			utilsMock.On("ToAssign", mock.Anything, mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
 			utilsMock.On("Prng", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assigned)
 
-			got, got1, err := utils.GetAssignedCollections(client, numActiveCollections, seed)
+			got, got1, err := utils.GetAssignedCollections(context.Background(), client, numActiveCollections, seed)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAssignedCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return

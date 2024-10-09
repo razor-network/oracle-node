@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
@@ -93,19 +94,19 @@ func TestDispute(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			cmdUtilsMock.On("GetCollectionIdPositionInBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.positionOfCollectionInBlock)
 			blockManagerMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
-			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
+			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 			cmdUtilsMock.On("CheckToDoResetDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 			utils := &UtilsStruct{}
 
-			err := utils.Dispute(client, config, account, epoch, blockIndex, proposedBlock, leafId, tt.args.sortedValues)
+			err := utils.Dispute(context.Background(), client, config, account, epoch, blockIndex, proposedBlock, leafId, tt.args.sortedValues)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for Dispute function, got = %v, want = %v", err, tt.want)
@@ -524,27 +525,27 @@ func TestHandleDispute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
-			cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.biggestStake, tt.args.biggestStakeId, tt.args.biggestStakeErr)
-			cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(types.ProposeFileData{
+			utilsMock.On("GetSortedProposedBlockIds", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
+			cmdUtilsMock.On("GetBiggestStakeAndId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.biggestStake, tt.args.biggestStakeId, tt.args.biggestStakeErr)
+			cmdUtilsMock.On("GetLocalMediansData", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(types.ProposeFileData{
 				MediansData:           tt.args.medians,
 				RevealedCollectionIds: tt.args.revealedCollectionIds,
 				RevealedDataMaps:      tt.args.revealedDataMaps,
 			}, tt.args.mediansErr)
-			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts)
 			blockManagerMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeBiggestStakeTxn, tt.args.disputeBiggestStakeErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.Hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.idDisputeTxn, tt.args.idDisputeTxnErr)
+			cmdUtilsMock.On("CheckDisputeForIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.idDisputeTxn, tt.args.idDisputeTxnErr)
 			utilsMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
-			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
+			cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeErr)
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
-			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
+			cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.storeBountyIdErr)
 			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
 			utils := &UtilsStruct{}
-			err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
+			err := utils.HandleDispute(context.Background(), client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for HandleDispute function, got = %v, want = %v", err, tt.want)
@@ -657,16 +658,16 @@ func TestGiveSorted(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			blockManagerMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr).Once()
+			blockManagerMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, tt.args.giveSortedErr).Once()
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
 			utilsMock.On("GetOptions").Return(callOpts)
 			blockManagerMock.On("Disputes", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputesMapping, tt.args.disputesMappingErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
-			blockManagerMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			blockManagerMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
 			cmdUtilsMock.On("ResetDispute", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything)
 
-			err := GiveSorted(client, blockManager, txnArgs, epoch, tt.args.leafId, tt.args.sortedValues)
+			err := GiveSorted(context.Background(), client, blockManager, txnArgs, epoch, tt.args.leafId, tt.args.sortedValues)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckDisputeForIds() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -794,10 +795,10 @@ func TestGetLocalMediansData(t *testing.T) {
 
 			pathMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			fileUtilsMock.On("ReadFromProposeJsonFile", mock.Anything).Return(tt.args.proposedData, tt.args.proposeDataErr)
-			cmdUtilsMock.On("MakeBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("MakeBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.medians, tt.args.revealedCollectionIds, tt.args.revealedDataMaps, tt.args.mediansErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			ut := &UtilsStruct{}
-			localProposedData, err := ut.GetLocalMediansData(client, account, tt.args.epoch, blockNumber, types.Rogue{IsRogue: tt.args.isRogue})
+			localProposedData, err := ut.GetLocalMediansData(context.Background(), client, account, tt.args.epoch, blockNumber, types.Rogue{IsRogue: tt.args.isRogue})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLocalMediansData() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -966,14 +967,14 @@ func TestCheckDisputeForIds(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
 			blockManagerMock.On("DisputeOnOrderOfIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeOnOrderOfIds, tt.args.DisputeOnOrderOfIdsErr)
-			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.incrementedGasLimit, tt.args.incrementedGasLimitErr)
+			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.incrementedGasLimit, tt.args.incrementedGasLimitErr)
 			blockManagerMock.On("DisputeCollectionIdShouldBePresent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBePresent, tt.args.DisputeCollectionIdShouldBePresentErr)
 			blockManagerMock.On("DisputeCollectionIdShouldBeAbsent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBeAbsent, tt.args.DisputeCollectionIdShouldBeAbsentErr)
-			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(uint64(2000), nil)
+			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(uint64(2000), nil)
 			ut := &UtilsStruct{}
-			got, err := ut.CheckDisputeForIds(client, transactionOpts, epoch, blockIndex, tt.args.idsInProposedBlock, tt.args.revealedCollectionIds)
+			got, err := ut.CheckDisputeForIds(context.Background(), client, transactionOpts, epoch, blockIndex, tt.args.idsInProposedBlock, tt.args.revealedCollectionIds)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckDisputeForIds() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1076,10 +1077,10 @@ func TestGetBountyIdFromEvents(t *testing.T) {
 
 			utilsMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractABI, tt.args.contractABIErr)
-			clientUtilsMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.logs, tt.args.logsErr)
 			abiMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
 			ut := &UtilsStruct{}
-			got, err := ut.GetBountyIdFromEvents(client, blockNumber, bountyHunter)
+			got, err := ut.GetBountyIdFromEvents(context.Background(), client, blockNumber, bountyHunter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetBountyIdFromEvents() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1202,22 +1203,22 @@ func BenchmarkHandleDispute(b *testing.B) {
 					Valid:        true,
 					BiggestStake: big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18))}
 
-				utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
-				cmdUtilsMock.On("GetBiggestStakeAndId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
-				cmdUtilsMock.On("GetLocalMediansData", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedData, nil)
-				utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(proposedBlock, nil)
-				utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+				utilsMock.On("GetSortedProposedBlockIds", mock.Anything, mock.Anything, mock.Anything).Return(getUint32DummyIds(v.numOfSortedBlocks), nil)
+				cmdUtilsMock.On("GetBiggestStakeAndId", mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
+				cmdUtilsMock.On("GetLocalMediansData", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedData, nil)
+				utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedBlock, nil)
+				utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts)
 				blockManagerMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				transactionMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
 				utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-				cmdUtilsMock.On("CheckDisputeForIds", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
-				utilsMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(0, nil)
+				cmdUtilsMock.On("CheckDisputeForIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
+				utilsMock.On("GetLeafIdOfACollection", mock.Anything, mock.Anything, mock.Anything).Return(0, nil)
 				cmdUtilsMock.On("Dispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 				utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
-				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything).Return(nil)
+				cmdUtilsMock.On("StoreBountyId", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 				utils := &UtilsStruct{}
-				err := utils.HandleDispute(client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
+				err := utils.HandleDispute(context.Background(), client, config, account, epoch, blockNumber, rogueData, backupNodeActionsToIgnore)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -1334,14 +1335,14 @@ func TestStoreBountyId(t *testing.T) {
 			SetUpMockInterfaces()
 
 			pathMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
-			cmdUtilsMock.On("GetBountyIdFromEvents", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.latestBountyId, tt.args.latestBountyIdErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			cmdUtilsMock.On("GetBountyIdFromEvents", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.latestBountyId, tt.args.latestBountyIdErr)
 			osPathMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			fileUtilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
 			fileUtilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 
 			ut := &UtilsStruct{}
-			if err := ut.StoreBountyId(client, account); (err != nil) != tt.wantErr {
+			if err := ut.StoreBountyId(context.Background(), client, account); (err != nil) != tt.wantErr {
 				t.Errorf("AutoClaimBounty() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

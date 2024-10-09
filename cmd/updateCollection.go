@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -83,22 +84,22 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 		Tolerance:   tolerance,
 		Account:     account,
 	}
-	txn, err := cmdUtils.UpdateCollection(client, config, collectionInput, collectionId)
+	txn, err := cmdUtils.UpdateCollection(context.Background(), client, config, collectionInput, collectionId)
 	utils.CheckError("Update Collection error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateCollection: ", err)
 }
 
 //This function allows the admin to update an existing collection
-func (*UtilsStruct) UpdateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
+func (*UtilsStruct) UpdateCollection(ctx context.Context, client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("UpdateCollection: Uint16 jobIds: ", jobIds)
-	_, err := cmdUtils.WaitIfCommitState(client, "update collection")
+	_, err := cmdUtils.WaitIfCommitState(ctx, client, "update collection")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(ctx, types.TransactionOptions{
 		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,

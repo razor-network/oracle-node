@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"os"
@@ -155,7 +156,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
-	epoch, err := razorUtils.GetEpoch(txnArgs.Client)
+	epoch, err := razorUtils.GetEpoch(context.Background(), txnArgs.Client)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return core.NilHash, err
@@ -190,7 +191,7 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		return core.NilHash, nil
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
 
 	log.Debug("Executing RedeemBounty transaction with bountyId: ", redeemBountyInput.BountyId)
 	tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)

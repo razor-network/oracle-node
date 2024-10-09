@@ -72,8 +72,8 @@ func TestCreateCollection(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
 			assetManagerMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"os"
@@ -112,12 +113,12 @@ func TestCalculateBlockTime(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.latestBlockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestBlock, tt.args.latestBlockErr)
 			clientUtilsMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.lastSecondBlock, tt.args.lastSecondBlockErr)
 
 			fatal = false
 
-			utils.CalculateBlockTime(client)
+			utils.CalculateBlockTime(context.Background(), client)
 			if fatal != tt.expectedFatal {
 				t.Error("The CalculateBlockTime function didn't execute as expected")
 			}
@@ -175,11 +176,11 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			clientMock.On("BalanceAtWithRetry", mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			clientMock.On("BalanceAtWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 
 			fatal = false
 
-			utils.CheckEthBalanceIsZero(client, address)
+			utils.CheckEthBalanceIsZero(context.Background(), client, address)
 			if fatal != tt.expectedFatal {
 				t.Error("The CheckEthBalanceIsZero function didn't execute as expected")
 			}
@@ -362,13 +363,10 @@ func TestFetchBalance(t *testing.T) {
 }
 
 func TestGetBufferedState(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
-		block          *types.Header
-		buffer         int32
-		stateBuffer    uint64
-		stateBufferErr error
+		block       *types.Header
+		buffer      int32
+		stateBuffer uint64
 	}
 	tests := []struct {
 		name    string
@@ -414,36 +412,12 @@ func TestGetBufferedState(t *testing.T) {
 			want:    -1,
 			wantErr: false,
 		},
-		{
-			name: "Test 4: When there is an error in getting stateBuffer",
-			args: args{
-				block: &types.Header{
-					Time: 100,
-				},
-				buffer:         2,
-				stateBufferErr: errors.New("error in getting stateBuffer"),
-			},
-
-			want:    -1,
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			utils := StartRazor(OptionsPackageStruct{})
 
-			utilsMock := new(mocks.Utils)
-			clientUtilsMock := new(mocks.ClientUtils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface:  utilsMock,
-				ClientInterface: clientUtilsMock,
-			}
-
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-
-			got, err := utils.GetBufferedState(client, tt.args.block, tt.args.buffer)
+			got, err := utils.GetBufferedState(tt.args.block, tt.args.stateBuffer, tt.args.buffer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetBufferedState() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -499,9 +473,9 @@ func TestGetEpoch(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
-			got, err := utils.GetEpoch(client)
+			got, err := utils.GetEpoch(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEpoch() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -856,11 +830,11 @@ func TestAssignStakerId(t *testing.T) {
 
 			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.flagPassed)
 			utilsMock.On("GetUint32", mock.Anything, mock.AnythingOfType("string")).Return(tt.args.flagSetStakerId, tt.args.flagSetStakerIdErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 
 			fatal = false
 
-			_, err := utils.AssignStakerId(flagSet, client, address)
+			_, err := utils.AssignStakerId(context.Background(), flagSet, client, address)
 			if fatal != tt.expectedFatal {
 				t.Error("The AssignStakerId function didn't execute as expected")
 			}
@@ -937,15 +911,10 @@ func TestAssignLogFile(t *testing.T) {
 }
 
 func TestGetRemainingTimeOfCurrentState(t *testing.T) {
-	var (
-		client        *ethclient.Client
-		bufferPercent int32
-	)
 	type args struct {
-		block          *types.Header
-		blockErr       error
-		stateBuffer    uint64
-		stateBufferErr error
+		block         *types.Header
+		stateBuffer   uint64
+		bufferPercent int32
 	}
 	tests := []struct {
 		name    string
@@ -962,38 +931,11 @@ func TestGetRemainingTimeOfCurrentState(t *testing.T) {
 			want:    85,
 			wantErr: false,
 		},
-		{
-			name: "Test 2: When there is an error in getting stateBuffer",
-			args: args{
-				block:          &types.Header{},
-				stateBufferErr: errors.New("error in getting stateBuffer"),
-			},
-			want:    0,
-			wantErr: true,
-		},
-		{
-			name: "Test 3: When there is an error in getting block",
-			args: args{
-				blockErr: errors.New("error in getting block"),
-			},
-			want:    0,
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(mocks.Utils)
-			clientUtilsMock := new(mocks.ClientUtils)
-
-			optionsPackageStruct := OptionsPackageStruct{
-				UtilsInterface:  utilsMock,
-				ClientInterface: clientUtilsMock,
-			}
-			utils := StartRazor(optionsPackageStruct)
-
-			utilsMock.On("GetStateBuffer", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.block, tt.args.blockErr)
-			got, err := utils.GetRemainingTimeOfCurrentState(client, bufferPercent)
+			utils := StartRazor(OptionsPackageStruct{})
+			got, err := utils.GetRemainingTimeOfCurrentState(tt.args.block, tt.args.stateBuffer, tt.args.bufferPercent)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetRemainingTimeOfCurrentState() error = %v, wantErr %v", err, tt.wantErr)
 				return

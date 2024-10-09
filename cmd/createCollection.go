@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -94,12 +95,12 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("CreateCollection: Uint16 jobIds: ", jobIds)
-	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)
+	_, err := cmdUtils.WaitForAppropriateState(context.Background(), client, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
 		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,

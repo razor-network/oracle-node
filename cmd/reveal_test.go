@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -65,11 +66,11 @@ func TestCheckForLastCommitted(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
+			utilsMock.On("GetEpochLastCommitted", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 
 			utils := &UtilsStruct{}
 
-			err := utils.CheckForLastCommitted(client, staker, tt.args.epoch)
+			err := utils.CheckForLastCommitted(context.Background(), client, staker, tt.args.epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for CheckForLastCommitted function, got = %v, want %v", err, tt.want)
@@ -93,6 +94,7 @@ func TestReveal(t *testing.T) {
 		config       types.Configurations
 		epoch        uint32
 		latestHeader *Types.Header
+		stateBuffer  uint64
 	)
 
 	type args struct {
@@ -163,13 +165,13 @@ func TestReveal(t *testing.T) {
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			merkleUtilsMock.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
 			voteManagerMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(client, config, account, epoch, latestHeader, commitData, signature)
+			got, err := utils.Reveal(context.Background(), client, config, account, epoch, latestHeader, stateBuffer, commitData, signature)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}
@@ -320,11 +322,11 @@ func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
-			clientUtilsMock.On("FilterLogsWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.FilterQuery")).Return(tt.args.logs, tt.args.logsErr)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.logs, tt.args.logsErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.contractAbiErr)
 			abiUtilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
 			ut := &UtilsStruct{}
-			got, err := ut.IndexRevealEventsOfCurrentEpoch(client, blockNumber, epoch)
+			got, err := ut.IndexRevealEventsOfCurrentEpoch(context.Background(), client, blockNumber, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("IndexRevealEventsOfCurrentEpoch() error = %v, wantErr %v", err, tt.wantErr)
 				return

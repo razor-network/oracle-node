@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -24,6 +25,7 @@ func TestCommit(t *testing.T) {
 		account      types.Account
 		config       types.Configurations
 		latestHeader *Types.Header
+		stateBuffer  uint64
 		seed         []byte
 		epoch        uint32
 	)
@@ -96,13 +98,13 @@ func TestCommit(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetBufferedState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			voteManagerMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(client, config, account, epoch, latestHeader, seed, tt.args.values)
+			got, err := utils.Commit(context.Background(), client, config, account, epoch, latestHeader, stateBuffer, seed, tt.args.values)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -233,13 +235,13 @@ func TestHandleCommitState(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
-			utilsMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
+			utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
 			utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
-			utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
+			utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(client, epoch, seed, commitParams, tt.args.rogueData)
+			got, err := utils.HandleCommitState(context.Background(), client, epoch, seed, commitParams, tt.args.rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}
@@ -350,15 +352,15 @@ func TestGetSalt(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetNumberOfProposedBlocks", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
-			utilsMock.On("GetBlockIndexToBeConfirmed", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
+			utilsMock.On("GetNumberOfProposedBlocks", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
+			utilsMock.On("GetBlockIndexToBeConfirmed", mock.Anything, mock.Anything).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
 			voteManagerUtilsMock.On("GetSaltFromBlockchain", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.saltFromBlockChain, tt.args.saltFromBlockChainErr)
-			utilsMock.On("GetSortedProposedBlockId", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
-			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
+			utilsMock.On("GetSortedProposedBlockId", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
+			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
 			utilsMock.On("CalculateSalt", mock.Anything, mock.Anything).Return(tt.args.salt)
 
 			ut := &UtilsStruct{}
-			got, err := ut.GetSalt(client, tt.args.epoch)
+			got, err := ut.GetSalt(context.Background(), client, tt.args.epoch)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from GetSalt function, got = %v, want = %v", got, tt.want)
 			}
@@ -403,13 +405,13 @@ func BenchmarkHandleCommitState(b *testing.B) {
 				SetUpMockInterfaces()
 
 				utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(v.numActiveCollections, nil)
-				utilsMock.On("GetAssignedCollections", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
+				utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
 				utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(uint16(1), nil)
-				utilsMock.On("GetAggregatedDataOfCollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
+				utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 				ut := &UtilsStruct{}
-				_, err := ut.HandleCommitState(client, epoch, seed, commitParams, types.Rogue{IsRogue: false})
+				_, err := ut.HandleCommitState(context.Background(), client, epoch, seed, commitParams, types.Rogue{IsRogue: false})
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -595,10 +597,10 @@ func TestVerifyCommitment(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: commitmentHash}, tt.args.commitmentErr)
-			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(salt, nil)
+			utilsMock.On("GetCommitment", mock.Anything, mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: commitmentHash}, tt.args.commitmentErr)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything, mock.Anything).Return(salt, nil)
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
-			got, err := VerifyCommitment(client, account, keystorePath, epoch, tt.args.values)
+			got, err := VerifyCommitment(context.Background(), client, account, keystorePath, epoch, tt.args.values)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VerifyCommitment() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -681,8 +683,8 @@ func TestCalculateSeed(t *testing.T) {
 			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
-			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(salt, tt.args.saltErr)
-			got, err := CalculateSeed(client, account, keystorePath, epoch)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything, mock.Anything).Return(salt, tt.args.saltErr)
+			got, err := CalculateSeed(context.Background(), client, account, keystorePath, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CalculateSeed() error = %v, wantErr %v", err, tt.wantErr)
 				return

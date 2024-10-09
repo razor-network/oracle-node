@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/utils"
@@ -14,8 +15,8 @@ import (
 )
 
 //This function takes client as a parameter and returns the epoch and state
-func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, error) {
-	epoch, err := razorUtils.GetEpoch(client)
+func (*UtilsStruct) GetEpochAndState(ctx context.Context, client *ethclient.Client) (uint32, int64, error) {
+	epoch, err := razorUtils.GetEpoch(ctx, client)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -23,16 +24,21 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 	if err != nil {
 		return 0, 0, err
 	}
-	err = ValidateBufferPercentLimit(client, bufferPercent)
+	err = ValidateBufferPercentLimit(ctx, client, bufferPercent)
 	if err != nil {
 		return 0, 0, err
 	}
-	latestHeader, err := clientUtils.GetLatestBlockWithRetry(client)
+	latestHeader, err := clientUtils.GetLatestBlockWithRetry(ctx, client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, 0, err
 	}
-	state, err := razorUtils.GetBufferedState(client, latestHeader, bufferPercent)
+	stateBuffer, err := razorUtils.GetStateBuffer(ctx, client)
+	if err != nil {
+		log.Error("Error in getting state buffer: ", err)
+		return 0, 0, err
+	}
+	state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, bufferPercent)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -42,10 +48,10 @@ func (*UtilsStruct) GetEpochAndState(client *ethclient.Client) (uint32, int64, e
 }
 
 //This function waits for the appropriate states which are required
-func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action string, states ...int) (uint32, error) {
+func (*UtilsStruct) WaitForAppropriateState(ctx context.Context, client *ethclient.Client, action string, states ...int) (uint32, error) {
 	statesAllowed := GetFormattedStateNames(states)
 	for {
-		epoch, state, err := cmdUtils.GetEpochAndState(client)
+		epoch, state, err := cmdUtils.GetEpochAndState(ctx, client)
 		if err != nil {
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err
@@ -60,9 +66,9 @@ func (*UtilsStruct) WaitForAppropriateState(client *ethclient.Client, action str
 }
 
 //This function wait if the state is commit state
-func (*UtilsStruct) WaitIfCommitState(client *ethclient.Client, action string) (uint32, error) {
+func (*UtilsStruct) WaitIfCommitState(ctx context.Context, client *ethclient.Client, action string) (uint32, error) {
 	for {
-		epoch, state, err := cmdUtils.GetEpochAndState(client)
+		epoch, state, err := cmdUtils.GetEpochAndState(ctx, client)
 		if err != nil {
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -88,20 +89,20 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 		Account:      account,
 	}
 
-	txn, err := cmdUtils.UpdateJob(client, config, jobInput, jobId)
+	txn, err := cmdUtils.UpdateJob(context.Background(), client, config, jobInput, jobId)
 	utils.CheckError("UpdateJob error: ", err)
 	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for updateJob: ", err)
 }
 
 //This function allows the admin to update an existing job
-func (*UtilsStruct) UpdateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
-	_, err := cmdUtils.WaitIfCommitState(client, "update job")
+func (*UtilsStruct) UpdateJob(ctx context.Context, client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
+	_, err := cmdUtils.WaitIfCommitState(ctx, client, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnArgs := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnArgs := razorUtils.GetTxnOpts(ctx, types.TransactionOptions{
 		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,

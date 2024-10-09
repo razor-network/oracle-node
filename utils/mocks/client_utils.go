@@ -53,25 +53,25 @@ func (_m *ClientUtils) BalanceAt(client *ethclient.Client, ctx context.Context, 
 	return r0, r1
 }
 
-// BalanceAtWithRetry provides a mock function with given fields: client, account
-func (_m *ClientUtils) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	ret := _m.Called(client, account)
+// BalanceAtWithRetry provides a mock function with given fields: ctx, client, account
+func (_m *ClientUtils) BalanceAtWithRetry(ctx context.Context, client *ethclient.Client, account common.Address) (*big.Int, error) {
+	ret := _m.Called(ctx, client, account)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) (*big.Int, error)); ok {
-		return rf(client, account)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, common.Address) (*big.Int, error)); ok {
+		return rf(ctx, client, account)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *big.Int); ok {
-		r0 = rf(client, account)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, common.Address) *big.Int); ok {
+		r0 = rf(ctx, client, account)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, account)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, common.Address) error); ok {
+		r1 = rf(ctx, client, account)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -205,25 +205,25 @@ func (_m *ClientUtils) FilterLogs(client *ethclient.Client, ctx context.Context,
 	return r0, r1
 }
 
-// FilterLogsWithRetry provides a mock function with given fields: client, query
-func (_m *ClientUtils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
-	ret := _m.Called(client, query)
+// FilterLogsWithRetry provides a mock function with given fields: ctx, client, query
+func (_m *ClientUtils) FilterLogsWithRetry(ctx context.Context, client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(ctx, client, query)
 
 	var r0 []types.Log
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) ([]types.Log, error)); ok {
-		return rf(client, query)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, ethereum.FilterQuery) ([]types.Log, error)); ok {
+		return rf(ctx, client, query)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) []types.Log); ok {
-		r0 = rf(client, query)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, ethereum.FilterQuery) []types.Log); ok {
+		r0 = rf(ctx, client, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Log)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.FilterQuery) error); ok {
-		r1 = rf(client, query)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, ethereum.FilterQuery) error); ok {
+		r1 = rf(ctx, client, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -231,25 +231,25 @@ func (_m *ClientUtils) FilterLogsWithRetry(client *ethclient.Client, query ether
 	return r0, r1
 }
 
-// GetLatestBlockWithRetry provides a mock function with given fields: client
-func (_m *ClientUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
-	ret := _m.Called(client)
+// GetLatestBlockWithRetry provides a mock function with given fields: ctx, client
+func (_m *ClientUtils) GetLatestBlockWithRetry(ctx context.Context, client *ethclient.Client) (*types.Header, error) {
+	ret := _m.Called(ctx, client)
 
 	var r0 *types.Header
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*types.Header, error)); ok {
-		return rf(client)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (*types.Header, error)); ok {
+		return rf(ctx, client)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) *types.Header); ok {
-		r0 = rf(client)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) *types.Header); ok {
+		r0 = rf(ctx, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Header)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
+		r1 = rf(ctx, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -257,23 +257,23 @@ func (_m *ClientUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types
 	return r0, r1
 }
 
-// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress
-func (_m *ClientUtils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
-	ret := _m.Called(client, accountAddress)
+// GetNonceAtWithRetry provides a mock function with given fields: ctx, client, accountAddress
+func (_m *ClientUtils) GetNonceAtWithRetry(ctx context.Context, client *ethclient.Client, accountAddress common.Address) (uint64, error) {
+	ret := _m.Called(ctx, client, accountAddress)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) (uint64, error)); ok {
-		return rf(client, accountAddress)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, common.Address) (uint64, error)); ok {
+		return rf(ctx, client, accountAddress)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
-		r0 = rf(client, accountAddress)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, common.Address) uint64); ok {
+		r0 = rf(ctx, client, accountAddress)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, accountAddress)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, common.Address) error); ok {
+		r1 = rf(ctx, client, accountAddress)
 	} else {
 		r1 = ret.Error(1)
 	}

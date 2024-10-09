@@ -291,13 +291,13 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 
 			utils := StartRazor(optionsPackageStruct)
 
-			clientMock.On("GetNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
+			clientMock.On("GetNonceAtWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.nonce, tt.args.nonceErr)
 			gasMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
 			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
-			gasMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			gasMock.On("GetGasLimit", mock.Anything, transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			clientMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
-			clientMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			clientMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
 			// Defer a function to recover from the panic and check if it matches the expectedFatal condition
 			defer func() {
@@ -319,7 +319,7 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				}
 			}()
 
-			got := utils.GetTxnOpts(transactionData)
+			got := utils.GetTxnOpts(context.Background(), transactionData)
 			if !tt.expectedFatal && fatalOccurred {
 				t.Fatalf("Test exited due to an unexpected fatal condition")
 			}
@@ -480,12 +480,12 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 
 			abiMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
 			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
-			clientUtilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			gasUtilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
-			utilsMock.On("ToAssign", mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
+			clientUtilsMock.On("EstimateGasWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
+			utilsMock.On("ToAssign", mock.Anything, mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
 
 			gasUtils := GasStruct{}
-			got, err := gasUtils.GetGasLimit(tt.args.transactionData, txnOpts)
+			got, err := gasUtils.GetGasLimit(context.Background(), tt.args.transactionData, txnOpts)
 			if got != tt.want {
 				t.Errorf("getGasLimit() got = %v, want %v", got, tt.want)
 			}
@@ -580,10 +580,10 @@ func TestUtilsStruct_IncreaseGasLimitValue(t *testing.T) {
 
 			StartRazor(optionsPackageStruct)
 
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.blockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestBlock, tt.args.blockErr)
 
 			gasUtils := GasStruct{}
-			got, err := gasUtils.IncreaseGasLimitValue(client, tt.args.gasLimit, tt.args.gasLimitMultiplier)
+			got, err := gasUtils.IncreaseGasLimitValue(context.Background(), client, tt.args.gasLimit, tt.args.gasLimitMultiplier)
 			if got != tt.want {
 				t.Errorf("increaseGasLimitValue() got = %v, want %v", got, tt.want)
 			}

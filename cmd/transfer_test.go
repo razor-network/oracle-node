@@ -63,7 +63,7 @@ func TestTransfer(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("GetTxnOpts", mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.decimalAmount)
 			tokenManagerMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.transferTxn, tt.args.transferErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.transferHash)

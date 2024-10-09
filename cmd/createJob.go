@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -108,7 +109,7 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		Account:         jobInput.Account,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
 	log.Info("Creating Job...")
 	log.Debugf("CreateJob: Executing CreateJob transaction with weight = %d, power = %d, selector type = %d, name = %s, selector = %s, URl = %s", jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)

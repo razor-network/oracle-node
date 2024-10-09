@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -88,7 +89,7 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
 		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,

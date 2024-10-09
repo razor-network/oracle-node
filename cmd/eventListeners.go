@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,8 +16,8 @@ import (
 	"strings"
 )
 
-func (*UtilsStruct) InitJobAndCollectionCache(client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
-	initAssetCacheBlock, err := clientUtils.GetLatestBlockWithRetry(client)
+func (*UtilsStruct) InitJobAndCollectionCache(ctx context.Context, client *ethclient.Client) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
+	initAssetCacheBlock, err := clientUtils.GetLatestBlockWithRetry(ctx, client)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return nil, nil, nil, err
@@ -43,7 +44,7 @@ func (*UtilsStruct) InitJobAndCollectionCache(client *ethclient.Client) (*cache.
 }
 
 // CheckForJobAndCollectionEvents checks for specific job and collections event that were emitted.
-func CheckForJobAndCollectionEvents(client *ethclient.Client, commitParams *types.CommitParams) error {
+func CheckForJobAndCollectionEvents(ctx context.Context, client *ethclient.Client, commitParams *types.CommitParams) error {
 	collectionManagerContractABI, err := abi.JSON(strings.NewReader(bindings.CollectionManagerMetaData.ABI))
 	if err != nil {
 		log.Errorf("Error in parsing collection manager contract ABI: %v", err)
@@ -53,14 +54,14 @@ func CheckForJobAndCollectionEvents(client *ethclient.Client, commitParams *type
 	eventNames := []string{core.JobUpdatedEvent, core.CollectionUpdatedEvent, core.CollectionActivityStatusEvent, core.JobCreatedEvent, core.CollectionCreatedEvent}
 
 	log.Debug("Checking for Job/Collection update events...")
-	toBlock, err := clientUtils.GetLatestBlockWithRetry(client)
+	toBlock, err := clientUtils.GetLatestBlockWithRetry(ctx, client)
 	if err != nil {
 		log.Error("Error in getting latest block to start event listener: ", err)
 		return err
 	}
 
 	// Process events and update the fromBlock for the next iteration
-	newFromBlock, err := processEvents(client, collectionManagerContractABI, commitParams.FromBlockToCheckForEvents, toBlock.Number, eventNames, commitParams.JobsCache, commitParams.CollectionsCache)
+	newFromBlock, err := processEvents(ctx, client, collectionManagerContractABI, commitParams.FromBlockToCheckForEvents, toBlock.Number, eventNames, commitParams.JobsCache, commitParams.CollectionsCache)
 	if err != nil {
 		return err
 	}
@@ -72,8 +73,8 @@ func CheckForJobAndCollectionEvents(client *ethclient.Client, commitParams *type
 }
 
 // processEvents fetches and processes logs for multiple event types.
-func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toBlock *big.Int, eventNames []string, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) (*big.Int, error) {
-	logs, err := getEventLogs(client, fromBlock, toBlock)
+func processEvents(ctx context.Context, client *ethclient.Client, contractABI abi.ABI, fromBlock, toBlock *big.Int, eventNames []string, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) (*big.Int, error) {
+	logs, err := getEventLogs(ctx, client, fromBlock, toBlock)
 	if err != nil {
 		log.Errorf("Failed to fetch logs: %v", err)
 		return nil, err
@@ -112,7 +113,7 @@ func processEvents(client *ethclient.Client, contractABI abi.ABI, fromBlock, toB
 }
 
 // getEventLogs is a utility function to fetch the event logs
-func getEventLogs(client *ethclient.Client, fromBlock *big.Int, toBlock *big.Int) ([]Types.Log, error) {
+func getEventLogs(ctx context.Context, client *ethclient.Client, fromBlock *big.Int, toBlock *big.Int) ([]Types.Log, error) {
 	log.Debugf("Checking for events from block %v to block %v...", fromBlock, toBlock)
 
 	// Set up the query for filtering logs
@@ -125,7 +126,7 @@ func getEventLogs(client *ethclient.Client, fromBlock *big.Int, toBlock *big.Int
 	}
 
 	// Retrieve the logs
-	logs, err := clientUtils.FilterLogsWithRetry(client, query)
+	logs, err := clientUtils.FilterLogsWithRetry(ctx, client, query)
 	if err != nil {
 		log.Errorf("Error in filter logs: %v", err)
 		return []Types.Log{}, err

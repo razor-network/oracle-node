@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -141,21 +142,21 @@ func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, 
 	return activeCollectionIds, nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) GetAggregatedDataOfCollection(ctx context.Context, client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(commitParams.CollectionsCache, collectionId)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	//Supply previous epoch to Aggregate in case if last reported value is required.
-	collectionData, aggregationError := UtilsInterface.Aggregate(client, epoch-1, activeCollection, commitParams)
+	collectionData, aggregationError := UtilsInterface.Aggregate(ctx, client, epoch-1, activeCollection, commitParams)
 	if aggregationError != nil {
 		return nil, aggregationError
 	}
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -213,7 +214,7 @@ func (*UtilsStruct) Aggregate(client *ethclient.Client, previousEpoch uint32, co
 	}
 	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, commitParams)
 	if len(dataToCommit) == 0 {
-		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(client, previousEpoch, collection.Id)
+		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(ctx, client, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -360,10 +361,10 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, commitParams
 	return MultiplyWithPower(datum, job.Power), err
 }
 
-func (*UtilsStruct) GetAssignedCollections(client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
+func (*UtilsStruct) GetAssignedCollections(ctx context.Context, client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
 	assignedCollections := make(map[int]bool)
 	var seqAllottedCollections []*big.Int
-	toAssign, err := UtilsInterface.ToAssign(client)
+	toAssign, err := UtilsInterface.ToAssign(ctx, client)
 	if err != nil {
 		return nil, nil, err
 	}

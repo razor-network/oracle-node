@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
@@ -59,7 +60,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
-	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(context.Background(), flagSet, client, address)
 	utils.CheckError("Error in getting stakerId: ", err)
 
 	extendLockInput := types.ExtendLockInput{
@@ -75,7 +76,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 
 //This function is used to reset the lock once the withdraw lock period is over
 func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
 		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,

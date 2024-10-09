@@ -84,8 +84,8 @@ func TestStakeCoins(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.getEpochErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.getEpochErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			stakeManagerMock.On("Stake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
@@ -327,10 +327,10 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
-			utilsMock.On("GetMinSafeRazor", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
-			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("CheckEthBalanceIsZero", mock.Anything, mock.Anything, mock.Anything).Return()
+			utilsMock.On("GetMinSafeRazor", mock.Anything, mock.Anything).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 

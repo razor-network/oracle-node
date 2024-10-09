@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -59,11 +60,11 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 	err = razorUtils.CheckPassword(account)
 	utils.CheckError("Error in fetching private key from given password: ", err)
 
-	stakerId, err := razorUtils.AssignStakerId(flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(context.Background(), flagSet, client, address)
 	utils.CheckError("Error in fetching stakerId:  ", err)
 	log.Debug("ExecuteUnlockWithdraw: StakerId: ", stakerId)
 
-	txn, err := cmdUtils.HandleWithdrawLock(client, account, config, stakerId)
+	txn, err := cmdUtils.HandleWithdrawLock(context.Background(), client, account, config, stakerId)
 	utils.CheckError("HandleWithdrawLock error: ", err)
 
 	if txn != core.NilHash {
@@ -73,8 +74,8 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 }
 
 //This function handles the Withdraw lock
-func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
-	withdrawLock, err := razorUtils.GetLock(client, account.Address, stakerId, 1)
+func (*UtilsStruct) HandleWithdrawLock(ctx context.Context, client *ethclient.Client, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+	withdrawLock, err := razorUtils.GetLock(ctx, client, account.Address, stakerId, 1)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -85,7 +86,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 		return core.NilHash, errors.New("initiate withdrawal of Razors before unlocking withdraw")
 	}
 
-	epoch, err := razorUtils.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(ctx, client)
 	if err != nil {
 		log.Error("Error in fetching epoch")
 		return core.NilHash, err
@@ -110,7 +111,7 @@ func (*UtilsStruct) HandleWithdrawLock(client *ethclient.Client, account types.A
 			Parameters:      []interface{}{stakerId},
 			Account:         account,
 		}
-		txnOpts := razorUtils.GetTxnOpts(txnArgs)
+		txnOpts := razorUtils.GetTxnOpts(ctx, txnArgs)
 		log.Debug("HandleWithdrawLock: Calling UnlockWithdraw() with arguments stakerId = ", stakerId)
 		return cmdUtils.UnlockWithdraw(client, txnOpts, stakerId)
 	}

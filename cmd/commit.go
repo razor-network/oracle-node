@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -21,15 +22,15 @@ import (
 GetSalt calculates the salt on the basis of previous epoch and the medians of the previous epoch.
 If the previous epoch doesn't contain any medians, then the value is fetched from the smart contract.
 */
-func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, error) {
+func (*UtilsStruct) GetSalt(ctx context.Context, client *ethclient.Client, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
 	log.Debug("GetSalt: Previous epoch: ", previousEpoch)
-	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(client, previousEpoch)
+	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(ctx, client, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
 	log.Debug("GetSalt: Number of proposed blocks: ", numProposedBlock)
-	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(client)
+	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(ctx, client)
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -37,12 +38,12 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexToBeConfirmed < 0) {
 		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
 	}
-	blockId, err := razorUtils.GetSortedProposedBlockId(client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
+	blockId, err := razorUtils.GetSortedProposedBlockId(ctx, client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
 	log.Debug("GetSalt: Block Id: ", blockId)
-	previousBlock, err := razorUtils.GetProposedBlock(client, previousEpoch, blockId)
+	previousBlock, err := razorUtils.GetProposedBlock(ctx, client, previousEpoch, blockId)
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
 	}
@@ -55,14 +56,14 @@ func (*UtilsStruct) GetSalt(client *ethclient.Client, epoch uint32) ([32]byte, e
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
+func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
 	if err != nil {
 		return types.CommitData{}, err
 	}
 	log.Debug("HandleCommitState: Number of active collections: ", numActiveCollections)
 	log.Debugf("HandleCommitState: Calling GetAssignedCollections() with arguments number of active collections = %d", numActiveCollections)
-	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(client, numActiveCollections, seed)
+	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(ctx, client, numActiveCollections, seed)
 	if err != nil {
 		return types.CommitData{}, err
 	}
@@ -94,7 +95,7 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 					errChan <- err
 					return
 				}
-				collectionData, err := razorUtils.GetAggregatedDataOfCollection(client, collectionId, epoch, commitParams)
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(ctx, client, collectionId, epoch, commitParams)
 				if err != nil {
 					log.Error("Error in getting aggregated data of collection: ", err)
 					errChan <- err
@@ -145,8 +146,8 @@ func (*UtilsStruct) HandleCommitState(client *ethclient.Client, epoch uint32, se
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, seed []byte, values []*big.Int) (common.Hash, error) {
-	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 0 {
+func (*UtilsStruct) Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, seed []byte, values []*big.Int) (common.Hash, error) {
+	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
@@ -157,7 +158,7 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 		return core.NilHash, err
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
+	txnOpts := razorUtils.GetTxnOpts(ctx, types.TransactionOptions{
 		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,
@@ -179,14 +180,14 @@ func (*UtilsStruct) Commit(client *ethclient.Client, config types.Configurations
 	return txnHash, nil
 }
 
-func CalculateSeed(client *ethclient.Client, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
+func CalculateSeed(ctx context.Context, client *ethclient.Client, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
 	log.Debugf("CalculateSeed: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
 	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("CalculateSeed: Getting Salt for current epoch %d...", epoch)
-	salt, err := cmdUtils.GetSalt(client, epoch)
+	salt, err := cmdUtils.GetSalt(ctx, client, epoch)
 	if err != nil {
 		log.Error("Error in getting salt: ", err)
 		return nil, err
@@ -214,15 +215,15 @@ func CalculateCommitment(seed []byte, values []*big.Int) ([32]byte, error) {
 	return commitmentToSend, nil
 }
 
-func VerifyCommitment(client *ethclient.Client, account types.Account, keystorePath string, epoch uint32, values []*big.Int) (bool, error) {
-	commitmentStruct, err := razorUtils.GetCommitment(client, account.Address)
+func VerifyCommitment(ctx context.Context, client *ethclient.Client, account types.Account, keystorePath string, epoch uint32, values []*big.Int) (bool, error) {
+	commitmentStruct, err := razorUtils.GetCommitment(ctx, client, account.Address)
 	if err != nil {
 		log.Error("Error in getting commitments: ", err)
 		return false, err
 	}
 	log.Debugf("VerifyCommitment: CommitmentStruct: %+v", commitmentStruct)
 
-	seed, err := CalculateSeed(client, account, keystorePath, epoch)
+	seed, err := CalculateSeed(ctx, client, account, keystorePath, epoch)
 	if err != nil {
 		log.Error("Error in calculating seed: ", err)
 		return false, err

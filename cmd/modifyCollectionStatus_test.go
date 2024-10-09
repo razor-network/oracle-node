@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -161,14 +162,14 @@ func TestModifyAssetStatus(t *testing.T) {
 			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("CheckCurrentStatus", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.currentStatus, tt.args.currentStatusErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			assetManagerMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.ModifyCollectionStatus(client, config, types.ModifyCollectionInput{
+			got, err := utils.ModifyCollectionStatus(context.Background(), client, config, types.ModifyCollectionInput{
 				Status: tt.args.status,
 			})
 			if got != tt.want {
@@ -326,7 +327,7 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("ModifyCollectionStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyCollectionStatusHash, tt.args.ModifyCollectionStatusErr)
+			cmdUtilsMock.On("ModifyCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyCollectionStatusHash, tt.args.ModifyCollectionStatusErr)
 			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
 
 			utils := &UtilsStruct{}

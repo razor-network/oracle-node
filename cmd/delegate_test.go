@@ -57,7 +57,7 @@ func TestDelegate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			stakeManagerMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
@@ -249,7 +249,7 @@ func TestExecuteDelegate(t *testing.T) {
 			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("CheckEthBalanceIsZero", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return()
+			utilsMock.On("CheckEthBalanceIsZero", mock.Anything, mock.Anything, mock.Anything).Return()
 			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
 			cmdUtilsMock.On("Delegate", mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.delegateHash, tt.args.delegateErr)
 
