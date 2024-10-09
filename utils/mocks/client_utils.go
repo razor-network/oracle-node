@@ -155,23 +155,23 @@ func (_m *ClientUtils) EstimateGas(client *ethclient.Client, ctx context.Context
 	return r0, r1
 }
 
-// EstimateGasWithRetry provides a mock function with given fields: client, message
-func (_m *ClientUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
-	ret := _m.Called(client, message)
+// EstimateGasWithRetry provides a mock function with given fields: ctx, client, message
+func (_m *ClientUtils) EstimateGasWithRetry(ctx context.Context, client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
+	ret := _m.Called(ctx, client, message)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) (uint64, error)); ok {
-		return rf(client, message)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, ethereum.CallMsg) (uint64, error)); ok {
+		return rf(ctx, client, message)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) uint64); ok {
-		r0 = rf(client, message)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, ethereum.CallMsg) uint64); ok {
+		r0 = rf(ctx, client, message)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.CallMsg) error); ok {
-		r1 = rf(client, message)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, ethereum.CallMsg) error); ok {
+		r1 = rf(ctx, client, message)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -371,25 +371,25 @@ func (_m *ClientUtils) SuggestGasPrice(client *ethclient.Client, ctx context.Con
 	return r0, r1
 }
 
-// SuggestGasPriceWithRetry provides a mock function with given fields: client
-func (_m *ClientUtils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
-	ret := _m.Called(client)
+// SuggestGasPriceWithRetry provides a mock function with given fields: ctx, client
+func (_m *ClientUtils) SuggestGasPriceWithRetry(ctx context.Context, client *ethclient.Client) (*big.Int, error) {
+	ret := _m.Called(ctx, client)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*big.Int, error)); ok {
-		return rf(client)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (*big.Int, error)); ok {
+		return rf(ctx, client)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
-		r0 = rf(client)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) *big.Int); ok {
+		r0 = rf(ctx, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
+		r1 = rf(ctx, client)
 	} else {
 		r1 = ret.Error(1)
 	}

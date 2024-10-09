@@ -1043,7 +1043,7 @@ func TestMakeBlock(t *testing.T) {
 			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("GetSortedRevealedValues", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealedDataMaps, tt.args.revealedDataMapsErr)
-			utilsMock.On("GetActiveCollectionIds", mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
+			utilsMock.On("GetActiveCollectionIds", mock.Anything, mock.Anything).Return(tt.args.activeCollections, tt.args.activeCollectionsErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(randomValue)
 			ut := &UtilsStruct{}
 			got, got1, got2, err := ut.MakeBlock(context.Background(), client, blockNumber, epoch, tt.args.rogueData)

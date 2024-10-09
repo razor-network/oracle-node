@@ -72,7 +72,7 @@ func TestGetCollectionList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetAllCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
+			utilsMock.On("GetAllCollections", mock.Anything, mock.Anything).Return(tt.args.collectionList, tt.args.collectionListErr)
 			utils := &UtilsStruct{}
 
 			err := utils.GetCollectionList(tt.args.client)

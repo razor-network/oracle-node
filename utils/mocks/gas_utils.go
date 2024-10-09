@@ -44,13 +44,13 @@ func (_m *GasUtils) GetGasLimit(ctx context.Context, transactionData types.Trans
 	return r0, r1
 }
 
-// GetGasPrice provides a mock function with given fields: client, config
-func (_m *GasUtils) GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int {
-	ret := _m.Called(client, config)
+// GetGasPrice provides a mock function with given fields: ctx, client, config
+func (_m *GasUtils) GetGasPrice(ctx context.Context, client *ethclient.Client, config types.Configurations) *big.Int {
+	ret := _m.Called(ctx, client, config)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, types.Configurations) *big.Int); ok {
-		r0 = rf(client, config)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, types.Configurations) *big.Int); ok {
+		r0 = rf(ctx, client, config)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)

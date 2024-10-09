@@ -234,9 +234,9 @@ func TestHandleCommitState(t *testing.T) {
 
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
+			utilsMock.On("GetNumActiveCollections", mock.Anything, mock.Anything).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
 			utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
-			utilsMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			utilsMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
