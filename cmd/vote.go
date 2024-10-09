@@ -338,7 +338,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 			blockConfirmed = epoch
 			break
 		}
-		if lastVerification == epoch && blockConfirmed < epoch {
+		if (lastVerification == epoch || lastVerification == 0) && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(ctx, types.TransactionOptions{
 				Client:          client,
 				ChainId:         core.ChainId,

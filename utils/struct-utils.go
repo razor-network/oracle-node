@@ -349,7 +349,12 @@ func (b BlockManagerStruct) GetConfirmedBlocks(client *ethclient.Client, epoch u
 	if returnedError != nil {
 		return coretypes.ConfirmedBlock{}, returnedError
 	}
-	return returnedValues[0].Interface().(coretypes.ConfirmedBlock), nil
+	return returnedValues[0].Interface().(struct {
+		Valid        bool
+		ProposerId   uint32
+		Iteration    *big.Int
+		BiggestStake *big.Int
+	}), nil
 }
 
 func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
