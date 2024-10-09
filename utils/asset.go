@@ -18,7 +18,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tidwall/gjson"
@@ -31,23 +30,11 @@ func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bin
 }
 
 func (*UtilsStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
-	var (
-		numCollections uint16
-		err            error
-	)
-	err = retry.Do(
-		func() error {
-			numCollections, err = AssetManagerInterface.GetNumCollections(client)
-			if err != nil {
-				log.Error("Error in fetching numCollections.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetNumCollections", client)
 	if err != nil {
 		return 0, err
 	}
-	return numCollections, nil
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error) {
@@ -67,23 +54,11 @@ func (*UtilsStruct) GetJobs(client *ethclient.Client) ([]bindings.StructsJob, er
 }
 
 func (*UtilsStruct) GetNumActiveCollections(client *ethclient.Client) (uint16, error) {
-	var (
-		numActiveAssets uint16
-		err             error
-	)
-	err = retry.Do(
-		func() error {
-			numActiveAssets, err = AssetManagerInterface.GetNumActiveCollections(client)
-			if err != nil {
-				log.Error("Error in fetching active assets.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetNumActiveCollections", client)
 	if err != nil {
 		return 0, err
 	}
-	return numActiveAssets, nil
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error) {
@@ -103,43 +78,19 @@ func (*UtilsStruct) GetAllCollections(client *ethclient.Client) ([]bindings.Stru
 }
 
 func (*UtilsStruct) GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	var (
-		collection bindings.StructsCollection
-		err        error
-	)
-	err = retry.Do(
-		func() error {
-			collection, err = AssetManagerInterface.GetCollection(client, collectionId)
-			if err != nil {
-				log.Error("Error in fetching collection.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetCollection", client, collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}
-	return collection, nil
+	return returnedValues[0].Interface().(bindings.StructsCollection), nil
 }
 
 func (*UtilsStruct) GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error) {
-	var (
-		activeCollectionIds []uint16
-		err                 error
-	)
-	err = retry.Do(
-		func() error {
-			activeCollectionIds, err = AssetManagerInterface.GetActiveCollections(client)
-			if err != nil {
-				log.Error("Error in fetching active assets.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetActiveCollections", client)
 	if err != nil {
 		return nil, err
 	}
-	return activeCollectionIds, nil
+	return returnedValues[0].Interface().([]uint16), nil
 }
 
 func (*UtilsStruct) GetAggregatedDataOfCollection(ctx context.Context, client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
@@ -224,23 +175,11 @@ func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, pre
 }
 
 func (*UtilsStruct) GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
-	var (
-		job bindings.StructsJob
-		err error
-	)
-	err = retry.Do(
-		func() error {
-			job, err = AssetManagerInterface.Jobs(client, jobId)
-			if err != nil {
-				log.Errorf("Error in fetching job %d.... Retrying", jobId)
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "Jobs", client, jobId)
 	if err != nil {
 		return bindings.StructsJob{}, err
 	}
-	return job, nil
+	return returnedValues[0].Interface().(bindings.StructsJob), nil
 }
 
 func (*UtilsStruct) GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error) {
@@ -377,63 +316,27 @@ func (*UtilsStruct) GetAssignedCollections(ctx context.Context, client *ethclien
 }
 
 func (*UtilsStruct) GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error) {
-	var (
-		leafId uint16
-		err    error
-	)
-	err = retry.Do(
-		func() error {
-			leafId, err = AssetManagerInterface.GetLeafIdOfACollection(client, collectionId)
-			if err != nil {
-				log.Error("Error in fetching collection id.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetLeafIdOfACollection", client, collectionId)
 	if err != nil {
 		return 0, err
 	}
-	return leafId, nil
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (*UtilsStruct) GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error) {
-	var (
-		collectionId uint16
-		err          error
-	)
-	err = retry.Do(
-		func() error {
-			collectionId, err = AssetManagerInterface.GetCollectionIdFromIndex(client, medianIndex)
-			if err != nil {
-				log.Error("Error in fetching collection id.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetCollectionIdFromIndex", client, medianIndex)
 	if err != nil {
 		return 0, err
 	}
-	return collectionId, nil
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func (*UtilsStruct) GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error) {
-	var (
-		collectionId uint16
-		err          error
-	)
-	err = retry.Do(
-		func() error {
-			collectionId, err = AssetManagerInterface.GetCollectionIdFromLeafId(client, leafId)
-			if err != nil {
-				log.Error("Error in fetching collection id.... Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+	returnedValues, err := InvokeFunctionWithRetryAttempts(AssetManagerInterface, "GetCollectionIdFromLeafId", client, leafId)
 	if err != nil {
 		return 0, err
 	}
-	return collectionId, nil
+	return returnedValues[0].Interface().(uint16), nil
 }
 
 func GetCustomJobsFromJSONFile(collection string, jsonFileData string) []bindings.StructsJob {
