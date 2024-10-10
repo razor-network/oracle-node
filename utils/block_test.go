@@ -774,31 +774,3 @@ func TestGetConfirmedBlocks(t *testing.T) {
 		})
 	}
 }
-
-//func TestGetConfirmedBlocks(t *testing.T) {
-//	var (
-//		client *ethclient.Client
-//		epoch  uint32
-//	)
-//
-//	type args struct {
-//	}
-//	tests := []struct {
-//		name    string
-//		args    args
-//		want    types.ConfirmedBlock
-//		wantErr assert.ErrorAssertionFunc
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			ut := &UtilsStruct{}
-//			got, err := ut.GetConfirmedBlocks(client, epoch)
-//			if !tt.wantErr(t, err, fmt.Sprintf("GetConfirmedBlocks(%v, %v)", tt.args.client, tt.args.epoch)) {
-//				return
-//			}
-//			assert.Equalf(t, tt.want, got, "GetConfirmedBlocks(%v, %v)", tt.args.client, tt.args.epoch)
-//		})
-//	}
-//}
