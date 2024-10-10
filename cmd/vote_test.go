@@ -539,7 +539,7 @@ func TestInitiateCommit(t *testing.T) {
 			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
+			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			pathMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(&Types.Header{Number: big.NewInt(100)}, nil)
