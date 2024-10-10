@@ -112,7 +112,7 @@ func Test_getGasPrice(t *testing.T) {
 			UtilsMock := new(mocks.Utils)
 			clientUtilsMock := new(mocks.ClientUtils)
 
-			clientUtilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
+			clientUtilsMock.On("SuggestGasPriceWithRetry", mock.Anything, mock.Anything).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
 			UtilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(tt.args.multipliedGasPrice)
 
 			fatal = false
@@ -123,7 +123,7 @@ func Test_getGasPrice(t *testing.T) {
 			}
 			StartRazor(optionsPackageStruct)
 			gasUtils := GasStruct{}
-			got := gasUtils.GetGasPrice(client, tt.args.config)
+			got := gasUtils.GetGasPrice(context.Background(), client, tt.args.config)
 			if fatal != tt.expectedFatal {
 				if got.Cmp(tt.want) != 0 {
 					t.Errorf("getGasPrice() = %v, want %v", got, tt.want)
@@ -292,10 +292,9 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			clientMock.On("GetNonceAtWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.nonce, tt.args.nonceErr)
-			gasMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
+			gasMock.On("GetGasPrice", mock.Anything, mock.Anything, mock.Anything).Return(gasPrice)
 			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
 			gasMock.On("GetGasLimit", mock.Anything, transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			clientMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
 			clientMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
@@ -480,7 +479,7 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 
 			abiMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
 			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
-			clientUtilsMock.On("EstimateGasWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			clientUtilsMock.On("EstimateGasWithRetry", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
 			utilsMock.On("ToAssign", mock.Anything, mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
 

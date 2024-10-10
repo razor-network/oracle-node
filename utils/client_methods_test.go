@@ -62,7 +62,7 @@ func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.SuggestGasPriceWithRetry(client)
+			got, err := clientUtils.SuggestGasPriceWithRetry(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SuggestGasPriceWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -178,7 +178,7 @@ func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.EstimateGasWithRetry(client, message)
+			got, err := clientUtils.EstimateGasWithRetry(context.Background(), client, message)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EstimateGasWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return

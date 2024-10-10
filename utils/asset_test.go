@@ -268,7 +268,7 @@ func TestGetActiveCollectionIds(t *testing.T) {
 			assetManagerMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetActiveCollectionIds(client)
+			got, err := utils.GetActiveCollectionIds(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetActiveCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -401,7 +401,7 @@ func TestGetActiveJob(t *testing.T) {
 			assetManagerMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetActiveJob(client, jobId)
+			got, err := utils.GetActiveJob(context.Background(), client, jobId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetActiveJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -462,7 +462,7 @@ func TestGetCollection(t *testing.T) {
 			assetManagerMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCollection(client, collectionId)
+			got, err := utils.GetCollection(context.Background(), client, collectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -544,10 +544,10 @@ func TestGetAllCollections(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
+			utilsMock.On("GetNumCollections", mock.Anything, mock.Anything).Return(tt.args.numAssets, tt.args.numAssetsErr)
 			assetMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
 
-			got, err := utils.GetAllCollections(client)
+			got, err := utils.GetAllCollections(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -869,9 +869,9 @@ func TestGetJobs(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			assetMock.On("GetNumJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numJobs, tt.args.numJobsErr)
-			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
+			utilsMock.On("GetActiveJob", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.activeJob, tt.args.activeJobErr)
 
-			got, err := utils.GetJobs(client)
+			got, err := utils.GetJobs(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -931,7 +931,7 @@ func TestGetNumActiveCollections(t *testing.T) {
 			assetManagerMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumActiveCollections(client)
+			got, err := utils.GetNumActiveCollections(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumActiveCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -988,10 +988,10 @@ func TestGetNumCollections(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
+			assetManagerMock.On("GetNumCollections", mock.Anything, mock.Anything).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumCollections(client)
+			got, err := utils.GetNumCollections(context.Background(), client)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1452,7 +1452,7 @@ func TestGetLeafIdOfACollection(t *testing.T) {
 			assetManagerMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetLeafIdOfACollection(client, collectionId)
+			got, err := utils.GetLeafIdOfACollection(context.Background(), client, collectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLeafIdOfACollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1509,7 +1509,7 @@ func TestGetCollectionIdFromIndex(t *testing.T) {
 			assetManagerMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCollectionIdFromIndex(client, medianIndex)
+			got, err := utils.GetCollectionIdFromIndex(context.Background(), client, medianIndex)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCollectionIdFromIndex() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1563,10 +1563,10 @@ func TestGetCollectionIdFromLeafId(t *testing.T) {
 				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
-			assetManagerMock.On("GetCollectionIdFromLeafId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			assetManagerMock.On("GetCollectionIdFromLeafId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCollectionIdFromLeafId(client, leafId)
+			got, err := utils.GetCollectionIdFromLeafId(context.Background(), client, leafId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCollectionIdFromLeafId() error = %v, wantErr %v", err, tt.wantErr)
 				return

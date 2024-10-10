@@ -57,7 +57,7 @@ HandleCommitState fetches the collections assigned to the staker and creates the
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
 func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
-	numActiveCollections, err := razorUtils.GetNumActiveCollections(client)
+	numActiveCollections, err := razorUtils.GetNumActiveCollections(ctx, client)
 	if err != nil {
 		return types.CommitData{}, err
 	}
@@ -89,7 +89,7 @@ func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Cli
 
 			log.Debugf("HandleCommitState: Is the collection at iterating index %v assigned: %v ", i, assignedCollections[i])
 			if assignedCollections[i] {
-				collectionId, err := razorUtils.GetCollectionIdFromIndex(client, uint16(i))
+				collectionId, err := razorUtils.GetCollectionIdFromIndex(ctx, client, uint16(i))
 				if err != nil {
 					log.Error("Error in getting collection ID: ", err)
 					errChan <- err

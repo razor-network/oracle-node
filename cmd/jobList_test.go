@@ -66,7 +66,7 @@ func TestGetJobList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobList, tt.args.jobListErr)
+			utilsMock.On("GetJobs", mock.Anything, mock.Anything).Return(tt.args.jobList, tt.args.jobListErr)
 			utils := &UtilsStruct{}
 
 			err := utils.GetJobList(tt.args.client)

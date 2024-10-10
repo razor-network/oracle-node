@@ -107,22 +107,22 @@ type Utils interface {
 	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
 	GetCollectionManager(client *ethclient.Client) *bindings.CollectionManager
 	GetCollectionManagerWithOpts(client *ethclient.Client) (*bindings.CollectionManager, bind.CallOpts)
-	GetNumCollections(client *ethclient.Client) (uint16, error)
-	GetActiveJob(client *ethclient.Client, jobId uint16) (bindings.StructsJob, error)
-	GetCollection(client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
+	GetNumCollections(ctx context.Context, client *ethclient.Client) (uint16, error)
+	GetActiveJob(ctx context.Context, client *ethclient.Client, jobId uint16) (bindings.StructsJob, error)
+	GetCollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
 	GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error)
 	Aggregate(ctx context.Context, client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error)
 	GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams *types.CommitParams) ([]*big.Int, []uint8)
 	GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error)
 	GetAssignedCollections(ctx context.Context, client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
-	GetLeafIdOfACollection(client *ethclient.Client, collectionId uint16) (uint16, error)
-	GetCollectionIdFromIndex(client *ethclient.Client, medianIndex uint16) (uint16, error)
-	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
-	GetNumActiveCollections(client *ethclient.Client) (uint16, error)
+	GetLeafIdOfACollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (uint16, error)
+	GetCollectionIdFromIndex(ctx context.Context, client *ethclient.Client, medianIndex uint16) (uint16, error)
+	GetCollectionIdFromLeafId(ctx context.Context, client *ethclient.Client, leafId uint16) (uint16, error)
+	GetNumActiveCollections(ctx context.Context, client *ethclient.Client) (uint16, error)
 	GetAggregatedDataOfCollection(ctx context.Context, client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error)
-	GetJobs(client *ethclient.Client) ([]bindings.StructsJob, error)
-	GetAllCollections(client *ethclient.Client) ([]bindings.StructsCollection, error)
-	GetActiveCollectionIds(client *ethclient.Client) ([]uint16, error)
+	GetJobs(ctx context.Context, client *ethclient.Client) ([]bindings.StructsJob, error)
+	GetAllCollections(ctx context.Context, client *ethclient.Client) ([]bindings.StructsCollection, error)
+	GetActiveCollectionIds(ctx context.Context, client *ethclient.Client) ([]uint16, error)
 	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16)
 	ConnectToClient(provider string) *ethclient.Client
 	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
@@ -172,8 +172,8 @@ type ClientUtils interface {
 	SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error)
 	EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error)
 	FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]Types.Log, error)
-	SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error)
-	EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error)
+	SuggestGasPriceWithRetry(ctx context.Context, client *ethclient.Client) (*big.Int, error)
+	EstimateGasWithRetry(ctx context.Context, client *ethclient.Client, message ethereum.CallMsg) (uint64, error)
 	GetLatestBlockWithRetry(ctx context.Context, client *ethclient.Client) (*Types.Header, error)
 	FilterLogsWithRetry(ctx context.Context, client *ethclient.Client, query ethereum.FilterQuery) ([]Types.Log, error)
 	BalanceAtWithRetry(ctx context.Context, client *ethclient.Client, account common.Address) (*big.Int, error)
@@ -306,7 +306,7 @@ type FileUtils interface {
 }
 
 type GasUtils interface {
-	GetGasPrice(client *ethclient.Client, config types.Configurations) *big.Int
+	GetGasPrice(ctx context.Context, client *ethclient.Client, config types.Configurations) *big.Int
 	GetGasLimit(ctx context.Context, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error)
 	IncreaseGasLimitValue(ctx context.Context, client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error)
 }

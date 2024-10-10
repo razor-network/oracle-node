@@ -679,13 +679,13 @@ func (_m *UtilsCmdInterface) GetBufferPercent() (int32, error) {
 	return r0, r1
 }
 
-// GetCollectionIdPositionInBlock provides a mock function with given fields: client, leafId, proposedBlock
-func (_m *UtilsCmdInterface) GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
-	ret := _m.Called(client, leafId, proposedBlock)
+// GetCollectionIdPositionInBlock provides a mock function with given fields: ctx, client, leafId, proposedBlock
+func (_m *UtilsCmdInterface) GetCollectionIdPositionInBlock(ctx context.Context, client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
+	ret := _m.Called(ctx, client, leafId, proposedBlock)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, uint16, bindings.StructsBlock) *big.Int); ok {
-		r0 = rf(client, leafId, proposedBlock)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16, bindings.StructsBlock) *big.Int); ok {
+		r0 = rf(ctx, client, leafId, proposedBlock)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)

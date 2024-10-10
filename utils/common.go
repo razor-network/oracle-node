@@ -33,7 +33,7 @@ func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string
 	erc20Contract := UtilsInterface.GetTokenManager(client)
 	opts := UtilsInterface.GetOptions()
 
-	returnedValues, err := InvokeFunctionWithRetryAttempts(CoinInterface, "BalanceOf", erc20Contract, &opts, address)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(context.Background(), CoinInterface, "BalanceOf", erc20Contract, &opts, address)
 	if err != nil {
 		return big.NewInt(0), err
 	}

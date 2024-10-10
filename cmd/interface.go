@@ -212,7 +212,7 @@ type UtilsCmdInterface interface {
 	GetLocalMediansData(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
 	CheckDisputeForIds(ctx context.Context, client *ethclient.Client, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
 	Dispute(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
-	GetCollectionIdPositionInBlock(client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
+	GetCollectionIdPositionInBlock(ctx context.Context, client *ethclient.Client, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
 	HandleDispute(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	ExecuteExtendLock(flagSet *pflag.FlagSet)
 	ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
