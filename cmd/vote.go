@@ -231,9 +231,9 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		return
 	}
 
-	// Warning the staker if sFuel balance is less than 0.001 sFuel
+	// Warning the staker if sFUEL balance is less than 0.001 sFUEL
 	if ethBalance.Cmp(big.NewInt(1e15)) == -1 {
-		log.Warn("sFuel balance is lower than 0.001 sFuel, kindly add more sFuel to be safe for executing transactions successfully")
+		log.Warn("sFUEL balance is lower than 0.001 sFUEL, kindly add more sFUEL to be safe for executing transactions successfully")
 	}
 
 	actualStake, err := utils.ConvertWeiToEth(stakedAmount)
@@ -264,7 +264,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 		}
 	}
 
-	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f sFuel Balance: %f", utils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
+	log.Infof("State: %s Staker ID: %d Stake: %f sRZR Balance: %f sFUEL Balance: %f", utils.GetStateName(state), stakerId, actualStake, sRZRInEth, actualBalance)
 
 	if staker.IsSlashed {
 		log.Error("Staker is slashed.... cannot continue to vote!")
