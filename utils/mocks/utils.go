@@ -734,6 +734,30 @@ func (_m *Utils) GetCommitment(ctx context.Context, client *ethclient.Client, ad
 	return r0, r1
 }
 
+// GetConfirmedBlocks provides a mock function with given fields: ctx, client, epoch
+func (_m *Utils) GetConfirmedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (types.ConfirmedBlock, error) {
+	ret := _m.Called(ctx, client, epoch)
+
+	var r0 types.ConfirmedBlock
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (types.ConfirmedBlock, error)); ok {
+		return rf(ctx, client, epoch)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) types.ConfirmedBlock); ok {
+		r0 = rf(ctx, client, epoch)
+	} else {
+		r0 = ret.Get(0).(types.ConfirmedBlock)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
+		r1 = rf(ctx, client, epoch)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetDataToCommitFromJob provides a mock function with given fields: job, commitParams
 func (_m *Utils) GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error) {
 	ret := _m.Called(job, commitParams)
