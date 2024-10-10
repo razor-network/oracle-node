@@ -73,7 +73,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
-	log.Debug("Checking whether sFuel balance is not 0...")
+	log.Debug("Checking whether sFUEL balance is not 0...")
 	razorUtils.CheckEthBalanceIsZero(context.Background(), client, address)
 
 	txnArgs := types.TransactionOptions{
