@@ -763,7 +763,7 @@ func TestGetConfirmedBlocks(t *testing.T) {
 			blockManagerMock.On("GetConfirmedBlocks", mock.Anything, mock.Anything).Return(tt.args.confirmedBlock, tt.args.confirmedBlockErr)
 			retryMock.On("RetryAttempts", mock.Anything).Return(retry.Attempts(1))
 
-			got, err := utils.GetConfirmedBlocks(client, epoch)
+			got, err := utils.GetConfirmedBlocks(context.Background(), client, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetConfirmedBlocks() error = %v, wantErr %v", err, tt.wantErr)
 				return
