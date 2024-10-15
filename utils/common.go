@@ -118,10 +118,10 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 func (*UtilsStruct) CheckEthBalanceIsZero(ctx context.Context, client *ethclient.Client, address string) {
 	ethBalance, err := ClientInterface.BalanceAtWithRetry(ctx, client, common.HexToAddress(address))
 	if err != nil {
-		log.Fatalf("Error in fetching sFuel balance of the account: %s\n%s", address, err)
+		log.Fatalf("Error in fetching sFUEL balance of the account: %s\n%s", address, err)
 	}
 	if ethBalance.Cmp(big.NewInt(0)) == 0 {
-		log.Fatal("sFuel balance is 0, Aborting...")
+		log.Fatal("sFUEL balance is 0, Aborting...")
 	}
 }
 
