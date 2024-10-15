@@ -166,7 +166,7 @@ type UtilsCmdInterface interface {
 	ClaimBlockReward(ctx context.Context, options types.TransactionOptions) (common.Hash, error)
 	GetSalt(ctx context.Context, client *ethclient.Client, epoch uint32) ([32]byte, error)
 	HandleCommitState(ctx context.Context, client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
-	Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, seed []byte, values []*big.Int) (common.Hash, error)
+	Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitment [32]byte) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(flagSet *pflag.FlagSet)

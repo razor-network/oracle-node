@@ -146,15 +146,9 @@ func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Cli
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, seed []byte, values []*big.Int) (common.Hash, error) {
+func (*UtilsStruct) Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitmentToSend [32]byte) (common.Hash, error) {
 	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
-		return core.NilHash, err
-	}
-
-	commitmentToSend, err := CalculateCommitment(seed, values)
-	if err != nil {
-		log.Error("Error in getting commitment: ", err)
 		return core.NilHash, err
 	}
 
@@ -215,9 +209,7 @@ func CalculateCommitment(seed []byte, values []*big.Int) ([32]byte, error) {
 	return commitmentToSend, nil
 }
 
-func VerifyCommitment(ctx context.Context, client *ethclient.Client, account types.Account, keystorePath string, epoch uint32, values []*big.Int) (bool, error) {
-	// TODO: Save commitment in memory and file system instead of recalculating again
-	// TODO: CHECK	IF THIS FUNCTION CAN SIMPLIFIED BY FIRST FETCHING DATA EITHER FROM MEMORY/FILE SYSTEM AND THAN VERIFICATION
+func VerifyCommitment(ctx context.Context, client *ethclient.Client, account types.Account, commitmentFetched [32]byte) (bool, error) {
 	commitmentStruct, err := razorUtils.GetCommitment(ctx, client, account.Address)
 	if err != nil {
 		log.Error("Error in getting commitments: ", err)
@@ -225,28 +217,15 @@ func VerifyCommitment(ctx context.Context, client *ethclient.Client, account typ
 	}
 	log.Debugf("VerifyCommitment: CommitmentStruct: %+v", commitmentStruct)
 
-	seed, err := CalculateSeed(ctx, client, account, keystorePath, epoch)
-	if err != nil {
-		log.Error("Error in calculating seed: ", err)
-		return false, err
-	}
-
-	calculatedCommitment, err := CalculateCommitment(seed, values)
-	if err != nil {
-		log.Error("Error in calculating commitment for given committed values: ", err)
-		return false, err
-	}
-	log.Debug("VerifyCommitment: Calculated commitment: ", calculatedCommitment)
-
-	if calculatedCommitment == commitmentStruct.CommitmentHash {
-		log.Debug("VerifyCommitment: Calculated commitment for given values is EQUAL to commitment of the epoch")
+	if commitmentFetched == commitmentStruct.CommitmentHash {
+		log.Debug("VerifyCommitment: Commitment fetched from memory/file system for given values is EQUAL to commitment of the epoch")
 		return true, nil
 	}
-	log.Debug("VerifyCommitment: Calculated commitment for given values DOES NOT MATCH with commitment in the epoch")
+	log.Debug("VerifyCommitment: Commitment fetched from memory/file system for given values DOES NOT MATCH with commitment in the epoch")
 	return false, nil
 }
 
-func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, keystorePath string, rogueData types.Rogue) (types.CommitFileData, error) {
+func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, rogueData types.Rogue) (types.CommitFileData, error) {
 	// Attempt to fetch global commit data from memory if epoch matches
 	if globalCommitDataStruct.Epoch == epoch {
 		log.Debugf("Epoch in global commit data is equal to current epoch %v. Fetching commit data from memory!", epoch)
@@ -276,12 +255,12 @@ func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, acc
 			Leaves:                 commitDataFromFile.Leaves,
 			SeqAllottedCollections: commitDataFromFile.SeqAllottedCollections,
 			AssignedCollections:    commitDataFromFile.AssignedCollections,
-		}, epoch)
+		}, commitDataFromFile.Commitment, epoch)
 	}
 
 	// Verify the final selected commit data
 	log.Debugf("Verifying commit data for epoch %v...", epoch)
-	isValid, err := VerifyCommitment(ctx, client, account, keystorePath, epoch, globalCommitDataStruct.Leaves)
+	isValid, err := VerifyCommitment(ctx, client, account, globalCommitDataStruct.Commitment)
 	if err != nil {
 		return types.CommitFileData{}, err
 	}

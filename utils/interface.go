@@ -299,7 +299,7 @@ type FlagSetUtils interface {
 }
 
 type FileUtils interface {
-	SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error
+	SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData, commitment [32]byte) error
 	ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error)
 	SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error
 	ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error)

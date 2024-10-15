@@ -1070,6 +1070,7 @@ func TestSaveDataToCommitJsonFile(t *testing.T) {
 		filePath   string
 		epoch      uint32
 		commitData Types.CommitData
+		commitment [32]byte
 	)
 	type args struct {
 		jsonData     []byte
@@ -1119,7 +1120,7 @@ func TestSaveDataToCommitJsonFile(t *testing.T) {
 			osMock.On("WriteFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.writeFileErr)
 
 			fileUtils := FileStruct{}
-			if err := fileUtils.SaveDataToCommitJsonFile(filePath, epoch, commitData); (err != nil) != tt.wantErr {
+			if err := fileUtils.SaveDataToCommitJsonFile(filePath, epoch, commitData, commitment); (err != nil) != tt.wantErr {
 				t.Errorf("SaveDataToCommitJsonFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

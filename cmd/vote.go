@@ -424,7 +424,13 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 	}
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
-	commitTxn, err := cmdUtils.Commit(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, commitData.Leaves)
+	commitmentToSend, err := CalculateCommitment(seed, commitData.Leaves)
+	if err != nil {
+		log.Error("Error in getting commitment: ", err)
+		return err
+	}
+
+	commitTxn, err := cmdUtils.Commit(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitmentToSend)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
@@ -437,14 +443,14 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 		}
 		log.Debug("InitiateCommit: Commit data file path: ", fileName)
 
-		err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
+		err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData, commitmentToSend)
 		if err != nil {
 			return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
 		}
 		log.Debug("Data saved!")
 
 		log.Debug("Updating GlobalCommitDataStruct with latest commitData and epoch...")
-		updateGlobalCommitDataStruct(commitData, epoch)
+		updateGlobalCommitDataStruct(commitData, commitmentToSend, epoch)
 		log.Debugf("InitiateCommit: Global commit data struct: %+v", globalCommitDataStruct)
 	}
 	return nil
@@ -490,7 +496,7 @@ func (*UtilsStruct) InitiateReveal(ctx context.Context, client *ethclient.Client
 	log.Debugf("InitiateReveal: Keystore file path: %s", keystorePath)
 
 	// Consolidated commitment verification for commit data being fetched from memory or file
-	commitData, err := GetCommittedDataForEpoch(ctx, client, account, epoch, keystorePath, rogueData)
+	commitData, err := GetCommittedDataForEpoch(ctx, client, account, epoch, rogueData)
 	if err != nil {
 		return err
 	}
@@ -594,11 +600,12 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	return signedData, secret, nil
 }
 
-func updateGlobalCommitDataStruct(commitData types.CommitData, epoch uint32) types.CommitFileData {
+func updateGlobalCommitDataStruct(commitData types.CommitData, commitment [32]byte, epoch uint32) types.CommitFileData {
 	globalCommitDataStruct.Leaves = commitData.Leaves
 	globalCommitDataStruct.AssignedCollections = commitData.AssignedCollections
 	globalCommitDataStruct.SeqAllottedCollections = commitData.SeqAllottedCollections
 	globalCommitDataStruct.Epoch = epoch
+	globalCommitDataStruct.Commitment = commitment
 	return globalCommitDataStruct
 }
 

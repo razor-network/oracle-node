@@ -393,7 +393,7 @@ func TestInitiateCommit(t *testing.T) {
 				commitData: types.CommitData{
 					AssignedCollections:    nil,
 					SeqAllottedCollections: nil,
-					Leaves:                 nil,
+					Leaves:                 []*big.Int{big.NewInt(100)},
 				},
 				commitTxn: common.BigToHash(big.NewInt(1)),
 				fileName:  "",
@@ -527,10 +527,31 @@ func TestInitiateCommit(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Test 13: When there is an error in getting commitment as values is nil",
+			args: args{
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				minStakeAmount: big.NewInt(100),
+				epoch:          5,
+				lastCommit:     2,
+				signature:      []byte{2},
+				secret:         []byte{1},
+				salt:           [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 []*big.Int{},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+
+			utils.MerkleInterface = &utils.MerkleTreeStruct{}
+			merkleUtils = utils.MerkleInterface
 
 			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			utilsMock.On("GetMinStakeAmount", mock.Anything, mock.Anything).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
@@ -541,7 +562,7 @@ func TestInitiateCommit(t *testing.T) {
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
 			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			pathMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
-			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
+			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(&Types.Header{Number: big.NewInt(100)}, nil)
 			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything, mock.Anything).Return([]Types.Log{}, nil)
 			ut := &UtilsStruct{}
@@ -561,13 +582,14 @@ func TestInitiateReveal(t *testing.T) {
 		stateBuffer  uint64
 	)
 
-	randomNum := big.NewInt(1111)
-	globalCommitDataStruct.Epoch = 5
-	globalCommitDataStruct.Leaves = []*big.Int{big.NewInt(100), big.NewInt(101)}
-
 	decodedCommitment, _ := hex.DecodeString("f3955999458f88a8440026a24e53c0761b67475e742556bf55bbe3bbdf5028ed")
 	var decodedCommitment32 [32]byte
 	copy(decodedCommitment32[:], decodedCommitment)
+
+	randomNum := big.NewInt(1111)
+	globalCommitDataStruct.Epoch = 5
+	globalCommitDataStruct.Leaves = []*big.Int{big.NewInt(100), big.NewInt(101)}
+	globalCommitDataStruct.Commitment = decodedCommitment32
 
 	type args struct {
 		staker                   bindings.StructsStaker
@@ -719,8 +741,9 @@ func TestInitiateReveal(t *testing.T) {
 				lastReveal: 2,
 				fileName:   "",
 				committedDataFromFile: types.CommitFileData{
-					Epoch:  5,
-					Leaves: []*big.Int{big.NewInt(1), big.NewInt(2)},
+					Epoch:      5,
+					Leaves:     []*big.Int{big.NewInt(1), big.NewInt(2)},
+					Commitment: decodedCommitment32,
 				},
 				secret:    []byte{},
 				revealTxn: common.BigToHash(big.NewInt(1)),

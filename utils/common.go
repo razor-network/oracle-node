@@ -219,13 +219,14 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 
 }
 
-func (*FileStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
+func (*FileStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData, commitment [32]byte) error {
 
 	var data types.CommitFileData
 	data.Epoch = epoch
 	data.AssignedCollections = commitData.AssignedCollections
 	data.SeqAllottedCollections = commitData.SeqAllottedCollections
 	data.Leaves = commitData.Leaves
+	data.Commitment = commitment
 
 	jsonData, err := JsonInterface.Marshal(data)
 	if err != nil {
