@@ -376,11 +376,8 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 	log.Debug("InitiateCommit: Epoch last committed: ", lastCommit)
 
 	if lastCommit >= epoch {
-		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
-		if commitParams.LocalCache.Len() != 0 {
-			log.Debug("Clearing up the cache storing API results as the staker has already committed successfully...")
-			commitParams.LocalCache.ClearAll()
-		}
+		// Clearing up the cache storing API results as the staker has already committed successfully
+		commitParams.LocalCache.ClearAll()
 		return nil
 	}
 
