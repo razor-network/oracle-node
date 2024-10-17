@@ -26,12 +26,11 @@ func TestCommit(t *testing.T) {
 		config       types.Configurations
 		latestHeader *Types.Header
 		stateBuffer  uint64
-		seed         []byte
 		epoch        uint32
+		commitment   [32]byte
 	)
 
 	type args struct {
-		values    []*big.Int
 		state     int64
 		stateErr  error
 		commitTxn *Types.Transaction
@@ -47,7 +46,6 @@ func TestCommit(t *testing.T) {
 		{
 			name: "Test 1: When Commit function executes successfully",
 			args: args{
-				values:    []*big.Int{big.NewInt(1)},
 				state:     0,
 				stateErr:  nil,
 				commitTxn: &Types.Transaction{},
@@ -60,7 +58,6 @@ func TestCommit(t *testing.T) {
 		{
 			name: "Test 2: When there is an error in getting state",
 			args: args{
-				values:    []*big.Int{big.NewInt(1)},
 				stateErr:  errors.New("state error"),
 				commitTxn: &Types.Transaction{},
 				commitErr: nil,
@@ -72,7 +69,6 @@ func TestCommit(t *testing.T) {
 		{
 			name: "Test 3: When Commit transaction fails",
 			args: args{
-				values:    []*big.Int{big.NewInt(1)},
 				state:     0,
 				stateErr:  nil,
 				commitTxn: &Types.Transaction{},
@@ -82,21 +78,10 @@ func TestCommit(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("commit error"),
 		},
-		{
-			name: "Test 4: When there is an error in getting commitmentHashString as values is nil",
-			args: args{
-				values: []*big.Int{},
-			},
-			want:    core.NilHash,
-			wantErr: errors.New("Error in getting merkle tree: values are nil, cannot create merkle tree"),
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
-
-			utils.MerkleInterface = &utils.MerkleTreeStruct{}
-			merkleUtils = utils.MerkleInterface
 
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
@@ -104,7 +89,7 @@ func TestCommit(t *testing.T) {
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(context.Background(), client, config, account, epoch, latestHeader, stateBuffer, seed, tt.args.values)
+			got, err := utils.Commit(context.Background(), client, config, account, epoch, latestHeader, stateBuffer, commitment)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -492,18 +477,13 @@ func TestCalculateCommitment(t *testing.T) {
 
 func TestVerifyCommitment(t *testing.T) {
 	var (
-		client       *ethclient.Client
-		account      types.Account
-		keystorePath string
-		epoch        uint32
+		client  *ethclient.Client
+		account types.Account
 	)
 	type args struct {
-		values               []*big.Int
-		commitmentHashString string
-		commitmentErr        error
-		secret               string
-		secretErr            error
-		salt                 string
+		commitmentFetchedString string
+		commitmentHashString    string
+		commitmentErr           error
 	}
 	tests := []struct {
 		name    string
@@ -512,50 +492,27 @@ func TestVerifyCommitment(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test 1: When commitmentHashString is verified successfully",
+			name: "Test 1: When commitmentFetched matches the commitment in the epoch",
 			args: args{
-				commitmentHashString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
-				values:               []*big.Int{big.NewInt(200), big.NewInt(100)},
-				salt:                 "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
-				secret:               "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+				commitmentHashString:    "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
+				commitmentFetchedString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
 			},
 			want:    true,
 			wantErr: false,
 		},
 		{
-			name: "Test 2: When commitmentHashString is not verified successfully",
+			name: "Test 2: When commitmentFetched does not match the commitment in the epoch",
 			args: args{
-				commitmentHashString: "23cabb074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
-				values:               []*big.Int{big.NewInt(200), big.NewInt(100)},
-				salt:                 "03bceb412a8c973dbb960f1353ba91cf6ca10dfde21c911054cf1e61f0d28e0b",
-				secret:               "0f7f6290794dae00bf7c673d36fa2a5b447d2c8c60e9a4220b7ab65be80547a9",
+				commitmentHashString:    "23cabb074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
+				commitmentFetchedString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
 			},
 			want:    false,
 			wantErr: false,
 		},
 		{
-			name: "Test 3: When there is an error in getting commitmentHashString",
+			name: "Test 3: When there is an error in fetching commitment from the blockchain",
 			args: args{
 				commitmentErr: errors.New("getCommitment error"),
-			},
-			want:    false,
-			wantErr: true,
-		},
-		{
-			name: "Test 4: When there is error in calculating commitmentHashString",
-			args: args{
-				commitmentHashString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
-				values:               []*big.Int{},
-			},
-			want:    false,
-			wantErr: true,
-		},
-		{
-			name: "Test 5: When there is error in calculating seed",
-			args: args{
-				commitmentHashString: "22c9ba074e44d0009116b244a5cece9e9ade85af486e1f4f8db8e304e6605bea",
-				values:               []*big.Int{big.NewInt(200), big.NewInt(100)},
-				secretErr:            errors.New("secret error"),
 			},
 			want:    false,
 			wantErr: true,
@@ -564,30 +521,24 @@ func TestVerifyCommitment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var commitmentHash [32]byte
-			var salt [32]byte
-			var secret []byte
+			var commitmentFetched [32]byte
 
+			// Convert the commitmentFetchedString to a [32]byte format
+			if tt.args.commitmentFetchedString != "" {
+				var err error
+				commitmentFetched, err = convertStringToByte32(tt.args.commitmentFetchedString)
+				if err != nil {
+					t.Errorf("Error in decoding commitmentFetchedString: %v", err)
+					return
+				}
+			}
+
+			// Convert the commitmentHashString to a [32]byte format
 			if tt.args.commitmentHashString != "" {
 				var err error
 				commitmentHash, err = convertStringToByte32(tt.args.commitmentHashString)
 				if err != nil {
 					t.Errorf("Error in decoding commitmentHashString: %v", err)
-					return
-				}
-			}
-			if tt.args.secret != "" {
-				var err error
-				secret, err = hex.DecodeString(tt.args.secret)
-				if err != nil {
-					t.Errorf("Error in decoding secret: %v", err)
-					return
-				}
-			}
-			if tt.args.salt != "" {
-				var err error
-				salt, err = convertStringToByte32(tt.args.salt)
-				if err != nil {
-					t.Errorf("Error in decoding salt: %v", err)
 					return
 				}
 			}
@@ -598,9 +549,8 @@ func TestVerifyCommitment(t *testing.T) {
 			merkleUtils = utils.MerkleInterface
 
 			utilsMock.On("GetCommitment", mock.Anything, mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: commitmentHash}, tt.args.commitmentErr)
-			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything, mock.Anything).Return(salt, nil)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
-			got, err := VerifyCommitment(context.Background(), client, account, keystorePath, epoch, tt.args.values)
+
+			got, err := VerifyCommitment(context.Background(), client, account, commitmentFetched)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VerifyCommitment() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -321,7 +321,24 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 	case 4:
 		log.Debugf("Last verification: %d", lastVerification)
 		log.Debugf("Block confirmed: %d", blockConfirmed)
-		if lastVerification == epoch && blockConfirmed < epoch {
+
+		if blockConfirmed >= epoch {
+			log.Debug("Block is already confirmed for this epoch!")
+			break
+		}
+
+		confirmedBlock, err := razorUtils.GetConfirmedBlocks(ctx, client, epoch)
+		if err != nil {
+			log.Error(err)
+			break
+		}
+
+		if confirmedBlock.ProposerId != 0 {
+			log.Infof("Block is already confirmed, setting blockConfirmed (%d) to current epoch (%d)", blockConfirmed, epoch)
+			blockConfirmed = epoch
+			break
+		}
+		if (lastVerification == epoch || lastVerification == 0) && blockConfirmed < epoch {
 			txn, err := cmdUtils.ClaimBlockReward(ctx, types.TransactionOptions{
 				Client:          client,
 				ChainId:         core.ChainId,
@@ -337,12 +354,7 @@ func (*UtilsStruct) HandleBlock(client *ethclient.Client, account types.Account,
 				break
 			}
 			if txn != core.NilHash {
-				waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, txn.Hex())
-				if waitForBlockCompletionErr != nil {
-					log.Error("Error in WaitForBlockCompletion for claimBlockReward: ", err)
-					break
-				}
-				blockConfirmed = epoch
+				log.Info("Confirm Transaction Hash: ", txn)
 			}
 		}
 	case -1:
@@ -364,7 +376,8 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 	log.Debug("InitiateCommit: Epoch last committed: ", lastCommit)
 
 	if lastCommit >= epoch {
-		log.Debugf("Cannot commit in epoch %d because last committed epoch is %d", epoch, lastCommit)
+		// Clearing up the cache storing API results as the staker has already committed successfully
+		commitParams.LocalCache.ClearAll()
 		return nil
 	}
 
@@ -411,11 +424,17 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 	}
 	log.Debug("InitiateCommit: Commit Data: ", commitData)
 
-	commitTxn, err := cmdUtils.Commit(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, commitData.Leaves)
+	commitmentToSend, err := CalculateCommitment(seed, commitData.Leaves)
+	if err != nil {
+		log.Error("Error in getting commitment: ", err)
+		return err
+	}
+
+	commitTxn, err := cmdUtils.Commit(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitmentToSend)
 	if err != nil {
 		return errors.New("Error in committing data: " + err.Error())
 	}
-	log.Debug("InitiateCommit: Commit Transaction Hash: ", commitTxn)
+	log.Info("InitiateCommit: Commit Transaction Hash: ", commitTxn)
 	if commitTxn != core.NilHash {
 		log.Debug("Saving committed data for recovery...")
 		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
@@ -424,24 +443,15 @@ func (*UtilsStruct) InitiateCommit(ctx context.Context, client *ethclient.Client
 		}
 		log.Debug("InitiateCommit: Commit data file path: ", fileName)
 
-		err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData)
+		err = fileUtils.SaveDataToCommitJsonFile(fileName, epoch, commitData, commitmentToSend)
 		if err != nil {
 			return errors.New("Error in saving data to file" + fileName + ": " + err.Error())
 		}
 		log.Debug("Data saved!")
 
-		log.Debug("Checking for commit transaction status with transaction hash: ", commitTxn)
-		waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, commitTxn.Hex())
-		if waitForBlockCompletionErr != nil {
-			log.Error("Error in WaitForBlockCompletion for commit: ", waitForBlockCompletionErr)
-			return errors.New("error in sending commit transaction")
-		}
 		log.Debug("Updating GlobalCommitDataStruct with latest commitData and epoch...")
-		updateGlobalCommitDataStruct(commitData, epoch)
+		updateGlobalCommitDataStruct(commitData, commitmentToSend, epoch)
 		log.Debugf("InitiateCommit: Global commit data struct: %+v", globalCommitDataStruct)
-
-		log.Debug("Clearing up the cache storing API results after successful commit...")
-		commitParams.LocalCache.ClearAll()
 	}
 	return nil
 }
@@ -477,102 +487,41 @@ func (*UtilsStruct) InitiateReveal(ctx context.Context, client *ethclient.Client
 		return err
 	}
 
-	if globalCommitDataStruct.Epoch != epoch {
-		log.Debugf("InitiateReveal: Epoch in global commit data: %v is not equal to current epoch: %v", globalCommitDataStruct.Epoch, epoch)
-		log.Info("Getting the commit data from file...")
-		fileName, err := pathUtils.GetCommitDataFileName(account.Address)
-		if err != nil {
-			log.Error("Error in getting file name to save committed data: ", err)
-			return err
-		}
-		log.Debug("InitiateReveal: Commit data file path: ", fileName)
-		committedDataFromFile, err := fileUtils.ReadFromCommitJsonFile(fileName)
-		if err != nil {
-			log.Errorf("Error in getting committed data from file %s: %v", fileName, err)
-			return err
-		}
-		log.Debug("InitiateReveal: Committed data from file: ", committedDataFromFile)
-		if committedDataFromFile.Epoch != epoch {
-			log.Errorf("File %s doesn't contain latest committed data", fileName)
-			return errors.New("commit data file doesn't contain latest committed data")
-		}
-		log.Debug("Verifying commit data from file...")
-		razorPath, err := pathUtils.GetDefaultPath()
-		if err != nil {
-			return err
-		}
-		log.Debugf("InitiateReveal: .razor directory path: %s", razorPath)
-		keystorePath := filepath.Join(razorPath, "keystore_files")
-		log.Debugf("InitiateReveal: Keystore file path: %s", keystorePath)
-
-		log.Debugf("InitiateReveal: Calling VerifyCommitment() for address %v with arguments epoch = %v, values = %v", account.Address, epoch, committedDataFromFile.Leaves)
-		isCommittedDataFromFileValid, err := VerifyCommitment(ctx, client, account, keystorePath, epoch, committedDataFromFile.Leaves)
-		if err != nil {
-			log.Error("Error in verifying commitment for commit data from file: ", err)
-			return err
-		}
-		if !isCommittedDataFromFileValid {
-			log.Infof("Not using data from file! as commitment calculated for data from commit data file is not equal to staker's commitment for this epoch.")
-			return errors.New("commitment verification for commit file data failed")
-		}
-		log.Debug("Updating global commit data struct...")
-		updateGlobalCommitDataStruct(types.CommitData{
-			Leaves:                 committedDataFromFile.Leaves,
-			SeqAllottedCollections: committedDataFromFile.SeqAllottedCollections,
-			AssignedCollections:    committedDataFromFile.AssignedCollections,
-		}, epoch)
-		log.Debugf("InitiateReveal: Global Commit data struct: %+v", globalCommitDataStruct)
+	razorPath, err := pathUtils.GetDefaultPath()
+	if err != nil {
+		return err
 	}
-	if rogueData.IsRogue && utils.Contains(rogueData.RogueMode, "reveal") {
-		log.Warn("YOU ARE REVEALING VALUES IN ROGUE MODE, THIS CAN INCUR PENALTIES!")
-		var rogueCommittedData []*big.Int
-		for i := 0; i < len(globalCommitDataStruct.Leaves); i++ {
-			rogueCommittedData = append(rogueCommittedData, razorUtils.GetRogueRandomValue(10000000))
-		}
-		globalCommitDataStruct.Leaves = rogueCommittedData
-		log.Debugf("InitiateReveal: Global Commit data struct in rogue mode: %+v", globalCommitDataStruct)
+	log.Debugf("InitiateReveal: .razor directory path: %s", razorPath)
+	keystorePath := filepath.Join(razorPath, "keystore_files")
+	log.Debugf("InitiateReveal: Keystore file path: %s", keystorePath)
+
+	// Consolidated commitment verification for commit data being fetched from memory or file
+	commitData, err := GetCommittedDataForEpoch(ctx, client, account, epoch, rogueData)
+	if err != nil {
+		return err
 	}
 
-	if globalCommitDataStruct.Epoch == epoch {
-		razorPath, err := pathUtils.GetDefaultPath()
-		if err != nil {
-			return err
-		}
-		log.Debug("InitiateReveal: .razor directory path: ", razorPath)
-		keystorePath := filepath.Join(razorPath, "keystore_files")
-		log.Debug("InitiateReveal: Keystore file path: ", keystorePath)
-
-		log.Debugf("InitiateReveal: Calling CalculateSecret() with argument epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
-		signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
-		if err != nil {
-			return err
-		}
-		log.Debug("InitiateReveal: Signature: ", signature)
-		log.Debug("InitiateReveal: Assigned Collections: ", globalCommitDataStruct.AssignedCollections)
-		log.Debug("InitiateReveal: SeqAllottedCollections: ", globalCommitDataStruct.SeqAllottedCollections)
-		log.Debug("InitiateReveal: Leaves: ", globalCommitDataStruct.Leaves)
-
-		commitDataToSend := types.CommitData{
-			Leaves:                 globalCommitDataStruct.Leaves,
-			AssignedCollections:    globalCommitDataStruct.AssignedCollections,
-			SeqAllottedCollections: globalCommitDataStruct.SeqAllottedCollections,
-		}
-		log.Debugf("InitiateReveal: Calling Reveal() with arguments epoch = %d, commitDataToSend = %+v, signature = %v", epoch, commitDataToSend, signature)
-		revealTxn, err := cmdUtils.Reveal(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitDataToSend, signature)
-		if err != nil {
-			return errors.New("Reveal error: " + err.Error())
-		}
-		if revealTxn != core.NilHash {
-			waitForBlockCompletionErr := razorUtils.WaitForBlockCompletion(client, revealTxn.Hex())
-			if waitForBlockCompletionErr != nil {
-				log.Error("Error in WaitForBlockCompletionErr for reveal: ", waitForBlockCompletionErr)
-				return err
-			}
-		}
-	} else {
-		log.Error("The commit data is outdated, does not match with the latest epoch")
-		return errors.New("outdated commit data")
+	log.Debugf("InitiateReveal: Calling CalculateSecret() with argument epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
+	signature, _, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
+	if err != nil {
+		return err
 	}
+	log.Debug("InitiateReveal: Signature: ", signature)
+	log.Debug("InitiateReveal: Assigned Collections: ", commitData.AssignedCollections)
+	log.Debug("InitiateReveal: SeqAllottedCollections: ", commitData.SeqAllottedCollections)
+	log.Debug("InitiateReveal: Leaves: ", commitData.Leaves)
+
+	commitDataToSend := types.CommitData{
+		Leaves:                 commitData.Leaves,
+		AssignedCollections:    commitData.AssignedCollections,
+		SeqAllottedCollections: commitData.SeqAllottedCollections,
+	}
+	log.Debugf("InitiateReveal: Calling Reveal() with arguments epoch = %d, commitDataToSend = %+v, signature = %v", epoch, commitDataToSend, signature)
+	revealTxn, err := cmdUtils.Reveal(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitDataToSend, signature)
+	if err != nil {
+		return errors.New("Reveal error: " + err.Error())
+	}
+	log.Info("InitiateReveal: Reveal Transaction Hash: ", revealTxn)
 	return nil
 }
 
@@ -651,11 +600,12 @@ func (*UtilsStruct) CalculateSecret(account types.Account, epoch uint32, keystor
 	return signedData, secret, nil
 }
 
-func updateGlobalCommitDataStruct(commitData types.CommitData, epoch uint32) types.CommitFileData {
+func updateGlobalCommitDataStruct(commitData types.CommitData, commitment [32]byte, epoch uint32) types.CommitFileData {
 	globalCommitDataStruct.Leaves = commitData.Leaves
 	globalCommitDataStruct.AssignedCollections = commitData.AssignedCollections
 	globalCommitDataStruct.SeqAllottedCollections = commitData.SeqAllottedCollections
 	globalCommitDataStruct.Epoch = epoch
+	globalCommitDataStruct.Commitment = commitment
 	return globalCommitDataStruct
 }
 

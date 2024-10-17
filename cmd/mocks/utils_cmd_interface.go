@@ -298,25 +298,25 @@ func (_m *UtilsCmdInterface) ClaimCommission(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
-// Commit provides a mock function with given fields: ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, values
-func (_m *UtilsCmdInterface) Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *coretypes.Header, stateBuffer uint64, seed []byte, values []*big.Int) (common.Hash, error) {
-	ret := _m.Called(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, values)
+// Commit provides a mock function with given fields: ctx, client, config, account, epoch, latestHeader, stateBuffer, commitment
+func (_m *UtilsCmdInterface) Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *coretypes.Header, stateBuffer uint64, commitment [32]byte) (common.Hash, error) {
+	ret := _m.Called(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitment)
 
 	var r0 common.Hash
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, uint64, []byte, []*big.Int) (common.Hash, error)); ok {
-		return rf(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, values)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, uint64, [32]byte) (common.Hash, error)); ok {
+		return rf(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitment)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, uint64, []byte, []*big.Int) common.Hash); ok {
-		r0 = rf(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, values)
+	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, uint64, [32]byte) common.Hash); ok {
+		r0 = rf(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitment)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(common.Hash)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, uint64, []byte, []*big.Int) error); ok {
-		r1 = rf(ctx, client, config, account, epoch, latestHeader, stateBuffer, seed, values)
+	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, types.Configurations, types.Account, uint32, *coretypes.Header, uint64, [32]byte) error); ok {
+		r1 = rf(ctx, client, config, account, epoch, latestHeader, stateBuffer, commitment)
 	} else {
 		r1 = ret.Error(1)
 	}

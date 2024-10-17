@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/rpc"
 	"io"
 	"io/fs"
 	"math/big"
@@ -12,6 +11,8 @@ import (
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
@@ -149,6 +150,7 @@ type Utils interface {
 	SecondsToReadableTime(input int) string
 	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
 	GetEpochLastProposed(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error)
+	GetConfirmedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (types.ConfirmedBlock, error)
 	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
 	PasswordPrompt() string
 	AssignPassword(flagSet *pflag.FlagSet) string
@@ -231,6 +233,7 @@ type BlockManagerUtils interface {
 	SortedProposedBlockIds(client *ethclient.Client, arg0 uint32, arg1 *big.Int) (uint32, error)
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
+	GetConfirmedBlocks(client *ethclient.Client, epoch uint32) (types.ConfirmedBlock, error)
 }
 
 type StakeManagerUtils interface {
@@ -296,7 +299,7 @@ type FlagSetUtils interface {
 }
 
 type FileUtils interface {
-	SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error
+	SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData, commitment [32]byte) error
 	ReadFromCommitJsonFile(filePath string) (types.CommitFileData, error)
 	SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error
 	ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error)

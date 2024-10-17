@@ -58,6 +58,7 @@ type CommitFileData struct {
 	AssignedCollections    map[int]bool
 	SeqAllottedCollections []*big.Int
 	Leaves                 []*big.Int
+	Commitment             [32]byte
 }
 
 type ProposeFileData struct {
