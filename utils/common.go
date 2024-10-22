@@ -60,19 +60,31 @@ func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash st
 }
 
 func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), core.BlockCompletionTimeout*time.Second)
+	defer cancel()
+
 	for i := 0; i < core.BlockCompletionAttempts; i++ {
-		log.Debug("Checking if transaction is mined....")
-		transactionStatus := UtilsInterface.CheckTransactionReceipt(client, hashToRead)
-		if transactionStatus == 0 {
-			err := errors.New("transaction mining unsuccessful")
-			log.Error(err)
-			return err
-		} else if transactionStatus == 1 {
-			log.Info("Transaction mined successfully")
-			return nil
+		select {
+		case <-ctx.Done():
+			log.Error("Timeout: WaitForBlockCompletion took too long")
+			return errors.New("timeout exceeded for transaction mining")
+		default:
+			log.Debug("Checking if transaction is mined....")
+			transactionStatus := UtilsInterface.CheckTransactionReceipt(client, hashToRead)
+
+			if transactionStatus == 0 {
+				err := errors.New("transaction mining unsuccessful")
+				log.Error(err)
+				return err
+			} else if transactionStatus == 1 {
+				log.Info("Transaction mined successfully")
+				return nil
+			}
+
+			time.Sleep(core.BlockCompletionAttemptRetryDelay * time.Second)
 		}
-		Time.Sleep(core.BlockCompletionAttemptRetryDelay * time.Second)
 	}
+
 	log.Info("Max retries for WaitForBlockCompletion attempted!")
 	return errors.New("maximum attempts failed for transaction mining")
 }
