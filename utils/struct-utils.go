@@ -9,12 +9,13 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/client"
+	"razor/RPC"
 	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -110,21 +111,25 @@ func CheckIfAnyError(result []reflect.Value) error {
 	return nil
 }
 
-func InvokeFunctionWithRetryAttempts(ctx context.Context, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
+func InvokeFunctionWithRetryAttempts(ctx context.Context, rpcManager *RPC.RPCManager, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
 	var returnedValues []reflect.Value
 	var err error
 	var contextError bool
 	inputs := make([]reflect.Value, len(args))
-	for i := range args {
+
+	// Always use the current best client for each retry
+	client, err := rpcManager.GetBestRPCClient()
+	if err != nil {
+		log.Errorf("Failed to get current best client: %v", err)
+		return returnedValues, err
+	}
+
+	// Insert the current best client as the first argument
+	inputs[0] = reflect.ValueOf(client)
+	for i := 1; i < len(args); i++ {
 		inputs[i] = reflect.ValueOf(args[i])
 	}
-	alternateProvider := client.GetAlternateProvider()
-	switchToAlternateClient := client.GetSwitchToAlternateClientStatus()
-	if switchToAlternateClient && alternateProvider != "" {
-		// Changing client argument to alternate client
-		log.Debug("Making this RPC call using alternate RPC provider!")
-		inputs = client.ReplaceClientWithAlternateClient(inputs)
-	}
+
 	err = retry.Do(
 		func() error {
 			// Check if the context has been cancelled or timed out
@@ -148,18 +153,59 @@ func InvokeFunctionWithRetryAttempts(ctx context.Context, interfaceName interfac
 		}, RetryInterface.RetryAttempts(core.MaxRetries), retry.Delay(time.Second*time.Duration(core.RetryDelayDuration)), retry.DelayType(retry.FixedDelay))
 	if err != nil {
 		if contextError {
-			// Skip the alternate client switch when the error is context-related
-			log.Warnf("Skipping alternate client switch due to context error: %v", err)
+			// If context error, we don't switch the client
+			log.Warnf("Skipping switching to the next best client due to context error: %v", err)
 			return returnedValues, err
 		}
-		if !switchToAlternateClient && alternateProvider != "" {
+
+		// Only switch to the next best client if the error is identified as an RPC error
+		if isRPCError(err) {
 			log.Errorf("%v error after retries: %v", methodName, err)
-			log.Info("Switching RPC to alternate RPC")
-			client.SetSwitchToAlternateClientStatus(true)
-			go client.StartTimerForAlternateClient(core.SwitchClientDuration)
+			log.Info("Attempting to switch to a new best RPC endpoint...")
+
+			// Attempt to switch to the next best client
+			switchErr := rpcManager.SwitchToNextBestRPCClient()
+			if switchErr != nil {
+				log.Errorf("Failed to switch to the next best client: %v", switchErr)
+				return returnedValues, switchErr
+			}
 		}
 	}
 	return returnedValues, err
+}
+
+func isRPCError(err error) bool {
+	// Check for common RPC error patterns
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return true
+	}
+
+	// Add other checks based on specific RPC errors (timeouts, connection issues, etc.)
+	if strings.Contains(err.Error(), "connection refused") ||
+		strings.Contains(err.Error(), "connection reset by peer") ||
+		strings.Contains(err.Error(), "EOF") ||
+		strings.Contains(err.Error(), "dial") ||
+		strings.Contains(err.Error(), "no such host") ||
+		strings.Contains(err.Error(), "i/o timeout") {
+		return true
+	}
+
+	// Check for HTTP 500–504 errors
+	if strings.Contains(err.Error(), "500") ||
+		strings.Contains(err.Error(), "501") ||
+		strings.Contains(err.Error(), "502") ||
+		strings.Contains(err.Error(), "503") ||
+		strings.Contains(err.Error(), "504") {
+		return true
+	}
+
+	// Check for the custom RPC timeout error
+	if strings.Contains(err.Error(), "RPC timeout error") {
+		return true
+	}
+
+	// If it's not an RPC error, return false
+	return false
 }
 
 func (b BlockManagerStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
