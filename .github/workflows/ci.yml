@@ -28,7 +28,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21
+          go-version: 1.23
       - name: Install Dependencies
         run: >
           sudo add-apt-repository -y ppa:ethereum/ethereum
@@ -39,9 +39,9 @@ jobs:
 
           npm install
 
-          go get -d github.com/ethereum/go-ethereum@v1.12.2 \
+          go get -d github.com/ethereum/go-ethereum@1.14.11 \
 
-          && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.12.2 \
+          && go install github.com/ethereum/go-ethereum/cmd/abigen@1.14.11 \
 
           && go install github.com/mattn/goveralls@v0.0.11 \
 
@@ -90,7 +90,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21
+          go-version: 1.23
 
       - name: Install Dependencies
         run: >
@@ -102,9 +102,9 @@ jobs:
 
           npm install
 
-          go get -d github.com/ethereum/go-ethereum@v1.12.2 \
+          go get -d github.com/ethereum/go-ethereum@v1.14.11 \
 
-          && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.12.2 \
+          && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.14.11 \
 
           && go install github.com/mattn/goveralls@v0.0.11 \
 
@@ -141,7 +141,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.21
+          go-version: 1.23
 
       - name: Install Dependencies
         run: >
@@ -153,9 +153,9 @@ jobs:
 
           npm install
 
-          go get -d github.com/ethereum/go-ethereum@v1.12.2 \
+          go get -d github.com/ethereum/go-ethereum@v1.14.11 \
 
-          && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.12.2 \
+          && go install github.com/ethereum/go-ethereum/cmd/abigen@v1.14.11 \
 
           && go install github.com/mattn/goveralls@v0.0.11 \
 
