@@ -115,7 +115,9 @@ func InvokeFunctionWithRetryAttempts(rpcParameters RPC.RPCParameters, interfaceN
 	var returnedValues []reflect.Value
 	var err error
 	var contextError bool
-	inputs := make([]reflect.Value, len(args))
+
+	// Ensure inputs has space for the client and any additional arguments
+	inputs := make([]reflect.Value, len(args)+1)
 
 	// Always use the current best client for each retry
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
@@ -124,10 +126,11 @@ func InvokeFunctionWithRetryAttempts(rpcParameters RPC.RPCParameters, interfaceN
 		return returnedValues, err
 	}
 
-	// Insert the current best client as the first argument
+	// Set the client as the first argument
 	inputs[0] = reflect.ValueOf(client)
-	for i := 1; i < len(args); i++ {
-		inputs[i] = reflect.ValueOf(args[i])
+	// Add the rest of the args to inputs starting from index 1
+	for i := 0; i < len(args); i++ {
+		inputs[i+1] = reflect.ValueOf(args[i])
 	}
 
 	err = retry.Do(

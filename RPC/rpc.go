@@ -92,12 +92,9 @@ func (m *RPCManager) RefreshEndpoints() error {
 
 func InitializeRPCManager(provider string) (*RPCManager, error) {
 	// Fetch the absolute path to the PROJECT directory and locate endpoints.json file
-	projectDir, err := os.Getwd()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current working directory: %w", err)
-	}
-
+	projectDir := filepath.Join("..", "..") // Relative path from build output
 	endpointsFile := filepath.Join(projectDir, "endpoints.json")
+
 	fileData, err := os.ReadFile(endpointsFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read endpoints.json: %w", err)
