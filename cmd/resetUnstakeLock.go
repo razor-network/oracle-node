@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -49,7 +50,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 }
 
 //This function is used to reset the lock once the withdraw lock period is over
-func (*UtilsStruct) ResetUnstakeLock(rpcParameters types.RPCParameters, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+func (*UtilsStruct) ResetUnstakeLock(rpcParameters RPC.RPCParameters, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,

@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -63,7 +64,7 @@ func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the staker to start accepting/rejecting delegation requests
-func (*UtilsStruct) SetDelegation(rpcParameters types.RPCParameters, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
+func (*UtilsStruct) SetDelegation(rpcParameters RPC.RPCParameters, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error) {
 	stakerInfo, err := razorUtils.GetStaker(rpcParameters, delegationInput.StakerId)
 	if err != nil {
 		return core.NilHash, err

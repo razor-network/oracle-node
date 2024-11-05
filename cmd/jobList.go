@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/pflag"
 	"os"
 	"razor/RPC"
-	"razor/core/types"
 	"razor/logger"
 	"razor/utils"
 	"strconv"
@@ -42,7 +41,7 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
 	utils.CheckError("Error in initializing RPC Manager: ", err)
 
-	rpcParameters := types.RPCParameters{
+	rpcParameters := RPC.RPCParameters{
 		RPCManager: rpcManager,
 		Ctx:        context.Background(),
 	}
@@ -53,7 +52,7 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 }
 
 //This function provides the list of all jobs
-func (*UtilsStruct) GetJobList(rpcParameters types.RPCParameters) error {
+func (*UtilsStruct) GetJobList(rpcParameters RPC.RPCParameters) error {
 	jobs, err := razorUtils.GetJobs(rpcParameters)
 	log.Debugf("JobList: Jobs: %+v", jobs)
 	if err != nil {

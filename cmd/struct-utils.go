@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -615,7 +616,7 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 }
 
 //This function is used to give the sorted Ids
-func (*UtilsStruct) GiveSorted(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+func (*UtilsStruct) GiveSorted(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
 	return GiveSorted(rpcParameters, txnArgs, epoch, assetId, sortedStakers)
 }
 

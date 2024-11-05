@@ -5,7 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
-	"razor/core/types"
+	"razor/RPC"
 	"razor/pkg/bindings"
 )
 
@@ -13,7 +13,7 @@ func (*UtilsStruct) GetStakedTokenManagerWithOpts(client *ethclient.Client, toke
 	return UtilsInterface.GetStakedToken(client, tokenAddress), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetStakerSRZRBalance(rpcParameters types.RPCParameters, staker bindings.StructsStaker) (*big.Int, error) {
+func (*UtilsStruct) GetStakerSRZRBalance(rpcParameters RPC.RPCParameters, staker bindings.StructsStaker) (*big.Int, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, StakedTokenInterface, "BalanceOf", staker.TokenAddress, staker.Address)
 	if err != nil {
 		log.Error("Error in getting sRZRBalance: ", err)

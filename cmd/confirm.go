@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 
@@ -9,7 +10,7 @@ import (
 )
 
 //This function allows the user to claim the block reward and returns the hash
-func (*UtilsStruct) ClaimBlockReward(rpcParameters types.RPCParameters, options types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) ClaimBlockReward(rpcParameters RPC.RPCParameters, options types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)

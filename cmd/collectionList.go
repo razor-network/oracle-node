@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"os"
 	"razor/RPC"
-	"razor/core/types"
 	"razor/logger"
 	"razor/utils"
 	"strconv"
@@ -44,7 +43,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
 	utils.CheckError("Error in initializing RPC Manager: ", err)
 
-	rpcParameters := types.RPCParameters{
+	rpcParameters := RPC.RPCParameters{
 		RPCManager: rpcManager,
 		Ctx:        context.Background(),
 	}
@@ -55,7 +54,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 }
 
 //This function provides the list of all collections with their name, power, ID etc.
-func (*UtilsStruct) GetCollectionList(rpcParameters types.RPCParameters) error {
+func (*UtilsStruct) GetCollectionList(rpcParameters RPC.RPCParameters) error {
 	collections, err := razorUtils.GetAllCollections(rpcParameters)
 	log.Debugf("GetCollectionList: Collections: %+v", collections)
 

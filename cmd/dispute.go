@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
@@ -26,7 +27,7 @@ var (
 //blockId is id of the block
 
 //This function handles the dispute and if there is any error it returns the error
-func (*UtilsStruct) HandleDispute(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+func (*UtilsStruct) HandleDispute(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 
 	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(rpcParameters, epoch)
 	if err != nil {
@@ -195,7 +196,7 @@ func (*UtilsStruct) HandleDispute(rpcParameters types.RPCParameters, config type
 }
 
 //This function returns the local median data
-func (*UtilsStruct) GetLocalMediansData(rpcParameters types.RPCParameters, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
+func (*UtilsStruct) GetLocalMediansData(rpcParameters RPC.RPCParameters, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error) {
 	if rogueData.IsRogue {
 		// As the staker has proposed with incorrect medians in rogue mode so those values needs to be compared with the correct calculated medians
 		log.Debug("Staker proposed in rogue mode, now calculating medians correctly...")
@@ -229,7 +230,7 @@ func (*UtilsStruct) GetLocalMediansData(rpcParameters types.RPCParameters, accou
 	return globalProposedDataStruct, nil
 }
 
-func calculateMedian(rpcParameters types.RPCParameters, account types.Account, epoch uint32, blockNumber *big.Int) (types.ProposeFileData, error) {
+func calculateMedian(rpcParameters RPC.RPCParameters, account types.Account, epoch uint32, blockNumber *big.Int) (types.ProposeFileData, error) {
 	stakerId, err := razorUtils.GetStakerId(rpcParameters, account.Address)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
@@ -256,7 +257,7 @@ func calculateMedian(rpcParameters types.RPCParameters, account types.Account, e
 }
 
 //This function check for the dispute in different type of Id's
-func (*UtilsStruct) CheckDisputeForIds(rpcParameters types.RPCParameters, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error) {
+func (*UtilsStruct) CheckDisputeForIds(rpcParameters RPC.RPCParameters, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error) {
 	//checking for hashing whether there is any dispute or not
 	hashIdsInProposedBlock := solsha3.SoliditySHA3([]string{"uint16[]"}, []interface{}{idsInProposedBlock})
 	log.Debug("CheckDisputeForIds: Hash of reveal Ids in proposed block: ", hashIdsInProposedBlock)
@@ -340,7 +341,7 @@ func (*UtilsStruct) CheckDisputeForIds(rpcParameters types.RPCParameters, transa
 }
 
 //This function finalizes the dispute and return the error if there is any
-func (*UtilsStruct) Dispute(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
+func (*UtilsStruct) Dispute(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error {
 	txnArgs := types.TransactionOptions{
 		ChainId: core.ChainId,
 		Config:  config,
@@ -444,7 +445,7 @@ func (*UtilsStruct) Dispute(rpcParameters types.RPCParameters, config types.Conf
 }
 
 //This function sorts the Id's recursively
-func GiveSorted(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
+func GiveSorted(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, leafId uint16, sortedValues []*big.Int) error {
 	if len(sortedValues) == 0 {
 		return errors.New("length of sortedValues is 0")
 	}
@@ -492,7 +493,7 @@ func GiveSorted(rpcParameters types.RPCParameters, txnArgs types.TransactionOpti
 }
 
 //This function returns the collection Id position in block
-func (*UtilsStruct) GetCollectionIdPositionInBlock(rpcParameters types.RPCParameters, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
+func (*UtilsStruct) GetCollectionIdPositionInBlock(rpcParameters RPC.RPCParameters, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int {
 	ids := proposedBlock.Ids
 	idToBeDisputed, err := razorUtils.GetCollectionIdFromLeafId(rpcParameters, leafId)
 	if err != nil {
@@ -510,7 +511,7 @@ func (*UtilsStruct) GetCollectionIdPositionInBlock(rpcParameters types.RPCParame
 }
 
 //This function saves the bountyId in disputeData file and return the error if there is any
-func (*UtilsStruct) StoreBountyId(rpcParameters types.RPCParameters, account types.Account) error {
+func (*UtilsStruct) StoreBountyId(rpcParameters RPC.RPCParameters, account types.Account) error {
 	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
@@ -556,7 +557,7 @@ func (*UtilsStruct) StoreBountyId(rpcParameters types.RPCParameters, account typ
 }
 
 //This function resets the dispute
-func (*UtilsStruct) ResetDispute(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32) {
+func (*UtilsStruct) ResetDispute(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32) {
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
 		return
@@ -578,7 +579,7 @@ func (*UtilsStruct) ResetDispute(rpcParameters types.RPCParameters, txnOpts *bin
 }
 
 //This function returns the bountyId from events
-func (*UtilsStruct) GetBountyIdFromEvents(rpcParameters types.RPCParameters, blockNumber *big.Int, bountyHunter string) (uint32, error) {
+func (*UtilsStruct) GetBountyIdFromEvents(rpcParameters RPC.RPCParameters, blockNumber *big.Int, bountyHunter string) (uint32, error) {
 	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(rpcParameters, blockNumber)
 	if err != nil {
 		log.Error(err)
@@ -621,7 +622,7 @@ func (*UtilsStruct) GetBountyIdFromEvents(rpcParameters types.RPCParameters, blo
 	return bountyId, nil
 }
 
-func (*UtilsStruct) CheckToDoResetDispute(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int) {
+func (*UtilsStruct) CheckToDoResetDispute(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int) {
 	// Fetch updated dispute mapping
 	disputesMapping, err := razorUtils.Disputes(rpcParameters, epoch, txnOpts.From)
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"razor/RPC"
 	"razor/cache"
 	"razor/core"
 	"razor/core/types"
@@ -132,7 +133,7 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+func (*UtilsStruct) Vote(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
 	header, err := clientUtils.GetLatestBlockWithRetry(rpcParameters)
 	utils.CheckError("Error in getting block: ", err)
 	for {
@@ -164,7 +165,7 @@ var (
 )
 
 //This function handles the block
-func (*UtilsStruct) HandleBlock(rpcParameters types.RPCParameters, account types.Account, stakerId uint32, latestHeader *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
+func (*UtilsStruct) HandleBlock(rpcParameters RPC.RPCParameters, account types.Account, stakerId uint32, latestHeader *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) {
 	stateBuffer, err := razorUtils.GetStateBuffer(rpcParameters)
 	if err != nil {
 		log.Error("Error in getting state buffer: ", err)
@@ -345,7 +346,7 @@ func (*UtilsStruct) HandleBlock(rpcParameters types.RPCParameters, account types
 }
 
 //This function initiates the commit
-func (*UtilsStruct) InitiateCommit(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateCommit(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error {
 	lastCommit, err := razorUtils.GetEpochLastCommitted(rpcParameters, stakerId)
 	if err != nil {
 		return errors.New("Error in fetching last commit: " + err.Error())
@@ -434,7 +435,7 @@ func (*UtilsStruct) InitiateCommit(rpcParameters types.RPCParameters, config typ
 }
 
 //This function initiates the reveal
-func (*UtilsStruct) InitiateReveal(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiateReveal(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiateReveal: Staked Amount: ", stakedAmount)
 	minStakeAmount, err := razorUtils.GetMinStakeAmount(rpcParameters)
@@ -503,7 +504,7 @@ func (*UtilsStruct) InitiateReveal(rpcParameters types.RPCParameters, config typ
 }
 
 //This function initiates the propose
-func (*UtilsStruct) InitiatePropose(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
+func (*UtilsStruct) InitiatePropose(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
 	stakedAmount := staker.Stake
 	log.Debug("InitiatePropose: Staked Amount: ", stakedAmount)
 	minStakeAmount, err := razorUtils.GetMinStakeAmount(rpcParameters)

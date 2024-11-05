@@ -4,6 +4,7 @@ package cmd
 import (
 	"crypto/ecdsa"
 	"math/big"
+	"razor/RPC"
 	"razor/cache"
 	"razor/core/types"
 	"razor/path"
@@ -154,93 +155,93 @@ type UtilsCmdInterface interface {
 	GetLogFileMaxAge() (int, error)
 	GetConfigData() (types.Configurations, error)
 	ExecuteClaimBounty(flagSet *pflag.FlagSet)
-	ClaimBounty(rpcParameters types.RPCParameters, config types.Configurations, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
-	ClaimBlockReward(rpcParameters types.RPCParameters, options types.TransactionOptions) (common.Hash, error)
-	GetSalt(rpcParameters types.RPCParameters, epoch uint32) ([32]byte, error)
-	HandleCommitState(rpcParameters types.RPCParameters, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
-	Commit(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitment [32]byte) (common.Hash, error)
+	ClaimBounty(rpcParameters RPC.RPCParameters, config types.Configurations, redeemBountyInput types.RedeemBountyInput) (common.Hash, error)
+	ClaimBlockReward(rpcParameters RPC.RPCParameters, options types.TransactionOptions) (common.Hash, error)
+	GetSalt(rpcParameters RPC.RPCParameters, epoch uint32) ([32]byte, error)
+	HandleCommitState(rpcParameters RPC.RPCParameters, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error)
+	Commit(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitment [32]byte) (common.Hash, error)
 	ListAccounts() ([]accounts.Account, error)
 	AssignAmountInWei(flagSet *pflag.FlagSet) (*big.Int, error)
 	ExecuteTransfer(flagSet *pflag.FlagSet)
-	Transfer(rpcParameters types.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error)
-	CheckForLastCommitted(rpcParameters types.RPCParameters, staker bindings.StructsStaker, epoch uint32) error
-	Reveal(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitData types.CommitData, signature []byte) (common.Hash, error)
+	Transfer(rpcParameters RPC.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error)
+	CheckForLastCommitted(rpcParameters RPC.RPCParameters, staker bindings.StructsStaker, epoch uint32) error
+	Reveal(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitData types.CommitData, signature []byte) (common.Hash, error)
 	GenerateTreeRevealData(merkleTree [][][]byte, commitData types.CommitData) bindings.StructsMerkleTree
-	IndexRevealEventsOfCurrentEpoch(rpcParameters types.RPCParameters, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
+	IndexRevealEventsOfCurrentEpoch(rpcParameters RPC.RPCParameters, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error)
 	ExecuteCreateJob(flagSet *pflag.FlagSet)
-	CreateJob(rpcParameter types.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error)
+	CreateJob(rpcParameter RPC.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error)
 	ExecuteCreateCollection(flagSet *pflag.FlagSet)
-	CreateCollection(rpcParameters types.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error)
-	GetEpochAndState(rpcParameter types.RPCParameters) (uint32, int64, error)
-	WaitForAppropriateState(rpcParameter types.RPCParameters, action string, states ...int) (uint32, error)
+	CreateCollection(rpcParameters RPC.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error)
+	GetEpochAndState(rpcParameter RPC.RPCParameters) (uint32, int64, error)
+	WaitForAppropriateState(rpcParameter RPC.RPCParameters, action string, states ...int) (uint32, error)
 	ExecuteJobList(flagSet *pflag.FlagSet)
-	GetJobList(rpcParameters types.RPCParameters) error
+	GetJobList(rpcParameters RPC.RPCParameters) error
 	ExecuteUnstake(flagSet *pflag.FlagSet)
-	Unstake(rpcParameters types.RPCParameters, config types.Configurations, input types.UnstakeInput) (common.Hash, error)
-	ApproveUnstake(rpcParameters types.RPCParameters, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error)
+	Unstake(rpcParameters RPC.RPCParameters, config types.Configurations, input types.UnstakeInput) (common.Hash, error)
+	ApproveUnstake(rpcParameters RPC.RPCParameters, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error)
 	ExecuteInitiateWithdraw(flagSet *pflag.FlagSet)
 	ExecuteUnlockWithdraw(flagSet *pflag.FlagSet)
-	InitiateWithdraw(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
-	UnlockWithdraw(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
-	HandleUnstakeLock(rpcParameters types.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
-	HandleWithdrawLock(rpcParameters types.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
+	InitiateWithdraw(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
+	UnlockWithdraw(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error)
+	HandleUnstakeLock(rpcParameters RPC.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
+	HandleWithdrawLock(rpcParameters RPC.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error)
 	ExecuteUpdateJob(flagSet *pflag.FlagSet)
-	UpdateJob(rpcParameters types.RPCParameters, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error)
-	WaitIfCommitState(rpcParameter types.RPCParameters, action string) (uint32, error)
+	UpdateJob(rpcParameters RPC.RPCParameters, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error)
+	WaitIfCommitState(rpcParameter RPC.RPCParameters, action string) (uint32, error)
 	ExecuteCollectionList(flagSet *pflag.FlagSet)
-	GetCollectionList(rpcParameters types.RPCParameters) error
+	GetCollectionList(rpcParameters RPC.RPCParameters) error
 	ExecuteStakerinfo(flagSet *pflag.FlagSet)
 	ExecuteSetDelegation(flagSet *pflag.FlagSet)
-	SetDelegation(rpcParameters types.RPCParameters, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error)
-	GetStakerInfo(rpcParameters types.RPCParameters, stakerId uint32) error
+	SetDelegation(rpcParameters RPC.RPCParameters, config types.Configurations, delegationInput types.SetDelegationInput) (common.Hash, error)
+	GetStakerInfo(rpcParameters RPC.RPCParameters, stakerId uint32) error
 	ExecuteUpdateCollection(flagSet *pflag.FlagSet)
-	UpdateCollection(rpcParameters types.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error)
-	MakeBlock(rpcParameters types.RPCParameters, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
+	UpdateCollection(rpcParameters RPC.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error)
+	MakeBlock(rpcParameters RPC.RPCParameters, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error)
 	IsElectedProposer(proposer types.ElectedProposer, currentStakerStake *big.Int) bool
-	GetSortedRevealedValues(rpcParameters types.RPCParameters, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
-	GetIteration(rpcParameters types.RPCParameters, proposer types.ElectedProposer, bufferPercent int32) int
-	Propose(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
-	GiveSorted(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
-	GetLocalMediansData(rpcParameters types.RPCParameters, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
-	CheckDisputeForIds(rpcParameters types.RPCParameters, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
-	Dispute(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
-	GetCollectionIdPositionInBlock(rpcParameters types.RPCParameters, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
-	HandleDispute(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
+	GetSortedRevealedValues(rpcParameters RPC.RPCParameters, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error)
+	GetIteration(rpcParameters RPC.RPCParameters, proposer types.ElectedProposer, bufferPercent int32) int
+	Propose(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	GiveSorted(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error
+	GetLocalMediansData(rpcParameters RPC.RPCParameters, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue) (types.ProposeFileData, error)
+	CheckDisputeForIds(rpcParameters RPC.RPCParameters, transactionOpts types.TransactionOptions, epoch uint32, blockIndex uint8, idsInProposedBlock []uint16, revealedCollectionIds []uint16) (*Types.Transaction, error)
+	Dispute(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockIndex uint8, proposedBlock bindings.StructsBlock, leafId uint16, sortedValues []*big.Int) error
+	GetCollectionIdPositionInBlock(rpcParameters RPC.RPCParameters, leafId uint16, proposedBlock bindings.StructsBlock) *big.Int
+	HandleDispute(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, blockNumber *big.Int, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	ExecuteExtendLock(flagSet *pflag.FlagSet)
-	ResetUnstakeLock(rpcParameters types.RPCParameters, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
+	ResetUnstakeLock(rpcParameters RPC.RPCParameters, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error)
 	ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet)
-	ModifyCollectionStatus(rpcParameters types.RPCParameters, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error)
-	Approve(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error)
+	ModifyCollectionStatus(rpcParameters RPC.RPCParameters, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error)
+	Approve(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error)
 	ExecuteDelegate(flagSet *pflag.FlagSet)
-	Delegate(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error)
+	Delegate(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error)
 	ExecuteCreate(flagSet *pflag.FlagSet)
 	Create(password string) (accounts.Account, error)
 	ExecuteImport(flagSet *pflag.FlagSet)
 	ImportAccount() (accounts.Account, error)
 	ExecuteUpdateCommission(flagSet *pflag.FlagSet)
-	UpdateCommission(rpcParameters types.RPCParameters, config types.Configurations, updateCommissionInput types.UpdateCommissionInput) error
-	GetBiggestStakeAndId(rpcParameters types.RPCParameters, epoch uint32) (*big.Int, uint32, error)
-	GetSmallestStakeAndId(rpcParameters types.RPCParameters, epoch uint32) (*big.Int, uint32, error)
-	StakeCoins(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error)
+	UpdateCommission(rpcParameters RPC.RPCParameters, config types.Configurations, updateCommissionInput types.UpdateCommissionInput) error
+	GetBiggestStakeAndId(rpcParameters RPC.RPCParameters, epoch uint32) (*big.Int, uint32, error)
+	GetSmallestStakeAndId(rpcParameters RPC.RPCParameters, epoch uint32) (*big.Int, uint32, error)
+	StakeCoins(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error)
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
-	HandleBlock(rpcParameters types.RPCParameters, account types.Account, stakerId uint32, header *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string)
+	HandleBlock(rpcParameters RPC.RPCParameters, account types.Account, stakerId uint32, header *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string)
 	ExecuteVote(flagSet *pflag.FlagSet)
-	Vote(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
+	Vote(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	HandleExit()
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
 	ExecuteStake(flagSet *pflag.FlagSet)
-	InitiateCommit(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error
-	InitiateReveal(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
-	InitiatePropose(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
-	GetBountyIdFromEvents(rpcParameters types.RPCParameters, blockNumber *big.Int, bountyHunter string) (uint32, error)
-	HandleClaimBounty(rpcParameters types.RPCParameters, config types.Configurations, account types.Account) error
+	InitiateCommit(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, stakerId uint32, latestHeader *Types.Header, commitParams *types.CommitParams, stateBuffer uint64, rogueData types.Rogue) error
+	InitiateReveal(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	InitiatePropose(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, staker bindings.StructsStaker, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error
+	GetBountyIdFromEvents(rpcParameters RPC.RPCParameters, blockNumber *big.Int, bountyHunter string) (uint32, error)
+	HandleClaimBounty(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account) error
 	ExecuteContractAddresses(flagSet *pflag.FlagSet)
 	ContractAddresses()
-	ResetDispute(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32)
-	StoreBountyId(rpcParameters types.RPCParameters, account types.Account) error
-	CheckToDoResetDispute(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
-	InitJobAndCollectionCache(rpcParameters types.RPCParameters) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)
+	ResetDispute(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32)
+	StoreBountyId(rpcParameters RPC.RPCParameters, account types.Account) error
+	CheckToDoResetDispute(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
+	InitJobAndCollectionCache(rpcParameters RPC.RPCParameters) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)
 	BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error)
 }
 

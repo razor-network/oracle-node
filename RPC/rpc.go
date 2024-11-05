@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"os"
 	"path/filepath"
 	"razor/logger"
@@ -17,31 +17,18 @@ import (
 
 var log = logger.NewLogger()
 
-type RPCManager struct {
-	Endpoints     []*RPCEndpoint
-	mutex         sync.RWMutex
-	BestRPCClient *rpc.Client // Holds the current best RPC client
-}
-
-type RPCEndpoint struct {
-	URL         string
-	BlockNumber uint64
-	Latency     float64
-	Client      *rpc.Client
-}
-
 func (m *RPCManager) calculateMetrics(endpoint *RPCEndpoint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // Default timeout of 5 seconds, modify as necessary
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	client, err := rpc.DialContext(ctx, endpoint.URL)
+	client, err := ethclient.DialContext(ctx, endpoint.URL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to RPC: %w", err)
 	}
 
 	start := time.Now()
-	var blockNumber string
-	if err := client.CallContext(ctx, &blockNumber, "eth_blockNumber"); err != nil {
+	blockNumber, err := client.BlockNumber(ctx)
+	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return fmt.Errorf("RPC call timed out: %w", err)
 		}
@@ -49,13 +36,7 @@ func (m *RPCManager) calculateMetrics(endpoint *RPCEndpoint) error {
 	}
 	latency := time.Since(start).Seconds()
 
-	var parsedBlockNumber uint64
-	if _, err := fmt.Sscanf(blockNumber, "0x%x", &parsedBlockNumber); err != nil {
-		client.Close()
-		return fmt.Errorf("failed to parse block number: %w", err)
-	}
-
-	endpoint.BlockNumber = parsedBlockNumber
+	endpoint.BlockNumber = blockNumber
 	endpoint.Latency = latency
 	endpoint.Client = client // Store the client for future use
 
@@ -163,8 +144,7 @@ func InitializeRPCManager(provider string) (*RPCManager, error) {
 	return rpcManager, nil
 }
 
-// GetBestRPCClient returns the current best RPC client.
-func (m *RPCManager) GetBestRPCClient() (*rpc.Client, error) {
+func (m *RPCManager) GetBestRPCClient() (*ethclient.Client, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 

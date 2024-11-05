@@ -65,7 +65,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
 	utils.CheckError("Error in initializing RPC Manager: ", err)
 
-	rpcParameters := types.RPCParameters{
+	rpcParameters := RPC.RPCParameters{
 		RPCManager: rpcManager,
 		Ctx:        context.Background(),
 	}
@@ -92,7 +92,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 }
 
 //This function transfers the razors from your account to others account
-func (*UtilsStruct) Transfer(rpcParameters types.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
+func (*UtilsStruct) Transfer(rpcParameters RPC.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 

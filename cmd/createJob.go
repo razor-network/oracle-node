@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -72,7 +73,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the admin to create the job
-func (*UtilsStruct) CreateJob(rpcParameters types.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
+func (*UtilsStruct) CreateJob(rpcParameters RPC.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,

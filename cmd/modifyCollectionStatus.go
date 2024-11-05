@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -55,7 +56,7 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the admin to modify the active status of collection
-func (*UtilsStruct) ModifyCollectionStatus(rpcParameters types.RPCParameters, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
+func (*UtilsStruct) ModifyCollectionStatus(rpcParameters RPC.RPCParameters, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
 	currentStatus, err := razorUtils.GetActiveStatus(rpcParameters, modifyCollectionInput.CollectionId)
 	if err != nil {
 		log.Error("Error in fetching active status")

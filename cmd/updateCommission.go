@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"errors"
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -50,7 +51,7 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 }
 
 //This function allows a staker to add/update the commission value
-func (*UtilsStruct) UpdateCommission(rpcParameters types.RPCParameters, config types.Configurations, updateCommissionInput types.UpdateCommissionInput) error {
+func (*UtilsStruct) UpdateCommission(rpcParameters RPC.RPCParameters, config types.Configurations, updateCommissionInput types.UpdateCommissionInput) error {
 	stakerInfo, err := razorUtils.GetStaker(rpcParameters, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")

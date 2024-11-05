@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -65,7 +66,7 @@ func (*UtilsStruct) ExecuteUpdateCollection(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the admin to update an existing collection
-func (*UtilsStruct) UpdateCollection(rpcParameters types.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
+func (*UtilsStruct) UpdateCollection(rpcParameters RPC.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput, collectionId uint16) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("UpdateCollection: Uint16 jobIds: ", jobIds)
 	_, err := cmdUtils.WaitIfCommitState(rpcParameters, "update collection")

@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"razor/RPC"
 	"razor/core/types"
 	"strings"
 
@@ -23,7 +24,7 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 	}
 }
 
-func (*UtilsStruct) GetTxnOpts(rpcParameters types.RPCParameters, transactionData types.TransactionOptions) *bind.TransactOpts {
+func (*UtilsStruct) GetTxnOpts(rpcParameters RPC.RPCParameters, transactionData types.TransactionOptions) *bind.TransactOpts {
 	log.Debug("Getting transaction options...")
 	account := transactionData.Account
 	if account.AccountManager == nil {
@@ -61,7 +62,7 @@ func (*UtilsStruct) GetTxnOpts(rpcParameters types.RPCParameters, transactionDat
 	return txnOpts
 }
 
-func (*GasStruct) GetGasPrice(rpcParameters types.RPCParameters, config types.Configurations) *big.Int {
+func (*GasStruct) GetGasPrice(rpcParameters RPC.RPCParameters, config types.Configurations) *big.Int {
 	var gas *big.Int
 	if config.GasPrice != 0 {
 		gas = big.NewInt(1).Mul(big.NewInt(int64(config.GasPrice)), big.NewInt(1e9))
@@ -84,7 +85,7 @@ func (*GasStruct) GetGasPrice(rpcParameters types.RPCParameters, config types.Co
 	return gasPrice
 }
 
-func (*GasStruct) GetGasLimit(rpcParameters types.RPCParameters, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+func (*GasStruct) GetGasLimit(rpcParameters RPC.RPCParameters, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
 	if transactionData.MethodName == "" {
 		return 0, nil
 	}
@@ -127,7 +128,7 @@ func (*GasStruct) GetGasLimit(rpcParameters types.RPCParameters, transactionData
 	return GasInterface.IncreaseGasLimitValue(rpcParameters, gasLimit, transactionData.Config.GasLimitMultiplier)
 }
 
-func (*GasStruct) IncreaseGasLimitValue(rpcParameters types.RPCParameters, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+func (*GasStruct) IncreaseGasLimitValue(rpcParameters RPC.RPCParameters, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
 	if gasLimit == 0 || gasLimitMultiplier <= 0 {
 		return gasLimit, nil
 	}
@@ -147,7 +148,7 @@ func (*GasStruct) IncreaseGasLimitValue(rpcParameters types.RPCParameters, gasLi
 	return gasLimit, nil
 }
 
-func getGasLimitForReveal(rpcParameters types.RPCParameters) (uint64, error) {
+func getGasLimitForReveal(rpcParameters RPC.RPCParameters) (uint64, error) {
 	toAssign, err := UtilsInterface.ToAssign(rpcParameters)
 	if err != nil {
 		return 0, err

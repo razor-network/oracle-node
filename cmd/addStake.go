@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -93,7 +94,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the user to stake razors in the razor network and returns the hash
-func (*UtilsStruct) StakeCoins(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) StakeCoins(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error) {
 	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		return core.NilHash, err

@@ -4,6 +4,7 @@ package cmd
 import (
 	"errors"
 	"math/big"
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -59,7 +60,7 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 }
 
 //This function allows user to unstake their sRZRs in the razor network
-func (*UtilsStruct) Unstake(rpcParameters types.RPCParameters, config types.Configurations, input types.UnstakeInput) (common.Hash, error) {
+func (*UtilsStruct) Unstake(rpcParameters RPC.RPCParameters, config types.Configurations, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Amount:  input.ValueInWei,
 		ChainId: core.ChainId,
@@ -126,7 +127,7 @@ func (*UtilsStruct) Unstake(rpcParameters types.RPCParameters, config types.Conf
 }
 
 //This function approves the unstake
-func (*UtilsStruct) ApproveUnstake(rpcParameters types.RPCParameters, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) ApproveUnstake(rpcParameters RPC.RPCParameters, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
 	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

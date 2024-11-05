@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/pflag"
 	"os"
 	"razor/RPC"
-	"razor/core/types"
 	"razor/logger"
 	"razor/utils"
 	"strconv"
@@ -45,7 +44,7 @@ func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
 	utils.CheckError("Error in initializing RPC Manager: ", err)
 
-	rpcParameters := types.RPCParameters{
+	rpcParameters := RPC.RPCParameters{
 		RPCManager: rpcManager,
 		Ctx:        context.Background(),
 	}
@@ -57,7 +56,7 @@ func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 }
 
 //This function provides the staker details like age, stake, maturity etc.
-func (*UtilsStruct) GetStakerInfo(rpcParameters types.RPCParameters, stakerId uint32) error {
+func (*UtilsStruct) GetStakerInfo(rpcParameters RPC.RPCParameters, stakerId uint32) error {
 	stakerInfo, err := razorUtils.StakerInfo(rpcParameters, stakerId)
 	if err != nil {
 		return err

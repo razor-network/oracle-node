@@ -4,6 +4,7 @@ package cmd
 import (
 	"errors"
 	"math/big"
+	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -47,7 +48,7 @@ func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
 }
 
 //This function handles the Withdraw lock
-func (*UtilsStruct) HandleWithdrawLock(rpcParameters types.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) HandleWithdrawLock(rpcParameters RPC.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 	withdrawLock, err := razorUtils.GetLock(rpcParameters, account.Address, stakerId, 1)
 	if err != nil {
 		return core.NilHash, err
@@ -91,7 +92,7 @@ func (*UtilsStruct) HandleWithdrawLock(rpcParameters types.RPCParameters, accoun
 }
 
 //This function withdraws your razor once withdraw lock has passed
-func (*UtilsStruct) UnlockWithdraw(rpcParameters types.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) UnlockWithdraw(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
 	log.Info("Unlocking funds...")
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

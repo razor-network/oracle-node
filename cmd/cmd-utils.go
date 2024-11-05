@@ -17,7 +17,7 @@ import (
 )
 
 //This function takes client as a parameter and returns the epoch and state
-func (*UtilsStruct) GetEpochAndState(rpcParameter types.RPCParameters) (uint32, int64, error) {
+func (*UtilsStruct) GetEpochAndState(rpcParameter RPC.RPCParameters) (uint32, int64, error) {
 	epoch, err := razorUtils.GetEpoch(rpcParameter)
 	if err != nil {
 		return 0, 0, err
@@ -50,7 +50,7 @@ func (*UtilsStruct) GetEpochAndState(rpcParameter types.RPCParameters) (uint32, 
 }
 
 //This function waits for the appropriate states which are required
-func (*UtilsStruct) WaitForAppropriateState(rpcParameter types.RPCParameters, action string, states ...int) (uint32, error) {
+func (*UtilsStruct) WaitForAppropriateState(rpcParameter RPC.RPCParameters, action string, states ...int) (uint32, error) {
 	statesAllowed := GetFormattedStateNames(states)
 	for {
 		epoch, state, err := cmdUtils.GetEpochAndState(rpcParameter)
@@ -68,7 +68,7 @@ func (*UtilsStruct) WaitForAppropriateState(rpcParameter types.RPCParameters, ac
 }
 
 //This function wait if the state is commit state
-func (*UtilsStruct) WaitIfCommitState(rpcParameter types.RPCParameters, action string) (uint32, error) {
+func (*UtilsStruct) WaitIfCommitState(rpcParameter RPC.RPCParameters, action string) (uint32, error) {
 	for {
 		epoch, state, err := cmdUtils.GetEpochAndState(rpcParameter)
 		if err != nil {
@@ -127,18 +127,18 @@ func GetFormattedStateNames(states []int) string {
 	return statesAllowed
 }
 
-func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations, types.RPCParameters, types.Account, error) {
+func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations, RPC.RPCParameters, types.Account, error) {
 	config, err := cmdUtils.GetConfigData()
 	if err != nil {
 		log.Error("Error in getting config: ", err)
-		return types.Configurations{}, types.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 	log.Debugf("Config: %+v", config)
 
 	address, err := flagSetUtils.GetStringAddress(flagSet)
 	if err != nil {
 		log.Error("Error in getting address: ", err)
-		return types.Configurations{}, types.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 	log.Debug("Address: %v", address)
 
@@ -151,7 +151,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	accountManager, err := razorUtils.AccountManagerForKeystore()
 	if err != nil {
 		log.Error("Error in getting accounts manager for keystore: ", err)
-		return types.Configurations{}, types.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
 	account := accounts.InitAccountStruct(address, password, accountManager)
@@ -159,16 +159,16 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	err = razorUtils.CheckPassword(account)
 	if err != nil {
 		log.Error("Error in fetching private key from given password: ", err)
-		return types.Configurations{}, types.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
 	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
 	if err != nil {
 		log.Error("Error in initializing RPC Manager: ", err)
-		return types.Configurations{}, types.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
-	rpcParameters := types.RPCParameters{
+	rpcParameters := RPC.RPCParameters{
 		RPCManager: rpcManager,
 		Ctx:        context.Background(),
 	}
@@ -176,7 +176,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	client, err := rpcManager.GetBestRPCClient()
 	if err != nil {
 		log.Error("Error in getting best RPC client: ", err)
-		return types.Configurations{}, types.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
 	logger.SetLoggerParameters(client, address)

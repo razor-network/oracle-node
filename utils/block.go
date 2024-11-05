@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+	"razor/RPC"
 	Types "razor/core/types"
 	"razor/pkg/bindings"
 
@@ -15,7 +16,7 @@ func (*UtilsStruct) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings
 	return UtilsInterface.GetBlockManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetNumberOfProposedBlocks(rpcParameters Types.RPCParameters, epoch uint32) (uint8, error) {
+func (*UtilsStruct) GetNumberOfProposedBlocks(rpcParameters RPC.RPCParameters, epoch uint32) (uint8, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "GetNumProposedBlocks", epoch)
 	if err != nil {
 		return 0, err
@@ -23,7 +24,7 @@ func (*UtilsStruct) GetNumberOfProposedBlocks(rpcParameters Types.RPCParameters,
 	return returnedValues[0].Interface().(uint8), nil
 }
 
-func (*UtilsStruct) GetProposedBlock(rpcParameters Types.RPCParameters, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
+func (*UtilsStruct) GetProposedBlock(rpcParameters RPC.RPCParameters, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "GetProposedBlock", epoch, proposedBlockId)
 	if err != nil {
 		return bindings.StructsBlock{}, err
@@ -31,7 +32,7 @@ func (*UtilsStruct) GetProposedBlock(rpcParameters Types.RPCParameters, epoch ui
 	return returnedValues[0].Interface().(bindings.StructsBlock), nil
 }
 
-func (*UtilsStruct) FetchPreviousValue(rpcParameters Types.RPCParameters, epoch uint32, assetId uint16) (*big.Int, error) {
+func (*UtilsStruct) FetchPreviousValue(rpcParameters RPC.RPCParameters, epoch uint32, assetId uint16) (*big.Int, error) {
 	block, err := UtilsInterface.GetBlock(rpcParameters, epoch)
 	if err != nil {
 		return big.NewInt(0), err
@@ -42,7 +43,7 @@ func (*UtilsStruct) FetchPreviousValue(rpcParameters Types.RPCParameters, epoch 
 	return block.Medians[assetId-1], nil
 }
 
-func (*UtilsStruct) GetBlock(rpcParameters Types.RPCParameters, epoch uint32) (bindings.StructsBlock, error) {
+func (*UtilsStruct) GetBlock(rpcParameters RPC.RPCParameters, epoch uint32) (bindings.StructsBlock, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "GetBlock", epoch)
 	if err != nil {
 		return bindings.StructsBlock{}, err
@@ -50,7 +51,7 @@ func (*UtilsStruct) GetBlock(rpcParameters Types.RPCParameters, epoch uint32) (b
 	return returnedValues[0].Interface().(bindings.StructsBlock), nil
 }
 
-func (*UtilsStruct) GetMinStakeAmount(rpcParameters Types.RPCParameters) (*big.Int, error) {
+func (*UtilsStruct) GetMinStakeAmount(rpcParameters RPC.RPCParameters) (*big.Int, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "MinStake")
 	if err != nil {
 		return nil, err
@@ -58,7 +59,7 @@ func (*UtilsStruct) GetMinStakeAmount(rpcParameters Types.RPCParameters) (*big.I
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetStateBuffer(rpcParameters Types.RPCParameters) (uint64, error) {
+func (*UtilsStruct) GetStateBuffer(rpcParameters RPC.RPCParameters) (uint64, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "StateBuffer")
 	if err != nil {
 		return 0, err
@@ -67,7 +68,7 @@ func (*UtilsStruct) GetStateBuffer(rpcParameters Types.RPCParameters) (uint64, e
 	return uint64(stateBufferUint8), nil
 }
 
-func (*UtilsStruct) GetMaxAltBlocks(rpcParameters Types.RPCParameters) (uint8, error) {
+func (*UtilsStruct) GetMaxAltBlocks(rpcParameters RPC.RPCParameters) (uint8, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "MaxAltBlocks")
 	if err != nil {
 		return 0, err
@@ -75,7 +76,7 @@ func (*UtilsStruct) GetMaxAltBlocks(rpcParameters Types.RPCParameters) (uint8, e
 	return returnedValues[0].Interface().(uint8), nil
 }
 
-func (*UtilsStruct) GetSortedProposedBlockId(rpcParameters Types.RPCParameters, epoch uint32, index *big.Int) (uint32, error) {
+func (*UtilsStruct) GetSortedProposedBlockId(rpcParameters RPC.RPCParameters, epoch uint32, index *big.Int) (uint32, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "SortedProposedBlockIds", epoch, index)
 	if err != nil {
 		return 0, err
@@ -83,7 +84,7 @@ func (*UtilsStruct) GetSortedProposedBlockId(rpcParameters Types.RPCParameters, 
 	return returnedValues[0].Interface().(uint32), nil
 }
 
-func (*UtilsStruct) GetSortedProposedBlockIds(rpcParameters Types.RPCParameters, epoch uint32) ([]uint32, error) {
+func (*UtilsStruct) GetSortedProposedBlockIds(rpcParameters RPC.RPCParameters, epoch uint32) ([]uint32, error) {
 	numberOfProposedBlocks, err := UtilsInterface.GetNumberOfProposedBlocks(rpcParameters, epoch)
 	if err != nil {
 		log.Error(err)
@@ -101,7 +102,7 @@ func (*UtilsStruct) GetSortedProposedBlockIds(rpcParameters Types.RPCParameters,
 	return sortedProposedBlockIds, nil
 }
 
-func (*UtilsStruct) GetBlockIndexToBeConfirmed(rpcParameters Types.RPCParameters) (int8, error) {
+func (*UtilsStruct) GetBlockIndexToBeConfirmed(rpcParameters RPC.RPCParameters) (int8, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "GetBlockIndexToBeConfirmed")
 	if err != nil {
 		return 0, err
@@ -109,7 +110,7 @@ func (*UtilsStruct) GetBlockIndexToBeConfirmed(rpcParameters Types.RPCParameters
 	return returnedValues[0].Interface().(int8), nil
 }
 
-func (*UtilsStruct) GetEpochLastProposed(rpcParameters Types.RPCParameters, stakerId uint32) (uint32, error) {
+func (*UtilsStruct) GetEpochLastProposed(rpcParameters RPC.RPCParameters, stakerId uint32) (uint32, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "GetEpochLastProposed", stakerId)
 	if err != nil {
 		return 0, err
@@ -117,7 +118,7 @@ func (*UtilsStruct) GetEpochLastProposed(rpcParameters Types.RPCParameters, stak
 	return returnedValues[0].Interface().(uint32), nil
 }
 
-func (*UtilsStruct) GetConfirmedBlocks(rpcParameters Types.RPCParameters, epoch uint32) (Types.ConfirmedBlock, error) {
+func (*UtilsStruct) GetConfirmedBlocks(rpcParameters RPC.RPCParameters, epoch uint32) (Types.ConfirmedBlock, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "GetConfirmedBlocks", epoch)
 	if err != nil {
 		return Types.ConfirmedBlock{}, err
@@ -125,7 +126,7 @@ func (*UtilsStruct) GetConfirmedBlocks(rpcParameters Types.RPCParameters, epoch 
 	return returnedValues[0].Interface().(Types.ConfirmedBlock), nil
 }
 
-func (*UtilsStruct) Disputes(rpcParameters Types.RPCParameters, epoch uint32, address common.Address) (Types.DisputesStruct, error) {
+func (*UtilsStruct) Disputes(rpcParameters RPC.RPCParameters, epoch uint32, address common.Address) (Types.DisputesStruct, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, BlockManagerInterface, "Disputes", epoch, address)
 	if err != nil {
 		return Types.DisputesStruct{}, err
