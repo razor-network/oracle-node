@@ -59,7 +59,7 @@ func (*UtilsStruct) GetBufferedState(header *Types.Header, stateBuffer uint64, b
 
 func (*UtilsStruct) CheckTransactionReceipt(rpcParameters RPC.RPCParameters, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
-	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, ClientInterface, "TransactionReceipt", txHash)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, ClientInterface, "TransactionReceipt", rpcParameters.Ctx, txHash)
 	if err != nil {
 		return -1
 	}
