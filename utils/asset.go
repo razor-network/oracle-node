@@ -102,7 +102,7 @@ func (*UtilsStruct) GetActiveCollectionIds(rpcParameters RPC.RPCParameters) ([]u
 }
 
 func (*UtilsStruct) GetActiveStatus(rpcParameters RPC.RPCParameters, id uint16) (bool, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetActiveStatus")
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetActiveStatus", id)
 	if err != nil {
 		return false, err
 	}
