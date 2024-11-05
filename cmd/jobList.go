@@ -3,11 +3,12 @@ package cmd
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
+	"razor/RPC"
+	"razor/core/types"
 	"razor/logger"
 	"razor/utils"
 	"strconv"
@@ -38,14 +39,22 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 	client := razorUtils.ConnectToClient(config.Provider)
 	logger.SetLoggerParameters(client, "")
 
+	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
+	utils.CheckError("Error in initializing RPC Manager: ", err)
+
+	rpcParameters := types.RPCParameters{
+		RPCManager: rpcManager,
+		Ctx:        context.Background(),
+	}
+
 	log.Debug("ExecuteJobList: Calling JobList()...")
-	err = cmdUtils.GetJobList(client)
+	err = cmdUtils.GetJobList(rpcParameters)
 	utils.CheckError("Error in getting job list: ", err)
 }
 
 //This function provides the list of all jobs
-func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
-	jobs, err := razorUtils.GetJobs(context.Background(), client)
+func (*UtilsStruct) GetJobList(rpcParameters types.RPCParameters) error {
+	jobs, err := razorUtils.GetJobs(rpcParameters)
 	log.Debugf("JobList: Jobs: %+v", jobs)
 	if err != nil {
 		return err

@@ -2,16 +2,12 @@
 package cmd
 
 import (
-	"context"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
@@ -35,32 +31,10 @@ func initialiseExtendLock(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ResetUnstakeLock function
 func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteExtendLock: Config: %+v", config)
+	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.SetLoggerParameters(client, address)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
-
-	stakerId, err := razorUtils.AssignStakerId(context.Background(), flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(rpcParameters, flagSet, account.Address)
 	utils.CheckError("Error in getting stakerId: ", err)
 
 	extendLockInput := types.ExtendLockInput{
@@ -68,16 +42,15 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 		Account:  account,
 	}
 
-	txn, err := cmdUtils.ResetUnstakeLock(client, config, extendLockInput)
+	txn, err := cmdUtils.ResetUnstakeLock(rpcParameters, config, extendLockInput)
 	utils.CheckError("Error in extending lock: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+	err = razorUtils.WaitForBlockCompletion(rpcParameters, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for resetUnstakeLock: ", err)
 }
 
 //This function is used to reset the lock once the withdraw lock period is over
-func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
-		Client:          client,
+func (*UtilsStruct) ResetUnstakeLock(rpcParameters types.RPCParameters, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
@@ -88,6 +61,11 @@ func (*UtilsStruct) ResetUnstakeLock(client *ethclient.Client, config types.Conf
 	})
 
 	log.Info("Extending lock...")
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Debug("Executing ResetUnstakeLock transaction with stakerId = ", extendLockInput.StakerId)
 	txn, err := stakeManagerUtils.ResetUnstakeLock(client, txnOpts, extendLockInput.StakerId)
 	if err != nil {

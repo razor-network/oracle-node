@@ -2,11 +2,8 @@
 package cmd
 
 import (
-	"context"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -34,33 +31,11 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the StakeCoins function
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteStake: config: %+v", config)
+	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-	log.Debug("ExecuteStake: Address: ", address)
-
-	logger.SetLoggerParameters(client, address)
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
-
-	balance, err := razorUtils.FetchBalance(client, address)
-	utils.CheckError("Error in fetching razor balance for account: "+address, err)
+	balance, err := razorUtils.FetchBalance(rpcParameters, account.Address)
+	utils.CheckError("Error in fetching razor balance for account: "+account.Address, err)
 	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amount: ", err)
@@ -70,13 +45,13 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	razorUtils.CheckAmountAndBalance(valueInWei, balance)
 
 	log.Debug("Checking whether sFUEL balance is not 0...")
-	razorUtils.CheckEthBalanceIsZero(context.Background(), client, address)
+	razorUtils.CheckEthBalanceIsZero(rpcParameters, account.Address)
 
-	minSafeRazor, err := razorUtils.GetMinSafeRazor(context.Background(), client)
+	minSafeRazor, err := razorUtils.GetMinSafeRazor(rpcParameters)
 	utils.CheckError("Error in getting minimum safe razor amount: ", err)
 	log.Debug("ExecuteStake: Minimum razor that you can stake for first time: ", minSafeRazor)
 
-	stakerId, err := razorUtils.GetStakerId(context.Background(), client, address)
+	stakerId, err := razorUtils.GetStakerId(rpcParameters, account.Address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ExecuteStake: Staker Id: ", stakerId)
 
@@ -85,7 +60,7 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	}
 
 	if stakerId != 0 {
-		staker, err := razorUtils.GetStaker(context.Background(), client, stakerId)
+		staker, err := razorUtils.GetStaker(rpcParameters, stakerId)
 		utils.CheckError("Error in getting staker: ", err)
 
 		if staker.IsSlashed {
@@ -94,7 +69,6 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	}
 
 	txnArgs := types.TransactionOptions{
-		Client:  client,
 		Amount:  valueInWei,
 		ChainId: core.ChainId,
 		Config:  config,
@@ -102,25 +76,25 @@ func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
 	}
 
 	log.Debug("ExecuteStake: Calling Approve() for amount: ", txnArgs.Amount)
-	approveTxnHash, err := cmdUtils.Approve(txnArgs)
+	approveTxnHash, err := cmdUtils.Approve(rpcParameters, txnArgs)
 	utils.CheckError("Approve error: ", err)
 
 	if approveTxnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(txnArgs.Client, approveTxnHash.Hex())
+		err = razorUtils.WaitForBlockCompletion(rpcParameters, approveTxnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for approve: ", err)
 	}
 
 	log.Debug("ExecuteStake: Calling StakeCoins() for amount: ", txnArgs.Amount)
-	stakeTxnHash, err := cmdUtils.StakeCoins(txnArgs)
+	stakeTxnHash, err := cmdUtils.StakeCoins(rpcParameters, txnArgs)
 	utils.CheckError("Stake error: ", err)
 
-	err = razorUtils.WaitForBlockCompletion(txnArgs.Client, stakeTxnHash.Hex())
+	err = razorUtils.WaitForBlockCompletion(rpcParameters, stakeTxnHash.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for stake: ", err)
 }
 
 //This function allows the user to stake razors in the razor network and returns the hash
-func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, error) {
-	epoch, err := razorUtils.GetEpoch(context.Background(), txnArgs.Client)
+func (*UtilsStruct) StakeCoins(rpcParameters types.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error) {
+	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		return core.NilHash, err
 	}
@@ -130,9 +104,15 @@ func (*UtilsStruct) StakeCoins(txnArgs types.TransactionOptions) (common.Hash, e
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
-	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Debugf("Executing Stake transaction with epoch = %d, amount = %d", epoch, txnArgs.Amount)
-	txn, err := stakeManagerUtils.Stake(txnArgs.Client, txnOpts, epoch, txnArgs.Amount)
+	txn, err := stakeManagerUtils.Stake(client, txnOpts, epoch, txnArgs.Amount)
 	if err != nil {
 		return core.NilHash, err
 	}

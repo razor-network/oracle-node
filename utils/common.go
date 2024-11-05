@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"errors"
-	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -12,6 +11,8 @@ import (
 	"razor/core/types"
 	"razor/logger"
 	"time"
+
+	Types "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -28,12 +29,17 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 	return client
 }
 
-func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
+func (*UtilsStruct) FetchBalance(rpcParameters types.RPCParameters, accountAddress string) (*big.Int, error) {
 	address := common.HexToAddress(accountAddress)
-	erc20Contract := UtilsInterface.GetTokenManager(client)
-	opts := UtilsInterface.GetOptions()
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, CoinInterface, "BalanceOf", address)
+	if err != nil {
+		return big.NewInt(0), err
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
+}
 
-	returnedValues, err := InvokeFunctionWithRetryAttempts(context.Background(), CoinInterface, "BalanceOf", erc20Contract, &opts, address)
+func (*UtilsStruct) Allowance(rpcParameters types.RPCParameters, owner common.Address, spender common.Address) (*big.Int, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, CoinInterface, "Allowance", owner, spender)
 	if err != nil {
 		return big.NewInt(0), err
 	}
@@ -50,16 +56,18 @@ func (*UtilsStruct) GetBufferedState(header *Types.Header, stateBuffer uint64, b
 	return int64(state % core.NumberOfStates), nil
 }
 
-func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
+func (*UtilsStruct) CheckTransactionReceipt(rpcParameters types.RPCParameters, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
-	tx, err := ClientInterface.TransactionReceipt(client, context.Background(), txHash)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, ClientInterface, "TransactionReceipt", txHash)
 	if err != nil {
 		return -1
 	}
-	return int(tx.Status)
+
+	txnReceipt := returnedValues[0].Interface().(*Types.Receipt)
+	return int(txnReceipt.Status)
 }
 
-func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
+func (*UtilsStruct) WaitForBlockCompletion(rpcParameters types.RPCParameters, hashToRead string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), core.BlockCompletionTimeout*time.Second)
 	defer cancel()
 
@@ -70,7 +78,7 @@ func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead 
 			return errors.New("timeout exceeded for transaction mining")
 		default:
 			log.Debug("Checking if transaction is mined....")
-			transactionStatus := UtilsInterface.CheckTransactionReceipt(client, hashToRead)
+			transactionStatus := UtilsInterface.CheckTransactionReceipt(rpcParameters, hashToRead)
 
 			if transactionStatus == 0 {
 				err := errors.New("transaction mining unsuccessful")
@@ -127,8 +135,8 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 	return found
 }
 
-func (*UtilsStruct) CheckEthBalanceIsZero(ctx context.Context, client *ethclient.Client, address string) {
-	ethBalance, err := ClientInterface.BalanceAtWithRetry(ctx, client, common.HexToAddress(address))
+func (*UtilsStruct) CheckEthBalanceIsZero(rpcParameters types.RPCParameters, address string) {
+	ethBalance, err := ClientInterface.BalanceAtWithRetry(rpcParameters, common.HexToAddress(address))
 	if err != nil {
 		log.Fatalf("Error in fetching sFUEL balance of the account: %s\n%s", address, err)
 	}
@@ -156,15 +164,15 @@ func GetStateName(stateNumber int64) string {
 	return stateName
 }
 
-func (*UtilsStruct) AssignStakerId(ctx context.Context, flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+func (*UtilsStruct) AssignStakerId(rpcParameters types.RPCParameters, flagSet *pflag.FlagSet, address string) (uint32, error) {
 	if UtilsInterface.IsFlagPassed("stakerId") {
 		return UtilsInterface.GetUint32(flagSet, "stakerId")
 	}
-	return UtilsInterface.GetStakerId(ctx, client, address)
+	return UtilsInterface.GetStakerId(rpcParameters, address)
 }
 
-func (*UtilsStruct) GetEpoch(ctx context.Context, client *ethclient.Client) (uint32, error) {
-	latestHeader, err := ClientInterface.GetLatestBlockWithRetry(ctx, client)
+func (*UtilsStruct) GetEpoch(rpcParameters types.RPCParameters) (uint32, error) {
+	latestHeader, err := ClientInterface.GetLatestBlockWithRetry(rpcParameters)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -173,13 +181,13 @@ func (*UtilsStruct) GetEpoch(ctx context.Context, client *ethclient.Client) (uin
 	return uint32(epoch), nil
 }
 
-func (*UtilsStruct) CalculateBlockTime(ctx context.Context, client *ethclient.Client) int64 {
-	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(ctx, client)
+func (*UtilsStruct) CalculateBlockTime(rpcParameters types.RPCParameters) int64 {
+	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(rpcParameters)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
 	latestBlockNumber := latestBlock.Number
-	lastSecondBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	lastSecondBlock, err := ClientInterface.GetBlockByNumberWithRetry(rpcParameters, big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
 	if err != nil {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}
@@ -206,8 +214,8 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
-	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(rpcParameters types.RPCParameters, currentBlockNumber *big.Int) (*big.Int, error) {
+	block, err := ClientInterface.GetBlockByNumberWithRetry(rpcParameters, currentBlockNumber)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return nil, err
@@ -215,7 +223,7 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 	currentEpoch := block.Time / core.EpochLength
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
-	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
+	previousBlock, err := ClientInterface.GetBlockByNumberWithRetry(rpcParameters, big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
 		log.Error("Err in fetching Previous block: ", err)
 		return nil, err
@@ -224,7 +232,7 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 	previousBlockAssumedTimestamp := block.Time - core.EpochLength
 	previousEpoch := previousBlockActualTimestamp / core.EpochLength
 	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previousEpoch != currentEpoch-1 {
-		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
+		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(rpcParameters, big.NewInt(int64(previousBlockNumber)))
 
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil

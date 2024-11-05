@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -14,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
@@ -22,28 +20,28 @@ import (
 GetSalt calculates the salt on the basis of previous epoch and the medians of the previous epoch.
 If the previous epoch doesn't contain any medians, then the value is fetched from the smart contract.
 */
-func (*UtilsStruct) GetSalt(ctx context.Context, client *ethclient.Client, epoch uint32) ([32]byte, error) {
+func (*UtilsStruct) GetSalt(rpcParameters types.RPCParameters, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
 	log.Debug("GetSalt: Previous epoch: ", previousEpoch)
-	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(ctx, client, previousEpoch)
+	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(rpcParameters, previousEpoch)
 	if err != nil {
 		return [32]byte{}, err
 	}
 	log.Debug("GetSalt: Number of proposed blocks: ", numProposedBlock)
-	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(ctx, client)
+	blockIndexToBeConfirmed, err := razorUtils.GetBlockIndexToBeConfirmed(rpcParameters)
 	if err != nil {
 		return [32]byte{}, err
 	}
 	log.Debug("GetSalt: Block Index to be confirmed: ", blockIndexToBeConfirmed)
 	if numProposedBlock == 0 || (numProposedBlock > 0 && blockIndexToBeConfirmed < 0) {
-		return utils.VoteManagerInterface.GetSaltFromBlockchain(client)
+		return razorUtils.GetSaltFromBlockchain(rpcParameters)
 	}
-	blockId, err := razorUtils.GetSortedProposedBlockId(ctx, client, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
+	blockId, err := razorUtils.GetSortedProposedBlockId(rpcParameters, previousEpoch, big.NewInt(int64(blockIndexToBeConfirmed)))
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting blockId: " + err.Error())
 	}
 	log.Debug("GetSalt: Block Id: ", blockId)
-	previousBlock, err := razorUtils.GetProposedBlock(ctx, client, previousEpoch, blockId)
+	previousBlock, err := razorUtils.GetProposedBlock(rpcParameters, previousEpoch, blockId)
 	if err != nil {
 		return [32]byte{}, errors.New("Error in getting previous block: " + err.Error())
 	}
@@ -56,14 +54,14 @@ func (*UtilsStruct) GetSalt(ctx context.Context, client *ethclient.Client, epoch
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Client, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
-	numActiveCollections, err := razorUtils.GetNumActiveCollections(ctx, client)
+func (*UtilsStruct) HandleCommitState(rpcParameters types.RPCParameters, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
+	numActiveCollections, err := razorUtils.GetNumActiveCollections(rpcParameters)
 	if err != nil {
 		return types.CommitData{}, err
 	}
 	log.Debug("HandleCommitState: Number of active collections: ", numActiveCollections)
 	log.Debugf("HandleCommitState: Calling GetAssignedCollections() with arguments number of active collections = %d", numActiveCollections)
-	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(ctx, client, numActiveCollections, seed)
+	assignedCollections, seqAllottedCollections, err := razorUtils.GetAssignedCollections(rpcParameters, numActiveCollections, seed)
 	if err != nil {
 		return types.CommitData{}, err
 	}
@@ -89,13 +87,13 @@ func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Cli
 
 			log.Debugf("HandleCommitState: Is the collection at iterating index %v assigned: %v ", i, assignedCollections[i])
 			if assignedCollections[i] {
-				collectionId, err := razorUtils.GetCollectionIdFromIndex(ctx, client, uint16(i))
+				collectionId, err := razorUtils.GetCollectionIdFromIndex(rpcParameters, uint16(i))
 				if err != nil {
 					log.Error("Error in getting collection ID: ", err)
 					errChan <- err
 					return
 				}
-				collectionData, err := razorUtils.GetAggregatedDataOfCollection(ctx, client, collectionId, epoch, commitParams)
+				collectionData, err := razorUtils.GetAggregatedDataOfCollection(rpcParameters, collectionId, epoch, commitParams)
 				if err != nil {
 					log.Error("Error in getting aggregated data of collection: ", err)
 					errChan <- err
@@ -146,14 +144,13 @@ func (*UtilsStruct) HandleCommitState(ctx context.Context, client *ethclient.Cli
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(ctx context.Context, client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitmentToSend [32]byte) (common.Hash, error) {
+func (*UtilsStruct) Commit(rpcParameters types.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitmentToSend [32]byte) (common.Hash, error) {
 	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(ctx, types.TransactionOptions{
-		Client:          client,
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
@@ -164,6 +161,12 @@ func (*UtilsStruct) Commit(ctx context.Context, client *ethclient.Client, config
 	})
 
 	log.Info("Commitment sent...")
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		log.Error(err)
+		return core.NilHash, err
+	}
+
 	log.Debugf("Executing Commit transaction with epoch = %d, commitmentToSend = %v", epoch, commitmentToSend)
 	txn, err := voteManagerUtils.Commit(client, txnOpts, epoch, commitmentToSend)
 	if err != nil {
@@ -174,14 +177,14 @@ func (*UtilsStruct) Commit(ctx context.Context, client *ethclient.Client, config
 	return txnHash, nil
 }
 
-func CalculateSeed(ctx context.Context, client *ethclient.Client, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
+func CalculateSeed(rpcParameters types.RPCParameters, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
 	log.Debugf("CalculateSeed: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
 	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("CalculateSeed: Getting Salt for current epoch %d...", epoch)
-	salt, err := cmdUtils.GetSalt(ctx, client, epoch)
+	salt, err := cmdUtils.GetSalt(rpcParameters, epoch)
 	if err != nil {
 		log.Error("Error in getting salt: ", err)
 		return nil, err
@@ -209,8 +212,8 @@ func CalculateCommitment(seed []byte, values []*big.Int) ([32]byte, error) {
 	return commitmentToSend, nil
 }
 
-func VerifyCommitment(ctx context.Context, client *ethclient.Client, account types.Account, commitmentFetched [32]byte) (bool, error) {
-	commitmentStruct, err := razorUtils.GetCommitment(ctx, client, account.Address)
+func VerifyCommitment(rpcParameters types.RPCParameters, account types.Account, commitmentFetched [32]byte) (bool, error) {
+	commitmentStruct, err := razorUtils.GetCommitment(rpcParameters, account.Address)
 	if err != nil {
 		log.Error("Error in getting commitments: ", err)
 		return false, err
@@ -225,7 +228,7 @@ func VerifyCommitment(ctx context.Context, client *ethclient.Client, account typ
 	return false, nil
 }
 
-func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, account types.Account, epoch uint32, rogueData types.Rogue) (types.CommitFileData, error) {
+func GetCommittedDataForEpoch(rpcParameters types.RPCParameters, account types.Account, epoch uint32, rogueData types.Rogue) (types.CommitFileData, error) {
 	// Attempt to fetch global commit data from memory if epoch matches
 	if globalCommitDataStruct.Epoch == epoch {
 		log.Debugf("Epoch in global commit data is equal to current epoch %v. Fetching commit data from memory!", epoch)
@@ -260,7 +263,7 @@ func GetCommittedDataForEpoch(ctx context.Context, client *ethclient.Client, acc
 
 	// Verify the final selected commit data
 	log.Debugf("Verifying commit data for epoch %v...", epoch)
-	isValid, err := VerifyCommitment(ctx, client, account, globalCommitDataStruct.Commitment)
+	isValid, err := VerifyCommitment(rpcParameters, account, globalCommitDataStruct.Commitment)
 	if err != nil {
 		return types.CommitFileData{}, err
 	}

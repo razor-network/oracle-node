@@ -2,19 +2,15 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"math/big"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
@@ -38,36 +34,14 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Unstake function
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteUnstake: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.SetLoggerParameters(client, address)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
+	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("Getting amount in wei...")
 	valueInWei, err := cmdUtils.AssignAmountInWei(flagSet)
 	utils.CheckError("Error in getting amountInWei: ", err)
 
-	stakerId, err := razorUtils.AssignStakerId(context.Background(), flagSet, client, address)
+	stakerId, err := razorUtils.AssignStakerId(rpcParameters, flagSet, account.Address)
 	utils.CheckError("StakerId error: ", err)
 
 	unstakeInput := types.UnstakeInput{
@@ -76,25 +50,24 @@ func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
 		Account:    account,
 	}
 
-	txnHash, err := cmdUtils.Unstake(context.Background(), config, client, unstakeInput)
+	txnHash, err := cmdUtils.Unstake(rpcParameters, config, unstakeInput)
 	utils.CheckError("Unstake Error: ", err)
 	if txnHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
+		err = razorUtils.WaitForBlockCompletion(rpcParameters, txnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for unstake: ", err)
 	}
 }
 
 //This function allows user to unstake their sRZRs in the razor network
-func (*UtilsStruct) Unstake(ctx context.Context, config types.Configurations, client *ethclient.Client, input types.UnstakeInput) (common.Hash, error) {
+func (*UtilsStruct) Unstake(rpcParameters types.RPCParameters, config types.Configurations, input types.UnstakeInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
-		Client:  client,
 		Amount:  input.ValueInWei,
 		ChainId: core.ChainId,
 		Config:  config,
 		Account: input.Account,
 	}
 	stakerId := input.StakerId
-	staker, err := razorUtils.GetStaker(ctx, client, stakerId)
+	staker, err := razorUtils.GetStaker(rpcParameters, stakerId)
 	if err != nil {
 		log.Error("Error in getting staker: ", err)
 		return core.NilHash, err
@@ -102,13 +75,13 @@ func (*UtilsStruct) Unstake(ctx context.Context, config types.Configurations, cl
 
 	log.Debugf("Unstake: Staker info: %+v", staker)
 	log.Debug("Unstake: Calling ApproveUnstake()...")
-	approveHash, err := cmdUtils.ApproveUnstake(client, staker.TokenAddress, txnArgs)
+	approveHash, err := cmdUtils.ApproveUnstake(rpcParameters, staker.TokenAddress, txnArgs)
 	if err != nil {
 		return core.NilHash, err
 	}
 
 	if approveHash != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, approveHash.Hex())
+		err = razorUtils.WaitForBlockCompletion(rpcParameters, approveHash.Hex())
 		if err != nil {
 			return core.NilHash, err
 		}
@@ -120,7 +93,7 @@ func (*UtilsStruct) Unstake(ctx context.Context, config types.Configurations, cl
 	txnArgs.MethodName = "unstake"
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 
-	unstakeLock, err := razorUtils.GetLock(ctx, txnArgs.Client, txnArgs.Account.Address, stakerId, 0)
+	unstakeLock, err := razorUtils.GetLock(rpcParameters, txnArgs.Account.Address, stakerId, 0)
 	if err != nil {
 		log.Error("Error in getting unstakeLock: ", err)
 		return core.NilHash, err
@@ -134,10 +107,15 @@ func (*UtilsStruct) Unstake(ctx context.Context, config types.Configurations, cl
 	}
 
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
-	txnOpts := razorUtils.GetTxnOpts(ctx, txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
 	log.Info("Unstaking coins")
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Debugf("Executing Unstake transaction with stakerId = %d, amount = %s", stakerId, txnArgs.Amount)
-	txn, err := stakeManagerUtils.Unstake(txnArgs.Client, txnOpts, stakerId, txnArgs.Amount)
+	txn, err := stakeManagerUtils.Unstake(client, txnOpts, stakerId, txnArgs.Amount)
 	if err != nil {
 		log.Error("Error in un-staking: ", err)
 		return core.NilHash, err
@@ -148,8 +126,13 @@ func (*UtilsStruct) Unstake(ctx context.Context, config types.Configurations, cl
 }
 
 //This function approves the unstake
-func (*UtilsStruct) ApproveUnstake(client *ethclient.Client, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
+func (*UtilsStruct) ApproveUnstake(rpcParameters types.RPCParameters, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Infof("Approving %d amount for unstake...", txnArgs.Amount)
 	txn, err := stakeManagerUtils.ApproveUnstake(client, txnOpts, stakerTokenAddress, txnArgs.Amount)
 	if err != nil {

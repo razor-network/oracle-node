@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"razor/client"
 	"razor/core"
@@ -10,7 +9,6 @@ import (
 	"razor/utils"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
@@ -406,8 +404,8 @@ func setLogLevel(config types.Configurations) {
 	}
 }
 
-func ValidateBufferPercentLimit(ctx context.Context, client *ethclient.Client, bufferPercent int32) error {
-	stateBuffer, err := razorUtils.GetStateBuffer(ctx, client)
+func ValidateBufferPercentLimit(rpcParameters types.RPCParameters, bufferPercent int32) error {
+	stateBuffer, err := razorUtils.GetStateBuffer(rpcParameters)
 	if err != nil {
 		return err
 	}

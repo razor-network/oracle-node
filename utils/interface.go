@@ -72,67 +72,74 @@ var GasInterface GasUtils
 
 type Utils interface {
 	MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int
-	GetTxnOpts(ctx context.Context, transactionData types.TransactionOptions) *bind.TransactOpts
+	GetTxnOpts(rpcParameters types.RPCParameters, transactionData types.TransactionOptions) *bind.TransactOpts
 	GetBlockManager(client *ethclient.Client) *bindings.BlockManager
 	GetOptions() bind.CallOpts
-	GetNumberOfProposedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (uint8, error)
-	GetSortedProposedBlockId(ctx context.Context, client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error)
-	FetchPreviousValue(ctx context.Context, client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error)
-	GetBlock(ctx context.Context, client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error)
-	GetMaxAltBlocks(ctx context.Context, client *ethclient.Client) (uint8, error)
-	GetMinSafeRazor(ctx context.Context, client *ethclient.Client) (*big.Int, error)
-	GetMinStakeAmount(ctx context.Context, client *ethclient.Client) (*big.Int, error)
-	GetStateBuffer(ctx context.Context, client *ethclient.Client) (uint64, error)
-	GetProposedBlock(ctx context.Context, client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error)
-	GetSortedProposedBlockIds(ctx context.Context, client *ethclient.Client, epoch uint32) ([]uint32, error)
-	GetBlockIndexToBeConfirmed(ctx context.Context, client *ethclient.Client) (int8, error)
+	GetNumberOfProposedBlocks(rpcParameters types.RPCParameters, epoch uint32) (uint8, error)
+	GetSortedProposedBlockId(rpcParameters types.RPCParameters, epoch uint32, index *big.Int) (uint32, error)
+	FetchPreviousValue(rpcParameters types.RPCParameters, epoch uint32, assetId uint16) (*big.Int, error)
+	GetBlock(rpcParameters types.RPCParameters, epoch uint32) (bindings.StructsBlock, error)
+	GetMaxAltBlocks(rpcParameters types.RPCParameters) (uint8, error)
+	GetMinSafeRazor(rpcParameters types.RPCParameters) (*big.Int, error)
+	GetMinStakeAmount(rpcParameters types.RPCParameters) (*big.Int, error)
+	GetStateBuffer(rpcParameters types.RPCParameters) (uint64, error)
+	GetProposedBlock(rpcParameters types.RPCParameters, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error)
+	GetSortedProposedBlockIds(rpcParameters types.RPCParameters, epoch uint32) ([]uint32, error)
+	GetBlockIndexToBeConfirmed(rpcParameters types.RPCParameters) (int8, error)
 	GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.BlockManager, bind.CallOpts)
 	GetStakeManager(client *ethclient.Client) *bindings.StakeManager
 	GetStakeManagerWithOpts(client *ethclient.Client) (*bindings.StakeManager, bind.CallOpts)
-	GetStaker(ctx context.Context, client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error)
-	GetStake(ctx context.Context, client *ethclient.Client, stakerId uint32) (*big.Int, error)
-	GetStakerId(ctx context.Context, client *ethclient.Client, address string) (uint32, error)
-	GetNumberOfStakers(ctx context.Context, client *ethclient.Client) (uint32, error)
-	GetLock(ctx context.Context, client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error)
-	GetWithdrawInitiationPeriod(ctx context.Context, client *ethclient.Client) (uint16, error)
-	GetMaxCommission(ctx context.Context, client *ethclient.Client) (uint8, error)
-	GetEpochLimitForUpdateCommission(ctx context.Context, client *ethclient.Client) (uint16, error)
+	GetStaker(rpcParameters types.RPCParameters, stakerId uint32) (bindings.StructsStaker, error)
+	GetStake(rpcParameters types.RPCParameters, stakerId uint32) (*big.Int, error)
+	GetStakerId(rpcParameters types.RPCParameters, address string) (uint32, error)
+	GetNumberOfStakers(rpcParameters types.RPCParameters) (uint32, error)
+	GetLock(rpcParameters types.RPCParameters, address string, stakerId uint32, lockType uint8) (types.Locks, error)
+	GetWithdrawInitiationPeriod(rpcParameters types.RPCParameters) (uint16, error)
+	GetMaxCommission(rpcParameters types.RPCParameters) (uint8, error)
+	GetEpochLimitForUpdateCommission(rpcParameters types.RPCParameters) (uint16, error)
+	StakerInfo(rpcParameters types.RPCParameters, stakerId uint32) (types.Staker, error)
+	GetMaturity(rpcParameters types.RPCParameters, age uint32) (uint16, error)
+	GetBountyLock(rpcParameters types.RPCParameters, bountyId uint32) (types.BountyLock, error)
 	GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.VoteManager, bind.CallOpts)
-	GetCommitment(ctx context.Context, client *ethclient.Client, address string) (types.Commitment, error)
-	GetVoteValue(ctx context.Context, client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
-	GetInfluenceSnapshot(ctx context.Context, client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
-	GetStakeSnapshot(ctx context.Context, client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error)
-	GetTotalInfluenceRevealed(ctx context.Context, client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error)
-	GetEpochLastCommitted(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetEpochLastRevealed(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error)
+	GetCommitment(rpcParameters types.RPCParameters, address string) (types.Commitment, error)
+	GetVoteValue(rpcParameters types.RPCParameters, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error)
+	GetInfluenceSnapshot(rpcParameters types.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error)
+	GetStakeSnapshot(rpcParameters types.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error)
+	GetTotalInfluenceRevealed(rpcParameters types.RPCParameters, epoch uint32, medianIndex uint16) (*big.Int, error)
+	GetEpochLastCommitted(rpcParameters types.RPCParameters, stakerId uint32) (uint32, error)
+	GetEpochLastRevealed(rpcParameters types.RPCParameters, stakerId uint32) (uint32, error)
 	GetVoteManager(client *ethclient.Client) *bindings.VoteManager
 	GetCollectionManager(client *ethclient.Client) *bindings.CollectionManager
 	GetCollectionManagerWithOpts(client *ethclient.Client) (*bindings.CollectionManager, bind.CallOpts)
-	GetNumCollections(ctx context.Context, client *ethclient.Client) (uint16, error)
-	GetActiveJob(ctx context.Context, client *ethclient.Client, jobId uint16) (bindings.StructsJob, error)
-	GetCollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error)
+	GetNumCollections(rpcParameters types.RPCParameters) (uint16, error)
+	GetNumJobs(rpcParameters types.RPCParameters) (uint16, error)
+	GetActiveJob(rpcParameters types.RPCParameters, jobId uint16) (bindings.StructsJob, error)
+	GetCollection(rpcParameters types.RPCParameters, collectionId uint16) (bindings.StructsCollection, error)
 	GetActiveCollection(collectionsCache *cache.CollectionsCache, collectionId uint16) (bindings.StructsCollection, error)
-	Aggregate(ctx context.Context, client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error)
+	Aggregate(rpcParameters types.RPCParameters, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error)
 	GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParams *types.CommitParams) ([]*big.Int, []uint8)
 	GetDataToCommitFromJob(job bindings.StructsJob, commitParams *types.CommitParams) (*big.Int, error)
-	GetAssignedCollections(ctx context.Context, client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
-	GetLeafIdOfACollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (uint16, error)
-	GetCollectionIdFromIndex(ctx context.Context, client *ethclient.Client, medianIndex uint16) (uint16, error)
-	GetCollectionIdFromLeafId(ctx context.Context, client *ethclient.Client, leafId uint16) (uint16, error)
-	GetNumActiveCollections(ctx context.Context, client *ethclient.Client) (uint16, error)
-	GetAggregatedDataOfCollection(ctx context.Context, client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error)
-	GetJobs(ctx context.Context, client *ethclient.Client) ([]bindings.StructsJob, error)
-	GetAllCollections(ctx context.Context, client *ethclient.Client) ([]bindings.StructsCollection, error)
-	GetActiveCollectionIds(ctx context.Context, client *ethclient.Client) ([]uint16, error)
-	HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16)
+	GetAssignedCollections(rpcParameters types.RPCParameters, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error)
+	GetLeafIdOfACollection(rpcParameters types.RPCParameters, collectionId uint16) (uint16, error)
+	GetSaltFromBlockchain(rpcParameters types.RPCParameters) ([32]byte, error)
+	GetCollectionIdFromIndex(rpcParameters types.RPCParameters, medianIndex uint16) (uint16, error)
+	GetCollectionIdFromLeafId(rpcParameters types.RPCParameters, leafId uint16) (uint16, error)
+	GetNumActiveCollections(rpcParameters types.RPCParameters) (uint16, error)
+	GetAggregatedDataOfCollection(rpcParameters types.RPCParameters, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error)
+	GetJobs(rpcParameters types.RPCParameters) ([]bindings.StructsJob, error)
+	GetAllCollections(rpcParameters types.RPCParameters) ([]bindings.StructsCollection, error)
+	GetActiveCollectionIds(rpcParameters types.RPCParameters) ([]uint16, error)
+	GetActiveStatus(rpcParameters types.RPCParameters, id uint16) (bool, error)
+	HandleOfficialJobsFromJSONFile(collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16)
 	ConnectToClient(provider string) *ethclient.Client
-	FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error)
+	FetchBalance(rpcParameters types.RPCParameters, accountAddress string) (*big.Int, error)
+	Allowance(rpcParameters types.RPCParameters, owner common.Address, spender common.Address) (*big.Int, error)
 	GetBufferedState(header *Types.Header, stateBuffer uint64, buffer int32) (int64, error)
-	WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error
-	CheckEthBalanceIsZero(ctx context.Context, client *ethclient.Client, address string)
-	AssignStakerId(ctx context.Context, flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error)
-	GetEpoch(ctx context.Context, client *ethclient.Client) (uint32, error)
-	CalculateBlockTime(ctx context.Context, client *ethclient.Client) int64
+	WaitForBlockCompletion(rpcManager types.RPCParameters, hashToRead string) error
+	CheckEthBalanceIsZero(rpcParameters types.RPCParameters, address string)
+	AssignStakerId(rpcParameters types.RPCParameters, flagSet *pflag.FlagSet, address string) (uint32, error)
+	GetEpoch(rpcParameters types.RPCParameters) (uint32, error)
+	CalculateBlockTime(rpcParameters types.RPCParameters) int64
 	IsFlagPassed(name string) bool
 	GetTokenManager(client *ethclient.Client) *bindings.RAZOR
 	GetStakedToken(client *ethclient.Client, tokenAddress common.Address) *bindings.StakedToken
@@ -142,22 +149,23 @@ type Utils interface {
 	WriteDataToJSON(fileName string, data map[string]*types.StructsJob) error
 	DeleteJobFromJSON(fileName string, jobId string) error
 	AddJobToJSON(fileName string, job *types.StructsJob) error
-	CheckTransactionReceipt(client *ethclient.Client, _txHash string) int
+	CheckTransactionReceipt(rpcManager types.RPCParameters, _txHash string) int
 	CalculateSalt(epoch uint32, medians []*big.Int) [32]byte
-	ToAssign(ctx context.Context, client *ethclient.Client) (uint16, error)
+	ToAssign(rpcParameters types.RPCParameters) (uint16, error)
 	Prng(max uint32, prngHashes []byte) *big.Int
 	GetRemainingTimeOfCurrentState(block *Types.Header, stateBuffer uint64, bufferPercent int32) (int64, error)
 	SecondsToReadableTime(input int) string
-	EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error)
-	GetEpochLastProposed(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error)
-	GetConfirmedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (types.ConfirmedBlock, error)
+	EstimateBlockNumberAtEpochBeginning(rpcParameters types.RPCParameters, currentBlockNumber *big.Int) (*big.Int, error)
+	GetEpochLastProposed(rpcParameters types.RPCParameters, stakerId uint32) (uint32, error)
+	GetConfirmedBlocks(rpcParameters types.RPCParameters, epoch uint32) (types.ConfirmedBlock, error)
+	Disputes(rpcParameters types.RPCParameters, epoch uint32, address common.Address) (types.DisputesStruct, error)
 	CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *big.Int
 	PasswordPrompt() string
 	AssignPassword(flagSet *pflag.FlagSet) string
 	PrivateKeyPrompt() string
 	GetRogueRandomValue(value int) *big.Int
 	GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAddress common.Address) (*bindings.StakedToken, bind.CallOpts)
-	GetStakerSRZRBalance(ctx context.Context, client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error)
+	GetStakerSRZRBalance(rpcParameters types.RPCParameters, staker bindings.StructsStaker) (*big.Int, error)
 	CheckPassword(account types.Account) error
 	AccountManagerForKeystore() (types.AccountManagerInterface, error)
 }
@@ -174,12 +182,13 @@ type ClientUtils interface {
 	SuggestGasPrice(client *ethclient.Client, ctx context.Context) (*big.Int, error)
 	EstimateGas(client *ethclient.Client, ctx context.Context, msg ethereum.CallMsg) (uint64, error)
 	FilterLogs(client *ethclient.Client, ctx context.Context, q ethereum.FilterQuery) ([]Types.Log, error)
-	SuggestGasPriceWithRetry(ctx context.Context, client *ethclient.Client) (*big.Int, error)
-	EstimateGasWithRetry(ctx context.Context, client *ethclient.Client, message ethereum.CallMsg) (uint64, error)
-	GetLatestBlockWithRetry(ctx context.Context, client *ethclient.Client) (*Types.Header, error)
-	FilterLogsWithRetry(ctx context.Context, client *ethclient.Client, query ethereum.FilterQuery) ([]Types.Log, error)
-	BalanceAtWithRetry(ctx context.Context, client *ethclient.Client, account common.Address) (*big.Int, error)
-	GetNonceAtWithRetry(ctx context.Context, client *ethclient.Client, accountAddress common.Address) (uint64, error)
+	SuggestGasPriceWithRetry(rpcParameters types.RPCParameters) (*big.Int, error)
+	EstimateGasWithRetry(rpcParameters types.RPCParameters, message ethereum.CallMsg) (uint64, error)
+	GetLatestBlockWithRetry(rpcParameters types.RPCParameters) (*Types.Header, error)
+	GetBlockByNumberWithRetry(rpcParameters types.RPCParameters, blockNumber *big.Int) (*Types.Header, error)
+	FilterLogsWithRetry(rpcParameters types.RPCParameters, query ethereum.FilterQuery) ([]Types.Log, error)
+	BalanceAtWithRetry(rpcParameters types.RPCParameters, account common.Address) (*big.Int, error)
+	GetNonceAtWithRetry(rpcParameters types.RPCParameters, accountAddress common.Address) (uint64, error)
 	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
 	CreateBatchCalls(contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([]rpc.BatchElem, error)
 	BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error)
@@ -197,7 +206,8 @@ type OSUtils interface {
 }
 
 type CoinUtils interface {
-	BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error)
+	BalanceOf(client *ethclient.Client, account common.Address) (*big.Int, error)
+	Allowance(client *ethclient.Client, owner common.Address, spender common.Address) (*big.Int, error)
 }
 
 type MerkleTreeInterface interface {
@@ -245,6 +255,9 @@ type StakeManagerUtils interface {
 	MaxCommission(client *ethclient.Client) (uint8, error)
 	EpochLimitForUpdateCommission(client *ethclient.Client) (uint16, error)
 	WithdrawInitiationPeriod(client *ethclient.Client) (uint16, error)
+	StakerInfo(client *ethclient.Client, stakerId uint32) (types.Staker, error)
+	GetMaturity(client *ethclient.Client, age uint32) (uint16, error)
+	GetBountyLock(client *ethclient.Client, bountyId uint32) (types.BountyLock, error)
 }
 
 type AssetManagerUtils interface {
@@ -254,6 +267,7 @@ type AssetManagerUtils interface {
 	GetJob(client *ethclient.Client, id uint16) (bindings.StructsJob, error)
 	GetCollection(client *ethclient.Client, id uint16) (bindings.StructsCollection, error)
 	GetActiveCollections(client *ethclient.Client) ([]uint16, error)
+	GetActiveStatus(client *ethclient.Client, id uint16) (bool, error)
 	Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error)
 	GetCollectionIdFromIndex(client *ethclient.Client, index uint16) (uint16, error)
 	GetCollectionIdFromLeafId(client *ethclient.Client, leafId uint16) (uint16, error)
@@ -309,9 +323,9 @@ type FileUtils interface {
 }
 
 type GasUtils interface {
-	GetGasPrice(ctx context.Context, client *ethclient.Client, config types.Configurations) *big.Int
-	GetGasLimit(ctx context.Context, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error)
-	IncreaseGasLimitValue(ctx context.Context, client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error)
+	GetGasPrice(rpcParameters types.RPCParameters, config types.Configurations) *big.Int
+	GetGasLimit(rpcParameters types.RPCParameters, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error)
+	IncreaseGasLimitValue(rpcParameters types.RPCParameters, gasLimit uint64, gasLimitMultiplier float32) (uint64, error)
 }
 
 type UtilsStruct struct{}

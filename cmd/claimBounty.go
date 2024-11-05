@@ -2,20 +2,16 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"os"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/path"
 	"razor/pkg/bindings"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -37,31 +33,8 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ClaimBounty function
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteClaimBounty: config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-	log.Debug("ExecuteClaimBounty: Address: ", address)
-
-	logger.SetLoggerParameters(client, address)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
+	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	if razorUtils.IsFlagPassed("bountyId") {
 		bountyId, err := flagSetUtils.GetUint32BountyId(flagSet)
@@ -73,23 +46,23 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 			Account:  account,
 		}
 
-		txn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
+		txn, err := cmdUtils.ClaimBounty(rpcParameters, config, redeemBountyInput)
 		utils.CheckError("ClaimBounty error: ", err)
 
 		if txn != core.NilHash {
-			err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+			err = razorUtils.WaitForBlockCompletion(rpcParameters, txn.Hex())
 			utils.CheckError("Error in WaitForBlockCompletion for claimBounty: ", err)
 		}
 	} else {
 		log.Debug("ExecuteClaimBounty: Calling HandleClaimBounty()")
-		err := cmdUtils.HandleClaimBounty(client, config, account)
+		err := cmdUtils.HandleClaimBounty(rpcParameters, config, account)
 		utils.CheckError("HandleClaimBounty error: ", err)
 	}
 
 }
 
 //This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
-func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Configurations, account types.Account) error {
+func (*UtilsStruct) HandleClaimBounty(rpcParameters types.RPCParameters, config types.Configurations, account types.Account) error {
 	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
@@ -119,12 +92,12 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 			Account:  account,
 		}
 		log.Debugf("HandleClaimBounty: Calling ClaimBounty() with arguments redeemBountyInput: %+v", redeemBountyInput)
-		claimBountyTxn, err := cmdUtils.ClaimBounty(config, client, redeemBountyInput)
+		claimBountyTxn, err := cmdUtils.ClaimBounty(rpcParameters, config, redeemBountyInput)
 		if err != nil {
 			return err
 		}
 		if claimBountyTxn != core.NilHash {
-			claimBountyErr := razorUtils.WaitForBlockCompletion(client, claimBountyTxn.Hex())
+			claimBountyErr := razorUtils.WaitForBlockCompletion(rpcParameters, claimBountyTxn.Hex())
 			if claimBountyErr == nil {
 				if len(disputeData.BountyIdQueue) > 1 {
 					//Removing the bountyId from the queue as the bounty is being claimed
@@ -145,9 +118,8 @@ func (*UtilsStruct) HandleClaimBounty(client *ethclient.Client, config types.Con
 }
 
 //This function allows the users who are bountyHunter to redeem their bounty in razor network
-func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.Client, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
+func (*UtilsStruct) ClaimBounty(rpcParameters types.RPCParameters, config types.Configurations, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
-		Client:          client,
 		Account:         redeemBountyInput.Account,
 		ChainId:         core.ChainId,
 		Config:          config,
@@ -156,15 +128,14 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		MethodName:      "redeemBounty",
 		Parameters:      []interface{}{redeemBountyInput.BountyId},
 	}
-	epoch, err := razorUtils.GetEpoch(context.Background(), txnArgs.Client)
+	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("ClaimBounty: Epoch: ", epoch)
 
-	callOpts := razorUtils.GetOptions()
-	bountyLock, err := stakeManagerUtils.GetBountyLock(txnArgs.Client, &callOpts, redeemBountyInput.BountyId)
+	bountyLock, err := razorUtils.GetBountyLock(rpcParameters, redeemBountyInput.BountyId)
 	if err != nil {
 		log.Error("Error in getting bounty lock: ", err)
 		return core.NilHash, err
@@ -191,10 +162,14 @@ func (*UtilsStruct) ClaimBounty(config types.Configurations, client *ethclient.C
 		return core.NilHash, nil
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	log.Debug("Executing RedeemBounty transaction with bountyId: ", redeemBountyInput.BountyId)
-	tx, err := stakeManagerUtils.RedeemBounty(txnArgs.Client, txnOpts, redeemBountyInput.BountyId)
+	tx, err := stakeManagerUtils.RedeemBounty(client, txnOpts, redeemBountyInput.BountyId)
 	if err != nil {
 		return core.NilHash, err
 	}

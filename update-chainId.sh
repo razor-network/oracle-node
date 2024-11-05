@@ -5,7 +5,7 @@ NETWORK=$1
 CHAINID=""
 
 if [[ "$NETWORK" == "mainnet" ]]; then
-    CHAINID="0x79f99296"
+    CHAINID="31337"
 elif [[ "$NETWORK" == "testnet" ]]; then
     CHAINID="0x561bf78b"
 else

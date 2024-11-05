@@ -9,7 +9,6 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/RPC"
 	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
@@ -111,14 +110,14 @@ func CheckIfAnyError(result []reflect.Value) error {
 	return nil
 }
 
-func InvokeFunctionWithRetryAttempts(ctx context.Context, rpcManager *RPC.RPCManager, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
+func InvokeFunctionWithRetryAttempts(rpcParameters coretypes.RPCParameters, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
 	var returnedValues []reflect.Value
 	var err error
 	var contextError bool
 	inputs := make([]reflect.Value, len(args))
 
 	// Always use the current best client for each retry
-	client, err := rpcManager.GetBestRPCClient()
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
 		log.Errorf("Failed to get current best client: %v", err)
 		return returnedValues, err
@@ -134,11 +133,11 @@ func InvokeFunctionWithRetryAttempts(ctx context.Context, rpcManager *RPC.RPCMan
 		func() error {
 			// Check if the context has been cancelled or timed out
 			select {
-			case <-ctx.Done():
+			case <-rpcParameters.Ctx.Done():
 				// If context is done, return the context error timeout
 				log.Debugf("Context timed out for method: %s", methodName)
 				contextError = true
-				return retry.Unrecoverable(ctx.Err())
+				return retry.Unrecoverable(rpcParameters.Ctx.Err())
 			default:
 				// Proceed with the RPC call
 				returnedValues = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
@@ -164,7 +163,7 @@ func InvokeFunctionWithRetryAttempts(ctx context.Context, rpcManager *RPC.RPCMan
 			log.Info("Attempting to switch to a new best RPC endpoint...")
 
 			// Attempt to switch to the next best client
-			switchErr := rpcManager.SwitchToNextBestRPCClient()
+			switchErr := rpcParameters.RPCManager.SwitchToNextBestRPCClient()
 			if switchErr != nil {
 				log.Errorf("Failed to switch to the next best client: %v", switchErr)
 				return returnedValues, switchErr
@@ -403,6 +402,22 @@ func (b BlockManagerStruct) GetConfirmedBlocks(client *ethclient.Client, epoch u
 	}), nil
 }
 
+func (b BlockManagerStruct) Disputes(client *ethclient.Client, epoch uint32, address common.Address) (coretypes.DisputesStruct, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "Disputes", &opts, epoch, address)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.DisputesStruct{}, returnedError
+	}
+	disputesMapping := returnedValues[0].Interface().(struct {
+		LeafId           uint16
+		LastVisitedValue *big.Int
+		AccWeight        *big.Int
+		Median           *big.Int
+	})
+	return disputesMapping, nil
+}
+
 func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(stakeManager, "GetStakerId", &opts, address)
@@ -477,6 +492,55 @@ func (s StakeManagerStruct) GetStaker(client *ethclient.Client, stakerId uint32)
 	return returnedValues[0].Interface().(bindings.StructsStaker), nil
 }
 
+func (s StakeManagerStruct) StakerInfo(client *ethclient.Client, stakerId uint32) (coretypes.Staker, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Stakers", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.Staker{}, returnedError
+	}
+	staker := returnedValues[0].Interface().(struct {
+		AcceptDelegation                bool
+		IsSlashed                       bool
+		Commission                      uint8
+		Id                              uint32
+		Age                             uint32
+		Address                         common.Address
+		TokenAddress                    common.Address
+		EpochFirstStakedOrLastPenalized uint32
+		EpochCommissionLastUpdated      uint32
+		Stake                           *big.Int
+		StakerReward                    *big.Int
+	})
+	return staker, nil
+}
+
+func (s StakeManagerStruct) GetMaturity(client *ethclient.Client, age uint32) (uint16, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	index := age / 10000
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Maturities", opts, big.NewInt(int64(index)))
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
+}
+
+func (s StakeManagerStruct) GetBountyLock(client *ethclient.Client, bountyId uint32) (coretypes.BountyLock, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "BountyLocks", &opts, bountyId)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.BountyLock{}, returnedError
+	}
+	bountyLock := returnedValues[0].Interface().(struct {
+		RedeemAfter  uint32
+		BountyHunter common.Address
+		Amount       *big.Int
+	})
+	return bountyLock, nil
+}
+
 func (a AssetManagerStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetNumCollections", &opts)
@@ -505,6 +569,16 @@ func (a AssetManagerStruct) GetActiveCollections(client *ethclient.Client) ([]ui
 		return nil, returnedError
 	}
 	return returnedValues[0].Interface().([]uint16), nil
+}
+
+func (a AssetManagerStruct) GetActiveStatus(client *ethclient.Client, id uint16) (bool, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetCollectionStatus", &opts, id)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return false, returnedError
+	}
+	return returnedValues[0].Interface().(bool), nil
 }
 
 func (a AssetManagerStruct) Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
@@ -738,8 +812,22 @@ func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, 
 	return returnedValues[0].Interface().([]types.Log), nil
 }
 
-func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	returnedValues := InvokeFunctionWithTimeout(erc20Contract, "BalanceOf", opts, account)
+func (c CoinStruct) BalanceOf(client *ethclient.Client, account common.Address) (*big.Int, error) {
+	tokenManager := UtilsInterface.GetTokenManager(client)
+	opts := UtilsInterface.GetOptions()
+	returnedValues := InvokeFunctionWithTimeout(tokenManager, "BalanceOf", &opts, account)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
+}
+
+//This function is used to check the allowance of staker
+func (c CoinStruct) Allowance(client *ethclient.Client, owner common.Address, spender common.Address) (*big.Int, error) {
+	tokenManager := UtilsInterface.GetTokenManager(client)
+	opts := UtilsInterface.GetOptions()
+	returnedValues := InvokeFunctionWithTimeout(tokenManager, "Allowance", &opts, owner, spender)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil, returnedError
