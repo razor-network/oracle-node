@@ -190,9 +190,9 @@ type ClientUtils interface {
 	FilterLogsWithRetry(rpcParameters RPC.RPCParameters, query ethereum.FilterQuery) ([]Types.Log, error)
 	BalanceAtWithRetry(rpcParameters RPC.RPCParameters, account common.Address) (*big.Int, error)
 	GetNonceAtWithRetry(rpcParameters RPC.RPCParameters, accountAddress common.Address) (uint64, error)
-	PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error
+	PerformBatchCall(rpcParameters RPC.RPCParameters, calls []rpc.BatchElem) error
 	CreateBatchCalls(contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([]rpc.BatchElem, error)
-	BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error)
+	BatchCall(rpcParameters RPC.RPCParameters, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error)
 }
 
 type TimeUtils interface {

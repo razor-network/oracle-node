@@ -7,22 +7,22 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"razor/RPC"
 	"razor/core"
 )
 
 //Each batch call may require multiple arguments therefore defining args as [][]interface{}
 
 // BatchCall performs a batch call to the Ethereum client, using the provided contract ABI, address, method name, and arguments.
-func (c ClientStruct) BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error) {
+func (c ClientStruct) BatchCall(rpcParameters RPC.RPCParameters, contractABI *abi.ABI, contractAddress, methodName string, args [][]interface{}) ([][]interface{}, error) {
 	calls, err := ClientInterface.CreateBatchCalls(contractABI, contractAddress, methodName, args)
 	if err != nil {
 		log.Errorf("Error in creating batch calls: %v", err)
 		return nil, err
 	}
 
-	err = performBatchCallWithRetry(client, calls)
+	err = performBatchCallWithRetry(rpcParameters, calls)
 	if err != nil {
 		log.Errorf("Error in performing batch call: %v", err)
 		return nil, err
@@ -63,8 +63,13 @@ func (c ClientStruct) CreateBatchCalls(contractABI *abi.ABI, contractAddress, me
 	return calls, nil
 }
 
-func (c ClientStruct) PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error {
-	err := client.Client().BatchCallContext(context.Background(), calls)
+func (c ClientStruct) PerformBatchCall(rpcParameters RPC.RPCParameters, calls []rpc.BatchElem) error {
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return err
+	}
+
+	err = client.Client().BatchCallContext(context.Background(), calls)
 	if err != nil {
 		return err
 	}
@@ -72,9 +77,9 @@ func (c ClientStruct) PerformBatchCall(client *ethclient.Client, calls []rpc.Bat
 }
 
 // performBatchCallWithRetry performs the batch call to the Ethereum client with retry logic.
-func performBatchCallWithRetry(client *ethclient.Client, calls []rpc.BatchElem) error {
+func performBatchCallWithRetry(rpcParameters RPC.RPCParameters, calls []rpc.BatchElem) error {
 	err := retry.Do(func() error {
-		err := ClientInterface.PerformBatchCall(client, calls)
+		err := ClientInterface.PerformBatchCall(rpcParameters, calls)
 		if err != nil {
 			log.Errorf("Error in performing batch call, retrying: %v", err)
 			return err

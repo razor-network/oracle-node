@@ -17,7 +17,6 @@ import (
 	"time"
 
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
@@ -207,12 +206,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(rpcParameters RPC.RPCParameters, epoch 
 	var biggestStakerId uint32
 	biggestStake := big.NewInt(0)
 
-	client, err := rpcParameters.RPCManager.GetBestRPCClient()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	stakeSnapshotArray, err := cmdUtils.BatchGetStakeSnapshotCalls(client, epoch, numberOfStakers)
+	stakeSnapshotArray, err := cmdUtils.BatchGetStakeSnapshotCalls(rpcParameters, epoch, numberOfStakers)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -486,7 +480,7 @@ func (*UtilsStruct) GetSmallestStakeAndId(rpcParameters RPC.RPCParameters, epoch
 	return smallestStake, smallestStakerId, nil
 }
 
-func (*UtilsStruct) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+func (*UtilsStruct) BatchGetStakeSnapshotCalls(rpcParameters RPC.RPCParameters, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
 	voteManagerABI, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerMetaData.ABI))
 	if err != nil {
 		log.Errorf("Error in parsed voteManager ABI: %v", err)
@@ -498,7 +492,7 @@ func (*UtilsStruct) BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch u
 		args[i-1] = []interface{}{epoch, i}
 	}
 
-	results, err := clientUtils.BatchCall(client, &voteManagerABI, core.VoteManagerAddress, core.GetStakeSnapshotMethod, args)
+	results, err := clientUtils.BatchCall(rpcParameters, &voteManagerABI, core.VoteManagerAddress, core.GetStakeSnapshotMethod, args)
 	if err != nil {
 		log.Error("Error in performing getStakeSnapshot batch calls: ", err)
 		return nil, err

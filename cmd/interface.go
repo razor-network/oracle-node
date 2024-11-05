@@ -242,7 +242,7 @@ type UtilsCmdInterface interface {
 	StoreBountyId(rpcParameters RPC.RPCParameters, account types.Account) error
 	CheckToDoResetDispute(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, epoch uint32, sortedValues []*big.Int)
 	InitJobAndCollectionCache(rpcParameters RPC.RPCParameters) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error)
-	BatchGetStakeSnapshotCalls(client *ethclient.Client, epoch uint32, numberOfStakers uint32) ([]*big.Int, error)
+	BatchGetStakeSnapshotCalls(rpcParameters RPC.RPCParameters, epoch uint32, numberOfStakers uint32) ([]*big.Int, error)
 }
 
 type TransactionInterface interface {
