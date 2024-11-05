@@ -4,6 +4,8 @@ package mocks
 
 import (
 	big "math/big"
+	RPC "razor/RPC"
+
 	bindings "razor/pkg/bindings"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -11,8 +13,6 @@ import (
 	cache "razor/cache"
 
 	common "github.com/ethereum/go-ethereum/common"
-
-	context "context"
 
 	coretypes "github.com/ethereum/go-ethereum/core/types"
 
@@ -70,25 +70,51 @@ func (_m *Utils) AddJobToJSON(fileName string, job *types.StructsJob) error {
 	return r0
 }
 
-// Aggregate provides a mock function with given fields: ctx, client, previousEpoch, collection, commitParams
-func (_m *Utils) Aggregate(ctx context.Context, client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
-	ret := _m.Called(ctx, client, previousEpoch, collection, commitParams)
+// Aggregate provides a mock function with given fields: rpcParameters, previousEpoch, collection, commitParams
+func (_m *Utils) Aggregate(rpcParameters RPC.RPCParameters, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, previousEpoch, collection, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, bindings.StructsCollection, *types.CommitParams) (*big.Int, error)); ok {
-		return rf(ctx, client, previousEpoch, collection, commitParams)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, bindings.StructsCollection, *types.CommitParams) (*big.Int, error)); ok {
+		return rf(rpcParameters, previousEpoch, collection, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, bindings.StructsCollection, *types.CommitParams) *big.Int); ok {
-		r0 = rf(ctx, client, previousEpoch, collection, commitParams)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, bindings.StructsCollection, *types.CommitParams) *big.Int); ok {
+		r0 = rf(rpcParameters, previousEpoch, collection, commitParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, bindings.StructsCollection, *types.CommitParams) error); ok {
-		r1 = rf(ctx, client, previousEpoch, collection, commitParams)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, bindings.StructsCollection, *types.CommitParams) error); ok {
+		r1 = rf(rpcParameters, previousEpoch, collection, commitParams)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Allowance provides a mock function with given fields: rpcParameters, owner, spender
+func (_m *Utils) Allowance(rpcParameters RPC.RPCParameters, owner common.Address, spender common.Address) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, owner, spender)
+
+	var r0 *big.Int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, common.Address, common.Address) (*big.Int, error)); ok {
+		return rf(rpcParameters, owner, spender)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, common.Address, common.Address) *big.Int); ok {
+		r0 = rf(rpcParameters, owner, spender)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, common.Address, common.Address) error); ok {
+		r1 = rf(rpcParameters, owner, spender)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -110,23 +136,23 @@ func (_m *Utils) AssignPassword(flagSet *pflag.FlagSet) string {
 	return r0
 }
 
-// AssignStakerId provides a mock function with given fields: ctx, flagSet, client, address
-func (_m *Utils) AssignStakerId(ctx context.Context, flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
-	ret := _m.Called(ctx, flagSet, client, address)
+// AssignStakerId provides a mock function with given fields: rpcParameters, flagSet, address
+func (_m *Utils) AssignStakerId(rpcParameters RPC.RPCParameters, flagSet *pflag.FlagSet, address string) (uint32, error) {
+	ret := _m.Called(rpcParameters, flagSet, address)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *pflag.FlagSet, *ethclient.Client, string) (uint32, error)); ok {
-		return rf(ctx, flagSet, client, address)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *pflag.FlagSet, string) (uint32, error)); ok {
+		return rf(rpcParameters, flagSet, address)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *pflag.FlagSet, *ethclient.Client, string) uint32); ok {
-		r0 = rf(ctx, flagSet, client, address)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *pflag.FlagSet, string) uint32); ok {
+		r0 = rf(rpcParameters, flagSet, address)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *pflag.FlagSet, *ethclient.Client, string) error); ok {
-		r1 = rf(ctx, flagSet, client, address)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, *pflag.FlagSet, string) error); ok {
+		r1 = rf(rpcParameters, flagSet, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -134,13 +160,13 @@ func (_m *Utils) AssignStakerId(ctx context.Context, flagSet *pflag.FlagSet, cli
 	return r0, r1
 }
 
-// CalculateBlockTime provides a mock function with given fields: ctx, client
-func (_m *Utils) CalculateBlockTime(ctx context.Context, client *ethclient.Client) int64 {
-	ret := _m.Called(ctx, client)
+// CalculateBlockTime provides a mock function with given fields: rpcParameters
+func (_m *Utils) CalculateBlockTime(rpcParameters RPC.RPCParameters) int64 {
+	ret := _m.Called(rpcParameters)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) int64); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) int64); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
@@ -180,9 +206,9 @@ func (_m *Utils) CheckAmountAndBalance(amountInWei *big.Int, balance *big.Int) *
 	return r0
 }
 
-// CheckEthBalanceIsZero provides a mock function with given fields: ctx, client, address
-func (_m *Utils) CheckEthBalanceIsZero(ctx context.Context, client *ethclient.Client, address string) {
-	_m.Called(ctx, client, address)
+// CheckEthBalanceIsZero provides a mock function with given fields: rpcParameters, address
+func (_m *Utils) CheckEthBalanceIsZero(rpcParameters RPC.RPCParameters, address string) {
+	_m.Called(rpcParameters, address)
 }
 
 // CheckPassword provides a mock function with given fields: account
@@ -199,13 +225,13 @@ func (_m *Utils) CheckPassword(account types.Account) error {
 	return r0
 }
 
-// CheckTransactionReceipt provides a mock function with given fields: client, _txHash
-func (_m *Utils) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
-	ret := _m.Called(client, _txHash)
+// CheckTransactionReceipt provides a mock function with given fields: rpcManager, _txHash
+func (_m *Utils) CheckTransactionReceipt(rpcManager RPC.RPCParameters, _txHash string) int {
+	ret := _m.Called(rpcManager, _txHash)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) int); ok {
-		r0 = rf(client, _txHash)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) int); ok {
+		r0 = rf(rpcManager, _txHash)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -243,25 +269,23 @@ func (_m *Utils) DeleteJobFromJSON(fileName string, jobId string) error {
 	return r0
 }
 
-// EstimateBlockNumberAtEpochBeginning provides a mock function with given fields: client, currentBlockNumber
-func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
-	ret := _m.Called(client, currentBlockNumber)
+// Disputes provides a mock function with given fields: rpcParameters, epoch, address
+func (_m *Utils) Disputes(rpcParameters RPC.RPCParameters, epoch uint32, address common.Address) (types.DisputesStruct, error) {
+	ret := _m.Called(rpcParameters, epoch, address)
 
-	var r0 *big.Int
+	var r0 types.DisputesStruct
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int) (*big.Int, error)); ok {
-		return rf(client, currentBlockNumber)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, common.Address) (types.DisputesStruct, error)); ok {
+		return rf(rpcParameters, epoch, address)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *big.Int) *big.Int); ok {
-		r0 = rf(client, currentBlockNumber)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, common.Address) types.DisputesStruct); ok {
+		r0 = rf(rpcParameters, epoch, address)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*big.Int)
-		}
+		r0 = ret.Get(0).(types.DisputesStruct)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *big.Int) error); ok {
-		r1 = rf(client, currentBlockNumber)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, common.Address) error); ok {
+		r1 = rf(rpcParameters, epoch, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -269,25 +293,25 @@ func (_m *Utils) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, c
 	return r0, r1
 }
 
-// FetchBalance provides a mock function with given fields: client, accountAddress
-func (_m *Utils) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	ret := _m.Called(client, accountAddress)
+// EstimateBlockNumberAtEpochBeginning provides a mock function with given fields: rpcParameters, currentBlockNumber
+func (_m *Utils) EstimateBlockNumberAtEpochBeginning(rpcParameters RPC.RPCParameters, currentBlockNumber *big.Int) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, currentBlockNumber)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) (*big.Int, error)); ok {
-		return rf(client, accountAddress)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *big.Int) (*big.Int, error)); ok {
+		return rf(rpcParameters, currentBlockNumber)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) *big.Int); ok {
-		r0 = rf(client, accountAddress)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *big.Int) *big.Int); ok {
+		r0 = rf(rpcParameters, currentBlockNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, string) error); ok {
-		r1 = rf(client, accountAddress)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, *big.Int) error); ok {
+		r1 = rf(rpcParameters, currentBlockNumber)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -295,25 +319,51 @@ func (_m *Utils) FetchBalance(client *ethclient.Client, accountAddress string) (
 	return r0, r1
 }
 
-// FetchPreviousValue provides a mock function with given fields: ctx, client, epoch, assetId
-func (_m *Utils) FetchPreviousValue(ctx context.Context, client *ethclient.Client, epoch uint32, assetId uint16) (*big.Int, error) {
-	ret := _m.Called(ctx, client, epoch, assetId)
+// FetchBalance provides a mock function with given fields: rpcParameters, accountAddress
+func (_m *Utils) FetchBalance(rpcParameters RPC.RPCParameters, accountAddress string) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, accountAddress)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint16) (*big.Int, error)); ok {
-		return rf(ctx, client, epoch, assetId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) (*big.Int, error)); ok {
+		return rf(rpcParameters, accountAddress)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint16) *big.Int); ok {
-		r0 = rf(ctx, client, epoch, assetId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) *big.Int); ok {
+		r0 = rf(rpcParameters, accountAddress)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, uint16) error); ok {
-		r1 = rf(ctx, client, epoch, assetId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, string) error); ok {
+		r1 = rf(rpcParameters, accountAddress)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FetchPreviousValue provides a mock function with given fields: rpcParameters, epoch, assetId
+func (_m *Utils) FetchPreviousValue(rpcParameters RPC.RPCParameters, epoch uint32, assetId uint16) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, epoch, assetId)
+
+	var r0 *big.Int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint16) (*big.Int, error)); ok {
+		return rf(rpcParameters, epoch, assetId)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint16) *big.Int); ok {
+		r0 = rf(rpcParameters, epoch, assetId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*big.Int)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, uint16) error); ok {
+		r1 = rf(rpcParameters, epoch, assetId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -345,25 +395,25 @@ func (_m *Utils) GetActiveCollection(collectionsCache *cache.CollectionsCache, c
 	return r0, r1
 }
 
-// GetActiveCollectionIds provides a mock function with given fields: ctx, client
-func (_m *Utils) GetActiveCollectionIds(ctx context.Context, client *ethclient.Client) ([]uint16, error) {
-	ret := _m.Called(ctx, client)
+// GetActiveCollectionIds provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetActiveCollectionIds(rpcParameters RPC.RPCParameters) ([]uint16, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 []uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) ([]uint16, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) ([]uint16, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) []uint16); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) []uint16); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]uint16)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -371,23 +421,23 @@ func (_m *Utils) GetActiveCollectionIds(ctx context.Context, client *ethclient.C
 	return r0, r1
 }
 
-// GetActiveJob provides a mock function with given fields: ctx, client, jobId
-func (_m *Utils) GetActiveJob(ctx context.Context, client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
-	ret := _m.Called(ctx, client, jobId)
+// GetActiveJob provides a mock function with given fields: rpcParameters, jobId
+func (_m *Utils) GetActiveJob(rpcParameters RPC.RPCParameters, jobId uint16) (bindings.StructsJob, error) {
+	ret := _m.Called(rpcParameters, jobId)
 
 	var r0 bindings.StructsJob
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) (bindings.StructsJob, error)); ok {
-		return rf(ctx, client, jobId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) (bindings.StructsJob, error)); ok {
+		return rf(rpcParameters, jobId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) bindings.StructsJob); ok {
-		r0 = rf(ctx, client, jobId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) bindings.StructsJob); ok {
+		r0 = rf(rpcParameters, jobId)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsJob)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16) error); ok {
-		r1 = rf(ctx, client, jobId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16) error); ok {
+		r1 = rf(rpcParameters, jobId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -395,25 +445,49 @@ func (_m *Utils) GetActiveJob(ctx context.Context, client *ethclient.Client, job
 	return r0, r1
 }
 
-// GetAggregatedDataOfCollection provides a mock function with given fields: ctx, client, collectionId, epoch, commitParams
-func (_m *Utils) GetAggregatedDataOfCollection(ctx context.Context, client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
-	ret := _m.Called(ctx, client, collectionId, epoch, commitParams)
+// GetActiveStatus provides a mock function with given fields: rpcParameters, id
+func (_m *Utils) GetActiveStatus(rpcParameters RPC.RPCParameters, id uint16) (bool, error) {
+	ret := _m.Called(rpcParameters, id)
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) (bool, error)); ok {
+		return rf(rpcParameters, id)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) bool); ok {
+		r0 = rf(rpcParameters, id)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16) error); ok {
+		r1 = rf(rpcParameters, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAggregatedDataOfCollection provides a mock function with given fields: rpcParameters, collectionId, epoch, commitParams
+func (_m *Utils) GetAggregatedDataOfCollection(rpcParameters RPC.RPCParameters, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, collectionId, epoch, commitParams)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16, uint32, *types.CommitParams) (*big.Int, error)); ok {
-		return rf(ctx, client, collectionId, epoch, commitParams)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16, uint32, *types.CommitParams) (*big.Int, error)); ok {
+		return rf(rpcParameters, collectionId, epoch, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16, uint32, *types.CommitParams) *big.Int); ok {
-		r0 = rf(ctx, client, collectionId, epoch, commitParams)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16, uint32, *types.CommitParams) *big.Int); ok {
+		r0 = rf(rpcParameters, collectionId, epoch, commitParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16, uint32, *types.CommitParams) error); ok {
-		r1 = rf(ctx, client, collectionId, epoch, commitParams)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16, uint32, *types.CommitParams) error); ok {
+		r1 = rf(rpcParameters, collectionId, epoch, commitParams)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -421,25 +495,25 @@ func (_m *Utils) GetAggregatedDataOfCollection(ctx context.Context, client *ethc
 	return r0, r1
 }
 
-// GetAllCollections provides a mock function with given fields: ctx, client
-func (_m *Utils) GetAllCollections(ctx context.Context, client *ethclient.Client) ([]bindings.StructsCollection, error) {
-	ret := _m.Called(ctx, client)
+// GetAllCollections provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetAllCollections(rpcParameters RPC.RPCParameters) ([]bindings.StructsCollection, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 []bindings.StructsCollection
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) ([]bindings.StructsCollection, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) ([]bindings.StructsCollection, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) []bindings.StructsCollection); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) []bindings.StructsCollection); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]bindings.StructsCollection)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -447,34 +521,34 @@ func (_m *Utils) GetAllCollections(ctx context.Context, client *ethclient.Client
 	return r0, r1
 }
 
-// GetAssignedCollections provides a mock function with given fields: ctx, client, numActiveCollections, seed
-func (_m *Utils) GetAssignedCollections(ctx context.Context, client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
-	ret := _m.Called(ctx, client, numActiveCollections, seed)
+// GetAssignedCollections provides a mock function with given fields: rpcParameters, numActiveCollections, seed
+func (_m *Utils) GetAssignedCollections(rpcParameters RPC.RPCParameters, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
+	ret := _m.Called(rpcParameters, numActiveCollections, seed)
 
 	var r0 map[int]bool
 	var r1 []*big.Int
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16, []byte) (map[int]bool, []*big.Int, error)); ok {
-		return rf(ctx, client, numActiveCollections, seed)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16, []byte) (map[int]bool, []*big.Int, error)); ok {
+		return rf(rpcParameters, numActiveCollections, seed)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16, []byte) map[int]bool); ok {
-		r0 = rf(ctx, client, numActiveCollections, seed)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16, []byte) map[int]bool); ok {
+		r0 = rf(rpcParameters, numActiveCollections, seed)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[int]bool)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16, []byte) []*big.Int); ok {
-		r1 = rf(ctx, client, numActiveCollections, seed)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16, []byte) []*big.Int); ok {
+		r1 = rf(rpcParameters, numActiveCollections, seed)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).([]*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, *ethclient.Client, uint16, []byte) error); ok {
-		r2 = rf(ctx, client, numActiveCollections, seed)
+	if rf, ok := ret.Get(2).(func(RPC.RPCParameters, uint16, []byte) error); ok {
+		r2 = rf(rpcParameters, numActiveCollections, seed)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -482,23 +556,23 @@ func (_m *Utils) GetAssignedCollections(ctx context.Context, client *ethclient.C
 	return r0, r1, r2
 }
 
-// GetBlock provides a mock function with given fields: ctx, client, epoch
-func (_m *Utils) GetBlock(ctx context.Context, client *ethclient.Client, epoch uint32) (bindings.StructsBlock, error) {
-	ret := _m.Called(ctx, client, epoch)
+// GetBlock provides a mock function with given fields: rpcParameters, epoch
+func (_m *Utils) GetBlock(rpcParameters RPC.RPCParameters, epoch uint32) (bindings.StructsBlock, error) {
+	ret := _m.Called(rpcParameters, epoch)
 
 	var r0 bindings.StructsBlock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (bindings.StructsBlock, error)); ok {
-		return rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (bindings.StructsBlock, error)); ok {
+		return rf(rpcParameters, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) bindings.StructsBlock); ok {
-		r0 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) bindings.StructsBlock); ok {
+		r0 = rf(rpcParameters, epoch)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsBlock)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -506,23 +580,23 @@ func (_m *Utils) GetBlock(ctx context.Context, client *ethclient.Client, epoch u
 	return r0, r1
 }
 
-// GetBlockIndexToBeConfirmed provides a mock function with given fields: ctx, client
-func (_m *Utils) GetBlockIndexToBeConfirmed(ctx context.Context, client *ethclient.Client) (int8, error) {
-	ret := _m.Called(ctx, client)
+// GetBlockIndexToBeConfirmed provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetBlockIndexToBeConfirmed(rpcParameters RPC.RPCParameters) (int8, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 int8
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (int8, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (int8, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) int8); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) int8); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(int8)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -572,6 +646,30 @@ func (_m *Utils) GetBlockManagerWithOpts(client *ethclient.Client) (*bindings.Bl
 	return r0, r1
 }
 
+// GetBountyLock provides a mock function with given fields: rpcParameters, bountyId
+func (_m *Utils) GetBountyLock(rpcParameters RPC.RPCParameters, bountyId uint32) (types.BountyLock, error) {
+	ret := _m.Called(rpcParameters, bountyId)
+
+	var r0 types.BountyLock
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (types.BountyLock, error)); ok {
+		return rf(rpcParameters, bountyId)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) types.BountyLock); ok {
+		r0 = rf(rpcParameters, bountyId)
+	} else {
+		r0 = ret.Get(0).(types.BountyLock)
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, bountyId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetBufferedState provides a mock function with given fields: header, stateBuffer, buffer
 func (_m *Utils) GetBufferedState(header *coretypes.Header, stateBuffer uint64, buffer int32) (int64, error) {
 	ret := _m.Called(header, stateBuffer, buffer)
@@ -596,23 +694,23 @@ func (_m *Utils) GetBufferedState(header *coretypes.Header, stateBuffer uint64, 
 	return r0, r1
 }
 
-// GetCollection provides a mock function with given fields: ctx, client, collectionId
-func (_m *Utils) GetCollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	ret := _m.Called(ctx, client, collectionId)
+// GetCollection provides a mock function with given fields: rpcParameters, collectionId
+func (_m *Utils) GetCollection(rpcParameters RPC.RPCParameters, collectionId uint16) (bindings.StructsCollection, error) {
+	ret := _m.Called(rpcParameters, collectionId)
 
 	var r0 bindings.StructsCollection
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) (bindings.StructsCollection, error)); ok {
-		return rf(ctx, client, collectionId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) (bindings.StructsCollection, error)); ok {
+		return rf(rpcParameters, collectionId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) bindings.StructsCollection); ok {
-		r0 = rf(ctx, client, collectionId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) bindings.StructsCollection); ok {
+		r0 = rf(rpcParameters, collectionId)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsCollection)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16) error); ok {
-		r1 = rf(ctx, client, collectionId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16) error); ok {
+		r1 = rf(rpcParameters, collectionId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -620,23 +718,23 @@ func (_m *Utils) GetCollection(ctx context.Context, client *ethclient.Client, co
 	return r0, r1
 }
 
-// GetCollectionIdFromIndex provides a mock function with given fields: ctx, client, medianIndex
-func (_m *Utils) GetCollectionIdFromIndex(ctx context.Context, client *ethclient.Client, medianIndex uint16) (uint16, error) {
-	ret := _m.Called(ctx, client, medianIndex)
+// GetCollectionIdFromIndex provides a mock function with given fields: rpcParameters, medianIndex
+func (_m *Utils) GetCollectionIdFromIndex(rpcParameters RPC.RPCParameters, medianIndex uint16) (uint16, error) {
+	ret := _m.Called(rpcParameters, medianIndex)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) (uint16, error)); ok {
-		return rf(ctx, client, medianIndex)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) (uint16, error)); ok {
+		return rf(rpcParameters, medianIndex)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) uint16); ok {
-		r0 = rf(ctx, client, medianIndex)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) uint16); ok {
+		r0 = rf(rpcParameters, medianIndex)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16) error); ok {
-		r1 = rf(ctx, client, medianIndex)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16) error); ok {
+		r1 = rf(rpcParameters, medianIndex)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -644,23 +742,23 @@ func (_m *Utils) GetCollectionIdFromIndex(ctx context.Context, client *ethclient
 	return r0, r1
 }
 
-// GetCollectionIdFromLeafId provides a mock function with given fields: ctx, client, leafId
-func (_m *Utils) GetCollectionIdFromLeafId(ctx context.Context, client *ethclient.Client, leafId uint16) (uint16, error) {
-	ret := _m.Called(ctx, client, leafId)
+// GetCollectionIdFromLeafId provides a mock function with given fields: rpcParameters, leafId
+func (_m *Utils) GetCollectionIdFromLeafId(rpcParameters RPC.RPCParameters, leafId uint16) (uint16, error) {
+	ret := _m.Called(rpcParameters, leafId)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) (uint16, error)); ok {
-		return rf(ctx, client, leafId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) (uint16, error)); ok {
+		return rf(rpcParameters, leafId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) uint16); ok {
-		r0 = rf(ctx, client, leafId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) uint16); ok {
+		r0 = rf(rpcParameters, leafId)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16) error); ok {
-		r1 = rf(ctx, client, leafId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16) error); ok {
+		r1 = rf(rpcParameters, leafId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -710,23 +808,23 @@ func (_m *Utils) GetCollectionManagerWithOpts(client *ethclient.Client) (*bindin
 	return r0, r1
 }
 
-// GetCommitment provides a mock function with given fields: ctx, client, address
-func (_m *Utils) GetCommitment(ctx context.Context, client *ethclient.Client, address string) (types.Commitment, error) {
-	ret := _m.Called(ctx, client, address)
+// GetCommitment provides a mock function with given fields: rpcParameters, address
+func (_m *Utils) GetCommitment(rpcParameters RPC.RPCParameters, address string) (types.Commitment, error) {
+	ret := _m.Called(rpcParameters, address)
 
 	var r0 types.Commitment
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, string) (types.Commitment, error)); ok {
-		return rf(ctx, client, address)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) (types.Commitment, error)); ok {
+		return rf(rpcParameters, address)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, string) types.Commitment); ok {
-		r0 = rf(ctx, client, address)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) types.Commitment); ok {
+		r0 = rf(rpcParameters, address)
 	} else {
 		r0 = ret.Get(0).(types.Commitment)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, string) error); ok {
-		r1 = rf(ctx, client, address)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, string) error); ok {
+		r1 = rf(rpcParameters, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -734,23 +832,23 @@ func (_m *Utils) GetCommitment(ctx context.Context, client *ethclient.Client, ad
 	return r0, r1
 }
 
-// GetConfirmedBlocks provides a mock function with given fields: ctx, client, epoch
-func (_m *Utils) GetConfirmedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (types.ConfirmedBlock, error) {
-	ret := _m.Called(ctx, client, epoch)
+// GetConfirmedBlocks provides a mock function with given fields: rpcParameters, epoch
+func (_m *Utils) GetConfirmedBlocks(rpcParameters RPC.RPCParameters, epoch uint32) (types.ConfirmedBlock, error) {
+	ret := _m.Called(rpcParameters, epoch)
 
 	var r0 types.ConfirmedBlock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (types.ConfirmedBlock, error)); ok {
-		return rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (types.ConfirmedBlock, error)); ok {
+		return rf(rpcParameters, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) types.ConfirmedBlock); ok {
-		r0 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) types.ConfirmedBlock); ok {
+		r0 = rf(rpcParameters, epoch)
 	} else {
 		r0 = ret.Get(0).(types.ConfirmedBlock)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -812,23 +910,23 @@ func (_m *Utils) GetDataToCommitFromJobs(jobs []bindings.StructsJob, commitParam
 	return r0, r1
 }
 
-// GetEpoch provides a mock function with given fields: ctx, client
-func (_m *Utils) GetEpoch(ctx context.Context, client *ethclient.Client) (uint32, error) {
-	ret := _m.Called(ctx, client)
+// GetEpoch provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetEpoch(rpcParameters RPC.RPCParameters) (uint32, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint32, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint32, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint32); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint32); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -836,23 +934,23 @@ func (_m *Utils) GetEpoch(ctx context.Context, client *ethclient.Client) (uint32
 	return r0, r1
 }
 
-// GetEpochLastCommitted provides a mock function with given fields: ctx, client, stakerId
-func (_m *Utils) GetEpochLastCommitted(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error) {
-	ret := _m.Called(ctx, client, stakerId)
+// GetEpochLastCommitted provides a mock function with given fields: rpcParameters, stakerId
+func (_m *Utils) GetEpochLastCommitted(rpcParameters RPC.RPCParameters, stakerId uint32) (uint32, error) {
+	ret := _m.Called(rpcParameters, stakerId)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (uint32, error)); ok {
-		return rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (uint32, error)); ok {
+		return rf(rpcParameters, stakerId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) uint32); ok {
-		r0 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) uint32); ok {
+		r0 = rf(rpcParameters, stakerId)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -860,23 +958,23 @@ func (_m *Utils) GetEpochLastCommitted(ctx context.Context, client *ethclient.Cl
 	return r0, r1
 }
 
-// GetEpochLastProposed provides a mock function with given fields: ctx, client, stakerId
-func (_m *Utils) GetEpochLastProposed(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error) {
-	ret := _m.Called(ctx, client, stakerId)
+// GetEpochLastProposed provides a mock function with given fields: rpcParameters, stakerId
+func (_m *Utils) GetEpochLastProposed(rpcParameters RPC.RPCParameters, stakerId uint32) (uint32, error) {
+	ret := _m.Called(rpcParameters, stakerId)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (uint32, error)); ok {
-		return rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (uint32, error)); ok {
+		return rf(rpcParameters, stakerId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) uint32); ok {
-		r0 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) uint32); ok {
+		r0 = rf(rpcParameters, stakerId)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -884,23 +982,23 @@ func (_m *Utils) GetEpochLastProposed(ctx context.Context, client *ethclient.Cli
 	return r0, r1
 }
 
-// GetEpochLastRevealed provides a mock function with given fields: ctx, client, stakerId
-func (_m *Utils) GetEpochLastRevealed(ctx context.Context, client *ethclient.Client, stakerId uint32) (uint32, error) {
-	ret := _m.Called(ctx, client, stakerId)
+// GetEpochLastRevealed provides a mock function with given fields: rpcParameters, stakerId
+func (_m *Utils) GetEpochLastRevealed(rpcParameters RPC.RPCParameters, stakerId uint32) (uint32, error) {
+	ret := _m.Called(rpcParameters, stakerId)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (uint32, error)); ok {
-		return rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (uint32, error)); ok {
+		return rf(rpcParameters, stakerId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) uint32); ok {
-		r0 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) uint32); ok {
+		r0 = rf(rpcParameters, stakerId)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -908,23 +1006,23 @@ func (_m *Utils) GetEpochLastRevealed(ctx context.Context, client *ethclient.Cli
 	return r0, r1
 }
 
-// GetEpochLimitForUpdateCommission provides a mock function with given fields: ctx, client
-func (_m *Utils) GetEpochLimitForUpdateCommission(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	ret := _m.Called(ctx, client)
+// GetEpochLimitForUpdateCommission provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetEpochLimitForUpdateCommission(rpcParameters RPC.RPCParameters) (uint16, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint16, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint16, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint16); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint16); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -932,25 +1030,25 @@ func (_m *Utils) GetEpochLimitForUpdateCommission(ctx context.Context, client *e
 	return r0, r1
 }
 
-// GetInfluenceSnapshot provides a mock function with given fields: ctx, client, stakerId, epoch
-func (_m *Utils) GetInfluenceSnapshot(ctx context.Context, client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	ret := _m.Called(ctx, client, stakerId, epoch)
+// GetInfluenceSnapshot provides a mock function with given fields: rpcParameters, stakerId, epoch
+func (_m *Utils) GetInfluenceSnapshot(rpcParameters RPC.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, stakerId, epoch)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32) (*big.Int, error)); ok {
-		return rf(ctx, client, stakerId, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32) (*big.Int, error)); ok {
+		return rf(rpcParameters, stakerId, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32) *big.Int); ok {
-		r0 = rf(ctx, client, stakerId, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32) *big.Int); ok {
+		r0 = rf(rpcParameters, stakerId, epoch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId, epoch)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -958,25 +1056,25 @@ func (_m *Utils) GetInfluenceSnapshot(ctx context.Context, client *ethclient.Cli
 	return r0, r1
 }
 
-// GetJobs provides a mock function with given fields: ctx, client
-func (_m *Utils) GetJobs(ctx context.Context, client *ethclient.Client) ([]bindings.StructsJob, error) {
-	ret := _m.Called(ctx, client)
+// GetJobs provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetJobs(rpcParameters RPC.RPCParameters) ([]bindings.StructsJob, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 []bindings.StructsJob
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) ([]bindings.StructsJob, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) ([]bindings.StructsJob, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) []bindings.StructsJob); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) []bindings.StructsJob); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]bindings.StructsJob)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -984,23 +1082,23 @@ func (_m *Utils) GetJobs(ctx context.Context, client *ethclient.Client) ([]bindi
 	return r0, r1
 }
 
-// GetLeafIdOfACollection provides a mock function with given fields: ctx, client, collectionId
-func (_m *Utils) GetLeafIdOfACollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (uint16, error) {
-	ret := _m.Called(ctx, client, collectionId)
+// GetLeafIdOfACollection provides a mock function with given fields: rpcParameters, collectionId
+func (_m *Utils) GetLeafIdOfACollection(rpcParameters RPC.RPCParameters, collectionId uint16) (uint16, error) {
+	ret := _m.Called(rpcParameters, collectionId)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) (uint16, error)); ok {
-		return rf(ctx, client, collectionId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) (uint16, error)); ok {
+		return rf(rpcParameters, collectionId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint16) uint16); ok {
-		r0 = rf(ctx, client, collectionId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint16) uint16); ok {
+		r0 = rf(rpcParameters, collectionId)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint16) error); ok {
-		r1 = rf(ctx, client, collectionId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint16) error); ok {
+		r1 = rf(rpcParameters, collectionId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1008,23 +1106,23 @@ func (_m *Utils) GetLeafIdOfACollection(ctx context.Context, client *ethclient.C
 	return r0, r1
 }
 
-// GetLock provides a mock function with given fields: ctx, client, address, stakerId, lockType
-func (_m *Utils) GetLock(ctx context.Context, client *ethclient.Client, address string, stakerId uint32, lockType uint8) (types.Locks, error) {
-	ret := _m.Called(ctx, client, address, stakerId, lockType)
+// GetLock provides a mock function with given fields: rpcParameters, address, stakerId, lockType
+func (_m *Utils) GetLock(rpcParameters RPC.RPCParameters, address string, stakerId uint32, lockType uint8) (types.Locks, error) {
+	ret := _m.Called(rpcParameters, address, stakerId, lockType)
 
 	var r0 types.Locks
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, string, uint32, uint8) (types.Locks, error)); ok {
-		return rf(ctx, client, address, stakerId, lockType)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string, uint32, uint8) (types.Locks, error)); ok {
+		return rf(rpcParameters, address, stakerId, lockType)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, string, uint32, uint8) types.Locks); ok {
-		r0 = rf(ctx, client, address, stakerId, lockType)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string, uint32, uint8) types.Locks); ok {
+		r0 = rf(rpcParameters, address, stakerId, lockType)
 	} else {
 		r0 = ret.Get(0).(types.Locks)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, string, uint32, uint8) error); ok {
-		r1 = rf(ctx, client, address, stakerId, lockType)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, string, uint32, uint8) error); ok {
+		r1 = rf(rpcParameters, address, stakerId, lockType)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1032,23 +1130,47 @@ func (_m *Utils) GetLock(ctx context.Context, client *ethclient.Client, address 
 	return r0, r1
 }
 
-// GetMaxAltBlocks provides a mock function with given fields: ctx, client
-func (_m *Utils) GetMaxAltBlocks(ctx context.Context, client *ethclient.Client) (uint8, error) {
-	ret := _m.Called(ctx, client)
+// GetMaturity provides a mock function with given fields: rpcParameters, age
+func (_m *Utils) GetMaturity(rpcParameters RPC.RPCParameters, age uint32) (uint16, error) {
+	ret := _m.Called(rpcParameters, age)
+
+	var r0 uint16
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (uint16, error)); ok {
+		return rf(rpcParameters, age)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) uint16); ok {
+		r0 = rf(rpcParameters, age)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, age)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetMaxAltBlocks provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetMaxAltBlocks(rpcParameters RPC.RPCParameters) (uint8, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint8
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint8, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint8, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint8); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint8); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1056,23 +1178,23 @@ func (_m *Utils) GetMaxAltBlocks(ctx context.Context, client *ethclient.Client) 
 	return r0, r1
 }
 
-// GetMaxCommission provides a mock function with given fields: ctx, client
-func (_m *Utils) GetMaxCommission(ctx context.Context, client *ethclient.Client) (uint8, error) {
-	ret := _m.Called(ctx, client)
+// GetMaxCommission provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetMaxCommission(rpcParameters RPC.RPCParameters) (uint8, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint8
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint8, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint8, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint8); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint8); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1080,25 +1202,25 @@ func (_m *Utils) GetMaxCommission(ctx context.Context, client *ethclient.Client)
 	return r0, r1
 }
 
-// GetMinSafeRazor provides a mock function with given fields: ctx, client
-func (_m *Utils) GetMinSafeRazor(ctx context.Context, client *ethclient.Client) (*big.Int, error) {
-	ret := _m.Called(ctx, client)
+// GetMinSafeRazor provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetMinSafeRazor(rpcParameters RPC.RPCParameters) (*big.Int, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (*big.Int, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (*big.Int, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) *big.Int); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) *big.Int); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1106,25 +1228,25 @@ func (_m *Utils) GetMinSafeRazor(ctx context.Context, client *ethclient.Client) 
 	return r0, r1
 }
 
-// GetMinStakeAmount provides a mock function with given fields: ctx, client
-func (_m *Utils) GetMinStakeAmount(ctx context.Context, client *ethclient.Client) (*big.Int, error) {
-	ret := _m.Called(ctx, client)
+// GetMinStakeAmount provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetMinStakeAmount(rpcParameters RPC.RPCParameters) (*big.Int, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (*big.Int, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (*big.Int, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) *big.Int); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) *big.Int); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1132,23 +1254,23 @@ func (_m *Utils) GetMinStakeAmount(ctx context.Context, client *ethclient.Client
 	return r0, r1
 }
 
-// GetNumActiveCollections provides a mock function with given fields: ctx, client
-func (_m *Utils) GetNumActiveCollections(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	ret := _m.Called(ctx, client)
+// GetNumActiveCollections provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetNumActiveCollections(rpcParameters RPC.RPCParameters) (uint16, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint16, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint16, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint16); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint16); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1156,23 +1278,23 @@ func (_m *Utils) GetNumActiveCollections(ctx context.Context, client *ethclient.
 	return r0, r1
 }
 
-// GetNumCollections provides a mock function with given fields: ctx, client
-func (_m *Utils) GetNumCollections(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	ret := _m.Called(ctx, client)
+// GetNumCollections provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetNumCollections(rpcParameters RPC.RPCParameters) (uint16, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint16, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint16, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint16); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint16); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1180,23 +1302,47 @@ func (_m *Utils) GetNumCollections(ctx context.Context, client *ethclient.Client
 	return r0, r1
 }
 
-// GetNumberOfProposedBlocks provides a mock function with given fields: ctx, client, epoch
-func (_m *Utils) GetNumberOfProposedBlocks(ctx context.Context, client *ethclient.Client, epoch uint32) (uint8, error) {
-	ret := _m.Called(ctx, client, epoch)
+// GetNumJobs provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetNumJobs(rpcParameters RPC.RPCParameters) (uint16, error) {
+	ret := _m.Called(rpcParameters)
+
+	var r0 uint16
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint16, error)); ok {
+		return rf(rpcParameters)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint16); ok {
+		r0 = rf(rpcParameters)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNumberOfProposedBlocks provides a mock function with given fields: rpcParameters, epoch
+func (_m *Utils) GetNumberOfProposedBlocks(rpcParameters RPC.RPCParameters, epoch uint32) (uint8, error) {
+	ret := _m.Called(rpcParameters, epoch)
 
 	var r0 uint8
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (uint8, error)); ok {
-		return rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (uint8, error)); ok {
+		return rf(rpcParameters, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) uint8); ok {
-		r0 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) uint8); ok {
+		r0 = rf(rpcParameters, epoch)
 	} else {
 		r0 = ret.Get(0).(uint8)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1204,23 +1350,23 @@ func (_m *Utils) GetNumberOfProposedBlocks(ctx context.Context, client *ethclien
 	return r0, r1
 }
 
-// GetNumberOfStakers provides a mock function with given fields: ctx, client
-func (_m *Utils) GetNumberOfStakers(ctx context.Context, client *ethclient.Client) (uint32, error) {
-	ret := _m.Called(ctx, client)
+// GetNumberOfStakers provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetNumberOfStakers(rpcParameters RPC.RPCParameters) (uint32, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint32, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint32, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint32); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint32); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1242,23 +1388,23 @@ func (_m *Utils) GetOptions() bind.CallOpts {
 	return r0
 }
 
-// GetProposedBlock provides a mock function with given fields: ctx, client, epoch, proposedBlockId
-func (_m *Utils) GetProposedBlock(ctx context.Context, client *ethclient.Client, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
-	ret := _m.Called(ctx, client, epoch, proposedBlockId)
+// GetProposedBlock provides a mock function with given fields: rpcParameters, epoch, proposedBlockId
+func (_m *Utils) GetProposedBlock(rpcParameters RPC.RPCParameters, epoch uint32, proposedBlockId uint32) (bindings.StructsBlock, error) {
+	ret := _m.Called(rpcParameters, epoch, proposedBlockId)
 
 	var r0 bindings.StructsBlock
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32) (bindings.StructsBlock, error)); ok {
-		return rf(ctx, client, epoch, proposedBlockId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32) (bindings.StructsBlock, error)); ok {
+		return rf(rpcParameters, epoch, proposedBlockId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32) bindings.StructsBlock); ok {
-		r0 = rf(ctx, client, epoch, proposedBlockId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32) bindings.StructsBlock); ok {
+		r0 = rf(rpcParameters, epoch, proposedBlockId)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsBlock)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, uint32) error); ok {
-		r1 = rf(ctx, client, epoch, proposedBlockId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, uint32) error); ok {
+		r1 = rf(rpcParameters, epoch, proposedBlockId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1306,23 +1452,25 @@ func (_m *Utils) GetRogueRandomValue(value int) *big.Int {
 	return r0
 }
 
-// GetSortedProposedBlockId provides a mock function with given fields: ctx, client, epoch, index
-func (_m *Utils) GetSortedProposedBlockId(ctx context.Context, client *ethclient.Client, epoch uint32, index *big.Int) (uint32, error) {
-	ret := _m.Called(ctx, client, epoch, index)
+// GetSaltFromBlockchain provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetSaltFromBlockchain(rpcParameters RPC.RPCParameters) ([32]byte, error) {
+	ret := _m.Called(rpcParameters)
 
-	var r0 uint32
+	var r0 [32]byte
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, *big.Int) (uint32, error)); ok {
-		return rf(ctx, client, epoch, index)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) ([32]byte, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, *big.Int) uint32); ok {
-		r0 = rf(ctx, client, epoch, index)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) [32]byte); ok {
+		r0 = rf(rpcParameters)
 	} else {
-		r0 = ret.Get(0).(uint32)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([32]byte)
+		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, *big.Int) error); ok {
-		r1 = rf(ctx, client, epoch, index)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1330,25 +1478,49 @@ func (_m *Utils) GetSortedProposedBlockId(ctx context.Context, client *ethclient
 	return r0, r1
 }
 
-// GetSortedProposedBlockIds provides a mock function with given fields: ctx, client, epoch
-func (_m *Utils) GetSortedProposedBlockIds(ctx context.Context, client *ethclient.Client, epoch uint32) ([]uint32, error) {
-	ret := _m.Called(ctx, client, epoch)
+// GetSortedProposedBlockId provides a mock function with given fields: rpcParameters, epoch, index
+func (_m *Utils) GetSortedProposedBlockId(rpcParameters RPC.RPCParameters, epoch uint32, index *big.Int) (uint32, error) {
+	ret := _m.Called(rpcParameters, epoch, index)
+
+	var r0 uint32
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, *big.Int) (uint32, error)); ok {
+		return rf(rpcParameters, epoch, index)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, *big.Int) uint32); ok {
+		r0 = rf(rpcParameters, epoch, index)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, *big.Int) error); ok {
+		r1 = rf(rpcParameters, epoch, index)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetSortedProposedBlockIds provides a mock function with given fields: rpcParameters, epoch
+func (_m *Utils) GetSortedProposedBlockIds(rpcParameters RPC.RPCParameters, epoch uint32) ([]uint32, error) {
+	ret := _m.Called(rpcParameters, epoch)
 
 	var r0 []uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) ([]uint32, error)); ok {
-		return rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) ([]uint32, error)); ok {
+		return rf(rpcParameters, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) []uint32); ok {
-		r0 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) []uint32); ok {
+		r0 = rf(rpcParameters, epoch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]uint32)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, epoch)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1356,25 +1528,25 @@ func (_m *Utils) GetSortedProposedBlockIds(ctx context.Context, client *ethclien
 	return r0, r1
 }
 
-// GetStake provides a mock function with given fields: ctx, client, stakerId
-func (_m *Utils) GetStake(ctx context.Context, client *ethclient.Client, stakerId uint32) (*big.Int, error) {
-	ret := _m.Called(ctx, client, stakerId)
+// GetStake provides a mock function with given fields: rpcParameters, stakerId
+func (_m *Utils) GetStake(rpcParameters RPC.RPCParameters, stakerId uint32) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, stakerId)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (*big.Int, error)); ok {
-		return rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (*big.Int, error)); ok {
+		return rf(rpcParameters, stakerId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) *big.Int); ok {
-		r0 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) *big.Int); ok {
+		r0 = rf(rpcParameters, stakerId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1424,25 +1596,25 @@ func (_m *Utils) GetStakeManagerWithOpts(client *ethclient.Client) (*bindings.St
 	return r0, r1
 }
 
-// GetStakeSnapshot provides a mock function with given fields: ctx, client, stakerId, epoch
-func (_m *Utils) GetStakeSnapshot(ctx context.Context, client *ethclient.Client, stakerId uint32, epoch uint32) (*big.Int, error) {
-	ret := _m.Called(ctx, client, stakerId, epoch)
+// GetStakeSnapshot provides a mock function with given fields: rpcParameters, stakerId, epoch
+func (_m *Utils) GetStakeSnapshot(rpcParameters RPC.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, stakerId, epoch)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32) (*big.Int, error)); ok {
-		return rf(ctx, client, stakerId, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32) (*big.Int, error)); ok {
+		return rf(rpcParameters, stakerId, epoch)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32) *big.Int); ok {
-		r0 = rf(ctx, client, stakerId, epoch)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32) *big.Int); ok {
+		r0 = rf(rpcParameters, stakerId, epoch)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId, epoch)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId, epoch)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1492,23 +1664,23 @@ func (_m *Utils) GetStakedTokenManagerWithOpts(client *ethclient.Client, tokenAd
 	return r0, r1
 }
 
-// GetStaker provides a mock function with given fields: ctx, client, stakerId
-func (_m *Utils) GetStaker(ctx context.Context, client *ethclient.Client, stakerId uint32) (bindings.StructsStaker, error) {
-	ret := _m.Called(ctx, client, stakerId)
+// GetStaker provides a mock function with given fields: rpcParameters, stakerId
+func (_m *Utils) GetStaker(rpcParameters RPC.RPCParameters, stakerId uint32) (bindings.StructsStaker, error) {
+	ret := _m.Called(rpcParameters, stakerId)
 
 	var r0 bindings.StructsStaker
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) (bindings.StructsStaker, error)); ok {
-		return rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (bindings.StructsStaker, error)); ok {
+		return rf(rpcParameters, stakerId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32) bindings.StructsStaker); ok {
-		r0 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) bindings.StructsStaker); ok {
+		r0 = rf(rpcParameters, stakerId)
 	} else {
 		r0 = ret.Get(0).(bindings.StructsStaker)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32) error); ok {
-		r1 = rf(ctx, client, stakerId)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1516,23 +1688,23 @@ func (_m *Utils) GetStaker(ctx context.Context, client *ethclient.Client, staker
 	return r0, r1
 }
 
-// GetStakerId provides a mock function with given fields: ctx, client, address
-func (_m *Utils) GetStakerId(ctx context.Context, client *ethclient.Client, address string) (uint32, error) {
-	ret := _m.Called(ctx, client, address)
+// GetStakerId provides a mock function with given fields: rpcParameters, address
+func (_m *Utils) GetStakerId(rpcParameters RPC.RPCParameters, address string) (uint32, error) {
+	ret := _m.Called(rpcParameters, address)
 
 	var r0 uint32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, string) (uint32, error)); ok {
-		return rf(ctx, client, address)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) (uint32, error)); ok {
+		return rf(rpcParameters, address)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, string) uint32); ok {
-		r0 = rf(ctx, client, address)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) uint32); ok {
+		r0 = rf(rpcParameters, address)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, string) error); ok {
-		r1 = rf(ctx, client, address)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, string) error); ok {
+		r1 = rf(rpcParameters, address)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1540,25 +1712,25 @@ func (_m *Utils) GetStakerId(ctx context.Context, client *ethclient.Client, addr
 	return r0, r1
 }
 
-// GetStakerSRZRBalance provides a mock function with given fields: ctx, client, staker
-func (_m *Utils) GetStakerSRZRBalance(ctx context.Context, client *ethclient.Client, staker bindings.StructsStaker) (*big.Int, error) {
-	ret := _m.Called(ctx, client, staker)
+// GetStakerSRZRBalance provides a mock function with given fields: rpcParameters, staker
+func (_m *Utils) GetStakerSRZRBalance(rpcParameters RPC.RPCParameters, staker bindings.StructsStaker) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, staker)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, bindings.StructsStaker) (*big.Int, error)); ok {
-		return rf(ctx, client, staker)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, bindings.StructsStaker) (*big.Int, error)); ok {
+		return rf(rpcParameters, staker)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, bindings.StructsStaker) *big.Int); ok {
-		r0 = rf(ctx, client, staker)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, bindings.StructsStaker) *big.Int); ok {
+		r0 = rf(rpcParameters, staker)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, bindings.StructsStaker) error); ok {
-		r1 = rf(ctx, client, staker)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, bindings.StructsStaker) error); ok {
+		r1 = rf(rpcParameters, staker)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1566,23 +1738,23 @@ func (_m *Utils) GetStakerSRZRBalance(ctx context.Context, client *ethclient.Cli
 	return r0, r1
 }
 
-// GetStateBuffer provides a mock function with given fields: ctx, client
-func (_m *Utils) GetStateBuffer(ctx context.Context, client *ethclient.Client) (uint64, error) {
-	ret := _m.Called(ctx, client)
+// GetStateBuffer provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetStateBuffer(rpcParameters RPC.RPCParameters) (uint64, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint64, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint64, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint64); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint64); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1606,25 +1778,25 @@ func (_m *Utils) GetTokenManager(client *ethclient.Client) *bindings.RAZOR {
 	return r0
 }
 
-// GetTotalInfluenceRevealed provides a mock function with given fields: ctx, client, epoch, medianIndex
-func (_m *Utils) GetTotalInfluenceRevealed(ctx context.Context, client *ethclient.Client, epoch uint32, medianIndex uint16) (*big.Int, error) {
-	ret := _m.Called(ctx, client, epoch, medianIndex)
+// GetTotalInfluenceRevealed provides a mock function with given fields: rpcParameters, epoch, medianIndex
+func (_m *Utils) GetTotalInfluenceRevealed(rpcParameters RPC.RPCParameters, epoch uint32, medianIndex uint16) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, epoch, medianIndex)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint16) (*big.Int, error)); ok {
-		return rf(ctx, client, epoch, medianIndex)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint16) (*big.Int, error)); ok {
+		return rf(rpcParameters, epoch, medianIndex)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint16) *big.Int); ok {
-		r0 = rf(ctx, client, epoch, medianIndex)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint16) *big.Int); ok {
+		r0 = rf(rpcParameters, epoch, medianIndex)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, uint16) error); ok {
-		r1 = rf(ctx, client, epoch, medianIndex)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, uint16) error); ok {
+		r1 = rf(rpcParameters, epoch, medianIndex)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1632,13 +1804,13 @@ func (_m *Utils) GetTotalInfluenceRevealed(ctx context.Context, client *ethclien
 	return r0, r1
 }
 
-// GetTxnOpts provides a mock function with given fields: ctx, transactionData
-func (_m *Utils) GetTxnOpts(ctx context.Context, transactionData types.TransactionOptions) *bind.TransactOpts {
-	ret := _m.Called(ctx, transactionData)
+// GetTxnOpts provides a mock function with given fields: rpcParameters, transactionData
+func (_m *Utils) GetTxnOpts(rpcParameters RPC.RPCParameters, transactionData types.TransactionOptions) *bind.TransactOpts {
+	ret := _m.Called(rpcParameters, transactionData)
 
 	var r0 *bind.TransactOpts
-	if rf, ok := ret.Get(0).(func(context.Context, types.TransactionOptions) *bind.TransactOpts); ok {
-		r0 = rf(ctx, transactionData)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, types.TransactionOptions) *bind.TransactOpts); ok {
+		r0 = rf(rpcParameters, transactionData)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*bind.TransactOpts)
@@ -1714,25 +1886,25 @@ func (_m *Utils) GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.Vot
 	return r0, r1
 }
 
-// GetVoteValue provides a mock function with given fields: ctx, client, epoch, stakerId, medianIndex
-func (_m *Utils) GetVoteValue(ctx context.Context, client *ethclient.Client, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
-	ret := _m.Called(ctx, client, epoch, stakerId, medianIndex)
+// GetVoteValue provides a mock function with given fields: rpcParameters, epoch, stakerId, medianIndex
+func (_m *Utils) GetVoteValue(rpcParameters RPC.RPCParameters, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, epoch, stakerId, medianIndex)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32, uint16) (*big.Int, error)); ok {
-		return rf(ctx, client, epoch, stakerId, medianIndex)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32, uint16) (*big.Int, error)); ok {
+		return rf(rpcParameters, epoch, stakerId, medianIndex)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint32, uint32, uint16) *big.Int); ok {
-		r0 = rf(ctx, client, epoch, stakerId, medianIndex)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32, uint32, uint16) *big.Int); ok {
+		r0 = rf(rpcParameters, epoch, stakerId, medianIndex)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint32, uint32, uint16) error); ok {
-		r1 = rf(ctx, client, epoch, stakerId, medianIndex)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32, uint32, uint16) error); ok {
+		r1 = rf(rpcParameters, epoch, stakerId, medianIndex)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1740,23 +1912,23 @@ func (_m *Utils) GetVoteValue(ctx context.Context, client *ethclient.Client, epo
 	return r0, r1
 }
 
-// GetWithdrawInitiationPeriod provides a mock function with given fields: ctx, client
-func (_m *Utils) GetWithdrawInitiationPeriod(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	ret := _m.Called(ctx, client)
+// GetWithdrawInitiationPeriod provides a mock function with given fields: rpcParameters
+func (_m *Utils) GetWithdrawInitiationPeriod(rpcParameters RPC.RPCParameters) (uint16, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 uint16
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint16, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint16, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint16); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint16); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1764,25 +1936,25 @@ func (_m *Utils) GetWithdrawInitiationPeriod(ctx context.Context, client *ethcli
 	return r0, r1
 }
 
-// HandleOfficialJobsFromJSONFile provides a mock function with given fields: client, collection, dataString, commitParams
-func (_m *Utils) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
-	ret := _m.Called(client, collection, dataString, commitParams)
+// HandleOfficialJobsFromJSONFile provides a mock function with given fields: collection, dataString, commitParams
+func (_m *Utils) HandleOfficialJobsFromJSONFile(collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
+	ret := _m.Called(collection, dataString, commitParams)
 
 	var r0 []bindings.StructsJob
 	var r1 []uint16
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, *types.CommitParams) ([]bindings.StructsJob, []uint16)); ok {
-		return rf(client, collection, dataString, commitParams)
+	if rf, ok := ret.Get(0).(func(bindings.StructsCollection, string, *types.CommitParams) ([]bindings.StructsJob, []uint16)); ok {
+		return rf(collection, dataString, commitParams)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, bindings.StructsCollection, string, *types.CommitParams) []bindings.StructsJob); ok {
-		r0 = rf(client, collection, dataString, commitParams)
+	if rf, ok := ret.Get(0).(func(bindings.StructsCollection, string, *types.CommitParams) []bindings.StructsJob); ok {
+		r0 = rf(collection, dataString, commitParams)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]bindings.StructsJob)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, bindings.StructsCollection, string, *types.CommitParams) []uint16); ok {
-		r1 = rf(client, collection, dataString, commitParams)
+	if rf, ok := ret.Get(1).(func(bindings.StructsCollection, string, *types.CommitParams) []uint16); ok {
+		r1 = rf(collection, dataString, commitParams)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).([]uint16)
@@ -1906,23 +2078,23 @@ func (_m *Utils) SecondsToReadableTime(input int) string {
 	return r0
 }
 
-// ToAssign provides a mock function with given fields: ctx, client
-func (_m *Utils) ToAssign(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	ret := _m.Called(ctx, client)
+// StakerInfo provides a mock function with given fields: rpcParameters, stakerId
+func (_m *Utils) StakerInfo(rpcParameters RPC.RPCParameters, stakerId uint32) (types.Staker, error) {
+	ret := _m.Called(rpcParameters, stakerId)
 
-	var r0 uint16
+	var r0 types.Staker
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) (uint16, error)); ok {
-		return rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) (types.Staker, error)); ok {
+		return rf(rpcParameters, stakerId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client) uint16); ok {
-		r0 = rf(ctx, client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint32) types.Staker); ok {
+		r0 = rf(rpcParameters, stakerId)
 	} else {
-		r0 = ret.Get(0).(uint16)
+		r0 = ret.Get(0).(types.Staker)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client) error); ok {
-		r1 = rf(ctx, client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint32) error); ok {
+		r1 = rf(rpcParameters, stakerId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1930,13 +2102,37 @@ func (_m *Utils) ToAssign(ctx context.Context, client *ethclient.Client) (uint16
 	return r0, r1
 }
 
-// WaitForBlockCompletion provides a mock function with given fields: client, hashToRead
-func (_m *Utils) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
-	ret := _m.Called(client, hashToRead)
+// ToAssign provides a mock function with given fields: rpcParameters
+func (_m *Utils) ToAssign(rpcParameters RPC.RPCParameters) (uint16, error) {
+	ret := _m.Called(rpcParameters)
+
+	var r0 uint16
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (uint16, error)); ok {
+		return rf(rpcParameters)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) uint16); ok {
+		r0 = rf(rpcParameters)
+	} else {
+		r0 = ret.Get(0).(uint16)
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WaitForBlockCompletion provides a mock function with given fields: rpcManager, hashToRead
+func (_m *Utils) WaitForBlockCompletion(rpcManager RPC.RPCParameters, hashToRead string) error {
+	ret := _m.Called(rpcManager, hashToRead)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, string) error); ok {
-		r0 = rf(client, hashToRead)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, string) error); ok {
+		r0 = rf(rpcManager, hashToRead)
 	} else {
 		r0 = ret.Error(0)
 	}
