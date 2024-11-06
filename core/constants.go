@@ -15,7 +15,7 @@ const (
 )
 
 // ChainId corresponds to the EUROPA chain
-var ChainId = big.NewInt(31337)
+var ChainId = big.NewInt(0x79f99296)
 
 const (
 	MaxRetries         uint  = 3
