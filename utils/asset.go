@@ -339,14 +339,6 @@ func (*UtilsStruct) GetLeafIdOfACollection(rpcParameters RPC.RPCParameters, coll
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetSaltFromBlockchain(rpcParameters RPC.RPCParameters) ([32]byte, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetSaltFromBlockchain")
-	if err != nil {
-		return [32]byte{}, err
-	}
-	return returnedValues[0].Interface().([32]byte), nil
-}
-
 func (*UtilsStruct) GetCollectionIdFromIndex(rpcParameters RPC.RPCParameters, medianIndex uint16) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollectionIdFromIndex", medianIndex)
 	if err != nil {

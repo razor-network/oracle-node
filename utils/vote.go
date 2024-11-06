@@ -82,3 +82,11 @@ func (*UtilsStruct) ToAssign(rpcParameters RPC.RPCParameters) (uint16, error) {
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
+
+func (*UtilsStruct) GetSaltFromBlockchain(rpcParameters RPC.RPCParameters) ([32]byte, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetSaltFromBlockchain")
+	if err != nil {
+		return [32]byte{}, err
+	}
+	return returnedValues[0].Interface().([32]byte), nil
+}

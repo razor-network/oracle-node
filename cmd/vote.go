@@ -162,6 +162,7 @@ var (
 	lastVerification       uint32
 	blockConfirmed         uint32
 	disputeData            types.DisputeFileData
+	lastRPCRefreshEpoch    uint32
 )
 
 //This function handles the block
@@ -333,6 +334,15 @@ func (*UtilsStruct) HandleBlock(rpcParameters RPC.RPCParameters, account types.A
 			}
 			if txn != core.NilHash {
 				log.Info("Confirm Transaction Hash: ", txn)
+			}
+
+			if lastRPCRefreshEpoch < epoch {
+				err = rpcParameters.RPCManager.RefreshEndpoints()
+				if err != nil {
+					log.Error("Error in refreshing RPC endpoints: ", err)
+					break
+				}
+				lastRPCRefreshEpoch = epoch
 			}
 		}
 	case -1:
