@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"razor/logger"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -91,8 +92,14 @@ func (m *RPCManager) RefreshEndpoints() error {
 }
 
 func InitializeRPCManager(provider string) (*RPCManager, error) {
-	// Fetch the absolute path to the PROJECT directory and locate endpoints.json file
-	projectDir := filepath.Join("..", "..") // Relative path from build output
+	// Locate the razor-go project directory dynamically
+	_, file, _, ok := runtime.Caller(0) // Get the current file (rpc.go) path
+	if !ok {
+		return nil, fmt.Errorf("failed to get the caller information")
+	}
+
+	// Move up to the razor-go project root
+	projectDir := filepath.Dir(filepath.Dir(file)) // This gets `razor-go` directory
 	endpointsFile := filepath.Join(projectDir, "endpoints.json")
 
 	fileData, err := os.ReadFile(endpointsFile)

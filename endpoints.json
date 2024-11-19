@@ -1,6 +1,3 @@
 [
-  "https://andromeda02.skale.prod.chorus1.net:10072",
-  "https://skale-figment-9.skale.figment.io:10008",
-  "https://skale-figment-2.skale.figment.io:10072",
-  "https://node03.skale.prod.chorus1.net:10072"
+  "https://testnet.skalenodes.com/v1/juicy-low-small-testnet"
 ]
