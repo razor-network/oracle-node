@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
@@ -21,7 +20,6 @@ import (
 )
 
 func TestHandleUnstakeLock(t *testing.T) {
-	var client *ethclient.Client
 	var account types.Account
 	var configurations types.Configurations
 	var stakerId uint32
@@ -180,16 +178,16 @@ func TestHandleUnstakeLock(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetWithdrawInitiationPeriod", mock.Anything, mock.Anything).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
-			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleUnstakeLock(context.Background(), client, account, configurations, stakerId)
+			got, err := utils.HandleUnstakeLock(rpcParameters, account, configurations, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdrawFunds function, got = %v, want = %v", got, tt.want)
 			}
@@ -211,7 +209,6 @@ func TestWithdraw(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1))
 
-	var client *ethclient.Client
 	var stakerId uint32
 
 	type args struct {
@@ -254,7 +251,7 @@ func TestWithdraw(t *testing.T) {
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.InitiateWithdraw(client, txnOpts, stakerId)
+			got, err := utils.InitiateWithdraw(rpcParameters, txnOpts, stakerId)
 			if got != tt.want {
 				t.Errorf("Txn hash for withdraw function, got = %v, want = %v", got, tt.want)
 			}
@@ -368,10 +365,10 @@ func TestExecuteWithdraw(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
-			utilsMock.On("AssignStakerId", mock.Anything, flagSet, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

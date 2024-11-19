@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -18,8 +17,6 @@ import (
 )
 
 func TestSetDelegation(t *testing.T) {
-
-	var client *ethclient.Client
 	var config = types.Configurations{
 		Provider:      "127.0.0.1",
 		GasMultiplier: 1,
@@ -135,14 +132,14 @@ func TestSetDelegation(t *testing.T) {
 
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
-			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			stakeManagerMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.setDelegationAcceptanceTxn, tt.args.setDelegationAcceptanceErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.SetDelegation(context.Background(), client, config, types.SetDelegationInput{
+			got, err := utils.SetDelegation(rpcParameters, config, types.SetDelegationInput{
 				Status:     tt.args.status,
 				Commission: tt.args.commission,
 			})
@@ -391,9 +388,9 @@ func TestExecuteSetDelegation(t *testing.T) {
 			flagSetMock.On("GetUint8Commission", flagSet).Return(tt.args.commission, tt.args.commissionErr)
 			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("SetDelegation", mock.Anything, mock.Anything, config, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("SetDelegation", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.setDelegationHash, tt.args.setDelegationErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

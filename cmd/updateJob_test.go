@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -17,8 +16,6 @@ import (
 )
 
 func TestUpdateJob(t *testing.T) {
-
-	var client *ethclient.Client
 	var config types.Configurations
 	var WaitIfCommitStateStatus uint32
 	var jobInput types.CreateJobInput
@@ -77,7 +74,7 @@ func TestUpdateJob(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.UpdateJob(context.Background(), client, config, jobInput, jobId)
+			got, err := utils.UpdateJob(rpcParameters, config, jobInput, jobId)
 			if got != tt.want {
 				t.Errorf("Txn hash for updateJob function, got = %v, want = %v", got, tt.want)
 			}
@@ -335,8 +332,8 @@ func TestExecuteUpdateJob(t *testing.T) {
 			flagSetMock.On("GetUint8Weight", flagSet).Return(tt.args.weight, tt.args.weightErr)
 			flagSetMock.On("GetUint8SelectorType", flagSet).Return(tt.args.selectorType, tt.args.selectorTypeErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("UpdateJob", mock.Anything, mock.Anything, config, mock.Anything, mock.Anything).Return(tt.args.updateJobTxn, tt.args.updateJobErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("UpdateJob", mock.Anything, config, mock.Anything, mock.Anything).Return(tt.args.updateJobTxn, tt.args.updateJobErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

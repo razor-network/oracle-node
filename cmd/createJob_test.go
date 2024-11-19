@@ -16,7 +16,6 @@ import (
 )
 
 func TestCreateJob(t *testing.T) {
-	var client *ethclient.Client
 	var jobInput types.CreateJobInput
 	var config types.Configurations
 
@@ -60,7 +59,7 @@ func TestCreateJob(t *testing.T) {
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.CreateJob(client, config, jobInput)
+			got, err := utils.CreateJob(rpcParameters, config, jobInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for createJob function, got = %v, want = %v", got, tt.want)
 			}
@@ -308,8 +307,8 @@ func TestExecuteCreateJob(t *testing.T) {
 			flagSetMock.On("GetUint8Weight", flagSet).Return(tt.args.weight, tt.args.weightErr)
 			flagSetMock.On("GetUint8SelectorType", flagSet).Return(tt.args.selectorType, tt.args.selectorTypeErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createJobHash, tt.args.createJobErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("CreateJob", mock.Anything, config, mock.Anything).Return(tt.args.createJobHash, tt.args.createJobErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

@@ -123,12 +123,12 @@ func TestApprove(t *testing.T) {
 			utilsMock.On("GetOptions").Return(tt.args.callOpts)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
-			tokenManagerMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
+			utilsMock.On("Allowance", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.allowanceAmount, tt.args.allowanceError)
 			tokenManagerMock.On("Approve", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveError)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Approve(tt.args.txnArgs)
+			got, err := utils.Approve(rpcParameters, tt.args.txnArgs)
 			if got != tt.want {
 				t.Errorf("Txn hash for approve function, got = %v, want = %v", got, tt.want)
 			}

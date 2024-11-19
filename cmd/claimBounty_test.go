@@ -11,7 +11,6 @@ import (
 	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -131,8 +130,8 @@ func TestExecuteClaimBounty(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			utilsMock.On("IsFlagPassed", mock.Anything).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
-			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			fatal = false
 			utils := &UtilsStruct{}
@@ -148,9 +147,7 @@ func TestExecuteClaimBounty(t *testing.T) {
 
 func TestClaimBounty(t *testing.T) {
 	var config types.Configurations
-	var client *ethclient.Client
 	var bountyInput types.RedeemBountyInput
-	var callOpts bind.CallOpts
 	var blockTime int64
 
 	type args struct {
@@ -264,9 +261,8 @@ func TestClaimBounty(t *testing.T) {
 			transactionUtils = transactionUtilsMock
 			timeUtils = timeMock
 
-			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("GetBountyLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.bountyLock, tt.args.bountyLockErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetBountyLock", mock.Anything, mock.Anything).Return(tt.args.bountyLock, tt.args.bountyLockErr)
 			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
 			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
@@ -275,7 +271,7 @@ func TestClaimBounty(t *testing.T) {
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.ClaimBounty(config, client, bountyInput)
+			got, err := utils.ClaimBounty(rpcParameters, config, bountyInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for claimBounty function, got = %v, want = %v", got, tt.want)
 			}
@@ -294,7 +290,6 @@ func TestClaimBounty(t *testing.T) {
 
 func TestHandleClaimBounty(t *testing.T) {
 	var (
-		client   *ethclient.Client
 		config   types.Configurations
 		account  types.Account
 		fileInfo fs.FileInfo
@@ -381,12 +376,12 @@ func TestHandleClaimBounty(t *testing.T) {
 			pathMock.On("GetDisputeDataFileName", mock.AnythingOfType("string")).Return(tt.args.disputeFilePath, tt.args.disputeFilePathErr)
 			osPathMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			fileUtilsMock.On("ReadFromDisputeJsonFile", mock.Anything).Return(tt.args.disputeData, tt.args.disputeDataErr)
-			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("ClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.claimBountyTxn, tt.args.claimBountyTxnErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			fileUtilsMock.On("SaveDataToDisputeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
 
 			ut := &UtilsStruct{}
-			if err := ut.HandleClaimBounty(client, config, account); (err != nil) != tt.wantErr {
+			if err := ut.HandleClaimBounty(rpcParameters, config, account); (err != nil) != tt.wantErr {
 				t.Errorf("AutoClaimBounty() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

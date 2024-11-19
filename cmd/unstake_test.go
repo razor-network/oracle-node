@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
@@ -24,7 +23,6 @@ import (
 
 func TestUnstake(t *testing.T) {
 	var config types.Configurations
-	var client *ethclient.Client
 	var account types.Account
 	var stakerId uint32
 
@@ -123,17 +121,17 @@ func TestUnstake(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
-			cmdUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.approveHash, tt.args.approveHashErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("ApproveUnstake", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveHash, tt.args.approveHashErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			stakeManagerMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			_, gotErr := utils.Unstake(context.Background(), config, client,
+			_, gotErr := utils.Unstake(rpcParameters, config,
 				types.UnstakeInput{
 					Account:    account,
 					StakerId:   stakerId,
@@ -300,9 +298,9 @@ func TestExecuteUnstake(t *testing.T) {
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
 			utilsMock.On("AssignStakerId", mock.Anything, flagSet, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
-			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeHash, tt.args.unstakeErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("GetLock", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
+			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeHash, tt.args.unstakeErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false
@@ -319,7 +317,6 @@ func TestExecuteUnstake(t *testing.T) {
 
 func TestApproveUnstake(t *testing.T) {
 	var (
-		client             *ethclient.Client
 		stakerTokenAddress common.Address
 		txnArgs            types.TransactionOptions
 	)
@@ -362,7 +359,7 @@ func TestApproveUnstake(t *testing.T) {
 			stakeManagerMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			ut := &UtilsStruct{}
-			got, err := ut.ApproveUnstake(client, stakerTokenAddress, txnArgs)
+			got, err := ut.ApproveUnstake(rpcParameters, stakerTokenAddress, txnArgs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApproveUnstake() error = %v, wantErr %v", err, tt.wantErr)
 				return

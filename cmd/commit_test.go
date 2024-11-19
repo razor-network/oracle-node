@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/cache"
@@ -21,7 +19,6 @@ import (
 
 func TestCommit(t *testing.T) {
 	var (
-		client       *ethclient.Client
 		account      types.Account
 		config       types.Configurations
 		latestHeader *Types.Header
@@ -89,7 +86,7 @@ func TestCommit(t *testing.T) {
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.Commit(context.Background(), client, config, account, epoch, latestHeader, stateBuffer, commitment)
+			got, err := utils.Commit(rpcParameters, config, account, epoch, latestHeader, stateBuffer, commitment)
 			if got != tt.want {
 				t.Errorf("Txn hash for Commit function, got = %v, want = %v", got, tt.want)
 			}
@@ -108,9 +105,8 @@ func TestCommit(t *testing.T) {
 
 func TestHandleCommitState(t *testing.T) {
 	var (
-		client *ethclient.Client
-		epoch  uint32
-		seed   []byte
+		epoch uint32
+		seed  []byte
 	)
 
 	rogueValue := big.NewInt(1111)
@@ -219,14 +215,14 @@ func TestHandleCommitState(t *testing.T) {
 
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetNumActiveCollections", mock.Anything, mock.Anything).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
-			utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
-			utilsMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
-			utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
+			utilsMock.On("GetNumActiveCollections", mock.Anything).Return(tt.args.numActiveCollections, tt.args.numActiveCollectionsErr)
+			utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assignedCollections, tt.args.seqAllottedCollections, tt.args.assignedCollectionsErr)
+			utilsMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.collectionDataErr)
 			utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 			utils := &UtilsStruct{}
-			got, err := utils.HandleCommitState(context.Background(), client, epoch, seed, commitParams, tt.args.rogueData)
+			got, err := utils.HandleCommitState(rpcParameters, epoch, seed, commitParams, tt.args.rogueData)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from HandleCommitState function, got = %v, want = %v", got, tt.want)
 			}
@@ -245,8 +241,6 @@ func TestHandleCommitState(t *testing.T) {
 }
 
 func TestGetSalt(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
 		epoch                        uint32
 		numProposedBlocks            uint8
@@ -337,15 +331,15 @@ func TestGetSalt(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetNumberOfProposedBlocks", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
-			utilsMock.On("GetBlockIndexToBeConfirmed", mock.Anything, mock.Anything).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
-			voteManagerUtilsMock.On("GetSaltFromBlockchain", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.saltFromBlockChain, tt.args.saltFromBlockChainErr)
-			utilsMock.On("GetSortedProposedBlockId", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
-			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
+			utilsMock.On("GetNumberOfProposedBlocks", mock.Anything, mock.Anything).Return(tt.args.numProposedBlocks, tt.args.numProposedBlocksErr)
+			utilsMock.On("GetBlockIndexToBeConfirmed", mock.Anything).Return(tt.args.blockIndexedToBeConfirmed, tt.args.blockIndexedToBeConfirmedErr)
+			utilsMock.On("GetSaltFromBlockchain", mock.Anything).Return(tt.args.saltFromBlockChain, tt.args.saltFromBlockChainErr)
+			utilsMock.On("GetSortedProposedBlockId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.blockId, tt.args.blockIdErr)
+			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.previousBlock, tt.args.previousBlockErr)
 			utilsMock.On("CalculateSalt", mock.Anything, mock.Anything).Return(tt.args.salt)
 
 			ut := &UtilsStruct{}
-			got, err := ut.GetSalt(context.Background(), client, tt.args.epoch)
+			got, err := ut.GetSalt(rpcParameters, tt.args.epoch)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Data from GetSalt function, got = %v, want = %v", got, tt.want)
 			}
@@ -364,9 +358,8 @@ func TestGetSalt(t *testing.T) {
 
 func BenchmarkHandleCommitState(b *testing.B) {
 	var (
-		client *ethclient.Client
-		epoch  uint32
-		seed   []byte
+		epoch uint32
+		seed  []byte
 	)
 
 	rogueValue := big.NewInt(1111)
@@ -389,14 +382,14 @@ func BenchmarkHandleCommitState(b *testing.B) {
 
 				SetUpMockInterfaces()
 
-				utilsMock.On("GetNumActiveCollections", mock.Anything, mock.Anything).Return(v.numActiveCollections, nil)
-				utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
-				utilsMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything, mock.Anything).Return(uint16(1), nil)
-				utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
+				utilsMock.On("GetNumActiveCollections", mock.Anything).Return(v.numActiveCollections, nil)
+				utilsMock.On("GetAssignedCollections", mock.Anything, mock.Anything, mock.Anything).Return(v.assignedCollections, nil, nil)
+				utilsMock.On("GetCollectionIdFromIndex", mock.Anything, mock.Anything).Return(uint16(1), nil)
+				utilsMock.On("GetAggregatedDataOfCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(big.NewInt(1000), nil)
 				utilsMock.On("GetRogueRandomValue", mock.Anything).Return(rogueValue)
 
 				ut := &UtilsStruct{}
-				_, err := ut.HandleCommitState(context.Background(), client, epoch, seed, commitParams, types.Rogue{IsRogue: false})
+				_, err := ut.HandleCommitState(rpcParameters, epoch, seed, commitParams, types.Rogue{IsRogue: false})
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -477,7 +470,6 @@ func TestCalculateCommitment(t *testing.T) {
 
 func TestVerifyCommitment(t *testing.T) {
 	var (
-		client  *ethclient.Client
 		account types.Account
 	)
 	type args struct {
@@ -548,9 +540,9 @@ func TestVerifyCommitment(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetCommitment", mock.Anything, mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: commitmentHash}, tt.args.commitmentErr)
+			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: commitmentHash}, tt.args.commitmentErr)
 
-			got, err := VerifyCommitment(context.Background(), client, account, commitmentFetched)
+			got, err := VerifyCommitment(rpcParameters, account, commitmentFetched)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("VerifyCommitment() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -564,7 +556,6 @@ func TestVerifyCommitment(t *testing.T) {
 
 func TestCalculateSeed(t *testing.T) {
 	var (
-		client       *ethclient.Client
 		account      types.Account
 		keystorePath string
 		epoch        uint32
@@ -633,8 +624,8 @@ func TestCalculateSeed(t *testing.T) {
 			SetUpMockInterfaces()
 
 			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, secret, tt.args.secretErr)
-			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything, mock.Anything).Return(salt, tt.args.saltErr)
-			got, err := CalculateSeed(context.Background(), client, account, keystorePath, epoch)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(salt, tt.args.saltErr)
+			got, err := CalculateSeed(rpcParameters, account, keystorePath, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CalculateSeed() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -18,7 +18,6 @@ import (
 func TestExtendLock(t *testing.T) {
 	var extendLockInput types.ExtendLockInput
 	var config types.Configurations
-	var client *ethclient.Client
 
 	type args struct {
 		resetLockTxn *Types.Transaction
@@ -62,7 +61,7 @@ func TestExtendLock(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.ResetUnstakeLock(client, config, extendLockInput)
+			got, err := utils.ResetUnstakeLock(rpcParameters, config, extendLockInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for resetLock function, got = %v, want = %v", got, tt.want)
 			}
@@ -176,10 +175,10 @@ func TestExecuteExtendLock(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
-			utilsMock.On("AssignStakerId", mock.Anything, flagSet, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			cmdUtilsMock.On("ResetUnstakeLock", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
+			cmdUtilsMock.On("ResetUnstakeLock", mock.Anything, config, mock.Anything).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

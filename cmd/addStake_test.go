@@ -84,14 +84,14 @@ func TestStakeCoins(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
-			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.getEpochErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.getEpochErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			stakeManagerMock.On("Stake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.StakeCoins(txnArgs)
+			got, err := utils.StakeCoins(rpcParameters, txnArgs)
 			if got != tt.want {
 				t.Errorf("Txn hash for stake function, got = %v, want %v", got, tt.want)
 			}
@@ -323,16 +323,16 @@ func TestExecuteStake(t *testing.T) {
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("FetchBalance", mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("CheckEthBalanceIsZero", mock.Anything, mock.Anything, mock.Anything).Return()
-			utilsMock.On("GetMinSafeRazor", mock.Anything, mock.Anything).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
-			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetStaker", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
-			cmdUtilsMock.On("Approve", mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
-			cmdUtilsMock.On("StakeCoins", mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
+			utilsMock.On("CheckEthBalanceIsZero", mock.Anything, mock.Anything).Return()
+			utilsMock.On("GetMinSafeRazor", mock.Anything).Return(tt.args.minSafeRazor, tt.args.minSafeRazorErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("Approve", mock.Anything, mock.Anything).Return(tt.args.approveTxn, tt.args.approveErr)
+			cmdUtilsMock.On("StakeCoins", mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

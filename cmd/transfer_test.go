@@ -17,7 +17,6 @@ import (
 )
 
 func TestTransfer(t *testing.T) {
-	var client *ethclient.Client
 	var config types.Configurations
 
 	type args struct {
@@ -70,7 +69,7 @@ func TestTransfer(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Transfer(client, config, types.TransferInput{
+			got, err := utils.Transfer(rpcParameters, config, types.TransferInput{
 				ValueInWei: big.NewInt(1).Mul(big.NewInt(1), big.NewInt(1e18)),
 			})
 			if got != tt.want {
@@ -252,9 +251,9 @@ func TestExecuteTransfer(t *testing.T) {
 			flagSetMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("FetchBalance", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.balance, tt.args.balanceErr)
-			cmdUtilsMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), config, mock.AnythingOfType("types.TransferInput")).Return(tt.args.transferHash, tt.args.transferErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("FetchBalance", mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
+			cmdUtilsMock.On("Transfer", mock.Anything, config, mock.Anything).Return(tt.args.transferHash, tt.args.transferErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false
