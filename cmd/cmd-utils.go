@@ -140,7 +140,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 		log.Error("Error in getting address: ", err)
 		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
-	log.Debug("Address: %v", address)
+	log.Debugf("Address: %v", address)
 
 	log.Debug("Checking to assign log file...")
 	fileUtils.AssignLogFile(flagSet, config)
