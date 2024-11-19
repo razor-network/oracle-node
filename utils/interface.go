@@ -245,6 +245,7 @@ type BlockManagerUtils interface {
 	GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error)
 	GetEpochLastProposed(client *ethclient.Client, stakerId uint32) (uint32, error)
 	GetConfirmedBlocks(client *ethclient.Client, epoch uint32) (types.ConfirmedBlock, error)
+	Disputes(client *ethclient.Client, epoch uint32, address common.Address) (types.DisputesStruct, error)
 }
 
 type StakeManagerUtils interface {
