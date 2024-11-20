@@ -136,10 +136,12 @@ func TestExecuteCollectionList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			pathMock.On("GetDefaultPath").Return(testDir, nil)
 			cmdUtilsMock.On("GetCollectionList", mock.Anything).Return(tt.args.collectionListErr)
 
 			utils := &UtilsStruct{}

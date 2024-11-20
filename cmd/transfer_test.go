@@ -241,6 +241,7 @@ func TestExecuteTransfer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
@@ -251,6 +252,7 @@ func TestExecuteTransfer(t *testing.T) {
 			flagSetMock.On("GetStringTo", flagSet).Return(tt.args.to, tt.args.toErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
+			pathMock.On("GetDefaultPath").Return(testDir, nil)
 			utilsMock.On("FetchBalance", mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("Transfer", mock.Anything, config, mock.Anything).Return(tt.args.transferHash, tt.args.transferErr)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)

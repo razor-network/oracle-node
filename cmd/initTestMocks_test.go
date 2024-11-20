@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"math/big"
+	"os"
+	"path/filepath"
 	"razor/RPC"
 	"razor/cmd/mocks"
 	"razor/path"
@@ -170,6 +172,7 @@ func SetUpMockInterfaces() {
 
 	pathMock = new(pathPkgMocks.PathInterface)
 	pathUtils = pathMock
+	path.PathUtilsInterface = pathMock
 
 	osPathMock = new(pathPkgMocks.OSInterface)
 	path.OSUtilsInterface = osPathMock
@@ -261,4 +264,20 @@ func (d *DummyRPC) SlowMethod(client *ethclient.Client) error {
 	fmt.Println("Sleeping...")
 	time.Sleep(3 * time.Second) // Simulate delay to trigger timeout
 	return nil
+}
+
+var testDir = "/tmp/test_rzr"
+
+func setupTestEndpointsEnvironment() {
+	err := os.MkdirAll(testDir, 0755)
+	if err != nil {
+		log.Fatalf("failed to create test directory: %w", err)
+	}
+
+	mockEndpoints := `["https://testnet.skalenodes.com/v1/juicy-low-small-testnet"]`
+	mockFilePath := filepath.Join(testDir, "endpoints.json")
+	err = os.WriteFile(mockFilePath, []byte(mockEndpoints), 0644)
+	if err != nil {
+		log.Fatalf("failed to write mock endpoints.json: %w", err)
+	}
 }
