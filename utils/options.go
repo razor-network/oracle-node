@@ -32,7 +32,10 @@ func (*UtilsStruct) GetTxnOpts(rpcParameters rpc.RPCParameters, transactionData 
 		return nil, errors.New("account manager not initialised")
 	}
 	privateKey, err := account.AccountManager.GetPrivateKey(account.Address, account.Password)
-	CheckError("Error in fetching private key: ", err)
+	if err != nil {
+		log.Error("Error in fetching private key: ", err)
+		return nil, err
+	}
 
 	nonce, err := ClientInterface.GetNonceAtWithRetry(rpcParameters, common.HexToAddress(account.Address))
 	if err != nil {
