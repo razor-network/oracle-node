@@ -81,7 +81,10 @@ func (*UtilsStruct) Delegate(rpcParameters rpc.RPCParameters, txnArgs types.Tran
 	txnArgs.MethodName = "delegate"
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
-	delegationTxnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	delegationTxnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Info("Sending Delegate transaction...")
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()

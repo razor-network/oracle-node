@@ -101,7 +101,10 @@ func (*UtilsStruct) UpdateCommission(rpcParameters rpc.RPCParameters, config typ
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 		Account:         updateCommissionInput.Account,
 	}
-	updateCommissionTxnOpts := razorUtils.GetTxnOpts(rpcParameters, txnOpts)
+	updateCommissionTxnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnOpts)
+	if err != nil {
+		return err
+	}
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

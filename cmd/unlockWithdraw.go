@@ -84,7 +84,10 @@ func (*UtilsStruct) HandleWithdrawLock(rpcParameters rpc.RPCParameters, account 
 			Parameters:      []interface{}{stakerId},
 			Account:         account,
 		}
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+		if err != nil {
+			return core.NilHash, err
+		}
 		log.Debug("HandleWithdrawLock: Calling UnlockWithdraw() with arguments stakerId = ", stakerId)
 		return cmdUtils.UnlockWithdraw(rpcParameters, txnOpts, stakerId)
 	}

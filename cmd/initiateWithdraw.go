@@ -106,7 +106,10 @@ func (*UtilsStruct) HandleUnstakeLock(rpcParameters rpc.RPCParameters, account t
 		Parameters:      []interface{}{stakerId},
 		Account:         account,
 	}
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	if big.NewInt(int64(epoch)).Cmp(unstakeLock.UnlockAfter) >= 0 && big.NewInt(int64(epoch)).Cmp(withdrawBefore) <= 0 {
 		log.Debug("Calling InitiateWithdraw() with arguments stakerId: ", stakerId)

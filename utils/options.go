@@ -24,21 +24,28 @@ func (*UtilsStruct) GetOptions() bind.CallOpts {
 	}
 }
 
-func (*UtilsStruct) GetTxnOpts(rpcParameters rpc.RPCParameters, transactionData types.TransactionOptions) *bind.TransactOpts {
+func (*UtilsStruct) GetTxnOpts(rpcParameters rpc.RPCParameters, transactionData types.TransactionOptions) (*bind.TransactOpts, error) {
 	log.Debug("Getting transaction options...")
 	account := transactionData.Account
 	if account.AccountManager == nil {
-		log.Fatal("Account Manager in transaction data is not initialised")
+		log.Error("Account Manager in transaction data is not initialised")
+		return nil, errors.New("account manager not initialised")
 	}
 	privateKey, err := account.AccountManager.GetPrivateKey(account.Address, account.Password)
 	CheckError("Error in fetching private key: ", err)
 
 	nonce, err := ClientInterface.GetNonceAtWithRetry(rpcParameters, common.HexToAddress(account.Address))
-	CheckError("Error in fetching nonce: ", err)
+	if err != nil {
+		log.Error("Error in fetching nonce: ", err)
+		return nil, err
+	}
 
 	gasPrice := GasInterface.GetGasPrice(rpcParameters, transactionData.Config)
 	txnOpts, err := BindInterface.NewKeyedTransactorWithChainID(privateKey, transactionData.ChainId)
-	CheckError("Error in getting transactor: ", err)
+	if err != nil {
+		log.Error("Error in getting transactor: ", err)
+		return nil, err
+	}
 	txnOpts.Nonce = big.NewInt(int64(nonce))
 	txnOpts.GasPrice = gasPrice
 	txnOpts.Value = transactionData.EtherValue
@@ -48,18 +55,21 @@ func (*UtilsStruct) GetTxnOpts(rpcParameters rpc.RPCParameters, transactionData 
 		errString := err.Error()
 		if ContainsStringFromArray(errString, []string{"500", "501", "502", "503", "504"}) || errString == errors.New("intrinsic gas too low").Error() {
 			latestBlock, err := ClientInterface.GetLatestBlockWithRetry(rpcParameters)
-			CheckError("Error in fetching block: ", err)
+			if err != nil {
+				log.Error("Error in fetching block: ", err)
+				return nil, err
+			}
 
 			txnOpts.GasLimit = latestBlock.GasLimit
 			log.Debug("Error occurred due to RPC issue, sending block gas limit...")
 			log.Debug("Gas Limit: ", txnOpts.GasLimit)
-			return txnOpts
+			return txnOpts, nil
 		}
 		log.Error("Error in getting gas limit: ", err)
 	}
 	log.Debug("Gas after increment: ", gasLimit)
 	txnOpts.GasLimit = gasLimit
-	return txnOpts
+	return txnOpts, nil
 }
 
 func (*GasStruct) GetGasPrice(rpcParameters rpc.RPCParameters, config types.Configurations) *big.Int {

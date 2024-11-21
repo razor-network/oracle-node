@@ -55,7 +55,7 @@ func (*UtilsStruct) Reveal(rpcParameters rpc.RPCParameters, config types.Configu
 
 	log.Info("Revealing votes...")
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,

@@ -38,7 +38,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 	log.Debugf("ClaimCommission: Staker Info: %+v", stakerInfo)
 
 	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 			ChainId:         core.ChainId,
 			Config:          config,
 			ContractAddress: core.StakeManagerAddress,
@@ -47,6 +47,7 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 			ABI:             bindings.StakeManagerMetaData.ABI,
 			Account:         account,
 		})
+		utils.CheckError("Error in getting txn options: ", err)
 
 		log.Info("Claiming commission...")
 

@@ -84,7 +84,10 @@ func (*UtilsStruct) CreateJob(rpcParameters rpc.RPCParameters, config types.Conf
 		Account:         jobInput.Account,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Info("Creating Job...")
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
